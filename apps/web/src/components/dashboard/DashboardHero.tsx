@@ -79,7 +79,7 @@ export function DashboardHero({
             <Link
               key={b.id}
               href={b.href ?? '#'}
-              className="block rounded-lg border border-border/60 p-3 text-sm transition-colors hover:bg-secondary/60"
+              className="block rounded-lg border border-border p-3 text-sm transition-colors hover:bg-secondary/60"
             >
               <p className="font-medium text-foreground">{b.title}</p>
               {b.excerpt && <p className="text-xs text-muted-foreground mt-0.5">{b.excerpt}</p>}

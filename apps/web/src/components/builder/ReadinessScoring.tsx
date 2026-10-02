@@ -489,7 +489,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                       "h-2 flex-1 rounded-full",
                       ['idea', 'validation', 'mvp', 'growth', 'scale'].indexOf(data.readinessLevel) >= index
                         ? 'bg-primary'
-                        // `bg-gray-200` is a fixed light value — on the dark theme the
+                        // `bg-muted` is a fixed light value — on the dark theme the
                         // unreached segments read as a bright bar, inverting the meaning.
                         : 'bg-muted'
                     )}

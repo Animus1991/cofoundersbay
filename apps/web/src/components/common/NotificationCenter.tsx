@@ -60,10 +60,10 @@ const notificationIcons: Record<NotificationType, React.ComponentType<{ classNam
 
 const notificationColors: Record<NotificationType, string> = {
   message: 'text-status-accent bg-status-accent-bg',
-  connection: 'text-emerald-400 bg-status-success-bg',
-  match: 'text-pink-400 bg-status-accent-bg',
-  event: 'text-purple-400 bg-status-accent-bg',
-  system: 'text-amber-400 bg-status-warning-bg',
+  connection: 'text-status-success bg-status-success-bg',
+  match: 'text-status-accent bg-status-accent-bg',
+  event: 'text-status-accent bg-status-accent-bg',
+  system: 'text-status-warning bg-status-warning-bg',
 };
 
 function formatTimestamp(date: Date): string {
@@ -182,7 +182,7 @@ export function NotificationCenter({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-[480px] overflow-hidden p-0">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-border/60">
+        <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-foreground">Notifications</h3>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (

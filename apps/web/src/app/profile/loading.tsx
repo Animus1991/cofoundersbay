@@ -19,7 +19,7 @@ export default function ProfileLoading() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
             {/* Left column */}
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-4">
+              <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
                 <div className="flex flex-col items-center gap-3">
                   <Skeleton className="h-24 w-24 rounded-full" />
                   <Skeleton className="h-6 w-36" />
@@ -38,7 +38,7 @@ export default function ProfileLoading() {
               </div>
 
               {/* Completion meter */}
-              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+              <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
                 <div className="flex justify-between">
                   <Skeleton className="h-4 w-36" />
                   <Skeleton className="h-4 w-10" />
@@ -52,7 +52,7 @@ export default function ProfileLoading() {
               </div>
 
               {/* Skills */}
-              <div className="rounded-2xl border border-border/40 bg-card p-5 space-y-3">
+              <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
                 <Skeleton className="h-4 w-16" />
                 <div className="flex flex-wrap gap-2">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -64,13 +64,13 @@ export default function ProfileLoading() {
 
             {/* Right column */}
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-3">
+              <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
                 <Skeleton className="h-5 w-16" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
                 <Skeleton className="h-4 w-4/6" />
               </div>
-              <div className="rounded-2xl border border-border/40 bg-card p-6 space-y-3">
+              <div className="rounded-2xl border border-border bg-card p-6 space-y-3">
                 <Skeleton className="h-5 w-32" />
                 <div className="grid grid-cols-2 gap-3">
                   {Array.from({ length: 4 }).map((_, i) => (

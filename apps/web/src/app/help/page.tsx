@@ -253,7 +253,7 @@ const faqCategories: FAQCategory[] = [
 
 function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean; onToggle: () => void }) {
   return (
-    <div className="border-b border-border/50 last:border-0">
+    <div className="border-b border-border last:border-0">
       <button
         type="button"
         aria-expanded={isOpen}
@@ -372,7 +372,7 @@ export default function HelpPage() {
       <div className="space-y-6 pb-10">
 
         {/* Search Hero */}
-        <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
+        <div className="rounded-xl border border-border bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
@@ -386,7 +386,7 @@ export default function HelpPage() {
               placeholder={bilingualInline("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-11 bg-background border-border/60"
+              className="pl-9 h-11 bg-background border-border"
             />
             {searchQuery && (
               <button
@@ -418,7 +418,7 @@ export default function HelpPage() {
               'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
               selectedCategory === null
                 ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
             )}
           >
             <BilingualText en="All Topics" el="Όλα τα θέματα" compact />
@@ -436,7 +436,7 @@ export default function HelpPage() {
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
                 selectedCategory === category.id
                   ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                  : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                  : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
               )}
             >
               <category.icon className="h-3 w-3" aria-hidden="true" />
@@ -467,7 +467,7 @@ export default function HelpPage() {
 
         {/* FAQ Content */}
         {displayCategories.length === 0 ? (
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
             <CardContent className="py-16 text-center">
               <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
               <h2 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
@@ -480,8 +480,8 @@ export default function HelpPage() {
         ) : (
           <div className="space-y-4">
             {displayCategories.map((category) => (
-              <Card key={category.id} className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50 py-4">
+              <Card key={category.id} className="shadow-sm border-border">
+                <CardHeader className="border-b border-border py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                       <category.icon className="h-4 w-4 text-primary-accessible" />
@@ -542,7 +542,7 @@ export default function HelpPage() {
         {/* Quick Links */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h3>
@@ -551,7 +551,7 @@ export default function HelpPage() {
             </Card>
           </Link>
           <Link href="/privacy" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h3>
@@ -560,7 +560,7 @@ export default function HelpPage() {
             </Card>
           </Link>
           <Link href="/settings" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
                 <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact /></h3>

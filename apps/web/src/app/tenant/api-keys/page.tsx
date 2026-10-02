@@ -62,7 +62,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
             {apiKey.isActive ? (
               <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Active" el="Ενεργό" compact /></Badge>
             ) : (
-              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>
+              <Badge variant="outline" size="sm" className="bg-muted text-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">

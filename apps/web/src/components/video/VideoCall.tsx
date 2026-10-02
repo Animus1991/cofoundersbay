@@ -104,7 +104,7 @@ export function VideoCall({ className }: VideoCallProps) {
           <div 
             ref={localVideoRef}
             className={cn(
-              'absolute bottom-4 right-4 w-48 h-36 bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-700',
+              'absolute bottom-4 right-4 w-48 h-36 bg-muted rounded-lg overflow-hidden border-2 border-border',
               'transition-all duration-200 hover:scale-105'
             )}
             id="local-video-container"
@@ -134,7 +134,7 @@ export function VideoCall({ className }: VideoCallProps) {
           {state === 'error' && (
             <div className="absolute inset-0 bg-status-danger-bg flex items-center justify-center">
               <div className="text-center text-white">
-                <div className="text-red-300 mb-4">
+                <div className="text-status-danger mb-4">
                   <Phone className="h-12 w-12 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-lg font-medium">Connection failed</p>
@@ -190,7 +190,7 @@ export function VideoCall({ className }: VideoCallProps) {
             <div className="space-y-2">
               {participants.map((participant) => (
                 <div key={participant.id} className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-success"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
                     {participant.audio && <Mic className="icon-sm text-status-success" />}

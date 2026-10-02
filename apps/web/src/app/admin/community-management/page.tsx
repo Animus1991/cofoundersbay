@@ -115,7 +115,7 @@ export default function CommunityManagementPage() {
             <Link
               key={g.id}
               href={`/groups/${g.id}`}
-              className="group flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border/60 px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/30 focus-ring"
+              className="group flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/30 focus-ring"
             >
               <div className="min-w-0 flex-1 basis-56">
                 <p className="flex flex-wrap items-center gap-2 font-medium">

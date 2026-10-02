@@ -73,7 +73,7 @@ const PLANS = [
     priceAnnual: 0,
     icon: Zap,
     color: 'text-muted-foreground',
-    bgColor: 'bg-slate-500/10',
+    bgColor: 'bg-muted',
     popular: false,
     cta: 'Get Started',
     ctaEl: 'Ξεκινήστε',
@@ -207,7 +207,7 @@ export default function PricingPage() {
     <div className="min-h-screen bg-background">
       <LandingNav />
       {/* Header */}
-      <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent pt-[52px]">
+      <div className="border-b border-border bg-gradient-to-b from-primary/5 to-transparent pt-[52px]">
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
             <Crown className="mr-1.5 icon-sm" />
@@ -221,7 +221,7 @@ export default function PricingPage() {
           </p>
 
           {/* Billing toggle */}
-          <div className="mt-8 inline-flex items-center rounded-full border border-border/60 bg-secondary/40 p-0.5">
+          <div className="mt-8 inline-flex items-center rounded-full border border-border bg-secondary/40 p-0.5">
             <button
               type="button"
               onClick={() => setAnnual(false)}
@@ -335,7 +335,7 @@ export default function PricingPage() {
       </div>
 
       {/* Feature Comparison Table */}
-      <div className="border-t border-border/50 bg-secondary/20">
+      <div className="border-t border-border bg-secondary/20">
         <div className="mx-auto max-w-7xl px-6 py-16">
           <h2 className="mb-8 text-center font-display text-2xl font-bold text-foreground">
             <BilingualText en="Compare all features" el="Σύγκριση όλων των δυνατοτήτων" compact />
@@ -353,7 +353,7 @@ export default function PricingPage() {
           >
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
-                <tr className="border-b border-border/60">
+                <tr className="border-b border-border">
                   <th className="py-4 text-left text-sm font-semibold text-foreground"><BilingualText en="Feature" el="Δυνατότητα" compact /></th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground"><BilingualText en="Free" el="Δωρεάν" compact /></th>
                   <th className="py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
@@ -363,7 +363,7 @@ export default function PricingPage() {
               </thead>
               <tbody>
                 {FEATURES.map((feature, i) => (
-                  <tr key={feature.name} className={cn('border-b border-border/40', i % 2 === 0 && 'bg-card/50')}>
+                  <tr key={feature.name} className={cn('border-b border-border', i % 2 === 0 && 'bg-card/50')}>
                     <td className="py-3 text-sm text-muted-foreground"><BilingualText en={feature.name} el={feature.nameEl} wrap /></td>
                     <td className="py-3 text-center">
                       <div className="flex justify-center">
@@ -426,7 +426,7 @@ export default function PricingPage() {
               a: 'Yes! We offer special pricing for nonprofits, educational institutions, and social enterprises. Contact us to learn more.',
             },
           ].map(({ q, a }) => (
-            <div key={q} className="rounded-xl border border-border/60 bg-card/50 p-5">
+            <div key={q} className="rounded-xl border border-border bg-card/50 p-5">
               <h3 className="font-semibold text-foreground">{q}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{a}</p>
             </div>
@@ -435,7 +435,7 @@ export default function PricingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="border-t border-border/50 bg-gradient-to-t from-primary/5 to-transparent">
+      <div className="border-t border-border bg-gradient-to-t from-primary/5 to-transparent">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <h2 className="font-display text-3xl font-bold text-foreground">
             <BilingualText en="Ready to accelerate your startup journey?" el="Έτοιμοι να επιταχύνετε τη διαδρομή της startup σας;" wrap />

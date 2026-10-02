@@ -334,12 +334,12 @@ export default function AdminProgramsPage() {
       content: (
         <ul className="space-y-2">
           {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
-            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
               <span className="min-w-0 flex-1 text-sm text-muted-foreground">
                 <BilingualText en={en} el={el} compact wrap />
               </span>
-              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+              <span className="page-stat font-bold tabular-nums">{isLoading ? '—' : value}</span>
             </li>
           ))}
         </ul>

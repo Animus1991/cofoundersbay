@@ -16,7 +16,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 /**
  * Password strength presentation. Colour comes from the semantic status tokens,
  * which already carry theme-tuned light/dark values — the previous hardcoded
- * `text-red-600 dark:text-red-400` pairs had to restate every theme by hand and
+ * `text-status-danger dark:text-status-danger` pairs had to restate every theme by hand and
  * ignored tenant branding entirely.
  */
 const PASSWORD_STRENGTH = {
@@ -63,9 +63,9 @@ const ROLES = [
 // What joining gives you, not member counts: the platform publishes none, so
 // "10K+ members" and "80+ countries" were invented figures.
 const HERO_STATS = [
-  { value: '4', label: 'Ways to join', labelEl: 'Τρόποι συμμετοχής', accent: 'from-amber-200/50 to-white/0' },
-  { value: '2', label: 'Languages, EN and EL', labelEl: 'Γλώσσες, EN και EL', accent: 'from-emerald-200/50 to-white/0' },
-  { value: '1', label: 'Profile for every match', labelEl: 'Προφίλ για κάθε αντιστοίχιση', accent: 'from-sky-200/50 to-white/0' },
+  { value: '4', label: 'Ways to join', labelEl: 'Τρόποι συμμετοχής', accent: 'from-status-warning-bg to-white/0' },
+  { value: '2', label: 'Languages, EN and EL', labelEl: 'Γλώσσες, EN και EL', accent: 'from-status-success-bg to-white/0' },
+  { value: '1', label: 'Profile for every match', labelEl: 'Προφίλ για κάθε αντιστοίχιση', accent: 'from-status-info-bg to-white/0' },
 ];
 
 type Message = { en: string; el?: string };
@@ -282,7 +282,7 @@ export default function RegisterPage() {
                       className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
                           ? 'border-primary/60 bg-primary/10 text-primary-accessible'
-                          : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                          : 'border-border bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
                       <span

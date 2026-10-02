@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { globSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -70,6 +70,13 @@ describe('product type standard', () => {
     expect(APP_SHELL).not.toContain('data-type-lock');
     expect(PAGE_RAIL).not.toContain('data-type-lock');
     expect(CSS).not.toMatch(/\.type-(hold|kicker)\b/);
+  });
+
+  it('has no leftover hold/kicker class names in source', () => {
+    const hits = globSync('src/{app,components,lib}/**/*.{ts,tsx,css}', { exclude: (path) => path.includes('.test.') })
+      .filter((path) => /type-hold|type-kicker/.test(readFileSync(path, 'utf8')))
+      .map((path) => path.replace(/\\/g, '/'));
+    expect(hits).toEqual([]);
   });
 
   it.each([

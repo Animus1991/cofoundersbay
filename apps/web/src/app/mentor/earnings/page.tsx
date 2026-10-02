@@ -183,7 +183,7 @@ export default function MentorEarningsPage() {
       content: (
         <ul className="space-y-2">
           {figures.map(({ id, icon: Icon, en, el, value, subEn, subEl, tone }) => (
-            <li key={id} className="rounded-lg border border-border/60 p-3">
+            <li key={id} className="rounded-lg border border-border p-3">
               <div className="flex items-center gap-2">
                 <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
                 <span className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact wrap /></span>

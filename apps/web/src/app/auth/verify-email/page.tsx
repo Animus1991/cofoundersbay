@@ -105,7 +105,7 @@ export default function VerifyEmailPage() {
           </Link>
         </div>
 
-        <Card className="border-border/60 shadow-lg">
+        <Card className="border-border shadow-lg">
           {status === 'loading' && (
             <>
               <CardHeader className="text-center pb-2">
@@ -167,7 +167,7 @@ export default function VerifyEmailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
-                <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
                   <p className="text-sm text-muted-foreground mb-3">Common reasons:</p>
                   <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                     <li><BilingualText en="The link has expired (valid for 24 hours)" el="Ο σύνδεσμος έληξε (ισχύει 24 ώρες)" wrap /></li>

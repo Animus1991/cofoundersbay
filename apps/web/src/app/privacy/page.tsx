@@ -217,7 +217,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="icon-sm" />
@@ -236,7 +236,7 @@ export default function PrivacyPage() {
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
+      <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <Shield className="h-7 w-7 text-primary-accessible" />
@@ -253,7 +253,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Quick Summary */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Privacy at a Glance" el="Το απόρρητο με μια ματιά" compact /></h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -263,7 +263,7 @@ export default function PrivacyPage() {
               { icon: UserCheck, label: 'Your Rights', labelEl: 'Τα δικαιώματά σας', desc: 'Access, correct, delete', descEl: 'Πρόσβαση, διόρθωση, διαγραφή' },
               { icon: Trash2, label: 'No Selling', labelEl: 'Καμία πώληση', desc: 'We never sell your data', descEl: 'Δεν πουλάμε ποτέ τα δεδομένα σας' },
             ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border/60 bg-card p-4">
+              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
@@ -278,7 +278,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Table of Contents */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -300,7 +300,7 @@ export default function PrivacyPage() {
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
           {sections.map((section) => (
-            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border/60">
+            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -315,7 +315,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* Footer CTA */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
+        <div className="mt-12 rounded-xl border border-border bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
             <BilingualText en="Your privacy matters to us. If you have any questions, please don't hesitate to reach out." el="Το απόρρητό σας μας ενδιαφέρει. Για οποιαδήποτε ερώτηση, επικοινωνήστε μαζί μας." wrap />
           </p>
@@ -331,7 +331,7 @@ export default function PrivacyPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>

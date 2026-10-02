@@ -25,6 +25,7 @@ import {
   Users,
   Zap,
   X,
+  CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -163,7 +164,7 @@ function GroupCard({
         )}
 
         <div
-          className="flex items-center justify-between pt-2 border-t border-border/40"
+          className="flex items-center justify-between pt-2 border-t border-border"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -221,6 +222,7 @@ function GroupsGrid({
 export default function GroupsPage() {
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'discover' | 'my-groups'>('discover');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -430,7 +432,7 @@ export default function GroupsPage() {
       content: trendingGroup ? (
         <Link
           href={`/groups/${trendingGroup.id}`}
-          className="group flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/40 focus-ring"
+          className="group flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/40 focus-ring"
         >
           <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', STATUS.warning.bg)} aria-hidden="true">
             <Star className={cn('icon-sm', STATUS.warning.icon)} />
@@ -443,6 +445,19 @@ export default function GroupsPage() {
         </Link>
       ) : (
         <p className="px-2.5 text-sm text-muted-foreground"><BilingualText en="Nothing is trending yet." el="Τίποτα δεν είναι σε τάση ακόμα." wrap /></p>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={Users} en="Open members" el="Άνοιγμα μελών" onClick={() => router.push('/members')} />
+          <RailAction icon={Layers} en="Open feed" el="Άνοιγμα ροής" onClick={() => router.push('/feed')} />
+        </div>
       ),
     },
   ];

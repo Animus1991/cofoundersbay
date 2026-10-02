@@ -17,7 +17,18 @@ import { describe, expect, it } from 'vitest';
  * of defect cannot be reintroduced by a later edit.
  */
 
-const GUARDED_DIRS = ['src/components/research'];
+/*
+ * The whole product, not one directory.
+ *
+ * This guarded `src/components/research` alone, because that is where the
+ * repaint happened; everywhere else kept 382 raw shades across 75 files
+ * because nothing was looking. A `bg-emerald-500` is 84% saturation where the
+ * success token is 32% - not a different shade of the same idea, a colour
+ * chosen without reference to the theme, which is exactly what competes with
+ * it. They are mapped onto the tones now, so the rule can cover what it was
+ * always right about.
+ */
+const GUARDED_DIRS = ['src/app', 'src/components'];
 
 /**
  * Identity palettes are a different problem and the status tones are the wrong
@@ -31,7 +42,13 @@ const GUARDED_DIRS = ['src/components/research'];
 const OPT_OUT = 'categorical-palette';
 
 /** Files whose whole colour vocabulary is categorical and already theme-aware. */
-const OPT_OUT_FILES = ['NodeTagsEditor.tsx'];
+const OPT_OUT_FILES = [
+  'NodeTagsEditor.tsx',       // tag categories, one hue each
+  'ContributionGraph.tsx',    // a sequential heatmap: the ramp is the reading
+  'CanvasCopilotPanel.tsx',   // copilot modes, one hue each
+  'themes/alliance/page.tsx', // a theme preview, built from gradients
+  'themes/alliance/loading.tsx', // its skeleton, same gradients
+];
 
 const RAW_PALETTE =
   /\b(?:hover:|focus:|group-hover:|dark:)?(?:text|bg|border|ring|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)\b/g;
@@ -55,7 +72,10 @@ describe('semantic colour coverage', () => {
 
     for (const dir of GUARDED_DIRS) {
       for (const file of walk(dir)) {
-        if (OPT_OUT_FILES.some((n) => file.endsWith(n))) continue;
+        // Compare on one spelling: walk() yields OS paths, and an opt-out
+        // written with forward slashes never matches a Windows one.
+        const unixPath = file.split('\\').join('/');
+        if (OPT_OUT_FILES.some((n) => unixPath.endsWith(n))) continue;
         // Scan line by line so a single opted-out line does not exempt the file.
         for (const line of readFileSync(file, 'utf8').split('\n')) {
           if (line.includes(OPT_OUT)) continue;
@@ -73,7 +93,11 @@ describe('semantic colour coverage', () => {
   it('actually finds the files it claims to guard', () => {
     // A typo'd path would make the assertion above vacuously pass.
     const files = GUARDED_DIRS.flatMap((d) => walk(d));
-    expect(files.length).toBeGreaterThan(5);
+    // Product-wide now: a path typo would make the assertion above vacuous,
+    // and so would a walk that silently stopped at the first directory.
+    expect(files.length).toBeGreaterThan(200);
     expect(files.some((f) => f.includes('BoardSummaryPanel'))).toBe(true);
+    const normalised = files.map((f) => f.split('\\').join('/'));
+    expect(normalised.some((f) => f.includes('app/analytics'))).toBe(true);
   });
 });

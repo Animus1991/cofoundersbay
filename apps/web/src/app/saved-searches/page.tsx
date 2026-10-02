@@ -14,6 +14,8 @@ import {
   type SavedSearch,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -402,8 +404,44 @@ export default function SavedSearchesPage() {
     { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => { if (v) setDeleteConfirm(v); } },
   ]);
 
+  /*
+   * The three counts describe the list rather than being the list, so they
+   * live in the rail. New Search stays in the header: it is this page's create.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'discover',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'searches', label: savedSearchesEn('stat_searches'), labelEl: savedSearchesEl('stat_searches'), value: searches.length, icon: Search, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'alerts', label: savedSearchesEn('stat_alerts'), labelEl: savedSearchesEl('stat_alerts'), value: searches.filter((s) => s.alertsEnabled).length, icon: Bell, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'new', label: savedSearchesEn('stat_new'), labelEl: savedSearchesEl('stat_new'), value: totalNewResults, icon: Sparkles, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Search} en="Open search" el="Άνοιγμα αναζήτησης" onClick={() => router.push('/search')} />
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={Users} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
+      rail={rail}
       actions={
         <Button onClick={handleCreateNew}>
           <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
@@ -414,46 +452,8 @@ export default function SavedSearchesPage() {
       <div className="space-y-6 pb-10">
         {/* The count line that stood here repeated the first card below
             ("0 saved searches" twice), and its new-results suffix the third.
-            The page's action joins the others in the header. */}
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 kpi-odd-span-sm gap-4 sm:grid-cols-3">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Search className="icon-md text-primary-accessible" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{searches.length}</p>
-                <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_searches')} el={savedSearchesEl('stat_searches')} compact wrap /></p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-success-bg p-2">
-                <Bell className="icon-md text-status-success" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">
-                  {searches.filter((s) => s.alertsEnabled).length}
-                </p>
-                <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_alerts')} el={savedSearchesEl('stat_alerts')} compact wrap /></p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-warning-bg p-2">
-                <Sparkles className="icon-md text-status-warning" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{totalNewResults}</p>
-                <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={savedSearchesEn('stat_new')} el={savedSearchesEl('stat_new')} compact wrap /></p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
+            The page's action joins the others in the header. The three
+            figures now live in the rail. */}
         {/* Search List */}
         {searches.length === 0 ? (
           <EmptyState

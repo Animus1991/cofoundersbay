@@ -98,7 +98,7 @@ export function CookieConsent() {
       )}
     >
       <div className="pointer-events-none mx-auto max-w-4xl">
-        <div className="pointer-events-auto rounded-xl border border-border/60 bg-card shadow-lg backdrop-blur-sm">
+        <div className="pointer-events-auto rounded-xl border border-border bg-card shadow-lg backdrop-blur-sm">
           {!showSettings ? (
             /* Main Banner */
             <div className="p-4 sm:p-6">
@@ -172,7 +172,7 @@ export function CookieConsent() {
 
               <div className="space-y-3 mb-4">
                 {/* Essential Cookies */}
-                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 p-3">
+                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="text-sm font-medium text-foreground"><BilingualText en="Essential Cookies" el="Απαραίτητα cookies" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Required for the website to function properly" el="Απαιτούνται για τη σωστή λειτουργία του ιστότοπου" wrap /></p>
@@ -186,7 +186,7 @@ export function CookieConsent() {
                 </div>
 
                 {/* Analytics Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="text-sm font-medium text-foreground"><BilingualText en="Analytics Cookies" el="Cookies ανάλυσης" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Help us understand how visitors use our site" el="Μας βοηθούν να καταλάβουμε πώς χρησιμοποιείται ο ιστότοπος" wrap /></p>
@@ -206,7 +206,7 @@ export function CookieConsent() {
                 </label>
 
                 {/* Marketing Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="text-sm font-medium text-foreground"><BilingualText en="Marketing Cookies" el="Cookies μάρκετινγκ" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Used to deliver personalized advertisements" el="Χρησιμοποιούνται για εξατομικευμένες διαφημίσεις" wrap /></p>
@@ -226,7 +226,7 @@ export function CookieConsent() {
                 </label>
 
                 {/* Preference Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="text-sm font-medium text-foreground"><BilingualText en="Preference Cookies" el="Cookies προτιμήσεων" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Remember your settings and preferences" el="Θυμούνται τις ρυθμίσεις και τις προτιμήσεις σας" wrap /></p>
@@ -246,7 +246,7 @@ export function CookieConsent() {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between pt-3 border-t border-border">
                 <Link href="/privacy" className="text-xs text-primary-accessible hover:underline">
                   <BilingualText en="Learn more about cookies" el="Μάθετε περισσότερα για τα cookies" compact />
                 </Link>

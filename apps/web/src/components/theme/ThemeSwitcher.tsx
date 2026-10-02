@@ -127,7 +127,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
                   isActive && 'bg-accent/60'
                 )}
               >
-                <div className="flex shrink-0 overflow-hidden rounded-md border border-border/50" style={{ width: 36, height: 28 }}>
+                <div className="flex shrink-0 overflow-hidden rounded-md border border-border" style={{ width: 36, height: 28 }}>
                   <div style={{ background: theme.swatch[0], flex: 1 }} />
                   <div style={{ background: theme.swatch[1], width: 8 }} />
                   <div style={{ background: theme.swatch[2], width: 8 }} />

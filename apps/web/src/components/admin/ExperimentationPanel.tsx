@@ -40,7 +40,7 @@ function MetricDiff({
       </div>
       <div className="w-1/3 text-right">
         <p className="text-xs text-muted-foreground">Δ</p>
-        <p className={`font-semibold ${diff >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
+        <p className={`font-semibold ${diff >= 0 ? 'text-status-success' : 'text-status-danger'}`}>
           {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{unit}
           {' '}
           {pct !== '—' && (
@@ -102,7 +102,7 @@ function ExperimentCard({
             <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{exp.key}</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                exp.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                exp.active ? 'bg-status-success-bg text-status-success' : 'bg-muted text-muted-foreground'
               }`}
             >
               {exp.active ? 'Active' : 'Inactive'}
@@ -123,8 +123,8 @@ function ExperimentCard({
             disabled={actLoading}
             className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
               exp.active
-                ? 'bg-rose-50 text-rose-600 hover:bg-rose-100'
-                : 'bg-green-50 text-green-700 hover:bg-green-100'
+                ? 'bg-status-danger-bg text-status-danger hover:bg-status-danger-bg'
+                : 'bg-status-success-bg text-status-success hover:bg-status-success-bg'
             }`}
           >
             {exp.active ? <Square className="icon-sm" /> : <Play className="icon-sm" />}
@@ -489,7 +489,7 @@ export function ExperimentationPanel() {
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               tab === key
                 ? 'bg-white text-primary-accessible shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Icon className="icon-sm" /> {label}

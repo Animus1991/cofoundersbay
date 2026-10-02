@@ -119,7 +119,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: <CheckCircle2 className="icon-sm" /> },
     suspended: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
-    pending: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: null },
+    pending: { color: 'bg-muted text-muted-foreground border-border', icon: null },
     banned: { color: 'bg-status-danger-bg text-status-danger border-status-danger-border', icon: <Ban className="icon-sm" /> },
   };
 
@@ -409,12 +409,12 @@ export default function AdminUsersPage() {
       content: (
         <ul className="space-y-2">
           {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
-            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
               <span className="min-w-0 flex-1 text-sm text-muted-foreground">
                 <BilingualText en={en} el={el} compact wrap />
               </span>
-              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+              <span className="page-stat font-bold tabular-nums">{isLoading ? '—' : value}</span>
             </li>
           ))}
         </ul>

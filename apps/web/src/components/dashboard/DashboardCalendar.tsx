@@ -52,7 +52,7 @@ export function DashboardCalendar({ events = defaultEvents, className }: Dashboa
             <li key={ev.id}>
               <Link
                 href={ev.href ?? '/events'}
-                className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
+                className="flex items-center gap-3 rounded-lg border border-border bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
               >
                 <span className="flex shrink-0 rounded bg-primary/15 px-2 py-1 text-xs font-medium text-primary-accessible">
                   {formatDate(ev.date)}

@@ -147,9 +147,9 @@ export function RichTextEditor({
     : 0;
 
   return (
-    <div className={cn('rounded-xl border border-border/60 overflow-hidden bg-background', className)}>
+    <div className={cn('rounded-xl border border-border overflow-hidden bg-background', className)}>
       {/* Toolbar */}
-      <div className={cn('flex flex-wrap items-center gap-0.5 p-1.5 border-b border-border/60 bg-muted/30', toolbarClassName)}>
+      <div className={cn('flex flex-wrap items-center gap-0.5 p-1.5 border-b border-border bg-muted/30', toolbarClassName)}>
         {TOOLBAR_GROUPS.map((group, gi) => (
           <span key={gi} className="flex items-center">
             {gi > 0 && <span className="w-px h-5 bg-border/60 mx-1" />}

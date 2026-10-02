@@ -184,7 +184,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
   const cat = TRIGGER_CATEGORY[rule.triggerType];
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
@@ -392,7 +392,7 @@ export default function TenantAutomationPage() {
             { label: 'Total Runs', labelEl: 'Σύνολο εκτελέσεων', value: totalRuns, color: 'text-status-info' },
             { label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
-            <Card key={s.label} className="border-border/60">
+            <Card key={s.label} className="border-border">
               <CardContent className="py-3 px-4">
                 <p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
                 <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
@@ -402,7 +402,7 @@ export default function TenantAutomationPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-border/50 gap-1">
+        <div className="flex border-b border-border gap-1">
           {(['rules', 'settings'] as const).map(tab => (
             <button
               key={tab}

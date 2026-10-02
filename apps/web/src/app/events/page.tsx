@@ -4,7 +4,8 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2, Layers, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2, Layers, X, GraduationCap, MessageCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -55,6 +56,7 @@ function toEventData(item: EventItem): EventData {
 }
 
 export default function EventsPage() {
+  const router = useRouter();
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'my-events' | 'past'>('upcoming');
@@ -203,6 +205,19 @@ export default function EventsPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Calendar} en="Open calendar" el="Άνοιγμα ημερολογίου" onClick={() => router.push('/calendar')} />
+          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
   ];
   const firstLabel = activeTab === 'past'
     ? { en: 'Most recent', el: 'Πιο πρόσφατη' }
@@ -213,6 +228,8 @@ export default function EventsPage() {
   return (
     <AppShell
       rail={rail}
+      showHelp
+      askAi="What's coming up in events, and which should I RSVP to or create to meet cofounders?"
       actions={
         <Button className="gap-2" asChild>
           <Link href="/events/create">
@@ -241,7 +258,7 @@ export default function EventsPage() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-border p-1">
             <Button aria-label={bilingualInline('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"

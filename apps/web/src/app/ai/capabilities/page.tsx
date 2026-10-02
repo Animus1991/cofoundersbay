@@ -98,7 +98,7 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
   const writes = spec.writes;
 
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-border/60 bg-card p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="text-sm font-semibold leading-snug">
           <BilingualText en={spec.label.en} el={spec.label.el} compact wrap />
@@ -156,7 +156,7 @@ export default function AICapabilitiesPage() {
         </Link>
 
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
-          <p className="type-hold max-w-2xl text-sm text-muted-foreground">
+          <p className="max-w-2xl text-sm text-muted-foreground">
             <BilingualText
               en="Every capability below is declared once, offered to the model, and confirmed by you before anything is written. Sample asks use Elena and Harbor's $750K seed. This page is generated from that contract, so it cannot fall behind."
               el="Κάθε δυνατότητα δηλώνεται μία φορά, προσφέρεται στο μοντέλο και επιβεβαιώνεται από εσάς πριν γραφτεί οτιδήποτε. Τα δείγματα χρησιμοποιούν την Elena και τον γύρο Harbor $750K. Η σελίδα παράγεται από αυτό το συμβόλαιο, οπότε δεν μπορεί να μείνει πίσω."
@@ -179,10 +179,10 @@ export default function AICapabilitiesPage() {
         </div>
 
         <section className="mb-10">
-          <h2 className="type-kicker mb-1 font-semibold">
+          <h2 className="page-section mb-1 font-semibold">
             <BilingualText en="Looks something up" el="Αναζητά κάτι" compact />
           </h2>
-          <p className="type-hold mb-4 text-sm text-muted-foreground">
+          <p className="mb-4 text-sm text-muted-foreground">
             <BilingualText
               en={`${reads.length} reads — answers a question from the same APIs the pages use.`}
               el={`${reads.length} αναγνώσεις — απαντούν με τα ίδια API που χρησιμοποιούν οι σελίδες.`}
@@ -197,10 +197,10 @@ export default function AICapabilitiesPage() {
         </section>
 
         <section>
-          <h2 className="type-kicker mb-1 font-semibold">
+          <h2 className="page-section mb-1 font-semibold">
             <BilingualText en="Changes something you own" el="Αλλάζει κάτι δικό σας" compact />
           </h2>
-          <p className="type-hold mb-4 text-sm text-muted-foreground">
+          <p className="mb-4 text-sm text-muted-foreground">
             <BilingualText
               en={`${mutations.length} actions — each waits for your confirm. Reversible ones offer Undo after they run.`}
               el={`${mutations.length} ενέργειες — η καθεμία περιμένει επιβεβαίωση. Οι αναστρέψιμες προσφέρουν Αναίρεση αφού εκτελεστούν.`}

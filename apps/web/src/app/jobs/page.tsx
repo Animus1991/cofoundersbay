@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -24,6 +25,8 @@ import {
   Sparkles,
   Zap,
   X,
+  Handshake,
+  Store,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -70,7 +73,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
   return (
     <Card className={cn(
       'card-interactive hover-lift group transition-all duration-200',
-      featured && 'border-primary/30 bg-gradient-to-br from-primary/[0.03] to-violet-500/[0.02]'
+      featured && 'border-primary/30 bg-gradient-to-br from-primary/[0.03] to-accent/[0.02]'
     )}>
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
@@ -244,6 +247,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
 
 export default function JobsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [employmentType, setEmploymentType] = useState<(typeof EMPLOYMENT_TYPES)[number]['value']>('all');
@@ -364,6 +368,19 @@ export default function JobsPage() {
           {activeFilters > 0 && (
             <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setRoleFilter('all'); setEmploymentType('all'); }} />
           )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Handshake} en="Open opportunities" el="Άνοιγμα ευκαιριών" onClick={() => router.push('/opportunities')} />
+          <RailAction icon={Store} en="Open marketplace" el="Άνοιγμα αγοράς" onClick={() => router.push('/marketplace')} />
+          <RailAction icon={Sparkles} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
         </div>
       ),
     },

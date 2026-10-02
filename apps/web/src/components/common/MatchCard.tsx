@@ -179,7 +179,7 @@ function MatchCardInner({
         >
           <div className={cn(
             'h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors',
-            isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
+            isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border hover:border-primary'
           )}>
             {isSelected && <Check className="icon-sm text-primary-foreground" />}
           </div>
@@ -195,7 +195,7 @@ function MatchCardInner({
         {/* Profile header */}
         <div className="flex items-start gap-3">
           <Link href={`/profiles/${userId}`}>
-            <Avatar className="h-11 w-11 rounded-lg border border-border/60 transition-transform group-hover:scale-105 shrink-0">
+            <Avatar className="h-11 w-11 rounded-lg border border-border transition-transform group-hover:scale-105 shrink-0">
               <AvatarImage src={avatarUrl || undefined} alt={displayName} />
               <AvatarFallback className="rounded-lg bg-muted text-foreground text-sm font-semibold">
                 {displayName.slice(0, 2).toUpperCase()}
@@ -275,7 +275,7 @@ function MatchCardInner({
         )}
 
         {/* Divider */}
-        <div className="mt-4 border-t border-border/50" />
+        <div className="mt-4 border-t border-border" />
 
         {/* Action buttons */}
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
@@ -284,7 +284,7 @@ function MatchCardInner({
               onClick={onPass}
               aria-label={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
               title={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
             >
               <X className="icon-sm" />
             </button>
@@ -294,7 +294,7 @@ function MatchCardInner({
               onClick={onLike}
               aria-label={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
               title={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
             >
               <UserPlus className="icon-sm" />
             </button>

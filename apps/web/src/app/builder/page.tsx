@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace, type BuilderWorkspaceDialog } from '@/components/builder/BuilderWorkspace';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
@@ -225,9 +227,68 @@ function BuilderPageContent() {
     return doc?.content || {};
   };
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'progress',
+      glyph: 'chart',
+      labelEn: 'Artefacts',
+      labelEl: 'Παραδοτέα',
+      content: (
+        <div className="space-y-2">
+          {documents.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en="Open a stage to start an artefact." el="Ανοίξτε ένα στάδιο για να ξεκινήσετε ένα παραδοτέο." wrap />
+            </p>
+          ) : (
+            documents.map((doc) => (
+              <button
+                key={doc.id}
+                type="button"
+                onClick={() => {
+                  const tab = Object.entries(TAB_TO_DOC).find(([, type]) => type === doc.type)?.[0];
+                  if (tab) setActiveTab(tab);
+                }}
+                className="flex w-full items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-left hover:bg-muted/40"
+              >
+                <span className="min-w-0 text-sm font-medium leading-snug">{doc.title}</span>
+                <span className="page-stat-label shrink-0 tabular-nums text-muted-foreground">{doc.completionPercent ?? 0}%</span>
+              </button>
+            ))
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder/pitch-deck', en: builderEn('app_link_pitch'), el: builderEl('app_link_pitch') },
+            { href: '/builder/applications', en: builderEn('tab_applications'), el: builderEl('tab_applications') },
+            { href: '/research', en: builderEn('app_link_research'), el: builderEl('app_link_research') },
+            { href: '/milestones', en: 'Milestones', el: 'Ορόσημα' },
+            { href: '/readiness', en: builderEn('app_link_readiness'), el: builderEl('app_link_readiness') },
+            { href: '/fundraising', en: builderEn('app_link_fundraising'), el: builderEl('app_link_fundraising') },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={step.en} el={step.el} wrap />
+                </span>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   if (isLoadingWorkspaces) {
     return (
-      <AppShell showHelp>
+      <AppShell showHelp rail={rail}>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -241,6 +302,7 @@ function BuilderPageContent() {
   return (
     <AppShell
       showHelp
+      rail={rail}
       askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
       contentClassName="builder-copy overflow-x-clip"
     >
@@ -267,7 +329,7 @@ function BuilderPageContent() {
             {workspace?.name && (
               <p className="page-section font-semibold tracking-tight text-foreground">{workspace.name}</p>
             )}
-            <p className="type-hold mt-0.5 text-sm leading-snug text-muted-foreground">
+            <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
               {/* The preview workspace ships an English description; map it so
                   the Greek-primary page is not interrupted. User workspaces
                   render whatever the founder wrote. */}

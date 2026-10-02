@@ -112,7 +112,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 function EngagementBar({ score }: { score: number }) {
-  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
+  const color = score >= 70 ? 'bg-status-success' : score >= 40 ? 'bg-status-warning' : 'bg-status-danger';
   return (
     <div className="space-y-0.5">
       <div className="flex justify-between text-2xs text-muted-foreground">
@@ -145,7 +145,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
               <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
             </Avatar>
             {member.isOnline && (
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-status-success border-2 border-background" />
             )}
           </div>
           <div className="flex-1 min-w-0 space-y-2">
@@ -255,7 +255,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
               </SelectContent>
             </Select>
           </div>
-          <div className="rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2">
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-2">
             <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Or share invite link" el="Ή μοιραστείτε σύνδεσμο πρόσκλησης" compact /></p>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
@@ -447,7 +447,7 @@ export default function TenantMembersPage() {
                   <Icon className={cn('icon-sm', color)} />
                 </div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
                   <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>

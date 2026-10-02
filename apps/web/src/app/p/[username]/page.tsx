@@ -46,7 +46,7 @@ function deriveProfileFields(profile: PublicProfile) {
 
 function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
   return (
-    <div className="rounded-lg border border-border/60 p-4">
+    <div className="rounded-lg border border-border p-4">
       <p className="text-muted-foreground italic">"{endorsement.content}"</p>
       {endorsement.skill && (
         <Badge variant="secondary" className="mt-2 text-xs">
@@ -78,7 +78,7 @@ function EndorsementsSkeleton() {
   return (
     <div className="space-y-4">
       {[1, 2].map((i) => (
-        <div key={i} className="rounded-lg border border-border/60 p-4">
+        <div key={i} className="rounded-lg border border-border p-4">
           <Skeleton className="h-4 w-full mb-2" />
           <Skeleton className="h-4 w-3/4 mb-4" />
           <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ export default function PublicProfilePage() {
   if (profileLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
               <Logo size="sm" />
@@ -172,7 +172,7 @@ export default function PublicProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Header */}
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
             <Logo size="sm" />
@@ -322,7 +322,7 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {experience.map((exp, i) => (
-                  <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border/60')}>
+                  <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border')}>
                     <div className="flex items-start gap-4">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                         <Briefcase className="icon-md text-muted-foreground" />
@@ -553,7 +553,7 @@ export default function PublicProfilePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 mt-12 py-8">
+      <footer className="border-t border-border mt-12 py-8">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} CoFounderBay. All rights reserved.</p>
           <div className="flex items-center justify-center gap-4 mt-2">

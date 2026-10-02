@@ -24,7 +24,6 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria } from '@/lib/i18n/format';
 import {
@@ -71,7 +70,6 @@ export default function CreateProjectPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
   const t = useProjectPrimaryText();
-  const { open: openAskAi } = usePopupChat();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -175,12 +173,6 @@ export default function CreateProjectPage() {
       showHelp
       askAi="Draft the next Harbor project from Idea Core, the GTM board, or the complementary-cofounder role."
       contentClassName="builder-copy overflow-x-clip"
-      actions={
-        <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
-          <CfbGlyph name="spark" className="icon-sm" />
-          <BilingualText en={projectEn('ask_ai_create')} el={projectEl('ask_ai_create')} compact />
-        </Button>
-      }
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
       <div className="min-w-0 space-y-5">
@@ -198,7 +190,7 @@ export default function CreateProjectPage() {
           <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
         <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
-        <p className="type-hold text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
           {' · '}
           <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
@@ -240,7 +232,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('basics_title')} el={projectEl('basics_title')} /></CardTitle>
-              <CardDescription className="type-hold"><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
+              <CardDescription className="type-identity"><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -272,7 +264,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('stage_title')} el={projectEl('stage_title')} /></CardTitle>
-              <CardDescription className="type-hold"><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
+              <CardDescription className="type-identity"><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -349,7 +341,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('team_title')} el={projectEl('team_title')} /></CardTitle>
-              <CardDescription className="type-hold"><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
+              <CardDescription className="type-identity"><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -423,7 +415,7 @@ export default function CreateProjectPage() {
           <Card className="rounded-xl">
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('review_title')} el={projectEl('review_title')} /></CardTitle>
-              <CardDescription className="type-hold"><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
+              <CardDescription className="type-identity"><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -534,9 +526,9 @@ export default function CreateProjectPage() {
                 {tagline.trim() || <BilingualText en={projectEn('no_tagline')} el={projectEl('no_tagline')} wrap />}
               </p>
               {description.trim() ? (
-                <p className="line-clamp-4 border-t border-border/60 pt-3 text-sm leading-relaxed text-muted-foreground">{description.trim()}</p>
+                <p className="line-clamp-4 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{description.trim()}</p>
               ) : null}
-              <dl className="space-y-1.5 border-t border-border/60 pt-3 text-sm">
+              <dl className="space-y-1.5 border-t border-border pt-3 text-sm">
                 <div className="flex items-baseline justify-between gap-3">
                   <dt className="min-w-0 text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} wrap /></dt>
                   <dd className="shrink-0 font-medium tabular-nums">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</dd>

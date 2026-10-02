@@ -25,7 +25,7 @@ export default function AuthError({
         <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
           <Logo size="sm" />
         </Link>
-        <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <AlertTriangle className="icon-md text-destructive-accessible" />
           </div>

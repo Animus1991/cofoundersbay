@@ -185,7 +185,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
     active: 'bg-status-success-bg text-status-success border-status-success-border',
     exited: 'bg-status-info-bg text-status-info border-status-info-border',
-    written_off: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    written_off: 'bg-muted text-muted-foreground border-border',
   };
 
   const isPositive = investment.returnPct >= 0;

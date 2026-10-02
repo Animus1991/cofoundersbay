@@ -376,7 +376,7 @@ export default function SharePage() {
 
               {/* Workspace info */}
               {document.workspace && (
-                <Card className="border-border/40">
+                <Card className="border-border">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">

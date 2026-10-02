@@ -107,7 +107,7 @@ const STATUS_CONFIG: Record<ReferralStatus, { key: ReferralKey; color: string; i
   signed_up: { key: 'status_signed_up', color: 'bg-status-info-bg text-status-info', icon: CheckCircle },
   active: { key: 'status_active', color: 'bg-status-success-bg text-status-success', icon: Users },
   rewarded: { key: 'status_rewarded', color: 'bg-status-accent-bg text-status-accent', icon: Gift },
-  expired: { key: 'status_expired', color: 'bg-slate-500/10 text-muted-foreground', icon: XCircle },
+  expired: { key: 'status_expired', color: 'bg-muted text-muted-foreground', icon: XCircle },
 };
 
 // Samples from the demo world, shown only with sample data on and when the
@@ -155,8 +155,8 @@ function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
   };
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="border-b border-border">
         <CardTitle className="flex items-center gap-2">
           <Share2 className="icon-md shrink-0 text-primary-accessible" />
           <BilingualText en={referralsEn('link_title')} el={referralsEl('link_title')} compact wrap />
@@ -214,8 +214,8 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
   const CurrentIcon = currentTier.icon;
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="border-b border-border">
         <CardTitle className="flex items-center gap-2">
           <Award className="icon-md shrink-0 text-primary-accessible" />
           <BilingualText en={referralsEn('tier_title')} el={referralsEl('tier_title')} compact wrap />
@@ -496,8 +496,8 @@ export default function ReferralsPage() {
 
         <ReferralLink onCopy={(copy) => { copyRef.current = copy; }} />
 
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <CardTitle><BilingualText en={referralsEn('list_title')} el={referralsEl('list_title')} compact wrap /></CardTitle>
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>

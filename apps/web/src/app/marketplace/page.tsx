@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search, Star, ExternalLink, Package, TrendingUp, DollarSign,
   CheckCircle, MessageCircle, Bookmark, Filter, ArrowUpDown,
   Clock, MapPin, Users, Zap, ChevronRight, ShieldCheck, Plus,
   Scale, Calculator, Megaphone, Code2, Brush, BrainCircuit, GraduationCap,
-  Globe, BadgeCheck, Store,
+  Globe, BadgeCheck, Store, Handshake, Briefcase,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -167,7 +169,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                   here is the whole specialism for one line. */}
               <p className="text-xs leading-snug text-muted-foreground">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="icon-sm fill-status-warning text-amber-400" />
+                <Star className="icon-sm fill-status-warning text-status-warning" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
               </div>
@@ -209,7 +211,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <div className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact /></div>
           <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
           <div className="flex items-center gap-1">
-            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-green-500' : 'bg-gray-400')} />
+            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-status-success' : 'bg-muted')} />
             {provider.isAvailable
               ? <BilingualText en="Available" el="Διαθέσιμος" compact />
               : <BilingualText en="Fully booked" el="Πλήρης" compact />}
@@ -217,7 +219,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         </div>
 
         {/* Footer */}
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border/40">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
             <p className="truncate font-semibold text-sm">{provider.pricing}</p>
@@ -277,6 +279,7 @@ export default function MarketplacePage() {
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [search, setSearch] = useState('');
   // ?q= seeds the search - a provider's "Preview" lands on their listing.
@@ -380,7 +383,7 @@ export default function MarketplacePage() {
       content: (
         <div className="space-y-2">
           {marketplaceStats(allProviders).map(s => (
-            <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border/60 p-3">
+            <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border p-3">
               <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
               <div>
                 <p className="text-sm font-bold">{s.value}</p>
@@ -425,6 +428,19 @@ export default function MarketplacePage() {
             <CheckCircle className="icon-sm shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1"><BilingualText en="Available providers only" el="Μόνο διαθέσιμοι πάροχοι" compact /></span>
           </button>
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Briefcase} en="Open jobs" el="Άνοιγμα θέσεων" onClick={() => router.push('/jobs')} />
+          <RailAction icon={Handshake} en="Open opportunities" el="Άνοιγμα ευκαιριών" onClick={() => router.push('/opportunities')} />
+          <RailAction icon={GraduationCap} en="Open programs" el="Άνοιγμα προγραμμάτων" onClick={() => router.push('/programs')} />
         </div>
       ),
     },

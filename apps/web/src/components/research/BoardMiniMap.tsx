@@ -121,7 +121,7 @@ export function BoardMiniMap({
         'overflow-hidden',
         embedded
           ? 'h-full w-full rounded-xl bg-muted/30'
-          : 'pointer-events-auto rounded-xl border border-border/70 bg-muted/80 shadow-lg backdrop-blur-sm',
+          : 'pointer-events-auto rounded-xl border border-border bg-muted/80 shadow-lg backdrop-blur-sm',
       )}
       style={embedded ? undefined : { width: miniW + BOARD_MINIMAP_FRAME_PX, height: miniH + BOARD_MINIMAP_FRAME_PX }}
     >

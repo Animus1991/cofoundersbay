@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
@@ -57,6 +56,7 @@ import {
   BUILDER_CARD_TITLE,
   BuilderAskAiButton,
   BuilderStageHeader,
+  useAskInPlace,
   useBuilderPrimaryText,
 } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
@@ -428,7 +428,7 @@ export function PitchDeckBuilder({
   askPrompt,
 }: PitchDeckBuilderProps) {
   const t = useBuilderPrimaryText();
-  const router = useRouter();
+  const askInPlace = useAskInPlace();
   const { success, error: toastError } = useToast();
   const savedRef = useRef(snapshotOf(hydratePitchDeck(initialData)));
   const [data, setData] = useState<PitchDeckData>(() => hydratePitchDeck(initialData));
@@ -524,7 +524,7 @@ export function PitchDeckBuilder({
         }
         return;
       }
-      router.push(`/ai?q=${encodeURIComponent(askPrompt ?? assistPrompt(data, ideaCore, bmc, market, workspaceName))}`);
+      askInPlace(askPrompt ?? assistPrompt(data, ideaCore, bmc, market, workspaceName));
     } finally {
       setIsGenerating(false);
     }
@@ -816,7 +816,7 @@ export function PitchDeckBuilder({
             </p>
           </div>
 
-          <dl className="space-y-2.5 border-t border-border/50 pt-4 text-xs">
+          <dl className="space-y-2.5 border-t border-border pt-4 text-xs">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
               <dt className="text-muted-foreground">
                 <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
@@ -1071,7 +1071,7 @@ export function PitchDeckBuilder({
                   key={template.type}
                   type="button"
                   onClick={() => addSlide(template.type)}
-                  className="flex min-h-11 items-start gap-3 rounded-2xl border border-border/60 bg-card p-3 text-left transition-colors hover:border-border hover:bg-muted/30"
+                  className="flex min-h-11 items-start gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-border hover:bg-muted/30"
                 >
                   <span className="mt-0.5 w-5 shrink-0 font-mono text-xs text-muted-foreground">{index + 1}</span>
                   <CfbGlyph name={template.glyph} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
@@ -1115,7 +1115,7 @@ export function PitchDeckBuilder({
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
+                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
                         aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
                         <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1147,7 +1147,7 @@ export function PitchDeckBuilder({
                           key={slide.id}
                           type="button"
                           onClick={() => setCurrentSlideIndex(index)}
-                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border/60 bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
+                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
                         >
                           <span className="font-mono text-2xs text-muted-foreground">{index + 1}</span>
                           <span className="min-w-0">{renderSlideTitle(slide)}</span>
@@ -1195,7 +1195,7 @@ export function PitchDeckBuilder({
                   ))}
                 </CardContent>
                 {/* Every type, one click away, without a twelve-row column under the list. */}
-                <div className="border-t border-border/60 p-2">
+                <div className="border-t border-border p-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-auto min-h-10 w-full justify-between gap-2 rounded-xl px-2 text-left">
@@ -1382,7 +1382,7 @@ export function PitchDeckBuilder({
                         </div>
                       </>
                     ) : (
-                      <div className="aspect-video min-h-[220px] rounded-2xl border border-border/60 bg-background p-6 sm:min-h-0 sm:p-8">
+                      <div className="aspect-video min-h-[220px] rounded-2xl border border-border bg-background p-6 sm:min-h-0 sm:p-8">
                         <p className="mb-3 font-mono text-xs text-muted-foreground">
                           {currentSlideIndex + 1}/{data.slides.length}
                         </p>

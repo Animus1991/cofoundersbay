@@ -126,8 +126,8 @@ export function ProfileCompleteness({
   };
 
   const getProgressColor = (pct: number) => {
-    if (pct >= 80) return 'bg-emerald-500';
-    if (pct >= 50) return 'bg-amber-500';
+    if (pct >= 80) return 'bg-status-success';
+    if (pct >= 50) return 'bg-status-warning';
     return 'bg-destructive';
   };
 
@@ -160,7 +160,7 @@ export function ProfileCompleteness({
   }
 
   return (
-    <Card className={cn('border-border/60', className)}>
+    <Card className={cn('border-border', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Profile Completeness</CardTitle>
@@ -211,7 +211,7 @@ export function ProfileCompleteness({
                     <Link
                       key={field.key}
                       href="/profile/edit"
-                      className="flex items-center gap-2 rounded-lg border border-border/60 p-2.5 hover:bg-muted/50 transition-colors group"
+                      className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
                         <Icon className="icon-sm text-muted-foreground" />

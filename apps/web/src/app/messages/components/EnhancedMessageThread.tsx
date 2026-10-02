@@ -154,7 +154,7 @@ export function EnhancedMessageThread({
             <p className="text-sm text-muted-foreground">
               {otherParticipant?.online ? (
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="w-2 h-2 bg-status-success rounded-full" />
                   Active now
                 </span>
               ) : (

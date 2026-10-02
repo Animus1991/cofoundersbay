@@ -33,12 +33,12 @@ const STATE_LABELS: Record<string, { label: string; color: string }> = {
   profile_incomplete: { label: 'Profile Incomplete', color: 'bg-status-warning' },
   exploring:          { label: 'Exploring',         color: 'bg-status-info' },
   matching_focused:   { label: 'Matching',          color: 'bg-status-accent' },
-  artifact_building:  { label: 'Building',          color: 'bg-emerald-500' },
-  stuck:              { label: 'Stuck',             color: 'bg-red-500' },
-  feedback_processing:{ label: 'Feedback',          color: 'bg-amber-500' },
-  high_momentum:      { label: 'High Momentum',     color: 'bg-green-500' },
-  review_ready:       { label: 'Review Ready',      color: 'bg-teal-500' },
-  readiness_plateaued:{ label: 'Plateaued',         color: 'bg-gray-500' },
+  artifact_building:  { label: 'Building',          color: 'bg-status-success' },
+  stuck:              { label: 'Stuck',             color: 'bg-status-danger' },
+  feedback_processing:{ label: 'Feedback',          color: 'bg-status-warning' },
+  high_momentum:      { label: 'High Momentum',     color: 'bg-status-success' },
+  review_ready:       { label: 'Review Ready',      color: 'bg-status-success' },
+  readiness_plateaued:{ label: 'Plateaued',         color: 'bg-muted' },
 };
 
 function KPICard({ title, value, sub, icon: Icon, color }: {
@@ -77,9 +77,9 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <KPICard title="Total Shown" value={stats.totalShown} icon={Target} color="bg-primary" />
-        <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-red-500" />
-        <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-emerald-500" />
-        <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-violet-500" />
+        <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-status-danger" />
+        <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-status-success" />
+        <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-status-accent" />
       </div>
 
       {chartData.length > 0 && (
@@ -174,8 +174,8 @@ function UserClassifyTab() {
                 <div key={log.id} className="flex items-center gap-3 px-4 py-2 text-xs">
                   <span className="font-mono text-muted-foreground">{log.nudgeKey}</span>
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
-                  {log.converted && <Badge className="bg-emerald-500 text-xs text-white">converted</Badge>}
-                  {log.dismissed && <Badge className="bg-rose-500 text-xs text-white">dismissed</Badge>}
+                  {log.converted && <Badge className="bg-status-success text-xs text-white">converted</Badge>}
+                  {log.dismissed && <Badge className="bg-status-danger text-xs text-white">dismissed</Badge>}
                   <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                 </div>
               ))}

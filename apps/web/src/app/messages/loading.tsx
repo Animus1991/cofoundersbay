@@ -4,8 +4,8 @@ export default function MessagesLoading() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar skeleton */}
-      <div className="w-full md:w-80 lg:w-96 border-r border-border/60 flex flex-col">
-        <div className="p-4 border-b border-border/60 space-y-3">
+      <div className="w-full md:w-80 lg:w-96 border-r border-border flex flex-col">
+        <div className="p-4 border-b border-border space-y-3">
           <div className="flex items-center justify-between">
             <Skeleton className="h-6 w-24" />
             <Skeleton className="h-8 w-8 rounded-md" />
@@ -36,7 +36,7 @@ export default function MessagesLoading() {
       {/* Chat area skeleton — hidden on mobile */}
       <div className="hidden md:flex flex-1 flex-col">
         {/* Chat header */}
-        <div className="flex items-center gap-3 border-b border-border/60 px-5 py-3.5">
+        <div className="flex items-center gap-3 border-b border-border px-5 py-3.5">
           <Skeleton className="h-9 w-9 rounded-full" />
           <div className="space-y-1.5">
             <Skeleton className="h-4 w-32" />
@@ -57,7 +57,7 @@ export default function MessagesLoading() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-border/60 p-4 flex items-center gap-3">
+        <div className="border-t border-border p-4 flex items-center gap-3">
           <Skeleton className="h-10 flex-1 rounded-xl" />
           <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
         </div>

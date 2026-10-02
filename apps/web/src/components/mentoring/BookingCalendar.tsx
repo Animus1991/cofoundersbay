@@ -289,7 +289,7 @@ export function BookingCalendar({
                         'rounded-lg border px-3 py-2 text-sm transition-colors',
                         selectedSlot?.id === slot.id
                           ? 'border-primary bg-primary/10 text-primary-accessible'
-                          : 'border-border/60 text-foreground hover:border-primary/50'
+                          : 'border-border text-foreground hover:border-primary/50'
                       )}
                     >
                       {formatTime(slot.startTime)}
@@ -347,7 +347,7 @@ export function BookingCalendar({
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'video'
                           ? 'border-primary bg-primary/10 text-primary-accessible'
-                          : 'border-border/60 text-muted-foreground hover:text-foreground'
+                          : 'border-border text-muted-foreground hover:text-foreground'
                       )}
                     >
                       <Video className="icon-sm" />
@@ -361,7 +361,7 @@ export function BookingCalendar({
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'in-person'
                           ? 'border-primary bg-primary/10 text-primary-accessible'
-                          : 'border-border/60 text-muted-foreground hover:text-foreground'
+                          : 'border-border text-muted-foreground hover:text-foreground'
                       )}
                     >
                       <MapPin className="icon-sm" />
@@ -414,7 +414,7 @@ export function BookingCalendar({
               </div>
               {mentor.hourlyRate && (
                 <>
-                  <div className="border-t border-border/60 my-2" />
+                  <div className="border-t border-border my-2" />
                   <div className="flex justify-between">
                     <span className="text-muted-foreground"><BilingualText en="Rate" el="Αμοιβή" compact /></span>
                     <span className="font-semibold text-primary-accessible">{mentor.hourlyRate}</span>

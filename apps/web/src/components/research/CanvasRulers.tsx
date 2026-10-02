@@ -21,7 +21,7 @@ export function CanvasRulers({
 
   return (
     <>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-5 overflow-hidden border-b border-border/40 bg-card/80">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 h-5 overflow-hidden border-b border-border bg-card/80">
         {xTicks.map((v) => (
           <span
             key={`x-${v}`}
@@ -32,7 +32,7 @@ export function CanvasRulers({
           </span>
         ))}
       </div>
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-30 w-8 overflow-hidden border-r border-border/40 bg-card/80">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-30 w-8 overflow-hidden border-r border-border bg-card/80">
         {yTicks.map((v) => (
           <span
             key={`y-${v}`}

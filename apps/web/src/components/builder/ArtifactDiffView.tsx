@@ -32,9 +32,9 @@ function statusIcon(status: DiffStatus) {
 
 function statusLineClass(status: DiffStatus) {
   switch (status) {
-    case 'added':   return 'bg-status-success-bg border-l-2 border-green-400 ';
-    case 'removed': return 'bg-status-danger-bg border-l-2 border-red-400 line-through opacity-70';
-    case 'changed': return 'bg-status-warning-bg border-l-2 border-yellow-400 ';
+    case 'added':   return 'bg-status-success-bg border-l-2 border-status-success-border ';
+    case 'removed': return 'bg-status-danger-bg border-l-2 border-status-danger-border line-through opacity-70';
+    case 'changed': return 'bg-status-warning-bg border-l-2 border-status-warning-border ';
     default:        return '';
   }
 }
@@ -177,7 +177,7 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
 
       {/* Sub-diffs */}
       {field.subDiffs && field.subDiffs.length > 0 && (
-        <div className="mt-2 ml-4 space-y-1 border-l-2 border-border/40 pl-2">
+        <div className="mt-2 ml-4 space-y-1 border-l-2 border-border pl-2">
           {field.subDiffs.map(sub => (
             <StructuredFieldRow key={sub.field} field={sub} />
           ))}

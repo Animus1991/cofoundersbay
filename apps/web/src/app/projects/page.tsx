@@ -85,7 +85,7 @@ function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-c
   const en = project.tagline || project.description;
   const el = project.taglineEl || project.descriptionEl;
   return (
-    <p className={cn('type-hold text-sm text-muted-foreground', clamp)}>
+    <p className={cn('text-sm text-muted-foreground', clamp)}>
       {el ? <BilingualText en={en} el={el} compact={clamp === 'line-clamp-1'} wrap={clamp === 'line-clamp-2'} /> : en}
     </p>
   );
@@ -116,7 +116,7 @@ function ProjectCard({
 }) {
   if (viewMode === 'list') {
     return (
-      <Card className="rounded-xl border-border/60 transition-colors hover:border-primary/30">
+      <Card className="rounded-xl border-border transition-colors hover:border-primary/30">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <div className="min-w-0 flex-1">
@@ -164,7 +164,7 @@ function ProjectCard({
   }
 
   return (
-    <Card className="group rounded-xl border-border/60 transition-colors hover:border-primary/30">
+    <Card className="group rounded-xl border-border transition-colors hover:border-primary/30">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
@@ -234,7 +234,7 @@ function ProjectCard({
           </div>
         )}
 
-        <div className="border-t border-border/60 pt-2">
+        <div className="border-t border-border pt-2">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CfbGlyph name="people" className="icon-sm" />
@@ -311,7 +311,7 @@ function EmptyState({
         <h3 className="page-section mb-1 font-semibold text-foreground">
           <BilingualText en={titleEn} el={titleEl} />
         </h3>
-        <p className="type-hold mb-4 max-w-sm text-sm text-muted-foreground">
+        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
           <BilingualText en={hintEn} el={hintEl} />
         </p>
         {action}
@@ -488,7 +488,7 @@ export default function ProjectsPage() {
             { labelKey: 'stat_roles' as const, value: stats.openRoles, glyph: 'people' as const, color: 'text-status-success', bg: 'bg-status-success-bg' },
             { labelKey: 'stat_industries' as const, value: stats.industries, glyph: 'chart' as const, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
           ].map((s) => (
-            <div key={s.labelKey} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <div key={s.labelKey} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', s.bg, s.color)}>
                 <CfbGlyph name={s.glyph} className="icon-sm" />
               </div>
@@ -572,6 +572,32 @@ export default function ProjectsPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder?tab=idea-core', title: 'link_idea' },
+            { href: '/milestones', title: 'link_milestones' },
+            { href: '/research', title: 'link_research' },
+            { href: '/fundraising', title: 'link_fundraising' },
+            { href: '/matches', title: 'link_matches' },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={projectEn(step.title)} el={projectEl(step.title)} wrap />
+                </span>
+                <ChevronRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
   ];
 
   const harborLive = projects.some((p) => p.name === 'Harbor' || p.id === '1');
@@ -588,48 +614,6 @@ export default function ProjectsPage() {
       actions={createCta}
     >
       <div className="space-y-4">
-        <button
-          type="button"
-          onClick={() => openAskAi()}
-          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1">
-            <span className="type-kicker block font-medium text-foreground">
-              <BilingualText en={projectEn('ask_ai_plan')} el={projectEl('ask_ai_plan')} stacked />
-            </span>
-            <span className="type-hold mt-0.5 block text-sm text-muted-foreground">
-              <BilingualText
-                en={projectEn(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-                el={projectEl(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-              />
-            </span>
-          </span>
-        </button>
-        <p className="type-hold text-sm text-muted-foreground">
-          <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
-          {' · '}
-          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_idea')} el={projectEl('link_idea')} compact />
-          </Link>
-          {' · '}
-          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_milestones')} el={projectEl('link_milestones')} compact />
-          </Link>
-          {' · '}
-          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_research')} el={projectEl('link_research')} compact />
-          </Link>
-          {' · '}
-          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_fundraising')} el={projectEl('link_fundraising')} compact />
-          </Link>
-          {' · '}
-          <Link href="/matches" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={projectEn('link_matches')} el={projectEl('link_matches')} compact />
-          </Link>
-        </p>
-
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
           <TabsList className="rounded-xl">
             {([
@@ -676,7 +660,7 @@ export default function ProjectsPage() {
                     'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
                     isActive
                       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                      : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
                   )}
                 >
                   <CfbGlyph name={pill.glyph} className="icon-sm" />

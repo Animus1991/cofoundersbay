@@ -58,6 +58,11 @@ export const OptimizedLink = forwardRef<HTMLAnchorElement, OptimizedLinkProps>(f
         prefetch();
       }}
       {...props}
+      // After `{...props}` so a caller cannot override it. SideNav peeks and
+      // bilingual titles can differ by a beat from SSR; the href and children
+      // are stable. Suppressing the attribute warning keeps the tree from
+      // overlaying a hydration dialog over the chrome.
+      suppressHydrationWarning
     >
       {children}
     </Link>

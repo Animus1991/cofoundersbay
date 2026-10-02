@@ -222,7 +222,7 @@ export function ReportBlockModal({
             <div className="space-y-3 py-4">
               <button
                 onClick={() => setStep('report')}
-                className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
                   <Flag className="icon-md text-status-warning" />
@@ -237,7 +237,7 @@ export function ReportBlockModal({
               
               <button
                 onClick={() => setStep('block')}
-                className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
                   <Ban className="icon-md text-destructive-accessible" />
@@ -278,7 +278,7 @@ export function ReportBlockModal({
                         'flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors',
                         selectedReason === reason.value
                           ? 'border-primary bg-primary/5'
-                          : 'border-border/60 hover:bg-muted/30'
+                          : 'border-border hover:bg-muted/30'
                       )}
                     >
                       <input
@@ -369,7 +369,7 @@ export function ReportBlockModal({
             </DialogHeader>
 
             <div className="py-4">
-              <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
                 <p className="text-sm text-foreground">When you block someone:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">

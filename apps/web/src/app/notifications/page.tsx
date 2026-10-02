@@ -10,6 +10,7 @@ import {
   Settings, Square, SquareCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions } from '@/components/layout/RailParts';
@@ -103,7 +104,7 @@ function formatTimeAgo(dateStr: string): string {
 
 function NotificationSkeleton() {
   return (
-    <div className="flex items-start gap-3 border-b border-border/50 px-4 py-4">
+    <div className="flex items-start gap-3 border-b border-border px-4 py-4">
       <Skeleton className="h-9 w-9 rounded-full shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3.5 w-40" />
@@ -138,7 +139,7 @@ const NotificationRow = memo(function NotificationRow({
     <div
       className={cn(
         'group flex items-start gap-3 px-4 py-4 transition-colors hover:bg-muted/30',
-        'border-b border-border/40 last:border-0',
+        'border-b border-border last:border-0',
         isUnread && 'bg-primary/[0.03]',
         selected && 'bg-primary/5',
       )}
@@ -222,6 +223,7 @@ const NotificationRow = memo(function NotificationRow({
 });
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
@@ -453,6 +455,19 @@ export default function NotificationsPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+          <RailAction icon={UserPlus} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
+          <RailAction icon={TrendingUp} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -462,10 +477,11 @@ export default function NotificationsPage() {
       description={notificationsEn('page_description')}
       descriptionEl={notificationsEl('page_description')}
       rail={rail}
+      askAi="I am looking at my notifications. What should I act on first — messages, connections, or matches?"
     >
       <div className="">
         {/* Notification list */}
-        <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <BellOff className="icon-xl text-muted-foreground/50" />
@@ -515,7 +531,7 @@ export default function NotificationsPage() {
           ) : (
             grouped.map(({ label, items }) => (
               <div key={label}>
-                <div className="px-4 py-2 border-b border-border/40 bg-muted/30">
+                <div className="px-4 py-2 border-b border-border bg-muted/30">
                   <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
                 </div>
                 {items.map((item) => (

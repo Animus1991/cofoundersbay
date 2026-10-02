@@ -41,7 +41,7 @@ export function FeatureGate({ feature, children, fallback, silent }: FeatureGate
 function UpgradePrompt({ feature }: { feature: PlanFeatureKey }) {
   const label = FEATURE_LABELS[feature] ?? feature;
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 bg-muted/30 p-6 text-center">
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-6 text-center">
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
         <Lock className="icon-md text-primary-accessible" />
       </div>

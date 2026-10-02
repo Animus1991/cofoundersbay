@@ -30,7 +30,7 @@ function AIPageInner() {
   if (!hasSession) {
     return (
       <AppShell askAi={false} showHelp>
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 bg-card px-6 py-16 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card px-6 py-16 text-center">
           <CfbGlyph name="spark" className="icon-lg text-muted-foreground" />
           <p className="max-w-md text-sm text-muted-foreground">
             <BilingualText

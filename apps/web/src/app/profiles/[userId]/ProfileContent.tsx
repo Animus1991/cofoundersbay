@@ -63,7 +63,7 @@ function SocialLinkButton({
       href={href.startsWith('http') ? href : `https://${href}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+      className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
     >
       <Icon className="icon-sm" />
       {label}
@@ -436,7 +436,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
                 {/* Social links */}
                 {rolePayload.links && typeof rolePayload.links === 'object' && (
-                  <div className="space-y-1.5 pt-2 border-t border-border/60">
+                  <div className="space-y-1.5 pt-2 border-t border-border">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Links</p>
                     <div className="flex flex-wrap gap-2">
                       {(

@@ -122,7 +122,7 @@ export function MobileNav() {
           }
         }}
       >
-        <div className="flex min-h-14 shrink-0 items-center justify-between border-b border-border/60 px-4 pr-14 safe-top">
+        <div className="flex min-h-14 shrink-0 items-center justify-between border-b border-border px-4 pr-14 safe-top">
           <SheetHeader className="space-y-0 text-left">
             <SheetTitle asChild>
               <OptimizedLink href="/" className="flex min-h-11 items-center rounded-xl focus-ring">
@@ -142,7 +142,7 @@ export function MobileNav() {
           {user && (
             <OptimizedLink
               href="/profile"
-              className="flex items-center gap-3 border-b border-border/60 px-4 py-3 hover:bg-secondary/50 focus-ring"
+              className="flex items-center gap-3 border-b border-border px-4 py-3 hover:bg-secondary/50 focus-ring"
             >
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
@@ -163,7 +163,7 @@ export function MobileNav() {
 
           <ModeSwitcher currentMode={mode} onModeChange={setMode} expanded />
 
-          <div className="border-b border-border/60 px-3 py-3">
+          <div className="border-b border-border px-3 py-3">
             <LanguagePanel />
           </div>
 
@@ -233,7 +233,7 @@ export function MobileNav() {
             ))}
           </nav>
 
-          <div className="safe-bottom space-y-1 border-t border-border/60 p-3">
+          <div className="safe-bottom space-y-1 border-t border-border p-3">
             {user ? (
               <>
                 <OptimizedLink

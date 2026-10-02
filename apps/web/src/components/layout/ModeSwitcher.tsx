@@ -45,7 +45,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          'min-w-0 shrink-0 border-b border-border/50',
+          'min-w-0 shrink-0 border-b border-border',
           // Compact 3-up when the drawer is open. Two Greek labels are wider
           // than the 58.8px cell and wrap to two hyphenated lines (see
           // MODE_LABEL_EL_DISPLAY); the tooltip carries both languages.

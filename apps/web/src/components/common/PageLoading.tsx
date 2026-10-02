@@ -14,7 +14,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
       <span className="sr-only">{label}…</span>
 
       {/* Page header */}
-      <div className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 lg:flex-row lg:items-center">
+      <div className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card px-5 py-3.5 lg:flex-row lg:items-center">
         <div className="space-y-2">
           <Skeleton className="h-5 w-48" />
           <Skeleton className="h-3.5 w-72" />
@@ -28,7 +28,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
       {/* Stat row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="space-y-3 rounded-xl border border-border/60 bg-card p-4">
+          <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-4">
             <Skeleton className="h-3.5 w-24" />
             <Skeleton className="h-7 w-16" />
             <Skeleton className="h-3 w-20" />
@@ -40,7 +40,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-3 rounded-xl border border-border/60 bg-card p-5">
+            <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-5">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
                 <div className="flex-1 space-y-2">
@@ -55,7 +55,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
         </div>
         <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="space-y-3 rounded-xl border border-border/60 bg-card p-5">
+            <div key={i} className="space-y-3 rounded-xl border border-border bg-card p-5">
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-3/4" />

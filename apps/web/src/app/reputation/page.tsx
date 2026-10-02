@@ -165,7 +165,7 @@ function HistoryItem({ event }: { event: XPEvent }) {
   const group = EVENT_GROUP[event.eventType] ?? 'other';
   const Icon = GROUP_ICON[group] ?? Layers;
   return (
-    <li className="flex items-center gap-3 border-b border-border/40 py-3 last:border-0">
+    <li className="flex items-center gap-3 border-b border-border py-3 last:border-0">
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-status-success-bg text-status-success">
         <Icon className="icon-sm" aria-hidden />
       </span>
@@ -304,7 +304,7 @@ export default function ReputationPage() {
         ) : (
           <>
             {/* Level card */}
-            <Card className="border-border/50 bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm">
+            <Card className="border-border bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm">
               <CardContent className="p-4 md:p-6">
                 {loading || !xp.data ? (
                   <div className="flex flex-col items-center gap-6 md:flex-row" aria-busy="true">
@@ -335,20 +335,20 @@ export default function ReputationPage() {
                         )}
                       </p>
                       <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
-                        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/80 px-3 py-1.5">
+                        <div className="flex items-center gap-2 rounded-lg border border-border bg-card/80 px-3 py-1.5">
                           <Trophy className="icon-sm text-status-warning" aria-hidden />
                           <span className="text-sm font-medium tabular-nums">
                             {badgeList.length} {t(badgeList.length === 1 ? 'badge_earned_one' : 'badges_earned')}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/80 px-3 py-1.5">
+                        <div className="flex items-center gap-2 rounded-lg border border-border bg-card/80 px-3 py-1.5">
                           <Flame className={cn('icon-sm', (streakData?.currentStreak ?? 0) > 0 ? 'text-status-warning' : 'text-muted-foreground')} aria-hidden />
                           <span className="text-sm font-medium tabular-nums">
                             {streakData?.currentStreak ?? 0} {t((streakData?.currentStreak ?? 0) === 1 ? 'streak_day_one' : 'streak_days')}
                           </span>
                         </div>
                         {recentTotal > 0 && (
-                          <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/80 px-3 py-1.5">
+                          <div className="flex items-center gap-2 rounded-lg border border-border bg-card/80 px-3 py-1.5">
                             <TrendingUp className="icon-sm text-status-success" aria-hidden />
                             <span className="text-sm font-medium tabular-nums">+{recentTotal} XP</span>
                           </div>
@@ -417,13 +417,13 @@ export default function ReputationPage() {
                         <p className="text-sm text-muted-foreground"><BilingualText en={reputationEn('streak_none')} el={reputationEl('streak_none')} compact /></p>
                       ) : (
                         <dl className="grid grid-cols-2 gap-4">
-                          <div className="rounded-xl border border-border/40 p-3">
+                          <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('current')}</dt>
                             <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
                               {streakData.currentStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.currentStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>
-                          <div className="rounded-xl border border-border/40 p-3">
+                          <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('longest')}</dt>
                             <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
                               {streakData.longestStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.longestStreak === 1 ? 'day_one' : 'days')}</span>
@@ -507,7 +507,7 @@ export default function ReputationPage() {
               ).map((tip) => {
                 const TipIcon = tip.icon;
                 return (
-                  <Link key={tip.title} href={tip.href} className="flex gap-3 rounded-xl border border-border/40 p-3 transition-colors hover:border-primary/30 hover:bg-muted/40">
+                  <Link key={tip.title} href={tip.href} className="flex gap-3 rounded-xl border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/40">
                     <span className={cn('h-fit rounded-lg p-2', tip.tone)}><TipIcon className="icon-sm" aria-hidden /></span>
                     <span className="min-w-0">
                       <span className="block text-sm font-medium"><BilingualText en={reputationEn(tip.title)} el={reputationEl(tip.title)} /></span>

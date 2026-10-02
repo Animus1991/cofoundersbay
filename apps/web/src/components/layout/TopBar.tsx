@@ -140,7 +140,7 @@ export function TopBar() {
   return (
     <header
       style={{ top: TOP_BANNER_STACK }}
-      className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md safe-x sm:hidden"
+      className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border bg-background/80 px-2 backdrop-blur-md safe-x sm:hidden"
     >
       <MobileNav />
       <SearchBar />

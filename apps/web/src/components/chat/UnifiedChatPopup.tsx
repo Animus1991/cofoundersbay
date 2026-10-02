@@ -694,7 +694,7 @@ export function UnifiedChatPopup() {
         <>
           {/* Thread sub-header */}
           {selected && (
-            <div className="flex shrink-0 items-center gap-2 border-b border-border/60 bg-card/80 px-3 py-2">
+            <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card/80 px-3 py-2">
               <button
                 type="button"
                 onClick={() => { setSelected(null); setActiveConversationId(null); }}
@@ -834,7 +834,7 @@ export function UnifiedChatPopup() {
                 )}
               </div>
 
-              <div className="shrink-0 border-t border-border/60 bg-card/80 px-3 py-2.5">
+              <div className="shrink-0 border-t border-border bg-card/80 px-3 py-2.5">
                 {!liveConnected && !isPreviewDemo() && (
                   <p className="mb-2 text-2xs text-status-warning">
                     <BilingualText en={messagesEn('reconnecting')} el={messagesEl('reconnecting')} />
@@ -853,7 +853,7 @@ export function UnifiedChatPopup() {
                     onKeyDown={handleMsgKeyDown}
                     placeholder={sayOne(messagesEn('type_message'), messagesEl('type_message'))}
                     aria-label={bilingualAria(messagesEn('type_message'), messagesEl('type_message'))}
-                    className="h-9 flex-1 rounded-xl border-border/60 bg-background text-sm"
+                    className="h-9 flex-1 rounded-xl border-border bg-background text-sm"
                   />
                   <Button
                     type="button"
@@ -882,7 +882,7 @@ export function UnifiedChatPopup() {
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder={sayOne(messagesEn('search_conversations'), messagesEl('search_conversations'))}
                     aria-label={bilingualAria(messagesEn('search_conversations'), messagesEl('search_conversations'))}
-                    className="h-8 rounded-lg border-border/60 bg-muted/40 pl-8 text-xs"
+                    className="h-8 rounded-lg border-border bg-muted/40 pl-8 text-xs"
                   />
                 </div>
               </div>
@@ -916,7 +916,7 @@ export function UnifiedChatPopup() {
                 )}
               </div>
 
-              <div className="shrink-0 space-y-1.5 border-t border-border/60 px-3 py-2">
+              <div className="shrink-0 space-y-1.5 border-t border-border px-3 py-2">
                 <div className="grid grid-cols-3 gap-1">
                   <button
                     type="button"

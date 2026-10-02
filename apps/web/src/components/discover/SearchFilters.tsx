@@ -136,7 +136,7 @@ function MultiSelect({
             'rounded-full border px-3 py-1 text-xs transition-colors',
             selected.includes(opt.value)
               ? 'border-primary bg-primary/10 text-primary-accessible'
-              : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+              : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
           )}
         >
           {opt.label}
@@ -376,7 +376,7 @@ export function SearchFilters({
                           'rounded-full border px-3 py-1 text-xs transition-colors',
                           (i === 0 && filters.remote === true) || (i === 1 && filters.remote === false)
                             ? 'border-primary bg-primary/10 text-primary-accessible'
-                            : 'border-border/60 text-muted-foreground hover:border-primary/50'
+                            : 'border-border text-muted-foreground hover:border-primary/50'
                         )}
                       >
                         {opt}

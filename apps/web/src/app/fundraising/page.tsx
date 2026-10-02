@@ -261,7 +261,7 @@ function RoundCard({
                 {roundKey ? <BilingualText en={fundraisingEn(roundKey)} el={fundraisingEl(roundKey)} compact /> : round.status}
               </Badge>
             </div>
-            <p className="type-hold mt-0.5 text-sm text-muted-foreground">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {round.type} · {round.valuation
                 ? `${fmtMoney(round.valuation, round.currency)} `
                 : null}
@@ -354,7 +354,7 @@ function PipelineView({
           return (
             <div key={stage} className="w-56 shrink-0">
               <div className={cn('mb-2 flex items-center justify-between rounded-xl border px-2.5 py-1.5', colors.chip)}>
-                <span className="type-kicker font-semibold">{statusLabel(stage)}</span>
+                <span className="page-stat-label font-semibold">{statusLabel(stage)}</span>
                 <Badge variant="secondary" size="sm" className="rounded-full px-1.5">{items.length}</Badge>
               </div>
               <div className="space-y-2">
@@ -394,7 +394,7 @@ function PipelineView({
                         </p>
                       )}
                       <select
-                        className="w-full rounded-xl border border-border/60 bg-background px-2 py-1 text-2xs"
+                        className="w-full rounded-xl border border-border bg-background px-2 py-1 text-2xs"
                         value={lead.status}
                         onChange={(e) => onMove(lead.id, e.target.value as InvestorStatus)}
                         aria-label={bilingualAria(fundraisingEn('move_to'), fundraisingEl('move_to'))}
@@ -408,7 +408,7 @@ function PipelineView({
                     </CardContent>
                   </Card>
                 ))}
-                <Button variant="ghost" size="sm" className={cn('h-7 w-full border border-dashed border-border/60 text-xs text-muted-foreground', BUILDER_BTN)} onClick={() => onAdd(stage)}>
+                <Button variant="ghost" size="sm" className={cn('h-7 w-full border border-dashed border-border text-xs text-muted-foreground', BUILDER_BTN)} onClick={() => onAdd(stage)}>
                   <Plus className="icon-sm mr-1" />
                   <BilingualText en={fundraisingEn('add_to_stage')} el={fundraisingEl('add_to_stage')} compact />
                 </Button>
@@ -442,8 +442,8 @@ function DataRoomView({
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="type-kicker font-semibold"><BilingualText en={fundraisingEn('dr_health')} el={fundraisingEl('dr_health')} compact /></p>
-              <p className="type-hold mt-0.5 text-2xs text-muted-foreground">
+              <p className="page-stat-label font-semibold"><BilingualText en={fundraisingEn('dr_health')} el={fundraisingEl('dr_health')} compact /></p>
+              <p className="mt-0.5 text-2xs text-muted-foreground">
                 {requiredReady}/{required.length} <BilingualText en={fundraisingEn('dr_required')} el={fundraisingEl('dr_required')} compact />
                 {' · '}
                 {ready}/{docs.length} <BilingualText en={fundraisingEn('dr_total')} el={fundraisingEl('dr_total')} compact />
@@ -482,7 +482,7 @@ function DataRoomView({
               onClick={() => setCatFilter(c)}
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                catFilter === c ? 'border-primary bg-primary/15 text-primary-accessible' : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                catFilter === c ? 'border-primary bg-primary/15 text-primary-accessible' : 'border-border text-muted-foreground hover:border-primary/40',
               )}
             >
               {key ? <BilingualText en={fundraisingEn(key)} el={fundraisingEl(key)} compact /> : c}
@@ -780,7 +780,7 @@ export default function FundraisingPage() {
             { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, count: stats.committed, tone: 'success' as const },
             { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null, tone: 'info' as const },
           ].map((s) => (
-            <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
                 <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
               </div>
@@ -812,6 +812,10 @@ export default function FundraisingPage() {
             { title: 'res_find' as const, desc: 'res_find_desc' as const, href: '/investors', glyph: 'discover' as const },
             { title: 'res_ready' as const, desc: 'res_ready_desc' as const, href: '/readiness', glyph: 'chart' as const },
             { title: 'res_deck' as const, desc: 'res_deck_desc' as const, href: '/builder/pitch-deck', glyph: 'builder' as const },
+            { title: 'link_idea' as const, href: '/builder?tab=idea-core', glyph: 'builder' as const },
+            { title: 'link_research' as const, href: '/research', glyph: 'research' as const },
+            { title: 'link_milestones' as const, href: '/milestones', glyph: 'flag' as const },
+            { title: 'link_projects' as const, href: '/projects', glyph: 'briefcase' as const },
           ].map((r) => (
             <Link key={r.href} href={r.href} className="group flex items-center justify-between rounded-lg px-2.5 py-2 transition-colors hover:bg-muted/70">
               <div className="flex min-w-0 items-center gap-2.5">
@@ -820,9 +824,11 @@ export default function FundraisingPage() {
                   <p className="text-sm font-medium transition-colors group-hover:text-primary-accessible">
                     <BilingualText en={fundraisingEn(r.title)} el={fundraisingEl(r.title)} compact wrap />
                   </p>
+                  {'desc' in r && r.desc ? (
                   <p className="text-2xs text-muted-foreground">
                     <BilingualText en={fundraisingEn(r.desc)} el={fundraisingEl(r.desc)} compact wrap />
                   </p>
+                  ) : null}
                 </div>
               </div>
               <ChevronRight className="icon-sm shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100" />
@@ -851,64 +857,12 @@ export default function FundraisingPage() {
       askAi={askAi}
       contentClassName="builder-copy overflow-x-clip"
       actions={
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" className={cn('gap-1.5', BUILDER_BTN)} asChild>
-            <Link href="/investors">
-              <BilingualText en={fundraisingEn('find_investors')} el={fundraisingEl('find_investors')} compact />
-            </Link>
-          </Button>
-          <Button size="sm" variant="outline" className={cn('gap-1.5', BUILDER_BTN)} onClick={() => openAdd()}>
-            <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
-          </Button>
-        </div>
+        <Button size="sm" variant="outline" className={cn('gap-1.5', BUILDER_BTN)} onClick={() => openAdd()}>
+          <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
+        </Button>
       }
     >
       <div className="space-y-4">
-        <button
-          type="button"
-          onClick={() => ask(askAi)}
-          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="type-kicker block font-medium text-foreground">
-              <BilingualText en={fundraisingEn('ask_ai_plan')} el={fundraisingEl('ask_ai_plan')} stacked />
-            </span>
-            <span className="type-hold mt-0.5 block text-sm text-muted-foreground">
-              <BilingualText
-                en={fundraisingEn(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-                el={fundraisingEl(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-              />
-            </span>
-          </span>
-        </button>
-        <p className="type-hold text-sm text-muted-foreground">
-          <BilingualText en={fundraisingEn('link_into')} el={fundraisingEl('link_into')} compact />
-          {' · '}
-          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_idea')} el={fundraisingEl('link_idea')} compact />
-          </Link>
-          {' · '}
-          <Link href="/builder/pitch-deck" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_pitch')} el={fundraisingEl('link_pitch')} compact />
-          </Link>
-          {' · '}
-          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_research')} el={fundraisingEl('link_research')} compact />
-          </Link>
-          {' · '}
-          <Link href="/milestones" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_milestones')} el={fundraisingEl('link_milestones')} compact />
-          </Link>
-          {' · '}
-          <Link href="/projects" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_projects')} el={fundraisingEl('link_projects')} compact />
-          </Link>
-          {' · '}
-          <Link href="/readiness" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={fundraisingEn('link_readiness')} el={fundraisingEl('link_readiness')} compact />
-          </Link>
-        </p>
-
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} />
         ) : (
@@ -916,7 +870,7 @@ export default function FundraisingPage() {
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
               <CfbGlyph name="wallet" className="icon-lg text-muted-foreground/50" />
               <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} /></p>
-              <p className="type-hold max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
+              <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
               <Button size="sm" className={BUILDER_BTN} onClick={() => ask(askAi)}>
                 <BilingualText en={fundraisingEn('ask_ai')} el={fundraisingEl('ask_ai')} compact />
               </Button>
@@ -929,14 +883,14 @@ export default function FundraisingPage() {
         <Tabs value={view} onValueChange={setView}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <TabsList className="rounded-xl">
-              <TabsTrigger value="pipeline" className={cn('rounded-xl', 'type-kicker')}>
+              <TabsTrigger value="pipeline" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_pipeline')} el={fundraisingEl('tab_pipeline')} compact />
                 <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{stats.total}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="kanban" className={cn('rounded-xl', 'type-kicker')}>
+              <TabsTrigger value="kanban" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_kanban')} el={fundraisingEl('tab_kanban')} compact />
               </TabsTrigger>
-              <TabsTrigger value="dataroom" className={cn('rounded-xl', 'type-kicker')}>
+              <TabsTrigger value="dataroom" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_dataroom')} el={fundraisingEl('tab_dataroom')} compact />
                 <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{docs.length}</Badge>
               </TabsTrigger>
@@ -951,7 +905,7 @@ export default function FundraisingPage() {
                 <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
                   <CfbGlyph name="people" className="icon-lg text-muted-foreground/50" />
                   <p className="page-section font-semibold"><BilingualText en={fundraisingEn('empty_pipeline_title')} el={fundraisingEl('empty_pipeline_title')} /></p>
-                  <p className="type-hold max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} /></p>
+                  <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} /></p>
                   {emptyCta}
                 </CardContent>
               </Card>

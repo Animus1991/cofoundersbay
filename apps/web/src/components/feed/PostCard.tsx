@@ -247,7 +247,7 @@ export function PostCard({
                   href={attachment.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block rounded-xl border border-border/60 p-3 hover:bg-secondary/40 transition-colors"
+                  className="block rounded-xl border border-border p-3 hover:bg-secondary/40 transition-colors"
                 >
                   <p className="text-sm font-medium text-foreground truncate">
                     {attachment.title || attachment.url}
@@ -260,7 +260,7 @@ export function PostCard({
         )}
 
         {/* Actions */}
-        <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -333,7 +333,7 @@ export function PostCardSkeleton() {
           <div className="h-4 w-3/4 bg-secondary rounded animate-pulse" />
           <div className="h-4 w-1/2 bg-secondary rounded animate-pulse" />
         </div>
-        <div className="mt-4 pt-3 border-t border-border/40 flex gap-4">
+        <div className="mt-4 pt-3 border-t border-border flex gap-4">
           <div className="h-8 w-16 bg-secondary rounded animate-pulse" />
           <div className="h-8 w-16 bg-secondary rounded animate-pulse" />
           <div className="h-8 w-12 bg-secondary rounded animate-pulse" />

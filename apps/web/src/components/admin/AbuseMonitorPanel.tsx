@@ -28,7 +28,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 function SeverityBar({ v }: { v: number }) {
   const pct = Math.round(v * 100);
-  const color = pct >= 70 ? 'bg-rose-500' : pct >= 40 ? 'bg-amber-400' : 'bg-green-400';
+  const color = pct >= 70 ? 'bg-status-danger' : pct >= 40 ? 'bg-status-warning' : 'bg-status-success';
   return (
     <div className="flex items-center gap-2">
       <div className="w-20 bg-muted rounded-full h-1.5">

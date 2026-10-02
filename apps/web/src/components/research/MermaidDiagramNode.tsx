@@ -89,7 +89,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
     <div className={cn('flex flex-col w-full h-full', compact && 'gap-0')}>
       {/* Toolbar */}
       {!readOnly && (
-        <div className="flex items-center gap-1 px-2 py-1 border-b border-border/50 bg-card/80">
+        <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-card/80">
           <button
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(false); }}
             className={cn(
@@ -131,7 +131,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onChange={(e) => setDraft(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
             placeholder={`graph TD\n  A[Start] --> B{Decision}\n  B -->|Yes| C[End]\n  B -->|No| A`}
-            className="flex-1 min-h-[120px] resize-none rounded-xl bg-secondary/60 border border-border/60 p-2 text-xs font-mono text-foreground outline-none"
+            className="flex-1 min-h-[120px] resize-none rounded-xl bg-secondary/60 border border-border p-2 text-xs font-mono text-foreground outline-none"
           />
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleApply(); }}

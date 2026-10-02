@@ -376,7 +376,7 @@ export default function InvestorAnalyticsPage() {
                 const value = d.currentValueCents ?? d.investedCents ?? 0;
                 const multiple = d.investedCents ? value / d.investedCents : 1;
                 return (
-                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3">
+                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{d.name}</p>
                       <p className="text-xs text-muted-foreground">Invested {money(d.investedCents, d.currency)}</p>
@@ -389,7 +389,7 @@ export default function InvestorAnalyticsPage() {
                 );
               })}
               {holdings.length > 0 && (
-                <dl className="grid grid-cols-3 gap-3 border-t border-border/60 pt-3 text-sm">
+                <dl className="grid grid-cols-3 gap-3 border-t border-border pt-3 text-sm">
                   <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επένδυση" compact /></dt>
                     <dd className="font-semibold tabular-nums">{money(investedTotal, currency)}</dd>

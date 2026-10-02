@@ -68,7 +68,7 @@ type FeatureFlag = {
 
 const STATUS_CONFIG: Record<FlagStatus, { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
   enabled:    { label: 'Enabled', labelEl: 'Ενεργή',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 },
-  disabled:   { label: 'Disabled', labelEl: 'Ανενεργή',   color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',     icon: XCircle },
+  disabled:   { label: 'Disabled', labelEl: 'Ανενεργή',   color: 'bg-muted text-muted-foreground border-border',     icon: XCircle },
   rollout:    { label: 'Rollout', labelEl: 'Σταδιακή διάθεση',    color: 'bg-status-info-bg text-status-info border-status-info-border',     icon: Percent },
   experiment: { label: 'Experiment', labelEl: 'Πείραμα', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: FlaskConical },
 };
@@ -481,7 +481,7 @@ export default function AdminFeatureFlagsPage() {
                   <Icon className={cn('icon-sm', color)} />
                 </div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
                   <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>

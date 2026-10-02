@@ -308,7 +308,7 @@ export function BranchPanel({
                   return (
                     <div
                       key={branch.id}
-                      className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors"
+                      className="p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
@@ -393,7 +393,7 @@ export function BranchPanel({
                   const meta = branchStatusMeta(branch.status);
                   const StatusIcon = meta.icon;
                   return (
-                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border/40 bg-muted/20">
+                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border bg-muted/20">
                       <div className="flex items-center gap-2">
                         <GitBranch className="icon-sm text-muted-foreground/50" />
                         <span className="text-xs text-muted-foreground truncate flex-1">{branch.name}</span>

@@ -184,7 +184,7 @@ export default function MatchComparePage() {
         </div>
 
         {notMatched.length > 0 && !recLoading && (
-          <p className="rounded-lg border border-border/60 bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-border bg-muted/30 px-4 py-2 text-sm text-muted-foreground">
             <BilingualText
               en={`${notMatched.length === 1 ? 'One person you picked is' : `${notMatched.length} people you picked are`} not among your current matches, so there is no breakdown to compare.`}
               el={`${notMatched.length === 1 ? 'Ένα πρόσωπο που επιλέξατε δεν είναι' : `${notMatched.length} πρόσωπα που επιλέξατε δεν είναι`} στις τρέχουσες αντιστοιχίσεις σας, οπότε δεν υπάρχει ανάλυση για σύγκριση.`}
@@ -209,7 +209,7 @@ export default function MatchComparePage() {
         )}
 
         {people.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-border/60 bg-card">
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <caption className="sr-only"><BilingualText en="Your matches compared, dimension by dimension" el="Οι αντιστοιχίσεις σας συγκριτικά, διάσταση προς διάσταση" wrap /></caption>
               <thead>
@@ -258,7 +258,7 @@ export default function MatchComparePage() {
                   const values = people.map((_, i) => axisScore(i, key));
                   const lead = leaderOf(values);
                   return (
-                    <tr key={key} className="border-t border-border/60">
+                    <tr key={key} className="border-t border-border">
                       <th scope="row" className="p-4 text-left text-xs font-medium text-muted-foreground"><BilingualText en={label} el={matchAxisEl(label)} compact wrap /></th>
                       {values.map((value, i) => (
                         <td key={people[i].userId} className="p-4 align-middle">
@@ -275,7 +275,7 @@ export default function MatchComparePage() {
                     </tr>
                   );
                 })}
-                <tr className="border-t border-border/60">
+                <tr className="border-t border-border">
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Skills" el="Δεξιότητες" compact /></th>
                   {people.map((person) => (
                     <td key={person.userId} className="p-4 align-top">
@@ -287,7 +287,7 @@ export default function MatchComparePage() {
                     </td>
                   ))}
                 </tr>
-                <tr className="border-t border-border/60">
+                <tr className="border-t border-border">
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
                     <span className="flex items-center gap-1.5"><Check className="icon-sm text-status-success" aria-hidden="true" /><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></span>
                   </th>
@@ -300,7 +300,7 @@ export default function MatchComparePage() {
                     </td>
                   ))}
                 </tr>
-                <tr className="border-t border-border/60">
+                <tr className="border-t border-border">
                   <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground">
                     <span className="flex items-center gap-1.5"><Minus className="icon-sm text-status-warning" aria-hidden="true" /><BilingualText en="Considerations" el="Επιφυλάξεις" compact /></span>
                   </th>
@@ -314,7 +314,7 @@ export default function MatchComparePage() {
                   ))}
                 </tr>
                 {people.some((p) => p.availability || p.lookingFor) && (
-                  <tr className="border-t border-border/60">
+                  <tr className="border-t border-border">
                     <th scope="row" className="p-4 text-left align-top text-xs font-medium text-muted-foreground"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></th>
                     {people.map((person) => (
                       <td key={person.userId} className="p-4 align-top text-muted-foreground">

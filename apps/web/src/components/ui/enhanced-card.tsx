@@ -96,7 +96,7 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
 
           {/* Footer */}
           {(footer || actions) && (
-            <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
               <div>{footer}</div>
               {actions && <div className="flex gap-2">{actions}</div>}
             </div>
@@ -198,7 +198,7 @@ export const ProfileCard = React.forwardRef<
             {initialsOf(profile.name).toUpperCase()}
           </div>
           {profile.verified && (
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-status-success rounded-full flex items-center justify-center">
               <div className="h-2 w-2 bg-white rounded-full" />
             </div>
           )}

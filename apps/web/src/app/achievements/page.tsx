@@ -89,7 +89,7 @@ const TIER_COLORS = {
 
 const TIER_BG = {
   bronze: 'bg-status-warning-bg',
-  silver: 'bg-gray-400/10',
+  silver: 'bg-muted',
   gold: 'bg-status-warning-bg',
   platinum: 'bg-status-info-bg',
 };
@@ -272,7 +272,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <Card
       className={cn(
-        'transition-all shadow-sm border-border/50',
+        'transition-all shadow-sm border-border',
         achievement.unlocked && 'hover:shadow-md'
       )}
     >
@@ -289,7 +289,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
           >
             <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} aria-hidden="true" />
             {achievement.unlocked && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success flex items-center justify-center">
                 <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
               </div>
             )}
@@ -366,7 +366,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
     100;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border/50 animate-fade-in">
+    <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border animate-fade-in">
       <CardContent className="p-4 md:p-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">

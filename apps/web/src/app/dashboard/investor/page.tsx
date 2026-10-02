@@ -112,7 +112,7 @@ function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.React
   return (
     <Link
       href={`/startups/${deal.id}`}
-      className="group flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30"
+      className="group flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30"
     >
       <Avatar className="h-10 w-10 shrink-0 rounded-lg">
         <AvatarImage src={deal.logoUrl ?? undefined} />

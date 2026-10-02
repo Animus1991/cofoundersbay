@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                   <Link
                     key={a.id}
                     href={a.href}
-                    className="rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
+                    className="rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
                   >
                     <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
                       {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}

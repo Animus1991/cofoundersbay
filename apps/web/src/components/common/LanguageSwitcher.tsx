@@ -116,7 +116,7 @@ export function LanguageChipGrid({
               'inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
               isActive
                 ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
             )}
           >
             {lang.label}

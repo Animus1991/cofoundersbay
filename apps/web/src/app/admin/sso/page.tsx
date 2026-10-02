@@ -180,7 +180,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
 
   return (
     <div
-      className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer"
+      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-center gap-4">
@@ -439,7 +439,7 @@ function SSOConfigPanel({
                 {providers?.map(p => (
                   <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex items-center gap-3">
-                      <div className={`h-2 w-2 rounded-full ${p.isActive ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                      <div className={`h-2 w-2 rounded-full ${p.isActive ? 'bg-status-success' : 'bg-muted-foreground'}`} />
                       <div>
                         <p className="text-sm font-medium">{p.providerName}</p>
                         <p className="text-xs text-muted-foreground uppercase">{p.providerType}</p>

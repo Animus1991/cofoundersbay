@@ -15,7 +15,7 @@ export default function OpportunitiesLoading() {
             ))}
           </div>
           <div className="space-y-6">
-            <div className="rounded-2xl border border-border/60 bg-card/70 p-6 flex justify-between items-center">
+            <div className="rounded-2xl border border-border bg-card/70 p-6 flex justify-between items-center">
               <div className="space-y-2">
                 <Skeleton className="h-7 w-44" />
                 <Skeleton className="h-4 w-64" />
@@ -30,7 +30,7 @@ export default function OpportunitiesLoading() {
             <Skeleton className="h-11 w-full rounded-xl" />
             <div className="space-y-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-border/40 bg-card p-5 space-y-3">
+                <div key={i} className="rounded-xl border border-border bg-card p-5 space-y-3">
                   <div className="flex items-start gap-3">
                     <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
                     <div className="flex-1 space-y-2">

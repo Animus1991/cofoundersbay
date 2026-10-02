@@ -339,7 +339,7 @@ export function ConversationValidationMenu({
                       'w-full flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
                       isActive
                         ? 'border-primary bg-primary/5'
-                        : 'border-border/60 hover:bg-muted/50'
+                        : 'border-border hover:bg-muted/50'
                     )}
                   >
                     <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', modeConfig.bgColor)}>
@@ -370,7 +370,7 @@ export function ConversationValidationMenu({
             )}
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="flex items-start gap-2">
               <Info className="icon-sm shrink-0 text-muted-foreground mt-0.5" />
               <div className="text-xs text-muted-foreground">
@@ -461,7 +461,7 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
       <Hash className="icon-sm text-muted-foreground shrink-0" />
       <code className="flex-1 text-xs font-mono text-muted-foreground truncate">
         {hash}

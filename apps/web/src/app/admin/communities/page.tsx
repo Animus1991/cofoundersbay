@@ -118,7 +118,7 @@ function CommunityCard({
 
   const statusColors: Record<string, string> = {
     active: 'bg-status-success-bg text-status-success border-status-success-border',
-    archived: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    archived: 'bg-muted text-muted-foreground border-border',
     flagged: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
@@ -404,7 +404,7 @@ export default function AdminCommunitiesPage() {
             { label: 'Total Posts', labelEl: 'Σύνολο αναρτήσεων', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB') },
             { label: 'Flagged', labelEl: 'Με σήμανση', value: communities.filter((c) => c.status === 'flagged').length, danger: true },
           ].map(({ label, labelEl, value, danger }) => (
-            <div key={label} className="rounded-lg border border-border/60 p-3">
+            <div key={label} className="rounded-lg border border-border p-3">
               <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               <p className={cn('page-stat mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
             </div>

@@ -361,7 +361,7 @@ export default function OrgCohortsPage() {
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>

@@ -240,7 +240,7 @@ export default function TenantBrandingPage() {
       actions={(
         <>
           {branding?.isBrandingActive ? (
-            <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
+            <Badge variant="default" className="gap-1.5 bg-status-success hover:bg-status-success">
               <CheckCircle2 className="icon-sm" />
               <BilingualText en="Published" el="Δημοσιευμένο" compact />
             </Badge>
@@ -460,10 +460,10 @@ export default function TenantBrandingPage() {
                             <img
                               src={form.logoUrl}
                               alt="Logo preview"
-                              className="h-16 w-32 rounded-lg border border-border/60 object-contain bg-background/50"
+                              className="h-16 w-32 rounded-lg border border-border object-contain bg-background/50"
                             />
                           ) : (
-                            <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
+                            <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
                               <Image className="icon-lg text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
@@ -508,10 +508,10 @@ export default function TenantBrandingPage() {
                             <img
                               src={form.faviconUrl}
                               alt="Favicon preview"
-                              className="h-8 w-8 rounded-md border border-border/60 object-contain bg-background/50"
+                              className="h-8 w-8 rounded-md border border-border object-contain bg-background/50"
                             />
                           ) : (
-                            <div className="h-8 w-8 rounded-md border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
+                            <div className="h-8 w-8 rounded-md border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
                               <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
@@ -825,19 +825,19 @@ export default function TenantBrandingPage() {
                     <p className="text-sm font-medium"><BilingualText en="Safeguards" el="Δικλίδες" compact /></p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`icon-sm ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.primaryColor ? 'text-status-success' : 'text-muted-foreground'}`} />
                         <BilingualText en="Primary color defined" el="Ορίστηκε κύριο χρώμα" compact />
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`icon-sm ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.heroTitle ? 'text-status-success' : 'text-muted-foreground'}`} />
                         <BilingualText en="Hero title set" el="Ορίστηκε κεντρικός τίτλος" compact />
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`icon-sm ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.supportEmail ? 'text-status-success' : 'text-muted-foreground'}`} />
                         <BilingualText en="Support email configured" el="Ορίστηκε email υποστήριξης" compact />
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`icon-sm ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.privacyPolicyUrl && form.termsUrl ? 'text-status-success' : 'text-muted-foreground'}`} />
                         <BilingualText en="Legal links provided" el="Δόθηκαν νομικοί σύνδεσμοι" compact />
                       </li>
                     </ul>
@@ -863,7 +863,7 @@ export default function TenantBrandingPage() {
                     {!branding?.isBrandingActive && (
                       <Button
                         variant="default"
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        className="flex-1 bg-status-success hover:bg-status-success"
                         onClick={() => { saveMutation.mutate(form); publishMutation.mutate(); }}
                         disabled={saveMutation.isPending || publishMutation.isPending}
                       >

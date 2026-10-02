@@ -164,7 +164,7 @@ export default function TenantDashboardPage() {
             {runningOrNext.map((program) => {
               const fill = program.capacity ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100)) : 0;
               return (
-                <Link key={program.id} href={`/programs/${program.id}`} className="block rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
+                <Link key={program.id} href={`/programs/${program.id}`} className="block rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex items-center gap-2">
                       <span className="font-medium">{program.title}</span>
@@ -221,7 +221,7 @@ export default function TenantDashboardPage() {
         <SectionCard title="Upcoming events" titleEl="Επόμενες εκδηλώσεις" action={{ href: '/events/create', label: 'Add event', labelEl: 'Νέα εκδήλωση' }}>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             {upcomingEvents.map((event) => (
-              <div key={event.id} className="rounded-lg border border-border/60 p-3">
+              <div key={event.id} className="rounded-lg border border-border p-3">
                 <p className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="icon-sm" aria-hidden="true" />
                   {event.date} · {event.type}

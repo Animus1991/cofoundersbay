@@ -34,12 +34,12 @@ interface NodeColor {
 }
 
 const NODE_COLORS: Record<string, NodeColor> = {
-  blue:   { bg: "bg-card", border: "border-blue-400/70",   icon: "text-blue-500",   label: "Blue", solid: "hsl(221 90% 60%)" },
-  purple: { bg: "bg-card", border: "border-purple-400/70", icon: "text-purple-500", label: "Purple", solid: "hsl(262 72% 60%)" },
-  green:  { bg: "bg-card", border: "border-emerald-400/70",icon: "text-emerald-500",label: "Green", solid: "hsl(162 63% 45%)" },
-  amber:  { bg: "bg-card", border: "border-amber-400/70",  icon: "text-amber-500",  label: "Amber", solid: "hsl(38 92% 55%)" },
-  rose:   { bg: "bg-card", border: "border-rose-400/70",   icon: "text-rose-500",   label: "Rose", solid: "hsl(0 72% 55%)" },
-  slate:  { bg: "bg-card", border: "border-slate-400/70",  icon: "text-slate-400",  label: "Slate", solid: "hsl(220 9% 55%)" },
+  blue:   { bg: "bg-card", border: "border-status-info-border",   icon: "text-status-info",   label: "Blue", solid: "hsl(221 90% 60%)" },
+  purple: { bg: "bg-card", border: "border-status-accent-border", icon: "text-status-accent", label: "Purple", solid: "hsl(262 72% 60%)" },
+  green:  { bg: "bg-card", border: "border-status-success-border",icon: "text-status-success",label: "Green", solid: "hsl(162 63% 45%)" },
+  amber:  { bg: "bg-card", border: "border-status-warning-border",  icon: "text-status-warning",  label: "Amber", solid: "hsl(38 92% 55%)" },
+  rose:   { bg: "bg-card", border: "border-status-danger-border",   icon: "text-status-danger",   label: "Rose", solid: "hsl(0 72% 55%)" },
+  slate:  { bg: "bg-card", border: "border-border",  icon: "text-muted-foreground",  label: "Slate", solid: "hsl(220 9% 55%)" },
 };
 
 interface CanvasNodeData {
@@ -368,7 +368,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             />
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
-                <span className="text-2xs text-amber-500 flex items-center gap-1">
+                <span className="text-2xs text-status-warning flex items-center gap-1">
                   <AlertCircle className="icon-sm" /> Unsaved
                 </span>
               )}
@@ -1251,7 +1251,7 @@ export default function ResearchCanvas() {
               onDoubleClick={() => setViewerNode(node)}
               onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, node.id); }}
             >
-              <div className="flex-none px-3 py-2 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between gap-2">
+              <div className="flex-none px-3 py-2 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {nodeIcon(node.type, node.colorKey, "w-4 h-4 flex-none")}
                   <span className="text-sm font-medium text-foreground truncate">
@@ -1260,7 +1260,7 @@ export default function ResearchCanvas() {
                 </div>
                 <div className="flex items-center gap-1 flex-none">
                   {node.pinned && <Pin className="icon-sm text-primary-accessible" />}
-                  {node.starred && <Star className="icon-sm text-amber-500" fill="currentColor" />}
+                  {node.starred && <Star className="icon-sm text-status-warning" fill="currentColor" />}
                   {node.locked && <Lock className="icon-sm text-muted-foreground" />}
                 </div>
               </div>
@@ -1284,7 +1284,7 @@ export default function ResearchCanvas() {
               </div>
 
               {node.tags && node.tags.length > 0 && (
-                <div className="flex-none px-3 py-1.5 border-t border-border/50 bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
+                <div className="flex-none px-3 py-1.5 border-t border-border bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
                   {node.tags.slice(0, 3).map(tag => (
                     <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-accessible">
                       {tag}
@@ -1310,7 +1310,7 @@ export default function ResearchCanvas() {
               {connectionStart && connectionStart !== node.id && (
                 <button
                   onClick={(e) => { e.stopPropagation(); completeConnection(node.id); }}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md animate-pulse"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-status-success text-white flex items-center justify-center shadow-md animate-pulse"
                   title="Complete connection"
                 >
                   <Check className="icon-sm" />
@@ -1517,7 +1517,7 @@ export default function ResearchCanvas() {
         <div className="flex items-center gap-4">
           <span>{filteredNodes.length} nodes visible</span>
           {selected.size > 0 && <span className="text-primary-accessible">{selected.size} selected</span>}
-          {connectionStart && <span className="text-amber-500">Drawing connection...</span>}
+          {connectionStart && <span className="text-status-warning">Drawing connection...</span>}
         </div>
         <div className="flex items-center gap-4">
           <span>Pan: {Math.round(panX)}, {Math.round(panY)}</span>

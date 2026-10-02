@@ -39,6 +39,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 
 type SearchCategory = SearchCategoryKey;
 
@@ -157,7 +158,7 @@ const CATEGORY_CONFIG: Record<
 
 function SearchResultSkeleton() {
   return (
-    <div className="flex items-start gap-4 p-4 border-b border-border/40">
+    <div className="flex items-start gap-4 p-4 border-b border-border">
       <Skeleton className="h-12 w-12 rounded-full shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-48" />
@@ -276,6 +277,10 @@ function ResultCard({ result }: { result: SearchResult }) {
 
 function EmptyState({ query, category }: { query: string; category: SearchCategory }) {
   const idle = !query;
+  const { ask } = usePopupChat();
+  const askPrompt = query
+    ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.`
+    : 'Help me search the network for a complementary cofounder.';
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center sm:py-12">
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -328,11 +333,9 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
             <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} compact secondaryFrom="lg" />
           </Link>
         </Button>
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
-            <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
-            <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
-          </Link>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => ask(askPrompt)}>
+          <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+          <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
         </Button>
       </div>
     </div>
@@ -341,6 +344,7 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
 
 export default function SearchPage() {
   const router = useRouter();
+  const { ask } = usePopupChat();
   const searchParams = useSearchParams();
   const initialQuery = searchParams?.get('q') || '';
   const initialCategory = (searchParams?.get('category') as SearchCategory) || 'all';
@@ -451,6 +455,15 @@ export default function SearchPage() {
       unavailableEl: results.length === 0 ? 'Δεν εμφανίζεται αποτέλεσμα.' : undefined,
       run: (href) => { if (href) router.push(href); },
     },
+    {
+      id: 'ask_search_ai',
+      labelEn: 'Ask AI about this search',
+      labelEl: 'Ρώτησε την AI για αυτή την αναζήτηση',
+      writes: false,
+      run: () => ask(query
+        ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.`
+        : 'Help me search the network for a complementary cofounder.'),
+    },
   ]);
   usePageList([
     {
@@ -485,7 +498,7 @@ export default function SearchPage() {
             />
             <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
               {!query && (
-                <kbd className="hidden items-center rounded border border-border/60 bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
+                <kbd className="hidden items-center rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-2xs text-muted-foreground sm:flex">
                   /
                 </kbd>
               )}
@@ -503,8 +516,8 @@ export default function SearchPage() {
 
           {/* Recent searches dropdown */}
           {inputFocused && !query && recentSearches.length > 0 && (
-            <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-border/60 bg-popover shadow-lg">
-              <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
+              <div className="px-3 py-2 border-b border-border flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <History className="icon-sm" />
                   <BilingualText en={searchEn('recent_searches')} el={searchEl('recent_searches')} />
@@ -561,7 +574,7 @@ export default function SearchPage() {
                       onClick={() => setCategory(key)}
                       className={cn(
                         'gap-1.5 text-xs',
-                        !isActive && 'border-border/60'
+                        !isActive && 'border-border'
                       )}
                     >
                       <Icon className="icon-sm" />

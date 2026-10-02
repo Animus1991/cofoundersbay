@@ -103,8 +103,8 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
   const statusColors: Record<string, string> = {
     paid: 'bg-status-success-bg text-status-success border-status-success-border',
     open: 'bg-status-info-bg text-status-info border-status-info-border',
-    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
-    void: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    draft: 'bg-muted text-muted-foreground border-border',
+    void: 'bg-muted text-muted-foreground border-border',
     uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
@@ -329,7 +329,7 @@ export default function AdminBillingPage() {
             { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-status-accent' },
             { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-lg border border-border/60 p-3">
+            <div key={label} className="rounded-lg border border-border p-3">
               <div className="flex items-center gap-2">
                 <Icon className={cn('icon-sm', color)} aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -475,8 +475,8 @@ export default function AdminBillingPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
                             <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
+                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
@@ -577,7 +577,7 @@ export default function AdminBillingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·

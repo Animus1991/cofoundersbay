@@ -58,10 +58,10 @@ function scoreColor(score: number): string {
 }
 
 function scoreBarColor(score: number): string {
-  if (score >= 75) return 'bg-emerald-500';
-  if (score >= 50) return 'bg-amber-500';
-  if (score >= 25) return 'bg-orange-500';
-  return 'bg-rose-500';
+  if (score >= 75) return 'bg-status-success';
+  if (score >= 50) return 'bg-status-warning';
+  if (score >= 25) return 'bg-status-warning';
+  return 'bg-status-danger';
 }
 
 function scoreBadgeVariant(score: number): 'default' | 'secondary' | 'outline' {
@@ -255,19 +255,19 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{velocity.toFixed(2)}</p>
+            <p className="page-stat font-bold tabular-nums">{velocity.toFixed(2)}</p>
             <p className="text-2xs text-muted-foreground">actions/day (14d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.activeContributors}</p>
+            <p className="page-stat font-bold tabular-nums">{bd.activeContributors}</p>
             <p className="text-2xs text-muted-foreground">contributors</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
+            <p className="page-stat font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
             <p className="text-2xs text-muted-foreground">actions (7d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
+            <p className="page-stat font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
             <p className="text-2xs text-muted-foreground">feedback loops</p>
           </div>
         </div>

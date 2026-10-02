@@ -3,16 +3,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   BrainCircuit, Calendar, Clock, CheckCircle2, XCircle, AlertTriangle,
   Video, MapPin, MessageCircle, Star, Plus, ChevronRight, Target,
   Users, TrendingUp, ListChecks, ArrowRight, Lightbulb, RefreshCw,
-  ClipboardList, Zap, BookOpen,
+  ClipboardList, Zap, BookOpen, CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -264,7 +266,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
   const totalActions = session.actionItems?.length ?? 0;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
@@ -330,7 +332,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {session.rating && (
               <div className="mt-2 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30')} />
+                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/30')} />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">
                   <BilingualText en="Your rating" el="Η βαθμολογία σας" compact />
@@ -416,7 +418,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
 
       {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-border/60 bg-muted/30 p-4 space-y-3">
+        <div className="border-t border-border bg-muted/30 p-4 space-y-3">
           {session.agenda && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Agenda</p>
@@ -450,7 +452,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
 
 function CoachCard({ coach }: { coach: CoachProfile }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
+    <div className="rounded-xl border border-border bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           {coach.avatar && <AvatarImage src={coach.avatar} />}
@@ -498,7 +500,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-sm fill-status-warning text-amber-400" />{' '}
+              <Star className="icon-sm fill-status-warning text-status-warning" />{' '}
               {coach.rating > 0 ? coach.rating : '—'}{' '}
               <BilingualText
                 en={`(${coach.sessionCount} sessions)`}
@@ -646,6 +648,7 @@ function toCoachProfile(mentor: MentorProfileItem): CoachProfile {
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
   const { showDemoData } = useDemoData();
+  const router = useRouter();
   const [specialtyFilter, setSpecialtyFilter] = useState<SessionType | null>(null);
   /*
    * Coaching is mentorship seen from the founder's side.
@@ -792,7 +795,7 @@ export default function CoachingPage() {
           {railStats.map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
             <div
               key={labelEn}
-              className="flex items-center gap-3 rounded-lg border border-border/50 bg-card p-2.5"
+              className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5"
             >
               <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
                 <Icon className="icon-sm" />
@@ -863,6 +866,19 @@ export default function CoachingPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Calendar} en="Open calendar" el="Άνοιγμα ημερολογίου" onClick={() => router.push('/calendar')} />
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -926,7 +942,7 @@ export default function CoachingPage() {
           {/* My Sessions */}
           <TabsContent value="sessions" className="mt-4 space-y-3">
             {sessions.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
+              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
                   <BrainCircuit className="h-7 w-7 text-primary-accessible" />
                 </div>
@@ -987,7 +1003,7 @@ export default function CoachingPage() {
             <div className="space-y-3">
               {visibleCoaches.map((coach) => <CoachCard key={coach.id} coach={coach} />)}
               {visibleCoaches.length === 0 && (
-                <p className="rounded-xl border border-dashed border-border/60 py-10 text-center text-sm text-muted-foreground">
+                <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
                   <BilingualText
                     en="No coaches with that specialty. Clear the filter to see all of them."
                     el="Κανένας coach με αυτή την ειδίκευση. Καθαρίστε το φίλτρο για να τους δείτε όλους."
@@ -996,7 +1012,7 @@ export default function CoachingPage() {
               )}
             </div>
 
-            <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
+            <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
               <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
               <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
@@ -1103,7 +1119,7 @@ export default function CoachingPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {sessions.filter((s) => s.keyInsights).map((s) => (
-                    <div key={s.id} className="rounded-lg bg-muted/50 px-3 py-2 border-l-2 border-amber-400">
+                    <div key={s.id} className="rounded-lg bg-muted/50 px-3 py-2 border-l-2 border-status-warning-border">
                       <p className="text-xs text-foreground/80 italic">"{s.keyInsights}"</p>
                       <p className="text-2xs text-muted-foreground mt-1">— {s.title}</p>
                     </div>

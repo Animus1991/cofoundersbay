@@ -52,7 +52,7 @@ function StarRating({ rating }: { rating: number }) {
           key={star}
           className={cn(
             'h-4 w-4',
-            star <= rating ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30'
+            star <= rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/30'
           )}
         />
       ))}
@@ -202,7 +202,7 @@ export default function MentorReviewsPage() {
                   {ratingDistribution.map((item) => (
                     <div key={item.rating} className="flex items-center gap-2">
                       <span className="text-sm w-3">{item.rating}</span>
-                      <Star className="icon-sm fill-status-warning text-amber-400" />
+                      <Star className="icon-sm fill-status-warning text-status-warning" />
                       <Progress value={item.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">{item.count}</span>
                     </div>

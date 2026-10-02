@@ -621,7 +621,7 @@ export function ResearchNodeCard({
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/50 shrink-0">
+        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border shrink-0">
           <div className="flex items-center gap-1.5">
             <Spline className="icon-sm" style={{ color: '#EC4899' }} />
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
@@ -658,7 +658,7 @@ export function ResearchNodeCard({
     return (
       <div
         className={cn(
-          'absolute group select-none rounded-2xl border border-border/60 shadow-sm transition-colors',
+          'absolute group select-none rounded-2xl border border-border shadow-sm transition-colors',
           isSelected && 'border-foreground/20 shadow-md',
           isDragging && 'opacity-75',
           'cursor-grab active:cursor-grabbing',
@@ -790,7 +790,7 @@ export function ResearchNodeCard({
     <div
       className={cn(
         'absolute group select-none overflow-hidden',
-        'rounded-2xl border border-border/60 bg-card/95 transition-colors',
+        'rounded-2xl border border-border bg-card/95 transition-colors',
         'shadow-sm',
         isSelected && 'border-foreground/20 shadow-md',
         !isSelected && 'hover:border-border hover:bg-muted/15',
@@ -935,7 +935,7 @@ export function ResearchNodeCard({
               >
                 <BilingualText en={researchEn('send_back')} el={researchEl('send_back')} compact />
               </button>
-              <div className="my-1 border-t border-border/60" />
+              <div className="my-1 border-t border-border" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"

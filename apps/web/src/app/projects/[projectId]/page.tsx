@@ -123,13 +123,13 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <AppShell showHelp contentClassName="builder-copy overflow-x-clip">
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
           <CfbGlyph name="briefcase" className="icon-lg text-muted-foreground/50" />
           <div>
             <p className="page-section font-medium text-foreground">
               <BilingualText en={projectEn('missing_title')} el={projectEl('missing_title')} />
             </p>
-            <p className="type-hold mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-muted-foreground">
               <BilingualText en={projectEn('missing_hint')} el={projectEl('missing_hint')} />
             </p>
           </div>
@@ -158,10 +158,6 @@ export default function ProjectDetailPage() {
       contentClassName="builder-copy overflow-x-clip"
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
-            <CfbGlyph name="spark" className="icon-sm" />
-            <BilingualText en={projectEn('ask_ai')} el={projectEl('ask_ai')} compact />
-          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -230,14 +226,14 @@ export default function ProjectDetailPage() {
                 {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : project.status}
               </Badge>
             </div>
-            <p className="type-hold text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {project.taglineEl
                 ? <BilingualText en={project.tagline} el={project.taglineEl} wrap />
                 : project.tagline}
             </p>
           </div>
         </div>
-        <p className="type-hold text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
           {' · '}
           <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
@@ -308,14 +304,14 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {project.rolesNeeded.map((role) => (
-                      <div key={role.title} className="rounded-xl border border-border/60 p-4">
+                      <div key={role.title} className="rounded-xl border border-border p-4">
                         <div className="mb-2 flex items-start justify-between gap-3">
                           <div>
                             <h4 className="page-section font-semibold text-foreground">
                               {role.titleEl ? <BilingualText en={role.title} el={role.titleEl} wrap /> : role.title}
                             </h4>
                             {role.description ? (
-                              <p className="type-hold text-sm text-muted-foreground">
+                              <p className="text-sm text-muted-foreground">
                                 {role.descriptionEl
                                   ? <BilingualText en={role.description} el={role.descriptionEl} wrap />
                                   : role.description}
@@ -383,7 +379,7 @@ export default function ProjectDetailPage() {
                           <Link href={`/profiles/${member.id}`} className="font-medium text-foreground transition-colors hover:text-primary-accessible">
                             {member.name}
                           </Link>
-                          <p className="type-hold text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {member.roleEl
                               ? <BilingualText en={member.role} el={member.roleEl} compact />
                               : member.role}
@@ -459,7 +455,7 @@ export default function ProjectDetailPage() {
                   <CardContent className="space-y-4">
                     {project.updates.map((update) => (
                       <div key={update.id} className="border-l-2 border-primary/30 py-2 pl-4">
-                        <p className="type-hold text-foreground">
+                        <p className="text-sm text-foreground">
                           {update.contentEl
                             ? <BilingualText en={update.content} el={update.contentEl} wrap />
                             : update.content}
@@ -481,11 +477,11 @@ export default function ProjectDetailPage() {
             <Card className="rounded-xl">
               <CardContent className="space-y-3 p-4">
                 {owned ? (
-                  <p className="type-hold text-center text-sm text-muted-foreground">
+                  <p className="text-center text-sm text-muted-foreground">
                     <BilingualText en={projectEn('own_this')} el={projectEl('own_this')} />
                   </p>
                 ) : joined ? (
-                  <p className="type-hold text-center text-sm text-muted-foreground">
+                  <p className="text-center text-sm text-muted-foreground">
                     <BilingualText en={projectEn('on_team')} el={projectEl('on_team')} />
                   </p>
                 ) : (

@@ -8,7 +8,7 @@ export default function ReadinessLoading() {
           <Skeleton className="h-8 w-52" />
           <Skeleton className="h-4 w-80" />
         </div>
-        <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
           <div className="flex items-center gap-4">
             <Skeleton className="h-20 w-20 rounded-full shrink-0" />
             <div className="flex-1 space-y-3">
@@ -20,7 +20,7 @@ export default function ReadinessLoading() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border/60 bg-card p-4 space-y-3">
+            <div key={i} className="rounded-xl border border-border bg-card p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="h-4 w-10" />

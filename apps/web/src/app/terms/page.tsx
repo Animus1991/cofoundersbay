@@ -139,7 +139,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="icon-sm" />
@@ -158,7 +158,7 @@ export default function TermsPage() {
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
+      <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <FileText className="h-7 w-7 text-primary-accessible" />
@@ -175,7 +175,7 @@ export default function TermsPage() {
       </section>
 
       {/* Table of Contents */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -197,7 +197,7 @@ export default function TermsPage() {
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
           {sections.map((section) => (
-            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border/60">
+            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -212,7 +212,7 @@ export default function TermsPage() {
         </div>
 
         {/* Footer CTA */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
+        <div className="mt-12 rounded-xl border border-border bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
             <BilingualText en="By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service." el="Χρησιμοποιώντας το CoFounderBay, δηλώνετε ότι διαβάσατε και αποδέχεστε αυτούς τους όρους χρήσης." wrap />
           </p>
@@ -228,7 +228,7 @@ export default function TermsPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>

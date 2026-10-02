@@ -263,7 +263,7 @@ export function EventCard({
           )}
           
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
+          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="icon-sm" />
               {event.attendeesCount} attending
@@ -372,7 +372,7 @@ export function EventCard({
         </div>
         
         {/* Actions */}
-        <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border/40">
+        <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border">
           <Button aria-label="Save"
             variant="ghost"
             size="icon"

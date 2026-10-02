@@ -263,7 +263,7 @@ function AttentionChips({
         <li key={`${item.href}:${item.en}`} className="min-w-0">
           <Link
             href={item.href}
-            className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-border/70 bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50 sm:min-h-0"
+            className="inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:bg-muted/50 sm:min-h-0"
           >
             <CfbGlyph name={item.glyph} className={cn('icon-sm shrink-0', item.urgent ? STATUS.danger.icon : 'text-muted-foreground')} />
             <span className="min-w-0 truncate">
@@ -280,7 +280,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary' : STATUS.warning.icon;
   return (
-    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
+    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 transition-colors hover:border-border hover:bg-muted/30">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
@@ -647,15 +647,323 @@ export default function FounderDashboardContent() {
   }
 
   /*
-   * Three families that are not the dashboard's reason for existing.
+   * Families that are not the dashboard's reason for existing.
    *
-   * A dashboard exists to be read at a glance, so the pulse stays in the
-   * column: readiness, the round, matches, milestones, profile strength.
-   * Quick actions is nine destinations - navigation, which already has a
-   * sidebar. XP and badges answer how the product is rewarding you. Activity
-   * and upcoming events are a readout of elsewhere, not the pulse.
+   * The column is the glance: greeting, next action, four figures,
+   * attention, readiness. Fundraising, matches, milestones and profile
+   * strength are readouts of other pages — they stay one gesture away
+   * in the rail, never deleted.
+   * Quick actions is nine destinations. XP and badges answer how the
+   * product is rewarding you. Activity and events are a readout of
+   * elsewhere, not the pulse.
    */
   const rail: PageRailSection[] = [
+    {
+      id: 'snapshot',
+      glyph: 'wallet',
+      labelEn: 'Venture snapshot',
+      labelEl: 'Στιγμιότυπο εγχειρήματος',
+      content: (
+        <div className="space-y-4">
+          {/* Fundraising widget */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2">
+                  <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
+                  <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="gap-1" asChild>
+                  <Link href="/fundraising">
+                    <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {showDemoData ? (
+                  <>
+                    <div className="flex items-end justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground">
+                          {fundRound.nameEl
+                            ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
+                            : fundRound.name}
+                        </p>
+                        <p className="page-figure font-bold text-foreground">
+                          {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
+                          <span className="ml-1 text-sm font-normal text-muted-foreground">
+                            / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
+                          </span>
+                        </p>
+                      </div>
+                      <span className={cn(
+                        'shrink-0 text-sm font-bold',
+                        fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
+                      )}>
+                        {fundingPct}%
+                      </span>
+                    </div>
+                    <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2.5" />
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <CfbGlyph name="people" className="icon-sm" />
+                        {fundStats.total}{' '}
+                        <BilingualText
+                          en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                          el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
+                          compact
+                        />
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                        {fundStats.committed}{' '}
+                        <BilingualText
+                          en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                          el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
+                          compact
+                        />
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    <BilingualText
+                      en={dashboardEn('fundraising_empty')}
+                      el={dashboardEl('fundraising_empty')}
+                      wrap
+                    />
+                  </p>
+                )}
+                <div className="space-y-2.5">
+                  <div className="flex flex-col gap-2.5 sm:flex-row">
+                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
+                      <Link href="/fundraising" className="flex-1">
+                        <CfbGlyph name="wallet" className="icon-sm" />
+                        <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
+                      <Link href="/investors" className="flex-1">
+                        <CfbGlyph name="discover" className="icon-sm" />
+                        <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
+                      </Link>
+                    </Button>
+                  </div>
+                  {/* A card's question for the assistant sits under what it asks about,
+                      as on Founder progress: a header row has no room for both languages. */}
+                  <AskAiButton
+                    variant="ghost"
+                    className="w-full"
+                    prompt="Review this fundraising round against my readiness and tell me the next investor action."
+                    labelEn={dashboardEn('ask_ai_fundraising')}
+                    labelEl={dashboardEl('ask_ai_fundraising')}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+           {/* Top Matches */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2">
+                  <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
+                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="gap-1" asChild>
+                  <Link href="/matches">
+                    <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
+                <MatchPreviewCard key={match.userId} match={match} />
+              ))}
+              {(recommendations?.suggestions?.length ?? 0) > 0 && (
+                <AskAiButton
+                  variant="ghost"
+                  className="w-full"
+                  prompt="How can I improve these matches and who should I reach out to first?"
+                  labelEn={dashboardEn('ask_ai_matches')}
+                  labelEl={dashboardEl('ask_ai_matches')}
+                />
+              )}
+              {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
+                <div className="rounded-xl border border-dashed border-border bg-muted/20 px-4 py-8 text-center">
+                  <CfbGlyph name="matches" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">
+                    <BilingualText
+                      en={dashboardEn('complete_profile_for_matches')}
+                      el={dashboardEl('complete_profile_for_matches')}
+                    />
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
+                    <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                      <Link href="/profile/edit">
+                        <CfbGlyph name="profile" className="icon-sm" />
+                        <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                      </Link>
+                    </Button>
+                    <AskAiButton
+                      variant="ghost"
+                      prompt="How can I start receiving better matches from this profile?"
+                      labelEn={dashboardEn('ask_ai_matches')}
+                      labelEl={dashboardEl('ask_ai_matches')}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+           {/* Milestones */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2">
+                  <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
+                  <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="gap-1" asChild>
+                  <Link href="/milestones">
+                    <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {usingDemoMilestones && (
+                <p className="page-stat-label leading-snug text-muted-foreground">
+                  <BilingualText
+                    en="Sample timeline — manage live items on Milestones."
+                    el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
+                    compact
+                    wrap
+                  />
+                </p>
+              )}
+              {upcomingMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
+              {milestones.length > 0 && (moreOpenMilestoneCount > 0 || completedMilestoneCount > 0) && (
+                <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+                  {/* Stacked: each language already joins its parts with "·". */}
+                  <BilingualText
+                    en={openMilestones.length === 0
+                      ? dashboardEn('milestones_all_complete')
+                      : [
+                          moreOpenMilestoneCount > 0 ? `${moreOpenMilestoneCount} more open` : null,
+                          completedMilestoneCount > 0 ? `${completedMilestoneCount} completed` : null,
+                        ].filter(Boolean).join(' · ')}
+                    el={openMilestones.length === 0
+                      ? dashboardEl('milestones_all_complete')
+                      : [
+                          moreOpenMilestoneCount > 0
+                            ? `${moreOpenMilestoneCount} ακόμη ${moreOpenMilestoneCount === 1 ? 'ανοιχτό' : 'ανοιχτά'}`
+                            : null,
+                          completedMilestoneCount > 0
+                            ? `${completedMilestoneCount} ${completedMilestoneCount === 1 ? 'ολοκληρωμένο' : 'ολοκληρωμένα'}`
+                            : null,
+                        ].filter(Boolean).join(' · ')}
+                    stacked
+                    wrap
+                  />
+                </p>
+              )}
+              {milestones.length === 0 && !usingDemoMilestones && (
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText
+                    en={dashboardEn('add_first_milestone')}
+                    el={dashboardEl('add_first_milestone')}
+                  />
+                </p>
+              )}
+              {openMilestones.length > 0 && (
+                <AskAiButton
+                  variant="ghost"
+                  className="w-full"
+                  prompt="How do I hit these milestone dates, and what should I sequence first?"
+                  labelEn={dashboardEn('ask_ai_milestones')}
+                  labelEl={dashboardEl('ask_ai_milestones')}
+                />
+              )}
+            </CardContent>
+          </Card>
+          {/* Profile strength — moved here from the sidebar.
+              The two columns were 1663px and 2169px, so the wider,
+              more important one ended 506px early and the page had a
+              void down its left side. This card is the one sidebar
+              item that is a task rather than a readout, so it is the
+              one that belongs in the main column; moving it leaves the
+              columns within ~25px of each other and keeps XP and
+              Badges together where they belong. */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
+                <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  <BilingualText en={dashboardEn('completion')} el={dashboardEl('completion')} compact />
+                </span>
+                <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
+              </div>
+              <Progress value={profilePct} label={bilingualAria('Profile completeness', 'Πληρότητα προφίλ')} className="h-2" />
+              {/* Two columns from `sm`: this card moved out of the 381px
+                  sidebar into the 786px main column, where four checklist
+                  rows stacked single-file would be four short lines with
+                  half the card empty beside them. */}
+              <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 sm:space-y-0">
+                {[
+                  { labelEn: 'Photo & headline', labelEl: 'Φωτογραφία & τίτλος', done: profileChecks.photoHeadline },
+                  { labelEn: 'Skills (5+)', labelEl: 'Δεξιότητες (5+)', done: profileChecks.skills },
+                  { labelEn: 'Work experience', labelEl: 'Εργασιακή εμπειρία', done: profileChecks.experience },
+                  { labelEn: 'Startup idea linked', labelEl: 'Σύνδεση ιδέας startup', done: profileChecks.ideaLinked },
+                ].map((item) => (
+                  <div key={item.labelEn} className="flex items-center gap-2 text-xs">
+                    <CheckCircle2 className={cn('icon-sm shrink-0', item.done ? STATUS.success.icon : 'text-muted-foreground/30')} />
+                    <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
+                      <BilingualText en={item.labelEn} el={item.labelEl} compact />
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2.5">
+                {profilePct < 100 ? (
+                  <Button variant="secondary" size="md" className="w-full gap-1.5" asChild>
+                    <Link href="/profile/edit">
+                      <CfbGlyph name="profile" className="icon-sm" />
+                      <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
+                    <Link href="/profile">
+                      <CfbGlyph name="profile" className="icon-sm" />
+                      <BilingualText en={dashboardEn('keep_current')} el={dashboardEl('keep_current')} compact />
+                    </Link>
+                  </Button>
+                )}
+                <AskAiButton
+                  variant="ghost"
+                  className="w-full"
+                  prompt="Review my founder profile and suggest what would make it stronger for investors and co-founders."
+                  labelEn={dashboardEn('ask_ai_profile')}
+                  labelEl={dashboardEl('ask_ai_profile')}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ),
+    },
     {
       id: 'shortcuts',
       glyph: 'spark',
@@ -911,17 +1219,12 @@ export default function FounderDashboardContent() {
 
         <AttentionChips items={attentionItems} />
 
-        <div className="min-w-0 space-y-6">
-
-            {/* Readiness — single home.
-                This previously rendered VentureReadinessCard *and* a second
-                "Startup Readiness" card built from the same `vrs` payload: same
-                score, same dimensions, one just showed fewer of them and did not
-                link them. The three navigation actions that were unique to the
-                second card now sit in this card's footer, so nothing is lost. */}
-            {vrs && (
-              <div id="founder-progress" className="scroll-mt-24" data-tour="founder-readiness">
-              <VentureReadinessCard
+        {/* Readiness — single home in the column.
+            Fundraising, matches, milestones and profile strength live in
+            the rail (`snapshot`) so this page stays a glance, not a stack. */}
+        {vrs && (
+          <div id="founder-progress" className="scroll-mt-24" data-tour="founder-readiness">
+            <VentureReadinessCard
                 data={vrs}
                 footer={
                   <div className="space-y-2.5">
@@ -955,308 +1258,8 @@ export default function FounderDashboardContent() {
                   </div>
                 }
               />
-              </div>
-            )}
-
-            {/* Fundraising widget */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
-                    <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/fundraising">
-                      <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {showDemoData ? (
-                    <>
-                      <div className="flex items-end justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {fundRound.nameEl
-                              ? <BilingualText en={fundRound.name} el={fundRound.nameEl} compact />
-                              : fundRound.name}
-                          </p>
-                          <p className="page-figure font-bold text-foreground">
-                            {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
-                            <span className="ml-1 text-sm font-normal text-muted-foreground">
-                              / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
-                            </span>
-                          </p>
-                        </div>
-                        <span className={cn(
-                          'shrink-0 text-sm font-bold',
-                          fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
-                        )}>
-                          {fundingPct}%
-                        </span>
-                      </div>
-                      <Progress value={fundingPct} label={bilingualAria('Round progress', 'Πρόοδος γύρου')} className="h-2.5" />
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <CfbGlyph name="people" className="icon-sm" />
-                          {fundStats.total}{' '}
-                          <BilingualText
-                            en={dashboardEn(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                            el={dashboardEl(fundStats.total === 1 ? 'lead_tracked' : 'leads_tracked')}
-                            compact
-                          />
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
-                          {fundStats.committed}{' '}
-                          <BilingualText
-                            en={dashboardEn(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                            el={dashboardEl(fundStats.committed === 1 ? 'committed_one' : 'committed_count')}
-                            compact
-                          />
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      <BilingualText
-                        en={dashboardEn('fundraising_empty')}
-                        el={dashboardEl('fundraising_empty')}
-                        wrap
-                      />
-                    </p>
-                  )}
-                  <div className="space-y-2.5">
-                    <div className="flex flex-col gap-2.5 sm:flex-row">
-                      <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                        <Link href="/fundraising" className="flex-1">
-                          <CfbGlyph name="wallet" className="icon-sm" />
-                          <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                        <Link href="/investors" className="flex-1">
-                          <CfbGlyph name="discover" className="icon-sm" />
-                          <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
-                        </Link>
-                      </Button>
-                    </div>
-                    {/* A card's question for the assistant sits under what it asks about,
-                        as on Founder progress: a header row has no room for both languages. */}
-                    <AskAiButton
-                      variant="ghost"
-                      className="w-full"
-                      prompt="Review this fundraising round against my readiness and tell me the next investor action."
-                      labelEn={dashboardEn('ask_ai_fundraising')}
-                      labelEl={dashboardEl('ask_ai_fundraising')}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Matches */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
-                    <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/matches">
-                      <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2.5">
-                {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
-                  <MatchPreviewCard key={match.userId} match={match} />
-                ))}
-                {(recommendations?.suggestions?.length ?? 0) > 0 && (
-                  <AskAiButton
-                    variant="ghost"
-                    className="w-full"
-                    prompt="How can I improve these matches and who should I reach out to first?"
-                    labelEn={dashboardEn('ask_ai_matches')}
-                    labelEl={dashboardEl('ask_ai_matches')}
-                  />
-                )}
-                {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
-                  <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-center">
-                    <CfbGlyph name="matches" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
-                    <p className="text-sm text-muted-foreground">
-                      <BilingualText
-                        en={dashboardEn('complete_profile_for_matches')}
-                        el={dashboardEl('complete_profile_for_matches')}
-                      />
-                    </p>
-                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
-                      <Button variant="outline" size="sm" className="gap-1.5" asChild>
-                        <Link href="/profile/edit">
-                          <CfbGlyph name="profile" className="icon-sm" />
-                          <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                        </Link>
-                      </Button>
-                      <AskAiButton
-                        variant="ghost"
-                        prompt="How can I start receiving better matches from this profile?"
-                        labelEn={dashboardEn('ask_ai_matches')}
-                        labelEl={dashboardEl('ask_ai_matches')}
-                      />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Milestones */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
-                    <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" className="gap-1" asChild>
-                    <Link href="/milestones">
-                      <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
-                      <ArrowRight className="icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {usingDemoMilestones && (
-                  <p className="page-stat-label leading-snug text-muted-foreground">
-                    <BilingualText
-                      en="Sample timeline — manage live items on Milestones."
-                      el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
-                      compact
-                      wrap
-                    />
-                  </p>
-                )}
-                {upcomingMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
-                {milestones.length > 0 && (moreOpenMilestoneCount > 0 || completedMilestoneCount > 0) && (
-                  <p className="border-t border-border/50 pt-3 text-xs text-muted-foreground">
-                    {/* Stacked: each language already joins its parts with "·". */}
-                    <BilingualText
-                      en={openMilestones.length === 0
-                        ? dashboardEn('milestones_all_complete')
-                        : [
-                            moreOpenMilestoneCount > 0 ? `${moreOpenMilestoneCount} more open` : null,
-                            completedMilestoneCount > 0 ? `${completedMilestoneCount} completed` : null,
-                          ].filter(Boolean).join(' · ')}
-                      el={openMilestones.length === 0
-                        ? dashboardEl('milestones_all_complete')
-                        : [
-                            moreOpenMilestoneCount > 0
-                              ? `${moreOpenMilestoneCount} ακόμη ${moreOpenMilestoneCount === 1 ? 'ανοιχτό' : 'ανοιχτά'}`
-                              : null,
-                            completedMilestoneCount > 0
-                              ? `${completedMilestoneCount} ${completedMilestoneCount === 1 ? 'ολοκληρωμένο' : 'ολοκληρωμένα'}`
-                              : null,
-                          ].filter(Boolean).join(' · ')}
-                      stacked
-                      wrap
-                    />
-                  </p>
-                )}
-                {milestones.length === 0 && !usingDemoMilestones && (
-                  <p className="text-sm text-muted-foreground">
-                    <BilingualText
-                      en={dashboardEn('add_first_milestone')}
-                      el={dashboardEl('add_first_milestone')}
-                    />
-                  </p>
-                )}
-                {openMilestones.length > 0 && (
-                  <AskAiButton
-                    variant="ghost"
-                    className="w-full"
-                    prompt="How do I hit these milestone dates, and what should I sequence first?"
-                    labelEn={dashboardEn('ask_ai_milestones')}
-                    labelEl={dashboardEl('ask_ai_milestones')}
-                  />
-                )}
-              </CardContent>
-            </Card>
-            {/* Profile strength — moved here from the sidebar.
-                The two columns were 1663px and 2169px, so the wider,
-                more important one ended 506px early and the page had a
-                void down its left side. This card is the one sidebar
-                item that is a task rather than a readout, so it is the
-                one that belongs in the main column; moving it leaves the
-                columns within ~25px of each other and keeps XP and
-                Badges together where they belong. */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2">
-                  <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
-                  <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    <BilingualText en={dashboardEn('completion')} el={dashboardEl('completion')} compact />
-                  </span>
-                  <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
-                </div>
-                <Progress value={profilePct} label={bilingualAria('Profile completeness', 'Πληρότητα προφίλ')} className="h-2" />
-                {/* Two columns from `sm`: this card moved out of the 381px
-                    sidebar into the 786px main column, where four checklist
-                    rows stacked single-file would be four short lines with
-                    half the card empty beside them. */}
-                <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 sm:space-y-0">
-                  {[
-                    { labelEn: 'Photo & headline', labelEl: 'Φωτογραφία & τίτλος', done: profileChecks.photoHeadline },
-                    { labelEn: 'Skills (5+)', labelEl: 'Δεξιότητες (5+)', done: profileChecks.skills },
-                    { labelEn: 'Work experience', labelEl: 'Εργασιακή εμπειρία', done: profileChecks.experience },
-                    { labelEn: 'Startup idea linked', labelEl: 'Σύνδεση ιδέας startup', done: profileChecks.ideaLinked },
-                  ].map((item) => (
-                    <div key={item.labelEn} className="flex items-center gap-2 text-xs">
-                      <CheckCircle2 className={cn('icon-sm shrink-0', item.done ? STATUS.success.icon : 'text-muted-foreground/30')} />
-                      <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
-                        <BilingualText en={item.labelEn} el={item.labelEl} compact />
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-2.5">
-                  {profilePct < 100 ? (
-                    <Button variant="secondary" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/profile/edit">
-                        <CfbGlyph name="profile" className="icon-sm" />
-                        <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
-                      </Link>
-                    </Button>
-                  ) : (
-                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
-                      <Link href="/profile">
-                        <CfbGlyph name="profile" className="icon-sm" />
-                        <BilingualText en={dashboardEn('keep_current')} el={dashboardEl('keep_current')} compact />
-                      </Link>
-                    </Button>
-                  )}
-                  <AskAiButton
-                    variant="ghost"
-                    className="w-full"
-                    prompt="Review my founder profile and suggest what would make it stronger for investors and co-founders."
-                    labelEn={dashboardEn('ask_ai_profile')}
-                    labelEl={dashboardEl('ask_ai_profile')}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-        </div>
+          </div>
+        )}
       </div>
     </AppShell>
   );

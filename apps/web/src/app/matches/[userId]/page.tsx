@@ -378,7 +378,7 @@ export default function MatchDetailPage() {
         </div>
 
         {/* Summary: the two of you, the score between you, how sure it is. */}
-        <div className="rounded-2xl border border-border/60 bg-card px-4 py-6 sm:px-8">
+        <div className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
           <div className="flex items-center justify-between gap-4">
             <PersonBlock name={sourceProfile.displayName} role={sourceProfile.role} avatarUrl={sourceProfile.avatarUrl} />
             <DonutScore score={overall.score} />

@@ -144,7 +144,7 @@ export function ShareModal({
         <div className="space-y-5">
           {/* Preview */}
           {(title || description || imageUrl) && (
-            <div className="flex gap-3 p-3 rounded-lg border border-border/60 bg-muted/30">
+            <div className="flex gap-3 p-3 rounded-lg border border-border bg-muted/30">
               {imageUrl && (
                 <img src={imageUrl} alt="" className="h-14 w-14 rounded object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={56} height={56} />
               )}
@@ -165,7 +165,7 @@ export function ShareModal({
                 variant={copied ? 'default' : 'outline'}
                 size="sm"
                 onClick={handleCopy}
-                className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-green-600 hover:bg-green-600 border-green-600')}
+                className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-status-success hover:bg-status-success border-status-success-border')}
               >
                 {copied ? <Check className="icon-sm" /> : <Link2 className="icon-sm" />}
                 {copied ? <BilingualText en="Copied!" el="Αντιγράφηκε!" /> : <BilingualText en="Copy" el="Αντιγραφή" />}
@@ -187,7 +187,7 @@ export function ShareModal({
                   type="button"
                   onClick={() => openChannel(ch.id)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 text-sm text-muted-foreground transition-colors',
+                    'flex items-center gap-2 px-3 py-2 rounded-xl border border-border text-sm text-muted-foreground transition-colors',
                     ch.color,
                   )}
                 >

@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
-import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   getAnalyticsAchievements,
@@ -14,6 +13,7 @@ import {
 import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -62,43 +62,6 @@ const WEEKDAY_EL: Record<string, string> = {
 /** "3h 20m" → "3ω 20λ": the API sends English duration units. */
 function durationEl(value: string): string {
   return value.replace(/(\d+)\s*h\b/g, '$1ω').replace(/(\d+)\s*m(in)?\b/g, '$1λ');
-}
-
-function AskAiButton({
-  labelEn,
-  labelEl,
-  prompt,
-  variant = 'outline',
-  className,
-}: {
-  labelEn?: string;
-  labelEl?: string;
-  prompt?: string;
-  variant?: 'outline' | 'ghost' | 'secondary';
-  className?: string;
-}) {
-  const popup = usePopupChatOptional();
-  const buttonClass = cn('h-auto min-h-9 gap-1.5 py-1.5 leading-snug', className);
-  const label = (
-    <>
-      <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
-      <BilingualText en={labelEn ?? analyticsEn('ask_ai')} el={labelEl ?? analyticsEl('ask_ai')} compact wrap />
-    </>
-  );
-  // Asks in place, like the header's Ask AI: /ai?q= would leave the page and its context behind.
-  if (popup && prompt) {
-    return (
-      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => popup.ask(prompt)}>
-        {label}
-      </Button>
-    );
-  }
-  const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
-  return (
-    <Button asChild variant={variant} size="sm" className={buttonClass}>
-      <Link href={href}>{label}</Link>
-    </Button>
-  );
 }
 
 type AnalyticsTab = 'overview' | 'engagement' | 'growth';
@@ -153,7 +116,7 @@ function MetricCard({
   // `h-full` down the chain, so every card fills its grid row; the Profile
   // Views card is taller than the rest by its sparkline.
   const body = (
-    <Card className="h-full min-w-0 border-border/60 transition-colors hover:border-border">
+    <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       <CardContent className="p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
@@ -272,7 +235,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           </p>
         )}
         {/* Each row is a link: py-1 gives it a 24px target and room from the next one. */}
-        <div className="space-y-1 border-t border-border/50 pt-2">
+        <div className="space-y-1 border-t border-border pt-2">
           {untracked.map((row) => (
             <Link key={row.key} href={row.href} className="block min-h-6 rounded-lg py-1 focus-ring">
               <p className="page-stat-label text-muted-foreground">
@@ -426,7 +389,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
                 'flex items-start gap-3 rounded-2xl border p-3',
                 achievement.unlocked
                   ? 'border-primary/25 bg-gradient-to-b from-primary/12 via-card to-card'
-                  : 'border-border/40 opacity-60',
+                  : 'border-border opacity-60',
               )}
             >
               <CfbGlyph
@@ -507,6 +470,7 @@ function isPeriod(value: string | null): value is Period {
 export default function AnalyticsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { openRailSection } = usePageRail();
   const [activeTab, setActiveTab] = useState<AnalyticsTab>('overview');
   const [period, setPeriodState] = useState<Period>('7d');
   const [mounted, setMounted] = useState(false);
@@ -652,7 +616,7 @@ export default function AnalyticsPage() {
                     'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors focus-ring',
                     period === p
                       ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                      : 'border-border text-muted-foreground hover:border-primary/40',
                   )}
                 >
                   <BilingualText en={PERIOD_LABEL[p].en} el={PERIOD_LABEL[p].el} wrap />
@@ -704,10 +668,10 @@ export default function AnalyticsPage() {
           {/* Four equal destinations, so none is filled; each hint says what that one is for. */}
           <div className="grid grid-cols-1 min-w-0 gap-2">
             {([
-              { href: '/profile', glyph: 'profile', title: 'open_profile', hint: 'build_profile' },
-              { href: '/discover', glyph: 'discover', title: 'open_discover', hint: 'grow_network' },
-              { href: '/messages', glyph: 'messages', title: 'open_messages', hint: 'reply_faster' },
-              { href: '/connections', glyph: 'people', title: 'open_connections', hint: 'follow_up' },
+              { href: '/profile', glyph: 'profile' as const, title: 'open_profile', hint: 'build_profile' },
+              { href: '/discover', glyph: 'discover' as const, title: 'open_discover', hint: 'grow_network' },
+              { href: '/messages', glyph: 'messages' as const, title: 'open_messages', hint: 'reply_faster' },
+              { href: '/connections', glyph: 'people' as const, title: 'open_connections', hint: 'follow_up' },
             ] as const).map((step) => (
               <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
                 <Link href={step.href}>
@@ -720,6 +684,16 @@ export default function AnalyticsPage() {
                 </Link>
               </Button>
             ))}
+              <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+                <Link href="/calendar">
+                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
+                    <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
+                  </span>
+                  <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                </Link>
+              </Button>
           </div>
         </div>
       ),
@@ -764,7 +738,7 @@ export default function AnalyticsPage() {
             <>
               {/* The window is chosen in the rail; the column says which one every figure below is for. */}
               <p className="page-stat-label flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-muted-foreground">
-                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-card px-2.5 py-0.5 font-medium text-foreground">
+                <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 font-medium text-foreground">
                   <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                   <BilingualText en={PERIOD_LABEL[period].en} el={PERIOD_LABEL[period].el} compact />
                 </span>
@@ -807,18 +781,9 @@ export default function AnalyticsPage() {
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {metricHref(declining[0].label) && (
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={metricHref(declining[0].label)!}>
-                          <BilingualText
-                            en={declining[0].label === 'Messages Sent' ? analyticsEn('open_messages') : analyticsEn('open_profile')}
-                            el={declining[0].label === 'Messages Sent' ? analyticsEl('open_messages') : analyticsEl('open_profile')}
-                            compact wrap
-                          />
-                        </Link>
-                      </Button>
-                    )}
-                    <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
+                    <Button type="button" variant="outline" size="sm" onClick={() => openRailSection('next')}>
+                      <BilingualText en={analyticsEn('open_discover')} el={analyticsEl('open_discover')} compact wrap />
+                    </Button>
                   </div>
                 </div>
               )}
@@ -862,18 +827,6 @@ export default function AnalyticsPage() {
                         <p className="page-stat font-semibold">{weeklySummary.totalInteractions ?? '—'}</p>
                       </div>
                     </div>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href="/calendar"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} compact wrap /></Link>
-                      </Button>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href="/messages"><BilingualText en={analyticsEn('reply_faster')} el={analyticsEl('reply_faster')} compact wrap /></Link>
-                      </Button>
-                      {/* One Ask AI per tab: the drop alert above already carries it when it shows. */}
-                      {declining.length === 0 && (
-                        <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
-                      )}
-                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -890,17 +843,11 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 min-w-0 gap-5 lg:grid-cols-2">
               <EngagementBreakdown engagement={engagement} />
               {topContent && topContent.length > 0 ? (
-                <div className="space-y-3">
-                  <TopContentList content={topContent} />
-                  <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
-                </div>
+                <TopContentList content={topContent} />
               ) : (
                 <Card className="min-w-0">
                   <CardContent className="py-12 text-center text-sm text-muted-foreground">
                     <p><BilingualText en={analyticsEn('no_engagement')} el={analyticsEl('no_engagement')} /></p>
-                    <div className="mt-3 flex justify-center">
-                      <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
-                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -921,9 +868,6 @@ export default function AnalyticsPage() {
                 <Card>
                   <CardContent className="py-16 text-center text-sm text-muted-foreground">
                     <p><BilingualText en={analyticsEn('no_views')} el={analyticsEl('no_views')} /></p>
-                    <div className="mt-3 flex justify-center">
-                      <AskAiButton variant="ghost" prompt={askPrompt} labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
-                    </div>
                   </CardContent>
                 </Card>
               )}

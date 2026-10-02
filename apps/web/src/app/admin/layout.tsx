@@ -23,7 +23,7 @@ const ADMIN_NAV = [
 function AdminSubNav() {
   const pathname = usePathname() ?? '/admin';
   return (
-    <div className="border-b border-border/50 bg-card/60 px-4">
+    <div className="border-b border-border bg-card/60 px-4">
       <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
         {ADMIN_NAV.map(({ href, label, labelEl, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));

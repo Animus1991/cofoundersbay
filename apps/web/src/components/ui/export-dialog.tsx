@@ -99,7 +99,7 @@ export function ExportDialog({
                     'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors',
                     format === opt.value
                       ? 'border-primary bg-primary/5'
-                      : 'border-border/60 hover:border-primary/40 hover:bg-muted/50',
+                      : 'border-border hover:border-primary/40 hover:bg-muted/50',
                   )}
                 >
                   <opt.icon className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -136,7 +136,7 @@ export function ExportDialog({
           {columns && columns.length > 0 && onColumnToggle && (
             <div>
               <p className="text-sm font-medium mb-2">Columns</p>
-              <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg border border-border/60 p-2">
+              <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg border border-border p-2">
                 {columns.map((col) => (
                   <label key={col.key} className="flex items-center gap-2 cursor-pointer py-0.5">
                     <input

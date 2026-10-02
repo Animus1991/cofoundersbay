@@ -69,7 +69,7 @@ function InquiryCard({
     new: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Mail },
     replied: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock },
     converted: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: CheckCircle },
-    declined: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: XCircle },
+    declined: { color: 'bg-muted text-muted-foreground border-border', icon: XCircle },
   };
 
   const config = statusConfig[inquiry.status];
@@ -385,7 +385,7 @@ export default function ProviderInquiriesPage() {
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>

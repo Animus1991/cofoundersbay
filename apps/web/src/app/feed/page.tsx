@@ -8,12 +8,14 @@ import {
   Send, Link2, Smile, TrendingUp,
   Users, Sparkles, Filter, Clock, Flame, ThumbsUp,
   Award, Rocket, Target, Briefcase, GraduationCap,
-  Plus, RefreshCw, ChevronDown, X, Flag, Settings,
+  Plus, RefreshCw, ChevronDown, X, Flag, Settings, CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -212,7 +214,7 @@ function PostCard({
     <Card
       id={`post-${post.id}`}
       tabIndex={-1}
-      className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
+      className="overflow-hidden shadow-sm border-border hover:shadow-md transition-shadow scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
     >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
@@ -393,10 +395,10 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
   const topicsToShow = topics || defaultTopics;
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="pb-3 border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
-          <Flame className="icon-sm text-orange-500" />
+          <Flame className="icon-sm text-status-warning" />
           Trending Topics
         </h3>
       </CardHeader>
@@ -414,7 +416,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-green-200">
+                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                     +{topic.growth}%
                   </Badge>
                 )}
@@ -439,8 +441,8 @@ function SuggestedConnections() {
   ];
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="pb-3 border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
           <Users className="icon-sm text-primary-accessible" />
           Suggested Connections
@@ -478,6 +480,7 @@ function SuggestedConnections() {
 export default function FeedPage() {
   const { success } = useToast();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
   const { openRailSection } = usePageRail();
 
@@ -796,6 +799,19 @@ export default function FeedPage() {
         </p>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Sparkles} en="Open groups" el="Άνοιγμα κοινοτήτων" onClick={() => router.push('/groups')} />
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={Users} en="Open members" el="Άνοιγμα μελών" onClick={() => router.push('/members')} />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -851,7 +867,7 @@ export default function FeedPage() {
               {feedLoading ? (
                 // Loading skeletons
                 Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="overflow-hidden shadow-sm border-border/50">
+                  <Card key={i} className="overflow-hidden shadow-sm border-border">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-start justify-between">
                         <div className="flex gap-3">

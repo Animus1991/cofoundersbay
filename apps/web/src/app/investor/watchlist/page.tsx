@@ -228,13 +228,13 @@ const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color:
   fundraise: { label: 'Fundraise', color: 'bg-status-info-bg text-status-info' },
   team: { label: 'Team', color: 'bg-status-accent-bg text-status-accent' },
   deck: { label: 'Deck', color: 'bg-status-warning-bg text-status-warning' },
-  update: { label: 'Update', color: 'bg-gray-500/10 text-muted-foreground' },
+  update: { label: 'Update', color: 'bg-muted text-muted-foreground' },
   // InvestorDealEvent.type also records these two (schema.prisma). They were
   // missing here while the live mapping cast the API's string straight to
   // this union, so the first stage change on the board threw inside `.map`
   // and blanked the Activity tab.
   stage_change: { label: 'Stage change', color: 'bg-status-info-bg text-status-info' },
-  note: { label: 'Note', color: 'bg-gray-500/10 text-muted-foreground' },
+  note: { label: 'Note', color: 'bg-muted text-muted-foreground' },
 };
 
 /** Narrow the API's free-form event type to one this page can render. */

@@ -281,7 +281,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       <DialogContent className="flex max-h-[min(70dvh,calc(100svh_-_5.5rem))] flex-col gap-0 overflow-hidden p-0 max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0 md:max-h-[min(92dvh,720px)] md:max-w-lg">
         <DialogTitle className="sr-only">Command palette</DialogTitle>
         {/* Search input */}
-        <div className="shrink-0 border-b border-border/60 p-4 pr-12">
+        <div className="shrink-0 border-b border-border p-4 pr-12">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
@@ -359,11 +359,11 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="hidden shrink-0 items-center justify-between border-t border-border/60 px-4 py-2 text-xs text-muted-foreground md:flex">
+        <div className="hidden shrink-0 items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground md:flex">
           <span>Navigate with ↑↓ keys</span>
           <span>Press Enter to select</span>
         </div>
-        <div className="shrink-0 border-t border-border/60 px-4 py-2 text-center text-xs text-muted-foreground md:hidden">
+        <div className="shrink-0 border-t border-border px-4 py-2 text-center text-xs text-muted-foreground md:hidden">
           Tap a result to go
         </div>
       </DialogContent>

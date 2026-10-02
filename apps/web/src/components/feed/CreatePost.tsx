@@ -115,7 +115,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
               {placeholder}
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-end gap-2 border-t border-border/40 pt-3">
+          <div className="mt-3 flex items-center justify-end gap-2 border-t border-border pt-3">
             {postTypes.slice(0, 4).map((pt) => (
               // Each opens the composer already set to its type; before, they
               // relied on the click bubbling to the card and the type was lost.
@@ -155,7 +155,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                   'flex flex-col items-center gap-1 rounded-lg border p-3 transition-colors',
                   postType === pt.type
                     ? 'border-primary bg-primary/10'
-                    : 'border-border/60 hover:border-primary/50'
+                    : 'border-border hover:border-primary/50'
                 )}
               >
                 <span className="text-xl" aria-hidden="true">{pt.emoji}</span>
@@ -217,7 +217,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                       addTag();
                     }
                   }}
-                  className="w-full rounded-lg border border-border/60 bg-transparent py-2 pl-9 pr-4 text-sm focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-border bg-transparent py-2 pl-9 pr-4 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
               <Button variant="secondary" size="sm" onClick={addTag} disabled={!tagInput.trim()}>
@@ -252,7 +252,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
             <div className="flex items-center gap-1" role="group" aria-label={bilingualAria('Attachments', 'Συνημμένα')} aria-describedby={attachHintId}>
               <span id={attachHintId} className="sr-only">{ATTACHMENTS_UNAVAILABLE}</span>
               <Button aria-label={bilingualAria('Add image', 'Προσθήκη εικόνας')} title={ATTACHMENTS_UNAVAILABLE} variant="ghost" size="icon" className="h-9 w-9" disabled>

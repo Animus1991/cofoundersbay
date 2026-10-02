@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X } from 'lucide-react';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -240,7 +241,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-auto">
+        <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
             <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
@@ -336,6 +337,7 @@ export default function LearningPage() {
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
   /*
    * The bookmark on each card was its own state, lost on the next render of
@@ -533,6 +535,19 @@ export default function LearningPage() {
           {activeFilters > 0 && (
             <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setTypeFilter('all'); setSelectedCategory('All'); }} />
           )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Award} en="Open programs" el="Άνοιγμα προγραμμάτων" onClick={() => router.push('/programs')} />
+          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+          <RailAction icon={Target} en="Open coaching" el="Άνοιγμα coaching" onClick={() => router.push('/coaching')} />
         </div>
       ),
     },

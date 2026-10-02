@@ -197,7 +197,7 @@ export function RichTextEditor({
           </div>
         )}
       </div>
-      <div className="flex justify-end border-t border-border/50 px-3 py-1 text-2xs tabular-nums text-muted-foreground">
+      <div className="flex justify-end border-t border-border px-3 py-1 text-2xs tabular-nums text-muted-foreground">
         {counts.words} · {counts.chars}
       </div>
     </div>

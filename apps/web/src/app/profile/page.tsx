@@ -236,7 +236,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
           >
             <Icon2 className="icon-sm" />
             {label}
@@ -247,8 +247,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     : null;
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="pb-3 border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-3 border-b border-border">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Icon className="icon-md text-primary-accessible" />
           <BilingualText
@@ -289,7 +289,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
           </>
         )}
         {linkEntries && linkEntries.length > 0 && (
-          <div className="space-y-1.5 pt-2 border-t border-border/60">
+          <div className="space-y-1.5 pt-2 border-t border-border">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <BilingualText en={profileEn('links')} el={profileEl('links')} />
             </p>
@@ -464,7 +464,7 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-3 shrink-0">
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
                     <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-status-success-bg text-status-success hover:bg-status-success-bg border-status-success-border">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-status-success animate-pulse"></div>
                       <BilingualText en={profileEn('open_to_work')} el={profileEl('open_to_work')} />
                     </Badge>
                   </div>
@@ -508,8 +508,8 @@ export default function ProfilePage() {
               that is *better* with room around it than cramped. */}
           <div className="space-y-6 lg:flex lg:flex-col">
             {/* Bio */}
-            <Card className="animate-fade-in stagger-1 shadow-sm border-border/50">
-              <CardHeader className="pb-3 border-b border-border/50">
+            <Card className="animate-fade-in stagger-1 shadow-sm border-border">
+              <CardHeader className="pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <UserIcon className="icon-md text-primary-accessible" />
@@ -530,7 +530,7 @@ export default function ProfilePage() {
                     {profile.bio}
                   </p>
                 ) : (
-                  <div className="text-center py-6 bg-secondary/20 rounded-lg border border-dashed border-border/50">
+                  <div className="text-center py-6 bg-secondary/20 rounded-lg border border-dashed border-border">
                     <p className="text-sm text-muted-foreground mb-3">
                       <BilingualText en={profileEn('bio_empty_hint')} el={profileEl('bio_empty_hint')} />
                     </p>
@@ -555,8 +555,8 @@ export default function ProfilePage() {
             ].filter((c) => c.value);
             if (!cards.length) return null;
             return (
-              <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
+              <Card className="animate-fade-in stagger-2 shadow-sm border-border">
+                <CardHeader className="pb-3 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Target className="icon-md text-primary-accessible" />
                     <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
@@ -596,8 +596,8 @@ export default function ProfilePage() {
 
           {/* Skill proficiency bars */}
           {profile.skills && profile.skills.length > 0 && (
-            <Card className="animate-fade-in stagger-3 shadow-sm border-border/50">
-              <CardHeader className="pb-3 border-b border-border/50">
+            <Card className="animate-fade-in stagger-3 shadow-sm border-border">
+              <CardHeader className="pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <BarChart3 className="icon-md text-primary-accessible" />
@@ -616,7 +616,7 @@ export default function ProfilePage() {
                     const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
                     const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
                     return (
-                      <div key={s.skillId} className="space-y-1.5 bg-secondary/20 p-3 rounded-lg border border-border/50">
+                      <div key={s.skillId} className="space-y-1.5 bg-secondary/20 p-3 rounded-lg border border-border">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-semibold text-foreground">{s.skillName}</span>
                           <Badge variant="secondary" size="sm" className="capitalize bg-background">{lvl}</Badge>
@@ -632,7 +632,7 @@ export default function ProfilePage() {
                   })}
                 </div>
                 {profile.skills.length > 6 && (
-                  <div className="mt-4 pt-4 border-t border-border/50 text-center">
+                  <div className="mt-4 pt-4 border-t border-border text-center">
                     {/* It offered to show all of them and did nothing; the six
                         after the sixth were simply unreachable. */}
                     <Button
@@ -657,8 +657,8 @@ export default function ProfilePage() {
           {/* Portfolio placeholder. It used to stretch to the right column's
               height, which drew a 550px dashed box around one line of text;
               the empty state keeps its own height now. */}
-          <Card className="animate-fade-in shadow-sm border-border/50">
-            <CardHeader className="pb-3 border-b border-border/50">
+          <Card className="animate-fade-in shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <FolderOpen className="icon-md text-primary-accessible" />
@@ -672,7 +672,7 @@ export default function ProfilePage() {
               </div>
             </CardHeader>
             <CardContent className="pt-5">
-              <div className="flex flex-col items-center justify-center gap-3 py-8 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
+              <div className="flex flex-col items-center justify-center gap-3 py-8 text-center rounded-xl bg-secondary/10 border border-dashed border-border">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-accessible">
                   <FolderOpen className="icon-lg" />
                 </div>
@@ -722,7 +722,7 @@ export default function ProfilePage() {
         {/* Right sidebar column */}
         <div className="space-y-6">
           {/* Action Card */}
-          <Card className="shadow-sm border-border/50 sticky top-6">
+          <Card className="shadow-sm border-border sticky top-6">
             <CardContent className="p-5 space-y-4">
               <Button className="w-full gap-2 font-medium" asChild>
                 <Link href="/profile/edit" className="block w-full">
@@ -754,8 +754,8 @@ export default function ProfilePage() {
           <VerificationCard email={profile.email} />
 
           {/* Reputation / Stats mini-card */}
-          <Card className="animate-fade-in shadow-sm border-border/50">
-            <CardHeader className="pb-3 border-b border-border/50">
+          <Card className="animate-fade-in shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <BilingualText en={profileEn('activity_reputation')} el={profileEl('activity_reputation')} />
               </CardTitle>
@@ -767,7 +767,7 @@ export default function ProfilePage() {
                 { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-primary-accessible', bg: 'bg-primary/10' },
                 { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-status-success', bg: 'bg-status-success-bg' },
               ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
-                <div key={labelEn} className="flex min-w-0 flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
+                <div key={labelEn} className="flex min-w-0 flex-col items-center rounded-xl border border-border bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className={`p-2 rounded-full ${bg} mb-2`}>
                     <Icon className={`icon-sm ${color}`} />
                   </div>
@@ -795,8 +795,8 @@ export default function ProfilePage() {
           </Card>
 
           {/* Contribution Graph */}
-          <Card className="animate-fade-in shadow-sm border-border/50">
-            <CardHeader className="pb-3 border-b border-border/50">
+          <Card className="animate-fade-in shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <BilingualText en={profileEn('activity_graph')} el={profileEl('activity_graph')} />
               </CardTitle>

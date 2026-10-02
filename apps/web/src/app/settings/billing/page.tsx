@@ -32,12 +32,12 @@ function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     paid: 'bg-status-success-bg text-status-success border-status-success-border',
     open: 'bg-status-info-bg text-status-info border-status-info-border',
-    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
-    void: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    draft: 'bg-muted text-muted-foreground border-border',
+    void: 'bg-muted text-muted-foreground border-border',
     uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   return (
-    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-muted-foreground')}>
+    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-muted text-muted-foreground')}>
       <StatusText value={status} />
     </Badge>
   );
@@ -46,7 +46,7 @@ function InvoiceStatusBadge({ status }: { status: string }) {
 /** What a plan includes: one quiet list, shared with /pricing through PLAN_HIGHLIGHTS. */
 function PlanHighlights({ items }: { items: { en: string; el: string }[] }) {
   return (
-    <ul className="space-y-1.5 border-t border-border/50 pt-3 text-sm text-muted-foreground">
+    <ul className="space-y-1.5 border-t border-border pt-3 text-sm text-muted-foreground">
       {items.map((item) => (
         <li key={item.en} className="flex items-start gap-2">
           <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
@@ -205,7 +205,7 @@ export default function UserBillingPage() {
       <div className="space-y-6 pb-10">
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card className="border-border/50 shadow-none">
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
               <p className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                 <BilingualText en="Current plan" el="Τρέχον πλάνο" />
@@ -305,7 +305,7 @@ export default function UserBillingPage() {
         )}
 
         {sub?.plan?.features && (
-          <Card className="border-border/50 shadow-none">
+          <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
               <CardTitle className="text-base"><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
             </CardHeader>
@@ -328,7 +328,7 @@ export default function UserBillingPage() {
           </Card>
         )}
 
-        <Card className="border-border/50 shadow-none">
+        <Card className="border-border shadow-none">
           <CardContent className="pt-2">
             <SettingsRow
               label={<BilingualText en="Payment method" el="Τρόπος πληρωμής" compact />}
@@ -349,8 +349,8 @@ export default function UserBillingPage() {
         </Card>
 
         {/* Billing Contact */}
-        <Card className="border-border/50 shadow-none">
-          <CardHeader className="pb-3 border-b border-border/50">
+        <Card className="border-border shadow-none">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
@@ -467,8 +467,8 @@ export default function UserBillingPage() {
         </Card>
 
         {/* Invoice history */}
-        <Card className="border-border/50 shadow-none">
-          <CardHeader className="pb-3 border-b border-border/50">
+        <Card className="border-border shadow-none">
+          <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-base"><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">

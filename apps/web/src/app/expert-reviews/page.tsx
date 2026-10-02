@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
   listExpertReviews,
@@ -31,8 +32,12 @@ import {
   Target,
   TrendingUp,
   XCircle,
+  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -259,7 +264,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
   const TypeIcon = type.icon;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
@@ -376,7 +381,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
       {/* Expanded feedback */}
       {expanded && (review.strengthsJson || review.improvementsJson || review.scoresByArea) && (
-        <div className="border-t border-border/60 bg-muted/30 p-4 space-y-4">
+        <div className="border-t border-border bg-muted/30 p-4 space-y-4">
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
@@ -432,7 +437,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
 function ExpertCard({ expert }: { expert: ExpertProfile }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
+    <div className="rounded-xl border border-border bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
@@ -624,6 +629,8 @@ export default function ExpertReviewsPage() {
   const [searchExperts, setSearchExperts] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
   const { showDemoData } = useDemoData();
+  const router = useRouter();
+  const { openRailSection } = usePageRail();
 
   /*
    * The founder's own reviews, from the module that now reads ExpertReview.
@@ -707,33 +714,76 @@ export default function ExpertReviewsPage() {
     ? (submitted.filter((r) => r.scoreOverall).reduce((acc, r) => acc + (r.scoreOverall ?? 0), 0) / submitted.filter((r) => r.scoreOverall).length)
     : null;
 
-  return (
-    <AppShell showHelp askAi="Which expert review should I request first — pitch deck, financial model, or go-to-market — given my current readiness gaps?">
-      <div className="space-y-6 pb-10">
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: myReviews.length, icon: FileText, tone: 'accent' as StatusTone },
-            { label: 'In progress', labelEl: 'Σε εξέλιξη', value: pending.length, icon: Clock, tone: 'warning' as StatusTone },
-            { label: 'Completed', labelEl: 'Ολοκληρωμένες', value: submitted.length, icon: CheckCircle2, tone: 'success' as StatusTone },
-            { label: 'Avg score', labelEl: 'Μέση βαθμολογία', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'info' as StatusTone },
-          ].map(({ label, labelEl, value, icon: Icon, tone }) => (
-            <Card key={label} className="shadow-sm border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', STATUS[tone].bg, STATUS[tone].icon)}>
-                  <Icon className="icon-sm" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">
-                    <BilingualText en={label} el={labelEl} compact wrap />
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+  /*
+   * The column leads with the tabs and the reviews. The four counts and the
+   * domain chips sat above the first card; they live in the rail now. Request
+   * review stays: it is this page's next step, not another surface.
+   */
+  const listingFilters = selectedDomain !== 'all' ? 1 : 0;
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: myReviews.length, icon: FileText, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'pending', label: 'In progress', labelEl: 'Σε εξέλιξη', value: pending.length, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
+            { key: 'done', label: 'Completed', labelEl: 'Ολοκληρωμένες', value: submitted.length, icon: CheckCircle2, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'avg', label: 'Avg score', labelEl: 'Μέση βαθμολογία', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'bg-status-info-bg text-status-info' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Expertise',
+      labelEl: 'Εξειδίκευση',
+      badge: listingFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Domain"
+            titleEl="Τομέας"
+            options={[
+              { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
+              ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({
+                value: key,
+                en: cfg.label,
+                el: cfg.labelEl,
+                icon: cfg.icon,
+              })),
+            ]}
+            value={selectedDomain}
+            onChange={(v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }}
+          />
+          {listingFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setSelectedDomain('all')} />
+          )}
         </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Target} en="Open readiness" el="Άνοιγμα ετοιμότητας" onClick={() => router.push('/readiness')} />
+          <RailAction icon={FileText} en="Open pitch deck" el="Άνοιγμα pitch deck" onClick={() => router.push('/builder/pitch-deck')} />
+          <RailAction icon={DollarSign} en="Open fundraising" el="Άνοιγμα χρηματοδότησης" onClick={() => router.push('/fundraising')} />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell showHelp rail={rail} askAi="Which expert review should I request first — pitch deck, financial model, or go-to-market — given my current readiness gaps?">
+      <div className="space-y-6 pb-10">
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3">
@@ -773,7 +823,7 @@ export default function ExpertReviewsPage() {
               </div>
             )}
             {myReviews.length === 0 && (
-              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
+              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
                   <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
@@ -788,48 +838,32 @@ export default function ExpertReviewsPage() {
 
           {/* Find Experts */}
           <TabsContent value="find-experts" className="mt-4 space-y-4">
-            {/* Search + domain filter */}
-            <div className="flex gap-2 flex-wrap">
-              <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-                <Input placeholder={bilingualInline("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
-              </div>
-            </div>
-
-            {/* Domain chips */}
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                onClick={() => setSelectedDomain('all')}
-                className={cn('rounded-full border px-3 py-1 text-xs transition-all', selectedDomain === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:border-border')}
-              >
-                <BilingualText en="All domains" el="Όλοι οι τομείς" compact />
-              </button>
-              {(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, typeof REVIEW_TYPE_CONFIG[ReviewType]][]).map(([key, cfg]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedDomain(key)}
-                  className={cn(
-                    'flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all',
-                    selectedDomain === key ? cn(STATUS[cfg.tone].chip, 'border-current') : 'border-border/60 text-muted-foreground hover:border-border',
-                  )}
-                >
-                  <cfg.icon className="h-3 w-3" />
-                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
-                </button>
-              ))}
+            {/* Search — domain lives in the rail. */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+              <Input placeholder={bilingualInline("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
             </div>
 
             <div className="space-y-3">
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact /> <button className="text-primary-accessible hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}><BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact /></button>
+                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact />{' '}
+                  {listingFilters > 0 ? (
+                    <button className="text-primary-accessible hover:underline" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                    </button>
+                  ) : (
+                    <button className="text-primary-accessible hover:underline" onClick={() => setSearchExperts('')}>
+                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
 
             {/* CTA for becoming an expert */}
-            <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
+            <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
               <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
               <p className="mb-1 text-sm font-medium text-foreground">
                 <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />

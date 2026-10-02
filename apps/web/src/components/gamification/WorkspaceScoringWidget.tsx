@@ -71,7 +71,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* Team Momentum */}
         {momentum && (
-          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-status-success-border ">
+          <div className="space-y-3 p-3 rounded-lg bg-status-success-bg border border-status-success-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="icon-sm text-status-success" />
@@ -101,7 +101,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* My Contribution */}
         {myContribution && (
-          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-status-accent-border ">
+          <div className="space-y-3 p-3 rounded-lg bg-status-accent-bg border border-status-accent-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Users className="icon-sm text-status-accent" />
@@ -130,7 +130,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* Mentor Metrics */}
         {mentorMetrics && mentorMetrics.feedbackCount > 0 && (
-          <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-status-warning-border ">
+          <div className="space-y-2 p-3 rounded-lg bg-status-warning-bg border border-status-warning-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <MessageSquare className="icon-sm text-status-warning" />

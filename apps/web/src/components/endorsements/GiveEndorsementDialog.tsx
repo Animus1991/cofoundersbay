@@ -168,7 +168,7 @@ export function GiveEndorsementDialog({
             </label>
 
             {picked ? (
-              <div className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-secondary/40 p-2.5">
+              <div className="flex items-center gap-2.5 rounded-xl border border-border bg-secondary/40 p-2.5">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={picked.avatarUrl ?? undefined} alt="" />
                   <AvatarFallback>{picked.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
@@ -207,7 +207,7 @@ export function GiveEndorsementDialog({
                 </div>
 
                 {trimmedQuery.length >= 2 && (
-                  <div className="max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border/60 p-1">
+                  <div className="max-h-52 space-y-1 overflow-y-auto rounded-xl border border-border p-1">
                     {isFetching && (
                       <p className="flex items-center gap-2 p-2 text-xs text-muted-foreground">
                         <Loader2 className="icon-sm animate-spin" />

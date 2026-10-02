@@ -149,13 +149,13 @@ export function CollaborationStarter({
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="relative">
-                <Avatar className="h-11 w-11 ring-2 ring-emerald-400/40">
+                <Avatar className="h-11 w-11 ring-2 ring-status-success">
                   <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
                     {initialsOf(otherUser.displayName)}
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>
-                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400 text-white">
+                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-status-success text-white">
                   <Handshake className="icon-sm" />
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function CollaborationStarter({
                   onClick={() => handleAction(action)}
                   disabled={loading === action.id}
                   className={cn(
-                    'w-full flex items-center gap-3 rounded-xl border border-border/60 bg-card px-4 py-3',
+                    'w-full flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3',
                     'text-left transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm',
                     'focus-visible:outline-none',
                     loading === action.id && 'opacity-60 pointer-events-none',
@@ -201,7 +201,7 @@ export function CollaborationStarter({
             })}
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground">You can always do this later from your connections</p>
             <Button
               variant="ghost"
@@ -262,7 +262,7 @@ export function CollaborationStarter({
   // ── Inline mode (default — compact action strip below a connection card) ───
   return (
     <div className={cn(
-      'flex flex-wrap items-center gap-2 rounded-b-xl border-t border-border/40 bg-muted/30 px-4 py-2.5',
+      'flex flex-wrap items-center gap-2 rounded-b-xl border-t border-border bg-muted/30 px-4 py-2.5',
       className,
     )}>
       <span className="text-xs text-muted-foreground mr-1">Next step:</span>

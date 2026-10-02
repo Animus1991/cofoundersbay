@@ -251,8 +251,8 @@ export default function TenantBillingPage() {
                   <div
                     className={cn(
                       'h-full rounded-full transition-all',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500' : 'bg-green-500',
+                      (seatPct ?? 0) >= 90 ? 'bg-status-danger' :
+                      (seatPct ?? 0) >= 70 ? 'bg-status-warning' : 'bg-status-success',
                     )}
                     style={{ width: `${Math.min(seatPct ?? 0, 100)}%` }}
                   />

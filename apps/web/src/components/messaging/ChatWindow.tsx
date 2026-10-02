@@ -191,7 +191,7 @@ function MessageBubble({
           {/* Hover action bar */}
           {showActions && (
             <div className={cn(
-              'absolute -top-8 flex items-center gap-0.5 rounded-full border border-border/60 bg-card shadow-md px-1 py-0.5 z-10',
+              'absolute -top-8 flex items-center gap-0.5 rounded-full border border-border bg-card shadow-md px-1 py-0.5 z-10',
               isOwn ? 'right-0' : 'left-0',
             )}>
               {QUICK_EMOJIS.map((emoji) => (
@@ -231,7 +231,7 @@ function MessageBubble({
               'px-4 py-2.5 text-xs leading-relaxed shadow-sm',
               isOwn
                 ? 'rounded-2xl rounded-br-sm bg-primary text-primary-foreground'
-                : 'rounded-2xl rounded-bl-sm border border-border/40 bg-background/90 text-foreground backdrop-blur-sm',
+                : 'rounded-2xl rounded-bl-sm border border-border bg-background/90 text-foreground backdrop-blur-sm',
             )}
           >
             <p className="text-sm whitespace-pre-wrap break-words">
@@ -270,7 +270,7 @@ function MessageBubble({
                   key={r.emoji}
                   type="button"
                   onClick={() => onReact?.(message.id, r.emoji)}
-                  className="inline-flex items-center gap-0.5 rounded-full border border-border/50 bg-secondary/80 px-1.5 py-0.5 text-xs transition-colors hover:bg-secondary"
+                  className="inline-flex items-center gap-0.5 rounded-full border border-border bg-secondary/80 px-1.5 py-0.5 text-xs transition-colors hover:bg-secondary"
                   aria-label={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
                 >
                   {r.emoji} {r.count > 1 && <span className="text-muted-foreground">{r.count}</span>}
@@ -455,7 +455,7 @@ export function ChatWindow({
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.07)_1px,transparent_1px)] bg-[size:18px_18px] opacity-40"
       />
       {/* Header */}
-      <div className="relative z-10 flex flex-col border-b border-border/40 bg-background/75 backdrop-blur-xl">
+      <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
@@ -562,7 +562,7 @@ export function ChatWindow({
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 border-t border-border/30 px-4 py-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-4 py-1.5">
           <Link
             href={`/profiles/${conversation.recipientId}`}
             className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
@@ -614,7 +614,7 @@ export function ChatWindow({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t(messagesEn('search_in_chat'), messagesEl('search_in_chat'))}
-                className="w-full rounded-xl border border-border/60 bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                className="w-full rounded-xl border border-border bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
             {searchQuery && (
@@ -725,7 +725,7 @@ export function ChatWindow({
         {isRecipientTyping && (
           <div className="flex items-center gap-2">
             <ThreadAvatar name={conversation.recipientName} src={conversation.recipientAvatar} seed={conversation.recipientId} size="sm" />
-            <div className="rounded-2xl rounded-bl-sm border border-border/40 bg-background/90 px-4 py-3 shadow-sm">
+            <div className="rounded-2xl rounded-bl-sm border border-border bg-background/90 px-4 py-3 shadow-sm">
               <div className="flex gap-1">
                 <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: '0ms' }} />
                 <span className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: '150ms' }} />
@@ -740,7 +740,7 @@ export function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="relative z-10 border-t border-border/40 bg-background/80 px-3 pb-3 pt-2 backdrop-blur-xl sm:px-4">
+      <div className="relative z-10 border-t border-border bg-background/80 px-3 pb-3 pt-2 backdrop-blur-xl sm:px-4">
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-xl border-l-2 border-primary/60 bg-muted/60 px-3 py-2">
@@ -762,7 +762,7 @@ export function ChatWindow({
             {pendingFiles.map((f) => (
               <div
                 key={`${f.name}-${f.size}-${f.lastModified}`}
-                className="flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-1 text-xs text-foreground"
+                className="flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs text-foreground"
               >
                 <Paperclip className="icon-sm text-muted-foreground" />
                 <span className="max-w-[220px] truncate">{f.name}</span>
@@ -781,7 +781,7 @@ export function ChatWindow({
             ))}
           </div>
         )}
-        <div className="flex items-end gap-1 rounded-[1.35rem] border border-border/60 bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
+        <div className="flex items-end gap-1 rounded-[1.35rem] border border-border bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
           <input
             ref={fileInputRef}
             type="file"
@@ -908,7 +908,7 @@ export function NoChatSelected({
                   key={item.id}
                   type="button"
                   onClick={() => onSelectRecent(item.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-2.5 py-1.5 text-left text-xs font-medium transition-colors hover:bg-muted/70"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-2.5 py-1.5 text-left text-xs font-medium transition-colors hover:bg-muted/70"
                 >
                   <ThreadAvatar name={item.name} src={item.avatarUrl} seed={item.userId} size="sm" />
                   <span className="max-w-[9rem] truncate">{item.name}</span>

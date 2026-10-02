@@ -127,7 +127,7 @@ function getDateGroup(dateStr: string): ActivityKey {
 
 function ItemSkeleton() {
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 px-4 py-4 last:border-0">
+    <div className="flex items-start gap-3 border-b border-border px-4 py-4 last:border-0">
       <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3.5 w-40" />
@@ -144,7 +144,7 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG['system'];
   const Icon = cfg.icon;
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
+    <div className="flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
       <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
         <Icon className="icon-sm" />
       </div>
@@ -192,7 +192,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
   const isUnread = !item.readAt;
   return (
     <div className={cn(
-      'flex items-start gap-3 border-b border-border/40 px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group',
+      'flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group',
       isUnread && 'bg-primary/[0.03]',
     )}>
       <div className="relative shrink-0">
@@ -242,7 +242,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 
 function DateGroupHeader({ groupKey }: { groupKey: keyof typeof ACTIVITY_STRINGS }) {
   return (
-    <div className="flex items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-2">
+    <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
       <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
         <BilingualText en={activityEn(groupKey)} el={activityEl(groupKey)} compact />
       </span>
@@ -391,7 +391,7 @@ export default function ActivityPage() {
               );
             })}
           </div>
-          <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
+          <Card className="border-border bg-gradient-to-br from-primary/5 to-accent/5">
             <CardContent className="p-4 text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <BarChart3 className="icon-md text-primary-accessible" />
@@ -520,7 +520,7 @@ export default function ActivityPage() {
 
               {/* Network tab with type filters */}
               <TabsContent value="network" className="mt-0 space-y-3" data-tour="activity-stream">
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <p className="text-sm text-muted-foreground">
@@ -586,7 +586,7 @@ export default function ActivityPage() {
 
               {/* Notifications */}
               <TabsContent value="notifications" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {notifError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <p className="text-sm text-muted-foreground">
@@ -628,7 +628,7 @@ export default function ActivityPage() {
 
               {/* Events */}
               <TabsContent value="events" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {activityLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : eventItems.length === 0 ? (

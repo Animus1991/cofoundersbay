@@ -37,28 +37,28 @@ const defaultActions: QuickAction[] = [
     label: 'New Post',
     icon: Edit,
     href: '/feed/new',
-    color: 'bg-purple-500 hover:bg-purple-600',
+    color: 'bg-status-accent hover:bg-status-accent',
   },
   {
     id: 'message',
     label: 'Messages',
     icon: MessageCircle,
     href: '/messages',
-    color: 'bg-emerald-500 hover:bg-emerald-600',
+    color: 'bg-status-success hover:bg-status-success',
   },
   {
     id: 'matches',
     label: 'Matches',
     icon: Users,
     href: '/matches',
-    color: 'bg-pink-500 hover:bg-pink-600',
+    color: 'bg-status-accent hover:bg-status-accent',
   },
   {
     id: 'events',
     label: 'Events',
     icon: Calendar,
     href: '/events',
-    color: 'bg-amber-500 hover:bg-amber-600',
+    color: 'bg-status-warning hover:bg-status-warning',
   },
 ];
 

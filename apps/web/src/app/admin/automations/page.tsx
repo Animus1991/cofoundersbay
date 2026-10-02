@@ -465,7 +465,7 @@ export default function AutomationsPage() {
         </div>
 
         {/* Tab toggle */}
-        <div className="flex border-b border-border/50 gap-1">
+        <div className="flex border-b border-border gap-1">
           {(['rules', 'executions'] as const).map(tab => (
             <button
               key={tab}

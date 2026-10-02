@@ -105,7 +105,7 @@ export function ApplicationProgramsChrome({
                 {statusBadge(app.status)}
               </div>
               <h3 className="mb-1 page-section font-semibold">{app.name}</h3>
-              <p className="type-hold mb-3 text-sm text-muted-foreground">
+              <p className="mb-3 text-sm text-muted-foreground">
                 {app.descKey ? (
                   <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
                 ) : (

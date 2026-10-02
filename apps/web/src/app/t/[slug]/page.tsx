@@ -120,7 +120,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </Button>
             )}
 
-            <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90 gap-2 shadow" asChild>
+            <Button size="lg" className="bg-white text-foreground hover:bg-white/90 gap-2 shadow" asChild>
               <Link href={b?.ctaUrl || '/register'}>
                 {b?.ctaLabel || 'Get Started'}
                 <ChevronRight className="icon-sm" />
@@ -143,7 +143,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
 
       {/* About section — shown only when aboutText is set */}
       {(b?.aboutText || tenant.aboutText) && (
-        <section className="bg-muted/30 border-b border-border/60">
+        <section className="bg-muted/30 border-b border-border">
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
@@ -168,7 +168,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             { icon: Sparkles, title: 'AI Matching', desc: 'Smart compatibility scoring for better teams' },
             { icon: Shield, title: 'Trusted Network', desc: 'Verified profiles and moderated community' },
           ].map((f) => (
-            <Card key={f.title} className="text-center border-border/60 hover:shadow-md transition-shadow">
+            <Card key={f.title} className="text-center border-border hover:shadow-md transition-shadow">
               <CardContent className="pt-6 pb-6">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   <f.icon className="h-6 w-6 text-primary-accessible" />
@@ -211,7 +211,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-3">
             {tenant.logoUrl
@@ -265,7 +265,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           </div>
         </div>
         {b?.emailFooterText && (
-          <div className="border-t border-border/40 mx-auto max-w-5xl px-6 py-3">
+          <div className="border-t border-border mx-auto max-w-5xl px-6 py-3">
             <p className="text-xs text-muted-foreground text-center">{b.emailFooterText}</p>
           </div>
         )}

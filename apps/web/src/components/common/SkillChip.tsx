@@ -97,7 +97,7 @@ export function SkillChipGroup({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary-accessible transition-colors"
+          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary-accessible transition-colors"
         >
           + Add skill
         </button>

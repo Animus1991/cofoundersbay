@@ -125,14 +125,14 @@ function ReportCard({
   onResolve?: ResolveFn;
 }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: <Clock className="icon-sm" /> },
+    pending: { color: 'bg-muted text-muted-foreground border-border', icon: <Clock className="icon-sm" /> },
     reviewing: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
     resolved: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: <CheckCircle2 className="icon-sm" /> },
-    dismissed: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: <XCircle className="icon-sm" /> },
+    dismissed: { color: 'bg-muted text-muted-foreground border-border', icon: <XCircle className="icon-sm" /> },
   };
 
   const priorityColors: Record<string, string> = {
-    low: 'bg-gray-500/10 text-muted-foreground',
+    low: 'bg-muted text-muted-foreground',
     medium: 'bg-status-warning-bg text-status-warning',
     high: 'bg-status-danger-bg text-status-danger',
   };
@@ -416,12 +416,12 @@ export default function AdminReportsPage() {
       content: (
         <ul className="space-y-2">
           {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
-            <li key={id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
               <span className="min-w-0 flex-1 text-sm text-muted-foreground">
                 <BilingualText en={en} el={el} compact wrap />
               </span>
-              <span className="text-lg font-bold tabular-nums">{isLoading ? '—' : value}</span>
+              <span className="page-stat font-bold tabular-nums">{isLoading ? '—' : value}</span>
             </li>
           ))}
         </ul>

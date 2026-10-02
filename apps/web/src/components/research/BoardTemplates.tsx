@@ -409,7 +409,7 @@ export function ResearchTemplateTile({
       type="button"
       onClick={() => onSelect(template)}
       className={cn(
-        'flex min-h-11 items-start gap-3 rounded-2xl border border-border/60 bg-card p-3.5 text-left',
+        'flex min-h-11 items-start gap-3 rounded-2xl border border-border bg-card p-3.5 text-left',
         'transition-colors hover:border-border hover:bg-muted/30',
       )}
     >

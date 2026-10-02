@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Search,
@@ -25,8 +26,14 @@ import {
   Star,
   Filter,
   X,
+  Handshake,
+  Briefcase,
+  FileText,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,13 +43,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PROGRAMS_STRINGS, programsEn, programsEl } from '@/lib/i18n/strings-programs';
@@ -238,7 +238,7 @@ function ProgramCard({
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-5">
         <div className="flex gap-4">
-          <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border/60">
+          <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
             {/* Stands in for the organisation's logo: an avatar, not decoration. */}
             <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
@@ -375,6 +375,8 @@ function ProgramSkeleton() {
 export default function ProgramsPage() {
   const { success, error: toastError } = useToast();
   const qc = useQueryClient();
+  const router = useRouter();
+  const { openRailSection } = usePageRail();
   // Placeholders, `title` attributes and tab labels are single-attribute or
   // single-line surfaces, so they follow the reader's primary language; every
   // full label on the page renders both.
@@ -471,9 +473,76 @@ export default function ProgramsPage() {
     { id: 'apply_to_program', labelEn: 'Open the application for', labelEl: 'Άνοιγμα αίτησης για', writes: false, options: rowOptions(openPrograms.filter((p) => !enrolledIds.has(p.id)), (p) => p.id, (p) => p.title), run: (v) => { const p = allPrograms.find((x) => x.id === v); if (p) setApplyTarget(p); } },
   ]);
 
+  /*
+   * The column leads with the search and the programmes. The four counts and
+   * the type and status selects sat above them; they live in the rail now.
+   * Refresh stays in the header: it is this page's recalculation.
+   */
+  const listingFilters = (programType !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: programsEn('stat_total'), labelEl: programsEl('stat_total'), value: isLoading ? '—' : (data?.total ?? 0), icon: Award, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'open', label: programsEn('stat_open'), labelEl: programsEl('stat_open'), value: isLoading ? '—' : openPrograms.length, icon: Zap, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'applied', label: programsEn('stat_applied'), labelEl: programsEl('stat_applied'), value: myPrograms.length, icon: CheckCircle2, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'remote', label: programsEn('stat_remote'), labelEl: programsEl('stat_remote'), value: isLoading ? '—' : filtered.filter((p) => p.isRemote).length, icon: Globe, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: listingFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Program type"
+            titleEl="Τύπος προγράμματος"
+            options={typeKeys.map((k) => ({ value: k, en: programsEn(`type_${k}`), el: programsEl(`type_${k}`) }))}
+            value={programType}
+            onChange={setProgramType}
+          />
+          <RailOptions
+            title="Status"
+            titleEl="Κατάσταση"
+            options={statusKeys.map((k) => ({ value: k, en: programsEn(`status_${k}`), el: programsEl(`status_${k}`) }))}
+            value={status}
+            onChange={setStatus}
+          />
+          {listingFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setProgramType('all'); setStatus('all'); }} />
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Handshake} en="Open opportunities" el="Άνοιγμα ευκαιριών" onClick={() => router.push('/opportunities')} />
+          <RailAction icon={Briefcase} en="Open jobs" el="Άνοιγμα θέσεων" onClick={() => router.push('/jobs')} />
+          <RailAction icon={FileText} en="Open applications" el="Άνοιγμα αιτήσεων" onClick={() => router.push('/builder/applications')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
+      rail={rail}
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
           {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
@@ -483,83 +552,25 @@ export default function ProgramsPage() {
     >
       <div className="space-y-6">
 
-        {/* Stats row */}
-        {!isLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { labelEn: programsEn('stat_total'), labelEl: programsEl('stat_total'), value: data?.total ?? 0, icon: Award, tone: 'accent' as const },
-              { labelEn: programsEn('stat_open'), labelEl: programsEl('stat_open'), value: openPrograms.length, icon: Zap, tone: 'success' as const },
-              { labelEn: programsEn('stat_applied'), labelEl: programsEl('stat_applied'), value: myPrograms.length, icon: CheckCircle2, tone: 'info' as const },
-              { labelEn: programsEn('stat_remote'), labelEl: programsEl('stat_remote'), value: filtered.filter((p) => p.isRemote).length, icon: Globe, tone: 'accent' as const },
-            ].map(({ labelEn, labelEl, value, icon: Icon, tone }) => (
-              <Card key={labelEn}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="rounded-lg p-2 bg-secondary">
-                    <Icon className={cn('icon-sm', STATUS[tone].icon)} />
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold tabular-nums">{value}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <BilingualText en={labelEn} el={labelEl} compact />
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input
-              aria-label={bilingualAria('Search programs', 'Αναζήτηση προγραμμάτων')}
-              placeholder={t('search_placeholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                aria-label={bilingualAria('Clear search', 'Καθαρισμός αναζήτησης')}
-                className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                {/* Decorative: the button is named by its aria-label. */}
-                <X className="icon-sm" aria-hidden="true" />
-              </button>
-            )}
-          </div>
-          <Select value={programType} onValueChange={setProgramType}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label={bilingualAria(programsEn('filter_program_type'), programsEl('filter_program_type'))}>
-              <SelectValue placeholder={t('filter_program_type')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('type_all')}</SelectItem>
-              <SelectItem value="accelerator">{t('type_accelerator')}</SelectItem>
-              <SelectItem value="incubator">{t('type_incubator')}</SelectItem>
-              <SelectItem value="bootcamp">{t('type_bootcamp')}</SelectItem>
-              <SelectItem value="competition">{t('type_competition')}</SelectItem>
-              <SelectItem value="cohort">{t('type_cohort')}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-full sm:w-[180px]" aria-label={bilingualAria(programsEn('filter_status'), programsEl('filter_status'))}>
-              <SelectValue placeholder={t('filter_status')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t('status_all')}</SelectItem>
-              <SelectItem value="open">{t('status_open')}</SelectItem>
-              <SelectItem value="upcoming">{t('status_upcoming')}</SelectItem>
-              <SelectItem value="active">{t('status_active')}</SelectItem>
-              <SelectItem value="closed">{t('status_closed')}</SelectItem>
-            </SelectContent>
-          </Select>
-          {hasFilters && (
-            <Button variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title={t('clear_filters')} aria-label={bilingualAria(programsEn('clear_filters'), programsEl('clear_filters'))}>
-              <X className="icon-sm" />
-            </Button>
+        {/* Search — type and status live in the rail. */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+          <Input
+            aria-label={bilingualAria('Search programs', 'Αναζήτηση προγραμμάτων')}
+            placeholder={t('search_placeholder')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              aria-label={bilingualAria('Clear search', 'Καθαρισμός αναζήτησης')}
+              className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {/* Decorative: the button is named by its aria-label. */}
+              <X className="icon-sm" aria-hidden="true" />
+            </button>
           )}
         </div>
 
@@ -574,7 +585,7 @@ export default function ProgramsPage() {
               {featuredPrograms.slice(0, 4).map((p) => {
                 const d = daysUntil(p.applicationDeadline);
                 return (
-                  <div key={p.id} className="shrink-0 rounded-xl border border-border/60 bg-card p-3 w-56 hover:border-primary/30 transition-colors cursor-pointer" onClick={() => setApplyTarget(p)}>
+                  <div key={p.id} className="shrink-0 rounded-xl border border-border bg-card p-3 w-56 hover:border-primary/30 transition-colors cursor-pointer" onClick={() => setApplyTarget(p)}>
                     <p className="text-xs font-semibold text-foreground line-clamp-1">{p.title}</p>
                     <p className="text-2xs text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
                     <div className="mt-2 flex items-center justify-between">
@@ -622,11 +633,15 @@ export default function ProgramsPage() {
                   <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
                   <p className="font-medium text-lg"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
                   <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_found_hint')} el={programsEl('none_found_hint')} wrap /></p>
-                  {hasFilters && (
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }}>
-                      Clear Filters
+                  {listingFilters > 0 ? (
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                     </Button>
-                  )}
+                  ) : search ? (
+                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
+                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                    </Button>
+                  ) : null}
                 </CardContent>
               </Card>
             ) : (

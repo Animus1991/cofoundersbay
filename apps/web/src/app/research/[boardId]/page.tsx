@@ -92,6 +92,7 @@ import { useResearchCollaboration } from '@/hooks/useResearchCollaboration';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { usePageControls, usePageList } from '@/lib/page-controls';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -1933,7 +1934,7 @@ export default function ResearchBoardPage() {
     if (dragCounterRef.current <= 0) { setIsDragOver(false); dragCounterRef.current = 0; }
   }, []);
 
-  const { expanded, toggle, setExpanded } = useSidebar();
+  const { expanded, toggle, setExpanded, mounted: sidebarMounted } = useSidebar();
   const { pinned: railPinned, hasRail, openRailSection } = usePageRail();
 
   // Mounted guard: prevents hydration mismatch by ensuring SSR and first
@@ -2116,6 +2117,24 @@ export default function ResearchBoardPage() {
   // Show a stable loading spinner until mounted + query resolves
   const showLoading = !mounted || isLoading;
 
+  usePageControls([
+    {
+      id: 'ask_canvas_ai',
+      labelEn: 'Ask AI about this canvas',
+      labelEl: 'Ρωτήστε το AI για αυτόν τον καμβά',
+      writes: false,
+      run: () => openAskAi(undefined, 'ai'),
+    },
+  ]);
+  usePageList([
+    {
+      id: 'nodes',
+      labelEn: 'Canvas nodes',
+      labelEl: 'Κόμβοι καμβά',
+      rows: board ? board.nodes.map((n) => n.title?.trim() || n.type) : undefined,
+    },
+  ]);
+
   /*
    * The page rail: the secondary controls, as six families.
    *
@@ -2172,7 +2191,7 @@ export default function ResearchBoardPage() {
       labelEn: 'Insert',
       labelEl: 'Εισαγωγή',
       content: railRows([
-        { icon: StickyNote, en: researchEn('add_sticky'), el: researchEl('add_sticky'), onClick: () => issue('add_sticky'), tone: 'text-amber-500' },
+        { icon: StickyNote, en: researchEn('add_sticky'), el: researchEl('add_sticky'), onClick: () => issue('add_sticky'), tone: 'text-status-warning' },
         { icon: Grid3X3, en: researchEn('create_group'), el: researchEl('create_group'), onClick: () => issue('group'), tone: 'text-primary-accessible' },
         {
           icon: LinkIcon, en: researchEn('add_link'), el: researchEl('add_link'),
@@ -2273,7 +2292,7 @@ export default function ResearchBoardPage() {
             { alg: 'dagre-rl' as LayoutAlgorithm, en: 'Right to left', el: 'Δεξιά προς αριστερά' },
             { alg: 'grid' as LayoutAlgorithm, en: 'Grid', el: 'Πλέγμα' },
             { alg: 'radial' as LayoutAlgorithm, en: 'Radial', el: 'Ακτινωτή' },
-          ]).map(({ alg, en, el }) => ({ icon: Network, en, el, onClick: () => issue('auto_layout', { query: alg }), tone: 'text-violet-500' })))}
+          ]).map(({ alg, en, el }) => ({ icon: Network, en, el, onClick: () => issue('auto_layout', { query: alg }), tone: 'text-status-accent' })))}
         </div>
       ),
     },
@@ -2293,7 +2312,7 @@ export default function ResearchBoardPage() {
           // so they order against each other and not against the fixed chrome.
           'relative isolate h-[100dvh] flex flex-col overflow-hidden transition-[margin-left,margin-right] duration-200 ease-out',
           'sm:ml-[4.25rem]',
-          expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
+          (sidebarMounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
           // This page mounts its own chrome rather than AppShellFrame, so it
           // reserves the page rail's strip itself - same widths the frame uses.
           hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
@@ -2361,7 +2380,7 @@ export default function ResearchBoardPage() {
             className="hidden sm:inline-flex h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('note_title'), researchEl('note_title'))}
           >
-            <StickyNote className="icon-sm text-amber-500" />
+            <StickyNote className="icon-sm text-status-warning" />
             <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('note')} el={researchEl('note')} compact />
             </span>
@@ -2443,7 +2462,7 @@ export default function ResearchBoardPage() {
             className="hidden sm:inline-flex h-8 gap-1.5 rounded-xl text-xs"
             title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
-            <GitBranch className="icon-sm text-emerald-500" />
+            <GitBranch className="icon-sm text-status-success" />
             <span className="hidden 2xl:inline">
               <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
             </span>
@@ -2520,8 +2539,8 @@ export default function ResearchBoardPage() {
 
       {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
-          <Sparkles className="icon-sm shrink-0 text-violet-600" />
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 border-b bg-status-accent-bg border-status-accent-border shrink-0 z-40">
+          <Sparkles className="icon-sm shrink-0 text-status-accent" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
               {board.nodes.length} <BilingualText en={researchEn('synth_ready')} el={researchEl('synth_ready')} compact />
@@ -2606,7 +2625,7 @@ export default function ResearchBoardPage() {
           <button
             type="button"
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-card/95 text-muted-foreground shadow-xl sm:hidden',
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-card/95 text-muted-foreground shadow-xl sm:hidden',
               phoneInspector && 'bg-primary/15 text-primary-accessible',
             )}
             aria-pressed={phoneInspector}
@@ -2739,7 +2758,7 @@ export default function ResearchBoardPage() {
         {/* Connection mode indicator */}
         {connectionStart && (
           <div className="absolute top-3 left-2 right-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 pointer-events-none">
-            <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
+            <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-status-success text-white text-xs font-medium shadow-lg backdrop-blur-sm">
               <GitBranch className="icon-sm" />
               Click a node to connect · Press Esc to cancel
             </div>
@@ -2880,7 +2899,7 @@ export default function ResearchBoardPage() {
         )}
 
         {/* Bottom status bar */}
-        <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
+        <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border flex items-center justify-between px-3 z-30 pointer-events-none select-none">
           <span className="text-2xs tabular-nums text-muted-foreground/70 truncate">
             {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
             {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
@@ -3113,7 +3132,7 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <StickyNote className="icon-sm text-amber-500" /> <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
+                <StickyNote className="icon-sm text-status-warning" /> <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
               </button>
               <div className="h-px bg-border my-1" />
               <button

@@ -175,7 +175,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                 totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
                 totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
               )}
-              className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-card text-foreground shadow-lg sm:bottom-6"
+              className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-lg sm:bottom-6"
             >
               <SlidersHorizontal className="icon-md" aria-hidden="true" />
               {totalBadge > 0 && (
@@ -257,7 +257,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
               flush with the window edge whether or not the panel is out. */}
           <div
             className={cn(
-              'h-full overflow-hidden border-l border-border/60 bg-card transition-[width,opacity] duration-200 ease-out',
+              'h-full overflow-hidden border-l border-border bg-card transition-[width,opacity] duration-200 ease-out',
               open ? 'opacity-100' : 'w-0 opacity-0',
               // A peek floats over the page; a pin is part of the layout, so it
               // casts no shadow and needs none.
@@ -268,7 +268,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
           >
             {open && (
               <div className="flex h-full w-full flex-col">
-                <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
                   {/* Stacked, not inline-truncated: "PLATFORM TOTALS · ΣΥΝΟΛΑ
                       ΠΛΑΤΦΟΡΜΑΣ" is wider than the panel, and an ellipsis on
                       the one line that names what the reader is looking at is
@@ -333,7 +333,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
 
           {/* The strip. Always visible, one icon per family. */}
           <div
-            className="flex h-full flex-col items-center gap-1 border-l border-border/60 bg-background py-3"
+            className="flex h-full flex-col items-center gap-1 border-l border-border bg-background py-3"
             style={{ width: PAGE_RAIL_COLLAPSED_WIDTH }}
           >
             <Tooltip>

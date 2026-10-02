@@ -245,7 +245,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           })}
         </ul>
 
-        {footer && <div className="mt-5 border-t border-border/60 pt-4">{footer}</div>}
+        {footer && <div className="mt-5 border-t border-border pt-4">{footer}</div>}
       </CardContent>
     </Card>
   );

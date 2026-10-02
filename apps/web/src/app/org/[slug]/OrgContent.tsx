@@ -139,7 +139,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
             { label: 'Members', value: org._count.members },
             { label: 'Events', value: org._count.events },
           ].map(({ label, value }) => (
-            <Card key={label} className="border-border/50">
+            <Card key={label} className="border-border">
               <CardContent className="pt-5 pb-4 text-center">
                 <div className="text-2xl font-bold text-foreground tabular-nums">{value}</div>
                 <div className="text-xs text-muted-foreground mt-0.5">{label}</div>

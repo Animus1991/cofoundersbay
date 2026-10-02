@@ -264,7 +264,7 @@ export default function IncubatorDashboard() {
                 const name = row.user.profile?.displayName ?? 'Applicant';
                 const startup = startupOf(row.user.profile?.headline);
                 return (
-                  <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 p-3 sm:flex-nowrap">
+                  <div key={row.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3 sm:flex-nowrap">
                     <Avatar className="h-10 w-10 shrink-0">
                       <AvatarFallback className="bg-muted text-foreground">{initialsOf(name)}</AvatarFallback>
                     </Avatar>
@@ -305,7 +305,7 @@ export default function IncubatorDashboard() {
                   <Link
                     key={program.id}
                     href={`/programs/${program.id}`}
-                    className="block rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
+                    className="block rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
                   >
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="text-sm font-medium">{program.title}</span>
@@ -336,7 +336,7 @@ export default function IncubatorDashboard() {
                   const name = row.user.profile?.displayName ?? 'Founder';
                   const startup = startupOf(row.user.profile?.headline) ?? name;
                   return (
-                    <div key={row.id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+                    <div key={row.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
                       <Avatar className="h-9 w-9 shrink-0 rounded-lg">
                         <AvatarFallback className="rounded-lg bg-primary/10 font-semibold text-primary-accessible">{startup[0]?.toUpperCase()}</AvatarFallback>
                       </Avatar>
@@ -407,7 +407,7 @@ export default function IncubatorDashboard() {
                   {row.detail ? <p className="text-xs text-muted-foreground">{row.detail}</p> : null}
                 </div>
               ))}
-              <p className="flex items-center gap-1.5 border-t border-border/60 pt-3 text-sm">
+              <p className="flex items-center gap-1.5 border-t border-border pt-3 text-sm">
                 <GraduationCap className="icon-sm text-muted-foreground" aria-hidden="true" />
                 <span className="tabular-nums">{alumni.length}</span>
                 <BilingualText en="startups graduated" el="startups αποφοίτησαν" />

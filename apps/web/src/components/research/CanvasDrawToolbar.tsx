@@ -94,7 +94,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
       role="toolbar"
       aria-label="Drawing tools"
       className={cn(
-        'flex items-center gap-1 py-1.5 px-1.5 bg-card/95 backdrop-blur-md border border-border/60 rounded-xl shadow-xl z-40 select-none',
+        'flex items-center gap-1 py-1.5 px-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl z-40 select-none',
         // Phone: horizontal strip that can scroll. Tablet/desktop: vertical rail.
         // `sm:w-11` is the 44px the inline width used to set, so the rail keeps
         // its size while the phone strip is free to be as wide as the screen.

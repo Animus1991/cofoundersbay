@@ -260,7 +260,7 @@ export function BoardHistoryDrawer({
           </SheetHeader>
 
           {/* Create snapshot */}
-          <div className="mt-4 space-y-2 p-3 bg-muted/50 rounded-lg border border-border/60">
+          <div className="mt-4 space-y-2 p-3 bg-muted/50 rounded-lg border border-border">
             <Label className="text-xs font-medium">Save current state</Label>
             <div className="flex gap-2">
               <Input
@@ -326,7 +326,7 @@ export function BoardHistoryDrawer({
                     return (
                       <div
                         key={snap.id}
-                        className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors cursor-pointer"
+                        className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={() => setPreviewSnapshot(snap)}
                       >
                         <div className={cn(

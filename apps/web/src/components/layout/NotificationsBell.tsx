@@ -222,7 +222,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             <button
               key={notification.id}
               className={cn(
-                'flex w-full items-start gap-3 border-b border-border/30 px-4 py-3 text-left transition-colors hover:bg-secondary/50 last:border-0',
+                'flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary/50 last:border-0',
                 !notification.readAt && 'bg-primary/5',
               )}
               onClick={async () => {

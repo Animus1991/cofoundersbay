@@ -73,7 +73,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Mentor',
     description: 'Guiding the next generation',
     icon: GraduationCap,
-    color: 'bg-green-500',
+    color: 'bg-status-success',
     questions: [
       'What areas do you specialize in?',
       'What\'s your mentoring style?',
@@ -84,7 +84,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Investor',
     description: 'Fueling innovation and growth',
     icon: Briefcase,
-    color: 'bg-purple-500',
+    color: 'bg-status-accent',
     questions: [
       'What\'s your investment focus?',
       'What stages do you invest in?',
@@ -95,7 +95,7 @@ const ROLE_DESCRIPTIONS = {
     title: 'Organization',
     description: 'Supporting the ecosystem',
     icon: Building2,
-    color: 'bg-orange-500',
+    color: 'bg-status-warning',
     questions: [
       'What type of organization are you?',
       'What programs do you offer?',
@@ -534,14 +534,14 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
               <BilingualText en="AI-powered connections based on skills and goals" el="Συνδέσεις με AI βάσει δεξιοτήτων και στόχων" wrap />
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-green-950">
+          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-status-success">
             <Shield className="icon-xl text-status-success mb-2 mx-auto" />
             <h3 className="font-semibold mb-1"><BilingualText en="Verified Profiles" el="Επαληθευμένα προφίλ" compact /></h3>
             <p className="text-sm text-muted-foreground">
               <BilingualText en="Trust and quality through verification system" el="Εμπιστοσύνη και ποιότητα μέσω επαλήθευσης" wrap />
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-purple-950">
+          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-status-accent">
             <Zap className="icon-xl text-status-accent mb-2 mx-auto" />
             <h3 className="font-semibold mb-1"><BilingualText en="Real-time Chat" el="Συνομιλία σε πραγματικό χρόνο" compact /></h3>
             <p className="text-sm text-muted-foreground">

@@ -23,8 +23,10 @@ import {
   GraduationCap,
   Briefcase,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -367,6 +369,7 @@ function MiniCalendar({
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CalendarPage() {
+  const router = useRouter();
   const { primary } = useLanguagePreference();
   // The page is prerendered at build time, and "today" then is not today when
   // it is read: after the date changed, the grid, the today highlight and the
@@ -471,7 +474,7 @@ export default function CalendarPage() {
             { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-status-info' },
             { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-status-warning' },
           ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
-            <div key={labelEn} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+            <div key={labelEn} className="flex items-center gap-3 rounded-lg border border-border p-3">
               <div className="rounded-lg bg-secondary p-2"><Icon className={cn('icon-sm', color)} aria-hidden="true" /></div>
               <div>
                 <p className="text-lg font-bold leading-none tabular-nums">{value}</p>
@@ -521,11 +524,25 @@ export default function CalendarPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Flag} en="Open milestones" el="Άνοιγμα οροσήμων" onClick={() => router.push('/milestones')} />
+          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
   ];
 
   if (!hydrated) {
     return (
-      <AppShell showHelp askAi="What is coming up on my calendar this week, and what should I prepare first?">
+      <AppShell showHelp rail={rail} askAi="What is coming up on my calendar this week, and what should I prepare first?">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted/40" />
           <div className="h-[32rem] animate-pulse rounded-xl bg-muted/40" />

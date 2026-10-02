@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, useAskInPlace, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
@@ -194,7 +193,7 @@ function assistPrompt(data: BMCData): string {
 
 export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRevision }: BusinessModelCanvasProps) {
   const t = useBuilderPrimaryText();
-  const router = useRouter();
+  const askInPlace = useAskInPlace();
   const { success, error: toastError } = useToast();
   const [data, setData] = useState<BMCData>(() => hydrateBmc(initialData));
   const [isGenerating, setIsGenerating] = useState(false);
@@ -223,7 +222,7 @@ export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRe
         }
         return;
       }
-      router.push(`/ai?q=${encodeURIComponent(assistPrompt(data))}`);
+      askInPlace(assistPrompt(data));
     } finally {
       setIsGenerating(false);
     }
@@ -266,7 +265,7 @@ export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRe
               aria-label={bilingualAria(builderEn(confKey), builderEl(confKey))}
             />
           </div>
-          <p className="type-kicker text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             <BilingualText en={builderEn(section.descKey)} el={builderEl(section.descKey)} />
           </p>
         </CardHeader>

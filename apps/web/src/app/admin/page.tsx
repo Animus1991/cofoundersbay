@@ -98,7 +98,7 @@ const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: 
   harassment: { label: 'Harassment', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
   fake: { label: 'Fake Profile', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
   inappropriate: { label: 'Inappropriate', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
-  other: { label: 'Other', color: 'bg-gray-500/15 text-foreground border-gray-500/30 ' },
+  other: { label: 'Other', color: 'bg-muted text-foreground border-border ' },
 };
 
 const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
@@ -162,7 +162,7 @@ function EmailTemplatesTab() {
           <CardContent className="p-0">
             {listLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 border-b border-border/40 px-4 py-3">
+                <div key={i} className="flex items-center gap-3 border-b border-border px-4 py-3">
                   <Skeleton className="icon-sm rounded" />
                   <Skeleton className="h-4 flex-1" />
                 </div>
@@ -172,7 +172,7 @@ function EmailTemplatesTab() {
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedId(tpl.id)}
-                  className={`flex w-full items-center justify-between gap-3 border-b border-border/40 px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
+                  className={`flex w-full items-center justify-between gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
                     selectedId === tpl.id ? 'bg-secondary' : ''
                   }`}
                 >
@@ -315,7 +315,7 @@ function ReportCard({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
+                <DropdownMenuItem onClick={onResolve} className="text-status-success">
                   <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
                   <BilingualText en="Resolve" el="Επίλυση" compact />
                 </DropdownMenuItem>
@@ -368,7 +368,7 @@ function UserRow({
   const displayName = user.profile?.displayName ?? user.email;
 
   return (
-    <div className="flex items-center gap-4 border-b border-border/40 p-4 transition-colors hover:bg-secondary/30">
+    <div className="flex items-center gap-4 border-b border-border p-4 transition-colors hover:bg-secondary/30">
       <Link href={`/profiles/${user.id}`}>
         <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
@@ -386,9 +386,9 @@ function UserRow({
             variant="outline"
             className={cn(
               'text-xs',
-              user.moderationStatus === 'active' ? 'text-emerald-400 border-status-success-border' :
-              user.moderationStatus === 'suspended' ? 'text-amber-400 border-status-warning-border' :
-              'text-red-400 border-status-danger-border',
+              user.moderationStatus === 'active' ? 'text-status-success border-status-success-border' :
+              user.moderationStatus === 'suspended' ? 'text-status-warning border-status-warning-border' :
+              'text-status-danger border-status-danger-border',
             )}
           >
             {user.moderationStatus}
@@ -904,7 +904,7 @@ export default function AdminPage() {
           ) : reports.filter((r) => r.status === 'pending').length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" aria-hidden="true" />
+                <Shield className="mx-auto mb-4 h-12 w-12 text-status-success" aria-hidden="true" />
                 <h3 className="text-lg font-semibold text-foreground"><BilingualText en="All clear!" el="Όλα καθαρά!" compact /></h3>
                 <p className="text-sm text-muted-foreground"><BilingualText en="No pending reports to review" el="Δεν υπάρχουν αναφορές για έλεγχο" compact /></p>
               </CardContent>
@@ -955,7 +955,7 @@ export default function AdminPage() {
             <CardContent className="p-0">
               {usersLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                     <Skeleton className="h-10 w-10 rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-36" />
@@ -996,7 +996,7 @@ export default function AdminPage() {
             </div>
             {eventsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                   <Skeleton className="h-8 w-8 rounded-md shrink-0" />
                   <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
                 </div>
@@ -1009,7 +1009,7 @@ export default function AdminPage() {
               <Card>
                 <CardContent className="p-0">
                   {(eventsData?.events ?? []).map((ev) => (
-                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{ev.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{ev.mode} · {ev.attendeesCount} attendees</p>
@@ -1052,7 +1052,7 @@ export default function AdminPage() {
             </div>
             {jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                   <Skeleton className="h-8 w-8 rounded-md shrink-0" />
                   <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
                 </div>
@@ -1065,7 +1065,7 @@ export default function AdminPage() {
               <Card>
                 <CardContent className="p-0">
                   {(jobsData?.jobs ?? []).map((job) => (
-                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{job.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{job.type ?? 'Full-time'} · {job.location ?? 'Remote'}</p>
@@ -1293,7 +1293,7 @@ export default function AdminPage() {
             <CardContent className="p-0">
               {auditLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                     <Skeleton className="h-8 w-8 rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />
@@ -1308,7 +1308,7 @@ export default function AdminPage() {
                 </div>
               ) : (
                 (auditData?.logs ?? []).map((log) => (
-                  <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
+                  <div key={log.id} className="flex items-start gap-4 border-b border-border p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                       <Shield className="icon-sm text-primary-accessible" />
                     </div>

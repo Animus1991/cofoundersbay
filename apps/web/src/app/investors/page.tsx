@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Search, TrendingUp, Building2, MapPin, DollarSign, Briefcase,
@@ -326,7 +327,7 @@ function InvestorCard({
               </div>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border/40 pt-3">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border pt-3">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 {facts.map(({ key, icon: Icon, en, el }) => (
                   <span key={key} className="flex items-center gap-1">
@@ -377,6 +378,7 @@ function InvestorCard({
 
 export default function InvestorsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const { showDemoData } = useDemoData();
   const { openRailSection } = usePageRail();
@@ -539,6 +541,19 @@ export default function InvestorsPage() {
           {activeFilters > 0 && (
             <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={clearFilters} />
           )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={TrendingUp} en="Open fundraising" el="Άνοιγμα χρηματοδότησης" onClick={() => router.push('/fundraising')} />
+          <RailAction icon={Zap} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={Telescope} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
         </div>
       ),
     },

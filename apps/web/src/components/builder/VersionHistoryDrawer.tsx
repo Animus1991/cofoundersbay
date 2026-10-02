@@ -62,7 +62,7 @@ function VersionCard({
         'flex items-start gap-3 p-3 rounded-lg border transition-colors group',
         current
           ? 'border-primary/30 bg-primary/5'
-          : 'border-border/60 hover:border-border hover:bg-muted/40',
+          : 'border-border hover:border-border hover:bg-muted/40',
       )}
     >
       {/* Version icon */}

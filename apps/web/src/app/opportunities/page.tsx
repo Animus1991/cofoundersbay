@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -24,6 +24,8 @@ import {
   TrendingUp,
   Globe,
   AlertCircle,
+  Store,
+  GraduationCap,
 } from 'lucide-react';
 import {
   listJobs, createJobPosting, type JobPostingView,
@@ -48,6 +50,7 @@ import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportuniti
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -112,11 +115,12 @@ const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityT
   investment: { labelKey: 'type_investment', className: 'bg-status-success-bg text-status-success border-status-success-border ', icon: Coins },
   partnership: { labelKey: 'type_partnership', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Users },
   mentorship: { labelKey: 'type_mentorship', className: 'bg-status-warning-bg text-status-warning border-status-warning-border ', icon: Rocket },
-  other: { labelKey: 'type_other', className: 'bg-muted text-muted-foreground border-border/40', icon: FileText },
+  other: { labelKey: 'type_other', className: 'bg-muted text-muted-foreground border-border', icon: FileText },
 };
 
 function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   const { success } = useToast();
+  const { ask } = usePopupChat();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
   const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
   const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
@@ -214,17 +218,18 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                the button said "Apply Now" and did nothing. The assistant can
                actually draft the approach from what this listing says, and the
                label now names that rather than promising a form. */
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild>
-              <Link
-                href={`/ai?q=${encodeURIComponent(
-                  `Draft my approach for this opportunity: "${opportunity.title}"` +
-                    `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
-                    `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
-                )}`}
-              >
-                <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
-                <ArrowRight className="icon-sm" />
-              </Link>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs"
+              onClick={() => ask(
+                `Draft my approach for this opportunity: "${opportunity.title}"` +
+                  `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
+                  `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
+              )}
+            >
+              <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
+              <ArrowRight className="icon-sm" />
             </Button>
           )}
           <Button
@@ -244,6 +249,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 
 function JobCard({ job }: { job: JobPostingView }) {
   const { success } = useToast();
+  const { ask } = usePopupChat();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
       <CardContent className="p-4 sm:p-5 space-y-3">
@@ -291,16 +297,16 @@ function JobCard({ job }: { job: JobPostingView }) {
           {/* Same here: the job feed has no apply route and the posting
               carries no creator id to message, so the honest useful action is
               the one the assistant can perform. */}
-          <Button size="sm" className="gap-1.5 text-xs" asChild>
-            <Link
-              href={`/ai?q=${encodeURIComponent(
-                `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
-                  'Use my profile and tell me what is missing before I send it.',
-              )}`}
-            >
-              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
+          <Button
+            size="sm"
+            className="gap-1.5 text-xs"
+            onClick={() => ask(
+              `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
+                'Use my profile and tell me what is missing before I send it.',
+            )}
+          >
+            <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
+            <ArrowRight className="icon-sm" />
           </Button>
           <Button
             variant="outline"
@@ -448,7 +454,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
                     'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                     form.type === key
                       ? 'border-primary bg-primary/20 text-primary-accessible'
-                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                      : 'border-border text-muted-foreground hover:border-primary/40',
                   )}
                 >
                   <cfg.icon className="icon-sm" />
@@ -515,6 +521,8 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
 
 export default function OpportunitiesPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const { ask } = usePopupChat();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
@@ -548,6 +556,7 @@ export default function OpportunitiesPage() {
   });
 
   const opportunities = opportunitiesData?.opportunities ?? [];
+  const listingJobs = jobsData?.jobs ?? [];
   const pendingProposals = proposals.filter((p) => p.status === 'pending').length;
 
   const handleAcceptProposal = (id: string) => {
@@ -592,6 +601,42 @@ export default function OpportunitiesPage() {
     { id: 'post_opportunity', labelEn: 'Open the post form', labelEl: 'Άνοιγμα φόρμας δημοσίευσης', writes: false, run: () => setShowPostForm(true) },
     { id: 'accept_proposal', labelEn: 'Accept sample proposal (this screen only)', labelEl: 'Αποδοχή δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleAcceptProposal(v); } },
     { id: 'decline_proposal', labelEn: 'Decline sample proposal (this screen only)', labelEl: 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleDeclineProposal(v); } },
+    {
+      id: 'draft_approach',
+      labelEn: 'Draft an approach for',
+      labelEl: 'Σύνταξη προσέγγισης για',
+      writes: false,
+      options: rowOptions(opportunities.filter((o) => !o.url), (o) => o.id, (o) => o.title),
+      unavailableEn: opportunities.filter((o) => !o.url).length === 0 ? 'Every listing here already has an apply link.' : undefined,
+      unavailableEl: opportunities.filter((o) => !o.url).length === 0 ? 'Κάθε καταχώριση εδώ έχει ήδη σύνδεσμο αίτησης.' : undefined,
+      run: (v) => {
+        const opportunity = opportunities.find((o) => o.id === v);
+        if (!opportunity) return;
+        const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
+        ask(
+          `Draft my approach for this opportunity: "${opportunity.title}"` +
+            `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
+            `Type: ${opportunitiesEn(cfg.labelKey)}. ${opportunity.description ?? ''}`,
+        );
+      },
+    },
+    {
+      id: 'draft_application',
+      labelEn: 'Draft an application for',
+      labelEl: 'Σύνταξη αίτησης για',
+      writes: false,
+      options: rowOptions(listingJobs, (j) => j.id, (j) => j.title),
+      unavailableEn: listingJobs.length === 0 ? 'No jobs are shown on this screen.' : undefined,
+      unavailableEl: listingJobs.length === 0 ? 'Δεν εμφανίζονται θέσεις σε αυτή την οθόνη.' : undefined,
+      run: (v) => {
+        const job = listingJobs.find((j) => j.id === v);
+        if (!job) return;
+        ask(
+          `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
+            'Use my profile and tell me what is missing before I send it.',
+        );
+      },
+    },
   ]);
 
   /*
@@ -656,6 +701,19 @@ export default function OpportunitiesPage() {
           {listingFilters > 0 && (
             <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setOppTypeFilter('all'); setRemoteOnly(false); }} />
           )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Briefcase} en="Open jobs" el="Άνοιγμα θέσεων" onClick={() => router.push('/jobs')} />
+          <RailAction icon={Store} en="Open marketplace" el="Άνοιγμα αγοράς" onClick={() => router.push('/marketplace')} />
+          <RailAction icon={GraduationCap} en="Open programs" el="Άνοιγμα προγραμμάτων" onClick={() => router.push('/programs')} />
         </div>
       ),
     },

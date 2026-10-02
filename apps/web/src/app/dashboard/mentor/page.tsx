@@ -52,7 +52,7 @@ function sessionWhen(iso: string, locale: 'en-GB' | 'el-GR' = 'en-GB'): string {
 
 function MenteeRowItem({ mentee }: { mentee: MenteeRow }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30">
+    <div className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={mentee.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(mentee.name)}</AvatarFallback>
@@ -78,7 +78,7 @@ function MenteeRowItem({ mentee }: { mentee: MenteeRow }) {
 /** The next session is the one that stands out; the rest are a quiet list. */
 function SessionRowItem({ session, next }: { session: SessionRow; next: boolean }) {
   return (
-    <div className={cn('flex items-center gap-3 rounded-lg border p-3', next ? 'border-primary/30 bg-primary/5' : 'border-border/60')}>
+    <div className={cn('flex items-center gap-3 rounded-lg border p-3', next ? 'border-primary/30 bg-primary/5' : 'border-border')}>
       <div className={cn('shrink-0 rounded-full p-2', next ? 'bg-primary/10' : 'bg-muted')}>
         <Video className={cn('icon-sm', next ? 'text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
       </div>
@@ -101,7 +101,7 @@ function SessionRowItem({ session, next }: { session: SessionRow; next: boolean 
 
 function RequestRowItem({ request }: { request: RequestRow }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
+    <div className="flex items-start gap-3 rounded-lg border border-border p-3">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={request.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-muted text-foreground">{initialsOf(request.name)}</AvatarFallback>

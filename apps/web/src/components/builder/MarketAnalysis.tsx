@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +17,7 @@ import {
   BUILDER_STAT,
   BUILDER_SUBTAB_LIST,
   BUILDER_SUBTAB_TRIGGER,
+  useAskInPlace,
   useBuilderPrimaryText,
 } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
@@ -422,7 +422,7 @@ function RemoveButton({ onClick }: { onClick: () => void }) {
 
 export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevision }: MarketAnalysisProps) {
   const t = useBuilderPrimaryText();
-  const router = useRouter();
+  const askInPlace = useAskInPlace();
   const { success, error: toastError } = useToast();
   const [data, setData] = useState<MarketData>(() => hydrateMarket(initialData));
   const [activeTab, setActiveTab] = useState('market-size');
@@ -448,7 +448,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
         }
         return;
       }
-      router.push(`/ai?q=${encodeURIComponent(assistPrompt(data))}`);
+      askInPlace(assistPrompt(data));
     } finally {
       setIsGenerating(false);
     }
@@ -499,7 +499,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
       {items.length === 0 ? (
         <div className="py-8 text-center text-muted-foreground">
           <CfbGlyph name="shield" className="icon-xl mx-auto mb-2 opacity-50" />
-          <p className="type-kicker text-xs leading-snug">
+          <p className="text-xs leading-snug">
             <BilingualText en={builderEn(emptyKey)} el={builderEl(emptyKey)} />
           </p>
         </div>
@@ -944,7 +944,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
               {data.personas.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
                   <CfbGlyph name="people" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p className="type-kicker text-xs leading-snug">
+                  <p className="text-xs leading-snug">
                     <BilingualText en={builderEn('mkt_no_persona')} el={builderEl('mkt_no_persona')} />
                   </p>
                 </div>
@@ -1020,7 +1020,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
               {data.trends.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
                   <CfbGlyph name="chart" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p className="type-kicker text-xs leading-snug">
+                  <p className="text-xs leading-snug">
                     <BilingualText en={builderEn('mkt_no_trend')} el={builderEl('mkt_no_trend')} />
                   </p>
                 </div>

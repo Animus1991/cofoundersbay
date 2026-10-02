@@ -46,6 +46,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,7 +101,7 @@ const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: stri
 
 function ShortlistCardSkeleton({ grid }: { grid?: boolean }) {
   return (
-    <div className={cn('rounded-xl border border-border/60 bg-card p-4 space-y-3', grid && 'flex flex-col')}>
+    <div className={cn('rounded-xl border border-border bg-card p-4 space-y-3', grid && 'flex flex-col')}>
       <div className="flex items-start gap-3">
         <Skeleton className="h-12 w-12 rounded-full shrink-0" />
         <div className="flex-1 space-y-2">
@@ -173,7 +174,7 @@ function ShortlistCard({
   return (
     <div className={cn(
       'group rounded-xl border bg-card p-4 transition-all hover:shadow-sm',
-      isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-border/60 hover:border-border',
+      isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-border hover:border-border',
     )}>
       <div className="flex items-start gap-3">
         {/* Checkbox (compare mode) */}
@@ -294,7 +295,7 @@ function ShortlistCard({
                 onClick={() => setStatusLabel(statusLabel === key ? null : key)}
                 className={cn(
                   'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
-                  statusLabel === key ? cfg.color : 'border-border/60 text-muted-foreground hover:border-border',
+                  statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
                 )}
               >
                 <cfg.icon className="h-3 w-3" aria-hidden="true" />
@@ -351,6 +352,7 @@ export default function ShortlistPage() {
   const [compareMode, setCompareMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { openRailSection } = usePageRail();
+  const { ask } = usePopupChat();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('shortlist'),
@@ -546,6 +548,7 @@ export default function ShortlistPage() {
     <AppShell
       showHelp
       rail={rail}
+      askAi="I have saved profiles. Who should I reach out to first, and what should I write?"
       title={shortlistEn('page_title')}
       titleEl={shortlistEl('page_title')}
       description={shortlistEn('page_description')}
@@ -580,7 +583,7 @@ export default function ShortlistPage() {
                 <SelectItem value="match_score"><BilingualText en={shortlistEn('sort_match')} el={shortlistEl('sort_match')} compact /></SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex items-center rounded-lg border border-border/60 p-0.5">
+            <div className="flex items-center rounded-lg border border-border p-0.5">
               <button type="button" aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'} onClick={() => setViewMode('list')} className={cn('rounded-xl p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
                 <List className="icon-sm" aria-hidden="true" />
               </button>
@@ -624,7 +627,7 @@ export default function ShortlistPage() {
 
         {/* Content */}
         {isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
             <AlertTriangle className="icon-xl text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact /></p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
@@ -634,7 +637,7 @@ export default function ShortlistPage() {
             {Array.from({ length: 4 }).map((_, i) => <ShortlistCardSkeleton key={i} grid={viewMode === 'grid'} />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <BookmarkX className="h-7 w-7 text-primary-accessible" />
             </div>
@@ -671,11 +674,9 @@ export default function ShortlistPage() {
                 <Button size="sm" className="gap-1.5" asChild>
                   <Link href="/matches"><BilingualText en={shortlistEn('browse_matches')} el={shortlistEl('browse_matches')} compact /></Link>
                 </Button>
-                <Button size="sm" variant="outline" className="gap-1.5" asChild>
-                  <Link href={`/ai?q=${encodeURIComponent('I have no saved profiles. Who from my matches should I shortlist first?')}`}>
-                    <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-hidden="true" />
-                    <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
-                  </Link>
+                <Button size="sm" variant="outline" className="gap-1.5" type="button" onClick={() => ask('I have no saved profiles. Who from my matches should I shortlist first?')}>
+                  <Sparkles className="h-3.5 w-3.5 text-status-accent" aria-hidden="true" />
+                  <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
                 </Button>
               </div>
             )}

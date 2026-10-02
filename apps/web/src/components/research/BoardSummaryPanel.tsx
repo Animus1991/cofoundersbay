@@ -27,7 +27,7 @@ interface BoardSummaryPanelProps {
 /* ─── Helper: stat card ─── */
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border/50">
+    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border">
       <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
         <Icon className="icon-sm" style={{ color }} />
       </div>
@@ -49,7 +49,7 @@ function CollapsibleSection({ title, icon: Icon, color, children, defaultOpen = 
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-border/60 overflow-hidden">
+    <div className="rounded-xl border border-border overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/30 transition-colors"

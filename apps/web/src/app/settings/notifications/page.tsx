@@ -183,7 +183,7 @@ export default function NotificationPreferencesPage() {
     >
       <div className="space-y-6 pb-10">
         {/* Where each choice is kept - said once, before any switch. */}
-        <p className="flex items-start gap-2 rounded-xl border border-border/60 bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        <p className="flex items-start gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
           <Info className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
           <BilingualText
             en="The email digest is saved to your account. Channels, quiet hours and automated messages are kept on this device and take effect immediately here; delivery from the server does not read them yet."
@@ -193,8 +193,8 @@ export default function NotificationPreferencesPage() {
         </p>
 
         {/* Delivery */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
               <BilingualText en="Delivery" el="Παράδοση" compact />
@@ -266,8 +266,8 @@ export default function NotificationPreferencesPage() {
         </Card>
 
         {/* Notification types: one matrix, the channels as columns. */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
               <BilingualText en="What you are notified about" el="Για τι ειδοποιείστε" compact />
@@ -278,7 +278,7 @@ export default function NotificationPreferencesPage() {
           </CardHeader>
           <CardContent className="p-0">
             {/* Column heads, from sm up; below sm each switch carries its own icon. */}
-            <div className="hidden items-center justify-end gap-4 border-b border-border/50 px-6 py-2 text-xs font-medium text-muted-foreground sm:flex">
+            <div className="hidden items-center justify-end gap-4 border-b border-border px-6 py-2 text-xs font-medium text-muted-foreground sm:flex">
               {CHANNELS.map((ch) => (
                 <span key={ch.id} className="flex w-16 flex-col items-center gap-0.5 text-center">
                   <ch.icon className="icon-sm" aria-hidden="true" />
@@ -289,7 +289,7 @@ export default function NotificationPreferencesPage() {
             {NOTIFICATION_CATEGORIES.map((category) => {
               const Icon = CATEGORY_ICONS[category.id];
               return (
-                <section key={category.id} className="border-b border-border/50 last:border-b-0" aria-labelledby={`cat-${category.id}`}>
+                <section key={category.id} className="border-b border-border last:border-b-0" aria-labelledby={`cat-${category.id}`}>
                   <div className="flex flex-col gap-3 bg-muted/20 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -338,8 +338,8 @@ export default function NotificationPreferencesPage() {
         </Card>
 
         {/* Automated messages */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="icon-md text-primary-accessible" aria-hidden="true" />
               <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />

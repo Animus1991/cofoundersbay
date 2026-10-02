@@ -149,7 +149,7 @@ export default function ProviderProfilePage() {
                   {headline || 'Add your service headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" aria-hidden="true" /> {summary?.avgRating != null ? `${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)` : 'No reviews yet'}</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {summary?.avgRating != null ? `${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)` : 'No reviews yet'}</span>
                   <span className="flex items-center gap-1"><Users className="icon-sm" /> {clientsServed || '?'} clients</span>
                   <span className="flex items-center gap-1"><TrendingUp className="icon-sm" /> {yearsInBusiness}y in business</span>
                   {companyWebsite && (
@@ -308,7 +308,7 @@ export default function ProviderProfilePage() {
                       onClick={() => setPricingModel(pm.value)}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
-                        pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border/80'
+                        pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border'
                       )}
                     >
                       <p className="text-sm font-medium">{pm.label}</p>

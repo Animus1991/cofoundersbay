@@ -96,13 +96,13 @@ function ReviewDecisionDialog({
       title: 'Approve Proposal',
       desc: 'Confirm you approve the changes in this proposal.',
       buttonLabel: 'Approve',
-      buttonClass: 'bg-green-600 hover:bg-green-700',
+      buttonClass: 'bg-status-success hover:bg-status-success',
     },
     changes_requested: {
       title: 'Request Changes',
       desc: 'Let the author know what needs to be revised.',
       buttonLabel: 'Request Changes',
-      buttonClass: 'bg-yellow-600 hover:bg-yellow-700',
+      buttonClass: 'bg-status-warning hover:bg-status-warning',
     },
     closed: {
       title: 'Close Proposal',
@@ -176,7 +176,7 @@ function ReviewDecisionDialog({
                     onClick={() => setRating(n === rating ? null : n)}
                     className={cn(
                       'transition-colors',
-                      n <= (rating ?? 0) ? 'text-yellow-400' : 'text-muted-foreground/40',
+                      n <= (rating ?? 0) ? 'text-status-warning' : 'text-muted-foreground/40',
                     )}
                   >
                     <Star className="icon-sm fill-current" />
@@ -310,7 +310,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                       'p-4 rounded-lg border transition-colors',
                       isPending
                         ? 'border-status-warning-border bg-status-warning-bg '
-                        : 'border-border/60 bg-card',
+                        : 'border-border bg-card',
                     )}
                   >
                     {/* Header */}

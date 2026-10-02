@@ -272,7 +272,7 @@ export default function ProviderAnalyticsPage() {
       content: (
         <dl className="space-y-2">
           {glance.map((g) => (
-            <div key={g.id} className="rounded-lg border border-border/60 p-3">
+            <div key={g.id} className="rounded-lg border border-border p-3">
               <dt className="text-sm text-muted-foreground"><BilingualText en={g.en} el={g.el} compact wrap /></dt>
               <dd className="mt-1 text-lg font-semibold tabular-nums">{g.value}</dd>
             </div>
@@ -524,7 +524,7 @@ export default function ProviderAnalyticsPage() {
                       </div>
                       {svc.rating != null ? (
                         <div className="flex items-center gap-1 shrink-0">
-                          <Star className="icon-sm text-amber-400 fill-status-warning" />
+                          <Star className="icon-sm text-status-warning fill-status-warning" />
                           <span className="text-sm font-medium">{svc.rating}</span>
                         </div>
                       ) : (

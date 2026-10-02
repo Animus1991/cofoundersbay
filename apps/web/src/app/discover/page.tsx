@@ -19,6 +19,7 @@ import {
   Briefcase,
   Star,
   BadgeCheck,
+  Bookmark,
   X as XIcon,
 } from 'lucide-react';
 import {
@@ -322,6 +323,19 @@ export default function DiscoverPage() {
         </div>
       ),
     },
+    {
+      id: 'next',
+      glyph: 'matches',
+      labelEn: 'Where to go next',
+      labelEl: 'Πού να πάτε μετά',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={TrendingUp} en={discoverEn('view_matches')} el={discoverEl('view_matches')} onClick={() => router.push('/matches')} />
+          <RailAction icon={Bookmark} en="Open shortlist" el="Άνοιγμα λίστας" onClick={() => router.push('/shortlist')} />
+          <RailAction icon={Users} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -334,14 +348,6 @@ export default function DiscoverPage() {
       askAi={askAi}
       contentClassName="overflow-x-clip"
       rail={rail}
-      actions={
-        <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
-          <Link href="/matches">
-            <TrendingUp className="icon-sm" />
-            <BilingualText en={discoverEn('view_matches')} el={discoverEl('view_matches')} compact />
-          </Link>
-        </Button>
-      }
     >
       <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
 
@@ -402,7 +408,7 @@ export default function DiscoverPage() {
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profiles/${h.userId}`}
-                    className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>

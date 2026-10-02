@@ -194,7 +194,7 @@ export function DateRangePicker({
         <div className="absolute z-50 mt-1 bg-popover border border-border rounded-xl shadow-xl flex flex-col sm:flex-row overflow-hidden">
           {/* Presets sidebar */}
           {presets.length > 0 && (
-            <div className="border-b sm:border-b-0 sm:border-r border-border/60 p-2 flex flex-row sm:flex-col gap-1 overflow-x-auto sm:overflow-x-visible sm:min-w-[130px]">
+            <div className="border-b sm:border-b-0 sm:border-r border-border p-2 flex flex-row sm:flex-col gap-1 overflow-x-auto sm:overflow-x-visible sm:min-w-[130px]">
               {presets.map((p) => (
                 <button
                   key={p.label}
@@ -230,7 +230,7 @@ export function DateRangePicker({
                 maxDate={maxDate}
               />
             </div>
-            <div className="hidden sm:block border-l border-border/60">
+            <div className="hidden sm:block border-l border-border">
               <div className="flex items-center justify-between px-3 pt-3 pb-1">
                 <button aria-label="Previous month" type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent invisible">
                   <ChevronLeft className="icon-sm" />
@@ -253,7 +253,7 @@ export function DateRangePicker({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-border/60 px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="border-t border-border px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
             <span>
               {selecting === 'from' ? 'Click to set start date' : 'Click to set end date'}
             </span>

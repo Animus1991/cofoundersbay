@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
@@ -30,6 +31,8 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -439,6 +442,7 @@ export default function RecommendationsPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { success: toastSuccess, error: toastError } = useToast();
 
   const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
@@ -554,12 +558,50 @@ export default function RecommendationsPage() {
     { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: (v) => { if (v) feedbackMutation.mutate({ userId: v, fb: 'not_relevant' }); } },
   ]);
 
+  /*
+   * The four counts describe the list rather than being the list, so they
+   * live in the rail. Linked pages sit beside this feed in Discover. Refresh
+   * stays in the header: it is this page's recalculation, not another surface.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'spark',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'new', label: 'New matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'week', label: 'This week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'connections', label: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'acceptance', label: 'Acceptance rate', labelEl: 'Ποσοστό αποδοχής', value: typeof stats?.acceptanceRate === 'number' ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={Search} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+          <RailAction icon={BookmarkPlus} en="Open shortlist" el="Άνοιγμα λίστας" onClick={() => router.push('/shortlist')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
       title="For you"
       description="Picks ranked from your profile, skills, and recent activity, recalculated at least hourly."
       descriptionEl="Επιλογές ταξινομημένες βάσει του προφίλ, των δεξιοτήτων και της πρόσφατης δραστηριότητάς σας, με επανυπολογισμό τουλάχιστον κάθε ώρα."
+      rail={rail}
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="icon-sm mr-2" />
@@ -568,28 +610,6 @@ export default function RecommendationsPage() {
       }
     >
       <div className="space-y-5">
-        {/* Stats header */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:grid-rows-1">
-          {[
-            { labelEn: 'New Matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target },
-            { labelEn: 'This Week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles },
-            { labelEn: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users },
-            { labelEn: 'Acceptance Rate', labelEl: 'Ποσοστό αποδοχής', value: typeof stats?.acceptanceRate === 'number' ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
-          ].map(({ labelEn, labelEl, value, icon: Icon }) => (
-            <Card key={labelEn}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Icon className="icon-sm text-primary-accessible" />
-                </div>
-                <div>
-                  <p className="page-stat text-xl font-bold leading-none">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en={labelEn} el={labelEl} compact /></p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">

@@ -146,7 +146,7 @@ export default function MentorProfilePage() {
                   {headline || 'Add your headline below...'}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" aria-hidden="true" /> {ratingValue != null ? `${ratingValue.toFixed(1)}${ratingNote}` : 'No reviews yet'}</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {ratingValue != null ? `${ratingValue.toFixed(1)}${ratingNote}` : 'No reviews yet'}</span>
                   <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
                   <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
                   <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
@@ -315,7 +315,7 @@ export default function MentorProfilePage() {
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
                         sessionFormats.includes(f.value)
                           ? 'border-primary bg-primary/5'
-                          : 'hover:border-border/80'
+                          : 'hover:border-border'
                       )}
                     >
                       <div>

@@ -24,7 +24,6 @@ import {
   Workflow,
   Plus,
   X,
-  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { BilingualText } from '@/components/common/BilingualText';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 
 interface EmptyStateProps {
   className?: string;
@@ -118,7 +118,7 @@ export function ListEmptyState({
 
   if (variant === 'dashed') {
     return (
-      <div className={cn('rounded-xl border border-dashed border-border/60 bg-card/30', className)}>
+      <div className={cn('rounded-xl border border-dashed border-border bg-card/30', className)}>
         {content}
       </div>
     );
@@ -234,11 +234,19 @@ function PrimaryAction({
 }
 
 function AskAiLink({ prompt }: { prompt: string }) {
+  const popup = usePopupChatOptional();
+  const label = <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />;
+  if (popup) {
+    return (
+      <Button variant="outline" onClick={() => popup.ask(prompt)}>
+        {label}
+      </Button>
+    );
+  }
   return (
-    <Button asChild variant="outline" className="gap-2">
+    <Button asChild variant="outline">
       <Link href={`/ai?q=${encodeURIComponent(prompt)}`}>
-        <Sparkles className="h-4 w-4 text-violet-500" />
-        <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
+        {label}
       </Link>
     </Button>
   );
@@ -419,7 +427,7 @@ export function EmptyMarketplace({ className, actionHref, onAction }: EmptyState
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
-        <ShoppingBag className="icon-xl text-pink-400" />
+        <ShoppingBag className="icon-xl text-status-accent" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No services listed" el="Δεν υπάρχουν υπηρεσίες" compact /></h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">

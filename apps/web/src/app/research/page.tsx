@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Plus, Search, MoreVertical, Pin, Archive, Trash2,
-  Grid3X3, List, Loader2, AlertCircle, Copy, ArchiveRestore,
+  Grid3X3, List, Loader2, AlertCircle, Copy, ArchiveRestore, ArrowRight,
 } from 'lucide-react';
 import { formatDistanceToNow, type Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
@@ -63,6 +63,7 @@ import {
 } from '@/components/research/BoardTemplates';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { qk } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 
@@ -421,7 +422,7 @@ export default function ResearchBoardsPage() {
       content: (
         // Same tile as the Builder rail: figure first, name under it, glyph aside.
         <div className="grid grid-cols-1 gap-2">
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-2">
@@ -446,7 +447,7 @@ export default function ResearchBoardsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-2">
@@ -466,7 +467,7 @@ export default function ResearchBoardsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="page-stat-label font-medium text-foreground">
@@ -534,7 +535,7 @@ export default function ResearchBoardsPage() {
                     variant={filter === f.id ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={() => setFilter(f.id)}
-                    className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
+                    className={`gap-1.5 ${BUILDER_BTN}`}
                     aria-pressed={filter === f.id}
                   >
                     <BilingualText en={f.labelEn} el={f.labelEl} compact />
@@ -554,7 +555,7 @@ export default function ResearchBoardsPage() {
                     variant={sort === s.id ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={() => setSort(s.id)}
-                    className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
+                    className={`gap-1.5 ${BUILDER_BTN}`}
                     aria-pressed={sort === s.id}
                   >
                     <BilingualText en={s.labelEn} el={s.labelEl} compact />
@@ -572,7 +573,7 @@ export default function ResearchBoardsPage() {
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
+                  className={`gap-1.5 ${BUILDER_BTN}`}
                   aria-pressed={viewMode === 'grid'}
                 >
                   <Grid3X3 className="icon-sm" />
@@ -583,7 +584,7 @@ export default function ResearchBoardsPage() {
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={`type-kicker gap-1.5 ${BUILDER_BTN}`}
+                  className={`gap-1.5 ${BUILDER_BTN}`}
                   aria-pressed={viewMode === 'list'}
                 >
                   <List className="icon-sm" />
@@ -592,6 +593,33 @@ export default function ResearchBoardsPage() {
               </div>
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder', en: 'Startup Builder', el: 'Κατασκευαστής startup' },
+            { href: '/builder?tab=idea-core', en: researchEn('link_idea'), el: researchEl('link_idea') },
+            { href: '/builder?tab=market', en: researchEn('link_market'), el: researchEl('link_market') },
+            { href: '/builder/pitch-deck', en: researchEn('link_pitch'), el: researchEl('link_pitch') },
+            { href: '/milestones', en: 'Milestones', el: 'Ορόσημα' },
+            { href: '/fundraising', en: builderEn('app_link_fundraising'), el: builderEl('app_link_fundraising') },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className={`h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left ${BUILDER_BTN}`}>
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={step.en} el={step.el} wrap />
+                </span>
+                <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
         </div>
       ),
     },
@@ -623,7 +651,7 @@ export default function ResearchBoardsPage() {
       {bootLoad && (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-primary-accessible" />
-          <p className="type-hold text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             <BilingualText en={researchEn('loading')} el={researchEl('loading')} compact />
           </p>
         </div>
@@ -646,12 +674,12 @@ export default function ResearchBoardsPage() {
 
           {/* The founder's own boards come first; templates are for starting something new. */}
           {boards.length === 0 && filter === 'all' && (
-            <div className="rounded-2xl border border-border/60 bg-card/60 px-5 py-10 text-center">
+            <div className="rounded-2xl border border-border bg-card/60 px-5 py-10 text-center">
               <CfbGlyph name="research" className="mx-auto mb-4 icon-lg text-muted-foreground/50" />
               <h2 className="page-section mb-2 font-semibold">
                 <BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />
               </h2>
-              <p className="type-hold mx-auto mb-5 max-w-md text-sm text-muted-foreground">
+              <p className="mx-auto mb-5 max-w-md text-sm text-muted-foreground">
                 <BilingualText en={researchEn('empty_hint')} el={researchEl('empty_hint')} />
               </p>
               <div className="flex flex-wrap justify-center gap-2">
@@ -761,7 +789,7 @@ export default function ResearchBoardsPage() {
             </div>
           )}
 
-          <section className="mt-10 border-t border-border/50 pt-8" data-tour="research-templates">
+          <section className="mt-10 border-t border-border pt-8" data-tour="research-templates">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div className="min-w-0 flex-[1_1_20rem]">
                 <h2 className="page-section font-semibold">
@@ -780,21 +808,6 @@ export default function ResearchBoardsPage() {
                 <ResearchTemplateTile key={template.id} template={template} onSelect={handleSelectTemplate} />
               ))}
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              <BilingualText en={researchEn('link_builder')} el={researchEl('link_builder')} compact />
-              {' · '}
-              <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_idea')} el={researchEl('link_idea')} compact />
-              </Link>
-              {' · '}
-              <Link href="/builder?tab=market" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_market')} el={researchEl('link_market')} compact />
-              </Link>
-              {' · '}
-              <Link href="/builder?tab=pitch-deck" className="text-foreground underline-offset-4 hover:underline">
-                <BilingualText en={researchEn('link_pitch')} el={researchEl('link_pitch')} compact />
-              </Link>
-            </p>
           </section>
 
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -810,7 +823,7 @@ export default function ResearchBoardsPage() {
 
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <label className="type-hold text-sm font-medium">
+                  <label className="text-sm font-medium">
                     <BilingualText en={researchEn('field_title')} el={researchEl('field_title')} compact />
                   </label>
                   <Input
@@ -823,7 +836,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="type-hold text-sm font-medium">
+                  <label className="text-sm font-medium">
                     <BilingualText en={researchEn('field_desc')} el={researchEl('field_desc')} compact />
                   </label>
                   <Input
@@ -835,7 +848,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="type-hold text-sm font-medium">
+                  <label className="text-sm font-medium">
                     <BilingualText en={researchEn('field_color')} el={researchEl('field_color')} compact />
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -860,7 +873,7 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="type-hold text-sm font-medium">
+                  <label className="text-sm font-medium">
                     <BilingualText en={researchEn('field_icon')} el={researchEl('field_icon')} compact />
                   </label>
                   <div className="flex flex-wrap gap-2">

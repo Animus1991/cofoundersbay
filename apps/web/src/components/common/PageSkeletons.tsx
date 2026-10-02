@@ -10,7 +10,7 @@ export function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       {/* Hero greeting */}
-      <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+      <div className="rounded-xl border border-border bg-card/70 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <Skeleton className="h-6 w-48" />
@@ -28,7 +28,7 @@ export function DashboardSkeleton() {
         {[0, 1, 2].map((col) => (
           <div key={col} className="space-y-6">
             {[0, 1].map((row) => (
-              <div key={row} className="rounded-xl border border-border/60 bg-card/70 p-4">
+              <div key={row} className="rounded-xl border border-border bg-card/70 p-4">
                 <Skeleton className="h-4 w-24 mb-4" />
                 <div className="space-y-3">
                   <Skeleton className="h-16 w-full" />
@@ -56,7 +56,7 @@ export function DiscoverSkeleton() {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
+          <div key={i} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-start gap-3">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -83,7 +83,7 @@ export function ProfileSkeleton() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="rounded-xl border border-border/60 bg-card p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex flex-col sm:flex-row gap-6">
           <Skeleton className="h-24 w-24 rounded-full shrink-0" />
           <div className="flex-1 space-y-3">
@@ -99,7 +99,7 @@ export function ProfileSkeleton() {
       </div>
       
       {/* Bio */}
-      <div className="rounded-xl border border-border/60 bg-card p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-5 w-16 mb-4" />
         <div className="space-y-2">
           <Skeleton className="h-4 w-full" />
@@ -109,7 +109,7 @@ export function ProfileSkeleton() {
       </div>
       
       {/* Skills */}
-      <div className="rounded-xl border border-border/60 bg-card p-6">
+      <div className="rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-5 w-16 mb-4" />
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -125,7 +125,7 @@ export function MessagesSkeleton() {
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Conversation list */}
-      <div className="w-80 rounded-xl border border-border/60 bg-card p-4 space-y-3">
+      <div className="w-80 rounded-xl border border-border bg-card p-4 space-y-3">
         <Skeleton className="h-10 w-full rounded-lg" />
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-2">
@@ -139,8 +139,8 @@ export function MessagesSkeleton() {
       </div>
       
       {/* Chat area */}
-      <div className="flex-1 rounded-xl border border-border/60 bg-card p-4 flex flex-col">
-        <div className="flex items-center gap-3 pb-4 border-b border-border/40">
+      <div className="flex-1 rounded-xl border border-border bg-card p-4 flex flex-col">
+        <div className="flex items-center gap-3 pb-4 border-b border-border">
           <Skeleton className="h-10 w-10 rounded-full" />
           <Skeleton className="h-5 w-32" />
         </div>
@@ -176,7 +176,7 @@ export function EventsSkeleton() {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card overflow-hidden">
+          <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
             <Skeleton className="h-40 w-full" />
             <div className="p-4 space-y-3">
               <Skeleton className="h-5 w-3/4" />
@@ -206,7 +206,7 @@ export function GroupsSkeleton() {
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
+          <div key={i} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-start gap-3">
               <Skeleton className="h-12 w-12 rounded-lg" />
               <div className="flex-1 space-y-2">
@@ -240,7 +240,7 @@ export function MentoringSkeleton() {
       {/* Mentor grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
+          <div key={i} className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center gap-3">
               <Skeleton className="h-14 w-14 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -273,7 +273,7 @@ export function ConnectionsSkeleton() {
       {/* List */}
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-border/60 bg-card p-4">
+          <div key={i} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-4">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="flex-1 space-y-2">

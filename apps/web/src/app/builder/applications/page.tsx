@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
@@ -13,8 +14,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
-import { usePopupChat } from '@/contexts/PopupChatContext';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import type { ApplicationTemplate } from '@/components/builder/application-model';
 
 const HARBOR_ASK =
@@ -34,7 +34,6 @@ function ApplicationsPageContent() {
     generateContent,
     clearError,
   } = useBuilder();
-  const { ask } = usePopupChat();
   const [showVersionHistory, setShowVersionHistory] = useState(false);
 
   useEffect(() => {
@@ -88,6 +87,36 @@ function ApplicationsPageContent() {
     );
   }
 
+  const relatedRail: PageRailSection[] = [
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder?tab=idea-core', title: 'app_link_idea' },
+            { href: '/builder/pitch-deck', title: 'app_link_pitch' },
+            { href: '/research', title: 'app_link_research' },
+            { href: '/fundraising', title: 'app_link_fundraising' },
+            { href: '/projects', title: 'app_link_projects' },
+            { href: '/readiness', title: 'app_link_readiness' },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={builderEn(step.title)} el={builderEl(step.title)} wrap />
+                </span>
+                <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       showHelp
@@ -131,56 +160,11 @@ function ApplicationsPageContent() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => ask(askAi)}
-          className="flex w-full items-center gap-3 rounded-xl border border-border/70 px-4 py-3 text-left transition-colors hover:bg-muted/40"
-        >
-          <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1">
-            <span className="type-kicker block font-medium text-foreground">
-              <BilingualText en={builderEn('app_ask_plan')} el={builderEl('app_ask_plan')} stacked />
-            </span>
-            <span className="type-hold mt-0.5 block text-sm text-muted-foreground">
-              <BilingualText
-                en={builderEn(harborLive ? 'app_ask_hint_harbor' : 'app_lead')}
-                el={builderEl(harborLive ? 'app_ask_hint_harbor' : 'app_lead')}
-              />
-            </span>
-          </span>
-        </button>
-        <p className="type-hold text-sm text-muted-foreground">
-          <BilingualText en={builderEn('app_link_into')} el={builderEl('app_link_into')} compact />
-          {' · '}
-          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_idea')} el={builderEl('app_link_idea')} compact />
-          </Link>
-          {' · '}
-          <Link href="/builder/pitch-deck" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_pitch')} el={builderEl('app_link_pitch')} compact />
-          </Link>
-          {' · '}
-          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_research')} el={builderEl('app_link_research')} compact />
-          </Link>
-          {' · '}
-          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_fundraising')} el={builderEl('app_link_fundraising')} compact />
-          </Link>
-          {' · '}
-          <Link href="/projects" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_projects')} el={builderEl('app_link_projects')} compact />
-          </Link>
-          {' · '}
-          <Link href="/readiness" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={builderEn('app_link_readiness')} el={builderEl('app_link_readiness')} compact />
-          </Link>
-        </p>
-
         <ApplicationGenerator
           key={applicationDocument?.id ?? 'applications'}
           hideTitle
           pageRail
+          extraSections={relatedRail}
           onSave={handleSave}
           onGenerate={handleGenerate}
           initialData={rawContent}

@@ -33,17 +33,19 @@ import { Button } from '@/components/ui/button';
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { expanded, isRail, toggle } = useSidebar();
+  const { expanded, isRail, toggle, mounted } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
   const role = useRoleOptional();
   const primaryRole = role?.primaryRole;
-  const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
   // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
   // collapsed contents regardless of the stored preference; the preference
   // still governs from `lg` up, where the 240px drawer fits.
-  const pinnedLabels = expanded && !isRail;
+  // Same first paint as AppShellFrame: expanded until `mounted`, so a stored
+  // collapse cannot disagree with the server HTML (OptimizedLink attributes
+  // and the logo link's aria-label both follow `showLabels`).
+  const pinnedLabels = (mounted ? expanded : true) && !isRail;
 
   /*
    * Hover peek, the same gesture the page rail on the right answers to. A
@@ -99,11 +101,7 @@ export function SideNav() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [peeking, closePeek]);
-  const showLabels = pinnedLabels || peeking;
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const showLabels = pinnedLabels || (mounted && peeking);
 
   // Redirect to login when session expires
   useEffect(() => {
@@ -160,28 +158,29 @@ export function SideNav() {
     <TooltipProvider delayDuration={400}>
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border/60 bg-card/98 backdrop-blur-sm',
+          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border bg-card/98 backdrop-blur-sm',
           'transition-[width] duration-200 ease-out will-change-[width]',
           // Rail from `sm`, drawer from `lg`. Width is pure CSS so the shell is
           // correct on first paint; only the contents wait for `isRail`.
           'hidden sm:flex',
           'max-sm:pointer-events-none max-sm:invisible',
           'w-[4.25rem]',
-          expanded ? 'lg:w-[15rem]' : 'lg:w-[4.25rem]',
+          (mounted ? expanded : true) ? 'lg:w-[15rem]' : 'lg:w-[4.25rem]',
           // Peeking floats the full drawer over the page; the page keeps its
-          // margin, so nothing underneath moves.
-          peeking && 'w-[15rem] shadow-xl lg:w-[15rem]',
+          // margin, so nothing underneath moves. Only after mount: a peek
+          // class on the first client paint would not have been on the server.
+          mounted && peeking && 'w-[15rem] shadow-xl lg:w-[15rem]',
         )}
         onPointerEnter={startPeek}
         onPointerLeave={endPeek}
-        data-rail={rail ? 'true' : undefined}
-        data-peek={peeking ? 'true' : undefined}
+        data-rail={mounted && rail ? 'true' : undefined}
+        data-peek={mounted && peeking ? 'true' : undefined}
         aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >
         {/* ── Logo header ── */}
         <div
           className={cn(
-            'flex h-14 flex-shrink-0 items-center overflow-x-hidden border-b border-border/60',
+            'flex h-14 flex-shrink-0 items-center overflow-x-hidden border-b border-border',
             showLabels ? 'justify-start pl-2 pr-3' : 'justify-center px-0',
           )}
         >
@@ -245,7 +244,7 @@ export function SideNav() {
                       href={href}
                       aria-current={active ? 'page' : undefined}
                       title={
-                        !showLabels
+                        mounted && !showLabels
                           ? bilingualAria(
                               navHint ?? label,
                               navHintEl ?? labelEl,
@@ -339,7 +338,7 @@ export function SideNav() {
         </nav>
 
         {/* Search + bell stay in the rail; command/locale/theme/demo live in UserMenu. */}
-        <div className={cn('flex-shrink-0 border-t border-border/60', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
+        <div className={cn('flex-shrink-0 border-t border-border', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
           <div className={cn(showLabels ? 'flex items-center gap-0.5' : 'flex flex-col items-center gap-0.5')}>
             <Button
               type="button"
@@ -373,7 +372,7 @@ export function SideNav() {
               pinnedLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
               pinnedLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
             )}
-            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 min-w-[24px] -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border/70 bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
+            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 min-w-[24px] -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
           >
             {pinnedLabels ? (
               <ChevronLeft className="h-3.5 w-3.5" aria-hidden />

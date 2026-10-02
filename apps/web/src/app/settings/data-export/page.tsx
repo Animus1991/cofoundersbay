@@ -157,7 +157,7 @@ export default function DataExportPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardHeader>
             <CardTitle className="text-base"><BilingualText en="Choose what to include" el="Επιλέξτε τι θα περιλαμβάνει" compact /></CardTitle>
             <CardDescription>
@@ -174,7 +174,7 @@ export default function DataExportPage() {
                     key={category.id}
                     className={cn(
                       'flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors focus-within:ring-2 focus-within:ring-ring',
-                      isSelected ? 'border-primary bg-primary/5' : 'border-border/60 hover:bg-muted/30',
+                      isSelected ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30',
                     )}
                   >
                     <input type="checkbox" checked={isSelected} onChange={() => toggleCategory(category.id)} className="sr-only" />
@@ -193,7 +193,7 @@ export default function DataExportPage() {
               })}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <p className="text-xs text-muted-foreground">
                 <BilingualText
                   en={`${selectedCategories.size} of ${DATA_CATEGORIES.length} categories selected`}
@@ -219,7 +219,7 @@ export default function DataExportPage() {
             <ul className="space-y-3">
               {downloads.map((d) => (
                 <li key={d.at}>
-                  <Card className="border-border/60">
+                  <Card className="border-border">
                     <CardContent className="flex items-start gap-3 pt-5">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-success-bg">
                         <Archive className="icon-md text-status-success" aria-hidden="true" />

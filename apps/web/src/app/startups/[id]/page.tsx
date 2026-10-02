@@ -319,7 +319,7 @@ export default function StartupDealPage() {
                   {deal.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
-              {deal.notes && <p className="whitespace-pre-line border-t border-border/60 pt-2 text-muted-foreground">{deal.notes}</p>}
+              {deal.notes && <p className="whitespace-pre-line border-t border-border pt-2 text-muted-foreground">{deal.notes}</p>}
             </CardContent>
           </Card>
           {deal.founder && (

@@ -55,7 +55,7 @@ import type { BuilderDocument } from '@/lib/builder-api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL } from './BuilderStageChrome';
+import { BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BuilderAskAiButton } from './BuilderStageChrome';
 import {
   builderEn,
   builderEl,
@@ -238,29 +238,6 @@ function docStatusChip(doc: BuilderDocument) {
     case 'in-progress': return STATUS.warning.chip;
     default: return STATUS.neutral.chip;
   }
-}
-
-function AskAiButton({
-  labelEn,
-  labelEl,
-  prompt,
-  variant = 'outline',
-}: {
-  labelEn?: string;
-  labelEl?: string;
-  prompt?: string;
-  variant?: 'outline' | 'ghost' | 'secondary';
-}) {
-  const href = prompt
-    ? `/ai?q=${encodeURIComponent(prompt)}`
-    : '/ai?q=' + encodeURIComponent('Help me decide the next Startup Builder section to complete — Idea Core, BMC, Market, Pitch, MVP, or Financials.');
-  return (
-    <Button asChild variant={variant} size="sm" className="h-8 gap-1.5 text-xs">
-      <Link href={href}>
-        <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
-      </Link>
-    </Button>
-  );
 }
 
 function usePrimaryText() {
@@ -606,7 +583,7 @@ export function BuilderWorkspace({
       badge: `${overallCompletion}%`,
       content: (
         <div className="builder-overview-stats grid grid-cols-1 gap-2">
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className={BUILDER_STAT}>{overallCompletion}%</div>
@@ -618,7 +595,7 @@ export function BuilderWorkspace({
             </div>
             <Progress value={overallCompletion} className="mt-2 h-1.5" />
           </div>
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className={cn(BUILDER_STAT, dimensionColor(overallReadiness))}>
@@ -632,7 +609,7 @@ export function BuilderWorkspace({
             </div>
             <Progress value={overallReadiness} className="mt-2 h-1.5" />
           </div>
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className={cn(BUILDER_STAT, completedDocs > 0 ? STATUS.success.text : 'text-foreground')}>{completedDocs}</div>
@@ -647,7 +624,7 @@ export function BuilderWorkspace({
               <CfbGlyph name="flag" className="icon-sm shrink-0 text-muted-foreground/70" />
             </div>
           </div>
-          <div className="rounded-xl border border-border/60 bg-card/80 p-3">
+          <div className="rounded-xl border border-border bg-card/80 p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className={cn(BUILDER_STAT, 'text-foreground')}>{collaborators.length}</div>
@@ -848,7 +825,7 @@ export function BuilderWorkspace({
             </div>
           )}
           {workspace && (
-            <div className="space-y-2 border-t border-border/50 pt-3">
+            <div className="space-y-2 border-t border-border pt-3">
               <p className="flex items-center gap-1.5 text-xs font-medium">
                 <CfbGlyph name="sliders" className="icon-sm" />
                 <BilingualText en={builderEn('workspace_settings')} el={builderEl('workspace_settings')} compact />
@@ -1095,11 +1072,11 @@ export function BuilderWorkspace({
             <p className="mb-4 text-muted-foreground">
               <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
             </p>
-            <div className="type-kicker flex flex-wrap items-center justify-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-2">
               <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}>
                 <BilingualText en={builderEn('create_first')} el={builderEl('create_first')} compact />
               </Button>
-              <AskAiButton
+              <BuilderAskAiButton
                 labelEn={builderEn('ask_ai_plan')}
                 labelEl={builderEl('ask_ai_plan')}
                 prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Recommend the next artifact and draft the first section.`}
@@ -1117,7 +1094,7 @@ export function BuilderWorkspace({
                 key={doc.id}
                 role="button"
                 tabIndex={0}
-                className="group cursor-pointer border-border/60 transition-colors hover:border-border hover:bg-muted/20"
+                className="group cursor-pointer border-border transition-colors hover:border-border hover:bg-muted/20"
                 onClick={() => openDocument(doc)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -1172,7 +1149,7 @@ export function BuilderWorkspace({
           })}
 
           <Card
-            className="cursor-pointer border border-dashed border-border/50 bg-transparent transition-colors hover:border-border hover:bg-muted/30"
+            className="cursor-pointer border border-dashed border-border bg-transparent transition-colors hover:border-border hover:bg-muted/30"
             onClick={() => setShowCreateDocDialog(true)}
           >
             <CardContent className="flex h-full flex-col items-center justify-center gap-2 py-8 text-center">

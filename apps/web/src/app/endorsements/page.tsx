@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -23,11 +24,11 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, Award, BadgeCheck, Quote,
-  ThumbsUp, ThumbsDown, Search,
+  ThumbsUp, ThumbsDown, Search, Users, UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailStats } from '@/components/layout/RailParts';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -210,7 +211,7 @@ function EndorsementCard({
           <p className="text-sm italic leading-relaxed text-muted-foreground">{endorsement.content}</p>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <span className="text-xs text-muted-foreground">
             {endorsement.createdAt ? formatDate(endorsement.createdAt, primary === 'el' ? 'el' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
           </span>
@@ -392,6 +393,7 @@ export default function EndorsementsPage() {
   const [tab, setTab] = useState<'received' | 'given'>('received');
   const { showDemoData } = useDemoData();
   const qc = useQueryClient();
+  const router = useRouter();
   const storedUser = useStoredUser();
 
   // Samples carry an age, stamped once the page knows today's date: a date
@@ -577,6 +579,19 @@ export default function EndorsementsPage() {
       labelEn: 'Ask for an endorsement',
       labelEl: 'Ζητήστε σύσταση',
       content: <RequestPanel meId={meId} endorsedIds={endorsedIds} />,
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Users} en="Open members" el="Άνοιγμα μελών" onClick={() => router.push('/members')} />
+          <RailAction icon={UserPlus} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
+          <RailAction icon={Handshake} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+        </div>
+      ),
     },
   ];
 

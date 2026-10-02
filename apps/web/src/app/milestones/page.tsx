@@ -23,7 +23,6 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
-import { usePopupChat } from '@/contexts/PopupChatContext';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { useToast } from '@/components/ui/toast';
@@ -94,7 +93,7 @@ function isOverdue(iso: string | null, status: MilestoneStatus): boolean {
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 function MilestoneSkeleton() {
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4 space-y-3 animate-pulse">
+    <div className="rounded-xl border border-border bg-card p-4 space-y-3 animate-pulse">
       <div className="flex items-start justify-between gap-2">
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-6 w-20 rounded-full" />
@@ -153,7 +152,7 @@ function MilestoneCard({
         // Completion is carried by the success border, the chip and the muted
         // title. No strike-through: it cuts through Greek accents and reads as
         // deleted, and a finished milestone is an achievement, not a removal.
-        item.status === 'completed' ? cn('border', STATUS.success.border) : 'border-border/60',
+        item.status === 'completed' ? cn('border', STATUS.success.border) : 'border-border',
         overdue && cn('border', STATUS.danger.border),
       )}
     >
@@ -201,7 +200,7 @@ function MilestoneCard({
                 {menuOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                    <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-border/60 bg-popover shadow-lg">
+                    <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-border bg-popover shadow-lg">
                       <button
                         type="button"
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
@@ -230,7 +229,7 @@ function MilestoneCard({
                           <BilingualText en={milestoneEn('reopen')} el={milestoneEl('reopen')} compact />
                         </button>
                       )}
-                      <div className="my-1 border-t border-border/40" />
+                      <div className="my-1 border-t border-border" />
                       <button
                         type="button"
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-accessible hover:bg-destructive/10"
@@ -348,7 +347,7 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
   // One row per figure: at rail width a 2×2 tile left ~80px per label, and
   // "Ολοκληρωμένα" alone is wider than that.
   return (
-    <div className="rounded-xl border border-border/60 bg-card/80 px-3 py-2.5">
+    <div className="rounded-xl border border-border bg-card/80 px-3 py-2.5">
       <dl className="space-y-1">
         {stats.map((s) => (
           <div key={s.labelKey} className="flex items-baseline justify-between gap-3">
@@ -363,7 +362,7 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
           </div>
         ))}
       </dl>
-      <div className="mt-2.5 border-t border-border/50 pt-2.5">
+      <div className="mt-2.5 border-t border-border pt-2.5">
         <div className="flex items-baseline justify-between gap-2">
           <p className="page-stat-label font-medium text-foreground">
             <BilingualText en={milestoneEn('stat_rate')} el={milestoneEl('stat_rate')} compact wrap />
@@ -389,7 +388,6 @@ function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; t
 export default function MilestonesPage() {
   const qc = useQueryClient();
   const t = useMilestonePrimaryText();
-  const { ask: askAssistant } = usePopupChat();
   const { success, error: showError } = useToast();
   const { isAuthenticated, isChecking } = useAuthenticatedSession();
   const confirm = useConfirm();
@@ -602,7 +600,7 @@ export default function MilestonesPage() {
       content: (
         <div className="space-y-3">
           {waiting ? (
-            <div className="space-y-2 rounded-xl border border-border/60 bg-card/80 px-3 py-3">
+            <div className="space-y-2 rounded-xl border border-border bg-card/80 px-3 py-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-5 w-full rounded-md" />
               ))}
@@ -657,7 +655,7 @@ export default function MilestonesPage() {
                     'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                     categoryFilter === cat
                       ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                      : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                      : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {cat === 'all'
@@ -688,7 +686,7 @@ export default function MilestonesPage() {
                     'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                     priorityFilter === opt.value
                       ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                      : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                      : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {opt.value !== 'all' && (
@@ -707,7 +705,7 @@ export default function MilestonesPage() {
               <BilingualText en={milestoneEn('layout')} el={milestoneEl('layout')} compact />
             </p>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5 rounded-xl border border-border/50 bg-secondary/30 p-0.5">
+              <div className="flex items-center gap-0.5 rounded-xl border border-border bg-secondary/30 p-0.5">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
@@ -728,6 +726,32 @@ export default function MilestonesPage() {
               </Button>
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder?tab=idea-core', title: 'link_idea' },
+            { href: '/builder?tab=pitch-deck', title: 'link_pitch' },
+            { href: '/research', title: 'link_research' },
+            { href: '/readiness', title: 'link_readiness' },
+            { href: '/fundraising', title: 'link_fundraising' },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={milestoneEn(step.title)} el={milestoneEl(step.title)} wrap />
+                </span>
+                <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
         </div>
       ),
     },
@@ -752,54 +776,9 @@ export default function MilestonesPage() {
       }
     >
       <div className="space-y-4">
-        {/* The card is the prompt: it sends askAi rather than opening an empty chat. */}
-        <button
-          type="button"
-          onClick={() => askAssistant(askAi)}
-          className="group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
-            <CfbGlyph name="spark" className="icon-sm" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="type-kicker block font-medium text-foreground">
-              <BilingualText en={milestoneEn('ask_ai_plan')} el={milestoneEl('ask_ai_plan')} stacked />
-            </span>
-            <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
-              <BilingualText
-                en={milestoneEn(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-                el={milestoneEl(harborLive ? 'ask_ai_hint_harbor' : 'ask_ai_hint')}
-              />
-            </span>
-          </span>
-          <ArrowRight className="icon-sm shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary-accessible" aria-hidden="true" />
-        </button>
-        <p className="text-xs text-muted-foreground">
-          <BilingualText en={milestoneEn('link_into')} el={milestoneEl('link_into')} compact />
-          {' '}
-          <Link href="/builder?tab=idea-core" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={milestoneEn('link_idea')} el={milestoneEl('link_idea')} compact />
-          </Link>
-          {' · '}
-          <Link href="/builder?tab=pitch-deck" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={milestoneEn('link_pitch')} el={milestoneEl('link_pitch')} compact />
-          </Link>
-          {' · '}
-          <Link href="/research" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={milestoneEn('link_research')} el={milestoneEl('link_research')} compact />
-          </Link>
-          {' · '}
-          <Link href="/readiness" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={milestoneEn('link_readiness')} el={milestoneEl('link_readiness')} compact />
-          </Link>
-          {' · '}
-          <Link href="/fundraising" className="text-foreground underline-offset-4 hover:underline">
-            <BilingualText en={milestoneEn('link_fundraising')} el={milestoneEl('link_fundraising')} compact />
-          </Link>
-        </p>
-
         {/* Status tabs. The priority select and the view toggle shared this
-            row and made it wrap; they are in the rail now. */}
+            row and made it wrap; they are in the rail now. Linked pages live
+            in the rail too — Ask AI is the header control. */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap gap-1.5">
             {statusTabs.map((tab) => (
@@ -812,7 +791,7 @@ export default function MilestonesPage() {
                     'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
                   statusFilter === tab.value
                     ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                    : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                    : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
                 <BilingualText en={milestoneEn(tab.labelKey)} el={milestoneEl(tab.labelKey)} compact />
@@ -831,7 +810,7 @@ export default function MilestonesPage() {
 
         {/* List */}
         {isError ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
             <CfbGlyph name="target" className="icon-lg text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground"><BilingualText en={milestoneEn('load_fail')} el={milestoneEl('load_fail')} /></p>
             <Button variant="secondary" size="sm" className={BUILDER_BTN} type="button" onClick={() => refetch()}>
@@ -843,7 +822,7 @@ export default function MilestonesPage() {
             {Array.from({ length: 4 }).map((_, i) => <MilestoneSkeleton key={i} />)}
           </div>
         ) : milestones.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
+          <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
             <CfbGlyph name="flag" className="icon-lg text-muted-foreground/50" />
             <div>
               <p className="page-section font-medium text-foreground">
@@ -851,7 +830,7 @@ export default function MilestonesPage() {
                   ? <BilingualText en={milestoneEn('empty_filter_title')} el={milestoneEl('empty_filter_title')} />
                   : <BilingualText en={milestoneEn('empty_title')} el={milestoneEl('empty_title')} />}
               </p>
-              <p className="type-hold mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {showFilteredEmpty
                   ? <BilingualText en={milestoneEn('empty_filter_hint')} el={milestoneEl('empty_filter_hint')} />
                   : <BilingualText en={milestoneEn('empty_hint')} el={milestoneEl('empty_hint')} />}

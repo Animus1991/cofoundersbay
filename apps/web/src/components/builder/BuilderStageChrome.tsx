@@ -2,12 +2,14 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { cn } from '@/lib/utils';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import {
   resolveBilingualPair,
   useLanguagePreference,
@@ -16,6 +18,19 @@ import {
 export function useBuilderPrimaryText() {
   const { primary, showSecondary } = useLanguagePreference();
   return (en: string, el: string) => resolveBilingualPair(en, el, primary, showSecondary).primaryText;
+}
+
+/** Ask in place when the popup exists; `/ai?q=` only without it. */
+export function useAskInPlace() {
+  const popup = usePopupChatOptional();
+  const router = useRouter();
+  return (prompt: string) => {
+    if (popup) {
+      popup.ask(prompt);
+      return;
+    }
+    router.push(`/ai?q=${encodeURIComponent(prompt)}`);
+  };
 }
 
 export function BuilderAskAiButton({
@@ -31,11 +46,23 @@ export function BuilderAskAiButton({
   variant?: 'outline' | 'ghost' | 'secondary';
   className?: string;
 }) {
+  const popup = usePopupChatOptional();
+  const buttonClass = cn('h-8 gap-1.5 text-xs', className);
+  const label = (
+    <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
+  );
+  if (popup && prompt) {
+    return (
+      <Button type="button" variant={variant} size="sm" className={buttonClass} onClick={() => popup.ask(prompt)}>
+        {label}
+      </Button>
+    );
+  }
   const href = prompt ? `/ai?q=${encodeURIComponent(prompt)}` : '/ai';
   return (
-    <Button asChild variant={variant} size="sm" className={cn('h-8 gap-1.5 text-xs', className)}>
+    <Button asChild variant={variant} size="sm" className={buttonClass}>
       <Link href={href}>
-        <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
+        {label}
       </Link>
     </Button>
   );
@@ -97,7 +124,7 @@ export function BuilderStageHeader({
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {completion != null && (
-          <Badge variant="outline" className="type-kicker gap-1.5 rounded-xl text-xs">
+          <Badge variant="outline" className="gap-1.5 rounded-xl text-xs">
             {completion.toFixed(0)}%{' '}
             <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
           </Badge>

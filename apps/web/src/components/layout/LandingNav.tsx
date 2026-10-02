@@ -21,7 +21,7 @@ export function LandingNav() {
     <nav
       aria-label="Primary"
       style={{ top: TOP_BANNER_STACK }}
-      className="fixed z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl safe-top"
+      className="fixed z-40 w-full border-b border-border bg-background/80 backdrop-blur-xl safe-top"
     >
       <div className="mx-auto flex h-[52px] w-full items-center justify-between px-6 sm:px-8 lg:px-12 xl:px-16">
         <Link href="/" aria-label="CoFounderBay home">
@@ -69,7 +69,7 @@ export function LandingNav() {
       {open && (
         <div
           id="landing-mobile-nav"
-          className="border-t border-border/50 bg-background px-6 py-4 sm:px-8 md:hidden"
+          className="border-t border-border bg-background px-6 py-4 sm:px-8 md:hidden"
         >
           <div className="flex flex-col gap-3">
             {NAV_LINKS.map((link) => (

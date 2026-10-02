@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { PitchDeckBuilder, pitchDeckCompletion, type PitchDeckData } from '@/components/builder/PitchDeckBuilder';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
@@ -13,7 +14,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 
 function PitchDeckPageContent() {
   const {
@@ -55,6 +56,58 @@ function PitchDeckPageContent() {
   const workspaceName = workspace?.startupName || workspace?.name || '';
   const contentRevision = `${pitchDocument?.id ?? ''}:${pitchDocument?.version ?? 0}:${pitchDocument?.updatedAt ?? ''}`;
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'from',
+      glyph: 'builder',
+      labelEn: 'From the workspace',
+      labelEl: 'Από τον χώρο εργασίας',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder?tab=idea-core', en: builderEn('tab_idea'), el: builderEl('tab_idea') },
+            { href: '/builder?tab=bmc', en: builderEn('tab_bmc'), el: builderEl('tab_bmc') },
+            { href: '/builder?tab=market', en: builderEn('tab_market'), el: builderEl('tab_market') },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={step.en} el={step.el} wrap />
+                </span>
+                <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder/applications', en: builderEn('tab_applications'), el: builderEl('tab_applications') },
+            { href: '/research', en: builderEn('app_link_research'), el: builderEl('app_link_research') },
+            { href: '/fundraising', en: builderEn('app_link_fundraising'), el: builderEl('app_link_fundraising') },
+            { href: '/readiness', en: builderEn('app_link_readiness'), el: builderEl('app_link_readiness') },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={step.en} el={step.el} wrap />
+                </span>
+                <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   const handleSave = async (data: PitchDeckData) => {
     let doc = documents.find((d) => d.type === 'pitch_deck');
     if (!doc) {
@@ -80,7 +133,7 @@ function PitchDeckPageContent() {
 
   if (isLoadingWorkspaces) {
     return (
-      <AppShell showHelp>
+      <AppShell showHelp rail={rail}>
         <div className="flex h-64 flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">
@@ -94,6 +147,7 @@ function PitchDeckPageContent() {
   return (
     <AppShell
       showHelp
+      rail={rail}
       contentClassName="builder-copy overflow-x-clip"
       askAi={`Help me complete the investor pitch deck for ${workspaceName || 'this startup'}. Draft only empty slides and empty fields; keep the company name and the ask if they are already written.`}
     >

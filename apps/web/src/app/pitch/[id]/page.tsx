@@ -319,9 +319,9 @@ function MarketSlide({ slide }: { slide: SlideBase }) {
       </div>
       <div className="flex items-end gap-6 justify-center">
         {[
-          { val: c.tam, label: c.tamLabel, size: 'h-48', color: 'bg-purple-200 dark:bg-purple-900/40' },
-          { val: c.sam, label: c.samLabel, size: 'h-36', color: 'bg-purple-300 dark:bg-purple-800/50' },
-          { val: c.som, label: c.somLabel, size: 'h-24', color: 'bg-purple-500 dark:bg-purple-600' },
+          { val: c.tam, label: c.tamLabel, size: 'h-48', color: 'bg-status-accent-bg dark:bg-status-accent' },
+          { val: c.sam, label: c.samLabel, size: 'h-36', color: 'bg-status-accent dark:bg-status-accent' },
+          { val: c.som, label: c.somLabel, size: 'h-24', color: 'bg-status-accent dark:bg-status-accent' },
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-2 flex-1">
             <p className="text-3xl font-bold">{item.val}</p>

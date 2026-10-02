@@ -113,8 +113,8 @@ function LanguageCard() {
   }, []);
 
   return (
-    <Card id="language" className="scroll-mt-16 shadow-sm border-border/50">
-      <CardHeader className="border-b border-border/50">
+    <Card id="language" className="scroll-mt-16 shadow-sm border-border">
+      <CardHeader className="border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
           {t('Language')}
@@ -154,8 +154,8 @@ const PRIVACY_CURRENT: Record<(typeof PRIVACY_ITEMS)[number]['id'], boolean> = {
 function PrivacyCard() {
   const { t } = useI18n();
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="icon-md text-primary-accessible" />
           {t('Privacy & Visibility')}
@@ -441,8 +441,8 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CreditCard className="icon-md text-primary-accessible" />
                     {t('Billing')}
@@ -467,7 +467,7 @@ export default function SettingsPage() {
                       {t('Loading billing…')}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-border/60 bg-card/60 p-4 text-sm">
+                    <div className="rounded-xl border border-border bg-card/60 p-4 text-sm">
                       <p className="font-medium text-foreground">
                         {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
                       </p>
@@ -503,8 +503,8 @@ export default function SettingsPage() {
 
 
               {/* Password Change */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <KeyRound className="icon-md text-primary-accessible" />
                     <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
@@ -571,8 +571,8 @@ export default function SettingsPage() {
 
 
               {/* Connected accounts */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Link2 className="icon-md text-primary-accessible" />
                     <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
@@ -639,8 +639,8 @@ export default function SettingsPage() {
 
 
               {/* Account section */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <User className="icon-md text-primary-accessible" />
                     <BilingualText en="Account" el="Λογαριασμός" compact />
@@ -686,8 +686,8 @@ export default function SettingsPage() {
 
             <div className="min-w-0 space-y-6">
               {/* Notifications: the quick view of /settings/notifications. */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
                       <CardTitle className="text-lg flex items-center gap-2">
@@ -763,8 +763,8 @@ export default function SettingsPage() {
               </Card>
 
               {/* Security — 2FA */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="icon-md text-primary-accessible" />
                     <BilingualText en="Security" el="Ασφάλεια" compact />
@@ -796,7 +796,7 @@ export default function SettingsPage() {
               <CardDescription><BilingualText en="Irreversible actions that affect your account permanently." el="Μη αναστρέψιμες ενέργειες που επηρεάζουν μόνιμα τον λογαριασμό σας." wrap /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-xl border border-border/60 p-4 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-border p-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
                   <p className="text-xs text-muted-foreground"><BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap /></p>

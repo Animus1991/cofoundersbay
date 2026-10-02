@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
@@ -181,7 +182,7 @@ function IntroDetailPane({
           </div>
         </div>
         {request.message && (
-          <blockquote className="rounded-2xl border border-border/50 bg-muted/40 px-4 py-3 text-sm italic leading-relaxed text-foreground/80">
+          <blockquote className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm italic leading-relaxed text-foreground/80">
             {quoteEl ? (
               <BilingualText en={request.message} el={quoteEl} wrap />
             ) : (
@@ -213,7 +214,7 @@ function IntroDetailPane({
             <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
           </Button>
         </div>
-        <div className="flex flex-wrap gap-2 border-t border-border/40 pt-4">
+        <div className="flex flex-wrap gap-2 border-t border-border pt-4">
           <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
             <Link href={`/profiles/${request.requester.id}`}>
               <CfbGlyph name="people" className="icon-sm mr-1.5" />
@@ -856,11 +857,70 @@ export default function MessagesPage() {
     { id: 'block_person', labelEn: 'Block the person in this chat', labelEl: 'Αποκλεισμός του ατόμου της συνομιλίας', writes: false, unavailableEn: selectedConversation ? undefined : 'Open a conversation first.', unavailableEl: selectedConversation ? undefined : 'Ανοίξτε πρώτα μια συνομιλία.', run: () => setReportBlockModal({ open: true, mode: 'block' }) },
   ]);
 
+  const rail: PageRailSection[] = [
+    {
+      id: 'people',
+      glyph: 'discover',
+      labelEn: 'Find people',
+      labelEl: 'Βρείτε άτομα',
+      content: (
+        <div className="grid grid-cols-1 gap-2">
+          {([
+            { href: '/discover', glyph: 'discover' as const, en: messagesEn('find_people'), el: messagesEl('find_people'), hintEn: 'Search the directory.', hintEl: 'Αναζήτηση στον κατάλογο.' },
+            { href: '/matches', glyph: 'matches' as const, en: messagesEn('browse_matches'), el: messagesEl('browse_matches'), hintEn: 'Open a ranked match and write from there.', hintEl: 'Ανοίξτε μια κατάταξη και γράψτε από εκεί.' },
+          ]).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+              <Link href={step.href}>
+                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium leading-snug">
+                    <BilingualText en={step.en} el={step.el} wrap />
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={step.hintEn} el={step.hintEl} wrap />
+                  </span>
+                </span>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'network',
+      glyph: 'people',
+      labelEn: 'Your network',
+      labelEl: 'Το δίκτυό σας',
+      content: (
+        <div className="grid grid-cols-1 gap-2">
+          {([
+            { href: '/connections', glyph: 'people' as const, en: 'Connections', el: 'Συνδέσεις', hintEn: 'People you already know.', hintEl: 'Άτομα που ήδη γνωρίζετε.' },
+            { href: '/calendar', glyph: 'calendar' as const, en: 'Calendar', el: 'Ημερολόγιο', hintEn: 'Schedule the next conversation.', hintEl: 'Προγραμματίστε την επόμενη συνομιλία.' },
+          ]).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+              <Link href={step.href}>
+                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium leading-snug">
+                    <BilingualText en={step.en} el={step.el} wrap />
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                    <BilingualText en={step.hintEn} el={step.hintEl} wrap />
+                  </span>
+                </span>
+              </Link>
+            </Button>
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   if (!canUseMessaging) {
     return (
-      <AppShell fullHeight contentClassName="min-h-0">
+      <AppShell fullHeight contentClassName="min-h-0" rail={rail}>
         <div className="flex flex-1 items-center justify-center bg-background/40">
-          <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+          <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
             <BilingualText en={messagesEn('preparing')} el={messagesEl('preparing')} />
           </div>
         </div>
@@ -869,12 +929,12 @@ export default function MessagesPage() {
   }
 
   return (
-    <AppShell fullHeight contentClassName="min-h-0">
+    <AppShell fullHeight contentClassName="min-h-0" rail={rail}>
       <div className="flex h-full min-h-0 flex-col p-2 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-3 lg:p-4 lg:pb-4">
-        <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
+        <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
           <div
             className={cn(
-              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden border-r border-border/40 bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
+              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-r border-border bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
               isMobileViewingChat && 'hidden md:grid',
             )}
           >
@@ -910,7 +970,7 @@ export default function MessagesPage() {
               <button
                 type="button"
                 onClick={openInboxAi}
-                className="flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border/70 px-3 py-2 text-left transition-colors hover:bg-muted/40"
+                className="flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border px-3 py-2 text-left transition-colors hover:bg-muted/40"
               >
                 <span className="min-w-0">
                   <span className="block text-xs font-semibold text-foreground">
@@ -1100,36 +1160,6 @@ export default function MessagesPage() {
                 )}
               </TabsContent>
             </Tabs>
-            <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-x-1 overflow-hidden border-t border-border/40 px-3 py-1.5">
-              <Link
-                href="/matches"
-                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <CfbGlyph name="matches" className="h-3 w-3" />
-                {t(messagesEn('find_matches'), messagesEl('find_matches'))}
-              </Link>
-              <Link
-                href="/discover"
-                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <CfbGlyph name="discover" className="h-3 w-3" />
-                {t(messagesEn('discover_people'), messagesEl('discover_people'))}
-              </Link>
-              <Link
-                href="/connections"
-                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <CfbGlyph name="people" className="h-3 w-3" />
-                {t(messagesEn('connections'), messagesEl('connections'))}
-              </Link>
-              <Link
-                href="/calendar"
-                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <CfbGlyph name="calendar" className="h-3 w-3" />
-                {t(messagesEn('open_calendar'), messagesEl('open_calendar'))}
-              </Link>
-            </div>
           </div>
 
           <div

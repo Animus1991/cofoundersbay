@@ -95,7 +95,7 @@ export function UserMenu({
       <DropdownMenuTrigger
         aria-label={triggerLabel}
         className={cn(
-          'flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:outline-none',
+          'flex items-center gap-2 rounded-xl border border-border bg-secondary/60 text-sm transition-colors outline-none hover:bg-secondary/80 focus-visible:outline-none',
           variant === 'sidebar'
             ? rail
               ? 'mx-auto h-9 w-9 justify-center overflow-hidden p-0 lg:h-[36px] lg:w-[36px]'

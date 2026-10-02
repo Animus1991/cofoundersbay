@@ -60,7 +60,7 @@ export function DashboardJobs({ jobs, className }: DashboardJobsProps) {
             <li key={job.id}>
               <Link
                 href={job.href ?? '/discover'}
-                className="block rounded-lg border border-border/60 bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
+                className="block rounded-lg border border-border bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
               >
                 <p className="font-medium text-foreground">{job.title}</p>
                 {(job.company || job.location) && (

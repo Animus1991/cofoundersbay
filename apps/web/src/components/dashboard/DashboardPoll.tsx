@@ -88,7 +88,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
                     'w-full rounded-lg border p-3 text-left text-sm transition-colors',
                     isSelected
                       ? 'border-primary bg-primary/10 text-primary-accessible'
-                      : 'border-border/60 hover:bg-secondary/60',
+                      : 'border-border hover:bg-secondary/60',
                     voted && !isSelected && 'cursor-default opacity-80',
                   )}
                 >

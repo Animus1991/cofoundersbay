@@ -104,7 +104,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
     .join(' · ');
 
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-border last:border-0">
       <div className={cn('rounded-lg p-2 border shrink-0 mt-0.5', colorClass)}>
         <ActionIcon className="icon-sm" />
       </div>

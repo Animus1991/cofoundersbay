@@ -262,7 +262,7 @@ function DiffDetailDialog({
 
           {(diff.edgeDiff.added.length > 0 || diff.edgeDiff.removed.length > 0) && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-1">
                 <ArrowRight className="icon-sm" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
@@ -394,7 +394,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   return (
     <div className="space-y-3 flex flex-col h-full">
       {/* Save */}
-      <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+      <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
         <Label className="text-xs font-medium">Save current state</Label>
         <div className="flex gap-2">
           <Input
@@ -436,7 +436,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                 const meta = triggerMeta(snap.triggerType);
                 const Icon = meta.icon;
                 return (
-                  <div key={snap.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+                  <div key={snap.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
                     <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
                       <Icon className="icon-sm" />
                     </div>
@@ -583,7 +583,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
   return (
     <div className="space-y-3 flex flex-col h-full">
       {/* Commit */}
-      <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+      <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
         <Label className="text-xs font-medium">Commit current state</Label>
         <div className="flex gap-2">
           <Input
@@ -619,7 +619,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
           const meta = triggerMeta(v.triggerType);
           const Icon = meta.icon;
           return (
-            <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+            <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
               <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
                 <Icon className="icon-sm" />
               </div>
@@ -751,7 +751,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
       </div>
 
       {showCreate && (
-        <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+        <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
           <Label className="text-xs font-medium">New branch</Label>
           <Input
             placeholder="branch-name (lowercase, hyphens)"
@@ -791,7 +791,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
             <p className="text-xs mt-1">Create a branch to experiment safely.</p>
           </div>
         ) : branches.map((b) => (
-          <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+          <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
             <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-status-accent-bg border-status-accent-border text-status-accent">
               <GitBranch className="icon-sm" />
             </div>
@@ -881,7 +881,7 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
-        <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/60">
+        <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
           <SheetTitle className="flex items-center gap-2 text-base">
             <History className="icon-sm text-primary-accessible" />
             Canvas History

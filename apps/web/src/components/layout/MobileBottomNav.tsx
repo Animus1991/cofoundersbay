@@ -97,7 +97,7 @@ export function MobileBottomNav() {
   return (
     <nav
       data-mobile-tabs=""
-      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-0.5 pt-1 backdrop-blur-md sm:hidden safe-bottom pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-card/95 px-0.5 pt-1 backdrop-blur-md sm:hidden safe-bottom pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]"
       role="navigation"
       aria-label={t('Primary mobile navigation')}
     >

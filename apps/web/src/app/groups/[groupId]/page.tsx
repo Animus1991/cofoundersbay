@@ -84,7 +84,7 @@ function PostCard({
   const isOwn = currentUserId && post.author.id === currentUserId;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
+    <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
           <Pin className="icon-sm" />
@@ -126,7 +126,7 @@ function PostCard({
       )}
 
       {/* Reactions & stats row */}
-      <div className="flex items-center gap-3 pt-1 border-t border-border/30">
+      <div className="flex items-center gap-3 pt-1 border-t border-border">
         <div className="relative">
           <button
             onClick={() => setShowReactions((p) => !p)}
@@ -141,7 +141,7 @@ function PostCard({
             {post.reactionCount > 0 && <span>{post.reactionCount}</span>}
           </button>
           {showReactions && (
-            <div className="absolute bottom-full left-0 mb-1 flex items-center gap-1 rounded-xl border border-border/60 bg-popover p-1.5 shadow-xl z-10">
+            <div className="absolute bottom-full left-0 mb-1 flex items-center gap-1 rounded-xl border border-border bg-popover p-1.5 shadow-xl z-10">
               {REACTIONS.map((emoji) => (
                 <button
                   key={emoji}
@@ -416,7 +416,7 @@ export default function GroupDetailPage() {
           Back to Groups
         </button>
 
-        <div className="rounded-2xl border border-border/60 bg-card/70 overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card/70 overflow-hidden">
           {group.coverImageUrl ? (
             <div
               className="h-40 w-full bg-cover bg-center"
@@ -496,7 +496,7 @@ export default function GroupDetailPage() {
         </div>
 
         {/* Section tabs */}
-        <div className="flex gap-1 rounded-xl border border-border/60 bg-card/70 p-1 w-fit">
+        <div className="flex gap-1 rounded-xl border border-border bg-card/70 p-1 w-fit">
           {(['feed', 'members'] as const).map((s) => (
             <button
               key={s}
@@ -524,7 +524,7 @@ export default function GroupDetailPage() {
             <div className="space-y-4">
               {/* Create post */}
               {isMember && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
@@ -591,7 +591,7 @@ export default function GroupDetailPage() {
             <div className="space-y-4">
               {/* Rules */}
               {group.rules.length > 0 && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
                   <h3 className="text-sm font-semibold">Group Rules</h3>
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
@@ -611,7 +611,7 @@ export default function GroupDetailPage() {
 
               {/* Recent members */}
               {groupMembers.length > 0 && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
                   <h3 className="text-sm font-semibold"><BilingualText en={`Members (${group.memberCount})`} el={`Μέλη (${group.memberCount})`} compact /></h3>
                   <div className="space-y-2">
                     {groupMembers.slice(0, 6).map((m) => (
@@ -646,14 +646,14 @@ export default function GroupDetailPage() {
 
         {/* Members section */}
         {activeSection === 'members' && (
-          <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+          <div className="rounded-xl border border-border bg-card/70 p-4">
             <h3 className="text-sm font-semibold mb-4"><BilingualText en={`All Members (${group.memberCount})`} el={`Όλα τα μέλη (${group.memberCount})`} compact /></h3>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {groupMembers.map((m) => (
                 <button
                   type="button"
                   key={m.userId}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border/40 p-3 text-left hover:border-primary/30 transition-colors focus-ring"
+                  className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left hover:border-primary/30 transition-colors focus-ring"
                   onClick={() => router.push(`/profiles/${m.userId}`)}
                 >
                   <Avatar className="h-10 w-10 shrink-0">

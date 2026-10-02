@@ -538,7 +538,7 @@ export default function AISettingsPage() {
                 { key: 'enableContextMemory', label: 'Context Memory', desc: 'AI remembers context from earlier in the conversation' },
                 { key: 'enableAutoSave', label: 'Auto-Save Conversations', desc: 'Automatically save your chat history' },
               ].map(({ key, label, desc }) => (
-                <div key={key} className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+                <div key={key} className="flex items-center justify-between py-3 border-b border-border last:border-0">
                   <div>
                     <p className="font-medium">{label}</p>
                     <p className="text-sm text-muted-foreground">{desc}</p>
@@ -570,7 +570,7 @@ export default function AISettingsPage() {
                 { key: 'anonymizeData', label: 'Anonymize Data', desc: 'Remove personally identifiable information from saved data' },
                 { key: 'shareForTraining', label: 'Help Improve AI', desc: 'Allow anonymized conversations to improve the AI (optional)' },
               ].map(({ key, label, desc }) => (
-                <div key={key} className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+                <div key={key} className="flex items-center justify-between py-3 border-b border-border last:border-0">
                   <div>
                     <p className="font-medium">{label}</p>
                     <p className="text-sm text-muted-foreground">{desc}</p>
@@ -608,7 +608,7 @@ export default function AISettingsPage() {
                 ]).map((agent) => (
                   <div
                     key={agent.id}
-                    className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
+                    className="flex items-start gap-3 rounded-lg border border-border p-3 bg-card"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
                       <CfbGlyph name="spark" className="icon-sm" />

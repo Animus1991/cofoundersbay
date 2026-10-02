@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Save, RefreshCw, X } from 'lucide-react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { BUILDER_BTN, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { BUILDER_BTN, BuilderStageHeader, useAskInPlace, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
@@ -160,7 +159,7 @@ function assistPrompt(data: IdeaCoreData): string {
 
 export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: IdeaCoreProps) {
   const t = useBuilderPrimaryText();
-  const router = useRouter();
+  const askInPlace = useAskInPlace();
   const { success, error: toastError } = useToast();
   const [data, setData] = useState<IdeaCoreData>(() => hydrateIdeaCore(initialData));
   const [isGenerating, setIsGenerating] = useState(false);
@@ -227,7 +226,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
         }
         return;
       }
-      router.push(`/ai?q=${encodeURIComponent(assistPrompt(data))}`);
+      askInPlace(assistPrompt(data));
     } finally {
       setIsGenerating(false);
     }
@@ -403,7 +402,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
             </CardHeader>
             <CardContent className="space-y-3">
               {data.assumptions.length === 0 && (
-                <p className="type-kicker text-xs leading-snug text-muted-foreground">
+                <p className="text-xs leading-snug text-muted-foreground">
                   <BilingualText en={builderEn('idea_assumptions_hint')} el={builderEl('idea_assumptions_hint')} wrap />
                 </p>
               )}
@@ -442,7 +441,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
             </CardHeader>
             <CardContent className="space-y-3">
               {data.painPoints.length === 0 && (
-                <p className="type-kicker text-xs leading-snug text-muted-foreground">
+                <p className="text-xs leading-snug text-muted-foreground">
                   <BilingualText en={builderEn('idea_pains_hint')} el={builderEl('idea_pains_hint')} wrap />
                 </p>
               )}

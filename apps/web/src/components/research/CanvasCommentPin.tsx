@@ -163,11 +163,11 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
       {/* Popover */}
       {open && (
         <div
-          className="absolute left-8 top-0 z-50 w-64 bg-card border border-border/70 rounded-lg shadow-xl"
+          className="absolute left-8 top-0 z-50 w-64 bg-card border border-border rounded-lg shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-start gap-2 p-3 border-b border-border/50">
+          <div className="flex items-start gap-2 p-3 border-b border-border">
             <Avatar className="h-6 w-6 shrink-0 mt-0.5">
               <AvatarImage src={comment.author?.avatarUrl} />
               <AvatarFallback className="text-2xs">
@@ -211,7 +211,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
 
           {/* Replies */}
           {replies.length > 0 && (
-            <div className="border-t border-border/40 px-3 py-1.5">
+            <div className="border-t border-border px-3 py-1.5">
               <button
                 className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground"
                 onClick={() => setShowReplies((v) => !v)}
@@ -239,7 +239,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
           )}
 
           {/* Actions */}
-          <div className="border-t border-border/40 p-2 space-y-2">
+          <div className="border-t border-border p-2 space-y-2">
             {/* Reply input */}
             <div className="flex gap-1.5">
               <Textarea
@@ -435,7 +435,7 @@ export function CanvasCommentPins({
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="bg-card border border-border/70 rounded-lg shadow-xl p-3 w-56"
+            className="bg-card border border-border rounded-lg shadow-xl p-3 w-56"
             style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom left' }}
           >
             <div className="flex items-center justify-between mb-2">

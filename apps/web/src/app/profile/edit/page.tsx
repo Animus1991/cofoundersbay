@@ -224,7 +224,7 @@ function TagInput({
   return (
     <div className="space-y-2">
       <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
-      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border/60 bg-background/50 min-h-[60px]">
+      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-background/50 min-h-[60px]">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
@@ -310,7 +310,7 @@ function SelectButtons({
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
               selected.includes(opt.value)
                 ? 'border-primary bg-primary/10 text-primary-accessible'
-                : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
             {opt.label}
@@ -613,8 +613,8 @@ export default function ProfileEditPage() {
             {/* Basic Info */}
             <TabsContent value="basic" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Avatar */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Camera className="icon-md text-primary-accessible" />
                     <BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact />
@@ -692,8 +692,8 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Name & Headline */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -739,7 +739,7 @@ export default function ProfileEditPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-medium"><BilingualText en="About / Bio" el="Σχετικά / Βιογραφικό" compact /></label>
-                      <span className={cn("text-xs", form.bio.length > 400 ? "text-amber-500" : "text-muted-foreground")}>
+                      <span className={cn("text-xs", form.bio.length > 400 ? "text-status-warning" : "text-muted-foreground")}>
                         {form.bio.length}/500
                       </span>
                     </div>
@@ -802,7 +802,7 @@ export default function ProfileEditPage() {
                         )}
 
                         {aiSuggestions.improvements.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-border/50">
+                          <div className="space-y-2 pt-2 border-t border-border">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Actionable Feedback" el="Πρακτικές παρατηρήσεις" compact /></p>
                             <ul className="space-y-2">
                               {aiSuggestions.improvements.map((imp, i) => (
@@ -821,8 +821,8 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Location */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <MapPin className="icon-md text-primary-accessible" />
                     <BilingualText en="Location & Timezone" el="Τοποθεσία & ζώνη ώρας" compact />
@@ -851,8 +851,8 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Skills & Industries */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Target className="icon-md text-primary-accessible" />
                     <BilingualText en="Skills & Expertise" el="Δεξιότητες & εξειδίκευση" compact />
@@ -914,7 +914,7 @@ export default function ProfileEditPage() {
                             'flex items-start gap-3 rounded-xl border p-4 text-left transition-all',
                             form.role === opt.value
                               ? 'border-primary bg-primary/10'
-                              : 'border-border/60 hover:border-primary/50'
+                              : 'border-border hover:border-primary/50'
                           )}
                         >
                           <div className={cn(
@@ -1102,8 +1102,8 @@ export default function ProfileEditPage() {
 
             {/* Social Links */}
             <TabsContent value="links" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Globe className="icon-md text-primary-accessible" />
                     <BilingualText en="Web & Social Links" el="Ιστότοπος & κοινωνικά δίκτυα" compact />
@@ -1124,7 +1124,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="icon-sm text-blue-600" /> LinkedIn
+                        <Linkedin className="icon-sm text-status-info" /> LinkedIn
                       </label>
                       <Input
                         value={form.linkedinUrl}
@@ -1162,7 +1162,7 @@ export default function ProfileEditPage() {
 
             {/* Portfolio Tab */}
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border/50 text-center py-12">
+              <Card className="shadow-sm border-border text-center py-12">
                 <CardContent className="space-y-4">
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
                     <LayoutDashboard className="icon-xl" />
@@ -1182,8 +1182,8 @@ export default function ProfileEditPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="shadow-sm border-border/50 sticky top-6">
-            <CardHeader className="pb-4 border-b border-border/50">
+          <Card className="shadow-sm border-border sticky top-6">
+            <CardHeader className="pb-4 border-b border-border">
               <CardTitle className="text-base font-semibold"><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 pt-5">
@@ -1196,8 +1196,8 @@ export default function ProfileEditPage() {
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-1000",
-                      completionPercentage >= 80 ? "bg-emerald-500" :
-                      completionPercentage >= 50 ? "bg-primary" : "bg-amber-500"
+                      completionPercentage >= 80 ? "bg-status-success" :
+                      completionPercentage >= 50 ? "bg-primary" : "bg-status-warning"
                     )}
                     style={{ width: `${completionPercentage}%` }}
                   />
@@ -1227,7 +1227,7 @@ export default function ProfileEditPage() {
                 </ul>
               </div>
 
-              <div className="pt-4 border-t border-border/50 space-y-3">
+              <div className="pt-4 border-t border-border space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
                   {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
                   <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />
@@ -1249,7 +1249,7 @@ export default function ProfileEditPage() {
           </Card>
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border/60 bg-card/95 p-3 backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md lg:hidden">
         <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save changes

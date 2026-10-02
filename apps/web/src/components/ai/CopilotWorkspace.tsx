@@ -184,8 +184,8 @@ export function CopilotWorkspace({
   return (
     <div className={cn('flex min-h-0 flex-1 overflow-hidden', isPage ? 'flex-col lg:flex-row' : 'flex-col')}>
       {isPage && (
-        <aside className="flex w-full shrink-0 flex-col border-b border-border/60 bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
-          <div className="flex items-center justify-between gap-2 border-b border-border/60 px-3 py-2.5">
+        <aside className="flex w-full shrink-0 flex-col border-b border-border bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
+          <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
             <p className="type-identity font-semibold">
               <BilingualText en="Threads" el="Νήματα" compact />
             </p>
@@ -254,7 +254,7 @@ export function CopilotWorkspace({
               </ul>
             )}
           </div>
-          <div className="border-t border-border/60 p-2">
+          <div className="border-t border-border p-2">
             <Button
               type="button"
               variant="ghost"
@@ -282,7 +282,7 @@ export function CopilotWorkspace({
       )}
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between gap-2 border-b border-border/40 bg-muted/30 px-3 py-2">
+        <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
@@ -402,7 +402,7 @@ export function CopilotWorkspace({
           <p className="type-caption px-3 text-destructive">{chat.error}</p>
         )}
 
-        <form onSubmit={onSubmit} className="shrink-0 border-t border-border/60 p-3">
+        <form onSubmit={onSubmit} className="shrink-0 border-t border-border p-3">
           <div className="flex items-center gap-2">
             <Input
               ref={inputRef}

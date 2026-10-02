@@ -281,10 +281,10 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
   const getPriorityColor = (priority: Feature['priority']) => {
     switch (priority) {
-      case 'must-have': return 'bg-red-500';
-      case 'should-have': return 'bg-orange-500';
-      case 'could-have': return 'bg-yellow-500';
-      case 'wont-have': return 'bg-gray-500';
+      case 'must-have': return 'bg-status-danger';
+      case 'should-have': return 'bg-status-warning';
+      case 'could-have': return 'bg-status-warning';
+      case 'wont-have': return 'bg-muted';
     }
   };
 

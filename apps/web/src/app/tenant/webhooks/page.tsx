@@ -201,7 +201,7 @@ export default function TenantWebhooksPage() {
             </div>
             {/* The header's "Add webhook" is the one place to add one; this
                 card repeated it as a second disabled button. */}
-            <p className="rounded-xl border border-dashed border-border/70 p-4 text-center text-sm text-muted-foreground">
+            <p className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
               <BilingualText
                 en="New endpoints are added from the header once webhook delivery is available."
                 el="Νέα endpoints προστίθενται από την κεφαλίδα μόλις γίνει διαθέσιμη η αποστολή webhooks."

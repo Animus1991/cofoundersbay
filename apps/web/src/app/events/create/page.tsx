@@ -215,7 +215,7 @@ export default function CreateEventPage() {
                       'min-h-9 rounded-full border px-3 py-1 text-sm font-medium transition-colors focus-ring',
                       form.type === value
                         ? 'border-primary bg-primary/15 text-primary-accessible'
-                        : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
                     )}
                   >
                     <BilingualText en={label} el={labelEl} compact />
@@ -366,7 +366,7 @@ export default function CreateEventPage() {
                 </li>
               </ul>
               {form.description.trim() ? (
-                <p className="line-clamp-4 border-t border-border/60 pt-3 text-sm leading-relaxed text-muted-foreground">{form.description.trim()}</p>
+                <p className="line-clamp-4 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{form.description.trim()}</p>
               ) : null}
             </CardContent>
           </Card>

@@ -24,7 +24,7 @@ export default function DiscoverLoading() {
           {/* Main content */}
           <div className="space-y-6">
             {/* Page header */}
-            <div className="rounded-2xl border border-border/60 bg-card/70 p-6">
+            <div className="rounded-2xl border border-border bg-card/70 p-6">
               <Skeleton className="h-7 w-40" />
               <Skeleton className="mt-2 h-4 w-64" />
             </div>
@@ -42,7 +42,7 @@ export default function DiscoverLoading() {
             {/* Cards grid */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-border/40 bg-card p-5 space-y-3">
+                <div key={i} className="rounded-xl border border-border bg-card p-5 space-y-3">
                   <div className="flex items-start gap-3">
                     <Skeleton className="h-12 w-12 rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">

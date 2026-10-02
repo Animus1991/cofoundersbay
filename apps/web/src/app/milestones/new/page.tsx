@@ -110,7 +110,7 @@ export default function NewMilestonePage() {
       contentClassName="builder-copy overflow-x-clip"
     >
       <div className="max-w-2xl space-y-4">
-        <p className="type-hold text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
         <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
@@ -122,7 +122,7 @@ export default function NewMilestonePage() {
                 <CardTitle>
                   <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />
                 </CardTitle>
-                <CardDescription className="type-hold">
+                <CardDescription className="type-identity">
                   {collaboratorId
                     ? <BilingualText en={milestoneEn('create_shared')} el={milestoneEl('create_shared')} />
                     : <BilingualText en={milestoneEn('create_solo')} el={milestoneEl('create_solo')} />}
@@ -241,7 +241,7 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-2">
+              <div className="flex items-center justify-end gap-3 border-t border-border pt-2">
                 <Button type="button" variant="ghost" className="rounded-xl" asChild>
                   <Link href="/milestones">
                     <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />

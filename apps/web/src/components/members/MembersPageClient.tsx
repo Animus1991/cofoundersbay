@@ -22,6 +22,8 @@ import {
   BadgeCheck,
   Circle,
   Award,
+  Compass,
+  Target,
 } from 'lucide-react';
 import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
 import { useHydrated } from '@/components/common/RelativeTime';
@@ -145,7 +147,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </Avatar>
               {isOnline && (
                 <span className="absolute bottom-3 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-status-success ring-1 ring-background" />
                 </span>
               )}
             </Link>
@@ -194,7 +196,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               )}
               {isOnline && (
                 <span className="flex items-center gap-1 text-status-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-status-success" />
                   <BilingualText en="Online" el="Σε σύνδεση" compact />
                 </span>
               )}
@@ -208,7 +210,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </div>
               <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-emerald-500' : completeness >= 50 ? 'bg-amber-500' : 'bg-primary/60')}
+                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-status-success' : completeness >= 50 ? 'bg-status-warning' : 'bg-primary/60')}
                   style={{ width: `${completeness}%` }}
                 />
               </div>
@@ -242,7 +244,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             </Avatar>
             {isOnline && (
               <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+                <span className="h-2.5 w-2.5 rounded-full bg-status-success ring-1 ring-background" />
               </span>
             )}
           </Link>
@@ -361,6 +363,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
 }
 
 export function MembersPageClient() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<(typeof ROLE_OPTIONS)[number]['value']>('all');
@@ -412,7 +415,6 @@ export function MembersPageClient() {
     setSearchQuery('');
   };
 
-  const router = useRouter();
   const { success, error: showError } = useToast();
 
   const connectMutation = useMutation({
@@ -547,6 +549,19 @@ export function MembersPageClient() {
           {activeFiltersCount > 0 && (
             <RailAction icon={X} en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" onClick={clearFilters} />
           )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Compass} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={UserPlus} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
         </div>
       ),
     },

@@ -61,7 +61,7 @@ type Deal = {
 };
 
 const PIPELINE_STAGES: { key: PipelineStage; label: string; labelEl: string; color: string }[] = [
-  { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-gray-500' },
+  { key: 'discovered', label: 'Discovered', labelEl: 'Εντοπίστηκε', color: 'bg-muted' },
   { key: 'reviewing', label: 'Reviewing', labelEl: 'Υπό εξέταση', color: 'bg-primary' },
   { key: 'meeting', label: 'Meeting', labelEl: 'Συνάντηση', color: 'bg-status-accent' },
   { key: 'due_diligence', label: 'Due Diligence', labelEl: 'Δέουσα επιμέλεια', color: 'bg-status-warning' },
@@ -395,7 +395,7 @@ export default function InvestorPipelinePage() {
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
@@ -467,7 +467,7 @@ export default function InvestorPipelinePage() {
                 return (
                   <div key={stage.key} className="flex min-w-0 flex-1 items-center gap-2">
                     <div className="min-w-0 flex-1 text-center">
-                      <p className="text-lg font-bold tabular-nums">{count}</p>
+                      <p className="page-stat font-bold tabular-nums">{count}</p>
                       <p className="truncate text-2xs text-muted-foreground"><BilingualText en={stage.label} el={stage.labelEl} compact /></p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>

@@ -82,7 +82,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
 }) {
   const cfg = STATUS_CONFIG[invite.status];
   return (
-    <div className="flex items-center gap-3 border-b border-border/40 py-3 last:border-0">
+    <div className="flex items-center gap-3 border-b border-border py-3 last:border-0">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
         <Mail className="icon-sm text-muted-foreground" />
       </div>
@@ -206,8 +206,8 @@ export default function InvitePage() {
         </div>
 
         {/* Invite form */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="icon-md shrink-0 text-primary-accessible" />
               <BilingualText en={inviteEn('form_title')} el={inviteEl('form_title')} compact wrap />
@@ -279,8 +279,8 @@ export default function InvitePage() {
         </Card>
 
         {/* Invite history */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="border-b border-border/50">
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
               <Clock className="icon-md shrink-0 text-muted-foreground" />
               <BilingualText en={inviteEn('history_title')} el={inviteEl('history_title')} compact wrap />
@@ -290,7 +290,7 @@ export default function InvitePage() {
             {invitesLoading ? (
               <div className="space-y-1">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 py-3 border-b border-border/40">
+                  <div key={i} className="flex items-center gap-3 py-3 border-b border-border">
                     <Skeleton className="h-8 w-8 rounded-full" />
                     <div className="flex-1 space-y-1.5">
                       <Skeleton className="h-3.5 w-40" />

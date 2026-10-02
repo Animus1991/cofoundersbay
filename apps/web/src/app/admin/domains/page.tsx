@@ -47,18 +47,18 @@ function statusBadge(status: TenantDomainItem['verificationStatus']) {
     case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1"><CheckCircle2 className="icon-sm" /><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>;
     case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1"><Clock className="icon-sm" /><BilingualText en="Pending" el="Σε αναμονή" compact /></Badge>;
     case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1"><XCircle className="icon-sm" /><BilingualText en="Failed" el="Απέτυχε" compact /></Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1"><XCircle className="icon-sm" /><BilingualText en="Expired" el="Έληξε" compact /></Badge>;
+    case 'expired':  return <Badge className="bg-muted text-muted-foreground border-border gap-1"><XCircle className="icon-sm" /><BilingualText en="Expired" el="Έληξε" compact /></Badge>;
   }
 }
 
 function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions }) {
   const copy = (text: string) => navigator.clipboard.writeText(text);
   return (
-    <div className="mt-3 rounded-lg border border-border/60 bg-muted/40 p-4 space-y-3 text-sm">
+    <div className="mt-3 rounded-lg border border-border bg-muted/40 p-4 space-y-3 text-sm">
       <p className="font-semibold text-foreground"><BilingualText en="DNS Setup Instructions" el="Οδηγίες ρύθμισης DNS" compact /></p>
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide"><BilingualText en="Step 1 – Verification TXT Record" el="Βήμα 1 – Εγγραφή TXT επαλήθευσης" compact /></p>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
           <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.verification.type}</span>
           <span />
@@ -75,7 +75,7 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
       </div>
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide"><BilingualText en="Step 2 – CNAME Record" el="Βήμα 2 – Εγγραφή CNAME" compact /></p>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
           <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.cname.type}</span>
           <span />
@@ -154,7 +154,7 @@ function DomainRow({
   };
 
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
@@ -202,7 +202,7 @@ function DomainRow({
             variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-status-warning hover:text-status-warning' : 'text-status-success hover:text-status-success'}`}
           >
             <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
@@ -271,7 +271,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       )}
 
       {/* Add subdomain */}
-      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
+      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
         <p className="text-sm font-medium"><BilingualText en="Add Platform Subdomain" el="Προσθήκη υποτομέα πλατφόρμας" compact /></p>
         <p className="text-xs text-muted-foreground">Your org will be accessible at <code className="bg-muted px-1 rounded">[subdomain].cofounderbay.com</code></p>
         <div className="flex gap-2">
@@ -300,7 +300,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       </div>
 
       {/* Add custom domain */}
-      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
+      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
         <p className="text-sm font-medium"><BilingualText en="Add Custom Domain" el="Προσθήκη προσαρμοσμένου τομέα" compact /></p>
         <p className="text-xs text-muted-foreground">Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code></p>
         <div className="flex gap-2">

@@ -148,7 +148,7 @@ export function MilestoneFormModal({
         data-surface="overlay"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 id="milestone-modal-title" className="page-section font-semibold text-foreground">
             <BilingualText
               en={isEdit ? milestoneEn('modal_edit') : milestoneEn('modal_new')}
@@ -315,7 +315,7 @@ export function MilestoneFormModal({
               onChange={(e) => set('collaboratorId', e.target.value)}
               placeholder={t(milestoneEn('collab_ph'), milestoneEl('collab_ph'))}
             />
-            <p className="type-hold text-2xs text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               <BilingualText en={milestoneEn('collab_hint')} el={milestoneEl('collab_hint')} />
             </p>
           </div>
@@ -337,7 +337,7 @@ export function MilestoneFormModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
             <Button type="button" variant="ghost" size="sm" className="rounded-xl" onClick={onClose}>
               <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />
             </Button>

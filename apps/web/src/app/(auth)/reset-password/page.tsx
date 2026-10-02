@@ -35,9 +35,9 @@ export default function ResetPasswordPage() {
     if (/[A-Z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^a-zA-Z0-9]/.test(pw)) score++;
-    if (score <= 1) return { level: score, label: 'Weak', color: 'bg-red-500' };
-    if (score <= 3) return { level: score, label: 'Fair', color: 'bg-amber-500' };
-    return { level: score, label: 'Strong', color: 'bg-emerald-500' };
+    if (score <= 1) return { level: score, label: 'Weak', color: 'bg-status-danger' };
+    if (score <= 3) return { level: score, label: 'Fair', color: 'bg-status-warning' };
+    return { level: score, label: 'Strong', color: 'bg-status-success' };
   }
 
   const strength = getStrength(password);

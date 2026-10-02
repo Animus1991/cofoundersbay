@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   GraduationCap,
@@ -28,6 +29,8 @@ import {
   BadgeCheck,
   Globe,
   X,
+  MessageCircle,
+  CalendarDays,
 } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, summarizeMeetingNotes, type MentorBookingItem, type SearchHit, type MeetingNotesSummary } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -116,8 +119,8 @@ function hitToMentor(hit: SearchHit): Mentor {
 
 const AVAIL_CONFIG = {
   available: { en: 'Available', el: 'Διαθέσιμος', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-status-success' },
-  busy:      { en: 'Busy',      el: 'Απασχολημένος', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-red-500'     },
-  limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-amber-500'   },
+  busy:      { en: 'Busy',      el: 'Απασχολημένος', color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-status-danger'     },
+  limited:   { en: 'Limited',   el: 'Περιορισμένη', color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-status-warning'   },
 } as const;
 
 const PRICE_FILTERS = ['Any', 'Free', 'Paid'] as const;
@@ -215,7 +218,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               <div className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
                 matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
-                : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-emerald-500/30'
+                : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-status-success'
                 : 'bg-muted text-muted-foreground ring-border',
               )}>
                 {matchPct}%
@@ -238,7 +241,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+        <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
@@ -667,6 +670,7 @@ function MentorSkeleton() {
 }
 
 export default function MentoringPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [mainTab, setMainTab] = useState<'find' | 'sessions'>('find');
@@ -866,10 +870,23 @@ export default function MentoringPage() {
         </div>
       ),
     },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Calendar} en="Open calendar" el="Άνοιγμα ημερολογίου" onClick={() => router.push('/calendar')} />
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
   ];
 
   return (
-    <AppShell showHelp rail={rail}>
+    <AppShell showHelp rail={rail} askAi="Help me pick a mentor and prepare the first session.">
       <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList>

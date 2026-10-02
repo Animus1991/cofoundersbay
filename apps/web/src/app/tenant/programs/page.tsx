@@ -146,7 +146,7 @@ function ProgramCard({
   onArchive: (p: Program) => void;
 }) {
   const statusColors: Record<string, string> = {
-    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    draft: 'bg-muted text-muted-foreground border-border',
     upcoming: 'bg-status-accent-bg text-status-accent border-status-accent-border',
     active: 'bg-status-success-bg text-status-success border-status-success-border',
     completed: 'bg-status-info-bg text-status-info border-status-info-border',
@@ -409,9 +409,9 @@ export default function TenantProgramsPage() {
       content: (
         <ul className="space-y-2">
           {totals.map((t) => (
-            <li key={t.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3">
+            <li key={t.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
               <span className="text-sm text-muted-foreground"><BilingualText en={t.en} el={t.el} compact wrap /></span>
-              <span className={cn('text-lg font-bold tabular-nums', t.tone)}>{t.value}</span>
+              <span className={cn('page-stat font-bold tabular-nums', t.tone)}>{t.value}</span>
             </li>
           ))}
         </ul>

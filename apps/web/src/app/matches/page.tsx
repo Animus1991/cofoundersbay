@@ -38,6 +38,7 @@ import type { ProfileCardData } from '@/components/discover/ProfileCard';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 const MATCHES_TOUR: TourStep[] = [
   {
@@ -139,7 +140,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
         {dims ? (
           <MatchCompatibilityChart dims={dims} />
         ) : (
-          <p className="rounded-lg border border-dashed border-border/50 p-3 text-center text-xs text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
             <BilingualText
               en={detailLoading ? matchesEn('breakdown_loading') : matchesEn('breakdown_unavailable')}
               el={detailLoading ? matchesEl('breakdown_loading') : matchesEl('breakdown_unavailable')}
@@ -148,7 +149,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
         )}
 
         {strengths.length > 0 && (
-          <div className="rounded-lg border border-border/40 bg-status-success-bg/40 p-3 space-y-1.5">
+          <div className="rounded-lg border border-border bg-status-success-bg/40 p-3 space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
             </p>
@@ -159,7 +160,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
         )}
 
         {frictions.length > 0 && (
-          <div className="rounded-lg border border-border/40 bg-status-warning-bg/40 p-3 space-y-1.5">
+          <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
             </p>
@@ -170,7 +171,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
         )}
 
         {reasons.length > 0 && (
-          <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
             </p>
@@ -281,7 +282,7 @@ function MatchListRow({
   const initials = hit.displayName.slice(0, 2).toUpperCase();
 
   return (
-    <Card className="shadow-sm border-border/50 hover:shadow-md transition-all group">
+    <Card className="shadow-sm border-border hover:shadow-md transition-all group">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Score ring + avatar */}
@@ -354,15 +355,15 @@ function MatchListRow({
         </div>
 
         {/* Actions */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
               aria-label={`Pass on ${hit.displayName}`}>
               <X className="icon-sm" />
             </button>
             <button onClick={onSave}
-              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
+              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
               aria-pressed={isSaved}
               aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
               {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
@@ -411,9 +412,9 @@ function MatchPreviewPanel({
       <div aria-hidden="true" className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
-      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border/60 bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
+        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold"><BilingualText en="Profile Preview" el="Προεπισκόπηση προφίλ" compact /></p>
           <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="icon-sm" />
@@ -423,7 +424,7 @@ function MatchPreviewPanel({
         <div className="space-y-4 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
-            <Avatar className="h-16 w-16 rounded-xl border-2 border-border/60">
+            <Avatar className="h-16 w-16 rounded-xl border-2 border-border">
               <AvatarImage src={hit.avatarUrl ?? undefined} />
               <AvatarFallback className="rounded-xl text-base font-bold bg-muted">
                 {hit.displayName.slice(0, 2).toUpperCase()}
@@ -486,7 +487,7 @@ function MatchPreviewPanel({
           )}
 
           {/* Actions */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
+          <div className="space-y-2 pt-2 border-t border-border">
             <div className="flex gap-2">
               <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
                 <UserPlus className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
@@ -824,7 +825,7 @@ export default function MatchesPage() {
         <div className="space-y-2.5">
 
           {/* Role filter */}
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
           <CardContent className="p-3 space-y-0.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
           <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
@@ -846,7 +847,7 @@ export default function MatchesPage() {
           </Card>
 
           {/* Location */}
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
           <CardContent className="p-3 space-y-1.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
           <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
@@ -855,7 +856,7 @@ export default function MatchesPage() {
           <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
           <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
           placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
-          className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
+          className="w-full h-8 rounded-lg border border-border bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
           {locationFilter && (
           <button aria-label="Clear location filter" onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
           <X className="icon-sm" />
@@ -866,7 +867,7 @@ export default function MatchesPage() {
           </Card>
 
           {/* Availability */}
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
           <CardContent className="p-3 space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
@@ -894,7 +895,7 @@ export default function MatchesPage() {
           {hasActiveFilters && (
           <button
           onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
-          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
+          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border hover:bg-secondary hover:text-foreground transition-colors">
           <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
           </button>
           )}
@@ -909,7 +910,7 @@ export default function MatchesPage() {
       content: (
         <div className="space-y-2.5">
           {/* Sort */}
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
           <CardContent className="p-3 space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
@@ -932,6 +933,30 @@ export default function MatchesPage() {
         </div>
       ),
     },
+    {
+      id: 'next',
+      glyph: 'discover',
+      labelEn: 'Find more people',
+      labelEl: 'Βρείτε περισσότερα άτομα',
+      content: (
+        <div className="space-y-2">
+          <Button asChild variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+            <Link href="/discover">
+              <CfbGlyph name="discover" className="icon-sm shrink-0 text-primary-accessible" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium leading-snug">
+                  <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} wrap />
+                </span>
+                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                  <BilingualText en="Search beyond this ranked list." el="Αναζήτηση πέρα από αυτή την κατάταξη." wrap />
+                </span>
+              </span>
+              <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      ),
+    },
   ];
   return (
     <AppShell
@@ -944,18 +969,10 @@ export default function MatchesPage() {
       askAi={askAi}
       contentClassName="overflow-x-clip"
       actions={
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="sm" className="min-h-10 gap-1.5" onClick={() => void refetch()}>
-            <RefreshCw className="icon-sm" />
-            <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} compact />
-          </Button>
-          <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
-            <Link href="/discover">
-              <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} compact />
-              <ArrowRight className="icon-sm" />
-            </Link>
-          </Button>
-        </div>
+        <Button variant="ghost" size="sm" className="min-h-10 gap-1.5" onClick={() => void refetch()}>
+          <RefreshCw className="icon-sm" />
+          <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} compact />
+        </Button>
       }
     >
       <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
@@ -981,7 +998,7 @@ export default function MatchesPage() {
 
         {/* ── Error state ── */}
         {hasToken && isError && (
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
               <p className="text-sm text-muted-foreground">
                 <BilingualText en={matchesEn('failed_to_load')} el={matchesEl('failed_to_load')} />
@@ -995,13 +1012,8 @@ export default function MatchesPage() {
 
         {/* ── Loading skeletons ── */}
         {hasToken && isLoading && (
-          <div className="flex gap-4 items-start">
-            <div className="hidden md:block w-[220px] shrink-0 space-y-3">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
-            </div>
-            <div className="flex-1 min-w-0 grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-              {[...Array(6)].map((_, i) => <ProfileCardSkeleton key={i} variant="featured" />)}
-            </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => <ProfileCardSkeleton key={i} variant="featured" />)}
           </div>
         )}
 
@@ -1018,7 +1030,7 @@ export default function MatchesPage() {
                 ? { bg: 'bg-muted/40', icon: 'text-foreground' }
                 : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
               return (
-              <Card key={labelEn} className="min-w-0 shadow-sm border-border/50">
+              <Card key={labelEn} className="min-w-0 shadow-sm border-border">
                 <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
                     <Icon className={cn('icon-sm', statColors.icon)} />
@@ -1109,7 +1121,7 @@ export default function MatchesPage() {
                   return (
                     <button key={tab.key} onClick={() => setActiveFilter(isActive && tab.key !== 'all' ? 'all' : tab.key)}
                       className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
-                        isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
+                        isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground')}>
                       {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
                       <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
                       <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
@@ -1137,7 +1149,7 @@ export default function MatchesPage() {
                   <button
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
                     className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',
-                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
+                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     aria-pressed={selectMode}
                     title={bilingualAria('Select profiles to compare', 'Επιλογή προφίλ για σύγκριση')}>
                     <CheckSquare className="icon-sm" />
@@ -1147,13 +1159,13 @@ export default function MatchesPage() {
 
                   <button onClick={() => setShowSearch(s => !s)}
                     className={cn('flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
-                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}
+                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary')}
                     aria-pressed={showSearch}
                     aria-label={bilingualAria('Search matches', 'Αναζήτηση αντιστοιχίσεων')}>
                     <Search className="icon-sm" />
                   </button>
 
-                  <div className="flex items-center gap-1 rounded-lg border border-border/60 p-0.5">
+                  <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
                     {([
                       { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false, mobile: true },
                       { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
@@ -1207,7 +1219,7 @@ export default function MatchesPage() {
 
               {/* No results for filters */}
               {filtered.length === 0 && (
-                <Card className="shadow-sm border-border/50">
+                <Card className="shadow-sm border-border">
                   <CardContent className="py-12 text-center">
                     <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" aria-hidden="true" />
                     <p className="font-medium text-foreground mb-1"><BilingualText en="No matches for these filters" el="Καμία αντιστοίχιση για αυτά τα φίλτρα" compact /></p>
@@ -1290,11 +1302,8 @@ export default function MatchesPage() {
 
               {/* Results footer */}
               {filtered.length > 0 && (
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
-                  <Link href="/discover" className="flex tap-target-y items-center gap-1 transition-colors hover:text-foreground">
-                    <BilingualText en="Explore more" el="Εξερευνήστε περισσότερα" compact /> <ArrowRight className="icon-sm" />
-                  </Link>
                 </div>
               )}
             </div>
@@ -1326,7 +1335,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"

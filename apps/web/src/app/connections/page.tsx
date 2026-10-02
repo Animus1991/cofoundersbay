@@ -416,6 +416,7 @@ export default function ConnectionsPage() {
       labelEl: 'Πού να πάτε μετά',
       content: (
         <div className="space-y-1">
+          <RailAction icon={UserPlus} en={connectionsEn('find_people')} el={connectionsEl('find_people')} onClick={() => router.push('/discover')} />
           <RailAction icon={Compass} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
           <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
         </div>
@@ -434,14 +435,6 @@ export default function ConnectionsPage() {
     <AppShell
       showHelp
       rail={rail}
-      actions={
-        <Button className="gap-2" asChild>
-          <Link href="/discover">
-            <UserPlus className="icon-sm" />
-            <BilingualText en={connectionsEn('find_people')} el={connectionsEl('find_people')} />
-          </Link>
-        </Button>
-      }
     >
       <div className="space-y-5 pb-10">
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
@@ -565,7 +558,7 @@ export default function ConnectionsPage() {
                   ? { id: c.receiverId, displayName: c.receiver?.displayName ?? '', avatarUrl: c.receiver?.avatarUrl ?? null, role: c.receiver?.role, headline: c.receiver?.headline ?? null }
                   : { id: c.requesterId, displayName: c.requester?.displayName ?? '', avatarUrl: c.requester?.avatarUrl ?? null, role: c.requester?.role, headline: c.requester?.headline ?? null };
                 return (
-                  <div key={c.id} className="rounded-xl overflow-hidden border border-border/60 shadow-sm">
+                  <div key={c.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
                     <ConnectionCard
                       connection={c}
                       viewerId={viewerId}

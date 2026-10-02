@@ -297,7 +297,7 @@ export default function ProviderDashboard() {
             <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }}>
               {inquiriesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
               {waiting.slice(0, 5).map((inquiry) => (
-                <div key={inquiry.id} className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
+                <div key={inquiry.id} className="flex items-start gap-3 rounded-lg border border-border p-3">
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarImage src={inquiry.clientAvatar} />
                     <AvatarFallback>{initialsOf(inquiry.clientName)}</AvatarFallback>
@@ -328,7 +328,7 @@ export default function ProviderDashboard() {
 
             <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }}>
               {projects.slice(0, 5).map((project) => (
-                <div key={project.id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3">
+                <div key={project.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
                   <Avatar className="h-10 w-10 shrink-0">
                     <AvatarImage src={project.clientAvatar} />
                     <AvatarFallback>{initialsOf(project.clientName)}</AvatarFallback>
@@ -359,7 +359,7 @@ export default function ProviderDashboard() {
             >
               {servicesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
               {services.map((svc) => (
-                <Link key={svc.id} href="/provider/services" className="rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
+                <Link key={svc.id} href="/provider/services" className="rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
                   <div className="flex items-start justify-between gap-2">
                     <p className="min-w-0 text-sm font-medium">{svc.title}</p>
                     <Badge size="sm" variant={svc.isActive === false ? 'secondary' : 'success'} className="shrink-0">

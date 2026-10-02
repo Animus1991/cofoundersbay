@@ -49,7 +49,7 @@ export function EmptyCanvasStarter({
 }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-4 sm:p-8">
-      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-border/70 bg-card/95 p-5 shadow-sm backdrop-blur-sm">
+      <div className="pointer-events-auto w-full max-w-2xl rounded-2xl border border-border bg-card/95 p-5 shadow-sm backdrop-blur-sm">
         <div className="flex items-start gap-3">
           <div className="rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name="research" className="icon-sm" />
@@ -70,7 +70,7 @@ export function EmptyCanvasStarter({
               type="button"
               onClick={() => onAddStarter(row.kind)}
               className={cn(
-                'flex min-h-11 items-start gap-3 rounded-2xl border border-border/60 bg-card p-3 text-left',
+                'flex min-h-11 items-start gap-3 rounded-2xl border border-border bg-card p-3 text-left',
                 'transition-colors hover:border-border hover:bg-muted/30',
               )}
             >

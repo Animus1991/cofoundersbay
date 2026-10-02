@@ -318,7 +318,7 @@ export default function AdminUserDetailPage() {
                 )}
               </div>
 
-              <dl className="mt-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t border-border/60 pt-3 text-left text-xs">
+              <dl className="mt-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t border-border pt-3 text-left text-xs">
                 <dt className="min-w-0 text-muted-foreground"><BilingualText en="Joined" el="Εγγραφή" stacked wrap /></dt>
                 <dd className="whitespace-nowrap text-right"><RelativeTime date={user.createdAt} format={formatRelativeTime} /></dd>
                 <dt className="min-w-0 text-muted-foreground"><BilingualText en="Last seen" el="Τελευταία παρουσία" stacked wrap /></dt>
@@ -338,7 +338,7 @@ export default function AdminUserDetailPage() {
 
             <SectionCard title="Reports about this account" titleEl="Αναφορές για αυτόν τον λογαριασμό" icon={Flag} action={{ href: '/admin/reports', label: 'All reports', labelEl: 'Όλες οι αναφορές' }}>
               {against.map((r) => (
-                <div key={r.id} className="rounded-lg border border-border/60 p-3">
+                <div key={r.id} className="rounded-lg border border-border p-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm" className="capitalize">{r.status}</Badge>
                     <span className="text-xs capitalize text-muted-foreground">{r.type}</span>
@@ -357,7 +357,7 @@ export default function AdminUserDetailPage() {
 
             <SectionCard title="Admin history" titleEl="Ιστορικό διαχείρισης" icon={Shield} action={{ href: '/admin/audit-log', label: 'Audit log', labelEl: 'Αρχείο ελέγχου' }}>
               {history.map((l) => (
-                <div key={l.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 border-b border-border/50 py-2 text-sm last:border-b-0">
+                <div key={l.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 border-b border-border py-2 text-sm last:border-b-0">
                   <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{l.action}</code>
                   <span className="min-w-0 flex-1 text-muted-foreground">
                     {l.actorEmail}

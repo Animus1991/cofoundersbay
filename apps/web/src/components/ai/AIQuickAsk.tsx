@@ -81,7 +81,7 @@ export function AIQuickAsk({
     <div className={cn('relative', className)}>
       <div className="bg-card border border-border rounded-lg shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 bg-status-accent-bg border-b border-border/60">
+        <div className="flex items-center justify-between px-3 py-2 bg-status-accent-bg border-b border-border">
           <span className="text-xs font-medium flex items-center gap-1.5">
             <span>{getAgentIcon(agentId)}</span>
             Quick AI Ask
@@ -96,7 +96,7 @@ export function AIQuickAsk({
 
         {/* Response */}
         {response && (
-          <div className="px-3 py-2 border-b border-border/60 bg-muted/30 max-h-32 overflow-y-auto">
+          <div className="px-3 py-2 border-b border-border bg-muted/30 max-h-32 overflow-y-auto">
             <div className="text-sm">
               {response.split('**').map((part, i) =>
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
@@ -107,7 +107,7 @@ export function AIQuickAsk({
 
         {/* Error */}
         {error && (
-          <div className="px-3 py-2 text-xs text-destructive-accessible bg-destructive/10 border-b border-border/60">
+          <div className="px-3 py-2 text-xs text-destructive-accessible bg-destructive/10 border-b border-border">
             {error}
           </div>
         )}

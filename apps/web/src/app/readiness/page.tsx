@@ -591,7 +591,7 @@ function DimensionCard({
                 thing still open, which is more useful than silence and fills
                 the space honestly. */}
             {status === 'excellent' && (
-              <div className="mt-auto space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 px-2.5 py-3.5">
+              <div className="mt-auto space-y-2.5 rounded-xl border border-border bg-secondary/50 px-2.5 py-3.5">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />
                   <BilingualText
@@ -624,7 +624,7 @@ function DimensionCard({
             )}
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-auto space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 px-2.5 py-3.5">
+              <div className="mt-auto space-y-2.5 rounded-xl border border-border bg-secondary/50 px-2.5 py-3.5">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CfbGlyph name="spark" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
@@ -1066,13 +1066,12 @@ export default function ReadinessPage() {
       labelEn: 'AI plan',
       labelEl: 'Πλάνο AI',
       content: <div className="space-y-3">
-        {/* AI Insight Panel */}
         <Card className="border-primary/20 bg-primary/[0.03]">
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">
         <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
-        <BilingualText en={readinessEn('ai_insight')} el={readinessEl('ai_insight')} compact />
+        <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
         </CardTitle>
         <AIInsightButton
         className="h-8"
@@ -1081,32 +1080,58 @@ export default function ReadinessPage() {
         </div>
         </CardHeader>
         <CardContent className="space-y-3">
-        {weakDims.slice(0, 3).map((d) => (
-        <div key={d.key} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3">
-        <CfbGlyph name="spark" className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
-        <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-foreground">
-        <BilingualText en={d.labelEn} el={d.labelEl} wrap /> — {Math.round((d.score / d.maxScore) * 100)}%
-        </p>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-        <BilingualText en={d.recommendations[0]?.en ?? ''} el={d.recommendations[0]?.el} />
-        </p>
-        </div>
-        </div>
-        ))}
-        {weakDims.length === 0 && (
+        {weakDims.length === 0 ? (
         <div className="flex items-center gap-2.5 p-3">
         <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
-        <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
+        <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_excellent')} el={readinessEl('all_dimensions_excellent')} /></p>
         </div>
-        )}
-        <AskAiButton
-        variant="ghost"
-        className="w-full"
-        prompt={askPrompt}
-        labelEn={readinessEn('ask_ai_plan')}
-        labelEl={readinessEl('ask_ai_plan')}
+        ) : (
+        weakDims
+        .slice()
+        .sort((a, b) => (a.score / a.maxScore) - (b.score / b.maxScore))
+        .flatMap((d) =>
+        d.recommendations.map((rec, i) => ({
+        key: `${d.key}-${i}`,
+        dimKey: d.key,
+        labelEn: d.labelEn,
+        labelEl: d.labelEl,
+        pct: Math.round((d.score / d.maxScore) * 100),
+        status: scoreToStatus(Math.round((d.score / d.maxScore) * 100)),
+        rec,
+        }))
+        )
+        .slice(0, 8)
+        .map((item) => {
+        const itemColors = scoreColors(item.status);
+        return (
+        <div key={item.key} className="flex items-start gap-2.5 rounded-xl border border-border bg-card p-3">
+        <ChevronRight className={cn('mt-0.5 icon-sm shrink-0', itemColors.icon)} />
+        <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+        <p className="text-xs font-semibold"><BilingualText en={item.labelEn} el={item.labelEl} compact /></p>
+        <Badge variant="outline" className={cn('border text-2xs', itemColors.chip)}>
+        {item.pct}%
+        </Badge>
+        </div>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+        <BilingualText en={item.rec.en} el={item.rec.el} />
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs" asChild>
+        <Link href={`#dim-${item.dimKey}`}>
+        <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
+        </Link>
+        </Button>
+        <AIInsightButton
+        className="h-8"
+        prompt={`Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`}
         />
+        </div>
+        </div>
+        </div>
+        );
+        })
+        )}
         </CardContent>
         </Card>
       </div>,
@@ -1117,37 +1142,46 @@ export default function ReadinessPage() {
       labelEn: 'Score history',
       labelEl: 'Ιστορικό βαθμολογίας',
       content: <div className="space-y-3">
-        <Card>
-        <CardContent className="p-4">
-        <p className="mb-2.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact wrap /></p>
         {isDemo ? <>
-        <div className="flex items-end gap-2.5">
-        <span className="page-stat font-bold tabular-nums">{overallScore}</span>
-        <span className={cn('mb-1 flex items-center gap-0.5 text-xs', TREND.up)}>
-        <TrendingUp className="icon-sm" />+{overallScore - demoHistory[0].score}{' '}
-        <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
+        <ScoreHistoryChart history={demoHistory} />
+        <Card>
+        <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2">
+        <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
+        <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
+        </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+        {demoHistory.slice().reverse().map((h, i) => (
+        <div key={i} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+        {h.week}
+        </div>
+        <div className="flex-1">
+        <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">{h.score}% <BilingualText en={readinessEn('overall_short')} el={readinessEl('overall_short')} compact /></span>
+        {i < demoHistory.length - 1 && (() => {
+        const delta = h.score - demoHistory[demoHistory.length - 2 - i].score;
+        return (
+        <span className={cn('flex items-center gap-0.5 text-xs', delta >= 0 ? TREND.up : TREND.down)}>
+        {delta >= 0 ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
+        {delta >= 0 ? '+' : ''}{delta}
         </span>
+        );
+        })()}
         </div>
-        {/* 40px, not 24. The seven weeks span 38→61, and in a 20px
-        strip that whole journey was five pixels — the bars read as
-        one flat row. The baseline stays at zero rather than at the
-        minimum, so the rise is shown without being exaggerated. */}
-        <div className="mt-3 flex h-10 items-end gap-1 lg:h-[40px]">
-        {demoHistory.map((h, i) => (
-        // Dimmed once, not twice: bg-primary/40 under an opacity
-        // starting at 0.4 left the oldest bar at ~16% alpha, and the
-        // 38→61 climb read as one flat row of pale blocks. Full
-        // colour, and the fade alone carries the passage of weeks.
-        <div
-        key={i}
-        className="flex-1 rounded-sm bg-primary transition-all"
-        style={{ height: `${Math.max(h.score, 4)}%`, opacity: 0.35 + (i / (demoHistory.length - 1 || 1)) * 0.65 }}
-        />
+        <p className="text-xs text-muted-foreground">
+        <BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact />: {h.accel}% · <BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact />: {h.invest}%
+        </p>
+        </div>
+        <Badge variant="outline" className="text-xs">
+        <BilingualText en={STATUS_LABEL[scoreToStatus(h.score)].en} el={STATUS_LABEL[scoreToStatus(h.score)].el} compact />
+        </Badge>
+        </div>
         ))}
-        </div>
-        </> : <p className="text-sm text-muted-foreground"><BilingualText en="Readiness history is not available yet." el="Το ιστορικό ετοιμότητας δεν είναι ακόμη διαθέσιμο." /></p>}
         </CardContent>
         </Card>
+        </> : <Card><CardContent className="p-4 text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
       </div>,
     },
     {
@@ -1245,7 +1279,7 @@ export default function ReadinessPage() {
               {nextOpen && (
                 <Link
                   href={`#dim-${nextOpen.dimKey}`}
-                  className="w-full rounded-2xl border border-border/70 bg-card/80 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
+                  className="w-full rounded-2xl border border-border bg-card/80 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
                 >
                   <p className="page-stat-label text-muted-foreground">
                     <BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap />
@@ -1279,14 +1313,22 @@ export default function ReadinessPage() {
           </div>
         </div>
 
-        {/* Tabs: Dimensions / Priority Actions / Benchmarks / History */}
+        {/* Tabs: dimensions and benchmarks stay in the column. Priority
+            actions and history live in the rail — opening them here is the
+            same gesture as the strip on the right. */}
         <Tabs defaultValue="dimensions" className="min-w-0">
-          <TabsList className="flex w-full justify-start">
+          <div className="flex flex-wrap items-center gap-2">
+          <TabsList className="flex w-full justify-start sm:w-auto">
             <TabsTrigger value="dimensions" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
-            <TabsTrigger value="actions" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact /></TabsTrigger>
             <TabsTrigger value="benchmarks" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_benchmarks')} el={readinessEl('tab_benchmarks')} compact /></TabsTrigger>
-            <TabsTrigger value="history" className="px-3 sm:px-4"><BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact /></TabsTrigger>
           </TabsList>
+          <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('plan')}>
+            <BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" className="min-h-10" onClick={() => openRailSection('history')}>
+            <BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact />
+          </Button>
+          </div>
 
           <TabsContent value="dimensions" className="mt-5">
             {/* The showcase has a workspace - /builder opens it - and its own
@@ -1317,82 +1359,6 @@ export default function ReadinessPage() {
                 />
               ))}
             </div>
-          </TabsContent>
-
-          <TabsContent value="actions" className="mt-5">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CfbGlyph name="spark" className={cn('icon-sm', STATUS.warning.icon)} />
-                  <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {weakDims.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <CheckCircle2 className={cn('mx-auto mb-3 icon-lg', STATUS.success.icon)} />
-                    <p className="font-medium"><BilingualText en={readinessEn('all_dimensions_excellent')} el={readinessEl('all_dimensions_excellent')} /></p>
-                    <p className="mt-1 text-sm text-muted-foreground"><BilingualText en={readinessEn('keep_iterating')} el={readinessEl('keep_iterating')} /></p>
-                  </div>
-                ) : (
-                  weakDims
-                    .sort((a, b) => (a.score / a.maxScore) - (b.score / b.maxScore))
-                    .flatMap((d) =>
-                      d.recommendations.map((rec, i) => ({
-                        key: `${d.key}-${i}`,
-                        dimKey: d.key,
-                        labelEn: d.labelEn,
-                        labelEl: d.labelEl,
-                        pct: Math.round((d.score / d.maxScore) * 100),
-                        status: scoreToStatus(Math.round((d.score / d.maxScore) * 100)),
-                        rec,
-                      }))
-                    )
-                    .slice(0, 8)
-                    .map((item) => {
-                      const itemColors = scoreColors(item.status);
-                      return (
-                      <div key={item.key} className="flex items-start gap-3 rounded-xl border border-border/40 bg-secondary/50 p-3.5">
-                        <ChevronRight className={cn('mt-0.5 icon-sm shrink-0', itemColors.icon)} />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-sm font-semibold"><BilingualText en={item.labelEn} el={item.labelEl} compact /></p>
-                            <Badge variant="outline" className={cn('border text-xs', itemColors.chip)}>
-                              {item.pct}%
-                            </Badge>
-                          </div>
-                          <p className="mt-0.5 text-sm text-muted-foreground">
-                            <BilingualText en={item.rec.en} el={item.rec.el} />
-                          </p>
-                          <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs" asChild>
-                              <Link href={`#dim-${item.dimKey}`}>
-                                <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
-                              </Link>
-                            </Button>
-                            <AIInsightButton
-                              className="h-8"
-                              prompt={`Help me improve ${readinessOf(item.labelEn)} (${item.pct}%). Next step: ${item.rec.en}`}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );})
-                )}
-                {/* The AI plan lives in the rail now. Rather than a second
-                    button with the same prompt, this opens that section - the
-                    reader ends up at the panel, not at a copy of its trigger. */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => openRailSection('plan')}
-                >
-                  <CfbGlyph name="spark" className="icon-sm mr-1.5" aria-hidden="true" />
-                  <BilingualText en="Open the AI plan" el="Άνοιγμα πλάνου AI" compact />
-                </Button>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="benchmarks" className="mt-5">
@@ -1487,49 +1453,6 @@ export default function ReadinessPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="history" className="mt-5">
-            {isDemo ? <div className="space-y-5">
-              <ScoreHistoryChart history={demoHistory} />
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2">
-                    <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
-                    <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-1">
-                  {demoHistory.slice().reverse().map((h, i) => (
-                    <div key={i} className="flex items-center gap-3 border-b border-border/40 py-3 last:border-0">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
-                        {h.week}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{h.score}% <BilingualText en={readinessEn('overall_short')} el={readinessEl('overall_short')} compact /></span>
-                          {i < demoHistory.length - 1 && (() => {
-                            const delta = h.score - demoHistory[demoHistory.length - 2 - i].score;
-                            return (
-                              <span className={cn('flex items-center gap-0.5 text-xs', delta >= 0 ? TREND.up : TREND.down)}>
-                                {delta >= 0 ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
-                                {delta >= 0 ? '+' : ''}{delta}
-                              </span>
-                            );
-                          })()}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          <BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact />: {h.accel}% · <BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact />: {h.invest}%
-                        </p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        <BilingualText en={STATUS_LABEL[scoreToStatus(h.score)].en} el={STATUS_LABEL[scoreToStatus(h.score)].el} compact />
-                      </Badge>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div> : <Card><CardContent className="p-6 text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
           </TabsContent>
         </Tabs>
 

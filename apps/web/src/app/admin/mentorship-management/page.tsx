@@ -131,7 +131,7 @@ export default function MentorshipManagementPage() {
             <Link
               key={m.id}
               href={`/profiles/${m.userId}`}
-              className="group flex flex-wrap items-center gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring sm:flex-nowrap"
+              className="group flex flex-wrap items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring sm:flex-nowrap"
             >
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarFallback className="bg-muted text-foreground">{initialsOf(m.displayName)}</AvatarFallback>

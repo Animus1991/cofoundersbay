@@ -129,10 +129,10 @@ export function CanvasInspectorPanel({
   return (
     <div
       data-canvas-chrome
-      className={cn('pointer-events-auto flex max-h-full min-h-0 w-full cursor-default flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-sm sm:w-[220px]', className)}
+      className={cn('pointer-events-auto flex max-h-full min-h-0 w-full cursor-default flex-col overflow-hidden rounded-2xl border border-border bg-card/95 shadow-sm sm:w-[220px]', className)}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <div className="relative z-10 shrink-0 border-b border-border/50 bg-card/95 px-3 pt-3 pb-2">
+      <div className="relative z-10 shrink-0 border-b border-border bg-card/95 px-3 pt-3 pb-2">
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 text-2xs font-medium text-muted-foreground">
             <Layers className="icon-sm" />
@@ -209,7 +209,7 @@ export function CanvasInspectorPanel({
                 disabled={idle}
                 onClick={() => onStyle({ fill: c.fill })}
                 className={cn(
-                  'h-5 w-5 rounded-md border border-border/50',
+                  'h-5 w-5 rounded-md border border-border',
                   fill && fill.toLowerCase() === c.fill.toLowerCase() && 'ring-1 ring-foreground/30',
                   fill && fill.toLowerCase() === c.accent.toLowerCase() && 'ring-1 ring-foreground/30',
                 )}
@@ -237,7 +237,7 @@ export function CanvasInspectorPanel({
               value={stroke || '#d4d4d8'}
               disabled={idle}
               onChange={(e) => onStyle({ stroke: e.target.value })}
-              className="h-6 w-8 cursor-pointer rounded-md border border-border/50 bg-transparent"
+              className="h-6 w-8 cursor-pointer rounded-md border border-border bg-transparent"
             />
           </label>
           <label className="flex items-center justify-between gap-2 text-2xs text-muted-foreground">
@@ -252,7 +252,7 @@ export function CanvasInspectorPanel({
           </label>
         </div>
 
-        <div className={cn('mt-2 border-t border-border/50 pt-2', idle && 'opacity-50')}>
+        <div className={cn('mt-2 border-t border-border pt-2', idle && 'opacity-50')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('note_text')} el={researchEl('note_text')} compact />
           </p>
@@ -296,7 +296,7 @@ export function CanvasInspectorPanel({
           </div>
         </div>
 
-        <div className={cn('mt-2 border-t border-border/50 pt-2', idle && 'opacity-50')}>
+        <div className={cn('mt-2 border-t border-border pt-2', idle && 'opacity-50')}>
           <p className="mb-1.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={researchEn('arrange')} el={researchEl('arrange')} compact />
           </p>
@@ -316,7 +316,7 @@ export function CanvasInspectorPanel({
           </div>
         </div>
 
-        <div className="mt-2 border-t border-border/50 pt-2">
+        <div className="mt-2 border-t border-border pt-2">
           <p className="mb-1.5 flex items-center gap-1.5 text-2xs font-medium text-muted-foreground">
             <LinkIcon className="icon-sm" />
             <BilingualText en={researchEn('link_to')} el={researchEl('link_to')} compact />
@@ -341,7 +341,7 @@ export function CanvasInspectorPanel({
           </div>
         </div>
       </div>
-      {footer ? <div className="shrink-0 border-t border-border/50 p-2">{footer}</div> : null}
+      {footer ? <div className="shrink-0 border-t border-border p-2">{footer}</div> : null}
     </div>
   );
 }

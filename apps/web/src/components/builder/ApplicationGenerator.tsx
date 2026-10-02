@@ -46,6 +46,8 @@ interface ApplicationGeneratorProps {
   hideTitle?: boolean;
   /** Dedicated /builder/applications page: stats and program picker live in the rail. */
   pageRail?: boolean;
+  /** Extra rail families from the host page (linked destinations). */
+  extraSections?: PageRailSection[];
   contentRevision?: string;
 }
 
@@ -84,6 +86,7 @@ export function ApplicationGenerator({
   initialData,
   hideTitle = false,
   pageRail = false,
+  extraSections,
   contentRevision,
 }: ApplicationGeneratorProps) {
   const t = useBuilderPrimaryText();
@@ -280,7 +283,7 @@ export function ApplicationGenerator({
 
   return (
     <>
-      {pageRail ? <PageRail sections={rail} /> : null}
+      {pageRail ? <PageRail sections={[...rail, ...(extraSections ?? [])]} /> : null}
     <div className="space-y-6">
       <BuilderStageHeader
         glyph="applications"
@@ -329,7 +332,7 @@ export function ApplicationGenerator({
                     {currentApp.name}{' '}
                     <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
                   </CardTitle>
-                  <p className="type-hold text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {currentApp.questions.length}{' '}
                     <BilingualText en={builderEn('app_questions')} el={builderEl('app_questions')} compact />
                     {' · '}
@@ -443,7 +446,7 @@ export function ApplicationGenerator({
                   />
 
                   {tip && (
-                    <p className="type-hold flex items-start gap-1 text-xs text-muted-foreground">
+                    <p className="flex items-start gap-1 text-xs text-muted-foreground">
                       <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
                       <BilingualText en={tip.en} el={tip.el} />
                     </p>

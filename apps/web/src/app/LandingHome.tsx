@@ -100,7 +100,7 @@ const PERSONAS: Array<{
   {
     icon: TrendingUp,
     role: 'Investor',
-    color: 'text-orange-400',
+    color: 'text-status-warning',
     bg: 'bg-status-warning-bg border-status-warning-border',
     headline: 'Source deals smarter',
     bullets: [
@@ -112,7 +112,7 @@ const PERSONAS: Array<{
   {
     icon: Building2,
     role: 'Accelerator',
-    color: 'text-purple-400',
+    color: 'text-status-accent',
     bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Run your cohort',
     bullets: [
@@ -136,7 +136,7 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: Target,
     title: 'Get matched intelligently',
     desc: 'Our multi-dimension matching engine scores compatibility across skills, stage, industry, location, values, and goals — with full transparency on why each match appears.',
-    color: 'text-emerald-400 bg-status-success-bg',
+    color: 'text-status-success bg-status-success-bg',
   },
   {
     step: 3,
@@ -490,7 +490,7 @@ export function LandingHome() {
             ].map(({ value, label }) => (
               <div
                 key={label}
-                className="rounded-xl border border-border/50 bg-card/50 p-4 text-center backdrop-blur-sm"
+                className="rounded-xl border border-border bg-card/50 p-4 text-center backdrop-blur-sm"
               >
                 <p className="font-display text-2xl font-bold text-foreground">{value}</p>
                 <p className="mt-1 text-xs text-muted-foreground"><L en={label} /></p>
@@ -501,7 +501,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Trusted By ─────────────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 bg-secondary/10 px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
+      <section className="border-t border-border bg-secondary/10 px-6 py-10 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
             <BilingualText en="Trusted by founders from leading programs" el="Το εμπιστεύονται ιδρυτές από κορυφαία προγράμματα" wrap />
@@ -521,7 +521,7 @@ export function LandingHome() {
       </section>
 
       {/* ── How It Works ───────────────────────────────────────────────────── */}
-      <section id="how-it-works" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section id="how-it-works" className="border-t border-border px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-14 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="How it works" el="Πώς λειτουργεί" compact /></Badge>
@@ -560,7 +560,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Personas ───────────────────────────────────────────────────────── */}
-      <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section id="roles" className="border-t border-border bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Roles" el="Ρόλοι" compact /></Badge>
@@ -604,7 +604,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Features ───────────────────────────────────────────────────────── */}
-      <section id="features" className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section id="features" className="border-t border-border px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Platform" el="Πλατφόρμα" compact /></Badge>
@@ -619,7 +619,7 @@ export function LandingHome() {
             {FEATURES.map(({ icon: Icon, title, desc }, index) => (
               <div
                 key={title}
-                className="group flex animate-fade-in gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-glow-sm"
+                className="group flex animate-fade-in gap-4 rounded-2xl border border-border bg-card/70 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-glow-sm"
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
@@ -637,7 +637,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Platform Statistics ────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section className="border-t border-border bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="By the numbers" el="Σε αριθμούς" compact /></Badge>
@@ -652,7 +652,7 @@ export function LandingHome() {
             {PLATFORM_STATS.map(({ value, label, sub }, index) => (
               <div
                 key={label}
-                className="animate-fade-in rounded-2xl border border-border/60 bg-card/80 p-6 text-center backdrop-blur-sm"
+                className="animate-fade-in rounded-2xl border border-border bg-card/80 p-6 text-center backdrop-blur-sm"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
                 <p className="font-display text-4xl font-bold text-primary-accessible">{value}</p>
@@ -665,7 +665,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Testimonials ───────────────────────────────────────────────────── */}
-      <section className="border-t border-border/40 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section className="border-t border-border px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Testimonials" el="Μαρτυρίες" compact /></Badge>
@@ -680,13 +680,13 @@ export function LandingHome() {
             {TESTIMONIALS.map(({ name, role, company, avatar, quote, rating, tag }, index) => (
               <div
                 key={name}
-                className="animate-fade-in flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/80 p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md"
+                className="animate-fade-in flex flex-col gap-4 rounded-2xl border border-border bg-card/80 p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} className="icon-sm fill-status-warning text-amber-400" />
+                      <Star key={i} className="icon-sm fill-status-warning text-status-warning" />
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs"><L en={tag} /></Badge>
@@ -694,7 +694,7 @@ export function LandingHome() {
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                   &ldquo;{quote}&rdquo;
                 </p>
-                <div className="flex items-center gap-3 border-t border-border/40 pt-4">
+                <div className="flex items-center gap-3 border-t border-border pt-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-accessible">
                     {avatar}
                   </div>
@@ -710,7 +710,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Pricing ────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+      <section id="pricing" className="border-t border-border bg-secondary/20 px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Pricing" el="Τιμές" compact /></Badge>
@@ -728,7 +728,7 @@ export function LandingHome() {
                 className={`animate-fade-in relative flex flex-col rounded-2xl border p-6 transition-all duration-300 ${
                   highlight
                     ? 'border-primary/60 bg-primary/5 shadow-xl shadow-primary/10 scale-[1.02]'
-                    : 'border-border/60 bg-card/80 hover:border-primary/20'
+                    : 'border-border bg-card/80 hover:border-primary/20'
                 }`}
                 style={{ animationDelay: `${index * 80}ms` }}
               >
@@ -769,7 +769,7 @@ export function LandingHome() {
       </section>
 
       {/* ── Final CTA ──────────────────────────────────────────────────────── */}
-      <section id="cta" className="border-t border-border/40 px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
+      <section id="cta" className="border-t border-border px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
@@ -807,7 +807,7 @@ export function LandingHome() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12 sm:px-8 lg:px-12 xl:px-16">
+      <footer className="border-t border-border bg-secondary/10 px-6 py-12 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 mb-10">
             <div className="lg:col-span-2 space-y-4">
@@ -818,19 +818,19 @@ export function LandingHome() {
               </p>
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on Twitter"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Twitter className="icon-sm" aria-hidden="true" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on LinkedIn"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Linkedin className="icon-sm" aria-hidden="true" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer" aria-label="CoFounderBay on GitHub"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Github className="icon-sm" aria-hidden="true" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer" aria-label="The CoFounderBay website"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Globe className="icon-sm" aria-hidden="true" />
                 </a>
               </div>
@@ -894,7 +894,7 @@ export function LandingHome() {
             </div>
           </div>
 
-          <div className="border-t border-border/40 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>

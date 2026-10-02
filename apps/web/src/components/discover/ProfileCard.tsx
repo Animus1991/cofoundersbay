@@ -56,10 +56,10 @@ export type ProfileCardData = {
 
 const ROLE_RING_COLORS: Record<string, string> = {
   founder: 'ring-primary/50',
-  mentor: 'ring-cyan-500/60',
-  investor: 'ring-orange-500/60',
-  org: 'ring-purple-500/60',
-  admin: 'ring-red-500/60',
+  mentor: 'ring-status-info',
+  investor: 'ring-status-warning',
+  org: 'ring-status-accent',
+  admin: 'ring-status-danger',
 };
 
 function ProfileCompletenessBar({ score }: { score: number }) {
@@ -180,7 +180,7 @@ function ProfileCardInner({
     return (
       <Card className={cn('group relative overflow-hidden', className)}>
         {/* Featured gradient border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">
@@ -302,7 +302,7 @@ function ProfileCardInner({
           )}
 
           {/* Actions */}
-          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4">
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
             <Button onClick={onConnect} size="sm" className="min-h-10 flex-1 gap-2">
               <UserPlus className="icon-sm" />
               Connect
@@ -424,10 +424,10 @@ function ProfileCardInner({
               </div>
             </div>
             {profile.headline && (
-              <p className="mt-1 text-sm text-muted-foreground dark:text-slate-400 line-clamp-2">{profile.headline}</p>
+              <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground line-clamp-2">{profile.headline}</p>
             )}
             {profile.location && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground dark:text-slate-400">
+              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground">
                 <MapPin className="icon-sm" />
                 {profile.location}
               </div>
