@@ -32,10 +32,12 @@ const LOCATION_ALIASES: Array<{ keys: string[]; value: string }> = [
 ];
 
 const PERSON_ALIASES: Array<{ keys: string[]; name: string }> = [
-  { keys: ['elena', 'papadopoulos', 'έλενα'], name: 'Elena' },
+  { keys: ['elena', 'papadopoulos', 'έλεν', 'ελεν'], name: 'Elena' },
   { keys: ['marcus', 'chen', 'μάρκους', 'μαρκους'], name: 'Marcus' },
   { keys: ['sarah', 'kim'], name: 'Sarah' },
-  { keys: ['nikos', 'andreou', 'νίκος', 'νικος'], name: 'Nikos' },
+  // Greek names decline - «ο Νίκος», «στον Νίκο», «του Νίκου» - so the stem
+  // without its ending is the key.
+  { keys: ['nikos', 'andreou', 'νίκο', 'νικο'], name: 'Nikos' },
 ];
 
 /**
@@ -59,8 +61,17 @@ const READINESS_DIMENSION_ALIASES: Array<{ keys: string[]; dimension: string }> 
   { keys: ['execution', 'εκτέλεσ', 'εκτελεσ', 'υλοποίησ', 'υλοποιησ'], dimension: 'execution' },
 ];
 
+/**
+ * Substring match that ignores Greek stress marks on both sides.
+ *
+ * Greek moves the accent between forms of one word - «αντιστοίχιση» but
+ * «αντιστοιχίσεις» - so a key spelled with one accent missed the other forms,
+ * and lists grew a second unaccented spelling per key to compensate.
+ * `fold` is defined below and used by `includesWord` for the same reason.
+ */
 function includesAny(haystack: string, needles: string[]): boolean {
-  return needles.some((n) => haystack.includes(n));
+  const folded = fold(haystack);
+  return needles.some((n) => haystack.includes(n) || folded.includes(fold(n)));
 }
 
 /**
@@ -568,6 +579,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const wantsMatches = includesAny(message, [
     'match',
     'recommend',
+    'αντιστοίχισ',
+    'αντιστοιχισ',
     'for you',
     'compatible',
     'ταιρι',
@@ -609,7 +622,21 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ]);
   const wantsShortlistRemove = explicitRemove && namesTheList;
 
+  // "Any connection requests?" and "do I have unread messages?" name the
+  // area, and "connect" sits inside "connection": a question about the area
+  // reads it, and only an explicit request to connect or to write proposes one.
+  const explicitConnect = includesAny(message, [
+    'connect with', 'connect me', 'send an intro', 'send intro', 'introduce me', 'send a connection', 'send connection',
+    'σύνδεσέ με', 'συνδεσε με', 'στείλε αίτημα σύνδεσης', 'στειλε αιτημα συνδεσης', 'στείλε intro', 'στειλε intro',
+  ]) || /^\s*(?:please\s+)?connect\b/.test(message);
+  const explicitMessage = includesAny(message, [
+    'send a message', 'send message', 'write to', 'chat with', 'dm ', 'στείλε μήνυμα', 'στειλε μηνυμα', 'γράψε στ', 'γραψε στ',
+  ]) || /^\s*(?:please\s+)?message\s+\S/.test(message);
+  const asksAboutConnections = areaReads.includes('get_connections') && !explicitConnect;
+  const asksAboutMessages = areaReads.includes('get_messages') && !explicitMessage;
+
   const wantsConnect =
+    !asksAboutConnections &&
     !namesCanvasSurface(message) &&
     includesAny(message, [
     'connect',
@@ -623,7 +650,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'στειλε intro',
   ]);
 
-  const wantsMessage = includesAny(message, [
+  const wantsMessage = !asksAboutMessages && includesAny(message, [
     'message',
     'dm',
     'chat with',
