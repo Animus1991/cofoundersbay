@@ -60,9 +60,9 @@ html {
        the page grey (232); sat 66% keeps it colourful without the 88%
        shout that was pulling the eye off the words. Contrast on white
        stays ≥5:1. */
-    --primary:          248 66% 60%;
+    --primary:          248 39% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 248 66% 60%;
+    --primary-accessible: 248 30% 50%;
 
     /* Secondary / muted sit a couple of points off the card, not a new colour. */
     --secondary:        232 7% 95.4%;
@@ -73,12 +73,12 @@ html {
 
     /* Accent follows primary. A second hue (magenta, cyan) was pulling the
        eye off the words the way cursor.com never does. */
-    --accent:           248 66% 60%;
+    --accent:           248 39% 56%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      4 42% 44%;
+    --destructive:      4 32.5% 40%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 4 40% 40%;
+    --destructive-accessible: 4 33.5% 38.8%;
 
     /* Borders: a hairline, spent sparingly.
        cursor.com draws its card edge at 1.15:1 and its button edge at 1.18:1,
@@ -91,7 +91,7 @@ html {
        than a card edge because it is the only thing that marks the field. */
     --border:           232 7% 93.6%;  /* ~1.12 on card — a hairline, not a frame */
     --input:            232 7% 90.5%;  /* ~1.22 on card — fields only */
-    --ring:             248 66% 60%;
+    --ring:             248 39% 56%;
     /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
        sm/DEFAULT 6 · md/lg 8 · xl 10 · 2xl 12 · 3xl 14.
        cursor.com: cards ~12px, outlined buttons ~6–8px, both circular arcs. */
@@ -112,7 +112,7 @@ html {
     /* Gradients. The hero is one flat dark tone carrying white type; a
        surface that shifts hue across its width pulls the eye off the words. */
     --gradient-hero:    linear-gradient(hsl(222 26% 10%), hsl(222 26% 10%));
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(252 52% 72%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(252 34% 70%));
     --gradient-card:    linear-gradient(hsl(var(--card)), hsl(var(--card)));
 
     /* ── Shadows ──────────────────────────────────────────────────────────
@@ -160,21 +160,21 @@ html {
     --card-foreground: 220 10% 93%;
     --popover: 222 20% 11.4%;
     --popover-foreground: 220 10% 93%;
-    --primary: 248 58% 74%;
+    --primary: 248 47% 76.6%;
     --primary-foreground: 248 32% 12%;
-    --primary-accessible: 248 62% 80%;
+    --primary-accessible: 248 50% 82%;
     --secondary: 232 16% 13.8%;
     --secondary-foreground: 232 10% 93%;
     --muted: 232 16% 13%;
     --muted-foreground: 232 8% 62%;
-    --accent: 248 58% 74%;
+    --accent: 248 47% 76.6%;
     --accent-foreground: 248 32% 12%;
-    --destructive: 4 36% 51%;
+    --destructive: 4 23.5% 47%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 4 32% 70%;
+    --destructive-accessible: 4 30% 70%;
     --border: 232 12% 13.6%;           /* ~1.12 on card */
     --input: 232 12% 16.8%;            /* ~1.22 on card */
-    --ring: 248 58% 74%;
+    --ring: 248 47% 76.6%;
     color-scheme: dark;
   }
 
@@ -197,9 +197,9 @@ html {
     --muted-foreground: 215 10% 68%;
     --accent: 199 36% 40%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 2 32% 50%;
+    --destructive: 2 23.5% 46.8%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 2 28% 70%;
+    --destructive-accessible: 2 30% 70%;
     --border: 215 16% 22.8%;           /* ~1.12 on card */
     --input: 215 16% 25.8%;            /* ~1.22 on card */
     --ring: 199 36% 40%;
@@ -227,9 +227,9 @@ html {
     --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
     --accent: 34 40% 41%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 2 30% 46%;
+    --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 2 26% 40%;
+    --destructive-accessible: 2 33.5% 38.8%;
     --border: 200 12% 93.4%;           /* ~1.12 on card */
     --input: 200 12% 90.4%;            /* ~1.22 on card */
     --ring: 34 40% 41%;
@@ -256,9 +256,9 @@ html {
     --muted-foreground: 240 5% 64%;
     --accent: 258 28% 54%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 2 32% 52%;
+    --destructive: 2 23% 48%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 2 28% 66%;
+    --destructive-accessible: 2 25% 64%;
     --border: 240 6% 10.8%;            /* ~1.12 on card */
     --input: 240 6% 13.6%;             /* ~1.22 on card */
     --ring: 258 28% 54%;
@@ -301,7 +301,7 @@ html {
     --accent:            40 16% 93%;
     --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
 
-    --destructive:       6 60% 42%;     /* white on it: 6.30 */
+    --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 6 60% 36%;  /* 7.83 on card */
 
@@ -337,9 +337,9 @@ html {
     --accent:            40 16% 93%;
     --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
 
-    --destructive:       6 60% 42%;     /* white on it: 6.30 */
+    --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 6 60% 36%; /* 7.83 on card */
+    --destructive-accessible: 6 33.5% 38.8%; /* 6.92 on card */
 
     --border:            36 10% 91.8%;  /* 1.17 on card */
     --input:             36 10% 55%;    /* 3.14 on card — a visible field edge */
@@ -349,69 +349,69 @@ html {
   }
 
   .role-founder {
-    --primary: 248 66% 60%;
+    --primary: 248 39% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 248 66% 60%;
-    --accent: 248 66% 60%;
+    --primary-accessible: 248 30% 50%;
+    --accent: 248 39% 56%;
     --accent-foreground: 0 0% 100%;
-    --ring: 248 66% 60%;
+    --ring: 248 39% 56%;
   }
   html.dark.role-founder {
-    --primary: 248 58% 74%;
-    --primary-accessible: 248 62% 80%;
-    --accent: 248 58% 74%;
-    --ring: 248 58% 74%;
+    --primary: 248 47% 76.6%;
+    --primary-accessible: 248 50% 82%;
+    --accent: 248 47% 76.6%;
+    --ring: 248 47% 76.6%;
     --primary-foreground: 248 32% 12%;
     --accent-foreground: 248 32% 12%;
   }
 
   .role-mentor {
-    --primary: 190 28% 41%;
+    --primary: 190 40.5% 37%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 190 24% 36%;
-    --accent: 190 28% 41%;
+    --primary-accessible: 190 46% 32.6%;
+    --accent: 190 40.5% 37%;
     --accent-foreground: 0 0% 100%;
-    --ring: 190 28% 41%;
+    --ring: 190 40.5% 37%;
   }
   html.dark.role-mentor {
-    --primary: 190 22% 62%;
-    --primary-accessible: 190 18% 74%;
-    --accent: 190 22% 62%;
-    --ring: 190 22% 62%;
+    --primary: 190 28.5% 61.4%;
+    --primary-accessible: 190 37.5% 76%;
+    --accent: 190 28.5% 61.4%;
+    --ring: 190 28.5% 61.4%;
     --primary-foreground: 190 30% 10%;
     --accent-foreground: 190 30% 10%;
   }
 
   .role-investor {
-    --primary: 32 36% 42%;
+    --primary: 32 39.5% 38%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 32 32% 36%;
-    --accent: 32 36% 42%;
+    --primary-accessible: 32 46% 32.6%;
+    --accent: 32 39.5% 38%;
     --accent-foreground: 0 0% 100%;
-    --ring: 32 36% 42%;
+    --ring: 32 39.5% 38%;
   }
   html.dark.role-investor {
-    --primary: 32 28% 58%;
-    --primary-accessible: 32 24% 70%;
-    --accent: 32 28% 58%;
-    --ring: 32 28% 58%;
+    --primary: 32 28.5% 61.4%;
+    --primary-accessible: 32 30% 70%;
+    --accent: 32 28.5% 61.4%;
+    --ring: 32 28.5% 61.4%;
     --primary-foreground: 32 30% 10%;
     --accent-foreground: 32 30% 10%;
   }
 
   .role-org {
-    --primary: 258 28% 48%;
+    --primary: 258 30% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 258 24% 40%;
-    --accent: 258 28% 48%;
+    --primary-accessible: 258 37.5% 40%;
+    --accent: 258 30% 50%;
     --accent-foreground: 0 0% 100%;
-    --ring: 258 28% 48%;
+    --ring: 258 30% 50%;
   }
   html.dark.role-org {
-    --primary: 258 24% 66%;
-    --primary-accessible: 258 20% 76%;
-    --accent: 258 24% 66%;
-    --ring: 258 24% 66%;
+    --primary: 258 35.5% 69%;
+    --primary-accessible: 258 37.5% 76%;
+    --accent: 258 35.5% 69%;
+    --ring: 258 35.5% 69%;
     --primary-foreground: 258 28% 12%;
     --accent-foreground: 258 28% 12%;
   }
@@ -421,53 +421,56 @@ html {
   :root,
   [data-theme="alliance"],
   [data-theme="minimal"] {
-    /* Helpers sit with the grey page and the lilac brand — same hues,
-       much less chroma, so a status chip does not out-shout the content
-       the way cursor.com never lets a spending delta do. */
-    --status-success-fg:     145 32% 36%;
-    --status-success-bg:     145 14% 95.8%;
-    --status-success-border: 145 10% 88%;
-    /* Bronze, not yellow-gold: hue 32 sits with charcoal/grey, sat 24%
-       stays well under the lilac's 66% so it flags without competing. */
-    --status-warning-fg:     32 24% 43%;
-    --status-warning-bg:     32 10% 96.4%;
-    --status-warning-border: 32 8% 88.5%;
-    --status-danger-fg:      4 38% 44%;
-    --status-danger-bg:      4 14% 96.5%;
-    --status-danger-border:  4 12% 88%;
+    /* Two bands, and the gap between them is the hierarchy: the brand
+       carries ~30 chroma, every status tone ~21, the page itself ~5. A
+       chip tells you what a thing is; it is not competing to be read
+       first, which is why cursor.com's deltas never shout either. */
+    --status-success-fg:     145 35% 30%;
+    --status-success-bg:     145 10% 95%  ;
+    --status-success-border: 145 5% 86% ;
+    /* Bronze, not yellow-gold: hue 32 sits with charcoal and grey. It
+       carries the same chroma as the other five tones now — an amber
+       that reads lighter than a red told people the red mattered more,
+       when both are only labels. */
+    --status-warning-fg:     32 27.5% 38.2%;
+    --status-warning-bg:     32 12.5% 96%;
+    --status-warning-border: 32 5.5% 87.3%;
+    --status-danger-fg:      4 25% 42%;
+    --status-danger-bg:      4 13.5% 96.3%;
+    --status-danger-border:  4 5% 86% ;
     /* Helper blue — extra colour only (e.g. readiness “Good”). */
-    --status-info-fg:        217 28% 42%;
-    --status-info-bg:        217 12% 96%;
-    --status-info-border:    217 10% 88%;
-    --status-accent-fg:      248 66% 60%;
-    --status-accent-bg:      248 22% 96.5%;
-    --status-accent-border:  248 16% 90%;
+    --status-info-fg:        217 29% 36.2%;
+    --status-info-bg:        217 10% 95%;
+    --status-info-border:    217 5% 86% ;
+    --status-accent-fg:      248 31% 54%;
+    --status-accent-bg:      248 13.5% 96.3%;
+    --status-accent-border:  248 6.5% 89.2%;
     --status-neutral-fg:     232 6% 45%;
-    --status-neutral-bg:     232 7% 95.6%;
-    --status-neutral-border: 232 7% 92%;
+    --status-neutral-bg:     232 6% 95%  ;
+    --status-neutral-border: 232 4.5% 90%;
   }
 
   .dark,
   [data-theme="cofounder"],
   [data-theme="system"] {
-    --status-success-fg:     145 26% 58%;
-    --status-success-bg:     145 12% 13%;
-    --status-success-border: 145 10% 22%;
-    --status-warning-fg:     32 20% 66%;
-    --status-warning-bg:     32 8% 13%;
-    --status-warning-border: 32 8% 22%;
-    --status-danger-fg:      4 32% 64%;
-    --status-danger-bg:      4 12% 13%;
-    --status-danger-border:  4 10% 22%;
-    --status-info-fg:        217 24% 66%;
-    --status-info-bg:        217 12% 13%;
-    --status-info-border:    217 10% 22%;
-    --status-accent-fg:      248 58% 74%;
-    --status-accent-bg:      248 20% 14%;
-    --status-accent-border:  248 16% 20%;
+    --status-success-fg:     145 21.5% 62.8%;
+    --status-success-bg:     145 12.5% 12%;
+    --status-success-border: 145 5% 24%;
+    --status-warning-fg:     32 25% 68%;
+    --status-warning-bg:     32 12.5% 12%;
+    --status-warning-border: 32 5% 24%;
+    --status-danger-fg:      4 25% 68%;
+    --status-danger-bg:      4 12.5% 12%;
+    --status-danger-border:  4 5% 24%;
+    --status-info-fg:        217 25% 68%;
+    --status-info-bg:        217 12.5% 12%;
+    --status-info-border:    217 5% 24%;
+    --status-accent-fg:      248 32% 75%;
+    --status-accent-bg:      248 10% 15%;
+    --status-accent-border:  248 5.5% 21.8%;
     --status-neutral-fg:     232 6% 64%;
-    --status-neutral-bg:     232 12% 12.2%;
-    --status-neutral-border: 232 12% 15.4%;
+    --status-neutral-bg:     232 11% 13.2%;
+    --status-neutral-border: 232 6.5% 15.4%;
   }
 
   * {

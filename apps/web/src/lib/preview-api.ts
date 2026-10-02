@@ -3671,9 +3671,18 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       unresolvedFeedback: 3,
       appliedFeedbackRate: 0.63,
       avgResponseTimeHrs: 14.5,
-      speedScore: 62,
-      depthScore: 54,
-      burdenScore: 38,
+      // Fractions, like the live endpoint. gamification.service derives all
+      // three in [0, 1] and the panel renders them as `score * 100`, so the
+      // 0-100 figures that used to sit here drew "Speed 6200%", "Depth 5400%"
+      // and "Low Burden 3800%" with every bar pinned full. Same mistake the XP
+      // block below already carries a note about: the scale is part of the
+      // contract, and a preview that invents its own is not a preview.
+      speedScore: 0.62,
+      depthScore: 0.54,
+      burdenScore: 0.38,
+      // improvementScore is the one that really is 0-100 (service line ~1072
+      // multiplies the weighted parts by 100), and the panel prints it as
+      // "46/100" rather than scaling it.
       improvementScore: 46,
       lastFeedbackAt: NOW,
       updatedAt: NOW,

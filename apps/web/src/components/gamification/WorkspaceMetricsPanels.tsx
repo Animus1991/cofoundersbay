@@ -342,12 +342,35 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                     {c.userId}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-2xs text-muted-foreground">
-                  <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
-                  <span title="Feedback applied">·{bd.feedbackApplied}FA</span>
-                  {recentActivity > 0 && (
-                    <span title="Recent activity (14d)" className="text-status-success ">·{recentActivity}↑</span>
-                  )}
+                {/* Was `6C·9I ·0FA ·3↑`. The letters were invented here and
+                    explained only in a `title`, which never appears on a touch
+                    screen and was English either way, so half the product's
+                    readers had four numbers and no nouns.
+
+                    Icons were the first attempt and the wrong one: this file
+                    sits inside [data-surface="card"], where the sweep below
+                    globals.css line 2798 hides decorative svg.lucide on purpose
+                    (181 of them across 37 routes) and keeps only state glyphs.
+                    Three of the four icons rendered at display:none. The rule is
+                    right — an icon standing in for a noun is the same guess the
+                    letters were — so the nouns are written out, in both
+                    languages, and a count of zero is dropped rather than printed
+                    as `0FA`. */}
+                <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 shrink-0 text-2xs text-muted-foreground">
+                  {([
+                    { n: bd.artifactsCreated, en: 'created', el: 'δημιουργίες' },
+                    { n: bd.artifactsImproved, en: 'improved', el: 'βελτιώσεις' },
+                    { n: bd.feedbackApplied, en: 'applied', el: 'εφαρμοσμένα' },
+                    { n: recentActivity, en: 'in 14 days', el: 'σε 14 ημέρες', tone: 'text-status-success' },
+                  ] as const)
+                    .filter((part) => part.n > 0)
+                    .map((part, i, kept) => (
+                      <span key={part.en} className={cn('whitespace-nowrap', 'tone' in part ? part.tone : undefined)}>
+                        <span className="tabular-nums font-medium">{part.n}</span>{' '}
+                        <BilingualText en={part.en} el={part.el} compact />
+                        {i < kept.length - 1 && <span aria-hidden="true" className="ml-2 opacity-50">·</span>}
+                      </span>
+                    ))}
                   <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
                     {c.score}
                   </Badge>
