@@ -79,3 +79,7 @@ apps/api/.dev-prisma-state.json
 credentials.json
 *.key
 .credentials
+
+# Setup templates hold placeholders only and must stay tracked; the
+# patterns above still ignore every real environment file.
+!.env.example
