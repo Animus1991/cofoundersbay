@@ -271,9 +271,10 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
             </span>
           </p>
         )}
-        <div className="space-y-2 border-t border-border/50 pt-3">
+        {/* Each row is a link: py-1 gives it a 24px target and room from the next one. */}
+        <div className="space-y-1 border-t border-border/50 pt-2">
           {untracked.map((row) => (
-            <Link key={row.key} href={row.href} className="block rounded-lg focus-ring">
+            <Link key={row.key} href={row.href} className="block min-h-6 rounded-lg py-1 focus-ring">
               <p className="page-stat-label text-muted-foreground">
                 <BilingualText en={row.en} el={row.el} wrap />
               </p>

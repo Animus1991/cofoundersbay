@@ -181,7 +181,9 @@ test.describe('authenticated routes', () => {
     await page.goto('/discover', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
     await expect(page.locator('main#main-content')).toHaveCount(1);
-    await expect(page.locator('aside')).toHaveCount(1);
+    // The sidebar, not every aside: a page rail ("Page tools") is a second,
+    // legitimate aside on /discover and the other railed pages.
+    await expect(page.locator('aside[aria-label^="Main navigation"]')).toHaveCount(1);
   });
 
   /**

@@ -161,15 +161,15 @@ html {
     --popover: 222 20% 11.4%;
     --popover-foreground: 220 10% 93%;
     --primary: 248 58% 74%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 248 32% 12%;
     --primary-accessible: 248 62% 80%;
     --secondary: 232 16% 13.8%;
     --secondary-foreground: 232 10% 93%;
     --muted: 232 16% 13%;
     --muted-foreground: 232 8% 62%;
     --accent: 248 58% 74%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 4 36% 58%;
+    --accent-foreground: 248 32% 12%;
+    --destructive: 4 36% 51%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 4 32% 70%;
     --border: 232 12% 13.6%;           /* ~1.12 on card */
@@ -218,21 +218,21 @@ html {
     --card-foreground: 220 100% 3%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 100% 3%;
-    --primary: 34 40% 46%;
+    --primary: 34 40% 41%;
     --primary-foreground: 0 0% 100%;
     --primary-accessible: 34 36% 34%;
     --secondary: 200 16% 93.6%;
     --secondary-foreground: 220 100% 3%;
     --muted: 190 22% 94%;
     --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
-    --accent: 34 40% 46%;
+    --accent: 34 40% 41%;
     --accent-foreground: 0 0% 100%;
     --destructive: 2 30% 46%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 26% 40%;
     --border: 200 12% 93.4%;           /* ~1.12 on card */
     --input: 200 12% 90.4%;            /* ~1.22 on card */
-    --ring: 34 40% 46%;
+    --ring: 34 40% 41%;
     --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
     color-scheme: light;
   }
@@ -247,21 +247,21 @@ html {
     --card-foreground: 0 0% 98%;
     --popover: 240 7% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 258 28% 58%;
+    --primary: 258 28% 54%;
     --primary-foreground: 0 0% 100%;
     --primary-accessible: 258 22% 72%;
     --secondary: 240 6% 10.4%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 9.8%;
     --muted-foreground: 240 5% 64%;
-    --accent: 258 28% 58%;
+    --accent: 258 28% 54%;
     --accent-foreground: 0 0% 100%;
     --destructive: 2 32% 52%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 28% 66%;
     --border: 240 6% 10.8%;            /* ~1.12 on card */
     --input: 240 6% 13.6%;             /* ~1.22 on card */
-    --ring: 258 28% 58%;
+    --ring: 258 28% 54%;
     --gradient-hero: linear-gradient(hsl(240 7% 6.8%), hsl(240 7% 6.8%));
     color-scheme: dark;
   }
@@ -361,36 +361,42 @@ html {
     --primary-accessible: 248 62% 80%;
     --accent: 248 58% 74%;
     --ring: 248 58% 74%;
+    --primary-foreground: 248 32% 12%;
+    --accent-foreground: 248 32% 12%;
   }
 
   .role-mentor {
-    --primary: 190 28% 42%;
+    --primary: 190 28% 41%;
     --primary-foreground: 0 0% 100%;
     --primary-accessible: 190 24% 36%;
-    --accent: 190 28% 42%;
+    --accent: 190 28% 41%;
     --accent-foreground: 0 0% 100%;
-    --ring: 190 28% 42%;
+    --ring: 190 28% 41%;
   }
   html.dark.role-mentor {
     --primary: 190 22% 62%;
     --primary-accessible: 190 18% 74%;
     --accent: 190 22% 62%;
     --ring: 190 22% 62%;
+    --primary-foreground: 190 30% 10%;
+    --accent-foreground: 190 30% 10%;
   }
 
   .role-investor {
-    --primary: 32 36% 44%;
+    --primary: 32 36% 42%;
     --primary-foreground: 0 0% 100%;
     --primary-accessible: 32 32% 36%;
-    --accent: 32 36% 44%;
+    --accent: 32 36% 42%;
     --accent-foreground: 0 0% 100%;
-    --ring: 32 36% 44%;
+    --ring: 32 36% 42%;
   }
   html.dark.role-investor {
     --primary: 32 28% 58%;
     --primary-accessible: 32 24% 70%;
     --accent: 32 28% 58%;
     --ring: 32 28% 58%;
+    --primary-foreground: 32 30% 10%;
+    --accent-foreground: 32 30% 10%;
   }
 
   .role-org {
@@ -406,6 +412,8 @@ html {
     --primary-accessible: 258 20% 76%;
     --accent: 258 24% 66%;
     --ring: 258 24% 66%;
+    --primary-foreground: 258 28% 12%;
+    --accent-foreground: 258 28% 12%;
   }
 
   /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)

@@ -40,7 +40,7 @@
   "/profile/edit": "a form: update_profile proposes the fields and the person saves",
   "/milestones/new": "a form: create_milestone proposes it and the person confirms",
   "/events/create": "a form: create_event proposes it and the person confirms",
-  "/projects/create": "a form the person fills and submits; no create-project action is declared yet",
+  "/projects/create": "a form: draft_project fills its fields from the conversation and the person walks the steps and presses Create; no create-project write is declared",
   "/mentor/profile": "a form for the mentor listing, filled and saved by the person",
   "/provider/profile": "a form for the provider listing, filled and saved by the person",
   "/invite": "an invite form: the person names who to invite; the assistant does not send email on its own",

@@ -625,8 +625,9 @@ export function LandingHome() {
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
                   <Icon className="icon-md text-primary-accessible" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground"><L en={title} /></h3>
+                {/* min-w-0 and a wrapping title: four cards a row leave too little width for both languages on one line. */}
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground"><L en={title} wrap /></h3>
                   <p className="mt-1 text-sm text-muted-foreground"><L en={desc} wrap /></p>
                 </div>
               </div>

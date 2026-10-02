@@ -353,8 +353,13 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowBranchPanel(true)}
+              // The label is `hidden sm:inline`: on a phone this is the only name.
+              aria-label={bilingualAria(
+                `${builderEn('collab_variants')}${openBranches.length ? ` (${openBranches.length} open)` : ''}`,
+                `${builderEl('collab_variants')}${openBranches.length ? ` (${openBranches.length} ανοιχτές)` : ''}`,
+              )}
             >
-              <GitBranch className="icon-sm mr-1.5" />
+              <GitBranch className="icon-sm mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">
                 <BilingualText en={builderEn('collab_variants')} el={builderEl('collab_variants')} compact />
               </span>
@@ -382,8 +387,12 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowReviewPanel(true)}
+              aria-label={bilingualAria(
+                `${builderEn('collab_proposals')}${openProposals.length ? ` (${openProposals.length} pending)` : ''}`,
+                `${builderEl('collab_proposals')}${openProposals.length ? ` (${openProposals.length} σε εκκρεμότητα)` : ''}`,
+              )}
             >
-              <ClipboardCheck className="icon-sm mr-1.5" />
+              <ClipboardCheck className="icon-sm mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">
                 <BilingualText en={builderEn('collab_proposals')} el={builderEl('collab_proposals')} compact />
               </span>

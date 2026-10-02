@@ -108,7 +108,7 @@ const DEMO_PROPOSALS: Proposal[] = [
 
 const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityType}`; className: string; icon: typeof Briefcase }> = {
   cofounder: { labelKey: 'type_cofounder', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Handshake },
-  job: { labelKey: 'type_job', className: 'bg-primary/20 text-primary-accessible border-primary/20', icon: Building2 },
+  job: { labelKey: 'type_job', className: 'bg-primary/10 text-primary-accessible border-primary/20', icon: Building2 },
   investment: { labelKey: 'type_investment', className: 'bg-status-success-bg text-status-success border-status-success-border ', icon: Coins },
   partnership: { labelKey: 'type_partnership', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Users },
   mentorship: { labelKey: 'type_mentorship', className: 'bg-status-warning-bg text-status-warning border-status-warning-border ', icon: Rocket },
@@ -258,7 +258,7 @@ function JobCard({ job }: { job: JobPostingView }) {
               <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary-accessible border-primary/20">
+                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/10 text-primary-accessible border-primary/20">
                   <Building2 className="mr-1 icon-sm" />
                   <BilingualText en={opportunitiesEn('job')} el={opportunitiesEl('job')} compact />
                 </Badge>

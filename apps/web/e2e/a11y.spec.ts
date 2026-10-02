@@ -155,7 +155,8 @@ test('toast region exists as a live region before any toast fires', async ({ pag
 
   // The region must be in the DOM before a toast is inserted, or screen
   // readers do not announce the insertion.
-  const region = page.locator('[role="region"][aria-label="Notifications"]');
+  // Bilingual name ("Notifications. Ειδοποιήσεις"), so match its English start.
+  const region = page.locator('[role="region"][aria-label^="Notifications"]');
   await expect(region).toHaveCount(1);
   await expect(region).toHaveAttribute('aria-live', 'polite');
 });
@@ -355,36 +356,24 @@ test.describe('corner system', () => {
     expect(strays, `radii outside the ladder derived from --radius: ${base}px`).toEqual([]);
   });
 
-  test('pills keep a circular corner, everything else is a squircle', async ({ page }) => {
+  // 0e792ce chose plain circular arcs ("as on cursor.com"): a superellipse
+  // at the same radius pulls the curve tight and reads abrupt. This holds
+  // that decision; it used to assert the opposite.
+  test('corners are plain circular arcs, pills included', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const res = await page.evaluate(() => {
-      const probe = document.createElement('div');
-      if (!CSS.supports('corner-shape', 'squircle')) return { supported: false, bad: [], squircles: 0 };
-      probe.remove();
-      const bad: string[] = [];
-      let squircles = 0;
+      if (!CSS.supports('corner-shape', 'squircle')) return { supported: false, shaped: [] as string[] };
+      const shaped: string[] = [];
       for (const el of Array.from(document.querySelectorAll('body *'))) {
         const cs = getComputedStyle(el);
-        if (cs.display === 'none') continue;
-        const r = el.getBoundingClientRect();
-        if (r.width < 2 || r.height < 2) continue;
+        if (cs.display === 'none' || !(parseFloat(cs.borderTopLeftRadius) > 0)) continue;
         const shape = cs.getPropertyValue('corner-shape').trim();
-        const cn = el.className as string | { baseVal?: string };
-        const cls = typeof cn === 'string' ? cn : (cn?.baseVal ?? '');
-        const radius = parseFloat(cs.borderTopLeftRadius) || 0;
-        // `rounded-full` is 9999px — hundreds of times past the clamp, where a
-        // superellipse degrades into a rounded rectangle. Avatars, badges and
-        // switches have to stay circular.
-        if (cls.includes('rounded-full') && shape !== 'round') {
-          bad.push(`pill ${el.tagName.toLowerCase()}.${cls.slice(0, 40)} → ${shape}`);
-        }
-        if (radius > 0 && shape === 'squircle') squircles++;
+        if (shape && shape !== 'round') shaped.push(`${el.tagName.toLowerCase()} → ${shape}`);
       }
-      return { supported: true, bad: [...new Set(bad)], squircles };
+      return { supported: true, shaped: [...new Set(shaped)] };
     });
     if (!res.supported) test.skip(true, 'browser does not implement corner-shape');
-    expect(res.bad, 'pills rendered as squircles').toEqual([]);
-    expect(res.squircles, 'nothing picked up continuous curvature').toBeGreaterThan(10);
+    expect(res.shaped, 'corners with a non-circular shape').toEqual([]);
   });
 
   test('no inset child out-radiuses the surface it sits in', async ({ page }) => {

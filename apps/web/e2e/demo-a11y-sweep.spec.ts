@@ -157,10 +157,12 @@ test('first-run tour dialog is accessible', async ({ page }, testInfo) => {
   await page.goto('/demo');
   await page.waitForURL(/\/dashboard\/founder/, { timeout: 20_000 });
   await page.goto('/matches');
-  const dialog = page.getByTestId('first-run-tour-step');
+  // By role, not test id: this suite runs a production build, and
+  // next.config's reactRemoveProperties strips data-test* attributes there.
+  const dialog = page.getByRole('dialog', { name: /Your match summary/ });
   await expect(dialog).toBeVisible({ timeout: 15_000 });
   await expect(dialog).toBeFocused();
-  const results = await new AxeBuilder({ page }).withTags(TAGS).include('[data-testid="first-run-tour"]').analyze();
+  const results = await new AxeBuilder({ page }).withTags(TAGS).include('[role="dialog"][aria-modal="true"]').analyze();
   findings.push({
     route: '/matches#tour',
     viewport: testInfo.project.name,
