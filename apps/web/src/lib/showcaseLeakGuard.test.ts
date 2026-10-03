@@ -28,6 +28,8 @@ const UNIVERSAL_COPY = [
   'lib/i18n/strings-pages.ts',
   'lib/nav-descriptions.ts',
   'components/common/PageContextualHelp.tsx',
+  // The /ai page's own introduction, shown to every user.
+  'components/ai/CopilotEmptyState.tsx',
 ];
 
 /** The showcase's identifying facts. */

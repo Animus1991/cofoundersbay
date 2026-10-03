@@ -41,9 +41,11 @@ export function CopilotEmptyState({
     >
       {isPage ? (
         <p className="type-ui mb-4 max-w-prose text-muted-foreground">
+          {/* Every user reads this on /ai, so it names their workspace, not the
+              showcase's company and its round. */}
           {sayOne(
-            'Looks up the same Harbor data as the rest of this workspace — matches, GTM, the $750K seed, and calendar.',
-            'Ψάχνει τα ίδια δεδομένα Harbor με τον υπόλοιπο χώρο εργασίας — αντιστοιχίσεις, GTM, τον γύρο $750K και το ημερολόγιο.',
+            'Looks up the same data as the rest of your workspace — matches, research, fundraising and calendar.',
+            'Ψάχνει τα ίδια δεδομένα με τον υπόλοιπο χώρο εργασίας σας — αντιστοιχίσεις, έρευνα, χρηματοδότηση και ημερολόγιο.',
           )}
         </p>
       ) : (

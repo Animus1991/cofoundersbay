@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -197,8 +198,17 @@ const DEMO_COACHES: CoachProfile[] = [
   },
 ];
 
-/** Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch. */
+/**
+ * Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch.
+ *
+ * It formatted in 'en-GB' with an English "at" whatever the reader's language,
+ * so the next-session banner read "Monday 5 Oct at 17:00" on a Greek screen.
+ * It also took the weekday in UTC and the hour in the local zone: a session at
+ * 23:30 UTC showed Sunday's name with Monday's 01:30. This only renders after
+ * mount, so both now come from the reader's own zone.
+ */
 function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }) {
+  const { primary } = useLanguagePreference();
   const [label, setLabel] = useState('—');
 
   useEffect(() => {
@@ -207,14 +217,15 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
       setLabel('—');
       return;
     }
+    const locale = primary === 'el' ? 'el-GR' : 'en-GB';
     if (variant === 'banner') {
-      const day = d.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'short' });
-      const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-      setLabel(`${day} at ${time}`);
+      const day = d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
+      const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+      setLabel(primary === 'el' ? `${day} στις ${time}` : `${day} at ${time}`);
       return;
     }
-    setLabel(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
-  }, [iso, variant]);
+    setLabel(d.toLocaleDateString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+  }, [iso, variant, primary]);
 
   return <span>{label}</span>;
 }
