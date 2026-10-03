@@ -80,6 +80,15 @@ export function BilingualText({
 }: BilingualTextProps) {
   const { primary, showSecondary } = useLanguagePreference();
   const resolved = resolveBilingualPair(en, el, primary, showSecondary);
+  // Marks a span whose Greek this component supplies itself. Under the Greek
+  // locale the DOM pass (DomI18n) must leave it alone: before the page subtree
+  // hydrates, the span still holds the server's English, and translating it
+  // in place made React find "Ρυθμίσεις" where it rendered "Settings" — a
+  // hydration failure on /settings and a full client re-render. The pair needs
+  // no help: React renders the Greek the moment the preference applies. A span
+  // with no Greek half stays unmarked, so the pass still translates it, and a
+  // third locale ignores the mark (Spanish reads the English, translated).
+  const pairMark = el && el.trim() && el !== en ? { 'data-bilingual-pair': '' } : undefined;
   // Written out in full, never assembled from parts: these live in
   // `@layer utilities` in globals.css, and Tailwind tree-shakes a custom
   // utility whose class name it cannot find literally in the source. A
@@ -94,6 +103,7 @@ export function BilingualText({
     return (
       <span
         lang={resolved.primaryLang}
+        {...pairMark}
         className={cn(className, primaryClassName, compact && (wrap ? 'break-words' : 'truncate'))}
       >
         {resolved.primaryText}
@@ -111,7 +121,8 @@ export function BilingualText({
           className,
         )}
       >
-        <span lang={resolved.primaryLang} className={cn(wrap ? 'break-words' : 'truncate', primaryClassName)}>
+        <span lang={resolved.primaryLang}
+        {...pairMark} className={cn(wrap ? 'break-words' : 'truncate', primaryClassName)}>
           {resolved.primaryText}
           {/* Inside the first language's span, so a wrapped pair never leaves the dot on a line of its own. */}
           {wrap && (
@@ -147,6 +158,7 @@ export function BilingualText({
             on capitals (Ά, Έ, Ό) and Latin descenders. */}
         <span
           lang={resolved.primaryLang}
+        {...pairMark}
           className={cn(wrap ? 'break-words leading-tight' : 'truncate leading-tight', primaryClassName)}
         >
           {resolved.primaryText}
@@ -168,7 +180,8 @@ export function BilingualText({
 
   return (
     <span className={cn('min-w-0', className)}>
-      <span lang={resolved.primaryLang} className={primaryClassName}>
+      <span lang={resolved.primaryLang}
+        {...pairMark} className={primaryClassName}>
         {resolved.primaryText}
       </span>
       <span className={cn('bilingual-separator mx-1.5', separatorNarrow)} aria-hidden="true">

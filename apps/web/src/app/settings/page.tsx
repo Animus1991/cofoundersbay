@@ -43,10 +43,12 @@ import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
+import { useLanguagePreference, type LanguageDisplayMode } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 import { bilingualInline } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
 
 /*
  * The quick notification switches here are the in-app channel of each
@@ -97,10 +99,44 @@ const PRIVACY_ITEMS = [
   { id: 'showActivity',   icon: Activity, label: 'Show recent activity', desc: 'Visible to connections on your profile' },
 ] as const;
 
+/**
+ * How many languages a screen carries.
+ *
+ * English and Greek pair: every label, title and description can show the
+ * reader's language and the other one beside it. That is useful while
+ * someone is learning the product's vocabulary and costs half of every
+ * screen after that. The preference already existed — `primary-only` — but
+ * only behind a menu item in the top bar and the account menu, so the one
+ * setting that removes the most text from every page was the hardest to find.
+ * It belongs here, under the language it qualifies.
+ *
+ * Shown only for English and Greek: every other locale already reads in one
+ * language (a Greek line under Spanish would be noise), so there is nothing
+ * to choose.
+ */
+const DISPLAY_CHOICES: { value: LanguageDisplayMode; en: string; el: string; hintEn: string; hintEl: string }[] = [
+  {
+    value: 'bilingual',
+    en: 'Both languages',
+    el: 'Και οι δύο γλώσσες',
+    hintEn: 'Each label shows its translation in smaller text.',
+    hintEl: 'Κάθε ετικέτα δείχνει και τη μετάφρασή της με μικρότερα γράμματα.',
+  },
+  {
+    value: 'primary-only',
+    en: 'Only my language',
+    el: 'Μόνο η γλώσσα μου',
+    hintEn: 'Half the text on every screen. The other language stays in tooltips and for screen readers.',
+    hintEl: 'Το μισό κείμενο σε κάθε οθόνη. Η άλλη γλώσσα μένει στις επεξηγήσεις και στους αναγνώστες οθόνης.',
+  },
+];
+
 function LanguageCard() {
   const { success } = useToast();
   const { t } = useI18n();
   const [locale, setLocale] = useState('en');
+  const { displayMode, setDisplayMode, mounted } = useLanguagePreference();
+  const pairs = locale === 'en' || locale === 'el';
 
   useEffect(() => {
     setLocale(getStoredLocale());
@@ -135,6 +171,43 @@ function LanguageCard() {
             );
           }}
         />
+        {mounted && pairs && (
+          <fieldset className="mt-5 space-y-2 border-t border-border pt-4">
+            <legend className="text-sm font-medium text-foreground">
+              <BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" />
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {DISPLAY_CHOICES.map((choice) => {
+                const active = displayMode === choice.value;
+                return (
+                  <button
+                    key={choice.value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setDisplayMode(choice.value);
+                      success(t('Display updated'));
+                    }}
+                    className={cn(
+                      'inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                    )}
+                  >
+                    <BilingualText en={choice.en} el={choice.el} compact />
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {(() => {
+                const current = DISPLAY_CHOICES.find((c) => c.value === displayMode) ?? DISPLAY_CHOICES[0];
+                return <BilingualText en={current.hintEn} el={current.hintEl} wrap />;
+              })()}
+            </p>
+          </fieldset>
+        )}
       </CardContent>
     </Card>
   );
@@ -198,6 +271,7 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
   const { t, locale } = useI18n();
+  const { displayMode, setDisplayMode } = useLanguagePreference();
 
   const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
@@ -336,6 +410,19 @@ export default function SettingsPage() {
       .map((c) => ({ value: c.id, labelEn: c.titleEn, labelEl: c.titleEl }));
   usePageControls([
     choiceControl('language', 'Language', 'Γλώσσα', APP_LOCALES.map((l) => ({ value: l.value, en: l.label, el: l.label })), locale, (v) => applyLocale(v)),
+    // The same two buttons as the card, so "show me only Greek" works from
+    // the assistant too. Reversible in one click, so no confirmation.
+    choiceControl(
+      'language_display',
+      'Languages on screen',
+      'Γλώσσες στην οθόνη',
+      [
+        { value: 'bilingual', en: 'Both languages', el: 'Και οι δύο γλώσσες' },
+        { value: 'primary-only', en: 'Only my language', el: 'Μόνο η γλώσσα μου' },
+      ],
+      displayMode,
+      (v) => setDisplayMode(v as LanguageDisplayMode),
+    ),
     {
       id: 'in_app_on',
       labelEn: 'Turn in-app notifications on for',

@@ -81,6 +81,38 @@ function translateValue(source: string, t: (source: string) => string, monolingu
   return next === trimmed ? source : source.replace(trimmed, next);
 }
 
+/**
+ * Whether React has claimed this element yet.
+ *
+ * Next 15 streams a page and hydrates it in pieces: the root layout first, a
+ * page that suspends (on `useSearchParams`, async params, data) later. DomI18n
+ * lives in the layout, so it starts translating while a suspended page is
+ * still the server's HTML — and rewriting text React has not hydrated makes
+ * React find "Configuración" where it rendered "Settings". It reports a
+ * hydration failure and re-renders the whole tree on the client. Measured on
+ * /settings under Spanish; the other six pages checked did not suspend.
+ *
+ * React writes a `__reactFiber$<id>` expando onto every element it hydrates or
+ * creates. An element without one, in a document where React is running, is
+ * server HTML that is not React's yet — and not ours to touch until it is.
+ * This is an internal key, stable since React 17 and read by DevTools and
+ * testing tools alike; if it ever changed, `reactIsRunning` turns false and
+ * the pass falls back to translating everything, as it did before.
+ */
+function hasFiber(el: Element): boolean {
+  for (const key in el) {
+    if (key.startsWith('__reactFiber$')) return true;
+  }
+  return false;
+}
+
+function reactIsRunning(): boolean {
+  // <body> is rendered by the root layout, so it carries a fiber as soon as
+  // React has hydrated anything at all. A plain DOM (tests, a static page)
+  // has none, and keeps the old translate-everything behaviour.
+  return typeof document !== 'undefined' && !!document.body && hasFiber(document.body);
+}
+
 export function translateDom(
   root: ParentNode,
   t: (source: string) => string,
@@ -91,6 +123,16 @@ export function translateDom(
   if (applying) return;
   applying = true;
   try {
+    const guardHydration = reactIsRunning();
+    const claimed = new WeakMap<Element, boolean>();
+    const isClaimed = (el: Element) => {
+      let hit = claimed.get(el);
+      if (hit === undefined) {
+        hit = hasFiber(el);
+        claimed.set(el, hit);
+      }
+      return hit;
+    };
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node = walker.nextNode();
     while (node) {
@@ -98,6 +140,10 @@ export function translateDom(
       node = walker.nextNode();
       const parent = textNode.parentElement;
       if (!parent || shouldSkipElement(parent)) continue;
+      if (guardHydration && !isClaimed(parent)) continue;
+      // Under Greek a BilingualText that carries its own Greek is React's to
+      // render, not ours to rewrite — see `pairMark` in BilingualText.
+      if (!monolingual && !passthrough && parent.closest('[data-bilingual-pair]')) continue;
       const current = textNode.nodeValue ?? '';
       if (!current.trim()) continue;
       const source = resolveSource(current, originalText.get(textNode), lastText.get(textNode));
@@ -114,6 +160,9 @@ export function translateDom(
     for (const el of [...extra, ...attrTargets]) {
       // A textarea's value is the user's own text, but its placeholder is ours.
       if (shouldSkipElement(el.tagName === 'TEXTAREA' ? el.parentElement : el)) continue;
+      // Attributes race hydration exactly as text does: React compares
+      // aria-label and title too ("Ask AI" vs "Preguntar a la IA").
+      if (guardHydration && !isClaimed(el)) continue;
       const orig = originalAttr.get(el) ?? {};
       const last = lastAttr.get(el) ?? {};
       let changedOrig = false;

@@ -111,6 +111,7 @@ export function LanguageChipGrid({
           <button
             key={lang.value}
             type="button"
+            aria-pressed={isActive}
             onClick={() => onChange(lang.value)}
             className={cn(
               'inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',

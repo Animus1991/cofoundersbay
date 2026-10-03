@@ -52,9 +52,17 @@ export function DomI18n({ children }: { children: ReactNode }) {
 
     apply();
 
+    // A page that suspends hydrates after this pass, and hydration that
+    // matches the server changes no DOM — so the observer never hears about
+    // it and that page would stay in English. The pass skips unhydrated text
+    // (see translateDom), so a few follow-up passes pick those subtrees up
+    // once React has claimed them. Each is a no-op when nothing is left.
+    const later = [250, 1000, 3000].map((ms) => window.setTimeout(apply, ms));
+
     return () => {
       obs.disconnect();
       if (frame) cancelAnimationFrame(frame);
+      later.forEach((id) => window.clearTimeout(id));
     };
   }, [locale, t]);
 
