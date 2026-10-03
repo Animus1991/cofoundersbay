@@ -1819,3 +1819,15 @@ Vitest 783/783 (99 αρχεία), typecheck web 0. Οι μετρήσεις brows
 Πριν τις διορθώσεις αναπαράχθηκαν τα borders σε Builder/Pitch, η έλλειψη `aria-pressed`, η έλλειψη accessible textbox names στο Pitch και η απουσία main landmark στον canvas. Η δοκιμή sidebar συνάντησε tour που ανοίγει μετά από 700ms· η αρχικοποίηση ελέγχου διορθώθηκε στο πραγματικό `cfb.tour.<tourId>.<userId>`, όχι με αλλαγή της λειτουργίας του tour. Η πρώτη συλλογή screenshots με tours/animations δεν χρησιμοποιείται ως τελικό οπτικό τεκμήριο.
 
 Νέα στατική απογραφή: 160 routes, 533 endpoints, 0 parse errors, **0 αυτομάτως verified**. AI census: 110 operable, 23 askable, 27 μη λειτουργικές επιφάνειες AI με δηλωμένη αιτία, 0 unexplained. Αυτή είναι κάλυψη δηλώσεων, όχι πραγματική εκτέλεση/εξουσιοδότηση 160 σελίδων.
+
+### 33.5 Κύμα 4 — πλήρες mobile sweep και οπτικός έλεγχος υπόλοιπων οικογενειών (αποτέλεσμα)
+
+**Mobile sweep 390px, 143/143 στατικές διαδρομές:** HTTP 200 παντού, 0 uncaught errors, 0 οριζόντιο overflow, 0 ανώνυμα controls, 0 κενά icon-only targets. Χωρίς Ask AI seam μένουν μόνο 13 auth/legal/utility routes (`/login`, `/register`, `/forgot-password`, `/reset-password`, `/pricing`, `/privacy`, `/terms`, `/unauthorized`, `/api-status`, `/auth/*`, `/test-onboarding`, `/themes/alliance`) — αναμενόμενο, όχι κενό.
+
+- `deadBands` εντοπίστηκε μόνο στο `/analytics` σε 390px: είναι το uniform-height KPI grid όπου οι πέντε κάρτες χωρίς sparkline κρατούν το ύψος της έκτης. Top-aligned περιεχόμενο σε ίσες κάρτες είναι το πρότυπο του κλάδου — αποδεκτό trade-off, όχι ελάττωμα.
+- Σε 1440px, `/analytics`, `/admin/analytics` και `/admin/dashboard` δείχνουν 0 dead bands· το παλιό «πιθανό κενό» του `/admin/analytics` δεν αναπαράγεται (ήταν πιθανώς snapshot mid-load). Greek share: 56% / 41% / 52% αντίστοιχα.
+- Οπτικός έλεγχος screenshots στις υπόλοιπες οικογένειες (`/admin`, `/admin/users`, `/tenant/members`, `/tenant/settings`, `/org/members`, `/org/dashboard`, `/matches`, `/messages`, `/settings`, `/search`, profile-onboarding): συνεπής ιεράρχηση, χωρίς νέα ευρήματα καθαρότητας μετά τα κύματα 1–3. Τα per-row Review buttons και η Message ως κύρια ενέργεια ανά match card είναι ορθά — δεν ανταγωνίζονται page-level primary.
+
+**Παρατήρηση θέματος (για απόφαση προϊόντος, όχι σιωπηρή αλλαγή):** το `RoleTheme` ορίζει `storedTheme || 'dark'` — νέος χρήστης χωρίς αποθηκευμένη προτίμηση αρχίζει σε dark, εκτός του συμφωνημένου συνόλου των τεσσάρων light θεμάτων. Αν το επιθυμητό default είναι light, η αλλαγή είναι μία γραμμή αλλά επηρεάζει την πρώτη εντύπωση κάθε νέου χρήστη και τα marketing screenshots. Καταγράφηκε, δεν άλλαξε.
+
+**Εναπομένοντα για επόμενα κύματα:** dynamic routes πέρα από `/projects/1` και `/research/board-gtm`, modals/dialogs (οι sweep δεν τα ανοίγει), πραγματικό backend persistence εκτός demo, πολλαπλοί ρόλοι ανά σελίδα, και το γνωστό `/fundraising` hydration μετά από καθαρή επανεκκίνηση του dev server.
