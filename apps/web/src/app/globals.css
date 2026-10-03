@@ -433,7 +433,7 @@ html {
     --ring: 212 39.3% 45.5%;
   }
   html[data-theme="minimal"] {
-    --primary: 165 79.6% 52.7%;           /* Windsurf "Download" #34e8bb, a touch deeper */
+    --primary: 158 72% 55%;               /* #34e8bb nudged a touch golden-pastel */
     --primary-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
     --primary-mid: 165 49.4% 34.25%;          /* tints only (/5../40) */
     --primary-accessible: 165 43.8% 31.5%;
