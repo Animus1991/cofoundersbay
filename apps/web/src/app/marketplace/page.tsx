@@ -1,5 +1,6 @@
 'use client';
 
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -137,7 +138,27 @@ const MOCK_PROVIDERS: ServiceProvider[] = [
 
 // ── Provider Card ──────────────────────────────────────────────────────────────
 
+/**
+ * The price as it sits under its "Starting at · Από" label.
+ *
+ * Providers write their price as free text, and most write it the way the
+ * label already reads — "From €500" — so the card said "Από / From €500":
+ * the same word twice, once in each language. The leading "From" / "Starting
+ * at" is dropped for display only (the stored text and what the assistant
+ * reads are untouched), and the common units read in Greek under Greek.
+ */
+function priceForDisplay(raw: string, lang: 'en' | 'el'): string {
+  const value = raw.replace(/^\s*(from|starting at)\s+/i, '');
+  if (lang !== 'el') return value;
+  return value
+    .replace(/\/mo\b/i, '/μήνα')
+    .replace(/\/month\b/i, '/μήνα')
+    .replace(/\/session\b/i, '/συνεδρία')
+    .replace(/\/(hour|hr)\b/i, '/ώρα');
+}
+
 function ProviderCard({ provider, featured }: { provider: ServiceProvider; featured?: boolean }) {
+  const { primary } = useLanguagePreference();
   const [saved, setSaved] = useState(false);
   const catCfg = CAT_CONFIG[provider.category] ?? CAT_CONFIG['other'];
   const CatIcon = catCfg.icon;
@@ -192,7 +213,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <CatIcon className={cn('icon-sm shrink-0', catCfg.color)} />
             <h3 className="font-semibold text-sm">{provider.title}</h3>
           </div>
-          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{provider.description}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{provider.description}</p>
         </div>
 
         {/* Specialties */}
@@ -222,7 +243,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
-            <p className="truncate font-semibold text-sm">{provider.pricing}</p>
+            <p className="truncate font-semibold text-sm">{priceForDisplay(provider.pricing, primary)}</p>
           </div>
           <div className="flex shrink-0 gap-2">
             {/* Neither had a handler. A listing carries its provider's own

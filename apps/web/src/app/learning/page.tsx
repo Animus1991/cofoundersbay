@@ -229,7 +229,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
           </button>
         </div>
 
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 flex-1">
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">
           {resource.description}
         </p>
 

@@ -600,7 +600,7 @@ function DimensionCard({
                     compact
                   />
                 </p>
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   {remaining.length ? (
                     <BilingualText en={remaining[0].name} el={remaining[0].nameEl ?? remaining[0].name} />
                   ) : (
@@ -637,7 +637,7 @@ function DimensionCard({
                     <span className="ml-1 font-normal text-muted-foreground">· {remaining[0].weight}%</span>
                   </p>
                 )}
-                <p className="text-xs leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-muted-foreground">
                   <BilingualText en={dim.recommendations[0].en} el={dim.recommendations[0].el} />
                 </p>
                 <AIInsightButton prompt={recPrompt} className="h-8" />
@@ -1018,7 +1018,7 @@ export default function ReadinessPage() {
         }
         </div>
         <Progress value={accelScore} label={bilingualAria('Accelerator readiness', 'Ετοιμότητα για επιταχυντή')} className="h-2" />
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
         <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
         </p>
         <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
@@ -1050,7 +1050,7 @@ export default function ReadinessPage() {
         }
         </div>
         <Progress value={investScore} label={bilingualAria('Investor readiness', 'Ετοιμότητα για επενδυτές')} className="h-2" />
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
         <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
         </p>
         <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
@@ -1113,7 +1113,7 @@ export default function ReadinessPage() {
         {item.pct}%
         </Badge>
         </div>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
         <BilingualText en={item.rec.en} el={item.rec.el} />
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">

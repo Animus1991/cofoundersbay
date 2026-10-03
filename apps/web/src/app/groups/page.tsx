@@ -150,7 +150,7 @@ function GroupCard({
         </div>
 
         {group.description && (
-          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{group.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{group.description}</p>
         )}
 
         {group.tags.length > 0 && (

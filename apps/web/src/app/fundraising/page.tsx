@@ -392,7 +392,7 @@ function PipelineView({
                           : lead.checkSize}
                       </div>
                       {lead.notes && (
-                        <p className="line-clamp-2 text-2xs text-muted-foreground">
+                        <p className="line-clamp-2 text-xs text-muted-foreground">
                           {lead.notesEl
                             ? <BilingualText en={lead.notes} el={lead.notesEl} wrap />
                             : lead.notes}
