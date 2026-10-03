@@ -68,7 +68,7 @@ export function HelpCallout({
         compact && 'h-11 w-11 justify-center p-0 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
       )}
     >
-      <CfbGlyph name="book" className="icon-sm" />
+      <CfbGlyph name="book" className="icon-sm text-primary" />
       <span className={cn(compact && 'sr-only', titleClassName)}>
         <BilingualText en={title} el={titleEl} compact />
       </span>
@@ -94,7 +94,7 @@ export function HelpCallout({
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 font-semibold text-primary-accessible">
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
-                  <CfbGlyph name="book" className="icon-sm" />
+                  <CfbGlyph name="book" className="icon-sm text-primary" />
                 </span>
                 <BilingualText en={title} el={titleEl} className={titleClassName} />
                 {badge && (
@@ -135,7 +135,7 @@ export function HelpCallout({
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 font-semibold text-primary-accessible">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
-            <CfbGlyph name="book" className="icon-sm" />
+            <CfbGlyph name="book" className="icon-sm text-primary" />
           </span>
           <BilingualText en={title} el={titleEl} className={titleClassName} />
           {badge && (

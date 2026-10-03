@@ -106,7 +106,7 @@ export function Logo({
       )}
     >
       CoFounder
-      <span className={inverted ? 'text-white/80' : 'text-primary-accessible'}>Bay</span>
+      <span className={inverted ? 'text-white/80' : 'text-primary'}>Bay</span>
     </span>
   );
 
