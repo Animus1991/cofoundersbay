@@ -42,7 +42,7 @@ import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
@@ -77,7 +77,7 @@ const MOCK_GROUPS: ManagedGroup[] = [
 
 type GroupActions = {
   onInvite: (g: ManagedGroup) => void;
-  onDelete: (g: ManagedGroup) => void;
+  onDelete: (g: ManagedGroup) => PageControlRunResult | Promise<PageControlRunResult>;
 };
 
 function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & GroupActions) {
@@ -143,17 +143,17 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {group.role === 'owner' ? (
-                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(group)}>
-                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete Group" el="Διαγραφή κοινότητας" compact />
+                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => void onDelete(group)}>
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />
                   </DropdownMenuItem>
                 ) : (
                   <UnavailableMenuItem
                     className="text-destructive-accessible"
                     icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                    en="Delete Group"
-                    el="Διαγραφή ομάδας"
+                    en="Delete group"
+                    el="Διαγραφή κοινότητας"
                     reasonEn="Only the owner can delete a group."
-                    reasonEl="Μόνο ο ιδιοκτήτης μπορεί να διαγράψει μια ομάδα."
+                    reasonEl="Μόνο ο ιδιοκτήτης μπορεί να διαγράψει μια κοινότητα."
                   />
                 )}
               </DropdownMenuContent>
@@ -215,19 +215,20 @@ export default function ManageGroupsPage() {
     onDelete: async (g) => {
       if (showingSample) {
         toastError('Nothing to delete', 'These are sample communities until you run one.');
-        return;
+        return { error: 'These are sample communities until you run one.' };
       }
       const ok = await confirm({
         title: <BilingualText en={`Delete ${g.name}?`} el={`Διαγραφή: ${g.name};`} />,
         description: <BilingualText en="The group, its posts and its member list are removed. This cannot be undone." el="Η κοινότητα, οι αναρτήσεις και τα μέλη της αφαιρούνται. Δεν αναιρείται." />,
         confirmLabel: <BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
       try {
         await deleteGroup(g.id);
         success('Group deleted', g.name);
       } catch (e) {
         toastError('Could not delete the group', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The group could not be deleted.' };
       } finally {
         void queryClient.invalidateQueries({ queryKey: qk('groups') });
       }
@@ -247,15 +248,15 @@ export default function ManageGroupsPage() {
     {
       id: 'managed_groups',
       labelEn: 'Groups you manage',
-      labelEl: 'Ομάδες που διαχειρίζεστε',
+      labelEl: 'Κοινότητες που διαχειρίζεστε',
       rows: isLoading ? undefined : filtered.map((g) => `${g.name} · ${g.category} · ${g.privacy} · ${g.memberCount} members${g.pendingRequests ? ` · ${g.pendingRequests} pending` : ''} · you are ${g.role}`),
       total: groups.length,
       sample: showingSample,
     },
   ]);
   usePageControls([
-    { id: 'copy_invite_link', labelEn: 'Copy a group invite link', labelEl: 'Αντιγραφή συνδέσμου πρόσκλησης ομάδας', writes: false, options: rowOptions(filtered, (g) => g.id, (g) => g.name), run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onInvite(g); } },
-    { id: 'delete_group', labelEn: 'Delete group', labelEl: 'Διαγραφή ομάδας', writes: true, options: rowOptions(filtered.filter((g) => g.role === 'owner'), (g) => g.id, (g) => g.name), unavailableEn: showingSample ? 'These are sample communities until you run one.' : undefined, unavailableEl: showingSample ? 'Είναι δείγματα κοινοτήτων μέχρι να δημιουργήσετε μία.' : undefined, run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onDelete(g); } },
+    { id: 'copy_invite_link', labelEn: 'Copy a group invite link', labelEl: 'Αντιγραφή συνδέσμου πρόσκλησης κοινότητας', writes: false, options: rowOptions(filtered, (g) => g.id, (g) => g.name), run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onInvite(g); } },
+    { id: 'delete_group', labelEn: 'Delete group', labelEl: 'Διαγραφή κοινότητας', writes: true, options: rowOptions(filtered.filter((g) => g.role === 'owner'), (g) => g.id, (g) => g.name), unavailableEn: showingSample ? 'These are sample communities until you run one.' : undefined, unavailableEl: showingSample ? 'Είναι δείγματα κοινοτήτων μέχρι να δημιουργήσετε μία.' : undefined, run: (v) => { const g = groups.find((x) => x.id === v); return g ? actions.onDelete(g) : ROW_GONE; } },
   ]);
 
   return (

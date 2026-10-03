@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
   getMentorshipSessions,
   getMyMentorships,
@@ -193,19 +193,20 @@ export default function MentorSessionsPage() {
     }
   }, []);
 
-  const cancelSession = async (s: MentorshipSessionItem) => {
+  const cancelSession = async (s: MentorshipSessionItem): Promise<PageControlRunResult> => {
     const ok = await confirm({
       title: <BilingualText en="Cancel this session?" el="Ακύρωση αυτής της συνεδρίας;" />,
       description: <BilingualText en="Your mentee sees it as cancelled. You can schedule a new one at any time." el="Ο καθοδηγούμενος τη βλέπει ως ακυρωμένη. Μπορείτε να προγραμματίσετε νέα οποτεδήποτε." />,
       confirmLabel: <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />,
     });
-    if (!ok) return;
+    if (!ok) return CANCELLED;
     try {
       await updateMentorshipSession(s.id, { status: 'cancelled' });
       success('Session cancelled');
       refresh();
     } catch (e) {
       toastError('Could not cancel the session', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The session is still booked.' };
     }
   };
   const actions: SessionActions = { onReschedule: setRescheduling, onCancel: (s) => void cancelSession(s), onNotes: setNotesFor };
@@ -257,7 +258,7 @@ export default function MentorSessionsPage() {
     { id: 'schedule_session', labelEn: 'Open the schedule session form', labelEl: 'Άνοιγμα φόρμας νέας συνεδρίας', writes: false, run: () => setScheduleOpen(true) },
     { id: 'reschedule_session', labelEn: 'Reschedule session', labelEl: 'Αλλαγή ώρας συνεδρίας', writes: false, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setRescheduling(s); } },
     { id: 'session_notes', labelEn: 'Open session notes', labelEl: 'Άνοιγμα σημειώσεων συνεδρίας', writes: false, options: rowOptions(sessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setNotesFor(s); } },
-    { id: 'cancel_session', labelEn: 'Cancel session', labelEl: 'Ακύρωση συνεδρίας', writes: true, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) void cancelSession(s); } },
+    { id: 'cancel_session', labelEn: 'Cancel session', labelEl: 'Ακύρωση συνεδρίας', writes: true, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); return s ? cancelSession(s) : ROW_GONE; } },
   ]);
 
   if (!mounted) {

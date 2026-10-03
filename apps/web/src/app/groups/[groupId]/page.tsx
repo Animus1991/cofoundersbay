@@ -35,7 +35,7 @@ import {
   type GroupComment,
 } from '@/lib/api';
 import { bilingualInline } from '@/lib/i18n/format';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -264,8 +264,8 @@ export default function GroupDetailPage() {
   const isMember = groupQuery.data?.isMember ?? false;
   const memberRole = groupQuery.data?.memberRole;
 
-  const handleToggleMembership = async () => {
-    if (!group) return;
+  const handleToggleMembership = async (): Promise<PageControlRunResult> => {
+    if (!group) return { error: 'The group has not loaded.' };
     setTogglingMembership(true);
     try {
       if (isMember) {
@@ -278,7 +278,8 @@ export default function GroupDetailPage() {
       queryClient.invalidateQueries({ queryKey: qk('groups', 'one', groupId) });
       queryClient.invalidateQueries({ queryKey: qk('groups') });
     } catch (e: unknown) {
-      toastError('Error', errorMessage(e, 'Something went wrong.'));
+      toastError(isMember ? 'Could not leave the group' : 'Could not join the group', errorMessage(e, 'Something went wrong.'));
+      return { error: errorMessage(e, isMember ? 'You are still a member.' : 'You did not join.') };
     } finally {
       setTogglingMembership(false);
     }
@@ -298,14 +299,15 @@ export default function GroupDetailPage() {
     }
   };
 
-  const handleDeletePost = async (postId: string) => {
-    if (!group) return;
+  const handleDeletePost = async (postId: string): Promise<PageControlRunResult> => {
+    if (!group) return { error: 'The group has not loaded.' };
     try {
       await deleteGroupPost(group.id, postId);
       queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
       success('Post deleted', '');
     } catch (e: unknown) {
-      toastError('Error', errorMessage(e, 'Failed to delete post.'));
+      toastError('Could not delete the post', errorMessage(e, 'Failed to delete post.'));
+      return { error: errorMessage(e, 'The post could not be deleted.') };
     }
   };
 
@@ -328,28 +330,28 @@ export default function GroupDetailPage() {
   const ownPosts = currentUserId ? feed.filter((p) => p.author?.id === currentUserId) : [];
   const groupMembers = group?.members ?? [];
   usePageControls([
-    choiceControl('group_section', 'Group section', 'Ενότητα ομάδας', [
+    choiceControl('group_section', 'Group section', 'Ενότητα κοινότητας', [
       { value: 'feed', en: 'Feed', el: 'Ροή' },
       { value: 'members', en: 'Members', el: 'Μέλη' },
     ], activeSection, (v) => setActiveSection(v as typeof activeSection)),
     {
       id: isMember ? 'leave_group' : 'join_group',
       labelEn: isMember ? 'Leave this group' : 'Join this group',
-      labelEl: isMember ? 'Αποχώρηση από την ομάδα' : 'Συμμετοχή στην ομάδα',
+      labelEl: isMember ? 'Αποχώρηση από την κοινότητα' : 'Συμμετοχή στην κοινότητα',
       writes: true,
       unavailableEn: !group ? 'The group has not loaded.' : memberRole === 'owner' ? 'The owner cannot leave; transfer ownership first.' : undefined,
-      unavailableEl: !group ? 'Η ομάδα δεν έχει φορτωθεί.' : memberRole === 'owner' ? 'Ο ιδιοκτήτης δεν μπορεί να αποχωρήσει· μεταβιβάστε πρώτα την ιδιοκτησία.' : undefined,
+      unavailableEl: !group ? 'Η κοινότητα δεν έχει φορτωθεί.' : memberRole === 'owner' ? 'Ο ιδιοκτήτης δεν μπορεί να αποχωρήσει· μεταβιβάστε πρώτα την ιδιοκτησία.' : undefined,
       run: handleToggleMembership,
     },
     {
       id: 'delete_own_post',
       labelEn: 'Delete one of my posts in this group',
-      labelEl: 'Διαγραφή δημοσίευσής μου στην ομάδα',
+      labelEl: 'Διαγραφή ανάρτησής μου στην κοινότητα',
       writes: true,
       options: rowOptions(ownPosts, (p) => p.id, (p) => (p.content ?? '').slice(0, 60)),
       unavailableEn: ownPosts.length === 0 ? 'You have no posts in this group.' : undefined,
-      unavailableEl: ownPosts.length === 0 ? 'Δεν έχετε δημοσιεύσεις σε αυτή την ομάδα.' : undefined,
-      run: async (value) => { if (value) await handleDeletePost(value); },
+      unavailableEl: ownPosts.length === 0 ? 'Δεν έχετε αναρτήσεις σε αυτή την κοινότητα.' : undefined,
+      run: (value) => (value ? handleDeletePost(value) : undefined),
     },
     {
       id: 'open_member',
@@ -366,7 +368,7 @@ export default function GroupDetailPage() {
     {
       id: 'group_posts',
       labelEn: 'Group posts',
-      labelEl: 'Δημοσιεύσεις ομάδας',
+      labelEl: 'Αναρτήσεις κοινότητας',
       rows: postsQuery.data ? feed.map((p) => `${p.author?.displayName ?? '—'}: ${(p.content ?? '').slice(0, 120)}`) : undefined,
       total: feed.length,
       sample: false,
@@ -461,7 +463,7 @@ export default function GroupDetailPage() {
                 variant={isMember ? 'outline' : 'default'}
                 className="w-full gap-2 shrink-0 sm:w-auto"
                 disabled={togglingMembership}
-                onClick={handleToggleMembership}
+                onClick={() => void handleToggleMembership()}
               >
                 {togglingMembership ? (
                   <Loader2 className="icon-sm animate-spin" />

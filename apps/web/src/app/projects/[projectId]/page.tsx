@@ -36,7 +36,7 @@ import {
 } from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
-import { usePageControls, rowOptions } from '@/lib/page-controls';
+import { CANCELLED, ROW_GONE, rowOptions, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import {
   getDemoProject,
   toggleDemoStar,
@@ -81,13 +81,12 @@ export default function ProjectDetailPage() {
     success('Link copied', 'Anyone with the link can open this project.');
   }
 
-  async function handleDelete() {
-    if (!project) return;
-    if (await confirm(deleteConfirmCopy({ en: 'project', el: 'έργου' }, project.name))) {
-      deleteDemoProject(project.id);
-      success('Project deleted');
-      router.push('/projects');
-    }
+  async function handleDelete(): Promise<PageControlRunResult> {
+    if (!project) return ROW_GONE;
+    if (!(await confirm(deleteConfirmCopy({ en: 'project', el: 'έργου' }, project.name)))) return CANCELLED;
+    deleteDemoProject(project.id);
+    success('Project deleted');
+    router.push('/projects');
   }
 
   function handleJoin() {
@@ -117,7 +116,7 @@ export default function ProjectDetailPage() {
     { id: 'share_project', labelEn: 'Copy a link to this project', labelEl: 'Αντιγραφή συνδέσμου του έργου', writes: false, unavailableEn: missingEn, unavailableEl: missingEl, run: handleShare },
     { id: 'request_join', labelEn: 'Request to join this project', labelEl: 'Αίτημα ένταξης σε αυτό το έργο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : joined ? "You're on this team." : joinRequested ? 'Request already sent.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : joined ? 'Είστε στην ομάδα.' : joinRequested ? 'Το αίτημα έχει ήδη σταλεί.' : undefined), run: handleJoin },
     { id: 'apply_role', labelEn: 'Apply to an open role', labelEl: 'Αίτηση σε ανοιχτό ρόλο', writes: true, unavailableEn: missingEn ?? (owned ? 'You own this project.' : !project?.rolesNeeded.length ? 'This project has no open roles.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Applications are already noted.' : undefined), unavailableEl: missingEl ?? (owned ? 'Αυτό το έργο είναι δικό σας.' : !project?.rolesNeeded.length ? 'Αυτό το έργο δεν έχει ανοιχτούς ρόλους.' : project.rolesNeeded.every((role) => appliedRoles.includes(role.title)) ? 'Οι αιτήσεις έχουν ήδη καταχωρηθεί.' : undefined), options: rowOptions((project?.rolesNeeded ?? []).filter((role) => !appliedRoles.includes(role.title)), (role) => role.title, (role) => role.title), run: (v) => { if (v) handleApply(v); } },
-    { id: 'delete_project', labelEn: 'Delete this project', labelEl: 'Διαγραφή του έργου', writes: true, unavailableEn: missingEn, unavailableEl: missingEl, run: () => void handleDelete() },
+    { id: 'delete_project', labelEn: 'Delete this project', labelEl: 'Διαγραφή του έργου', writes: true, unavailableEn: missingEn, unavailableEl: missingEl, run: () => handleDelete() },
   ]);
 
   if (!project) {

@@ -48,7 +48,7 @@ import {
 } from '@/components/ui/dialog';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
@@ -139,7 +139,7 @@ const APPLICATION_STATUS: Record<ApplicationStatus, { tone: StatusTone; icon: Re
   rejected: { tone: 'danger', icon: XCircle },
 };
 
-type DecideFn = (application: Application, status: 'accepted' | 'rejected') => void;
+type DecideFn = (application: Application, status: 'accepted' | 'rejected') => Promise<PageControlRunResult>;
 
 function ApplicationCard({
   onReview,
@@ -311,10 +311,11 @@ export default function OrgApplicationsPage() {
 
   const [reviewing, setReviewing] = useState<Application | null>(null);
 
+  // Settles with the server: the decision is reported only once stored.
   const onDecide: DecideFn = (application, status) => {
     const programId = (application as Application & { programId?: string }).programId;
-    if (!programId) return;
-    decide.mutate({ programId, participantId: application.id, status });
+    if (!programId) return Promise.resolve({ error: 'This application is not linked to a programme.' });
+    return settle(() => decide.mutateAsync({ programId, participantId: application.id, status }));
   };
 
   /*
@@ -385,8 +386,8 @@ export default function OrgApplicationsPage() {
     choiceControl('program_filter', 'Program filter', 'Φίλτρο προγράμματος', [{ value: 'all', en: 'All programs', el: 'Όλα τα προγράμματα' }, ...programNames.map((p) => ({ value: p, en: p, el: p }))], program, setProgram),
     { id: 'clear_filters', labelEn: 'Clear the application filters', labelEl: 'Καθαρισμός φίλτρων αιτήσεων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
     { id: 'review_application', labelEn: 'Review application', labelEl: 'Αξιολόγηση αίτησης', writes: false, options: byStartup(filteredApplications), run: (v) => { const a = applications.find((x) => x.id === v); if (a) setReviewing(a); } },
-    { id: 'accept_application', labelEn: 'Accept application', labelEl: 'Αποδοχή αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); if (a) onDecide(a, 'accepted'); } },
-    { id: 'reject_application', labelEn: 'Reject application', labelEl: 'Απόρριψη αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); if (a) onDecide(a, 'rejected'); } },
+    { id: 'accept_application', labelEn: 'Accept application', labelEl: 'Αποδοχή αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); return a ? onDecide(a, 'accepted') : ROW_GONE; } },
+    { id: 'reject_application', labelEn: 'Reject application', labelEl: 'Απόρριψη αίτησης', writes: true, options: byStartup(undecided), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const a = applications.find((x) => x.id === v); return a ? onDecide(a, 'rejected') : ROW_GONE; } },
   ]);
 
   return (
@@ -503,13 +504,13 @@ export default function OrgApplicationsPage() {
                 <Button
                   variant="outline"
                   disabled={reviewing.status === 'rejected'}
-                  onClick={() => { onDecide(reviewing, 'rejected'); setReviewing(null); }}
+                  onClick={() => { void onDecide(reviewing, 'rejected'); setReviewing(null); }}
                 >
                   <BilingualText en="Reject" el="Απόρριψη" compact />
                 </Button>
                 <Button
                   disabled={reviewing.status === 'accepted'}
-                  onClick={() => { onDecide(reviewing, 'accepted'); setReviewing(null); }}
+                  onClick={() => { void onDecide(reviewing, 'accepted'); setReviewing(null); }}
                 >
                   <BilingualText en="Accept" el="Αποδοχή" compact />
                 </Button>

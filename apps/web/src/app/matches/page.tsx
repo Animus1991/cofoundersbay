@@ -14,7 +14,7 @@ import {
 import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -653,25 +653,29 @@ export default function MatchesPage() {
     setLastPassed(null);
   }, [lastPassed]);
 
-  const handleSave = useCallback((userId: string, name: string) => {
-    setSavedIds(prev => {
-      const isSaved = prev.has(userId);
-      const next = new Set(prev);
-      if (isSaved) {
-        next.delete(userId);
-        void removeFromShortlist(userId).catch(() =>
-          setSavedIds(p => { const r = new Set(p); r.add(userId); return r; })
-        );
-      } else {
-        next.add(userId);
-        success('Saved to shortlist', `${name} added to your saved profiles`);
-        void saveToShortlist(userId).catch(() =>
-          setSavedIds(p => { const r = new Set(p); r.delete(userId); return r; })
-        );
-      }
-      return next;
-    });
-  }, [success]);
+  // The heart flips at once and a failed write flips it back. The request
+  // used to be sent from inside the state updater, which React may run twice,
+  // and nothing waited for it - so the assistant reported a save that could
+  // still fail, and the reader never heard that it had.
+  const handleSave = useCallback(async (userId: string, name: string): Promise<PageControlRunResult> => {
+    const wasSaved = savedIds.has(userId);
+    const flip = (saved: boolean) =>
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (saved) next.add(userId);
+        else next.delete(userId);
+        return next;
+      });
+    flip(!wasSaved);
+    try {
+      await (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId));
+      if (!wasSaved) success('Saved to shortlist', `${name} added to your saved profiles`);
+    } catch (err) {
+      flip(wasSaved);
+      showError(wasSaved ? 'Could not remove from shortlist' : 'Could not save to shortlist', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'Your saved profiles did not change.' };
+    }
+  }, [savedIds, success, showError]);
 
   const TIER_TABS: { key: FilterKey; labelEn: string; labelEl: string; tier?: MatchTier }[] = [
     { key: 'all',       labelEn: matchesEn('tier_all'),       labelEl: matchesEl('tier_all') },
@@ -792,7 +796,7 @@ export default function MatchesPage() {
       // back. Not the reverse: removing drops the row's note, which saving
       // again does not restore.
       undo: (v) => ({ control: 'unshortlist_match', value: v }),
-      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+      run: (v) => { const hit = hitById(v); return hit ? handleSave(hit.userId, hit.displayName) : ROW_GONE; },
     },
     {
       id: 'unshortlist_match',
@@ -800,7 +804,7 @@ export default function MatchesPage() {
       labelEl: 'Αφαίρεση αντιστοίχισης από τη λίστα',
       writes: true,
       options: hitRows(filtered.filter((h) => savedIds.has(h.userId))),
-      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+      run: (v) => { const hit = hitById(v); return hit ? handleSave(hit.userId, hit.displayName) : ROW_GONE; },
     },
     {
       id: 'pass_match',
@@ -1259,7 +1263,7 @@ export default function MatchesPage() {
                         onLike={() => handleConnect(profile)}
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
                         onMessage={() => handleMessage(profile)}
-                        onBookmark={() => handleSave(hit.userId, hit.displayName)}
+                        onBookmark={() => void handleSave(hit.userId, hit.displayName)}
                         onBreakdown={() => setBreakdownTarget(hit)}
                         onClick={!selectMode ? () => setPreviewTarget(hit) : undefined}
                         isSelected={selectMode ? selectedIds.has(hit.id) : undefined}
@@ -1292,7 +1296,7 @@ export default function MatchesPage() {
                         onConnect={() => handleConnect(profile)}
                         onMessage={() => handleMessage(profile)}
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
-                        onSave={() => handleSave(hit.userId, hit.displayName)}
+                        onSave={() => void handleSave(hit.userId, hit.displayName)}
                         onBreakdown={() => setBreakdownTarget(hit)}
                       />
                     );
@@ -1326,7 +1330,7 @@ export default function MatchesPage() {
             onClose={() => setPreviewTarget(null)}
             onConnect={() => { handleConnect(previewProfile); setPreviewTarget(null); }}
             onMessage={() => { handleMessage(previewProfile); setPreviewTarget(null); }}
-            onSave={() => handleSave(previewTarget.userId, previewTarget.displayName)}
+            onSave={() => void handleSave(previewTarget.userId, previewTarget.displayName)}
             onPass={() => { handlePass(previewTarget.id, previewTarget.displayName, previewTarget.userId); setPreviewTarget(null); }}
             onBreakdown={() => { setBreakdownTarget(previewTarget); setPreviewTarget(null); }}
           />

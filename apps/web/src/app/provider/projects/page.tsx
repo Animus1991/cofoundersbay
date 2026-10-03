@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -297,18 +297,19 @@ export default function ProviderProjectsPage() {
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
   const [viewing, setViewing] = useState<Project | null>(null);
-  const complete = async (p: Project) => {
+  const complete = async (p: Project): Promise<PageControlRunResult> => {
     const ok = await confirm({
       title: <BilingualText en={`Mark the project for ${p.clientName} complete?`} el={`Ολοκλήρωση του έργου για ${p.clientName};`} />,
       description: <BilingualText en="The client can then leave a review." el="Ο πελάτης μπορεί έπειτα να αφήσει αξιολόγηση." />,
       confirmLabel: <BilingualText en="Mark complete" el="Σήμανση ως ολοκληρωμένο" compact />,
     });
-    if (!ok) return;
+    if (!ok) return CANCELLED;
     try {
       await updateServiceInquiry(p.id, { status: 'completed' });
       success('Project completed', p.clientName);
     } catch (e) {
       toastError('Could not complete the project', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The project is still open.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('provider', 'projects') });
     }
@@ -358,7 +359,7 @@ export default function ProviderProjectsPage() {
       options: byClient(filteredProjects.filter((p) => p.status !== 'completed')),
       unavailableEn: live.length > 0 ? undefined : 'These projects are samples; there is nothing behind them to complete.',
       unavailableEl: live.length > 0 ? undefined : 'Τα έργα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για ολοκλήρωση.',
-      run: (v) => { const p = projects.find((x) => x.id === v); if (p) void complete(p); },
+      run: (v) => { const p = projects.find((x) => x.id === v); return p ? complete(p) : ROW_GONE; },
     },
   ]);
 

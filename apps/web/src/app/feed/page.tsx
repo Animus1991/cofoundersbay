@@ -41,7 +41,7 @@ import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -586,14 +586,10 @@ export default function FeedPage() {
     );
   };
 
-  const handleLike = (postId: string, isCurrentlyLiked: boolean) => {
-    // Record interaction
-    recordInteractionMutation.mutate({
-      postId,
-      interaction: isCurrentlyLiked ? 'like' : 'like', // Toggle like
-    });
-
-    // Update UI optimistically
+  // The feed answers at once and the server catches up; the promise settles
+  // with the server, so the assistant reports the like only once it is kept.
+  // A failed write puts the feed back the way the server has it.
+  const handleLike = async (postId: string, isCurrentlyLiked: boolean): Promise<PageControlRunResult> => {
     queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
@@ -609,16 +605,13 @@ export default function FeedPage() {
         ),
       };
     });
+    // The endpoint toggles: the same 'like' interaction likes and unlikes.
+    const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'like' }));
+    if (result) void queryClient.invalidateQueries({ queryKey: qk('feed', 'personalized', activeTab) });
+    return result;
   };
 
-  const handleBookmark = (postId: string, isCurrentlyBookmarked: boolean) => {
-    // Record interaction
-    recordInteractionMutation.mutate({
-      postId,
-      interaction: isCurrentlyBookmarked ? 'bookmark' : 'bookmark',
-    });
-
-    // Update UI optimistically
+  const handleBookmark = async (postId: string, isCurrentlyBookmarked: boolean): Promise<PageControlRunResult> => {
     queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
@@ -628,7 +621,12 @@ export default function FeedPage() {
         ),
       };
     });
-
+    // Toggles as well; the toast now waits for the server to agree.
+    const result = await settle(() => recordInteractionMutation.mutateAsync({ postId, interaction: 'bookmark' }));
+    if (result) {
+      void queryClient.invalidateQueries({ queryKey: qk('feed', 'personalized', activeTab) });
+      return result;
+    }
     success('Bookmark updated');
   };
 
@@ -708,10 +706,10 @@ export default function FeedPage() {
       run: () => void fetchNextPage(),
     },
     // Like and save each flip one flag on the post; the other command flips it back.
-    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), undo: (v) => ({ control: 'unlike_post', value: v }), run: (v) => { if (v) handleLike(v, false); } },
-    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), undo: (v) => ({ control: 'like_post', value: v }), run: (v) => { if (v) handleLike(v, true); } },
-    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), undo: (v) => ({ control: 'unsave_post', value: v }), run: (v) => { if (v) handleBookmark(v, false); } },
-    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), undo: (v) => ({ control: 'save_post', value: v }), run: (v) => { if (v) handleBookmark(v, true); } },
+    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), undo: (v) => ({ control: 'unlike_post', value: v }), run: (v) => (v ? handleLike(v, false) : undefined) },
+    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), undo: (v) => ({ control: 'like_post', value: v }), run: (v) => (v ? handleLike(v, true) : undefined) },
+    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), undo: (v) => ({ control: 'unsave_post', value: v }), run: (v) => (v ? handleBookmark(v, false) : undefined) },
+    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), undo: (v) => ({ control: 'save_post', value: v }), run: (v) => (v ? handleBookmark(v, true) : undefined) },
     { id: 'share_post', labelEn: 'Copy a link to post', labelEl: 'Αντιγραφή συνδέσμου ανάρτησης', writes: false, options: byAuthor(posts), run: (v) => { if (v) handleShare(v); } },
     {
       id: 'report_author',
@@ -893,8 +891,8 @@ export default function FeedPage() {
                 <PostCard
                   key={post.id}
                   post={post}
-                  onLike={() => handleLike(post.id, post.isLiked)}
-                  onBookmark={() => handleBookmark(post.id, post.isBookmarked)}
+                  onLike={() => void handleLike(post.id, post.isLiked)}
+                  onBookmark={() => void handleBookmark(post.id, post.isBookmarked)}
                   onComment={() => {}}
                   onShare={() => handleShare(post.id)}
                   onView={() => handlePostView(post.id)}

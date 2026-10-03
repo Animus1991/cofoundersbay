@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Check, Loader2, RotateCcw, Sparkles, X } from 'lucide-react';
+import { AlertTriangle, Ban, Check, Loader2, RotateCcw, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,14 @@ type ActionCardProps = {
 
 export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: ActionCardProps) {
   const busy = busyId === action.id;
+  // One write at a time: while another card runs, this one waits rather than
+  // offering a button that would silently do nothing.
+  const otherBusy = Boolean(busyId) && !busy;
   const done = action.status === 'done';
   const dismissed = action.status === 'dismissed';
   const failed = action.status === 'error';
   const undone = action.status === 'undone';
+  const cancelled = action.status === 'cancelled';
 
   const spec = getActionSpec(action.tool);
   const reversal = spec?.reversal;
@@ -38,7 +42,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
       className={cn(
         'rounded-lg border bg-card px-3 py-2.5 shadow-sm',
         done && `border-status-success-border/40 ${STATUS.success.bg}`,
-        (dismissed || undone) && 'surface-inactive',
+        (dismissed || undone || cancelled) && 'surface-inactive',
         failed && 'border-destructive/40',
       )}
     >
@@ -53,7 +57,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
       {/* Stated before the user commits, not after. The registry verifies each
           of these against the API, so an intro says plainly that it cannot be
           withdrawn rather than implying it can. */}
-      {showReversal && !dismissed && (
+      {showReversal && !dismissed && !cancelled && !undone && (
         <p
           className={cn(
             'mt-1.5 flex items-start gap-1.5 text-2xs',
@@ -75,8 +79,27 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
         </p>
       )}
 
+      {action.error && (failed || done) && (
+        <p role="alert" className="mt-1.5 flex items-start gap-1.5 text-xs text-destructive">
+          <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>
+            <BilingualText
+              en={failed ? 'Not applied: ' : 'Undo did not go through: '}
+              el={failed ? 'Δεν εφαρμόστηκε: ' : 'Η αναίρεση δεν ολοκληρώθηκε: '}
+              compact
+            />
+            {action.error}
+          </span>
+        </p>
+      )}
+
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        {undone ? (
+        {cancelled ? (
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+            <BilingualText en="Cancelled — no changes made" el="Ακυρώθηκε — δεν έγιναν αλλαγές" />
+          </span>
+        ) : undone ? (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
             <BilingualText en="Undone" el="Αναιρέθηκε" />
@@ -100,7 +123,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
                 size="sm"
                 variant="ghost"
                 className="h-7 gap-1.5 tap-target-y"
-                disabled={busy}
+                disabled={busy || otherBusy}
                 onClick={() => onUndo?.(action)}
               >
                 {busy ? (
@@ -122,7 +145,8 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
               type="button"
               size="sm"
               className="h-7 gap-1.5 tap-target-y"
-              disabled={busy}
+              disabled={busy || otherBusy}
+              aria-busy={busy || undefined}
               onClick={() => onConfirm(action)}
             >
               {busy ? (

@@ -12,7 +12,7 @@ import { formatDistanceToNow, type Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -242,11 +242,12 @@ export default function ResearchBoardsPage() {
     });
   };
 
-  const handleTogglePin = (board: ResearchBoard) => {
-    updateMutation.mutate({ boardId: board.id, data: { isPinned: !board.isPinned } });
-  };
+  // Each settles with the server and says when the reader declined, so the
+  // assistant reports a board change only once it is stored.
+  const handleTogglePin = (board: ResearchBoard): Promise<PageControlRunResult> =>
+    settle(() => updateMutation.mutateAsync({ boardId: board.id, data: { isPinned: !board.isPinned } }));
 
-  const handleArchive = async (board: ResearchBoard) => {
+  const handleArchive = async (board: ResearchBoard): Promise<PageControlRunResult> => {
     const ok = await confirm({
       title: <BilingualText en={`Archive board “${board.title}”?`} el={`Αρχειοθέτηση πίνακα “${board.title}”;`} />,
       description: (
@@ -258,28 +259,27 @@ export default function ResearchBoardsPage() {
       confirmLabel: <BilingualText en={researchEn('archive')} el={researchEl('archive')} compact />,
       variant: 'default',
     });
-    if (!ok) return;
-    updateMutation.mutate({ boardId: board.id, data: { isArchived: true } });
+    if (!ok) return CANCELLED;
+    return settle(() => updateMutation.mutateAsync({ boardId: board.id, data: { isArchived: true } }));
   };
 
-  const handleRestore = async (board: ResearchBoard) => {
+  const handleRestore = async (board: ResearchBoard): Promise<PageControlRunResult> => {
     const ok = await confirm({
       title: <BilingualText en={researchEn('restore_title')} el={researchEl('restore_title')} />,
       description: <BilingualText en={researchEn('restore_desc')} el={researchEl('restore_desc')} />,
       confirmLabel: <BilingualText en={researchEn('restore')} el={researchEl('restore')} compact />,
       variant: 'default',
     });
-    if (!ok) return;
-    updateMutation.mutate({ boardId: board.id, data: { isArchived: false } });
+    if (!ok) return CANCELLED;
+    return settle(() => updateMutation.mutateAsync({ boardId: board.id, data: { isArchived: false } }));
   };
 
-  const handleDelete = async (board: ResearchBoard) => {
-    if (await confirm(deleteConfirmCopy({ en: 'board', el: 'πίνακα' }, board.title))) {
-      deleteMutation.mutate(board.id);
-    }
+  const handleDelete = async (board: ResearchBoard): Promise<PageControlRunResult> => {
+    if (!(await confirm(deleteConfirmCopy({ en: 'board', el: 'πίνακα' }, board.title)))) return CANCELLED;
+    return settle(() => deleteMutation.mutateAsync(board.id));
   };
 
-  const handleDuplicate = async (board: ResearchBoard) => {
+  const handleDuplicate = async (board: ResearchBoard): Promise<PageControlRunResult> => {
     try {
       const full = await getResearchBoard(board.id);
       const result = await createResearchBoard({
@@ -308,8 +308,9 @@ export default function ResearchBoardsPage() {
       queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success('Board duplicated');
       router.push(`/research/${result.board.id}`);
-    } catch {
+    } catch (err) {
       showError('Failed to duplicate', 'Please try again');
+      return { error: err instanceof Error && err.message ? err.message : 'The board was not duplicated.' };
     }
   };
 
@@ -392,12 +393,12 @@ export default function ResearchBoardsPage() {
       return [
         // updateBoard writes only the fields it is sent (research.service), so
         // pin / unpin and archive / restore are each other's exact opposite.
-        { id: 'pin_board', labelEn: 'Pin board', labelEl: 'Καρφίτσωμα πίνακα', writes: true, options: byTitle(active.filter((b) => !b.isPinned)), undo: (v?: string) => ({ control: 'unpin_board', value: v }), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
-        { id: 'unpin_board', labelEn: 'Unpin board', labelEl: 'Ξεκαρφίτσωμα πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isPinned)), undo: (v?: string) => ({ control: 'pin_board', value: v }), run: (v?: string) => { const b = board(v); if (b) handleTogglePin(b); } },
-        { id: 'duplicate_board', labelEn: 'Duplicate board', labelEl: 'Αντίγραφο πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDuplicate(b); } },
-        { id: 'archive_board', labelEn: 'Archive board', labelEl: 'Αρχειοθέτηση πίνακα', writes: true, options: byTitle(active), undo: (v?: string) => ({ control: 'restore_board', value: v }), run: (v?: string) => { const b = board(v); if (b) void handleArchive(b); } },
-        { id: 'restore_board', labelEn: 'Restore archived board', labelEl: 'Επαναφορά αρχειοθετημένου πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isArchived)), undo: (v?: string) => ({ control: 'archive_board', value: v }), run: (v?: string) => { const b = board(v); if (b) void handleRestore(b); } },
-        { id: 'delete_board', labelEn: 'Delete board', labelEl: 'Διαγραφή πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); if (b) void handleDelete(b); } },
+        { id: 'pin_board', labelEn: 'Pin board', labelEl: 'Καρφίτσωμα πίνακα', writes: true, options: byTitle(active.filter((b) => !b.isPinned)), undo: (v?: string) => ({ control: 'unpin_board', value: v }), run: (v?: string) => { const b = board(v); return b ? handleTogglePin(b) : ROW_GONE; } },
+        { id: 'unpin_board', labelEn: 'Unpin board', labelEl: 'Ξεκαρφίτσωμα πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isPinned)), undo: (v?: string) => ({ control: 'pin_board', value: v }), run: (v?: string) => { const b = board(v); return b ? handleTogglePin(b) : ROW_GONE; } },
+        { id: 'duplicate_board', labelEn: 'Duplicate board', labelEl: 'Δημιουργία αντιγράφου πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); return b ? handleDuplicate(b) : ROW_GONE; } },
+        { id: 'archive_board', labelEn: 'Archive board', labelEl: 'Αρχειοθέτηση πίνακα', writes: true, options: byTitle(active), undo: (v?: string) => ({ control: 'restore_board', value: v }), run: (v?: string) => { const b = board(v); return b ? handleArchive(b) : ROW_GONE; } },
+        { id: 'restore_board', labelEn: 'Restore archived board', labelEl: 'Επαναφορά αρχειοθετημένου πίνακα', writes: true, options: byTitle(filteredBoards.filter((b) => b.isArchived)), undo: (v?: string) => ({ control: 'archive_board', value: v }), run: (v?: string) => { const b = board(v); return b ? handleRestore(b) : ROW_GONE; } },
+        { id: 'delete_board', labelEn: 'Delete board', labelEl: 'Διαγραφή πίνακα', writes: true, options: byTitle(filteredBoards), run: (v?: string) => { const b = board(v); return b ? handleDelete(b) : ROW_GONE; } },
       ];
     })(),
   ]);

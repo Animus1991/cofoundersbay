@@ -40,7 +40,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -62,9 +62,9 @@ type Service = {
 
 type ServiceActions = {
   /** All absent on demo rows: there is no listing behind them. */
-  onActive?: (s: Service, active: boolean) => void;
+  onActive?: (s: Service, active: boolean) => Promise<PageControlRunResult>;
   onEdit?: (s: Service) => void;
-  onDelete?: (s: Service) => void;
+  onDelete?: (s: Service) => Promise<PageControlRunResult>;
 };
 
 function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service } & ServiceActions) {
@@ -283,6 +283,7 @@ export default function ProviderServicesPage() {
         success(active ? 'Listing is live' : 'Listing hidden', svc.name);
       } catch (e) {
         toastError('Could not change the listing', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The listing did not change.' };
       } finally { refresh(); }
     },
     onEdit: (svc) => {
@@ -292,15 +293,16 @@ export default function ProviderServicesPage() {
     onDelete: async (svc) => {
       const ok = await confirm({
         title: <BilingualText en={`Delete ${svc.name}?`} el={`Διαγραφή: ${svc.name};`} />,
-        description: <BilingualText en="The listing leaves the marketplace. Past inquiries keep their history." el="Η καταχώριση φεύγει από την αγορά. Τα παλαιότερα αιτήματα κρατούν το ιστορικό τους." />,
+        description: <BilingualText en="The listing leaves the marketplace. Past inquiries keep their history." el="Η καταχώριση αφαιρείται από τον κατάλογο υπηρεσιών. Τα παλαιότερα αιτήματα κρατούν το ιστορικό τους." />,
         confirmLabel: <BilingualText en="Delete listing" el="Διαγραφή καταχώρισης" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
       try {
         await deleteMarketplaceService(svc.id);
         success('Listing deleted', svc.name);
       } catch (e) {
         toastError('Could not delete the listing', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The listing was not deleted.' };
       } finally { refresh(); }
     },
   } : {};
@@ -366,10 +368,10 @@ export default function ProviderServicesPage() {
   usePageControls([
     { id: 'add_service', labelEn: 'Open the new listing form', labelEl: 'Άνοιγμα φόρμας νέας καταχώρισης', writes: false, run: openCreate },
     // `isActive` alone (updateMarketplaceService): live and hidden are opposites.
-    { id: 'publish_service', labelEn: 'Make listing live', labelEl: 'Δημοσίευση καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => !s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'hide_service', value: v }), run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, true); } },
-    { id: 'hide_service', labelEn: 'Hide listing', labelEl: 'Απόκρυψη καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'publish_service', value: v }), run: (v) => { const s = serviceById(v); if (s) void serviceActions.onActive?.(s, false); } },
+    { id: 'publish_service', labelEn: 'Make listing live', labelEl: 'Δημοσίευση καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => !s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'hide_service', value: v }), run: (v) => { const s = serviceById(v); return !s ? ROW_GONE : serviceActions.onActive ? serviceActions.onActive(s, true) : { error: sampleEn ?? 'This listing is a sample.' }; } },
+    { id: 'hide_service', labelEn: 'Hide listing', labelEl: 'Απόκρυψη καταχώρισης', writes: true, options: byName(filteredServices.filter((s) => s.isActive)), unavailableEn: sampleEn, unavailableEl: sampleEl, undo: (v) => ({ control: 'publish_service', value: v }), run: (v) => { const s = serviceById(v); return !s ? ROW_GONE : serviceActions.onActive ? serviceActions.onActive(s, false) : { error: sampleEn ?? 'This listing is a sample.' }; } },
     { id: 'edit_service', labelEn: 'Edit listing', labelEl: 'Επεξεργασία καταχώρισης', writes: false, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) serviceActions.onEdit?.(s); } },
-    { id: 'delete_service', labelEn: 'Delete listing', labelEl: 'Διαγραφή καταχώρισης', writes: true, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); if (s) void serviceActions.onDelete?.(s); } },
+    { id: 'delete_service', labelEn: 'Delete listing', labelEl: 'Διαγραφή καταχώρισης', writes: true, options: byName(filteredServices), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const s = serviceById(v); return !s ? ROW_GONE : serviceActions.onDelete ? serviceActions.onDelete(s) : { error: sampleEn ?? 'This listing is a sample.' }; } },
   ]);
 
   return (

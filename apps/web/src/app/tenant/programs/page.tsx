@@ -386,7 +386,7 @@ export default function TenantProgramsPage() {
       options: rowOptions(filteredPrograms.filter((p) => p.status !== 'archived'), (p) => p.id, (p) => p.name),
       unavailableEn: isLive ? undefined : 'Illustrative row — there is nothing to archive',
       unavailableEl: isLive ? undefined : 'Ενδεικτική γραμμή — δεν υπάρχει κάτι για αρχειοθέτηση',
-      run: (v) => { if (v) archiveMutation.mutate(v); },
+      run: async (v) => { if (v) await archiveMutation.mutateAsync(v); },
     },
   ]);
   usePageList([

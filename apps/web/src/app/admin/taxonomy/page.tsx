@@ -38,7 +38,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import {
   adminListSkills,
   adminCreateSkill,
@@ -143,7 +144,7 @@ function SkillDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{skill ? 'Edit Skill' : 'Add New Skill'}</DialogTitle>
+          <DialogTitle>{skill ? <BilingualText en="Edit skill" el="Επεξεργασία δεξιότητας" compact /> : <BilingualText en="Add a skill" el="Προσθήκη δεξιότητας" compact />}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div>
@@ -191,10 +192,10 @@ function SkillDialog({
 export default function AdminTaxonomyPage() {
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [editTarget, setEditTarget] = useState<AdminSkillItem | null | 'new'>(null);
-  const [deleteTarget, setDeleteTarget] = useState<AdminSkillItem | null>(null);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: qk('admin', 'skills', search, categoryFilter),
@@ -240,10 +241,23 @@ export default function AdminTaxonomyPage() {
     onSuccess: () => {
       success('Skill deleted');
       qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
-      setDeleteTarget(null);
     },
     onError: (e: Error) => showError('Failed to delete skill', e.message),
   });
+
+  // The row's delete button and the assistant ask the same question in the
+  // app's one confirm dialog. The command used to open a page-local dialog
+  // and report done while it was still waiting for an answer.
+  const deleteSkill = async (skill: AdminSkillItem): Promise<PageControlRunResult> => {
+    const ok = await confirm({
+      title: <BilingualText en={`Delete “${skill.name}”?`} el={`Διαγραφή «${skill.name}»;`} />,
+      description: <BilingualText en="It is removed from every profile that lists it." el="Αφαιρείται από κάθε προφίλ που την αναφέρει." />,
+      confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact secondaryClassName="text-destructive-foreground" />,
+      variant: 'destructive',
+    });
+    if (!ok) return CANCELLED;
+    return settle(() => deleteMutation.mutateAsync(skill.id));
+  };
 
   const handleSave = (formData: { name: string; slug: string; category: string }) => {
     if (editTarget === 'new') {
@@ -273,7 +287,7 @@ export default function AdminTaxonomyPage() {
     ], categoryFilter || 'all', (v) => setCategoryFilter(v === 'all' ? '' : v)),
     { id: 'new_skill', labelEn: 'Open the new skill form', labelEl: 'Άνοιγμα φόρμας νέας δεξιότητας', writes: false, run: () => setEditTarget('new') },
     { id: 'edit_skill', labelEn: 'Edit skill', labelEl: 'Επεξεργασία δεξιότητας', writes: false, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setEditTarget(sk); } },
-    { id: 'delete_skill', labelEn: 'Delete skill', labelEl: 'Διαγραφή δεξιότητας', writes: true, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setDeleteTarget(sk); } },
+    { id: 'delete_skill', labelEn: 'Delete skill', labelEl: 'Διαγραφή δεξιότητας', writes: true, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); return sk ? deleteSkill(sk) : ROW_GONE; } },
   ]);
 
   return (
@@ -402,13 +416,13 @@ export default function AdminTaxonomyPage() {
                         {cat} ({items.length})
                       </div>
                       {items.map((skill) => (
-                        <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={setDeleteTarget} />
+                        <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />
                       ))}
                     </div>
                   ))}
                   {/* Filtered flat list */}
                   {(categoryFilter || search) && skills.map((skill) => (
-                    <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={setDeleteTarget} />
+                    <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />
                   ))}
                   {/* Uncategorized */}
                   {!categoryFilter && !search && uncategorized.length > 0 && (
@@ -417,7 +431,7 @@ export default function AdminTaxonomyPage() {
                         Uncategorized ({uncategorized.length})
                       </div>
                       {uncategorized.map((skill) => (
-                        <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={setDeleteTarget} />
+                        <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />
                       ))}
                     </div>
                   )}
@@ -437,34 +451,6 @@ export default function AdminTaxonomyPage() {
         isSaving={isSaving}
       />
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle><BilingualText en="Delete Skill" el="Διαγραφή δεξιότητας" compact /></DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground py-2">
-            <BilingualText
-              en={`Delete "${deleteTarget?.name ?? ''}"? It is removed from every profile that lists it.`}
-              el={`Διαγραφή «${deleteTarget?.name ?? ''}»; Αφαιρείται από κάθε προφίλ που την αναφέρει.`}
-              wrap
-            />
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleteMutation.isPending}>
-              <BilingualText en="Cancel" el="Ακύρωση" compact />
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />}
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </AppShell>
   );
 }

@@ -35,7 +35,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -233,17 +233,17 @@ export default function AdminProgramsPage() {
   const live = useMemo(() => (Array.isArray(data?.programs) ? data.programs : []).map(toProgram), [data]);
   const showingSample = !isLoading && live.length === 0;
 
-  const archive = async (p: Program) => {
+  const archive = async (p: Program): Promise<PageControlRunResult> => {
     if (!p.orgSlug) {
       toastError('Nothing to archive', 'This is a sample row until the programs API returns programmes.');
-      return;
+      return { error: 'This is a sample row until the programs API returns programmes.' };
     }
     const ok = await confirm({
       title: <BilingualText en={`Archive ${p.name}?`} el={`Αρχειοθέτηση: ${p.name};`} />,
       description: <BilingualText en="The programme stops taking applications and leaves active lists. Archived programmes stay readable." el="Το πρόγραμμα σταματά να δέχεται αιτήσεις και φεύγει από τις ενεργές λίστες. Τα αρχειοθετημένα προγράμματα παραμένουν αναγνώσιμα." />,
       confirmLabel: <BilingualText en="Archive" el="Αρχειοθέτηση" compact />,
     });
-    if (!ok) return;
+    if (!ok) return CANCELLED;
     try {
       await deleteProgram(p.id);
       success('Programme archived', p.name);
@@ -256,6 +256,7 @@ export default function AdminProgramsPage() {
           ? `Only members of ${p.organization} can archive it.`
           : err instanceof Error ? err.message : undefined,
       );
+      return { error: err instanceof Error && err.message ? err.message : 'The programme could not be archived.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('programs') });
     }
@@ -452,7 +453,7 @@ export default function AdminProgramsPage() {
       unavailableEl: showingSample ? 'Είναι δείγματα μέχρι το API προγραμμάτων να επιστρέψει προγράμματα.' : undefined,
       run: (value) => {
         const program = programs.find((p) => p.id === value);
-        if (program) void archive(program);
+        return program ? archive(program) : ROW_GONE;
       },
     },
   ]);

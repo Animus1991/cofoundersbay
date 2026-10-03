@@ -54,7 +54,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
@@ -130,8 +130,8 @@ const TENANT_ROLES = ['member', 'mentor', 'admin'] as const;
 
 type MemberActions = {
   /** Absent on sample rows. */
-  onRole?: (m: Member, role: string) => void;
-  onRemove?: (m: Member) => void;
+  onRole?: (m: Member, role: string) => Promise<PageControlRunResult>;
+  onRemove?: (m: Member) => Promise<PageControlRunResult>;
 };
 
 function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberActions) {
@@ -311,27 +311,29 @@ export default function TenantMembersPage() {
   const refreshMembers = () => void queryClient.invalidateQueries({ queryKey: qk('tenant', 'members', tenantId) });
   const memberActions: MemberActions = live.length > 0 && tenantId ? {
     onRole: async (m, role) => {
-      if (!m.userId) return;
+      if (!m.userId) return { error: 'This member has no account to update.' };
       try {
         await updateTenantMember(tenantId, m.userId, { role });
         toastOk('Role changed', bilingualInline(`${m.name} is now ${role}.`, `${m.name}: ${statusEl(role) ?? role}.`));
       } catch (e) {
         toastFail('Could not change the role', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The role did not change.' };
       } finally { refreshMembers(); }
     },
     onRemove: async (m) => {
-      if (!m.userId) return;
+      if (!m.userId) return { error: 'This member has no account to remove.' };
       const ok = await confirm({
         title: <BilingualText en={`Remove ${m.name}?`} el={`Αφαίρεση: ${m.name};`} />,
         description: <BilingualText en="They lose access to this workspace. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον χώρο εργασίας. Ο λογαριασμός του/της δεν διαγράφεται." />,
         confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
       try {
         await removeTenantMember(tenantId, m.userId);
         toastOk('Member removed', m.name);
       } catch (e) {
         toastFail('Could not remove the member', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The member was not removed.' };
       } finally { refreshMembers(); }
     },
   } : {};
@@ -405,7 +407,7 @@ export default function TenantMembersPage() {
         const prior = memberById(v)?.role;
         return prior && prior !== role && (TENANT_ROLES as readonly string[]).includes(prior) ? { control: `make_${prior}`, value: v } : undefined;
       },
-      run: (v?: string) => { const m = memberById(v); if (m) void memberActions.onRole?.(m, role); },
+      run: (v?: string) => { const m = memberById(v); return !m ? ROW_GONE : memberActions.onRole ? memberActions.onRole(m, role) : { error: liveOnlyEn ?? 'These members are samples.' }; },
     })),
     {
       id: 'remove_member',
@@ -415,7 +417,7 @@ export default function TenantMembersPage() {
       options: rowOptions(filteredMembers, (m) => m.id, (m) => m.name),
       unavailableEn: liveOnlyEn,
       unavailableEl: liveOnlyEl,
-      run: (v) => { const m = memberById(v); if (m) void memberActions.onRemove?.(m); },
+      run: (v) => { const m = memberById(v); return !m ? ROW_GONE : memberActions.onRemove ? memberActions.onRemove(m) : { error: liveOnlyEn ?? 'These members are samples.' }; },
     },
   ]);
 

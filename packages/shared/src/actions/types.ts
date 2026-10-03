@@ -53,6 +53,15 @@ export type ActionOutcome = {
   href?: string;
   error?: string;
   /**
+   * The reader said no in the page's own confirmation, so nothing was written.
+   *
+   * Always paired with `ok: false`. A caller that has never heard of
+   * cancellation still reads it as "not applied", which is the safe reading;
+   * the ones that know show "Cancelled — no changes made" instead of an error,
+   * and file nothing in the audit trail, because nothing happened.
+   */
+  cancelled?: boolean;
+  /**
    * What the undo will need, produced by the action itself.
    *
    * An undo used to be handed only the original payload, which is why every

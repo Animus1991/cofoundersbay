@@ -21,7 +21,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
-import { choiceControl, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -304,11 +304,12 @@ export default function AdminUsersPage() {
   // Writes go to the real directory only. The seed rows show the screen's
   // shape on an empty instance; acting on them would report a change that
   // never reached any account.
-  const refuseOnSeed = () => {
+  const refuseOnSeed = (): PageControlRunResult => {
     error('Nothing to update', 'These rows are illustrative until the user directory loads.');
+    return { error: 'These rows are illustrative until the user directory loads.' };
   };
 
-  const moderate: RowActions['onModerate'] = async (user, next) => {
+  const moderate = async (user: User, next: 'active' | 'suspended' | 'banned'): Promise<PageControlRunResult> => {
     if (!isLive) return refuseOnSeed();
     if (next === 'banned') {
       const ok = await confirm({
@@ -316,25 +317,27 @@ export default function AdminUsersPage() {
         description: <BilingualText en="They are signed out and cannot sign back in until the ban is lifted from this menu." el="Αποσυνδέεται και δεν μπορεί να συνδεθεί ξανά μέχρι να αρθεί ο αποκλεισμός από αυτό το μενού." />,
         confirmLabel: <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
     }
     try {
       await updateAdminUserModeration(user.id, next);
       success('Status updated', `${user.name} is now ${next}.`);
     } catch (err) {
       error('Could not update the status', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The status could not be updated.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
     }
   };
 
-  const assignRole: RowActions['onRole'] = async (user, next) => {
+  const assignRole = async (user: User, next: (typeof ASSIGNABLE_ROLES)[number]): Promise<PageControlRunResult> => {
     if (!isLive) return refuseOnSeed();
     try {
       await changeUserRole(user.id, next);
       success('Role updated', `${user.name} is now ${next}.`);
     } catch (err) {
       error('Could not change the role', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The role could not be changed.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
     }
@@ -525,7 +528,7 @@ export default function AdminUsersPage() {
     },
     run: (value) => {
       const user = users.find((u) => u.id === value);
-      if (user) void moderate(user, next);
+      return user ? moderate(user, next) : ROW_GONE;
     },
   });
   const ROLE_EL: Record<(typeof ASSIGNABLE_ROLES)[number], string> = {
@@ -563,7 +566,7 @@ export default function AdminUsersPage() {
       },
       run: (value) => {
         const user = users.find((u) => u.id === value);
-        if (user) void assignRole(user, r);
+        return user ? assignRole(user, r) : ROW_GONE;
       },
     })),
   ]);

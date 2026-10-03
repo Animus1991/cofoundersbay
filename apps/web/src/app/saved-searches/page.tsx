@@ -39,6 +39,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -47,7 +48,7 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { SAVED_SEARCHES_STRINGS, savedSearchesEn, savedSearchesEl } from '@/lib/i18n/strings-saved-searches';
 import { useRouter } from 'next/navigation';
 import { qk } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 function SearchCard({
   search,
@@ -305,6 +306,7 @@ function EditSearchDialog({
 export default function SavedSearchesPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { primary } = useLanguagePreference();
   /* Toasts and the empty state's title/description are single strings passed to
@@ -313,7 +315,6 @@ export default function SavedSearchesPage() {
   const t = (key: SavedKey) => (primary === 'el' ? savedSearchesEl(key) : savedSearchesEn(key));
 
   const [editingSearch, setEditingSearch] = useState<SavedSearch | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: qk('saved-searches'),
@@ -346,7 +347,6 @@ export default function SavedSearchesPage() {
     mutationFn: (id: string) => deleteSavedSearch(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
-      setDeleteConfirm(null);
       success(t('search_deleted'));
     },
     onError: () => showError(t('search_delete_failed')),
@@ -362,9 +362,8 @@ export default function SavedSearchesPage() {
     router.push(`/discover?${params.toString()}`);
   };
 
-  const handleToggleAlerts = (id: string, current: boolean) => {
-    toggleAlertsMutation.mutate({ id, alertsEnabled: !current });
-  };
+  const handleToggleAlerts = (id: string, current: boolean): Promise<PageControlRunResult> =>
+    settle(() => toggleAlertsMutation.mutateAsync({ id, alertsEnabled: !current }));
 
   const handleSaveEdit = (data: Partial<SavedSearch>) => {
     if (!editingSearch) return;
@@ -372,8 +371,18 @@ export default function SavedSearchesPage() {
     setEditingSearch(null);
   };
 
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+  // The row's delete and the assistant ask in the app's one confirm dialog.
+  // The command used to open a page-local dialog and report done while the
+  // question was still on screen.
+  const handleDelete = async (id: string): Promise<PageControlRunResult> => {
+    const ok = await confirm({
+      title: <BilingualText en={savedSearchesEn('delete_title')} el={savedSearchesEl('delete_title')} />,
+      description: <BilingualText en={savedSearchesEn('delete_body')} el={savedSearchesEl('delete_body')} />,
+      confirmLabel: <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact secondaryClassName="text-destructive-foreground" />,
+      variant: 'destructive',
+    });
+    if (!ok) return CANCELLED;
+    return settle(() => deleteMutation.mutateAsync(id));
   };
 
   const handleCreateNew = () => {
@@ -398,10 +407,10 @@ export default function SavedSearchesPage() {
     { id: 'new_search', labelEn: 'Start a new saved search', labelEl: 'Νέα αποθηκευμένη αναζήτηση', writes: false, run: handleCreateNew },
     { id: 'run_search', labelEn: 'Run saved search', labelEl: 'Εκτέλεση αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) handleRun(x); } },
     // updateSavedSearch sends `alertsEnabled` alone; on and off are opposites.
-    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, false); } },
-    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, true); } },
+    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const x = searchById(v); return x ? handleToggleAlerts(x.id, false) : ROW_GONE; } },
+    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const x = searchById(v); return x ? handleToggleAlerts(x.id, true) : ROW_GONE; } },
     { id: 'edit_search', labelEn: 'Edit saved search', labelEl: 'Επεξεργασία αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) setEditingSearch(x); } },
-    { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => { if (v) setDeleteConfirm(v); } },
+    { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => (v ? handleDelete(v) : undefined) },
   ]);
 
   /*
@@ -477,9 +486,9 @@ export default function SavedSearchesPage() {
                 key={search.id}
                 search={search}
                 onRun={() => handleRun(search)}
-                onToggleAlerts={(current) => handleToggleAlerts(search.id, current)}
+                onToggleAlerts={(current) => void handleToggleAlerts(search.id, current)}
                 onEdit={() => setEditingSearch(search)}
-                onDelete={() => setDeleteConfirm(search.id)}
+                onDelete={() => void handleDelete(search.id)}
               />
             ))}
           </div>
@@ -493,28 +502,6 @@ export default function SavedSearchesPage() {
           onSave={handleSaveEdit}
         />
 
-        {/* Delete Confirmation */}
-        <Dialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle><BilingualText en={savedSearchesEn('delete_title')} el={savedSearchesEl('delete_title')} compact wrap /></DialogTitle>
-            </DialogHeader>
-            <p className="text-muted-foreground">
-              <BilingualText en={savedSearchesEn('delete_body')} el={savedSearchesEl('delete_body')} />
-            </p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                <BilingualText en={savedSearchesEn('cancel')} el={savedSearchesEl('cancel')} compact />
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
-              >
-                <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact />
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </AppShell>
   );

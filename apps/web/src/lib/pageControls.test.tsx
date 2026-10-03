@@ -8,11 +8,15 @@ import {
   currentPageLists,
   LIST_ROW_CHARS,
   LIST_ROW_LIMIT,
+  CANCELLED,
   resetPageControlsForTests,
   resetPageListsForTests,
+  ROW_GONE,
+  settle,
   usePageControls,
   usePageList,
   type PageControl,
+  type PageControlRunResult,
 } from './page-controls';
 import { executeAction, getActionSpec, undoAction, undoAvailable } from './action-registry';
 import { pageControlFor, pageListFor } from './copilot-planner';
@@ -207,6 +211,91 @@ describe('an assistant turn on a page with controls', () => {
   it('names what it can use when asked about the page', async () => {
     const turn = await runCopilotTurn('what can I do on this page?', context, { tools: [] });
     expect(turn.message).toContain('You can ask me to use: Status filter, Export users as CSV, Suspend user.');
+  });
+});
+
+/**
+ * What a command's handler answers is what the assistant's card shows: the
+ * write landed, the reader said no in the page's own confirmation, or it did
+ * not go through - and the answer arrives only once the write has settled.
+ */
+describe('what a command reports', () => {
+  const ROWS = [
+    { value: 'r1', labelEn: 'Weekly digest', labelEl: 'Εβδομαδιαία σύνοψη' },
+    { value: 'r2', labelEn: 'Welcome email', labelEl: 'Email καλωσορίσματος' },
+  ];
+  function Rules({ run, options = ROWS, undo }: {
+    run: (v?: string) => PageControlRunResult | Promise<PageControlRunResult>;
+    options?: PageControl['options'];
+    undo?: PageControl['undo'];
+  }) {
+    usePageControls([{ id: 'delete_rule', labelEn: 'Delete rule', labelEl: 'Διαγραφή κανόνα', writes: true, options, undo, run }]);
+    return null;
+  }
+  const command = (value?: string) => executeAction('run_page_command', { control: 'delete_rule', value });
+
+  it('reports done when the handler answers nothing', async () => {
+    render(<Rules run={() => undefined} />);
+    await expect(command('r1')).resolves.toEqual({ ok: true });
+  });
+
+  it('reports cancelled - never done, never an error - when the reader declines', async () => {
+    render(<Rules run={async () => CANCELLED} undo={(v) => ({ control: 'restore_rule', value: v })} />);
+    const outcome = await command('r1');
+    expect(outcome).toEqual({ ok: false, cancelled: true });
+    // Nothing was written, so nothing can be taken back.
+    expect(undoAvailable('run_page_command', outcome.undo)).toBe(false);
+  });
+
+  it('reports the handler’s reason when the write does not go through', async () => {
+    render(<Rules run={async () => ({ error: 'The rule is in use.' })} />);
+    await expect(command('r1')).resolves.toEqual({ ok: false, error: 'The rule is in use.' });
+  });
+
+  it('reports a thrown failure as a failure, with its message', async () => {
+    render(<Rules run={async () => { throw new Error('Server unavailable'); }} />);
+    await expect(command('r1')).resolves.toEqual({ ok: false, error: 'Server unavailable' });
+  });
+
+  it('turns a failure into an answer for handlers a button shares, instead of a rejection', async () => {
+    await expect(settle(async () => { throw new Error('Offline'); })).resolves.toEqual({ error: 'Offline' });
+    await expect(settle(async () => 'stored')).resolves.toBeUndefined();
+    expect(ROW_GONE.error).toMatch(/no longer on this page/);
+  });
+
+  it('stays pending until the handler settles', async () => {
+    let release!: () => void;
+    render(<Rules run={() => new Promise<void>((resolve) => { release = resolve; })} />);
+    let settled = false;
+    const outcome = command('r1').then((o) => { settled = true; return o; });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    release();
+    await expect(outcome).resolves.toEqual({ ok: true });
+  });
+
+  it('refuses a command whose list is empty right now, instead of running it on nothing', async () => {
+    const run = vi.fn();
+    render(<Rules run={run} options={[]} />);
+    await expect(command('anything')).resolves.toEqual({ ok: false, error: '"Delete rule" has nothing to act on right now.' });
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('still runs a command that takes no choice at all', async () => {
+    const run = vi.fn();
+    function MarkAll() {
+      usePageControls([{ id: 'mark_all_read', labelEn: 'Mark all read', labelEl: 'Σήμανση όλων ως αναγνωσμένων', writes: true, run }]);
+      return null;
+    }
+    render(<MarkAll />);
+    await expect(executeAction('run_page_command', { control: 'mark_all_read' })).resolves.toEqual({ ok: true });
+    expect(run).toHaveBeenCalledWith(undefined);
+  });
+
+  it('keeps the command standing when the reader declines its undo', async () => {
+    render(<Rules run={async () => CANCELLED} />);
+    await expect(undoAction('run_page_command', {}, { control: 'delete_rule', value: 'r1' })).resolves.toEqual({ ok: false, cancelled: true });
   });
 });
 

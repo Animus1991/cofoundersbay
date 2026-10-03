@@ -25,7 +25,7 @@ import {
 import { formatRelativeTime } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
-import { usePageControls } from '@/lib/page-controls';
+import { CANCELLED, usePageControls } from '@/lib/page-controls';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -109,16 +109,17 @@ export default function StartupDealPage() {
       unavailableEl: unloadedEl,
       undo: () => (deal ? { control: 'move_deal_stage', value: deal.pipelineStage } : undefined),
       run: async (value) => {
-        if (!deal || !value || value === deal.pipelineStage) return;
+        if (!deal) return { error: 'The deal has not loaded.' };
+        if (!value || value === deal.pipelineStage) return;
         if (value === 'passed') {
           const ok = await confirm({
             title: <BilingualText en={`Pass on ${deal.name}?`} el={`Απόρριψη: ${deal.name};`} />,
             description: <BilingualText en="It leaves the active pipeline. You can move it back to any stage from here." el="Φεύγει από την ενεργή ροή. Μπορείτε να τη μεταφέρετε ξανά σε οποιοδήποτε στάδιο από εδώ." />,
             confirmLabel: <BilingualText en="Pass" el="Απόρριψη" compact />,
           });
-          if (!ok) return;
+          if (!ok) return CANCELLED;
         }
-        moveTo.mutate(value as PipelineStage);
+        await moveTo.mutateAsync(value as PipelineStage);
       },
     },
     ...([true, false] as const).map((on) => ({
@@ -129,7 +130,7 @@ export default function StartupDealPage() {
       unavailableEn: unloaded ?? (deal && deal.starred === on ? (on ? 'The deal is already starred.' : 'The deal is not starred.') : undefined),
       unavailableEl: unloadedEl ?? (deal && deal.starred === on ? (on ? 'Η συμφωνία έχει ήδη αστέρι.' : 'Η συμφωνία δεν έχει αστέρι.') : undefined),
       undo: () => ({ control: on ? 'unstar_deal' : 'star_deal' }),
-      run: () => { star.mutate(on); },
+      run: async () => { await star.mutateAsync(on); },
     })),
   ]);
 

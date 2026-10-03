@@ -464,7 +464,7 @@ export default function SettingsPage() {
         const prior = digestPrefs?.digestFrequency ?? 'never';
         return prior === 'weekly' ? { control: 'email_digest', value: 'on' } : prior === 'never' ? { control: 'email_digest', value: 'off' } : undefined;
       },
-      run: (v) => saveDigest.mutate(v === 'on'),
+      run: async (v) => { await saveDigest.mutateAsync(v === 'on'); },
     },
     {
       id: 'upgrade',

@@ -70,7 +70,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 
@@ -294,15 +294,15 @@ export default function AdminUserManagementPage() {
   const moderationOf = (status: UserStatus): 'active' | 'suspended' | 'banned' | null =>
     status === 'active' || status === 'suspended' || status === 'banned' ? status : null;
 
-  const updateStatus = async (id: string, status: UserStatus) => {
+  const updateStatus = async (id: string, status: UserStatus): Promise<PageControlRunResult> => {
     const moderation = moderationOf(status);
     if (!moderation) {
       error('Not a stored status', 'The platform records active, suspended or banned.');
-      return;
+      return { error: 'The platform records active, suspended or banned.' };
     }
     if (!isLive) {
       error('Nothing to update', 'These rows are illustrative until the directory loads.');
-      return;
+      return { error: 'These rows are illustrative until the directory loads.' };
     }
     // Optimistic, then reconciled with the server on refresh.
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, status } : u)));
@@ -311,15 +311,16 @@ export default function AdminUserManagementPage() {
       success('Status updated', `User is now ${status}.`);
     } catch (err) {
       error('Could not update the status', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The status could not be updated.' };
     } finally {
       void refresh();
     }
   };
 
-  const updateRole = async (id: string, role: UserRole) => {
+  const updateRole = async (id: string, role: UserRole): Promise<PageControlRunResult> => {
     if (!isLive) {
       error('Nothing to update', 'These rows are illustrative until the directory loads.');
-      return;
+      return { error: 'These rows are illustrative until the directory loads.' };
     }
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, role } : u)));
     try {
@@ -327,6 +328,7 @@ export default function AdminUserManagementPage() {
       success('Role updated', `User role changed to ${role}.`);
     } catch (err) {
       error('Could not update the role', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The role could not be updated.' };
     } finally {
       void refresh();
     }
@@ -533,7 +535,7 @@ export default function AdminUserManagementPage() {
     en: string,
     el: string,
     list: ManagedUser[],
-    run: (u: ManagedUser) => void,
+    run: (u: ManagedUser) => PageControlRunResult | Promise<PageControlRunResult>,
     undo?: (u: ManagedUser) => string | undefined,
   ): PageControl => ({
     id,
@@ -544,7 +546,7 @@ export default function AdminUserManagementPage() {
     unavailableEn: SAMPLE_EN,
     unavailableEl: SAMPLE_EL,
     ...(undo ? { undo: (v?: string) => { const u = users.find((row) => row.id === v); const back = u ? undo(u) : undefined; return back ? { control: back, value: v } : undefined; } } : {}),
-    run: (v) => { const u = users.find((row) => row.id === v); if (u) run(u); },
+    run: (v) => { const u = users.find((row) => row.id === v); return u ? run(u) : ROW_GONE; },
   });
   // The moderation and role endpoints each set one field to what they are
   // sent (admin.service), so the command that sets the previous value back
@@ -599,10 +601,10 @@ export default function AdminUserManagementPage() {
       run: exportCsv,
     },
     { id: 'quick_view', labelEn: 'Quick view a user', labelEl: 'Γρήγορη προβολή χρήστη', writes: false, options: byName(filtered), run: (v) => { const u = users.find((row) => row.id === v); if (u) setDetailUser(u); } },
-    rowCommand('set_active', 'Set user active', 'Ενεργοποίηση χρήστη', filtered.filter((u) => u.status !== 'active'), (u) => void updateStatus(u.id, 'active'), backToStatus),
-    rowCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', filtered.filter((u) => u.status !== 'suspended'), (u) => void updateStatus(u.id, 'suspended'), backToStatus),
-    rowCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', filtered.filter((u) => u.status !== 'banned'), (u) => void updateStatus(u.id, 'banned'), backToStatus),
-    rowCommand('make_admin', 'Make user an admin', 'Ορισμός χρήστη ως διαχειριστή', filtered.filter((u) => u.role !== 'admin'), (u) => void updateRole(u.id, 'admin')),
+    rowCommand('set_active', 'Set user active', 'Ενεργοποίηση χρήστη', filtered.filter((u) => u.status !== 'active'), (u) => updateStatus(u.id, 'active'), backToStatus),
+    rowCommand('suspend_user', 'Suspend user', 'Αναστολή χρήστη', filtered.filter((u) => u.status !== 'suspended'), (u) => updateStatus(u.id, 'suspended'), backToStatus),
+    rowCommand('ban_user', 'Ban user', 'Αποκλεισμός χρήστη', filtered.filter((u) => u.status !== 'banned'), (u) => updateStatus(u.id, 'banned'), backToStatus),
+    rowCommand('make_admin', 'Make user an admin', 'Ορισμός χρήστη ως διαχειριστή', filtered.filter((u) => u.role !== 'admin'), (u) => updateRole(u.id, 'admin')),
   ]);
   return (
     <AppShell

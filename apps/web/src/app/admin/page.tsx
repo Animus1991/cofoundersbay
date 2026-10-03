@@ -89,7 +89,7 @@ import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { bilingualInline } from '@/lib/i18n/format';
 
@@ -671,8 +671,9 @@ export default function AdminPage() {
 
   // A cohort delete used to run on the first click of a hover-only icon. It
   // asks now, from the button and from the assistant alike.
-  const deleteCohort = async (cohort: { id: string; name: string }) => {
-    if (await confirm(deleteConfirmCopy({ en: 'cohort', el: 'κοορτής' }, cohort.name))) deleteCohortMutation.mutate(cohort.id);
+  const deleteCohort = async (cohort: { id: string; name: string }): Promise<PageControlRunResult> => {
+    if (!(await confirm(deleteConfirmCopy({ en: 'cohort', el: 'κύκλου' }, cohort.name)))) return CANCELLED;
+    return settle(() => deleteCohortMutation.mutateAsync(cohort.id));
   };
 
   // Offered to the assistant: the tab, Refresh, the audit export, and each
@@ -731,7 +732,7 @@ export default function AdminPage() {
     { id: 'suspend_user', labelEn: 'Suspend user', labelEl: 'Αναστολή χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus === 'active'), (u) => u.id, userName), undo: (v) => ({ control: 'reactivate_user', value: v }), run: async (v) => { if (v) await userMutation.mutateAsync({ userId: v, status: 'suspended' }); } },
     { id: 'reactivate_user', labelEn: 'Reactivate user', labelEl: 'Επανενεργοποίηση χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'active'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'suspended' ? { control: 'suspend_user', value: v } : prior === 'banned' ? { control: 'ban_user', value: v } : undefined; }, run: async (v) => { if (v) await userMutation.mutateAsync({ userId: v, status: 'active' }); } },
     { id: 'ban_user', labelEn: 'Ban user', labelEl: 'Αποκλεισμός χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'banned'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'active' ? { control: 'reactivate_user', value: v } : prior === 'suspended' ? { control: 'suspend_user', value: v } : undefined; }, run: async (v) => { if (v) await userMutation.mutateAsync({ userId: v, status: 'banned' }); } },
-    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κύκλου', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κύκλοι.', run: async (v) => { const c = cohorts.find((x) => x.id === v); if (c && await confirm(deleteConfirmCopy({ en: 'cohort', el: 'κοορτής' }, c.name))) await deleteCohortMutation.mutateAsync(c.id); } },
+    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κύκλου', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κύκλοι.', run: (v) => { const c = cohorts.find((x) => x.id === v); return c ? deleteCohort(c) : ROW_GONE; } },
     { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: async (v) => { const e = events.find((x) => x.id === v); if (e) await featureMutation.mutateAsync({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
     { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: async (v) => { const j = jobs.find((x) => x.id === v); if (j) await featureMutation.mutateAsync({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
     { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: async (v) => { if (v) await removeContentMutation.mutateAsync({ type: 'event', id: v }); } },

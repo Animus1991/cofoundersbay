@@ -19,7 +19,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 type Report = {
   id: string;
@@ -103,11 +103,11 @@ export default function ContentModerationPage() {
       (!search || r.reason.toLowerCase().includes(search.toLowerCase())),
   );
 
-  const resolve = async (id: string, status: Report['status']) => {
-    if (status === 'open') return;
+  const resolve = async (id: string, status: Report['status']): Promise<PageControlRunResult> => {
+    if (status === 'open') return { error: 'A report cannot be reopened here.' };
     if (!isLive) {
       error('Nothing to update', 'These rows are illustrative until the queue loads.');
-      return;
+      return { error: 'These rows are illustrative until the queue loads.' };
     }
     // Optimistic, then reconciled from the server.
     setItems((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
@@ -116,6 +116,7 @@ export default function ContentModerationPage() {
       success('Report updated', `Marked as ${status}.`);
     } catch (err) {
       error('Could not update the report', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The report did not change.' };
     } finally {
       void qc.invalidateQueries({ queryKey: qk('admin', 'reports') });
     }
@@ -133,7 +134,7 @@ export default function ContentModerationPage() {
     options: rowOptions(open, (r) => r.id, (r) => `${r.type} · ${r.reason}`),
     unavailableEn: !isLive ? 'These rows are illustrative until the queue loads.' : open.length === 0 ? 'No open report is shown.' : undefined,
     unavailableEl: !isLive ? 'Οι γραμμές είναι ενδεικτικές μέχρι να φορτώσει η ουρά.' : open.length === 0 ? 'Δεν εμφανίζεται ανοιχτή αναφορά.' : undefined,
-    run: (value?: string) => { if (value) void resolve(value, status); },
+    run: (value?: string) => (value ? resolve(value, status) : undefined),
   });
   usePageControls([
     choiceControl('queue_tab', 'Queue', 'Ουρά', [

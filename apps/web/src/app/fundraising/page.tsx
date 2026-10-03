@@ -749,10 +749,13 @@ export default function FundraisingPage() {
       { value: 'dataroom', en: 'Data room', el: 'Data room' },
     ], view, setView),
     {
+      // Opens the form at the chosen stage; nothing is stored until the
+      // reader saves it there, so this is a view control, not a command -
+      // as a command its card said "Done" over an empty form.
       id: 'add_lead',
-      labelEn: 'Add an investor lead',
-      labelEl: 'Προσθήκη υποψήφιου επενδυτή',
-      writes: true,
+      labelEn: 'Open the form to add an investor lead',
+      labelEl: 'Άνοιγμα φόρμας νέου υποψήφιου επενδυτή',
+      writes: false,
       options: PIPELINE_STAGES.map((st) => ({ value: st, labelEn: stageName(st).en, labelEl: stageName(st).el })),
       run: (value) => openAdd((value as InvestorStatus) ?? 'prospect'),
     },

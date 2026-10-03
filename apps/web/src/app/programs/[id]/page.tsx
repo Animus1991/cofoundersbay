@@ -79,7 +79,7 @@ export default function ProgramDetailPage() {
       writes: true,
       unavailableEn: !program ? 'The programme has not loaded.' : enrolled ? 'You have already applied.' : !open ? 'This programme is not taking applications.' : undefined,
       unavailableEl: !program ? 'Το πρόγραμμα δεν έχει φορτωθεί.' : enrolled ? 'Έχετε ήδη κάνει αίτηση.' : !open ? 'Το πρόγραμμα δεν δέχεται αιτήσεις.' : undefined,
-      run: () => { apply.mutate(); },
+      run: async () => { await apply.mutateAsync(); },
     },
   ]);
 

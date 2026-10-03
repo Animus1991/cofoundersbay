@@ -15,7 +15,7 @@ import { useToast } from '@/components/ui/toast';
 import { getEvent, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { usePageControls } from '@/lib/page-controls';
+import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -86,8 +86,8 @@ export default function EventDetailPage() {
   });
   const event = data?.event ?? null;
 
-  const respond = async (status: Rsvp) => {
-    if (!event) return;
+  const respond = async (status: Rsvp): Promise<PageControlRunResult> => {
+    if (!event) return { error: 'The event has not loaded.' };
     try {
       await rsvpEvent(event.id, status);
       queryClient.setQueryData(qk('events', 'detail', id), (old: { event: EventItem } | undefined) =>
@@ -108,6 +108,7 @@ export default function EventDetailPage() {
       success('RSVP updated');
     } catch (e) {
       showError('RSVP failed', e instanceof Error ? e.message : 'Sign in and try again.');
+      return { error: e instanceof Error && e.message ? e.message : 'The RSVP was not saved.' };
     }
   };
 
@@ -143,7 +144,7 @@ export default function EventDetailPage() {
         previous && previous !== 'going' && value && value !== 'going' && value !== previous
           ? { control: 'rsvp', value: previous }
           : undefined,
-      run: async (value) => { if (value) await respond(value as Rsvp); },
+      run: (value) => (value ? respond(value as Rsvp) : undefined),
     },
     {
       id: 'add_to_calendar',

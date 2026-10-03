@@ -45,7 +45,7 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
-import { usePageControls } from '@/lib/page-controls';
+import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -133,7 +133,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     enabled: !!userId && hasToken,
   });
 
-  const handleConnect = async () => {
+  const handleConnect = async (): Promise<PageControlRunResult> => {
     setConnecting(true);
     try {
       await sendConnectionRequest({ receiverId: userId });
@@ -143,6 +143,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       success('Request sent!', `Your connection request has been sent.`);
     } catch (err) {
       showError('Could not connect', err instanceof Error ? err.message : 'Please try again');
+      return { error: err instanceof Error && err.message ? err.message : 'The connection request was not sent.' };
     } finally {
       setConnecting(false);
     }
@@ -342,7 +343,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <div className="flex w-full flex-col gap-2 pt-1">
                   <Button
                     className="w-full gap-2"
-                    onClick={handleConnect}
+                    onClick={() => void handleConnect()}
                     disabled={connecting || isConnected || isPendingSent || isBlocked}
                     variant={isConnected || isBlocked ? 'secondary' : 'default'}
                   >

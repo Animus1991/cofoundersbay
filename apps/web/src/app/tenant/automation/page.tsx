@@ -31,7 +31,7 @@ import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 const TRIGGER_LABELS: Record<string, { en: string; el: string }> = {
   user_signup: { en: 'User Signup', el: 'Εγγραφή χρήστη' },
@@ -288,13 +288,14 @@ export default function TenantAutomationPage() {
     unavailableEn: noRules,
     unavailableEl: noRulesEl,
     undo: (value?: string) => (value ? { control: back, value } : undefined),
-    run: async (value?: string) => {
+    run: async (value?: string): Promise<PageControlRunResult> => {
       if (!value) return;
       try {
         await setAutomationRuleStatus(value, next);
         toastOk(next === 'active' ? 'Rule activated' : 'Rule paused');
-      } catch {
+      } catch (err) {
         toastFail('Failed to update rule');
+        return { error: err instanceof Error && err.message ? err.message : 'The rule did not change.' };
       } finally {
         void refetch();
       }
@@ -322,7 +323,13 @@ export default function TenantAutomationPage() {
       unavailableEl: noRulesEl,
       run: async (value) => {
         if (!value) return;
-        try { await triggerAutomationRule(value); toastOk('Rule triggered manually'); } catch { toastFail('Failed to trigger rule'); }
+        try {
+          await triggerAutomationRule(value);
+          toastOk('Rule triggered manually');
+        } catch (err) {
+          toastFail('Failed to trigger rule');
+          return { error: err instanceof Error && err.message ? err.message : 'The rule did not run.' };
+        }
       },
     },
     {
@@ -335,9 +342,17 @@ export default function TenantAutomationPage() {
       unavailableEl: rules.every((r) => r.tenantId === null) ? 'Εμφανίζονται μόνο κανόνες πλατφόρμας· δεν διαγράφονται από εδώ.' : undefined,
       run: async (value) => {
         const rule = rules.find((r) => r.id === value);
-        if (!rule) return;
-        if (!(await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name)))) return;
-        try { await deleteAutomationRule(rule.id); toastOk('Rule deleted'); } catch { toastFail('Failed to delete rule'); } finally { void refetch(); }
+        if (!rule) return ROW_GONE;
+        if (!(await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name)))) return CANCELLED;
+        try {
+          await deleteAutomationRule(rule.id);
+          toastOk('Rule deleted');
+        } catch (err) {
+          toastFail('Failed to delete rule');
+          return { error: err instanceof Error && err.message ? err.message : 'The rule was not deleted.' };
+        } finally {
+          void refetch();
+        }
       },
     },
   ]);

@@ -40,7 +40,7 @@ import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -211,7 +211,7 @@ export default function DiscoverPage() {
   };
 
   // Handle bookmark
-  const handleBookmark = async (profile: ProfileCardData) => {
+  const handleBookmark = async (profile: ProfileCardData): Promise<PageControlRunResult> => {
     try {
       await saveToShortlist(profile.userId);
       void queryClient.invalidateQueries({ queryKey: queryKeys.shortlist });
@@ -219,6 +219,7 @@ export default function DiscoverPage() {
       success('Saved to shortlist', `${profile.displayName} is on your saved profiles`);
     } catch (err) {
       showError('Could not save', err instanceof Error ? err.message : 'Try again from the profile page');
+      return { error: err instanceof Error && err.message ? err.message : 'The profile was not saved.' };
     }
   };
 
@@ -267,7 +268,7 @@ export default function DiscoverPage() {
     { id: 'reset_filters', labelEn: 'Reset the search filters', labelEl: 'Επαναφορά φίλτρων αναζήτησης', writes: false, run: () => setFilters(defaultFilters) },
     { id: 'connect_with', labelEn: 'Open a connection request to', labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleConnect(hitToProfile(h)); } },
     { id: 'message_person', labelEn: 'Message', labelEl: 'Μήνυμα σε', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleMessage(hitToProfile(h)); } },
-    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(shown), run: (v) => { const h = hitById(v); if (h) void handleBookmark(hitToProfile(h)); } },
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(shown), run: (v) => { const h = hitById(v); return h ? handleBookmark(hitToProfile(h)) : ROW_GONE; } },
   ]);
 
   const rail: PageRailSection[] = [

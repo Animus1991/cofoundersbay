@@ -129,6 +129,12 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const [conversationId, setConversationId] = useState<string | null>(options.conversationId || null);
   const [conversations, setConversations] = useState<AIConversation[]>([]);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  /**
+   * The same claim, readable synchronously. State updates land on the next
+   * render, so two clicks in one tick both saw `pendingActionId === null` and
+   * both ran the write; the ref is set before the first await.
+   */
+  const pendingRef = useRef<string | null>(null);
 
   const lastUserMessageRef = useRef<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -532,14 +538,20 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   const confirmAction = useCallback(
     async (action: CopilotAction) => {
-      if (pendingActionId) return;
+      if (pendingRef.current) return;
+      pendingRef.current = action.id;
       setPendingActionId(action.id);
       try {
         const result = await executeCopilotAction(action);
+        // The reader said no in the page's own confirmation. Nothing was
+        // written, so nothing is refreshed, filed or offered for Undo.
+        if (result.cancelled) {
+          updateAction(action.id, { status: 'cancelled', error: undefined });
+          return;
+        }
         if (!result.ok) {
           audit(action, 'failed');
-          updateAction(action.id, { status: 'error' });
-          setError(result.error ?? 'Action failed');
+          updateAction(action.id, { status: 'error', error: result.error ?? 'Action failed' });
           return;
         }
         // A page command is not applied when its request merely started. Its
@@ -550,13 +562,14 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         audit(action, 'applied');
         // Carried on the card so the undo can act on what was created, not on
         // what was asked for. Without it a create can only ever be `none`.
-        updateAction(action.id, { status: 'done', undoContext: result.undo });
+        updateAction(action.id, { status: 'done', undoContext: result.undo, error: undefined });
         return { href: result.href };
       } finally {
+        pendingRef.current = null;
         setPendingActionId(null);
       }
     },
-    [audit, invalidateFor, updateAction, pendingActionId],
+    [audit, invalidateFor, updateAction],
   );
 
   /**
@@ -566,27 +579,35 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
    */
   const undoAction = useCallback(
     async (action: CopilotAction) => {
-      if (pendingActionId) return false;
+      if (pendingRef.current) return false;
       if (!undoAvailable(action.tool, action.undoContext)) return false;
 
+      pendingRef.current = action.id;
       setPendingActionId(action.id);
       try {
         const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
         const result = await runUndo(action.tool, payload, action.undoContext ?? {});
-        invalidateFor(action.tool);
-        audit(action, result.ok ? 'undone' : 'failed');
-
+        // Declined inside the opposite: the command still stands, so the card
+        // stays done and Undo stays on offer. Filing "failed" here would put
+        // an error in the trail for a choice the reader made on purpose.
+        if (result.cancelled) return false;
+        // The same order as confirm: refresh and file "undone" only once the
+        // undo has actually landed, never on its attempt.
         if (!result.ok) {
-          setError(result.error ?? 'Undo failed');
+          audit(action, 'failed');
+          updateAction(action.id, { error: result.error ?? 'Undo failed' });
           return false;
         }
-        updateAction(action.id, { status: 'undone' });
+        invalidateFor(action.tool);
+        audit(action, 'undone');
+        updateAction(action.id, { status: 'undone', error: undefined });
         return true;
       } finally {
+        pendingRef.current = null;
         setPendingActionId(null);
       }
     },
-    [audit, invalidateFor, updateAction, pendingActionId],
+    [audit, invalidateFor, updateAction],
   );
 
   const dismissAction = useCallback(

@@ -24,8 +24,12 @@ export type CopilotActionTool = MutationActionId;
  * `undone` is distinct from `dismissed`: dismissed means the user declined
  * before anything ran, undone means it ran and was then taken back. Collapsing
  * them would lose the fact that a write reached the backend.
+ *
+ * `cancelled` is the third "nothing changed": the reader confirmed the card,
+ * then said no in the page's own confirmation. It is a settled answer, not a
+ * failure, so the card says so plainly and offers neither Retry nor Undo.
  */
-export type CopilotActionStatus = 'pending' | 'done' | 'dismissed' | 'error' | 'undone';
+export type CopilotActionStatus = 'pending' | 'done' | 'dismissed' | 'error' | 'undone' | 'cancelled';
 
 export type CopilotAction = {
   id: string;
@@ -42,6 +46,12 @@ export type CopilotAction = {
    * write, so nothing earlier in the chain could have carried it.
    */
   undoContext?: Record<string, unknown>;
+  /**
+   * Why the last attempt did not go through, shown on the card it belongs
+   * to. A single line under the chat could not say which of several cards
+   * had failed, and it outlived the card's own retry.
+   */
+  error?: string;
 };
 
 export type CopilotCitation = {

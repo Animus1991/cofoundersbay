@@ -19,7 +19,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getMatchBreakdown, sendConnectionRequest } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const ComparisonChart = dynamic(
@@ -316,13 +316,14 @@ export default function ComparePage() {
     router.push('/discover?mode=compare&returnTo=/compare');
   };
 
-  const handleConnect = async (id: string) => {
+  const handleConnect = async (id: string): Promise<PageControlRunResult> => {
     setConnectingId(id);
     try {
       await sendConnectionRequest({ receiverId: id, message: 'I found you through profile comparison and would love to connect!' });
       success('Connection request sent!');
     } catch (err) {
       showError('Failed to send connection request');
+      return { error: err instanceof Error && err.message ? err.message : 'The connection request was not sent.' };
     } finally {
       setConnectingId(null);
     }
@@ -368,7 +369,7 @@ export default function ComparePage() {
       options: personRows,
       unavailableEn: nobody,
       unavailableEl: nobodyEl,
-      run: async (value) => { if (value) await handleConnect(value); },
+      run: (value) => (value ? handleConnect(value) : undefined),
     },
     { id: 'copy_comparison_link', labelEn: 'Copy the comparison link', labelEl: 'Αντιγραφή συνδέσμου σύγκρισης', writes: false, run: handleShare },
   ]);

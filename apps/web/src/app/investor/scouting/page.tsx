@@ -59,7 +59,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
@@ -329,8 +329,8 @@ export default function InvestorScoutingPage() {
     retry: 0,
   });
   const dealFor = (st: Startup) => watchedDeals?.deals?.find((deal) => deal.name === st.name);
-  const scout = async (st: Startup | undefined, action: 'watch' | 'unwatch' | 'pipeline') => {
-    if (!st) return;
+  const scout = async (st: Startup | undefined, action: 'watch' | 'unwatch' | 'pipeline'): Promise<PageControlRunResult> => {
+    if (!st) return ROW_GONE;
     const existing = dealFor(st);
     try {
       if (action === 'watch' && !existing) await createInvestorDeal(startupDeal(st));
@@ -342,6 +342,7 @@ export default function InvestorScoutingPage() {
       success(action === 'watch' ? 'Added to your watchlist' : action === 'unwatch' ? 'Removed from your watchlist' : 'Added to your pipeline', st.name);
     } catch (err) {
       showError('Could not update your board', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'Your board was not updated.' };
     } finally {
       void qc.invalidateQueries({ queryKey: qk('investor') });
     }
@@ -375,9 +376,9 @@ export default function InvestorScoutingPage() {
     // Watching creates a fresh deal from this card, so stopping deletes
     // exactly what was made. Not the reverse: a watched deal may carry notes
     // that deleting it loses and watching again would not bring back.
-    { id: 'watch_startup', labelEn: 'Watch startup', labelEl: 'Παρακολούθηση startup', writes: true, options: startupRows(startups.filter((st) => !dealFor(st))), undo: (v) => ({ control: 'unwatch_startup', value: v }), run: (v) => void scout(byId(v), 'watch') },
-    { id: 'unwatch_startup', labelEn: 'Stop watching startup', labelEl: 'Διακοπή παρακολούθησης startup', writes: true, options: startupRows(startups.filter((st) => dealFor(st))), run: (v) => void scout(byId(v), 'unwatch') },
-    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(startups), run: (v) => void scout(byId(v), 'pipeline') },
+    { id: 'watch_startup', labelEn: 'Watch startup', labelEl: 'Παρακολούθηση startup', writes: true, options: startupRows(startups.filter((st) => !dealFor(st))), undo: (v) => ({ control: 'unwatch_startup', value: v }), run: (v) => scout(byId(v), 'watch') },
+    { id: 'unwatch_startup', labelEn: 'Stop watching startup', labelEl: 'Διακοπή παρακολούθησης startup', writes: true, options: startupRows(startups.filter((st) => dealFor(st))), run: (v) => scout(byId(v), 'unwatch') },
+    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(startups), run: (v) => scout(byId(v), 'pipeline') },
   ]);
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
 

@@ -42,7 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { choiceControl, rowOptions, usePageControls, usePageList, type PageControl } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -157,7 +157,7 @@ const MOCK_FLAGS: FeatureFlag[] = [
 ];
 
 type FlagActions = {
-  onToggle: (id: string, enabled: boolean) => void | Promise<void>;
+  onToggle: (id: string, enabled: boolean) => void | Promise<unknown>;
   onEdit: (flag: FeatureFlag, mode: 'details' | 'rollout') => void;
   onCopyKey: (flag: FeatureFlag) => void;
   onDelete: (flag: FeatureFlag) => void;
@@ -338,26 +338,30 @@ export default function AdminFeatureFlagsPage() {
     }
   };
 
-  const deleteFlag = async (flag: FeatureFlag) => {
-    if (!isLive) return refuseOnSample();
+  const deleteFlag = async (flag: FeatureFlag): Promise<PageControlRunResult> => {
+    if (!isLive) {
+      refuseOnSample();
+      return { error: 'These flags are samples until the experiments API returns rows.' };
+    }
     const ok = await confirm({
       title: <BilingualText en={`Delete ${flag.name}?`} el={`Διαγραφή: ${flag.name};`} />,
       description: <BilingualText en="The experiment and its assignments are removed. Code that reads this key falls back to its default." el="Το πείραμα και οι αναθέσεις του αφαιρούνται. Ο κώδικας που διαβάζει αυτό το κλειδί επιστρέφει στην προεπιλογή." />,
       confirmLabel: <BilingualText en="Delete flag" el="Διαγραφή σημαίας" compact />,
     });
-    if (!ok) return;
+    if (!ok) return CANCELLED;
     try {
       await adminDeleteExperiment(flag.id);
       success('Flag deleted', flag.key);
     } catch (err) {
       toastError('Could not delete the flag', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The flag could not be deleted.' };
     } finally {
       void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
   };
 
-  const handleToggle = async (id: string, enabled: boolean) => {
-    if (!isLive) return;
+  const handleToggle = async (id: string, enabled: boolean): Promise<PageControlRunResult> => {
+    if (!isLive) return { error: 'These flags are samples until the experiments API returns rows.' };
     // Optimistic, then reconciled.
     setFlags((prev) =>
       prev.map((f) =>
@@ -366,6 +370,10 @@ export default function AdminFeatureFlagsPage() {
     );
     try {
       await (enabled ? adminActivateExperiment(id) : adminDeactivateExperiment(id));
+    } catch (err) {
+      // The switch used to flip back silently on the refetch; now it says why.
+      toastError('Could not change the flag', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The flag could not be changed.' };
     } finally {
       void qc.invalidateQueries({ queryKey: qk('admin', 'experiments') });
     }
@@ -389,7 +397,7 @@ export default function AdminFeatureFlagsPage() {
   // still ask before a delete.
   const SAMPLE_EN = isLive ? undefined : 'These flags are samples until the experiments API returns rows.';
   const SAMPLE_EL = isLive ? undefined : 'Οι σημαίες είναι δείγματα μέχρι το API πειραμάτων να επιστρέψει γραμμές.';
-  const flagCommand = (id: string, en: string, el: string, writes: boolean, list: FeatureFlag[], run: (f: FeatureFlag) => void, sampleOk = false, opposite?: string): PageControl => ({
+  const flagCommand = (id: string, en: string, el: string, writes: boolean, list: FeatureFlag[], run: (f: FeatureFlag) => PageControlRunResult | Promise<PageControlRunResult>, sampleOk = false, opposite?: string): PageControl => ({
     id,
     labelEn: en,
     labelEl: el,
@@ -400,7 +408,7 @@ export default function AdminFeatureFlagsPage() {
     // (experimentation.service); the split and the assignments are untouched,
     // so the other switch restores the flag, with a new start or end time.
     ...(opposite ? { undo: (v?: string) => ({ control: opposite, value: v }) } : {}),
-    run: (v) => { const f = flags.find((row) => row.id === v); if (f) run(f); },
+    run: (v) => { const f = flags.find((row) => row.id === v); return f ? run(f) : ROW_GONE; },
   });
   usePageList([
     {
@@ -421,12 +429,12 @@ export default function AdminFeatureFlagsPage() {
       { value: 'disabled', en: 'Disabled', el: 'Ανενεργές' },
     ], activeTab, setActiveTab),
     { id: 'new_flag', labelEn: 'Open the new flag form', labelEl: 'Άνοιγμα φόρμας νέας σημαίας', writes: false, run: () => setCreating(true) },
-    flagCommand('enable_flag', 'Turn feature flag on', 'Ενεργοποίηση σημαίας', true, filtered.filter((f) => f.status === 'disabled'), (f) => void handleToggle(f.id, true), false, 'disable_flag'),
-    flagCommand('disable_flag', 'Turn feature flag off', 'Απενεργοποίηση σημαίας', true, filtered.filter((f) => f.status !== 'disabled'), (f) => void handleToggle(f.id, false), false, 'enable_flag'),
+    flagCommand('enable_flag', 'Turn feature flag on', 'Ενεργοποίηση σημαίας', true, filtered.filter((f) => f.status === 'disabled'), (f) => handleToggle(f.id, true), false, 'disable_flag'),
+    flagCommand('disable_flag', 'Turn feature flag off', 'Απενεργοποίηση σημαίας', true, filtered.filter((f) => f.status !== 'disabled'), (f) => handleToggle(f.id, false), false, 'enable_flag'),
     flagCommand('edit_flag', 'Edit feature flag', 'Επεξεργασία σημαίας', false, filtered, (f) => openEdit(f, 'details')),
     flagCommand('set_rollout', 'Set a flag rollout percentage', 'Ορισμός ποσοστού διάθεσης σημαίας', false, filtered, (f) => openEdit(f, 'rollout')),
-    flagCommand('copy_flag_key', 'Copy a flag key', 'Αντιγραφή κλειδιού σημαίας', false, filtered, (f) => void copyKey(f), true),
-    flagCommand('delete_flag', 'Delete feature flag', 'Διαγραφή σημαίας', true, filtered, (f) => void deleteFlag(f)),
+    flagCommand('copy_flag_key', 'Copy a flag key', 'Αντιγραφή κλειδιού σημαίας', false, filtered, (f) => copyKey(f), true),
+    flagCommand('delete_flag', 'Delete feature flag', 'Διαγραφή σημαίας', true, filtered, (f) => deleteFlag(f)),
   ]);
 
   const stats = {

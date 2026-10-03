@@ -226,7 +226,7 @@ export default function ReputationPage() {
       writes: true,
       unavailableEn: unseen === 0 ? 'No badge is new.' : undefined,
       unavailableEl: unseen === 0 ? 'Καμία διάκριση δεν είναι νέα.' : undefined,
-      run: () => markSeen.mutate(),
+      run: async () => { await markSeen.mutateAsync(); },
     },
   ]);
   usePageList([

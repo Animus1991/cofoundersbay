@@ -303,7 +303,7 @@ export default function OrgProgramsPage() {
       options: rowOptions(filteredPrograms.filter((p) => p.status !== 'archived'), (p) => p.id, (p) => p.name),
       unavailableEn: live.length > 0 ? undefined : 'These programs are samples; there is nothing behind them to archive.',
       unavailableEl: live.length > 0 ? undefined : 'Τα προγράμματα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για αρχειοθέτηση.',
-      run: (v) => { if (v) archiveProgram.mutate(v); },
+      run: async (v) => { if (v) await archiveProgram.mutateAsync(v); },
     },
   ]);
 

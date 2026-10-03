@@ -12,7 +12,7 @@ import {
   type ShortlistItem,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
-import { executeAction, getActionSpec } from '@/lib/action-registry';
+import { executeAction, getActionSpec, type ActionOutcome } from '@/lib/action-registry';
 import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
@@ -1032,9 +1032,7 @@ export async function runCopilotTurn(
  * to read `payload.href ?? action.href ?? '/dashboard'`, and proposals built
  * before this change carry the destination in either field.
  */
-export async function executeCopilotAction(
-  action: CopilotAction,
-): Promise<{ ok: boolean; href?: string; error?: string; undo?: Record<string, unknown> }> {
+export async function executeCopilotAction(action: CopilotAction): Promise<ActionOutcome> {
   const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
   if (payload.href === undefined && action.href !== undefined) payload.href = action.href;
   return executeAction(action.tool, payload);

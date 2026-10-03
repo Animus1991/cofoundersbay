@@ -37,7 +37,7 @@ import {
   type AdminUserItem,
 } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
-import { usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 
 // The API's Role enum; ChangeUserRoleDto accepts nothing else.
@@ -129,7 +129,7 @@ export default function AdminUserDetailPage() {
   const name = user?.profile?.displayName ?? user?.email ?? 'User';
   const status = user ? STATUS[user.moderationStatus] ?? STATUS.active : null;
 
-  const setStatus = async (next: AdminUserItem['moderationStatus']) => {
+  const setStatus = async (next: AdminUserItem['moderationStatus']): Promise<PageControlRunResult> => {
     if (next !== 'active') {
       const ok = await confirm({
         title: next === 'banned'
@@ -143,9 +143,9 @@ export default function AdminUserDetailPage() {
           ? <BilingualText en="Ban account" el="Αποκλεισμός λογαριασμού" compact />
           : <BilingualText en="Suspend account" el="Αναστολή λογαριασμού" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
     }
-    moderation.mutate(next);
+    return settle(() => moderation.mutateAsync(next));
   };
 
   const dash = '—';
@@ -171,7 +171,7 @@ export default function AdminUserDetailPage() {
       unavailableEn: unloaded,
       unavailableEl: unloadedEl,
       undo: () => (user ? { control: 'set_account_status', value: user.moderationStatus } : undefined),
-      run: async (value) => { if (value) await setStatus(value as AdminUserItem['moderationStatus']); },
+      run: (value) => (value ? setStatus(value as AdminUserItem['moderationStatus']) : undefined),
     },
     {
       id: 'change_role',
@@ -183,7 +183,7 @@ export default function AdminUserDetailPage() {
       unavailableEn: unloaded,
       unavailableEl: unloadedEl,
       undo: () => (user ? { control: 'change_role', value: user.role } : undefined),
-      run: (value) => { if (user && value && value !== user.role) role.mutate(value); },
+      run: async (value) => { if (user && value && value !== user.role) await role.mutateAsync(value); },
     },
   ]);
   usePageList([

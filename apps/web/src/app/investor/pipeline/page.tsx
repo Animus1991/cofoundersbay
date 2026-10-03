@@ -28,7 +28,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -246,20 +246,21 @@ export default function InvestorPipelinePage() {
   const { success, error: toastError } = useToast();
   const confirm = useConfirm();
 
-  const moveDeal = async (deal: Deal, stage: PipelineStage) => {
+  const moveDeal = async (deal: Deal, stage: PipelineStage): Promise<PageControlRunResult> => {
     if (stage === 'passed') {
       const ok = await confirm({
         title: <BilingualText en={`Pass on ${deal.name}?`} el={`Απόρριψη: ${deal.name};`} />,
         description: <BilingualText en="It leaves the active pipeline. You can bring it back from its deal page." el="Φεύγει από την ενεργή ροή. Μπορείτε να την επαναφέρετε από τη σελίδα της." />,
         confirmLabel: <BilingualText en="Pass" el="Απόρριψη" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
     }
     try {
       await updateInvestorDeal(deal.id, { pipelineStage: stage });
       success('Deal moved', `${deal.name} → ${stage.replace('_', ' ')}`);
     } catch (e) {
       toastError('Could not move the deal', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The deal was not moved.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('investor') });
     }
@@ -343,7 +344,7 @@ export default function InvestorPipelinePage() {
       },
       run: (value?: string) => {
         const deal = deals.find((d) => d.id === value);
-        if (deal) void moveDeal(deal, stage.key);
+        return deal ? moveDeal(deal, stage.key) : ROW_GONE;
       },
     })),
   ]);

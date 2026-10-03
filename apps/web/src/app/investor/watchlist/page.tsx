@@ -51,7 +51,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
@@ -242,10 +242,12 @@ function toActivityType(type: string | null | undefined): ActivityItem['type'] {
   return type && type in ACTIVITY_TYPE_CONFIG ? (type as ActivityItem['type']) : 'update';
 }
 
+// Each answers how it ended, so the assistant's card can say so; the card's
+// buttons ignore the answer, since the toast has already told the reader.
 type WatchActions = {
-  onPromote: (s: WatchedStartup) => void;
-  onRemove: (s: WatchedStartup) => void;
-  onAlerts: (s: WatchedStartup, enabled: boolean) => void;
+  onPromote: (s: WatchedStartup) => Promise<PageControlRunResult>;
+  onRemove: (s: WatchedStartup) => Promise<PageControlRunResult>;
+  onAlerts: (s: WatchedStartup, enabled: boolean) => Promise<PageControlRunResult>;
 };
 
 function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { startup: WatchedStartup; live: boolean } & WatchActions) {
@@ -440,6 +442,7 @@ export default function InvestorWatchlistPage() {
         success('Added to pipeline', `${st.name} is now in Reviewing.`);
       } catch (e) {
         toastError('Could not add to pipeline', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'It was not added to the pipeline.' };
       } finally { refreshBoard(); }
     },
     onRemove: async (st) => {
@@ -448,12 +451,13 @@ export default function InvestorWatchlistPage() {
         description: <BilingualText en="The deal and its notes are deleted from your board." el="Η ευκαιρία και οι σημειώσεις της διαγράφονται από τον πίνακά σας." />,
         confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
       });
-      if (!ok) return;
+      if (!ok) return CANCELLED;
       try {
         await deleteInvestorDeal(st.id);
         success('Removed from watchlist', st.name);
       } catch (e) {
         toastError('Could not remove it', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'It was not removed.' };
       } finally { refreshBoard(); }
     },
     onAlerts: async (st, enabled) => {
@@ -461,6 +465,7 @@ export default function InvestorWatchlistPage() {
         await updateInvestorDeal(st.id, { alertsEnabled: enabled });
       } catch (e) {
         toastError('Could not change alerts', e instanceof Error ? e.message : undefined);
+        return { error: e instanceof Error && e.message ? e.message : 'The alerts were not changed.' };
       } finally { refreshBoard(); }
     },
   };
@@ -508,12 +513,12 @@ export default function InvestorWatchlistPage() {
       { value: 'off', en: 'All startups', el: 'Όλα τα startups' },
       { value: 'on', en: 'Alerts on only', el: 'Μόνο με ειδοποιήσεις' },
     ], alertsOnly ? 'on' : 'off', (v) => setAlertsOnly(v === 'on')),
-    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onPromote(st); } },
-    { id: 'remove_from_watchlist', labelEn: 'Remove startup from watchlist', labelEl: 'Αφαίρεση startup από τη λίστα', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); if (st) void watchActions.onRemove(st); } },
+    { id: 'add_to_pipeline', labelEn: 'Add startup to pipeline', labelEl: 'Προσθήκη startup στο pipeline', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); return st ? watchActions.onPromote(st) : ROW_GONE; } },
+    { id: 'remove_from_watchlist', labelEn: 'Remove startup from watchlist', labelEl: 'Αφαίρεση startup από τη λίστα', writes: true, options: startupRows(watched), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, run: (v) => { const st = byId(v); return st ? watchActions.onRemove(st) : ROW_GONE; } },
     // `alertsEnabled` is one field on the deal (updateInvestorDeal), so on and
     // off are each other's exact opposite.
-    { id: 'alerts_on', labelEn: 'Turn alerts on for startup', labelEl: 'Ενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => !st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, true); } },
-    { id: 'alerts_off', labelEn: 'Turn alerts off for startup', labelEl: 'Απενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const st = byId(v); if (st) void watchActions.onAlerts(st, false); } },
+    { id: 'alerts_on', labelEn: 'Turn alerts on for startup', labelEl: 'Ενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => !st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const st = byId(v); return st ? watchActions.onAlerts(st, true) : ROW_GONE; } },
+    { id: 'alerts_off', labelEn: 'Turn alerts off for startup', labelEl: 'Απενεργοποίηση ειδοποιήσεων για startup', writes: true, options: startupRows(watched.filter((st) => st.alertsEnabled)), unavailableEn: liveOnlyEn, unavailableEl: liveOnlyEl, undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const st = byId(v); return st ? watchActions.onAlerts(st, false) : ROW_GONE; } },
   ]);
 
   return (

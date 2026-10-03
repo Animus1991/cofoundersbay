@@ -12,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -494,16 +494,18 @@ export default function MilestonesPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: qk('milestones') }),
   });
 
+  // Both settle with the server, so a status change or a delete run by the
+  // assistant is reported only once it is stored - and "no" stays "no".
   const handleStatusChange = useCallback(
-    (id: string, status: MilestoneStatus) => updateMut.mutate({ id, data: { status } }),
+    (id: string, status: MilestoneStatus): Promise<PageControlRunResult> =>
+      settle(() => updateMut.mutateAsync({ id, data: { status } })),
     [updateMut],
   );
 
   const handleDelete = useCallback(
-    async (id: string) => {
-      if (await confirm(deleteConfirmCopy({ en: 'milestone', el: 'ορόσημου' }))) {
-        deleteMut.mutate(id);
-      }
+    async (id: string): Promise<PageControlRunResult> => {
+      if (!(await confirm(deleteConfirmCopy({ en: 'milestone', el: 'οροσήμου' })))) return CANCELLED;
+      return settle(() => deleteMut.mutateAsync(id));
     },
     [deleteMut, confirm],
   );
@@ -561,7 +563,7 @@ export default function MilestonesPage() {
             ? { control: `mark_${prior}`, value: v }
             : undefined;
         },
-        run: (v?: string) => { if (v) handleStatusChange(v, status); },
+        run: (v?: string) => (v ? handleStatusChange(v, status) : undefined),
       };
     }),
     {
@@ -578,7 +580,7 @@ export default function MilestonesPage() {
       labelEl: 'Διαγραφή ορόσημου',
       writes: true,
       options: rowOptions(milestones, (m) => m.id, (m) => m.title),
-      run: (v) => { if (v) void handleDelete(v); },
+      run: (v) => (v ? handleDelete(v) : undefined),
     },
   ]);
   usePageList([

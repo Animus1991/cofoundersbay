@@ -24,6 +24,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { formatDate } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
+import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
@@ -171,6 +172,7 @@ export default function MentorRequestsPage() {
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const { hasSession, mounted } = useSession();
   const queryClient = useQueryClient();
+  const { error: toastError } = useToast();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: qk('mentorships', 'requests-received'),
@@ -188,6 +190,9 @@ export default function MentorRequestsPage() {
       queryClient.invalidateQueries({ queryKey: qk('mentorships', 'requests-received') });
       queryClient.invalidateQueries({ queryKey: qk('mentorships') });
     },
+    // A failed answer used to vanish: the buttons came back and nothing said
+    // the request was still waiting.
+    onError: (e: unknown) => toastError('Could not answer the request', e instanceof Error ? e.message : undefined),
     onSettled: () => {
       setRespondingId(null);
     },
@@ -215,8 +220,8 @@ export default function MentorRequestsPage() {
       { value: 'accepted', en: 'Accepted', el: 'Αποδεκτά' },
       { value: 'declined', en: 'Declined', el: 'Απορριφθέντα' },
     ], activeTab, setActiveTab),
-    { id: 'accept_request', labelEn: 'Accept mentorship request', labelEl: 'Αποδοχή αιτήματος mentoring', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: (v) => { if (v) respondMutation.mutate({ requestId: v, accept: true }); } },
-    { id: 'decline_request', labelEn: 'Decline mentorship request', labelEl: 'Απόρριψη αιτήματος mentoring', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: (v) => { if (v) respondMutation.mutate({ requestId: v, accept: false }); } },
+    { id: 'accept_request', labelEn: 'Accept mentorship request', labelEl: 'Αποδοχή αιτήματος καθοδήγησης', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: async (v) => { if (v) await respondMutation.mutateAsync({ requestId: v, accept: true }); } },
+    { id: 'decline_request', labelEn: 'Decline mentorship request', labelEl: 'Απόρριψη αιτήματος καθοδήγησης', writes: true, options: byRequester(pendingRequests), unavailableEn: pendingRequests.length ? undefined : 'No request is waiting.', unavailableEl: pendingRequests.length ? undefined : 'Κανένα αίτημα δεν περιμένει.', run: async (v) => { if (v) await respondMutation.mutateAsync({ requestId: v, accept: false }); } },
   ]);
 
   if (!mounted) {

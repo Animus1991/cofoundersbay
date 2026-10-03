@@ -17,7 +17,7 @@ import {
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { AppShell } from '@/components/layout/AppShell';
@@ -385,13 +385,14 @@ export default function TenantDomainsPage() {
       unavailableEn: eligible.length === 0 ? (next ? 'No verified domain is inactive.' : 'No domain is active.') : undefined,
       unavailableEl: eligible.length === 0 ? (next ? 'Κανένα επαληθευμένο domain δεν είναι ανενεργό.' : 'Κανένα domain δεν είναι ενεργό.') : undefined,
       undo: (value?: string) => (value ? { control: back, value } : undefined),
-      run: async (value?: string) => {
+      run: async (value?: string): Promise<PageControlRunResult> => {
         if (!value) return;
         try {
           await toggleTenantDomainActive(tenantId, value, next);
           toastSuccess(next ? 'Domain activated' : 'Domain deactivated');
         } catch (e) {
           toastError((e as Error).message);
+          return { error: (e as Error).message || 'The domain did not change.' };
         } finally {
           after();
         }
@@ -413,10 +414,17 @@ export default function TenantDomainsPage() {
         if (!value) return;
         try {
           const res = await verifyTenantDomain(tenantId, value);
-          if (res.verified) toastSuccess('Domain verified successfully');
-          else toastError(res.message);
+          if (res.verified) {
+            toastSuccess('Domain verified successfully');
+          } else {
+            // The check ran and the records are not there yet: the reader asked
+            // for a verified domain, so the card says why it is not one.
+            toastError(res.message);
+            return { error: res.message || 'The DNS records are not in place yet.' };
+          }
         } catch (e) {
           toastError((e as Error).message);
+          return { error: (e as Error).message || 'The domain could not be checked.' };
         } finally {
           after();
         }
@@ -440,6 +448,7 @@ export default function TenantDomainsPage() {
           toastSuccess('Primary domain updated');
         } catch (e) {
           toastError((e as Error).message);
+          return { error: (e as Error).message || 'The primary domain did not change.' };
         } finally {
           after();
         }
@@ -455,7 +464,7 @@ export default function TenantDomainsPage() {
       unavailableEl: noDomainsEl,
       run: async (value) => {
         const domain = domains.find((d) => d.id === value);
-        if (!domain) return;
+        if (!domain) return ROW_GONE;
         const ok = await confirm({
           title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
           description: (
@@ -466,12 +475,13 @@ export default function TenantDomainsPage() {
           ),
           confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
         });
-        if (!ok) return;
+        if (!ok) return CANCELLED;
         try {
           await deleteTenantDomain(tenantId, domain.id);
           toastSuccess('Domain removed');
         } catch (e) {
           toastError((e as Error).message);
+          return { error: (e as Error).message || 'The domain was not removed.' };
         } finally {
           after();
         }

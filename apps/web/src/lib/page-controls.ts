@@ -46,8 +46,17 @@ export type PageControl = {
   /** Why it cannot run right now (nothing to export, sample rows). */
   unavailableEn?: string;
   unavailableEl?: string;
-  /** The page's own handler. Receives the chosen option's value. */
-  run: (value?: string) => void | Promise<void>;
+  /**
+   * The page's own handler. Receives the chosen option's value.
+   *
+   * The assistant reports exactly what this returns, so a command keeps its
+   * promise pending until the write settles (`await mutateAsync`, never a
+   * bare `mutate`), and says when nothing was written:
+   * - nothing at all: the write landed;
+   * - `CANCELLED`: the reader said no in the page's own confirmation;
+   * - `{ error }`: it did not go through - or throw, which reads the same.
+   */
+  run: (value?: string) => PageControlRunResult | Promise<PageControlRunResult>;
   /**
    * The verified opposite of a command, for Undo.
    *
@@ -63,6 +72,50 @@ export type PageControl = {
 
 /** The control that takes a command back, and the value to run it with. */
 export type PageControlUndo = { control: string; value?: string };
+
+/**
+ * How a handler says that nothing was written.
+ *
+ * A destructive command asks the page's own "Are you sure?" after the reader
+ * confirmed the assistant's card. Answering no used to come back as an
+ * ordinary resolved promise, so the card turned green, the audit trail filed
+ * "applied" and Undo was offered for a deletion that never happened.
+ */
+export type PageControlRunResult = void | { cancelled: true } | { error: string };
+
+/** Returned by a handler when the reader declined its confirmation. */
+export const CANCELLED: { cancelled: true } = Object.freeze({ cancelled: true as const });
+
+/**
+ * Returned when the row a command named has left the page between the choice
+ * and the run - refreshed away, or acted on in another tab. Saying nothing
+ * here would read as done.
+ */
+export const ROW_GONE: { error: string } = Object.freeze({ error: 'That item is no longer on this page.' });
+
+export function isCancelledRun(result: unknown): result is { cancelled: true } {
+  return typeof result === 'object' && result !== null && (result as { cancelled?: unknown }).cancelled === true;
+}
+
+function runError(result: unknown): string | undefined {
+  if (typeof result !== 'object' || result === null) return undefined;
+  const error = (result as { error?: unknown }).error;
+  return typeof error === 'string' && error ? error : undefined;
+}
+
+/**
+ * For a handler that a button and a command share: runs the write and turns a
+ * failure into `{ error }` instead of a rejection. The button path drops the
+ * promise, and a rejection nobody catches surfaces as a crash overlay - while
+ * the command path needs the reason, so the card can say why nothing changed.
+ */
+export async function settle(write: () => Promise<unknown>): Promise<PageControlRunResult> {
+  try {
+    await write();
+  } catch (err) {
+    return { error: err instanceof Error && err.message ? err.message : 'The change could not be saved.' };
+  }
+}
 
 /** What leaves the page: everything but the handlers, and whether it can be undone. */
 export type PageControlSummary = Omit<PageControl, 'run' | 'undo'> & { undoable?: boolean };
@@ -139,7 +192,9 @@ export function usePageControls(controls: PageControl[]): void {
         run: async (value?: string) => {
           const current = latest.current.find((x) => x.id === c.id);
           if (!current) throw new Error(`The page command "${c.id}" is no longer available.`);
-          await current.run(value);
+          // Handed back, not swallowed: "the reader said no" and "it failed"
+          // travel in the result, and dropping it made both read as success.
+          return current.run(value);
         },
         undo: c.undo ? (value?: string) => latest.current.find((x) => x.id === c.id)?.undo?.(value) : undefined,
       })),
@@ -158,7 +213,18 @@ export function usePageControls(controls: PageControl[]): void {
 
 export type PageControlOutcome =
   | { ok: true; undo?: PageControlUndo }
-  | { ok: false; error: string };
+  | { ok: false; error: string; cancelled?: undefined }
+  // Not a failure - the reader declined - but never success either, so a
+  // caller that only checks `ok` still does not claim the write.
+  | { ok: false; cancelled: true; error?: undefined };
+
+/** What the handler's result means for the assistant's card. */
+function outcomeOf(result: PageControlRunResult, undo?: PageControlUndo): PageControlOutcome {
+  if (isCancelledRun(result)) return { ok: false, cancelled: true };
+  const error = runError(result);
+  if (error) return { ok: false, error };
+  return undo ? { ok: true, undo } : { ok: true };
+}
 
 /**
  * Run a control by id. The executors' single entry point.
@@ -204,10 +270,17 @@ export async function runPageControl(
   // the write lands - so the choice is taken as given; the page's handler
   // still looks the row up and does nothing if it is gone.
   if (options.undoing && value) {
-    await control.run(value);
-    return { ok: true };
+    // A declined confirmation inside the opposite keeps the card as it was:
+    // the command still stands, and Undo is still on offer.
+    return outcomeOf(await control.run(value));
   }
-  if (control.options?.length) {
+  if (control.options) {
+    // An empty list is not "takes no choice": it is a list with nothing in it
+    // right now - no active rules, no open reports. Running anyway handed the
+    // handler a value it could not find, which did nothing and reported done.
+    if (control.options.length === 0) {
+      return { ok: false, error: `"${control.labelEn}" has nothing to act on right now.` };
+    }
     if (!value) return { ok: false, error: `"${control.labelEn}" needs a choice: ${control.options.map((o) => o.labelEn).join(', ')}.` };
     // A model may name the option rather than its value; both are accepted.
     const asked = value.toLowerCase();
@@ -222,8 +295,7 @@ export async function runPageControl(
   // Asked before the handler runs: afterwards the row already shows the new
   // state, and the page could no longer say what to restore.
   const undo = control.writes ? control.undo?.(value) : undefined;
-  await control.run(value);
-  return undo ? { ok: true, undo } : { ok: true };
+  return outcomeOf(await control.run(value), undo);
 }
 
 /** For tests: forget every registration. */

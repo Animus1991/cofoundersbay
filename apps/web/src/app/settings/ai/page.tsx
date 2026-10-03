@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
 
 type AIPreferences = {
@@ -131,15 +131,16 @@ export default function AISettingsPage() {
     setHasChanges(true);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<PageControlRunResult> => {
     try {
       await updateAIPreferences(prefs);
       localStorage.setItem('ai-preferences', JSON.stringify(prefs));
       void queryClient.invalidateQueries({ queryKey: queryKeys.aiPreferences });
       success('AI preferences saved');
       setHasChanges(false);
-    } catch {
+    } catch (err) {
       showError('Failed to save preferences');
+      return { error: err instanceof Error && err.message ? err.message : 'Your AI preferences were not saved.' };
     }
   };
 
@@ -264,7 +265,7 @@ export default function AISettingsPage() {
                 <BilingualText en="Open assistant" el="Άνοιγμα βοηθού" compact />
               </Link>
             </Button>
-            <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
+            <Button onClick={() => void handleSave()} disabled={!hasChanges} className="gap-2">
               {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   MessageSquare,
   Search,
@@ -38,7 +39,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
@@ -288,13 +289,15 @@ export default function ProviderInquiriesPage() {
 
   const live = useMemo(() => (data?.inquiries ?? []).map(toPageInquiry), [data]);
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
-  const setStatus = async (inq: Inquiry, status: 'in_discussion' | 'accepted' | 'declined') => {
+  const setStatus = async (inq: Inquiry, status: 'in_discussion' | 'accepted' | 'declined'): Promise<PageControlRunResult> => {
     try {
       await updateServiceInquiry(inq.id, { status });
       if (status !== 'in_discussion') success(status === 'accepted' ? 'Marked as converted' : 'Inquiry declined', inq.clientName);
     } catch (e) {
       toastError('Could not update the inquiry', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The inquiry did not change.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('provider', 'inquiries') });
     }
@@ -353,15 +356,19 @@ export default function ProviderInquiriesPage() {
       options: byClient(filteredInquiries.filter((i) => i.clientId)),
       unavailableEn: sampleEn,
       unavailableEl: sampleEl,
-      run: (v) => {
+      // The status is stored before the thread opens, and the thread opens
+      // in place: a full reload used to cut the request off mid-flight and
+      // take the assistant's conversation down with the page.
+      run: async (v) => {
         const inq = inquiryById(v);
-        if (!inq?.clientId) return;
-        void setStatus(inq, 'in_discussion');
-        window.location.assign(`/messages?to=${inq.clientId}`);
+        if (!inq?.clientId) return ROW_GONE;
+        const result = await setStatus(inq, 'in_discussion');
+        if (result) return result;
+        router.push(`/messages?to=${inq.clientId}`);
       },
     },
-    { id: 'convert_inquiry', labelEn: 'Mark inquiry as converted', labelEl: 'Σήμανση αιτήματος ως μετατροπής', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'converted')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'accepted'); } },
-    { id: 'decline_inquiry', labelEn: 'Decline inquiry', labelEl: 'Απόρριψη αιτήματος', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'declined')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'declined'); } },
+    { id: 'convert_inquiry', labelEn: 'Mark inquiry as converted', labelEl: 'Σήμανση αιτήματος ως πελάτη', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'converted')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); return inq ? setStatus(inq, 'accepted') : ROW_GONE; } },
+    { id: 'decline_inquiry', labelEn: 'Decline inquiry', labelEl: 'Απόρριψη αιτήματος', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'declined')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); return inq ? setStatus(inq, 'declined') : ROW_GONE; } },
   ]);
 
   return (

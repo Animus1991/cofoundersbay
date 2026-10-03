@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -269,7 +269,7 @@ export default function GroupsPage() {
   });
 
   const handleToggle = useCallback(
-    async (groupId: string, isMember: boolean) => {
+    async (groupId: string, isMember: boolean): Promise<PageControlRunResult> => {
       setLoadingId(groupId);
       try {
         if (isMember) {
@@ -281,7 +281,8 @@ export default function GroupsPage() {
         }
         queryClient.invalidateQueries({ queryKey: qk('groups') });
       } catch (e: any) {
-        toastError('Error', e?.message ?? 'Something went wrong.');
+        toastError(isMember ? 'Could not leave the group' : 'Could not join the group', e?.message ?? 'Something went wrong.');
+        return { error: e?.message || (isMember ? 'You are still a member.' : 'You did not join.') };
       } finally {
         setLoadingId(null);
       }
@@ -341,7 +342,7 @@ export default function GroupsPage() {
       // (groups.service), so leaving takes a join back. The welcome the join
       // triggers has been sent either way.
       undo: (v) => ({ control: 'leave_group', value: v }),
-      run: (v) => { if (v) void handleToggle(v, false); },
+      run: (v) => (v ? handleToggle(v, false) : undefined),
     },
     {
       id: 'leave_group',
@@ -352,7 +353,7 @@ export default function GroupsPage() {
       // Rejoining comes back as `member`: exact for a member, not for an
       // admin or moderator, whose role would be lost - so only then.
       undo: (v) => (displayGroups.find((g) => g.id === v)?.memberRole === 'member' ? { control: 'join_group', value: v } : undefined),
-      run: (v) => { if (v) void handleToggle(v, true); },
+      run: (v) => (v ? handleToggle(v, true) : undefined),
     },
   ]);
 

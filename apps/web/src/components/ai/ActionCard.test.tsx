@@ -118,3 +118,65 @@ describe('ActionCard reversibility', () => {
     expect(screen.getByText('“Hi there”')).toBeTruthy();
   });
 });
+
+/**
+ * The three ways a confirmed card can end that are not "done": the reader
+ * declined the page's own confirmation, the write failed, or another card is
+ * still running. Each says so on the card, in both languages, and offers only
+ * what can still be done.
+ */
+describe('ActionCard outcomes', () => {
+  function renderWith(a: CopilotAction, busyId: string | null = null) {
+    const onConfirm = vi.fn();
+    const onUndo = vi.fn();
+    render(
+      <LanguagePreferenceProvider>
+        <ActionCard action={a} busyId={busyId} onConfirm={onConfirm} onDismiss={vi.fn()} onUndo={onUndo} />
+      </LanguagePreferenceProvider>,
+    );
+    return { onConfirm, onUndo };
+  }
+
+  it('says a declined command was cancelled and offers nothing further', () => {
+    renderWith(action('run_page_command', 'cancelled', { control: 'delete_rule', value: 'r1' }));
+    expect(screen.getByText('Cancelled — no changes made')).toBeTruthy();
+    expect(screen.getByText('Ακυρώθηκε — δεν έγιναν αλλαγές')).toBeTruthy();
+    expect(screen.queryByText('Done')).toBeNull();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  it('puts the reason for a failure on the card and still lets the reader retry', () => {
+    const { onConfirm } = renderWith({ ...action('shortlist_add', 'error', { userId: 'u1' }), error: 'Network unreachable' });
+    expect(screen.getByRole('alert').textContent).toContain('Network unreachable');
+    expect(screen.getByText('Not applied:', { exact: false })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Confirm/ }));
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps a done card undoable when its undo failed, and says why', () => {
+    const { onUndo } = renderWith({ ...action('shortlist_add', 'done', { userId: 'u1' }), error: 'Already removed' });
+    expect(screen.getByRole('alert').textContent).toContain('Already removed');
+    fireEvent.click(screen.getByRole('button', { name: /Undo|Αναίρεση/ }));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits while another card runs, instead of offering a button that would do nothing', () => {
+    const { onConfirm } = renderWith(action('shortlist_add', 'pending', { userId: 'u1' }), 'some-other-card');
+    const confirm = screen.getByRole('button', { name: /Confirm/ });
+    expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(confirm);
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('shows its own run as busy, and is free again once nothing runs', () => {
+    renderWith(action('shortlist_add', 'pending', { userId: 'u1' }), 'a-shortlist_add');
+    const busy = screen.getByRole('button', { name: /Confirm/ });
+    expect((busy as HTMLButtonElement).disabled).toBe(true);
+    expect(busy.getAttribute('aria-busy')).toBe('true');
+
+    cleanup();
+
+    renderWith(action('shortlist_add', 'pending', { userId: 'u1' }), null);
+    expect((screen.getByRole('button', { name: /Confirm/ }) as HTMLButtonElement).disabled).toBe(false);
+  });
+});

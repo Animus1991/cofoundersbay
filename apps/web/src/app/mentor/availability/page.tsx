@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile, listMentorAvailability, replaceMentorAvailability } from '@/lib/api';
 import { qk, queryKeys } from '@/lib/query-keys';
-import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 
 const DAYS = [
@@ -146,7 +146,7 @@ export default function MentorAvailabilityPage() {
     setSlots(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
   }
 
-  async function handleSave() {
+  async function handleSave(): Promise<PageControlRunResult> {
     setIsSaving(true);
     try {
       const res = await replaceMentorAvailability(
@@ -157,6 +157,7 @@ export default function MentorAvailabilityPage() {
       success('Availability saved', 'Your schedule has been updated.');
     } catch (e) {
       showError('Could not save your availability', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'Your hours were not saved.' };
     } finally {
       setIsSaving(false);
     }
@@ -239,7 +240,7 @@ export default function MentorAvailabilityPage() {
     <AppShell showHelp
       actions={
         <>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={() => void handleSave()} disabled={isSaving}>
             {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             <BilingualText en="Save Changes" el="Αποθήκευση" compact />
           </Button>

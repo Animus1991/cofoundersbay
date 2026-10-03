@@ -60,7 +60,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -302,36 +302,39 @@ export default function OrgAdminPage() {
     return true;
   });
 
-  const notLive = () => {
+  const notLive = (): PageControlRunResult => {
     showError('Nothing to update', 'These rows are illustrative until the organisation loads.');
+    return { error: 'These rows are illustrative until the organisation loads.' };
   };
 
-  const handleRoleChange = async (memberId: string, newRole: string) => {
+  const handleRoleChange = async (memberId: string, newRole: string): Promise<PageControlRunResult> => {
     if (!isLive || !orgId) return notLive();
     try {
       await updateOrganizationMember(orgId, memberId, { role: newRole });
       success('Role updated', `Member role changed to ${newRole}`);
     } catch (err) {
       showError('Could not update the role', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The role did not change.' };
     } finally {
       refresh();
     }
   };
 
-  const handleSetActive = async (memberId: string, active: boolean) => {
+  const handleSetActive = async (memberId: string, active: boolean): Promise<PageControlRunResult> => {
     if (!isLive || !orgId) return notLive();
     try {
       await updateOrganizationMember(orgId, memberId, { isActive: active });
       success(active ? 'Member reactivated' : 'Member suspended', active ? 'The member is active again' : 'The member has been suspended');
     } catch (err) {
       showError('Could not update the member', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The member did not change.' };
     } finally {
       refresh();
     }
   };
 
   const confirm = useConfirm();
-  const handleRemoveMember = async (memberId: string) => {
+  const handleRemoveMember = async (memberId: string): Promise<PageControlRunResult> => {
     if (!isLive || !orgId) return notLive();
     // Removed on the first click before; membership is not restored by any
     // other control on this page, so it asks.
@@ -341,12 +344,13 @@ export default function OrgAdminPage() {
       description: <BilingualText en="They lose access to this organisation. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον οργανισμό. Ο λογαριασμός του/της δεν διαγράφεται." />,
       confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
     });
-    if (!ok) return;
+    if (!ok) return CANCELLED;
     try {
       await removeOrganizationMember(orgId, memberId);
       success('Member removed', 'The member has been removed from the organization');
     } catch (err) {
       showError('Could not remove the member', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The member was not removed.' };
     } finally {
       refresh();
     }
@@ -426,11 +430,11 @@ export default function OrgAdminPage() {
     // organization.service updateMember writes only what it is sent (`role`
     // or `isActive`), so each of these is undone by the command that sets the
     // previous value back.
-    { id: 'make_admin', labelEn: 'Make member an admin', labelEl: 'Ορισμός μέλους ως διαχειριστή', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'admin' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.role === 'member' ? { control: 'make_member', value: v } : undefined), run: (v) => { if (v) void handleRoleChange(v, 'admin'); } },
-    { id: 'make_member', labelEn: 'Change role to member', labelEl: 'Αλλαγή ρόλου σε μέλος', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'member' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.role === 'admin' ? { control: 'make_admin', value: v } : undefined), run: (v) => { if (v) void handleRoleChange(v, 'member'); } },
-    { id: 'suspend_member', labelEn: 'Suspend member', labelEl: 'Αναστολή μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status === 'active' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => ({ control: 'reactivate_member', value: v }), run: (v) => { if (v) void handleSetActive(v, false); } },
-    { id: 'reactivate_member', labelEn: 'Reactivate member', labelEl: 'Επανενεργοποίηση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status !== 'active')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.status === 'suspended' ? { control: 'suspend_member', value: v } : undefined), run: (v) => { if (v) void handleSetActive(v, true); } },
-    { id: 'remove_member', labelEn: 'Remove member', labelEl: 'Αφαίρεση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => { if (v) void handleRemoveMember(v); } },
+    { id: 'make_admin', labelEn: 'Make member an admin', labelEl: 'Ορισμός μέλους ως διαχειριστή', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'admin' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.role === 'member' ? { control: 'make_member', value: v } : undefined), run: (v) => (v ? handleRoleChange(v, 'admin') : undefined) },
+    { id: 'make_member', labelEn: 'Change role to member', labelEl: 'Αλλαγή ρόλου σε μέλος', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'member' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.role === 'admin' ? { control: 'make_admin', value: v } : undefined), run: (v) => (v ? handleRoleChange(v, 'member') : undefined) },
+    { id: 'suspend_member', labelEn: 'Suspend member', labelEl: 'Αναστολή μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status === 'active' && m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => ({ control: 'reactivate_member', value: v }), run: (v) => (v ? handleSetActive(v, false) : undefined) },
+    { id: 'reactivate_member', labelEn: 'Reactivate member', labelEl: 'Επανενεργοποίηση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.status !== 'active')), unavailableEn: liveEn, unavailableEl: liveEl, undo: (v) => (members.find((m) => m.id === v)?.status === 'suspended' ? { control: 'suspend_member', value: v } : undefined), run: (v) => (v ? handleSetActive(v, true) : undefined) },
+    { id: 'remove_member', labelEn: 'Remove member', labelEl: 'Αφαίρεση μέλους', writes: true, options: byName(filteredMembers.filter((m) => m.role !== 'owner')), unavailableEn: liveEn, unavailableEl: liveEl, run: (v) => (v ? handleRemoveMember(v) : undefined) },
   ]);
 
   /*

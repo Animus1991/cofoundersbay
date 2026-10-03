@@ -23,7 +23,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
-import { usePageControls } from '@/lib/page-controls';
+import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
@@ -206,7 +206,7 @@ export default function MatchDetailPage() {
     onError: () => addToast({ title: 'Could not send request', type: 'error' }),
   });
 
-  const handleShortlist = async () => {
+  const handleShortlist = async (): Promise<PageControlRunResult> => {
     const nextState = !shortlisted;
     setShortlisted(nextState);
     try {
@@ -217,15 +217,21 @@ export default function MatchDetailPage() {
         await removeFromShortlist(targetUserId);
       }
       addToast({ title: nextState ? 'Saved to shortlist' : 'Removed from shortlist', type: 'info' });
-    } catch {
+    } catch (err) {
       setShortlisted(!nextState);
       addToast({ title: 'Could not update shortlist', type: 'error' });
+      return { error: err instanceof Error && err.message ? err.message : 'Your shortlist did not change.' };
     }
   };
 
-  const handlePropose = () => {
-    connectMutation.mutate('Hi, I came across your profile and I think we could be a strong match. I would love to connect and explore potential collaboration.');
-    recordMatchFeedback({ targetUserId, feedback: 'accepted', connectionStarted: true }).catch(() => {});
+  // The match feedback says a connection started, so it is filed only once
+  // the request has actually been sent.
+  const handlePropose = async (): Promise<PageControlRunResult> => {
+    const result = await settle(() =>
+      connectMutation.mutateAsync('Hi, I came across your profile and I think we could be a strong match. I would love to connect and explore potential collaboration.'),
+    );
+    if (!result) recordMatchFeedback({ targetUserId, feedback: 'accepted', connectionStarted: true }).catch(() => {});
+    return result;
   };
 
   /*
@@ -237,21 +243,21 @@ export default function MatchDetailPage() {
     {
       id: 'save_to_shortlist',
       labelEn: 'Save this person to my shortlist',
-      labelEl: 'Αποθήκευση στη λίστα επιλογών',
+      labelEl: 'Αποθήκευση στα αποθηκευμένα προφίλ',
       writes: true,
       unavailableEn: shortlisted ? 'Already on your shortlist.' : undefined,
-      unavailableEl: shortlisted ? 'Είναι ήδη στη λίστα σας.' : undefined,
+      unavailableEl: shortlisted ? 'Είναι ήδη στα αποθηκευμένα προφίλ σας.' : undefined,
       undo: () => ({ control: 'remove_from_shortlist' }),
-      run: () => { if (!shortlisted) void handleShortlist(); },
+      run: () => (shortlisted ? undefined : handleShortlist()),
     },
     {
       id: 'remove_from_shortlist',
       labelEn: 'Remove this person from my shortlist',
-      labelEl: 'Αφαίρεση από τη λίστα επιλογών',
+      labelEl: 'Αφαίρεση από τα αποθηκευμένα προφίλ',
       writes: true,
       unavailableEn: !shortlisted ? 'Not on your shortlist.' : undefined,
-      unavailableEl: !shortlisted ? 'Δεν είναι στη λίστα σας.' : undefined,
-      run: () => { if (shortlisted) void handleShortlist(); },
+      unavailableEl: !shortlisted ? 'Δεν είναι στα αποθηκευμένα προφίλ σας.' : undefined,
+      run: () => (shortlisted ? handleShortlist() : undefined),
     },
     {
       id: 'propose_collaboration',
@@ -341,7 +347,7 @@ export default function MatchDetailPage() {
           <p className="min-w-0 flex-1 text-sm text-muted-foreground">
             <BilingualText en={`You and ${targetProfile.displayName}`} el={`Εσείς και ${targetProfile.displayName}`} />
           </p>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleShortlist} aria-pressed={shortlisted}>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => void handleShortlist()} aria-pressed={shortlisted}>
             <Bookmark className={cn('icon-sm', shortlisted && 'fill-current text-status-warning')} aria-hidden="true" />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
@@ -351,7 +357,7 @@ export default function MatchDetailPage() {
               Message
             </Link>
           </Button>
-          <Button size="sm" className="gap-1.5" onClick={handlePropose} disabled={connectMutation.isPending}>
+          <Button size="sm" className="gap-1.5" onClick={() => void handlePropose()} disabled={connectMutation.isPending}>
             <Send className="icon-sm" aria-hidden="true" />
             Collaborate
           </Button>

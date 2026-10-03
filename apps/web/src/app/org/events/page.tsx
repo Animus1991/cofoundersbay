@@ -38,7 +38,7 @@ import { EmptyOrgEvents } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -304,9 +304,9 @@ export default function OrgEventsPage() {
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
 
-  const duplicate = async (e: OrgEvent) => {
+  const duplicate = async (e: OrgEvent): Promise<PageControlRunResult> => {
     const src = (data?.events ?? []).find((x) => x.id === e.id);
-    if (!src) return;
+    if (!src) return ROW_GONE;
     const week = 7 * 86_400_000;
     try {
       const created = await createEvent({
@@ -324,6 +324,7 @@ export default function OrgEventsPage() {
       success('Event duplicated', `${created?.event?.title ?? src.title} - one week later.`);
     } catch (err) {
       toastError('Could not duplicate the event', err instanceof Error ? err.message : undefined);
+      return { error: err instanceof Error && err.message ? err.message : 'The event was not duplicated.' };
     } finally {
       void queryClient.invalidateQueries({ queryKey: qk('events') });
     }
@@ -363,7 +364,7 @@ export default function OrgEventsPage() {
       { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένες' },
     ], activeTab, setActiveTab),
     { id: 'clear_filters', labelEn: 'Clear the event filters', labelEl: 'Καθαρισμός φίλτρων εκδηλώσεων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
-    { id: 'duplicate_event', labelEn: 'Duplicate event a week later', labelEl: 'Αντίγραφο εκδήλωσης μια εβδομάδα αργότερα', writes: true, options: rowOptions(filtered, (e) => e.id, (e) => e.title), unavailableEn: live.length > 0 ? undefined : 'These events are samples; there is nothing to duplicate.', unavailableEl: live.length > 0 ? undefined : 'Οι εκδηλώσεις είναι δείγματα· δεν υπάρχει κάτι για αντιγραφή.', run: (v) => { const e = events.find((x) => x.id === v); if (e) void duplicate(e); } },
+    { id: 'duplicate_event', labelEn: 'Duplicate event a week later', labelEl: 'Αντίγραφο εκδήλωσης μια εβδομάδα αργότερα', writes: true, options: rowOptions(filtered, (e) => e.id, (e) => e.title), unavailableEn: live.length > 0 ? undefined : 'These events are samples; there is nothing to duplicate.', unavailableEl: live.length > 0 ? undefined : 'Οι εκδηλώσεις είναι δείγματα· δεν υπάρχει κάτι για αντιγραφή.', run: (v) => { const e = events.find((x) => x.id === v); return e ? duplicate(e) : ROW_GONE; } },
   ]);
 
   return (

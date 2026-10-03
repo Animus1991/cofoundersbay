@@ -47,7 +47,7 @@ import { useSession } from '@/hooks/useSession';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
 import { queryKeys } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
 
@@ -757,7 +757,7 @@ export default function MessagesPage() {
   };
 
   // Handle pin
-  const handlePin = async (id: string) => {
+  const handlePin = async (id: string): Promise<PageControlRunResult> => {
     const nextPinned = !conversations.find((c) => c.id === id)?.isPinned;
     try {
       await updateConversationFlags(id, { isPinned: nextPinned });
@@ -775,11 +775,12 @@ export default function MessagesPage() {
         t(messagesEn('update_fail'), messagesEl('update_fail')),
         e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
       );
+      return { error: e instanceof Error && e.message ? e.message : 'The conversation did not change.' };
     }
   };
 
   // Handle archive
-  const handleArchive = async (id: string) => {
+  const handleArchive = async (id: string): Promise<PageControlRunResult> => {
     try {
       await updateConversationFlags(id, { isArchived: true });
       setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, isArchived: true } : c)));
@@ -793,6 +794,7 @@ export default function MessagesPage() {
         t(messagesEn('update_fail'), messagesEl('update_fail')),
         e instanceof Error ? e.message : t(messagesEn('try_again'), messagesEl('try_again')),
       );
+      return { error: e instanceof Error && e.message ? e.message : 'The conversation was not archived.' };
     }
   };
 
@@ -848,9 +850,9 @@ export default function MessagesPage() {
     },
     // updateConversationFlags sends one flag; pinning and unpinning are each
     // other's opposite. Archive has no opposite on this page.
-    { id: 'pin_conversation', labelEn: 'Pin conversation', labelEl: 'Καρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => !c.isPinned)), undo: (v) => ({ control: 'unpin_conversation', value: v }), run: (v) => { if (v) void handlePin(v); } },
-    { id: 'unpin_conversation', labelEn: 'Unpin conversation', labelEl: 'Ξεκαρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => c.isPinned)), undo: (v) => ({ control: 'pin_conversation', value: v }), run: (v) => { if (v) void handlePin(v); } },
-    { id: 'archive_conversation', labelEn: 'Archive conversation', labelEl: 'Αρχειοθέτηση συνομιλίας', writes: true, options: byPerson(inbox), run: (v) => { if (v) void handleArchive(v); } },
+    { id: 'pin_conversation', labelEn: 'Pin conversation', labelEl: 'Καρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => !c.isPinned)), undo: (v) => ({ control: 'unpin_conversation', value: v }), run: (v) => (v ? handlePin(v) : undefined) },
+    { id: 'unpin_conversation', labelEn: 'Unpin conversation', labelEl: 'Ξεκαρφίτσωμα συνομιλίας', writes: true, options: byPerson(inbox.filter((c) => c.isPinned)), undo: (v) => ({ control: 'pin_conversation', value: v }), run: (v) => (v ? handlePin(v) : undefined) },
+    { id: 'archive_conversation', labelEn: 'Archive conversation', labelEl: 'Αρχειοθέτηση συνομιλίας', writes: true, options: byPerson(inbox), run: (v) => (v ? handleArchive(v) : undefined) },
     // The open chat's header menu: report or block the other person. Both
     // open the same dialog, which asks for the reason and confirms.
     { id: 'report_person', labelEn: 'Report the person in this chat', labelEl: 'Αναφορά του ατόμου της συνομιλίας', writes: false, unavailableEn: selectedConversation ? undefined : 'Open a conversation first.', unavailableEl: selectedConversation ? undefined : 'Ανοίξτε πρώτα μια συνομιλία.', run: () => setReportBlockModal({ open: true, mode: 'report' }) },

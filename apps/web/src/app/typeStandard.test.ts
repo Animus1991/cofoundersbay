@@ -1,4 +1,5 @@
-import { globSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -73,7 +74,16 @@ describe('product type standard', () => {
   });
 
   it('has no leftover hold/kicker class names in source', () => {
-    const hits = globSync('src/{app,components,lib}/**/*.{ts,tsx,css}', { exclude: (path) => path.includes('.test.') })
+    // A plain walk rather than `fs.globSync`, which Node 20 - still within
+    // the engines range - does not have.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) return walk(full);
+        return /\.(ts|tsx|css)$/.test(entry) && !entry.includes('.test.') ? [full] : [];
+      });
+    const hits = ['src/app', 'src/components', 'src/lib']
+      .flatMap(walk)
       .filter((path) => /type-hold|type-kicker/.test(readFileSync(path, 'utf8')))
       .map((path) => path.replace(/\\/g, '/'));
     expect(hits).toEqual([]);

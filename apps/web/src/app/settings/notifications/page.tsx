@@ -122,7 +122,7 @@ export default function NotificationPreferencesPage() {
       writes: true,
       unavailableEn: digestDirty ? undefined : 'The digest frequency is already saved.',
       unavailableEl: digestDirty ? undefined : 'Η συχνότητα σύνοψης είναι ήδη αποθηκευμένη.',
-      run: () => saveDigest.mutate(),
+      run: async () => { await saveDigest.mutateAsync(); },
     },
     {
       id: 'quiet_hours',

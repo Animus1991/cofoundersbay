@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
@@ -395,8 +395,11 @@ export default function AutomationsPage() {
   // buttons - edit, run now, pause, activate, delete (which still asks).
   const ruleRows = (list: AutomationRuleItem[]) => rowOptions(list, (r) => r.id, (r) => r.name);
   const ruleById = (id?: string) => rules.find((r) => r.id === id);
-  const deleteRule = async (rule: AutomationRuleItem) => {
-    if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
+  // One handler for the row button and the assistant, so both ask the same
+  // question and both report the same answer - including "no".
+  const deleteRule = async (rule: AutomationRuleItem): Promise<PageControlRunResult> => {
+    if (!(await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name)))) return CANCELLED;
+    return settle(() => deleteMutation.mutateAsync(rule.id));
   };
   usePageList([
     {
@@ -419,7 +422,7 @@ export default function AutomationsPage() {
     // pausing an active rule is undone by activating it, and the reverse.
     { id: 'pause_rule', labelEn: 'Pause automation rule', labelEl: 'Παύση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), undo: (v) => ({ control: 'activate_rule', value: v }), run: async (v) => { if (v) await setStatusMutation.mutateAsync({ id: v, status: 'paused' }); } },
     { id: 'activate_rule', labelEn: 'Activate automation rule', labelEl: 'Ενεργοποίηση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status !== 'active')), undo: (v) => (ruleById(v)?.status === 'paused' ? { control: 'pause_rule', value: v } : undefined), run: async (v) => { if (v) await setStatusMutation.mutateAsync({ id: v, status: 'active' }); } },
-    { id: 'delete_rule', labelEn: 'Delete automation rule', labelEl: 'Διαγραφή κανόνα', writes: true, options: ruleRows(rules), run: async (v) => { const r = ruleById(v); if (r && await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, r.name))) await deleteMutation.mutateAsync(r.id); } },
+    { id: 'delete_rule', labelEn: 'Delete automation rule', labelEl: 'Διαγραφή κανόνα', writes: true, options: ruleRows(rules), run: (v) => { const r = ruleById(v); return r ? deleteRule(r) : ROW_GONE; } },
   ]);
 
   return (

@@ -290,7 +290,7 @@ export default function NotificationsPage() {
       writes: true,
       unavailableEn: unreadCount === 0 ? 'Nothing is unread.' : undefined,
       unavailableEl: unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined,
-      run: () => markAllRead.mutate(),
+      run: async () => { await markAllRead.mutateAsync(); },
     },
   ]);
 
@@ -327,7 +327,7 @@ export default function NotificationsPage() {
       labelEl: 'Σήμανση ειδοποίησης ως αναγνωσμένης',
       writes: true,
       options: rowOptions(notifications.filter((n) => !n.readAt), (n) => n.id, (n) => n.title),
-      run: (v) => { if (v) handleRead(v); },
+      run: async (v) => { if (v) await markRead.mutateAsync(v); },
     },
     {
       id: 'delete_notification',
@@ -335,7 +335,7 @@ export default function NotificationsPage() {
       labelEl: 'Διαγραφή ειδοποίησης',
       writes: true,
       options: rowOptions(notifications, (n) => n.id, (n) => n.title),
-      run: (v) => { if (v) handleDelete(v); },
+      run: async (v) => { if (v) await deleteN.mutateAsync(v); },
     },
   ]);
 

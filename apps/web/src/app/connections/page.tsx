@@ -1,6 +1,6 @@
 'use client';
 
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -330,11 +330,13 @@ export default function ConnectionsPage() {
   // on a request someone sent the reader - the same mutation the buttons run.
   const otherOf = (c: (typeof connections)[number]) => (c.requesterId === viewerId ? c.receiver : c.requester);
   const incoming = connections.filter((c) => c.receiverId === viewerId && c.status === 'pending');
-  const respond = (id: string | undefined, status: 'accepted' | 'declined') => {
+  // Kept pending until the answer is stored, so the assistant's card turns
+  // green only once the request has actually been accepted or declined.
+  const respond = async (id: string | undefined, status: 'accepted' | 'declined'): Promise<PageControlRunResult> => {
     const c = incoming.find((row) => row.id === id);
-    if (!c) return;
+    if (!c) return ROW_GONE;
     const other = otherOf(c);
-    respondMutation.mutate({
+    await respondMutation.mutateAsync({
       id: c.id,
       status,
       otherUserId: c.requesterId,

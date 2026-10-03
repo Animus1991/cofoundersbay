@@ -496,7 +496,7 @@ export default function ShortlistPage() {
       { value: 'off', en: 'Off', el: 'Ανενεργή' },
       { value: 'on', en: 'On', el: 'Ενεργή' },
     ], compareMode ? 'on' : 'off', (v) => { setCompareMode(v === 'on'); if (v !== 'on') setSelectedIds(new Set()); }),
-    { id: 'remove_saved', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: rowOptions(filtered, (i) => i.userId, (i) => i.profile?.displayName ?? 'Member'), run: (v) => { if (v) handleRemove(v); } },
+    { id: 'remove_saved', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τα αποθηκευμένα', writes: true, options: rowOptions(filtered, (i) => i.userId, (i) => i.profile?.displayName ?? 'Member'), run: async (v) => { if (v) await removeMut.mutateAsync(v); } },
   ]);
 
   /*

@@ -59,7 +59,7 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -513,18 +513,20 @@ export default function RecommendationsPage() {
     if (shortlistIds?.ids) setSavedIds(new Set(shortlistIds.ids));
   }, [shortlistIds]);
 
-  const handleSave = (userId: string) => {
+  // Optimistic, and settled: the promise ends when the server has the save,
+  // so the assistant reports it only then; a failure flips the card back.
+  const handleSave = async (userId: string): Promise<PageControlRunResult> => {
     const wasSaved = savedIds.has(userId);
     setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.delete(userId); else next.add(userId); return next; });
-    void (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId))
-      .then(() => {
-        toastSuccess(wasSaved ? 'Removed from your shortlist' : 'Saved to your shortlist');
-        void queryClient.invalidateQueries({ queryKey: qk('shortlist') });
-      })
-      .catch(() => {
-        setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.add(userId); else next.delete(userId); return next; });
-        toastError('Could not update your shortlist', 'Please try again');
-      });
+    try {
+      await (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId));
+      toastSuccess(wasSaved ? 'Removed from your shortlist' : 'Saved to your shortlist');
+      void queryClient.invalidateQueries({ queryKey: qk('shortlist') });
+    } catch (err) {
+      setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.add(userId); else next.delete(userId); return next; });
+      toastError('Could not update your shortlist', 'Please try again');
+      return { error: err instanceof Error && err.message ? err.message : 'Your saved profiles did not change.' };
+    }
   };
 
   // Offered to the assistant: the tab, the minimum score, Refresh, and each
@@ -550,12 +552,12 @@ export default function RecommendationsPage() {
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
     choiceControl('min_score', 'Minimum match score', 'Ελάχιστη βαθμολογία', [0, 50, 65, 80].map((n) => ({ value: String(n), en: n ? `${n}% or more` : 'Any score', el: n ? `${n}% και πάνω` : 'Οποιαδήποτε' })), String(minScore), (v) => setMinScore(Number(v))),
     { id: 'refresh', labelEn: 'Refresh recommendations', labelEl: 'Ανανέωση προτάσεων', writes: false, run: handleRefresh },
-    { id: 'connect_with', labelEn: 'Send a connection request to', labelEl: 'Αίτημα σύνδεσης προς', writes: true, options: byName(people), run: (v) => { if (v) connectMutation.mutate(v); } },
+    { id: 'connect_with', labelEn: 'Send a connection request to', labelEl: 'Αίτημα σύνδεσης προς', writes: true, options: byName(people), run: async (v) => { if (v) await connectMutation.mutateAsync(v); } },
     // Saving creates a fresh shortlist row, so removing it is the undo; not
     // the reverse, since removing drops the row's note.
-    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), undo: (v) => ({ control: 'unsave_person', value: v }), run: (v) => { if (v) handleSave(v); } },
-    { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
-    { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: (v) => { if (v) feedbackMutation.mutate({ userId: v, fb: 'not_relevant' }); } },
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση προφίλ', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), undo: (v) => ({ control: 'unsave_person', value: v }), run: (v) => (v ? handleSave(v) : undefined) },
+    { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τα αποθηκευμένα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => (v ? handleSave(v) : undefined) },
+    { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: async (v) => { if (v) await feedbackMutation.mutateAsync({ userId: v, fb: 'not_relevant' }); } },
   ]);
 
   /*
