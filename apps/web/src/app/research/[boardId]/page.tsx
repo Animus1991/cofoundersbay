@@ -2306,6 +2306,8 @@ export default function ResearchBoardPage() {
 
       {/* Main content area - offset by sidebar */}
       <div
+        role="main"
+        aria-label={bilingualAria('Research workspace', 'Χώρος έρευνας')}
         className={cn(
           // `isolate`: this column uses z-50 internally (toolbar, overlays). A
           // stacking context of its own keeps those layers inside the column,

@@ -434,7 +434,7 @@ export function CopilotWorkspace({
             <p className="type-support mt-1.5 text-center text-muted-foreground">
               <button
                 type="button"
-                className="underline-offset-2 hover:underline"
+                className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
                 onClick={() => router.push('/ai/capabilities')}
               >
                 <BilingualText

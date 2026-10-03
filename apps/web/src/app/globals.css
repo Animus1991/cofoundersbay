@@ -1766,6 +1766,44 @@ html {
       width: 44px;
       min-width: 44px;
     }
+
+    /* What a fingertip still missed at 390px (measured on 15 pages, 60
+       targets): text buttons and links in rows that declare themselves
+       targets (`tap-target-y`, 24px), native selects (32px), and switches
+       (26px). A switch keeps its slim track; the area around it answers. */
+    .tap-target-y,
+    select {
+      min-height: 44px;
+    }
+    .tap-target-phone {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    [role='switch'] {
+      position: relative;
+    }
+    [role='switch']::before {
+      content: '';
+      position: absolute;
+      inset: -10px -2px;
+    }
+  }
+
+  /* Reading measure. A line of description reads best at 45-80 characters;
+     on a 1440px screen the descriptions under headings and in cards ran to
+     113-156 (measured on seven pages), so the eye lost its place on the way
+     back. Muted paragraphs stop at 75ch; a single truncated line is a label,
+     not reading, and keeps its width. `:where` keeps this below any utility,
+     so a page that sets its own measure (max-w-prose) still wins. A centred
+     layout re-centres the shortened block.
+     Attribute selectors, not `.text-muted-foreground`: Tailwind folds a rule
+     that names one of its utilities into that utility and rebuilds it for
+     every variant (`placeholder:`, `hover:`...), which broke the stylesheet. */
+  :where(main p[class~='text-muted-foreground']:not([class~='truncate']):not([class~='line-clamp-1']), main p[class~='page-lead']) {
+    max-width: 75ch;
+  }
+  :where(main [class~='text-center']:not([class*='sm:text-left']):not([class*='md:text-left']):not([class*='lg:text-left']) p[class~='text-muted-foreground'], main p[class~='text-muted-foreground'][class~='text-center']) {
+    margin-inline: auto;
   }
 
   /* A control paints its own foreground; the page's muted token is not readable

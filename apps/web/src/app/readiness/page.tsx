@@ -591,7 +591,7 @@ function DimensionCard({
                 thing still open, which is more useful than silence and fills
                 the space honestly. */}
             {status === 'excellent' && (
-              <div className="mt-auto space-y-2.5 rounded-xl border border-border bg-secondary/50 px-2.5 py-3.5">
+              <div className="mt-auto space-y-2.5 rounded-xl bg-secondary/40 p-3">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />
                   <BilingualText
@@ -624,7 +624,7 @@ function DimensionCard({
             )}
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-auto space-y-2.5 rounded-xl border border-border bg-secondary/50 px-2.5 py-3.5">
+              <div className="mt-auto space-y-2.5 rounded-xl bg-secondary/40 p-3">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CfbGlyph name="spark" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
@@ -1244,7 +1244,7 @@ export default function ReadinessPage() {
         {/* One card now: the two audience readouts moved to the rail, so the
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
-          <Card className="min-w-0 overflow-hidden border-primary/15 bg-primary/[0.03] lg:col-span-1">
+          <Card className="min-w-0 overflow-hidden border-0 bg-primary/[0.03] lg:col-span-1">
             <CardContent className="flex h-full flex-col items-center gap-5 p-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
               <ScoreEmblem
                 score={overallScore}
@@ -1280,7 +1280,7 @@ export default function ReadinessPage() {
               {nextOpen && (
                 <Link
                   href={`#dim-${nextOpen.dimKey}`}
-                  className="w-full rounded-2xl border border-border bg-card/80 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
+                  className="w-full rounded-xl bg-card/80 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
                 >
                   <p className="page-stat-label text-muted-foreground">
                     <BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap />

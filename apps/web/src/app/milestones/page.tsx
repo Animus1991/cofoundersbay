@@ -256,7 +256,7 @@ function MilestoneCard({
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
               <Badge
                 variant="outline"
-                className={cn('h-5 gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
+                className={cn('gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
               >
                 {/* Singular: this chip describes one milestone, not the set. */}
                 <BilingualText
@@ -790,10 +790,10 @@ export default function MilestonesPage() {
                 aria-pressed={statusFilter === tab.value}
                 onClick={() => setStatusFilter(tab.value)}
                 className={cn(
-                    'inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors',
+                  'tap-target-phone inline-flex min-h-9 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                   statusFilter === tab.value
-                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                    : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
+                    ? 'bg-primary/10 font-semibold text-primary-accessible'
+                    : 'bg-secondary/30 text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
                 )}
               >
                 <BilingualText en={milestoneEn(tab.labelKey)} el={milestoneEl(tab.labelKey)} compact />

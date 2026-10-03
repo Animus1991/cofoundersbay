@@ -78,7 +78,7 @@ type TabId = 'discover' | 'mine' | 'joined' | 'starred';
 function roleLabel(role: DemoRole | string) {
   const title = typeof role === 'string' ? role : role.title;
   const el = typeof role === 'string' ? PROJECT_ROLE_TITLE_EL[title] : (role.titleEl ?? PROJECT_ROLE_TITLE_EL[title]);
-  return el ? <BilingualText en={title} el={el} compact /> : title;
+  return el ? <BilingualText en={title} el={el} compact wrap /> : title;
 }
 
 function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-clamp-1' | 'line-clamp-2' }) {
@@ -164,7 +164,7 @@ function ProjectCard({
   }
 
   return (
-    <Card className="group rounded-xl border-border transition-colors hover:border-primary/30">
+    <Card className="group flex min-w-0 flex-col rounded-xl border-0">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
@@ -181,7 +181,7 @@ function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-xl opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+                className="h-8 w-8 shrink-0 rounded-md text-muted-foreground hover:text-foreground"
                 aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
               >
                 <MoreVertical className="icon-sm" />
@@ -209,7 +209,7 @@ function ProjectCard({
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex min-w-0 flex-1 flex-col gap-3">
         <ProjectBlurb project={project} clamp="line-clamp-2" />
 
         <div className="flex flex-wrap gap-1.5">
@@ -243,7 +243,7 @@ function ProjectCard({
                 <BilingualText en={projectEn('members')} el={projectEl('members')} compact />
               </span>
             </div>
-            {project.messageCount && project.messageCount > 0 && (
+            {(project.messageCount ?? 0) > 0 && (
               <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                 <CfbGlyph name="messages" className="icon-sm" />
                 {project.messageCount}
@@ -269,7 +269,7 @@ function ProjectCard({
               </p>
               <div className="flex flex-wrap gap-1">
                 {project.rolesNeeded.map((role) => (
-                  <Badge key={role.title} variant="outline" className="rounded-full bg-primary/5 text-2xs text-primary-accessible border-primary/20">
+                  <Badge key={role.title} variant="outline" className="max-w-full whitespace-normal break-words rounded-md bg-primary/5 text-left text-2xs text-primary-accessible">
                     {roleLabel(role)}
                   </Badge>
                 ))}
@@ -278,7 +278,7 @@ function ProjectCard({
           )}
         </div>
 
-        <Button className={`w-full ${BUILDER_BTN}`} asChild>
+        <Button variant="secondary" size="sm" className={`mt-auto max-w-full self-start ${BUILDER_BTN}`} asChild>
           <Link href={`/projects/${project.id}`}>
             <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
             <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
@@ -656,11 +656,12 @@ export default function ProjectsPage() {
                   key={pill.value}
                   type="button"
                   onClick={() => setStatusFilter(pill.value)}
+                  aria-pressed={isActive}
                   className={cn(
-                    'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    'tap-target-phone inline-flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                     isActive
-                      ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                      : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                      ? 'bg-primary/10 font-semibold text-primary-accessible'
+                      : 'bg-secondary/30 text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
                   )}
                 >
                   <CfbGlyph name={pill.glyph} className="icon-sm" />

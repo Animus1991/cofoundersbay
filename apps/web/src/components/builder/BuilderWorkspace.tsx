@@ -913,8 +913,9 @@ export function BuilderWorkspace({
             return (
               <Button
                 key={type}
-                className="h-auto min-h-11 w-full justify-between rounded-xl px-3 py-2"
-                variant="outline"
+                className="h-auto w-full justify-between rounded-md bg-secondary/30 px-3 py-1.5 text-foreground"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   if (existing) selectDocument(existing.id);
                   const tab = DOC_TO_TAB[type];
@@ -1046,7 +1047,7 @@ export function BuilderWorkspace({
               <button
                 type="button"
                 onClick={dismissReview}
-                className="rounded-lg p-1.5 text-muted-foreground/60 transition-colors hover:bg-muted/60 hover:text-muted-foreground focus-ring"
+                className="tap-target-phone inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground/60 transition-colors hover:bg-muted/60 hover:text-muted-foreground focus-ring"
                 title={bilingualAria('Dismiss', 'Απόρριψη')}
                 aria-label={bilingualAria('Dismiss expert-review suggestion', 'Απόρριψη πρότασης αξιολόγησης')}
               >

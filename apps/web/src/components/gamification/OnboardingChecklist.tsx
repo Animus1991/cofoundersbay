@@ -142,7 +142,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           <button
             type="button"
             onClick={handleDismiss}
-            className="shrink-0 rounded-xl p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="tap-target-phone inline-flex shrink-0 items-center justify-center rounded-xl p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title={dismissLabel}
             aria-label={dismissLabel}
           >

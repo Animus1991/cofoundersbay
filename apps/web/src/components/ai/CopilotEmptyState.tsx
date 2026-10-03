@@ -72,7 +72,7 @@ export function CopilotEmptyState({
       >
         <button
           type="button"
-          className="underline-offset-2 hover:underline"
+          className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
           onClick={onOpenCapabilities}
         >
           <BilingualText
@@ -124,8 +124,8 @@ function StarterColumn({
                 BUILDER_BTN,
                 'type-ui flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors',
                 writes
-                  ? 'border border-status-warning-border/50 bg-status-warning-bg text-status-warning hover:bg-status-warning-bg/70'
-                  : 'border border-border bg-card text-foreground hover:bg-secondary',
+                  ? 'bg-status-warning-bg text-status-warning hover:bg-status-warning-bg/70'
+                  : 'bg-card text-foreground hover:bg-secondary',
               )}
             >
               <CfbGlyph name={starter.glyph} className="icon-sm shrink-0 opacity-80" aria-hidden="true" />

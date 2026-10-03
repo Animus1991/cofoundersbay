@@ -1768,3 +1768,54 @@ Vitest 783/783 (99 αρχεία), typecheck web 0. Οι μετρήσεις brows
 - Ο dev server ξεκίνησε ως **ανεξάρτητη διεργασία** (`Start-Process node ./scripts/dev.js`, κρυφό παράθυρο)· μια εργασία παρασκηνίου του εργαλείου τερματίζεται στο χρονικό της όριο και παίρνει τον server μαζί της.
 - Μετά από τερματισμό ή μεγάλη αλλαγή, επαλήθευσε ότι το HTML του server έχει τη νέα αλλαγή (`curl … | grep`) πριν εμπιστευτείς οποιαδήποτε μέτρηση browser.
 - Σε shell heredoc, το `\b` μέσα σε Python string έγινε **χαρακτήρας backspace** στο αρχείο. Για κανονικές εκφράσεις γράψε το script με το εργαλείο αρχείων, όχι με heredoc.
+
+## 33. Συνέχεια 2026-10-04 — upstream reconciliation και καθαρότητα στα συγκεκριμένα workspaces
+
+### 33.1 Τι υπάρχει πραγματικά στα δύο repositories
+
+Έγινε νέο fetch από τα δύο δηλωμένα remotes και απογραφή branches μέσω GitHub CLI. Το ενεργό `claude/project-audit-upgrade-y2ebnr` και το origin ήταν στο `5b547b86`. Όλα τα υπόλοιπα δημοσιευμένα branches του origin είναι πρόγονοί του. Τα δύο Cascade worktrees ήταν καθαρά στο `150c70af`, το οποίο το `git cherry` χαρακτηρίζει patch-equivalent με την ενεργή ιστορία.
+
+Το upstream `tasoasteritopeleven/cofoundersbay` έχει μόνο `main`, στο `32dffb10`, με τρία commits και **χωρίς κοινό merge base** με το δικό μας repository. Είναι preview wrapper: ο κατάλογος `cofoundersbay` είναι gitlink (`160000`) προς το ήδη δικό μας `15183f58`, όχι tree με τον νεότερο κώδικα. Τα root manifests/configuration ανήκουν σε διαφορετικό starter. Δεν έγινε merge unrelated histories, αντικατάσταση manifests, εισαγωγή `.gitconfig` ή μεταφορά preview-only security settings.
+
+Το upstream `memory/PRD.md` αναφέρει μη δημοσιευμένες αλλαγές μέσα στο `/app/cofoundersbay`. Αυτές δεν ανακτώνται με pull του wrapper. **Εκκρεμότητα εισόδου:** απαιτείται commit/push του εσωτερικού repo ή patch μαζί με τα νέα αρχεία. Οι αναφορές αποτελεσμάτων του άλλου περιβάλλοντος δεν θεωρούνται απόδειξη ότι έχουμε τα αρχεία του.
+
+Το δικό μας `dcd95c09` αναφέρει ρητά τα ευρήματα Emergent και ήδη υλοποιεί αποτέλεσμα `cancelled`, άρνηση κενών choices, αναμονή ολοκλήρωσης εντολών, κλείδωμα διπλής επιβεβαίωσης και αντίστοιχα tests. Αυτό ελέγχθηκε στον κώδικα, όχι μόνο στον τίτλο commit. Το `5b547b86` προσθέτει ελληνική ορολογία. Οι επτά τοπικές αλλαγές που υπήρχαν κατά την έναρξη διατηρήθηκαν· δεν έγινε stash/reset πάνω σε ξένη εργασία.
+
+### 33.2 Σχεδιαστική απόφαση: αφαιρούμε διακόσμηση, όχι προσανατολισμό
+
+- **Πρωτεύουσα ενέργεια:** το accent υποδεικνύει δημιουργία/αποθήκευση ή το επόμενο ουσιώδες βήμα, όχι κάθε επαναλαμβανόμενο link σε λίστα.
+- **Περιγράμματα:** αφαιρούνται επιλεκτικά από φωλιασμένες βοηθητικές επιφάνειες, chips ενεργειών και πληροφοριακές κάρτες που ήδη χωρίζονται με χρώμα επιφάνειας/κενό. Δεν αλλάζει καθολικά το shared `outline` variant, τα πεδία, τα overlays ή τα επιλεγμένα στοιχεία καμβά.
+- **Keyboard focus:** διατηρείται το εξωτερικό περίγραμμα 2px. Είναι ένδειξη χειρισμού, όχι διακοσμητικός θόρυβος.
+- **Μέγεθος:** επαναλαμβανόμενες βοηθητικές ενέργειες χρησιμοποιούν την υπάρχουσα compact κλίμακα, συνήθως 32–36px στο desktop. Ύψος τουλάχιστον 44px στο τηλέφωνο, αναδίπλωση χωρίς clipping, όχι οριζόντιο «μίκρυνε τα πάντα».
+- **Ανάγνωση:** διατηρούνται οι προηγούμενες βελτιώσεις μεγέθους γραμματοσειράς και η επιλογή κύριας/δίγλωσσης εμφάνισης. Οι μακριοί ρόλοι έργων αναδιπλώνονται μέσα στην κάρτα αντί να χύνονται στην επόμενη.
+- **Σημασία χωρίς αποκλειστική χρήση χρώματος:** τα φίλτρα έργων αποκτούν `aria-pressed` και διαφοροποίηση βάρους. Τα status labels, ποσοστά και μηνύματα παραμένουν.
+- **Χρώματα:** δεν αλλάζουν αυθαίρετα τα τέσσερα συμφωνημένα light accents. Η ηπιότερη εικόνα προκύπτει πρώτα από λιγότερες ανταγωνιστικές γεμίσεις και εσωτερικές γραμμές. Τα token contrast checks δεν πιστοποιούν κάθε γράφημα.
+
+### 33.3 Πρώτη εφαρμογή και υπόλοιπη σειρά ελέγχου
+
+| Σελίδα / οικογένεια | Πρώτη εφαρμογή ή εύρημα | Επόμενος λεπτομερής έλεγχος |
+|---|---|---|
+| Founder dashboard | Αφαίρεση διακοσμητικού accent περιγράμματος στη σύνοψη προόδου, χωρίς αλλαγή διαστάσεων/δεδομένων | Ιεράρχηση ειδοποιήσεων, χαμηλότερη διάσταση, μετάβαση από σύνοψη στην ενέργεια, πραγματικά queries |
+| Readiness | Ήρεμη σύνοψη, recommendations και next-criterion χωρίς επάλληλα πλαίσια· παραμένουν όλα τα κριτήρια/radar | Live/demo, αλλαγές κριτηρίων, μέτρηση γειτονικών χρωμάτων γραφήματος και κατάσταση αποτυχίας |
+| Analytics | Περιλαμβάνεται στον browser έλεγχο, όχι νέα αναδιάταξη στο παρόν κύμα | Ύψος metric cards, ίση οπτική βαρύτητα, μονάδες και πηγή μετρήσεων, περίοδοι/exports |
+| Builder | Έξι συντομεύσεις ως ήρεμες compact επιφάνειες αντί για πλαίσιο μέσα σε πλαίσιο | Ίδιο document/context σε όλες τις καρτέλες, versions, collaborators, αποτυχία αποθήκευσης |
+| Pitch deck | Συμπαγείς προτάσεις χωρίς περίγραμμα· πραγματική σύνδεση content/notes labels και word count με πεδία | Manual/AI race, import/export, preview, versions και save με πραγματικό backend |
+| Applications | Διατηρούνται labels, ευρετήριο και οι προηγούμενοι έλεγχοι διατήρησης draft | Κάθε πρόγραμμα, long answers, errors, reload μετά την αποθήκευση, επικύρωση limits |
+| Research list / canvas | Ο canvas αποκτά ονομασμένο main landmark χωρίς ενεργοποίηση των γενικών `#main-content` overrides | Selection, zoom, alignment, resize, layering, inspector states, συνδέσεις, undo και κοινή χρήση |
+| Milestones | Φίλτρα χωρίς επαναλαμβανόμενα outlines, με διακριτή επιλογή και touch floor | Edit/complete/reopen/delete, dates, κανόνες προόδου, modal keyboard flow |
+| Projects list | Η «Προβολή έργου» παύει να ανταγωνίζεται τη δημιουργία, παραμένει link· ορατό menu, αναδίπλωση ρόλων, αφαιρείται stray `0` | Grid/list ισοδυναμία, φίλτρα, κενές λίστες, team/actions, πραγματική υλοποίηση πέρα από demo |
+| Project detail — 4 tabs | Ήρεμες βοηθητικές ενέργειες και role tiles· ίδια join/apply/message/calendar handlers | Δικαιώματα ιδιοκτήτη/μέλους/επισκέπτη, ακριβής κατάσταση αίτησης, persistence |
+| Fundraising | Περιλαμβάνεται στον browser έλεγχο, δεν αλλάζει ο πυρήνας δεδομένων | Pipeline/Kanban/data room, scopes και διάκριση demo πραγματικού γύρου, status transitions |
+| AI | Οι προτάσεις χάνουν τα περιττά περιγράμματα· παραμένει η διάκριση ανάγνωσης/μεταβολής | Context ανά route, consent, cancelled/failed/done, cache refresh, αληθινό undo, citations |
+| Messages | Περιλαμβάνεται στον browser έλεγχο, χωρίς αφαίρεση ενεργειών | Conversation identity, composer/reply, scrolling, scheduling, attachment/error states |
+| Calendar | Περιλαμβάνεται στον browser έλεγχο, χωρίς αφαίρεση views | Day/week/list, time zones, modal forms, συμβατότητα πηγών events/meetings/milestones |
+
+Τα επόμενα κύματα συνεχίζουν στα admin/tenant/org/provider/investor/mentor, auth/onboarding και λοιπά dynamic routes. Δεν θεωρούνται ελεγμένα επειδή το static registry τα γνωρίζει.
+
+### 33.4 Μέθοδος επαλήθευσης
+
+Νέο `apps/web/e2e/workspace-clarity.spec.ts`: browser tests για πραγματική ενεργοποίηση shortcuts, ορατό menu χωρίς hover, φίλτρα και στόχους αφής, αναδίπλωση καρτών, τέσσερις project tabs, προσθήκη διαφάνειας, labels και drafts μεταξύ slides. Πρόσθετοι έλεγχοι στις 15 ζητούμενες διαδρομές σε desktop/mobile και στα τέσσερα light themes με κύρια γλώσσα ελληνικά στις κάρτες έργων. Τα screenshots δεν αποτελούν αυτόματα visual-diff acceptance.
+
+Πριν τις διορθώσεις αναπαράχθηκαν τα borders σε Builder/Pitch, η έλλειψη `aria-pressed`, η έλλειψη accessible textbox names στο Pitch και η απουσία main landmark στον canvas. Η δοκιμή sidebar συνάντησε tour που ανοίγει μετά από 700ms· η αρχικοποίηση ελέγχου διορθώθηκε στο πραγματικό `cfb.tour.<tourId>.<userId>`, όχι με αλλαγή της λειτουργίας του tour. Η πρώτη συλλογή screenshots με tours/animations δεν χρησιμοποιείται ως τελικό οπτικό τεκμήριο.
+
+Νέα στατική απογραφή: 160 routes, 533 endpoints, 0 parse errors, **0 αυτομάτως verified**. AI census: 110 operable, 23 askable, 27 μη λειτουργικές επιφάνειες AI με δηλωμένη αιτία, 0 unexplained. Αυτή είναι κάλυψη δηλώσεων, όχι πραγματική εκτέλεση/εξουσιοδότηση 160 σελίδων.

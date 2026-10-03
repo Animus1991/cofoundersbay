@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
@@ -428,6 +428,7 @@ export function PitchDeckBuilder({
   askPrompt,
 }: PitchDeckBuilderProps) {
   const t = useBuilderPrimaryText();
+  const fieldId = useId();
   const askInPlace = useAskInPlace();
   const { success, error: toastError } = useToast();
   const savedRef = useRef(snapshotOf(hydratePitchDeck(initialData)));
@@ -1115,7 +1116,7 @@ export function PitchDeckBuilder({
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
+                        className="tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
                         aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
                         <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1147,7 +1148,7 @@ export function PitchDeckBuilder({
                           key={slide.id}
                           type="button"
                           onClick={() => setCurrentSlideIndex(index)}
-                          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-left text-xs transition-colors hover:border-border hover:bg-muted/40 focus-ring"
+                          className="tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
                         >
                           <span className="font-mono text-2xs text-muted-foreground">{index + 1}</span>
                           <span className="min-w-0">{renderSlideTitle(slide)}</span>
@@ -1355,14 +1356,16 @@ export function PitchDeckBuilder({
                       <>
                         <div>
                           <div className="mb-1.5 flex items-center justify-between gap-2">
-                            <Label>
+                            <Label htmlFor={`${fieldId}-content`}>
                               <BilingualText en={builderEn('pitch_content')} el={builderEl('pitch_content')} compact />
                             </Label>
-                            <span className="text-2xs tabular-nums text-muted-foreground">
+                            <span id={`${fieldId}-words`} className="text-2xs tabular-nums text-muted-foreground">
                               {wordCount} <BilingualText en={builderEn('pitch_words')} el={builderEl('pitch_words')} compact />
                             </span>
                           </div>
                           <Textarea
+                            id={`${fieldId}-content`}
+                            aria-describedby={`${fieldId}-words`}
                             value={currentSlide.content}
                             onChange={(event) => updateSlide('content', event.target.value)}
                             placeholder={t(builderEn('pitch_content_ph'), builderEl('pitch_content_ph'))}
@@ -1370,10 +1373,11 @@ export function PitchDeckBuilder({
                           />
                         </div>
                         <div>
-                          <Label>
+                          <Label htmlFor={`${fieldId}-notes`}>
                             <BilingualText en={builderEn('pitch_notes')} el={builderEl('pitch_notes')} compact />
                           </Label>
                           <Textarea
+                            id={`${fieldId}-notes`}
                             value={currentSlide.notes}
                             onChange={(event) => updateSlide('notes', event.target.value)}
                             placeholder={t(builderEn('pitch_notes_ph'), builderEl('pitch_notes_ph'))}

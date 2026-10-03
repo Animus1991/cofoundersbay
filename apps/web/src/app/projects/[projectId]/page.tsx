@@ -303,7 +303,7 @@ export default function ProjectDetailPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {project.rolesNeeded.map((role) => (
-                      <div key={role.title} className="rounded-xl border border-border p-4">
+                      <div key={role.title} className="rounded-xl bg-secondary/30 p-3">
                         <div className="mb-2 flex items-start justify-between gap-3">
                           <div>
                             <h4 className="page-section font-semibold text-foreground">
@@ -497,11 +497,11 @@ export default function ProjectDetailPage() {
                     />
                   </Button>
                 )}
-                <Button variant="outline" className={`w-full gap-2 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
+                <Button variant="ghost" size="sm" className={`w-full gap-2 ${BUILDER_BTN}`} onClick={() => openAskAi(project.founder.id, 'messages')}>
                   <CfbGlyph name="messages" className="icon-sm" />
                   <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
                 </Button>
-                <Button variant="outline" className={`w-full gap-2 ${BUILDER_BTN}`} asChild>
+                <Button variant="ghost" size="sm" className={`w-full gap-2 ${BUILDER_BTN}`} asChild>
                   <Link href="/calendar">
                     <CfbGlyph name="calendar" className="icon-sm" />
                     <BilingualText en={projectEn('schedule_call')} el={projectEl('schedule_call')} compact />
