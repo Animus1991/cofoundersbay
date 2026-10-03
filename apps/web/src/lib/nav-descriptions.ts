@@ -14,7 +14,7 @@ export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
   '/milestones': 'Goals, owners, and due dates',
   '/projects': 'Side projects and startup initiatives',
   '/fundraising': 'Investor pipeline and data room',
-  '/ai': 'Harbor copilot — matches, GTM board, $750K seed. Writes wait for confirm',
+  '/ai': 'Your assistant — matches, research, fundraising. Writes wait for confirm',
   '/messages': 'Direct messages and intro requests',
   '/calendar': 'Calls, sessions, and events',
   '/mentor/sessions': 'Upcoming and past mentoring sessions',

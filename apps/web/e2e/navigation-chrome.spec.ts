@@ -70,6 +70,36 @@ test.describe('left sidebar', () => {
   });
 });
 
+test.describe('right page tools', () => {
+  test('keyboard focus reveals the named section without pinning it', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'phones use the tools sheet');
+    await signIn(page);
+    await page.goto('/projects', { waitUntil: 'networkidle' });
+    await skipTours(page);
+    const rail = page.locator('[data-page-rail]');
+    const filters = rail.getByRole('button', { name: /^Filters\./ });
+    await filters.focus();
+    await expect(rail.getByRole('region', { name: /^Filters\./ })).toBeVisible();
+    await expect(filters).toHaveAttribute('aria-expanded', 'true');
+    await expect(rail.getByRole('button', { name: /^Keep page tools open/ }).first()).toHaveAttribute('aria-pressed', 'false');
+    await page.keyboard.press('Escape');
+    await expect(rail.getByRole('region')).toHaveCount(0);
+  });
+
+  test('the mobile sheet has a name and keeps every tool section reachable', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the sheet is the phone navigation path');
+    await signIn(page);
+    await page.goto('/projects', { waitUntil: 'networkidle' });
+    await skipTours(page);
+    await page.getByRole('button', { name: /^Page tools/ }).click();
+    const sheet = page.getByRole('dialog', { name: /Page tools/ });
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('button', { name: /^Filters/ }).click();
+    await expect(sheet.getByRole('button', { name: /^Filters/ })).toHaveAttribute('aria-expanded', 'true');
+    await expect(sheet.getByRole('button', { name: /^Layout/ })).toBeVisible();
+  });
+});
+
 const ICON_ROUTES = ['/builder/pitch-deck', '/dashboard/founder', '/matches', '/admin', '/settings', '/events'];
 
 test.describe('icon-only controls', () => {

@@ -98,8 +98,20 @@ function statusLabel(status: InvestorStatus) {
     : status;
 }
 
-function leadAskPrompt(lead: InvestorLead) {
-  return `Draft a next-step note for ${lead.name} on Harbor's $750K seed (Athens Tech Angels, $375K committed).`;
+/**
+ * The ask behind a lead's message and details buttons.
+ *
+ * It used to state Harbor's round for every lead: "Draft a next-step note for
+ * {lead} on Harbor's $750K seed (Athens Tech Angels, $375K committed)". Outside
+ * the showcase a founder adds their own contacts here, so the assistant was
+ * briefed with another company's raise and asked to write to a real investor
+ * about it. The round facts belong to the showcase only, exactly as the page's
+ * own `askAi` already gates them on `harborLive`.
+ */
+function leadAskPrompt(lead: InvestorLead, harborLive: boolean) {
+  return harborLive
+    ? `Draft a next-step note for ${lead.name} on Harbor's $750K seed (Athens Tech Angels, $375K committed).`
+    : `Draft a next-step note for ${lead.name}. Use only my saved round details, pitch deck and data room; ask me for anything missing rather than inventing amounts or commitments.`;
 }
 
 function LeadName({ lead, className }: { lead: InvestorLead; className?: string }) {
@@ -571,9 +583,12 @@ function DataRoomView({
 function InvestorListView({
   leads,
   onMove,
+  harborLive,
 }: {
   leads: InvestorLead[];
   onMove: (id: string, status: InvestorStatus) => void;
+  /** Only the showcase may brief the assistant with Harbor's round. */
+  harborLive: boolean;
 }) {
   const { primary } = useLanguagePreference();
   const { ask } = usePopupChat();
@@ -649,7 +664,7 @@ function InvestorListView({
                     size="sm"
                     className={cn('h-7 w-7 p-0', BUILDER_BTN)}
                     aria-label={bilingualAria(fundraisingEn('message'), fundraisingEl('message'))}
-                    onClick={() => ask(leadAskPrompt(lead))}
+                    onClick={() => ask(leadAskPrompt(lead, harborLive))}
                   >
                     <CfbGlyph name="messages" className="icon-sm" />
                   </Button>
@@ -660,7 +675,7 @@ function InvestorListView({
                     aria-label={bilingualAria(fundraisingEn('view_details'), fundraisingEl('view_details'))}
                     onClick={() => {
                       if (lead.href) router.push(lead.href);
-                      else ask(leadAskPrompt(lead));
+                      else ask(leadAskPrompt(lead, harborLive));
                     }}
                   >
                     <CfbGlyph name="discover" className="icon-sm" />
@@ -910,7 +925,7 @@ export default function FundraisingPage() {
                 </CardContent>
               </Card>
             ) : (
-              <InvestorListView leads={leads} onMove={handleMove} />
+              <InvestorListView leads={leads} onMove={handleMove} harborLive={harborLive} />
             )}
           </TabsContent>
           <TabsContent value="kanban" className="mt-4">

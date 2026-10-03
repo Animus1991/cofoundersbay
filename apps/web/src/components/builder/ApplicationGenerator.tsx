@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,8 +66,8 @@ function applicationsEqual(a: ApplicationTemplate, b: ApplicationTemplate): bool
 function programAskPrompt(app: ApplicationTemplate): string {
   const empty = app.questions.filter((q) => !q.answer.trim()).map((q) => q.id);
   return [
-    `Draft empty ${app.name} answers from Idea Core, the GTM board, and Harbor's $750K seed (Athens Tech Angels, $375K committed).`,
-    'Fill only empty fields.',
+    `Draft empty ${app.name} answers using only verified artefacts from the active workspace.`,
+    'Do not invent funding, traction, people or company details. Ask for missing evidence. Fill only empty fields.',
     empty.length
       ? `Start with the ${empty.length} empty ${empty.length === 1 ? 'answer' : 'answers'}.`
       : 'Every required field has text — propose what to tighten, do not overwrite.',
@@ -77,7 +77,7 @@ function programAskPrompt(app: ApplicationTemplate): string {
 function questionAskPrompt(app: ApplicationTemplate, questionEn: string, filled: boolean): string {
   return filled
     ? `Tighten this ${app.name} answer: ${questionEn}`
-    : `Draft an answer to this ${app.name} question from Idea Core and the $750K seed: ${questionEn}`;
+    : `Draft an answer to this ${app.name} question using only verified artefacts from the active workspace. Ask for missing evidence instead of inventing facts: ${questionEn}`;
 }
 
 export function ApplicationGenerator({
@@ -98,6 +98,17 @@ export function ApplicationGenerator({
   const [generatingQuestionId, setGeneratingQuestionId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const fieldPrefix = useId();
+  const answerFields = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const saving = useRef(false);
+  const latestApplications = useRef(applications);
+  latestApplications.current = applications;
+  const focusQuestion = (id: string) => {
+    const field = answerFields.current[id];
+    if (!field) throw new Error('This question is not available in the active application.');
+    field.focus({ preventScroll: true });
+    field.scrollIntoView?.({ block: 'center', behavior: 'instant' });
+  };
 
   useEffect(() => {
     setApplications(mergeSavedApplications(initialData));
@@ -121,12 +132,13 @@ export function ApplicationGenerator({
         return;
       }
       const incoming = pickGeneratedAnswers(raw);
-      const merged = mergeEmptyApplicationAnswers(currentApp, incoming);
-      if (applicationsEqual(currentApp, merged)) {
+      const latest = latestApplications.current.find((app) => app.id === currentApp.id) ?? currentApp;
+      const merged = mergeEmptyApplicationAnswers(latest, incoming);
+      if (applicationsEqual(latest, merged)) {
         success('Nothing to change');
         return;
       }
-      setApplications((prev) => prev.map((app) => (app.id === currentApp.id ? merged : app)));
+      setApplications((prev) => prev.map((app) => (app.id === currentApp.id ? mergeEmptyApplicationAnswers(app, incoming) : app)));
       success('Draft filled empty answers only.');
     } catch {
       toastError('Could not generate');
@@ -160,8 +172,12 @@ export function ApplicationGenerator({
         ask(questionAskPrompt(currentApp, promptEn, false));
         return;
       }
-      const merged = mergeEmptyApplicationAnswers(currentApp, { [questionId]: draft });
-      setApplications((prev) => prev.map((app) => (app.id === currentApp.id ? merged : app)));
+      const latest = latestApplications.current.find((app) => app.id === currentApp.id) ?? currentApp;
+      if (latest.questions.find((q) => q.id === questionId)?.answer.trim()) {
+        success('Nothing to change');
+        return;
+      }
+      setApplications((prev) => prev.map((app) => (app.id === currentApp.id ? mergeEmptyApplicationAnswers(app, { [questionId]: draft }) : app)));
       success('Draft filled empty answers only.');
     } catch {
       toastError('Could not generate');
@@ -190,16 +206,35 @@ export function ApplicationGenerator({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleSave = async () => {
-    if (!onSave) return;
+  const saveUnavailable = !onSave
+    ? { en: 'Saving is unavailable in this view.', el: 'Η αποθήκευση δεν είναι διαθέσιμη σε αυτή την προβολή.' }
+    : isSaving || isGenerating || generatingQuestionId
+      ? { en: 'Wait for the current operation to finish.', el: 'Περιμένετε να ολοκληρωθεί η τρέχουσα ενέργεια.' }
+      : null;
+
+  const persistApplications = async (next: ApplicationTemplate[], propagateError = false) => {
+    if (!onSave || saving.current || isGenerating || generatingQuestionId) {
+      if (propagateError) throw new Error(saveUnavailable?.en ?? 'Saving is already in progress.');
+      return false;
+    }
+    saving.current = true;
     setIsSaving(true);
     try {
-      await onSave(applications);
-      success('Applications saved', 'Written to the workspace artefact.');
+      await onSave(next);
+      return true;
     } catch {
       toastError('Could not save');
+      if (propagateError) throw new Error(bilingualAria('Could not save', 'Η αποθήκευση απέτυχε'));
+      return false;
     } finally {
+      saving.current = false;
       setIsSaving(false);
+    }
+  };
+
+  const handleSave = async (propagateError = false) => {
+    if (await persistApplications(applications, propagateError)) {
+      success('Applications saved', 'Written to the workspace artefact.');
     }
   };
 
@@ -208,12 +243,9 @@ export function ApplicationGenerator({
     const nextList = applications.map((app) => (
       app.id === activeApp ? { ...app, status: 'submitted' as const } : app
     ));
-    setApplications(nextList);
-    try {
-      await onSave?.(nextList);
+    if (await persistApplications(nextList)) {
+      setApplications(nextList);
       success('Marked submitted', 'The programme stays in this workspace artefact.');
-    } catch {
-      toastError('Could not save');
     }
   };
 
@@ -232,7 +264,22 @@ export function ApplicationGenerator({
       labelEl: 'Αποθήκευση αιτήσεων προγράμματος',
       writes: true,
       options: [{ value: 'all', labelEn: 'All four templates', labelEl: 'Και τα τέσσερα πρότυπα' }],
-      run: () => { void handleSave(); },
+      unavailableEn: saveUnavailable?.en,
+      unavailableEl: saveUnavailable?.el,
+      run: () => handleSave(true),
+    },
+    {
+      id: 'focus_application_question',
+      labelEn: 'Go to application question',
+      labelEl: 'Μετάβαση σε ερώτηση αίτησης',
+      writes: false,
+      options: (currentApp?.questions ?? []).map((question, index) => {
+        const prompt = applicationQuestionCopy(question.id, question.question);
+        return { value: question.id, labelEn: `${index + 1}. ${prompt.en}`, labelEl: `${index + 1}. ${prompt.el}` };
+      }),
+      unavailableEn: isSaving ? 'Wait for saving to finish.' : undefined,
+      unavailableEl: isSaving ? 'Περιμένετε να ολοκληρωθεί η αποθήκευση.' : undefined,
+      run: (id) => focusQuestion(id ?? ''),
     },
   ]);
   usePageList([
@@ -284,7 +331,7 @@ export function ApplicationGenerator({
   return (
     <>
       {pageRail ? <PageRail sections={[...rail, ...(extraSections ?? [])]} /> : null}
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-5xl space-y-6">
       <BuilderStageHeader
         glyph="applications"
         titleEn={builderEn('app_title')}
@@ -292,11 +339,20 @@ export function ApplicationGenerator({
         subtitleEn={builderEn('app_sub')}
         subtitleEl={builderEl('app_sub')}
         hideTitle={hideTitle}
+        leading={hideTitle && currentApp ? (
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en={`${currentApp.questions.filter((q) => q.required && !q.answer.trim()).length} required answers remaining. AI drafts stay editable until you save.`}
+              el={`${currentApp.questions.filter((q) => q.required && !q.answer.trim()).length} υποχρεωτικές απαντήσεις απομένουν. Τα προσχέδια AI παραμένουν επεξεργάσιμα μέχρι την αποθήκευση.`}
+              wrap
+            />
+          </p>
+        ) : undefined}
         showAskAi={!hideTitle}
         askPrompt={currentApp ? programAskPrompt(currentApp) : undefined}
         extraActions={
           <>
-            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => void generateWithAI()} disabled={isGenerating || isSaving}>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => void generateWithAI()} disabled={isGenerating || isSaving || generatingQuestionId != null}>
               {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
               <BilingualText
                 en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
@@ -304,7 +360,7 @@ export function ApplicationGenerator({
                 compact
               />
             </Button>
-            <Button size="sm" className={BUILDER_BTN} onClick={() => void handleSave()} disabled={isSaving || isGenerating}>
+            <Button size="sm" className={BUILDER_BTN} onClick={() => void handleSave()} disabled={saveUnavailable != null} title={saveUnavailable ? bilingualAria(saveUnavailable.en, saveUnavailable.el) : undefined}>
               <Save className="icon-sm mr-2" />
               <BilingualText en={builderEn('app_save_all')} el={builderEl('app_save_all')} compact />
             </Button>
@@ -342,7 +398,7 @@ export function ApplicationGenerator({
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {requiredCompletion(currentApp) === 100 && currentApp.status !== 'submitted' && (
-                  <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => void markSubmitted()}>
+                  <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => void markSubmitted()} disabled={saveUnavailable != null} title={saveUnavailable ? bilingualAria(saveUnavailable.en, saveUnavailable.el) : undefined}>
                     <CheckCircle2 className="icon-sm mr-2" />
                     <BilingualText en={builderEn('app_mark_submitted')} el={builderEl('app_mark_submitted')} compact />
                   </Button>
@@ -372,16 +428,38 @@ export function ApplicationGenerator({
                 )}
               </div>
             </div>
+            <div className="mt-4 space-y-2">
+              <Label htmlFor={`${fieldPrefix}-question-nav`}>
+                <BilingualText en="Go to question" el="Μετάβαση σε ερώτηση" compact />
+              </Label>
+              <select
+                id={`${fieldPrefix}-question-nav`}
+                value=""
+                disabled={isSaving}
+                onChange={(event) => { if (event.target.value) focusQuestion(event.target.value); }}
+                className="h-11 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-ring"
+              >
+                <option value="">{t('Choose a question', 'Επιλέξτε ερώτηση')}</option>
+                {currentApp.questions.map((question, index) => {
+                  const prompt = applicationQuestionCopy(question.id, question.question);
+                  const status = question.answer.trim() ? t('Answered', 'Απαντήθηκε') : t('Unanswered', 'Αναπάντητη');
+                  return <option key={question.id} value={question.id}>{index + 1}. {t(prompt.en, prompt.el)} — {status}</option>;
+                })}
+              </select>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {currentApp.questions.map((question, index) => {
               const prompt = applicationQuestionCopy(question.id, question.question);
               const tip = applicationTipCopy(question.id, question.tips);
               const busy = generatingQuestionId === question.id;
+              const fieldId = `${fieldPrefix}-${question.id}`;
+              const overLimit = question.maxLength != null && question.answer.length > question.maxLength;
+              const describedBy = [tip && `${fieldId}-tip`, question.maxLength && `${fieldId}-count`].filter(Boolean).join(' ') || undefined;
               return (
                 <div key={question.id} className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <Label className="flex items-start gap-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <Label htmlFor={fieldId} className="flex min-w-0 flex-[1_1_20rem] items-start gap-2">
                       <span className="mt-0.5 font-mono text-xs text-muted-foreground">
                         {String(index + 1).padStart(2, '0')}
                       </span>
@@ -397,7 +475,7 @@ export function ApplicationGenerator({
                         size="sm"
                         className={BUILDER_BTN}
                         aria-label={bilingualAria(builderEn('app_ask_fill'), builderEl('app_ask_fill'))}
-                        disabled={busy || isGenerating}
+                        disabled={generatingQuestionId != null || isGenerating || isSaving}
                         onClick={() => void generateOneAnswer(question.id, prompt.en)}
                       >
                         {busy ? <RefreshCw className="icon-sm animate-spin" /> : <CfbGlyph name="spark" className="icon-sm" />}
@@ -427,14 +505,22 @@ export function ApplicationGenerator({
                         </Button>
                       )}
                       {question.maxLength && (
-                        <Badge variant="outline" className="rounded-xl text-xs">
+                        <Badge id={`${fieldId}-count`} variant="outline" className={cn('rounded-xl text-xs tabular-nums', overLimit && 'text-status-danger')}>
                           {question.answer.length}/{question.maxLength}
+                          {overLimit && <span className="sr-only">{t('Character limit exceeded', 'Υπέρβαση ορίου χαρακτήρων')}</span>}
                         </Badge>
                       )}
                     </div>
                   </div>
 
                   <Textarea
+                    id={fieldId}
+                    ref={(field) => { answerFields.current[question.id] = field; }}
+                    required={question.required}
+                    aria-describedby={describedBy}
+                    aria-invalid={overLimit || undefined}
+                    aria-busy={busy || isGenerating}
+                    readOnly={isSaving}
                     value={question.answer}
                     onChange={(e) => updateAnswer(question.id, e.target.value)}
                     placeholder={t(builderEn('app_answer_ph'), builderEl('app_answer_ph'))}
@@ -446,7 +532,7 @@ export function ApplicationGenerator({
                   />
 
                   {tip && (
-                    <p className="flex items-start gap-1 text-xs text-muted-foreground">
+                    <p id={`${fieldId}-tip`} className="flex items-start gap-1 text-xs text-muted-foreground">
                       <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
                       <BilingualText en={tip.en} el={tip.el} />
                     </p>

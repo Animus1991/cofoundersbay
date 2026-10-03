@@ -88,12 +88,12 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
         <p>
           This page edits the same <strong>application</strong> artefact as the Applications tab in Startup Builder. Four
           templates stay on the page — Y Combinator, Techstars, university incubator, and grants. Completion is the share
-          of <em>required</em> answers filled; optional questions do not hold the bar. Harbor seed is $750K ($375K
-          committed by Athens Tech Angels).
+          of <em>required</em> answers filled; optional questions do not hold the bar.
         </p>
         <p>
-          Use <em>AI Generate</em> to fill empty answers only in the open programme, or <em>Ask AI</em> to draft from Idea
-          Core, the GTM board, and the seed. Save writes this workspace artefact. <em>Mark submitted</em> appears when
+          Use <em>AI Generate</em> to fill empty answers only in the open programme, or <em>Ask AI</em> to draft from
+          your Idea Core, research boards and saved round details — it asks for anything missing rather than inventing
+          figures. Save writes this workspace artefact. <em>Mark submitted</em> appears when
           every required field is filled. View Program opens the real application page.
         </p>
       </>
@@ -104,11 +104,11 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
           Αυτή η σελίδα επεξεργάζεται το ίδιο παραδοτέο <strong>application</strong> με την καρτέλα Αιτήσεις στον Startup
           Builder. Τα τέσσερα πρότυπα μένουν στη σελίδα — Y Combinator, Techstars, πανεπιστημιακό incubator και
           επιχορηγήσεις. Η ολοκλήρωση είναι το μερίδιο <em>υποχρεωτικών</em> απαντήσεων· οι προαιρετικές δεν κρατούν τη μπάρα.
-          Ο γύρος Harbor είναι $750K ($375K από Athens Tech Angels).
         </p>
         <p>
           Με <em>Δημιουργία AI</em> γεμίζετε μόνο κενές απαντήσεις στο ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em>
-          συντάσσετε από τον Πυρήνα ιδέας, τον πίνακα GTM και τον γύρο. Η αποθήκευση γράφει σε αυτό το παραδοτέο. Η
+          συντάσσετε από τον Πυρήνα ιδέας, τους πίνακες έρευνας και τα αποθηκευμένα στοιχεία του γύρου σας — ρωτά ό,τι
+          λείπει αντί να επινοεί αριθμούς. Η αποθήκευση γράφει σε αυτό το παραδοτέο. Η
           <em>Σήμανση υποβολής</em> εμφανίζεται όταν όλα τα υποχρεωτικά πεδία έχουν απάντηση. Το «Προβολή προγράμματος»
           ανοίγει την πραγματική αίτηση.
         </p>
@@ -119,9 +119,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          This is the full-page Harbor copilot — the same tools as the popup. It can read matches, the GTM research
-          board, Harbor&apos;s <strong>$750K seed</strong> (Athens Tech Angels committed $375K), calendar, and Builder
-          artefacts. Writes (shortlist, connect, message) wait for your confirmation.
+          This is the full-page assistant — the same tools as the popup. It reads your matches, research boards,
+          fundraising pipeline, calendar and Builder artefacts — your workspace, not a sample. Writes (shortlist,
+          connect, message) wait for your confirmation.
         </p>
         <p>
           Look-up rows run immediately. Amber rows write, and each one asks first. <em>What I can do</em> lists every
@@ -133,9 +133,9 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Αυτός είναι ο βοηθός Harbor πλήρους σελίδας — τα ίδια εργαλεία με το αναδυόμενο. Διαβάζει αντιστοιχίσεις, τον
-          πίνακα GTM, τον γύρο Harbor <strong>$750K</strong> (Athens Tech Angels $375K δεσμευμένα), ημερολόγιο και
-          παραδοτέα του Builder. Οι εγγραφές (λίστα, σύνδεση, μήνυμα) περιμένουν την επιβεβαίωσή σας.
+          Αυτός είναι ο βοηθός πλήρους σελίδας — τα ίδια εργαλεία με το αναδυόμενο. Διαβάζει τις αντιστοιχίσεις σας, τους
+          πίνακες έρευνας, το pipeline χρηματοδότησης, το ημερολόγιο και τα παραδοτέα του Builder — τον δικό σας χώρο
+          εργασίας, όχι δείγμα. Οι εγγραφές (λίστα, σύνδεση, μήνυμα) περιμένουν την επιβεβαίωσή σας.
         </p>
         <p>
           Οι γραμμές αναζήτησης τρέχουν αμέσως. Οι πορτοκαλί γράφουν και ρωτούν πρώτα. Το <em>Τι μπορώ να κάνω</em>{' '}
@@ -255,8 +255,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          This is Harbor&apos;s <strong>$750K seed</strong>. Athens Tech Angels committed $375K; $375K remains; a warm
-          intro from Athens founder networks is in motion. The summary counts the full pipeline. Committed contacts are
+          The round card shows your target, what is committed and what remains. The summary counts the full
+          pipeline. Committed contacts are
           the investor count on the round card — they cannot disagree with Kanban. Contacts you add and stage moves stay
           in this browser until a fundraising API exists.
         </p>
@@ -269,8 +269,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Αυτός είναι ο γύρος Harbor <strong>$750K</strong>. Οι Athens Tech Angels δεσμεύτηκαν $375K· απομένουν $375K·
-          μια ζεστή σύσταση από δίκτυα ιδρυτών στην Αθήνα είναι σε εξέλιξη. Οι στήλες Kanban είναι τα στάδια:{' '}
+          Η κάρτα γύρου δείχνει τον στόχο σας, τι έχει δεσμευτεί και τι απομένει. Οι στήλες Kanban είναι τα στάδια:{' '}
           <strong>Υποψήφιος → Επικοινωνία → Συνάντηση → Due diligence → Δεσμευμένος → Δεν προχώρησε</strong>. Η σύνοψη μετρά ολόκληρο
           το pipeline· οι δεσμευμένοι είναι ο αριθμός επενδυτών στην κάρτα γύρου — δεν μπορεί να διαφωνούν. Οι επαφές και
           οι μετακινήσεις μένουν σε αυτόν τον browser μέχρι να υπάρξει υπηρεσία χρηματοδότησης.
@@ -444,14 +443,14 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          <strong>Discover</strong> is Harbor plus listings you publish. Preview keeps Harbor (Elena), the GTM board Alex
-          joined, and Alex&rsquo;s Athens path so <em>My projects</em>, <em>Joined</em>, and <em>Starred</em> are not empty.
-          Rail counts match the catalogue; filters only change what is on screen.
+          <strong>Discover</strong> lists published projects, including the ones you publish. In the showcase, sample
+          projects keep <em>My projects</em>, <em>Joined</em> and <em>Starred</em> from being empty. Rail counts match the
+          catalogue; filters only change what is on screen.
         </p>
         <p>
           Open a card for roles, team, milestones, and updates. Apply and request-to-join stay in this browser until a
-          projects API exists — the founder has not accepted yet. Use <em>Ask AI</em> to pick a project from Idea Core, the GTM board, and
-          the $750K seed (Athens Tech Angels, $375K committed). Create still
+          projects API exists — the founder has not accepted yet. Use <em>Ask AI</em> to pick a project that fits your Idea
+          Core and research boards. Create still
           publishes every field from the four-step form.
         </p>
       </>
@@ -459,15 +458,14 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Η <strong>Ανακάλυψη</strong> είναι το Harbor και οι καταχωρίσεις που δημοσιεύετε. Το preview κρατά το Harbor (Elena),
-          τον πίνακα GTM όπου συμμετέχει ο Alex, και τη διαδρομή Αθήνας του Alex ώστε <em>Τα έργα μου</em>,{' '}
-          <em>Συμμετοχές</em> και <em>Αγαπημένα</em> να μην είναι άδεια. Οι αριθμοί στη ράγα ταιριάζουν με τον κατάλογο· τα
+          Η <strong>Ανακάλυψη</strong> δείχνει τα δημοσιευμένα έργα, μαζί με όσα δημοσιεύετε εσείς. Στην επίδειξη, δείγματα
+          έργων κρατούν τα <em>Τα έργα μου</em>, <em>Συμμετοχές</em> και <em>Αγαπημένα</em> ώστε να μην είναι άδεια. Οι αριθμοί στη ράγα ταιριάζουν με τον κατάλογο· τα
           φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
         </p>
         <p>
           Ανοίξτε κάρτα για ρόλους, ομάδα, ορόσημα και ενημερώσεις. Αίτηση και αίτημα ένταξης μένουν σε αυτόν τον browser μέχρι
-          να υπάρχει API έργων — ο ιδρυτής δεν έχει αποδεχτεί ακόμη. Με το <em>Ρωτήστε το AI</em> διαλέγετε έργο με βάση τον Πυρήνα ιδέας, τον πίνακα
-          GTM και τον γύρο $750K (Athens Tech Angels, $375K δεσμευμένα). Η
+          να υπάρχει API έργων — ο ιδρυτής δεν έχει αποδεχτεί ακόμη. Με το <em>Ρωτήστε το AI</em> διαλέγετε έργο που ταιριάζει
+          με τον Πυρήνα ιδέας και τους πίνακες έρευνάς σας. Η
           δημιουργία δημοσιεύει καταχώριση με όλα τα πεδία της φόρμας τεσσάρων βημάτων.
         </p>
       </>

@@ -380,7 +380,10 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                         // Clicking an icon is a commitment, not a glance.
                         if (!pinned) togglePinned();
                       }}
-                      onFocus={openPeek}
+                      onFocus={() => {
+                        setActiveId(section.id);
+                        openPeek();
+                      }}
                       onMouseEnter={() => setActiveId(section.id)}
                       className={cn(
                         'relative flex h-11 w-11 items-center justify-center rounded-md transition-colors focus-ring',

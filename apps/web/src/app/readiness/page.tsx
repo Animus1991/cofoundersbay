@@ -1240,9 +1240,10 @@ export default function ReadinessPage() {
           </div>
         )}
 
+        <div className="flex flex-wrap items-stretch gap-6">
         {/* One card now: the two audience readouts moved to the rail, so the
             gauge no longer shares a row with two restatements of itself. */}
-        <div className="grid grid-cols-1 min-w-0 gap-5">
+        <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
           <Card className="min-w-0 overflow-hidden border-primary/15 bg-primary/[0.03] lg:col-span-1">
             <CardContent className="flex h-full flex-col items-center gap-5 p-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
               <ScoreEmblem
@@ -1307,10 +1308,11 @@ export default function ReadinessPage() {
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid grid-cols-1 min-w-0 gap-5">
+        <div className="grid min-w-0 flex-[1_1_24rem] grid-cols-1 gap-5">
           <div className="min-w-0">
             <ReadinessRadarChart dimensions={dimensions} />
           </div>
+        </div>
         </div>
 
         {/* Tabs: dimensions and benchmarks stay in the column. Priority

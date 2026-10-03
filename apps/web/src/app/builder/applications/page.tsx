@@ -17,8 +17,8 @@ import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { ArrowLeft, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import type { ApplicationTemplate } from '@/components/builder/application-model';
 
-const HARBOR_ASK =
-  "Draft empty YC, Techstars, university, or grant answers from Idea Core, the GTM board, and Harbor's $750K seed (Athens Tech Angels, $375K committed). Fill only empty fields.";
+const APPLICATION_ASK =
+  'Draft empty accelerator or grant answers using only verified Builder artefacts from the active workspace. Ask for missing evidence; do not invent funding, traction or company details. Fill only empty fields.';
 
 function ApplicationsPageContent() {
   const {
@@ -53,8 +53,7 @@ function ApplicationsPageContent() {
     applicationDocument?.content ??
     {};
   const contentRevision = `${applicationDocument?.id ?? ''}:${applicationDocument?.version ?? 0}:${applicationDocument?.updatedAt ?? ''}`;
-  const harborLive = documents.some((d) => d.type === 'idea_core' || d.type === 'pitch_deck' || d.type === 'application');
-  const askAi = harborLive ? HARBOR_ASK : 'Draft empty accelerator or grant answers from Builder artefacts. Fill only empty fields.';
+  const askAi = APPLICATION_ASK;
 
   const handleSave = async (data: unknown) => {
     let doc = documents.find((d) => d.type === 'application');

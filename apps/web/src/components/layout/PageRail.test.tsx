@@ -70,6 +70,15 @@ describe('the assistant and a mounted rail', () => {
     expect(screen.getByText('Filters body')).toBeTruthy();
   });
 
+  it('opens the focused section rather than the first one for keyboard users', () => {
+    vi.stubGlobal('innerWidth', 1280);
+    mount();
+    act(() => screen.getByRole('button', { name: /Narrow the list/ }).focus());
+    expect(screen.getByRole('region', { name: /Narrow the list/ })).toBeTruthy();
+    expect(screen.getByText('Filters body')).toBeTruthy();
+    expect(screen.queryByText('Totals body')).toBeNull();
+  });
+
   it('says which sections exist when asked for one that does not', async () => {
     mount();
     const outcome = await executeAction('open_rail_section', { section: 'export' });

@@ -58,6 +58,14 @@ describe('page registry coverage', () => {
     expect(thin, 'entries missing a title or description').toEqual([]);
   });
 
+  it('keeps workspace page descriptions independent of demonstration company facts', () => {
+    for (const path of ['/builder/applications', '/fundraising', '/ai']) {
+      const page = getPageMeta(path);
+      expect(page).toBeTruthy();
+      expect(`${page?.description} ${page?.descriptionEl}`).not.toMatch(/Harbor|Athens Tech Angels|\$750K|\$375K/);
+    }
+  });
+
   it('resolves every route through getPageMeta, dynamic segments included', () => {
     // A `[param]` route is matched by pattern rather than by string equality,
     // so presence in the array is not proof the lookup finds it.

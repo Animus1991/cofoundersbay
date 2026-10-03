@@ -301,7 +301,7 @@ export function CopilotWorkspace({
               <p className="type-support truncate text-muted-foreground">
                 {chat.isAIAvailable
                   ? sayOne('Live model · workspace tools', 'Ζωντανό μοντέλο · εργαλεία χώρου')
-                  : sayOne('Harbor copilot · tools ready', 'Βοηθός Harbor · εργαλεία έτοιμα')}
+                  : sayOne('Built-in assistant · tools ready', 'Ενσωματωμένος βοηθός · εργαλεία έτοιμα')}
               </p>
               )}
             </div>
