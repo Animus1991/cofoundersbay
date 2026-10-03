@@ -442,7 +442,7 @@ html {
     --ring: 165 43.8% 31.5%;
   }
   html[data-theme="apricot"] {
-    --primary: 26 78% 67%;                /* #f09f6d nudged a touch golden-pastel */
+    --primary: 26 78% 68.5%;              /* #f09f6d nudged golden-pastel, a touch lighter */
     --primary-foreground: 20 30% 9%;
     --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
     --primary-accessible: 23 44.8% 41.5%;
