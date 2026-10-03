@@ -108,15 +108,6 @@ const reportStatusConfig: Record<AdminReportItem['status'], { label: string; col
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
-function formatTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
-}
 
 function EmailTemplatesTab() {
   const { success, error: showError } = useToast();
@@ -292,7 +283,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} format={formatTimeAgo} />
+                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} />
               </p>
             </div>
           </div>
@@ -399,13 +390,13 @@ function UserRow({
       <div className="hidden text-right sm:block">
         <p className="text-sm capitalize text-foreground">{user.role}</p>
         {user.lastSeenAt && (
-          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} format={formatTimeAgo} /></p>
+          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} /></p>
         )}
       </div>
       <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
         <p className="text-xs text-muted-foreground">
-          <BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} format={formatTimeAgo} />
+          <BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} />
         </p>
       </div>
       <DropdownMenu>
@@ -1111,14 +1102,14 @@ export default function AdminPage() {
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
               <Plus className="icon-sm" />
-              <BilingualText en="New Cohort" el="Νέα κοορτή" compact />
+              <BilingualText en="New Cohort" el="Νέος κύκλος" compact />
             </Button>
           </div>
 
           {showNewCohort && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέας κοορτής / προγράμματος" compact /></CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέου κύκλου / προγράμματος" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -1174,8 +1165,8 @@ export default function AdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                <h3 className="font-semibold text-foreground"><BilingualText en="No cohorts yet" el="Δεν υπάρχουν κοορτές ακόμα" compact /></h3>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Create your first cohort or program above" el="Δημιουργήστε την πρώτη σας κοορτή ή πρόγραμμα παραπάνω" wrap /></p>
+                <h3 className="font-semibold text-foreground"><BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κύκλοι" compact /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Create your first cohort or program above" el="Δημιουργήστε τον πρώτο σας κύκλο ή πρόγραμμα παραπάνω" wrap /></p>
               </CardContent>
             </Card>
           ) : (
@@ -1321,7 +1312,7 @@ export default function AdminPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
-                        <RelativeTime date={log.createdAt} format={formatTimeAgo} />
+                        <RelativeTime date={log.createdAt} />
                       </p>
                       {log.meta && Object.keys(log.meta).length > 0 && (
                         <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">

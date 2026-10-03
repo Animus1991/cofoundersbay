@@ -381,7 +381,9 @@ export default function IncubatorDashboard() {
                   <div className="shrink-0 text-right">
                     <p className="text-xs font-medium tabular-nums">{shortDate(item.iso)}</p>
                     <p className={cn('text-xs tabular-nums', item.days <= 7 ? 'text-status-warning' : 'text-muted-foreground')}>
-                      {item.days === 0 ? 'today' : `in ${item.days}d`}
+                      {item.days === 0
+                        ? <BilingualText en="today" el="σήμερα" compact />
+                        : <BilingualText en={`in ${item.days}d`} el={`σε ${item.days} ημ.`} compact />}
                     </p>
                   </div>
                 </div>

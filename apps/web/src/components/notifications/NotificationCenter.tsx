@@ -101,7 +101,7 @@ function NotificationRow({
           {notification.body}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground"><RelativeTime date={notification.createdAt} format={getTimeAgo} /></span>
+          <span className="text-xs text-muted-foreground"><RelativeTime date={notification.createdAt} absoluteAfterDays={7} /></span>
           <div className="flex items-center gap-1">
             {!notification.readAt && (
               <Button aria-label="Mark as read"
@@ -134,15 +134,6 @@ function NotificationRow({
   );
 }
 
-function getTimeAgo(date: string | Date): string {
-  const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
-  
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(date).toLocaleDateString('en-GB', { timeZone: 'UTC' });
-}
 
 export function NotificationCenter() {
   const [open, setOpen] = useState(false);

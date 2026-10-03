@@ -101,16 +101,6 @@ async function getSnapshot(boardId: string, snapshotId: string): Promise<BoardSn
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
 
 function triggerMeta(type: string) {
   switch (type) {
@@ -636,7 +626,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{v.changeSummary}</p>
                 )}
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} format={timeAgo} /></span>
+                  <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} /></span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">{v.nodeCount} nodes</span>
                   {v.createdBy && (
@@ -805,7 +795,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               </div>
               {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{b.description}</p>}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-muted-foreground"><RelativeTime date={b.updatedAt} format={timeAgo} /></span>
+                <span className="text-xs text-muted-foreground"><RelativeTime date={b.updatedAt} /></span>
                 {b.nodeCount != null && (
                   <>
                     <span className="text-xs text-muted-foreground">·</span>

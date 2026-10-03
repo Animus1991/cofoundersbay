@@ -36,7 +36,7 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   dim_funding: { en: 'Funding Readiness', el: 'Ετοιμότητα χρηματοδότησης' },
   dim_funding_desc: {
     en: 'Pitch deck, financials, data room, and investor targeting readiness',
-    el: 'Παρουσίαση, οικονομικά στοιχεία, δωμάτιο δεδομένων και ετοιμότητα στόχευσης επενδυτών',
+    el: 'Pitch deck, οικονομικά στοιχεία, data room και ετοιμότητα στόχευσης επενδυτών',
   },
   dim_execution: { en: 'Execution', el: 'Εκτέλεση' },
   dim_execution_desc: {
@@ -75,8 +75,8 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   // ── Criteria (funding) ──
   crit_pitch_deck: { en: 'Pitch deck ready (10-12 slides)', el: 'Pitch deck έτοιμο (10-12 διαφάνειες)' },
   crit_financial_projections: { en: 'Financial projections (3 years)', el: 'Οικονομικές προβλέψεις (3 έτη)' },
-  crit_data_room: { en: 'Data room prepared', el: 'Δωμάτιο δεδομένων προετοιμάστηκε' },
-  crit_investor_list: { en: 'Target investor list built', el: 'Λίστα στοχευόμενων επενδυτών δημιουργήθηκε' },
+  crit_data_room: { en: 'Data room prepared', el: 'Data room έτοιμο' },
+  crit_investor_list: { en: 'Target investor list built', el: 'Λίστα επενδυτών-στόχων έτοιμη' },
   crit_term_sheet: { en: 'Term sheet knowledge ready', el: 'Γνώση όρων χρηματοδότησης έτοιμη' },
 
   // ── Criteria (execution) ──
@@ -168,7 +168,7 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   priority_action_plan: { en: 'Priority Action Plan', el: 'Σχέδιο ενεργειών προτεραιότητας' },
   all_dimensions_excellent: { en: 'Excellent! All dimensions are strong.', el: 'Εξαιρετικά! Όλες οι διαστάσεις είναι ισχυρές.' },
   keep_iterating: { en: 'Keep iterating and maintain your momentum.', el: 'Συνεχίστε τις βελτιώσεις και διατηρήστε τη δυναμική σας.' },
-  recommendation: { en: 'Recommendation', el: 'Σύσταση' },
+  recommendation: { en: 'Recommendation', el: 'Συμβουλή' },
   show_less: { en: 'Show less', el: 'Λιγότερα' },
 
   // ── Benchmarks ──

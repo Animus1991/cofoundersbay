@@ -379,7 +379,7 @@ export default function AdminCommunitiesPage() {
       { value: 'all', en: 'Any visibility', el: 'Οποιαδήποτε ορατότητα' },
       { value: 'public', en: 'Public', el: 'Δημόσια' },
       { value: 'private', en: 'Private', el: 'Ιδιωτική' },
-      { value: 'tenant', en: 'Tenant', el: 'Tenant' },
+      { value: 'tenant', en: 'Tenant', el: 'Οργανισμός' },
     ], visibility, setVisibility),
     choiceControl('status_filter', 'Community status filter', 'Φίλτρο κατάστασης κοινότητας', [
       { value: 'all', en: 'Any status', el: 'Οποιαδήποτε κατάσταση' },

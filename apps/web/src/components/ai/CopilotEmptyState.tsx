@@ -77,7 +77,7 @@ export function CopilotEmptyState({
         >
           <BilingualText
             en="See everything I can read and change"
-            el="Δες όλα όσα μπορώ να διαβάσω και να αλλάξω"
+            el="Δείτε όλα όσα μπορώ να διαβάσω και να αλλάξω"
             compact
             wrap
           />

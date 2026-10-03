@@ -288,7 +288,7 @@ export default function OrgCohortsPage() {
     {
       id: 'clear_filters',
       labelEn: 'Clear the cohort filters',
-      labelEl: 'Καθαρισμός φίλτρων κοορτών',
+      labelEl: 'Καθαρισμός φίλτρων κύκλων',
       writes: false,
       unavailableEn: statusFilter === 'all' && !search ? 'No filter is set.' : undefined,
       unavailableEl: statusFilter === 'all' && !search ? 'Δεν υπάρχει φίλτρο.' : undefined,

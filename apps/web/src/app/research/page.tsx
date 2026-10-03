@@ -8,7 +8,7 @@ import {
   Plus, Search, MoreVertical, Pin, Archive, Trash2,
   Grid3X3, List, Loader2, AlertCircle, Copy, ArchiveRestore, ArrowRight,
 } from 'lucide-react';
-import { formatDistanceToNow, type Locale } from 'date-fns';
+import type { Locale } from 'date-fns';
 import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -972,10 +972,7 @@ function BoardCard({
       : board.description
     : null;
   const updated = (
-    <RelativeTime
-      date={board.updatedAt}
-      format={(iso) => formatDistanceToNow(new Date(iso), { addSuffix: true, locale: dateLocale })}
-    />
+    <RelativeTime date={board.updatedAt} />
   );
 
   const menu = (

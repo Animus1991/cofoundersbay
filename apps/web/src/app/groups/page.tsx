@@ -335,7 +335,7 @@ export default function GroupsPage() {
     {
       id: 'join_group',
       labelEn: 'Join group',
-      labelEl: 'Συμμετοχή σε ομάδα',
+      labelEl: 'Συμμετοχή σε κοινότητα',
       writes: true,
       options: rowOptions(displayGroups.filter((g) => !g.isMember), (g) => g.id, (g) => g.name),
       // joinGroup creates a `member` row and leaveGroup deletes it
@@ -347,7 +347,7 @@ export default function GroupsPage() {
     {
       id: 'leave_group',
       labelEn: 'Leave group',
-      labelEl: 'Αποχώρηση από ομάδα',
+      labelEl: 'Αποχώρηση από κοινότητα',
       writes: true,
       options: rowOptions(displayGroups.filter((g) => g.isMember), (g) => g.id, (g) => g.name),
       // Rejoining comes back as `member`: exact for a member, not for an

@@ -467,7 +467,7 @@ export default function MentorAvailabilityPage() {
                         this no longer promises mentees see them. */}
                     <BilingualText
                       en="Saved hours are stored with your mentor account. Bookings mentees make appear in your upcoming sessions."
-                      el="Οι αποθηκευμένες ώρες κρατιούνται στον λογαριασμό μέντορά σας. Οι κρατήσεις των mentees εμφανίζονται στις προσεχείς συνεδρίες σας."
+                      el="Οι αποθηκευμένες ώρες κρατιούνται στον λογαριασμό μέντορά σας. Οι κρατήσεις των καθοδηγούμενων εμφανίζονται στις προσεχείς συνεδρίες σας."
                       wrap
                     />
                   </p>

@@ -71,19 +71,6 @@ const postTypeConfig: Record<PostType, { label: string; color: string; emoji: st
   pitch: { label: 'Pitch', color: 'bg-status-info-bg text-status-info border-status-info-border', emoji: '🚀' },
 };
 
-function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m`;
-  if (hours < 24) return `${hours}h`;
-  if (days < 7) return `${days}d`;
-  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
-}
 
 export function PostCard({
   id,
@@ -151,7 +138,7 @@ export function PostCard({
                     hides the console error but React still repaints the
                     mismatched text; the two-pass component removes the
                     mismatch itself. */}
-                <span className="text-xs text-muted-foreground"><RelativeTime date={createdAt} format={formatTimeAgo} /></span>
+                <span className="text-xs text-muted-foreground"><RelativeTime date={createdAt} short absoluteAfterDays={7} /></span>
               </div>
               {author.headline && (
                 <p className="text-xs text-muted-foreground truncate">{author.headline}</p>

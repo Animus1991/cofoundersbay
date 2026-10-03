@@ -15,7 +15,7 @@ export type SearchResultTypeKey = 'user' | 'job' | 'event' | 'group' | 'opportun
 export const SEARCH_STRINGS: Record<string, BilingualPair> = {
   input_placeholder: {
     en: 'Search for people, jobs, events, groups…',
-    el: 'Αναζήτηση ατόμων, θέσεων εργασίας, εκδηλώσεων, ομάδων…',
+    el: 'Αναζήτηση ατόμων, θέσεων εργασίας, εκδηλώσεων, κοινοτήτων…',
   },
   recent_searches: {
     en: 'Recent searches',
@@ -43,7 +43,7 @@ export const SEARCH_STRINGS: Record<string, BilingualPair> = {
   },
   category_groups: {
     en: 'Groups',
-    el: 'Ομάδες',
+    el: 'Κοινότητες',
   },
   category_mentors: {
     en: 'Mentors',
@@ -143,7 +143,7 @@ export const SEARCH_STRINGS: Record<string, BilingualPair> = {
   },
   type_group: {
     en: 'group',
-    el: 'ομάδα',
+    el: 'κοινότητα',
   },
   type_opportunity: {
     en: 'opportunity',

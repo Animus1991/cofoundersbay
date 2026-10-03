@@ -174,7 +174,7 @@ export default function GroupsModerationPage() {
     {
       id: 'reports',
       labelEn: 'Group reports',
-      labelEl: 'Αναφορές ομάδων',
+      labelEl: 'Αναφορές κοινοτήτων',
       rows: filtered.map((r) => `${r.type} · ${r.contentType} by ${r.reportedUser} in ${r.groupName} · ${r.status} · ${r.priority} priority · ${ageLabel(r.reportedHoursAgo).en}`),
       total: reports.length,
       sample: reports.length > 0,

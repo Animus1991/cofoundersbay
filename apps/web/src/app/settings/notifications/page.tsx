@@ -69,7 +69,7 @@ const AUTOMATION: { key: AutomationKey; icon: React.ElementType; en: string; el:
   { key: 'automation_onboarding', icon: Users, en: 'Onboarding', el: 'Πρώτα βήματα', descEn: 'Welcome, profile nudges, setup reminders', descEl: 'Καλωσόρισμα, υπενθυμίσεις προφίλ και ρύθμισης' },
   { key: 'automation_matching', icon: GitMerge, en: 'Matching', el: 'Αντιστοιχίσεις', descEn: 'New matches, connection follow-ups, unread match nudges', descEl: 'Νέες αντιστοιχίσεις, συνέχειες συνδέσεων, υπενθυμίσεις' },
   { key: 'automation_mentorship', icon: TrendingUp, en: 'Mentorship', el: 'Mentoring', descEn: 'Mentor request updates, session reminders', descEl: 'Ενημερώσεις αιτημάτων μέντορα, υπενθυμίσεις συνεδριών' },
-  { key: 'automation_community', icon: Users, en: 'Community', el: 'Κοινότητα', descEn: 'Welcome messages, activity nudges in groups', descEl: 'Μηνύματα καλωσορίσματος, υπενθυμίσεις σε ομάδες' },
+  { key: 'automation_community', icon: Users, en: 'Community', el: 'Κοινότητα', descEn: 'Welcome messages, activity nudges in groups', descEl: 'Μηνύματα καλωσορίσματος, υπενθυμίσεις σε κοινότητες' },
   { key: 'automation_billing', icon: CreditCard, en: 'Billing & subscriptions', el: 'Χρεώσεις & συνδρομές', descEn: 'Trial reminders, payment alerts, renewal notices', descEl: 'Υπενθυμίσεις δοκιμής, ειδοποιήσεις πληρωμών και ανανεώσεων' },
   { key: 'automation_reengagement', icon: RefreshCw, en: 'Re-engagement', el: 'Επανασύνδεση', descEn: 'Personalised prompts when inactive', descEl: 'Εξατομικευμένες υπενθυμίσεις όταν είστε ανενεργοί' },
 ];

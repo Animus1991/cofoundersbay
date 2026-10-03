@@ -722,7 +722,7 @@ export default function RecommendationsPage() {
               <Skeleton3 />
             ) : recsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Αποτυχία φόρτωσης συστάσεων." /></p>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Δεν ήταν δυνατή η φόρτωση των προτάσεων." /></p>
                 <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
@@ -745,7 +745,7 @@ export default function RecommendationsPage() {
               <Card>
                 <CardContent className="py-14 text-center">
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν συστάσεις ακόμα" /></h3>
+                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν ακόμη προτάσεις" /></h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
                   </p>

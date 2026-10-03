@@ -376,7 +376,7 @@ export default function GroupDetailPage() {
     {
       id: 'group_members',
       labelEn: 'Group members',
-      labelEl: 'Μέλη ομάδας',
+      labelEl: 'Μέλη κοινότητας',
       rows: group ? groupMembers.map((m) => `${m.user?.displayName ?? m.userId} · ${m.role}`) : undefined,
       total: group?.memberCount ?? groupMembers.length,
       sample: false,
@@ -397,8 +397,8 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <p className="text-muted-foreground"><BilingualText en="Group not found" el="Η ομάδα δεν βρέθηκε" compact /></p>
-          <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Groups" el="Πίσω στις ομάδες" compact /></Button>
+          <p className="text-muted-foreground"><BilingualText en="Group not found" el="Η κοινότητα δεν βρέθηκε" compact /></p>
+          <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Groups" el="Πίσω στις κοινότητες" compact /></Button>
         </div>
       </AppShell>
     );

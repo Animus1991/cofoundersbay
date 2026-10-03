@@ -88,16 +88,6 @@ async function getSnapshot(boardId: string, snapshotId: string): Promise<BoardSn
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
 
 function triggerMeta(type: string) {
   switch (type) {
@@ -132,7 +122,7 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
             {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>
-            {snapshot.nodeCount} nodes · saved <RelativeTime date={snapshot.createdAt} format={timeAgo} />
+            {snapshot.nodeCount} nodes · saved <RelativeTime date={snapshot.createdAt} />
             {snapshot.createdBy && ` by ${snapshot.createdBy.displayName}`}
           </DialogDescription>
         </DialogHeader>

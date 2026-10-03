@@ -321,7 +321,7 @@ export default function MentorDashboard() {
               {mentees.map((mentee) => (
                 <MenteeRowItem key={mentee.id} mentee={mentee} />
               ))}
-              {mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αποδεκτά αιτήματα γίνονται mentees εδώ." />}
+              {mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αιτήματα που αποδέχεστε εμφανίζονται εδώ ως καθοδηγούμενοι." />}
             </SectionCard>
           </div>
 

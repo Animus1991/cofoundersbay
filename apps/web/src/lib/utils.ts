@@ -5,26 +5,54 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatRelativeTime(dateStr: string | Date): string {
+export type RelativeTimeOptions = {
+  /** "5m" / «5 λ.» rather than "5m ago" / «πριν 5 λ.», for tight rows such as a feed. */
+  short?: boolean;
+  /** From this many days on, the date itself ("16 Sep" / «16 Σεπ») instead of an age. */
+  absoluteAfterDays?: number;
+};
+
+const RELATIVE_UNITS = {
+  en: { minute: 'm', hour: 'h', day: 'd', week: 'w', month: 'mo', year: 'y', now: 'just now' },
+  el: { minute: ' λ.', hour: ' ώ.', day: ' ημ.', week: ' εβδ.', month: ' μήν.', year: ' έτ.', now: 'μόλις τώρα' },
+} as const;
+
+/**
+ * The one way the product says how long ago something happened, in either
+ * language: "3h ago" / «πριν 3 ώ.», "2w ago" / «πριν 2 εβδ.». Thirteen pages
+ * used to keep their own copy of this arithmetic, all in English only, which
+ * is how a Greek screen ended up reading «πριν 2w».
+ */
+export function relativeTimeLabel(dateStr: string | Date, lang: 'en' | 'el' = 'en', options: RelativeTimeOptions = {}): string {
   const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
   // A value that is not a date ("Never", or a sample row's "2 hours ago")
   // used to come out as "NaNy ago". Show what was given instead.
   if (Number.isNaN(date.getTime())) return typeof dateStr === 'string' && dateStr.trim() ? dateStr : '—';
-  const now = Date.now();
-  const diff = now - date.getTime();
-  const seconds = Math.floor(diff / 1000);
-  if (seconds < 60) return 'just now';
+  const u = RELATIVE_UNITS[lang];
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  const days = Math.floor(seconds / 86_400);
+  if (options.absoluteAfterDays !== undefined && days >= options.absoluteAfterDays) {
+    return date.toLocaleDateString(lang === 'el' ? 'el-GR' : 'en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
+  }
+  if (seconds < 60) return u.now;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
   const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
+  const [n, unit] =
+    minutes < 60 ? [minutes, u.minute]
+      : hours < 24 ? [hours, u.hour]
+        : days < 7 ? [days, u.day]
+          : weeks < 5 ? [weeks, u.week]
+            : months < 12 ? [months, u.month]
+              : [Math.floor(months / 12), u.year];
+  const age = `${n}${unit}`;
+  if (options.short) return age;
+  return lang === 'el' ? `πριν ${age}` : `${age} ago`;
+}
+
+export function formatRelativeTime(dateStr: string | Date): string {
+  return relativeTimeLabel(dateStr, 'en');
 }
 
 /**
@@ -33,21 +61,7 @@ export function formatRelativeTime(dateStr: string | Date): string {
  * tight slot, so it shows one language rather than both.
  */
 export function formatRelativeTimeEl(dateStr: string | Date): string {
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
-  if (Number.isNaN(date.getTime())) return typeof dateStr === 'string' && dateStr.trim() ? dateStr : '—';
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return 'μόλις τώρα';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `πριν ${minutes} λ.`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `πριν ${hours} ώ.`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `πριν ${days} ημ.`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `πριν ${weeks} εβδ.`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `πριν ${months} μήν.`;
-  return `πριν ${Math.floor(months / 12)} έτ.`;
+  return relativeTimeLabel(dateStr, 'el');
 }
 
 /**

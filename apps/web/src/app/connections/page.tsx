@@ -250,7 +250,7 @@ export default function ConnectionsPage() {
   // declining are offered below, once the rows are known.
   usePageControls([
     choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
-      { value: 'intros', en: 'Intros', el: 'Συστάσεις' },
+      { value: 'intros', en: 'Intros', el: 'Γνωριμίες' },
       { value: 'received', en: 'Received requests', el: 'Ληφθέντα αιτήματα' },
       { value: 'sent', en: 'Sent requests', el: 'Σταλμένα αιτήματα' },
       { value: 'accepted', en: 'Connected', el: 'Συνδεδεμένοι' },

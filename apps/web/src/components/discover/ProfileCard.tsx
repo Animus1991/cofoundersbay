@@ -29,7 +29,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn, initialsOf, relativeTimeLabel } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 
@@ -102,6 +102,13 @@ function formatLastActive(date: Date): string {
   if (hours < 24) return `Active ${hours}h ago`;
   if (days < 7) return `Active ${days}d ago`;
   return `Active ${Math.floor(days / 7)}w ago`;
+}
+
+/** «Ενεργό πριν 2 ώ.» - the same thresholds as `formatLastActive`. */
+function formatLastActiveEl(date: Date): string {
+  const hours = Math.floor((Date.now() - date.getTime()) / 3600000);
+  if (hours < 1) return 'Ενεργό τώρα';
+  return `Ενεργό ${relativeTimeLabel(date, 'el')}`;
 }
 
 function ProfileCardInner({
@@ -240,7 +247,7 @@ function ProfileCardInner({
             {profile.lastActive && (
               <span className="flex items-center gap-1">
                 <Clock className="icon-sm" />
-                <RelativeTime date={profile.lastActive} format={formatLastActive} />
+                <RelativeTime date={profile.lastActive} format={formatLastActive} formatEl={formatLastActiveEl} />
               </span>
             )}
           </div>

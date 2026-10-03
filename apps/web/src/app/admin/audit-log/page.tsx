@@ -85,15 +85,6 @@ const ACTION_TYPES = [
   'skill.create', 'skill.update', 'skill.delete',
 ];
 
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
 function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
   const ActionIcon = ACTION_ICONS[verbOf(log.action)] ?? Settings;
   const colorClass = ACTION_COLORS[verbOf(log.action)] ?? 'bg-muted text-muted-foreground border-border';
@@ -125,7 +116,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
           <p className="text-xs text-muted-foreground mt-0.5 truncate">{metaStr}</p>
         )}
       </div>
-      <span className="text-xs text-muted-foreground shrink-0"><RelativeTime date={log.createdAt} format={formatRelativeTime} /></span>
+      <span className="text-xs text-muted-foreground shrink-0"><RelativeTime date={log.createdAt} /></span>
     </div>
   );
 }

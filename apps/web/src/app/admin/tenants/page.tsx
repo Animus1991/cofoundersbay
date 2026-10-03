@@ -139,7 +139,7 @@ export default function TenantsAdminPage() {
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
         const ok = await confirm({
-          title: <BilingualText en={`Delete ${ids.length} tenants?`} el={`Διαγραφή ${ids.length} tenants;`} />,
+          title: <BilingualText en={`Delete ${ids.length} tenants?`} el={`Διαγραφή ${ids.length} οργανισμών;`} />,
           description: TENANT_DELETE_DESCRIPTION,
           confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
         });
@@ -168,7 +168,7 @@ export default function TenantsAdminPage() {
   };
 
   const totals = [
-    { id: 'total', en: 'Total tenants', el: 'Σύνολο tenants', value: tenantList.length, icon: Building2, tone: 'text-primary-accessible' },
+    { id: 'total', en: 'Total tenants', el: 'Σύνολο οργανισμών', value: tenantList.length, icon: Building2, tone: 'text-primary-accessible' },
     { id: 'active', en: 'Active', el: 'Ενεργοί', value: tenantList.filter((t) => t.status === 'active').length, icon: Check, tone: 'text-status-success' },
     { id: 'branded', en: 'With branding', el: 'Με επωνυμία', value: tenantList.filter((t) => t.logoUrl).length, icon: Palette, tone: 'text-status-accent' },
     { id: 'suspended', en: 'Suspended', el: 'Σε αναστολή', value: tenantList.filter((t) => t.status === 'suspended').length, icon: AlertTriangle, tone: 'text-status-warning' },
@@ -187,7 +187,7 @@ export default function TenantsAdminPage() {
     {
       id: 'tenants',
       labelEn: 'Tenants',
-      labelEl: 'Tenants',
+      labelEl: 'Οργανισμοί',
       rows: isLoading ? undefined : visibleTenants.map((t) =>
         `${t.displayName || t.name} (${t.slug}) · ${t.status}${t.logoUrl ? ' · branded' : ''}`,
       ),
@@ -199,13 +199,13 @@ export default function TenantsAdminPage() {
   usePageControls([
     choiceControl('status_filter', 'Tenant status filter', 'Φίλτρο κατάστασης tenant', STATUS_OPTIONS, statusFilter, (v) => { setStatusFilter(v as StatusFilter); clear(); }),
     choiceControl('branding_filter', 'Branding filter', 'Φίλτρο επωνυμίας', BRANDING_OPTIONS, brandingFilter, (v) => { setBrandingFilter(v as BrandingFilter); clear(); }),
-    { id: 'refresh', labelEn: 'Refresh tenants', labelEl: 'Ανανέωση tenants', writes: false, run: () => void refetch() },
-    { id: 'export_csv', labelEn: 'Export tenants as CSV', labelEl: 'Εξαγωγή tenants σε CSV', writes: false, unavailableEn: visibleTenants.length ? undefined : 'No tenant matches the current filters.', run: exportCsv },
-    { id: 'create_tenant', labelEn: 'Open the create tenant form', labelEl: 'Άνοιγμα φόρμας νέου tenant', writes: false, run: () => setIsCreating(true) },
+    { id: 'refresh', labelEn: 'Refresh tenants', labelEl: 'Ανανέωση οργανισμών', writes: false, run: () => void refetch() },
+    { id: 'export_csv', labelEn: 'Export tenants as CSV', labelEl: 'Εξαγωγή οργανισμών σε CSV', writes: false, unavailableEn: visibleTenants.length ? undefined : 'No tenant matches the current filters.', run: exportCsv },
+    { id: 'create_tenant', labelEn: 'Open the create tenant form', labelEl: 'Άνοιγμα φόρμας νέου οργανισμού', writes: false, run: () => setIsCreating(true) },
     {
       id: 'tenant_settings',
       labelEn: 'Open tenant settings',
-      labelEl: 'Άνοιγμα ρυθμίσεων tenant',
+      labelEl: 'Άνοιγμα ρυθμίσεων οργανισμού',
       writes: false,
       // The page's guarded list: the payload is not always an array (the
       // comment on tenantList says why), and `.map` on it threw.
@@ -219,7 +219,7 @@ export default function TenantsAdminPage() {
       id: 'totals',
       glyph: 'chart',
       labelEn: 'Tenant totals',
-      labelEl: 'Σύνολα tenants',
+      labelEl: 'Σύνολα οργανισμών',
       badge: suspendedCount || null,
       content: (
         <ul className="space-y-2">
@@ -297,7 +297,7 @@ export default function TenantsAdminPage() {
             className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
           >
             <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="min-w-0 flex-1"><BilingualText en="Refresh tenants" el="Ανανέωση tenants" compact wrap /></span>
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh tenants" el="Ανανέωση οργανισμών" compact wrap /></span>
           </button>
           <button
             type="button"
@@ -330,7 +330,7 @@ export default function TenantsAdminPage() {
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
           <Plus className="icon-sm" aria-hidden="true" />
-          <BilingualText en="Create Tenant" el="Νέος tenant" compact />
+          <BilingualText en="Create Tenant" el="Νέος οργανισμός" compact />
         </Button>
       }
     >
@@ -341,7 +341,7 @@ export default function TenantsAdminPage() {
             <CardDescription>
               <BilingualText
                 en="Configure branding, SSO, and settings for each tenant"
-                el="Ρυθμίσεις επωνυμίας, SSO και παραμέτρων ανά tenant"
+                el="Εταιρική ταυτότητα, SSO και ρυθμίσεις ανά οργανισμό (tenant)"
                 compact
                 wrap
               />
@@ -389,7 +389,7 @@ export default function TenantsAdminPage() {
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
               <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" aria-hidden="true" />
-              <p><BilingualText en="Failed to load tenants" el="Αποτυχία φόρτωσης tenants" compact /></p>
+              <p><BilingualText en="Failed to load tenants" el="Δεν ήταν δυνατή η φόρτωση των οργανισμών" compact /></p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 <BilingualText en="Retry" el="Επανάληψη" compact />
               </Button>
@@ -397,10 +397,10 @@ export default function TenantsAdminPage() {
           ) : tenantList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
-              <p><BilingualText en="No tenants configured yet" el="Δεν υπάρχουν ακόμη tenants" compact /></p>
+              <p><BilingualText en="No tenants configured yet" el="Δεν υπάρχουν ακόμη οργανισμοί" compact /></p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
                 <Plus className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Create First Tenant" el="Δημιουργία πρώτου tenant" compact />
+                <BilingualText en="Create First Tenant" el="Δημιουργία πρώτου οργανισμού" compact />
               </Button>
             </div>
           ) : visibleTenants.length === 0 ? (
@@ -409,7 +409,7 @@ export default function TenantsAdminPage() {
               <p>
                 <BilingualText
                   en="No tenant matches this search and these filters."
-                  el="Κανένας tenant δεν ταιριάζει με την αναζήτηση και τα φίλτρα."
+                  el="Κανένας οργανισμός δεν ταιριάζει με την αναζήτηση και τα φίλτρα."
                   compact
                   wrap
                 />
@@ -970,7 +970,7 @@ function TenantEditor({
             {tenant && (
               <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={async () => {
                 if (await confirm({
-                  title: <BilingualText en={`Delete tenant “${tenant.name}”?`} el={`Διαγραφή tenant “${tenant.name}”;`} />,
+                  title: <BilingualText en={`Delete tenant “${tenant.name}”?`} el={`Διαγραφή οργανισμού «${tenant.name}»;`} />,
                   description: TENANT_DELETE_DESCRIPTION,
                   confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
                 })) deleteMut.mutate();

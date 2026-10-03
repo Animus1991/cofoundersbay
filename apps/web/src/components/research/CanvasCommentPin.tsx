@@ -86,15 +86,6 @@ async function resolveComment(commentId: string): Promise<CanvasComment> {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h`;
-  return `${Math.floor(hrs / 24)}d`;
-}
 
 function typeColor(type: string) {
   switch (type) {
@@ -180,7 +171,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                   {comment.author?.displayName ?? 'Anonymous'}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} format={timeAgo} /></span>
+                  <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} short /></span>
                   <Button aria-label="Close"
                     variant="ghost"
                     size="sm"

@@ -100,7 +100,7 @@ export default function CommunityManagementPage() {
           </div>
         )}
         {!isLoading && isError && groups.length === 0 && (
-          <EmptyLine en="The groups could not be loaded." el="Οι ομάδες δεν φορτώθηκαν." />
+          <EmptyLine en="The groups could not be loaded." el="Οι κοινότητες δεν φορτώθηκαν." />
         )}
         {!isLoading && !isError && filtered.length === 0 && (
           <EmptyLine

@@ -148,7 +148,7 @@ export default function AdminDashboardPage() {
     { id: 'messages', en: 'Messages', el: 'Μηνύματα', value: stats?.totalMessages, href: '/messages' },
     { id: 'connections', en: 'Connections', el: 'Συνδέσεις', value: stats?.totalConnections, href: '/connections' },
     { id: 'events', en: 'Events', el: 'Εκδηλώσεις', value: stats?.totalEvents, href: '/events' },
-    { id: 'groups', en: 'Groups', el: 'Ομάδες', value: stats?.totalGroups, href: '/admin/communities' },
+    { id: 'groups', en: 'Groups', el: 'Κοινότητες', value: stats?.totalGroups, href: '/admin/communities' },
     { id: 'jobs', en: 'Jobs', el: 'Αγγελίες', value: stats?.totalJobs, href: '/jobs' },
   ];
 

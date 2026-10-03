@@ -142,6 +142,12 @@ function formatRelative(locale: Exclude<AppLocale, 'en'>, text: string): string 
   if (!unit) return null;
   const style = rawUnit.length <= 2 ? 'short' : 'long';
   const value = Number(amount);
+  // Greek gets the product's own compact form (`relativeTimeLabel`), so a
+  // timestamp the DOM pass rewrites reads like every other one on the page.
+  if (locale === 'el' && style === 'short') {
+    const abbr = { minute: 'λ.', hour: 'ώ.', day: 'ημ.', week: 'εβδ.', month: 'μήν.' }[unit as 'minute' | 'hour' | 'day' | 'week' | 'month'];
+    if (abbr) return future ? `σε ${value} ${abbr}` : `πριν ${value} ${abbr}`;
+  }
   return new Intl.RelativeTimeFormat(LOCALE_BCP47[locale], { numeric: 'always', style }).format(
     future ? value : -value,
     unit,

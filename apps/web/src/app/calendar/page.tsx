@@ -532,7 +532,7 @@ export default function CalendarPage() {
       content: (
         <div className="space-y-1">
           <RailAction icon={Flag} en="Open milestones" el="Άνοιγμα οροσήμων" onClick={() => router.push('/milestones')} />
-          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα καταλόγου μεντόρων" onClick={() => router.push('/mentoring')} />
           <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
           <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
         </div>

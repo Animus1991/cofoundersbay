@@ -179,7 +179,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   },
   mentor_lead: {
     en: 'Requests waiting on you, your next sessions and your mentees.',
-    el: 'Αιτήματα που σας περιμένουν, οι επόμενες συνεδρίες και οι mentees σας.',
+    el: 'Αιτήματα που σας περιμένουν, οι επόμενες συνεδρίες και οι καθοδηγούμενοί σας.',
   },
   incubator_lead: {
     en: 'Applications waiting on you, your programmes and how your startups are doing.',
@@ -191,7 +191,7 @@ export const DASHBOARD_STRINGS: Record<string, BilingualPair> = {
   },
   no_recent_activity: { en: 'No recent activity', el: 'Καμία πρόσφατη δραστηριότητα' },
   browse_all: { en: 'Browse all', el: 'Περιήγηση όλων' },
-  all_groups: { en: 'All groups', el: 'Όλες οι ομάδες' },
+  all_groups: { en: 'All groups', el: 'Όλες οι κοινότητες' },
   see_all: { en: 'See all', el: 'Δείτε όλα' },
   match_short: { en: 'match', el: 'ταιριάσμα' },
   members: { en: 'members', el: 'μέλη' },

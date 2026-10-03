@@ -546,7 +546,7 @@ export default function LearningPage() {
       content: (
         <div className="space-y-1">
           <RailAction icon={Award} en="Open programs" el="Άνοιγμα προγραμμάτων" onClick={() => router.push('/programs')} />
-          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+          <RailAction icon={GraduationCap} en="Open mentoring" el="Άνοιγμα καταλόγου μεντόρων" onClick={() => router.push('/mentoring')} />
           <RailAction icon={Target} en="Open coaching" el="Άνοιγμα coaching" onClick={() => router.push('/coaching')} />
         </div>
       ),

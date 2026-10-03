@@ -222,7 +222,7 @@ export default function ReputationPage() {
     {
       id: 'mark_badges_seen',
       labelEn: 'Mark new badges as seen',
-      labelEl: 'Σήμανση νέων διακρίσεων ως αναγνωσμένων',
+      labelEl: 'Σήμανση νέων εμβλημάτων ως αναγνωσμένων',
       writes: true,
       unavailableEn: unseen === 0 ? 'No badge is new.' : undefined,
       unavailableEl: unseen === 0 ? 'Καμία διάκριση δεν είναι νέα.' : undefined,

@@ -156,12 +156,12 @@ export default function MenteesPage() {
     {
       id: 'mentees',
       labelEn: 'Mentees',
-      labelEl: 'Mentees',
+      labelEl: 'Καθοδηγούμενοι',
       rows: isLoading ? undefined : relationships.map((r) => `${r.mentee?.displayName || 'Unknown'} · ${r.status}${r.nextSessionAt ? ` · next session ${r.nextSessionAt.slice(0, 10)}` : ''}`),
     },
   ]);
   usePageControls([
-    { id: 'message_mentee', labelEn: 'Message mentee', labelEl: 'Μήνυμα σε mentee', writes: false, options: byMentee(relationships), run: (v) => { if (v) router.push(`/messages?to=${v}`); } },
+    { id: 'message_mentee', labelEn: 'Message mentee', labelEl: 'Μήνυμα σε καθοδηγούμενο', writes: false, options: byMentee(relationships), run: (v) => { if (v) router.push(`/messages?to=${v}`); } },
     { id: 'schedule_with_mentee', labelEn: 'Schedule a session with', labelEl: 'Προγραμματισμός συνεδρίας με', writes: false, options: byMentee(activeRelationships), run: (v) => { if (v) router.push(`/mentor/sessions?new=1&mentee=${v}`); } },
   ]);
 
@@ -265,7 +265,7 @@ export default function MenteesPage() {
                 <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί μαθητευόμενοι" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα mentoring για να ξεκινήσετε" wrap />
+                  <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />
                 </p>
                 <Button className="mt-4" asChild>
                   <Link href="/mentor/requests"><BilingualText en="View Requests" el="Προβολή αιτημάτων" compact /></Link>

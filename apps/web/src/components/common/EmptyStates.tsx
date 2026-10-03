@@ -348,15 +348,15 @@ export function EmptyGroups({ className }: EmptyStateProps) {
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
         <Users className={cn('icon-xl', STATUS.success.icon)} />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No groups joined" el="Δεν έχετε ενταχθεί σε ομάδες" compact /></h3>
+      <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No groups joined" el="Δεν έχετε γίνει μέλος σε κοινότητες" compact /></h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
-        <BilingualText en="Join groups to connect with like-minded founders and participate in discussions." el="Ενταχθείτε σε ομάδες για να γνωρίσετε ιδρυτές με κοινά ενδιαφέροντα και να συμμετέχετε σε συζητήσεις." wrap />
+        <BilingualText en="Join groups to connect with like-minded founders and participate in discussions." el="Γίνετε μέλος σε κοινότητες για να γνωρίσετε ιδρυτές με κοινά ενδιαφέροντα και να συμμετέχετε σε συζητήσεις." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Button className="gap-2" asChild>
           <Link href="/groups">
             <Search className="icon-sm" />
-            <BilingualText en="Browse groups" el="Περιήγηση ομάδων" compact />
+            <BilingualText en="Browse groups" el="Περιήγηση κοινοτήτων" compact />
           </Link>
         </Button>
         <AskAiLink prompt="I have not joined any groups. Which communities fit a founder looking for a technical cofounder?" />
@@ -508,7 +508,7 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, acti
       description={<BilingualText en="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days." el="Ένας κύκλος ομαδοποιεί startups που περνούν μαζί ένα πρόγραμμα. Δημιουργήστε έναν για να αναθέσετε μέντορες, να παρακολουθείτε ορόσημα και να οργανώνετε demo days." wrap />}
       action={(
         <PrimaryAction actionHref={actionHref} onAction={onAction}>
-          <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Create cohort" el="Δημιουργία κοορτής" compact />
+          <Plus className="mr-1.5 icon-sm" /> <BilingualText en="Create cohort" el="Δημιουργία κύκλου" compact />
         </PrimaryAction>
       )}
       className={className}

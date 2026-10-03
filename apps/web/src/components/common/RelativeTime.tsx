@@ -1,9 +1,7 @@
 'use client';
 
 import { useSyncExternalStore, type ReactNode } from 'react';
-import { formatDistanceToNow } from 'date-fns';
-import { el as elLocale } from 'date-fns/locale';
-import { formatRelativeTime, formatRelativeTimeEl } from '@/lib/utils';
+import { formatRelativeTime, relativeTimeLabel } from '@/lib/utils';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
@@ -62,15 +60,24 @@ type DateInput = string | number | Date;
 export function RelativeTime<T extends DateInput>({
   date,
   format,
+  formatEl,
+  short,
+  absoluteAfterDays,
   className,
 }: {
   date: T;
   /**
-   * The site's own wording, unchanged — only *when* it runs is managed here.
-   * Omitted, it falls back to date-fns "x ago", which is what the previous
-   * single-purpose RelativeTime (in LocalTime.tsx) hardcoded.
+   * A page's own wording, for the rare case the shared one does not fit
+   * ("Active 2h ago"). Omitted, the product's one wording is used, in the
+   * reader's language: "3h ago" / «πριν 3 ώ.».
    */
   format?: (date: T) => ReactNode;
+  /** The Greek of a custom `format`; without it a custom format is shown as given. */
+  formatEl?: (date: T) => ReactNode;
+  /** "5m" / «5 λ.», for tight rows. */
+  short?: boolean;
+  /** From this many days on, show the date rather than its age. */
+  absoluteAfterDays?: number;
   className?: string;
 }) {
   const hydrated = useHydrated();
@@ -79,13 +86,13 @@ export function RelativeTime<T extends DateInput>({
   const iso = Number.isNaN(d.getTime()) ? undefined : d.toISOString();
   const greek = primary === 'el';
 
-  // The shared formatter and the date-fns default have Greek wording; a page's
-  // own formatter is used as given.
+  // One wording for the whole product, in the reader's language. Thirteen
+  // call sites used to pass their own English-only arithmetic here, which a
+  // Greek page then showed as «πριν 2w» or plain "5m ago".
   const relative = () => {
-    if (format === formatRelativeTime && greek) return formatRelativeTimeEl(date as string | Date);
-    if (format) return format(date);
-    if (!iso) return '';
-    return formatDistanceToNow(d, { addSuffix: true, ...(greek ? { locale: elLocale } : {}) });
+    if (format && format !== formatRelativeTime) return greek && formatEl ? formatEl(date) : format(date);
+    if (!iso && typeof date !== 'string') return '';
+    return relativeTimeLabel(date as string | Date, greek ? 'el' : 'en', { short, absoluteAfterDays });
   };
 
   return (

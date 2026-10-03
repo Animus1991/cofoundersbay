@@ -48,7 +48,7 @@ const ACHIEVEMENTS_TOUR: TourStep[] = [
   {
     target: 'achievements-list',
     titleEn: 'Badges are the same list, sliced',
-    titleEl: 'Τα σήματα είναι η ίδια λίστα, κομμένη',
+    titleEl: 'Τα εμβλήματα είναι η ίδια λίστα, φιλτραρισμένη',
     bodyEn: 'All / Unlocked / Locked are filters of this list. The rail filters by category. Locked cards show progress toward that badge only.',
     bodyEl: 'Όλα / Ξεκλειδωμένα / Κλειδωμένα είναι φίλτρα αυτής της λίστας. Η ράγα φιλτράρει ανά κατηγορία. Οι κλειδωμένες κάρτες δείχνουν πρόοδο μόνο προς εκείνο το σήμα.',
   },

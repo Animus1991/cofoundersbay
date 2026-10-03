@@ -245,7 +245,7 @@ export default function MentorSessionsPage() {
     {
       id: 'sessions',
       labelEn: 'Mentoring sessions',
-      labelEl: 'Συνεδρίες mentoring',
+      labelEl: 'Συνεδρίες καθοδήγησης',
       rows: isLoading ? undefined : (activeTab === 'past' ? pastSessions : upcomingSessions).map((s) => `${when(s)} · ${s.duration} min${s.meetingType ? ` · ${s.meetingType.replace('_', ' ')}` : ''} · ${s.status}`),
       total: sessions.length,
     },

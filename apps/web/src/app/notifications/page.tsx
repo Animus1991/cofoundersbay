@@ -93,14 +93,6 @@ function groupByDate(notifications: NotificationItem[]): { label: string; items:
   return Object.entries(groups).filter(([, items]) => items.length > 0).map(([label, items]) => ({ label, items }));
 }
 
-function formatTimeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
-}
 
 function NotificationSkeleton() {
   return (
@@ -184,7 +176,7 @@ const NotificationRow = memo(function NotificationRow({
               {typeLabel}
             </Badge>
           </div>
-          <span className="shrink-0 text-2xs text-muted-foreground"><RelativeTime date={item.createdAt} format={formatTimeAgo} /></span>
+          <span className="shrink-0 text-2xs text-muted-foreground"><RelativeTime date={item.createdAt} absoluteAfterDays={7} /></span>
         </div>
         {item.body && (
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>

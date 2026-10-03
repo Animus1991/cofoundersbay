@@ -7,31 +7,31 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   page_title: { en: 'Connections', el: 'Συνδέσεις' },
   page_description: {
     en: 'Pending requests, active relationships, and intros you sent or received.',
-    el: 'Εκκρεμή αιτήματα, ενεργές σχέσεις και εισαγωγές που στείλατε ή λάβατε.',
+    el: 'Εκκρεμή αιτήματα, ενεργές σχέσεις και αιτήματα γνωριμίας που στείλατε ή λάβατε.',
   },
   find_people: { en: 'Find people', el: 'Εύρεση ατόμων' },
   message: { en: 'Message', el: 'Μήνυμα' },
   accept: { en: 'Accept', el: 'Αποδοχή' },
   decline: { en: 'Decline', el: 'Απόρριψη' },
-  accept_intro: { en: 'Accept intro', el: 'Αποδοχή εισαγωγής' },
+  accept_intro: { en: 'Accept intro', el: 'Αποδοχή γνωριμίας' },
   pending: { en: 'Pending', el: 'Εκκρεμεί' },
   retry: { en: 'Retry', el: 'Επανάληψη' },
   discover_people: { en: 'Discover people', el: 'Ανακάλυψη ατόμων' },
 
   // tabs
-  intro_requests: { en: 'Intro Requests', el: 'Αιτήματα εισαγωγής' },
+  intro_requests: { en: 'Intro Requests', el: 'Αιτήματα γνωριμίας' },
   received: { en: 'Received', el: 'Ληφθέντα' },
   sent: { en: 'Sent', el: 'Απεσταλμένα' },
   connected: { en: 'Connected', el: 'Συνδεδεμένα' },
 
   // stats
   stat_connected: { en: 'Connected', el: 'Συνδεδεμένοι' },
-  stat_intro_requests: { en: 'Intro Requests', el: 'Αιτήματα εισαγωγής' },
+  stat_intro_requests: { en: 'Intro Requests', el: 'Αιτήματα γνωριμίας' },
   stat_sent_pending: { en: 'Sent Pending', el: 'Αποσταλέντα εκκρεμή' },
   stat_total_interactions: { en: 'Total Interactions', el: 'Σύνολο αλληλεπιδράσεων' },
 
   // empty states
-  no_intro_requests: { en: 'No intro requests', el: 'Δεν υπάρχουν αιτήματα εισαγωγής' },
+  no_intro_requests: { en: 'No intro requests', el: 'Δεν υπάρχουν αιτήματα γνωριμίας' },
   no_intro_desc: {
     en: 'When someone sends you a connection request with a message, it appears here.',
     el: 'Όταν κάποιος σας στέλνει αίτημα σύνδεσης με μήνυμα, εμφανίζεται εδώ.',
@@ -60,7 +60,7 @@ export const CONNECTIONS_STRINGS: Record<string, BilingualPair> = {
   could_not_respond: { en: 'Could not respond', el: 'Αδυναμία απόκρισης' },
 
   // intro card label
-  intro_request: { en: 'Intro request', el: 'Αίτημα εισαγωγής' },
+  intro_request: { en: 'Intro request', el: 'Αίτημα γνωριμίας' },
   ai_collaboration: { en: 'AI collaboration insight', el: 'Ανάλυση συνεργασίας AI' },
 };
 

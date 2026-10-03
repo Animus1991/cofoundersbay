@@ -70,20 +70,6 @@ const ENTITY_LABEL: Record<string, { en: string; el: string }> = {
   comment: { en: 'Comment', el: 'Σχόλιο' },
 };
 
-function timeAgoPair(iso: string): { en: string; el: string } {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return { en: 'just now', el: 'μόλις τώρα' };
-  if (mins < 60) return { en: `${mins}m ago`, el: `πριν ${mins} λεπ.` };
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return { en: `${hrs}h ago`, el: `πριν ${hrs} ώρ.` };
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return { en: `${days}d ago`, el: `πριν ${days} ημ.` };
-  const en = new Date(iso).toLocaleDateString('en-GB', { timeZone: 'UTC' });
-  const el = new Date(iso).toLocaleDateString('el-GR', { timeZone: 'UTC' });
-  return { en, el };
-}
-
 function getActivityMeta(action: string): ActivityMeta {
   return ACTIVITY_META[action] ?? DEFAULT_META;
 }
@@ -188,10 +174,6 @@ export function ActivityTimeline({
             const Icon = meta.icon;
             const isLast = idx === activities.length - 1;
             const phrase = meta.label(activity);
-            const agoNode = (iso: string) => {
-              const pair = timeAgoPair(iso);
-              return <BilingualText en={pair.en} el={pair.el} compact />;
-            };
             const entity = activity.entityType ? ENTITY_LABEL[activity.entityType] : undefined;
 
             return (
@@ -223,7 +205,7 @@ export function ActivityTimeline({
                       )}
                       <BilingualText en={phrase.en} el={phrase.el} compact wrap />
                       <span className="text-muted-foreground ml-1.5">
-                        <RelativeTime date={activity.createdAt} format={agoNode} />
+                        <RelativeTime date={activity.createdAt} />
                       </span>
                     </p>
                   ) : (
@@ -240,7 +222,7 @@ export function ActivityTimeline({
                           </p>
                         </div>
                         <span className="text-xs text-muted-foreground shrink-0 mt-0.5">
-                          <RelativeTime date={activity.createdAt} format={agoNode} />
+                          <RelativeTime date={activity.createdAt} />
                         </span>
                       </div>
 

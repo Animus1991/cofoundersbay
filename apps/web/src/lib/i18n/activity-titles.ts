@@ -33,11 +33,7 @@ export function activityTimeAgoPair(value: string): { en: string; el: string } {
   if (!match) return { en: trimmed, el: trimmed };
   const n = Number(match[1]);
   const unit = match[2];
-  const el =
-    unit === 'm'
-      ? `πριν ${n} ${n === 1 ? 'λεπτό' : 'λεπτά'}`
-      : unit === 'h'
-        ? `πριν ${n} ${n === 1 ? 'ώρα' : 'ώρες'}`
-        : `πριν ${n} ${n === 1 ? 'ημέρα' : 'ημέρες'}`;
+  // The compact form the rest of the product uses (`relativeTimeLabel`).
+  const el = `πριν ${n} ${unit === 'm' ? 'λ.' : unit === 'h' ? 'ώ.' : 'ημ.'}`;
   return { en: `${n}${unit} ago`, el };
 }

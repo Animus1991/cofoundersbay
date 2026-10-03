@@ -67,7 +67,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/dashboard/mentor', title: 'Mentor dashboard', description: 'Sessions, requests, earnings, and mentee overview.', helpId: 'dashboard-mentor', helpTitle: 'How this mentor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας μέντορα', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/sessions', title: 'My sessions', description: 'Upcoming and past mentoring sessions.', helpId: 'mentor-sessions', helpTitle: 'Upcoming vs past sessions', helpTitleEl: 'Επερχόμενες και παρελθούσες συνεδρίες', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/requests', title: 'Mentee requests', description: 'Accept or decline new mentoring requests.', helpId: 'mentor-requests', helpTitle: 'How mentee requests work', helpTitleEl: 'Πώς δουλεύουν τα αιτήματα mentee', section: 'Work', audience: ['mentor'], status: 'complete' },
-  { path: '/mentoring', title: 'Find mentors', description: 'Directory of mentors — filter by expertise and availability.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκεις και κλείνεις mentor', section: 'Explore', status: 'complete' },
+  { path: '/mentoring', title: 'Find mentors', description: 'Directory of mentors — filter by expertise and availability.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
 
   // ── Investor ──
   { path: '/dashboard/investor', title: 'Investor dashboard', description: 'Deal flow KPIs, pipeline snapshot, and watchlist.', helpId: 'dashboard-investor', helpTitle: 'How this investor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας επενδυτή', section: 'Work', audience: ['investor'], status: 'complete' },
@@ -155,7 +155,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', helpId: 'learning', helpTitle: 'How the learning hub works', helpTitleEl: 'Πώς δουλεύει το κέντρο μάθησης', section: 'Resources', status: 'complete' },
   { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', helpId: 'groups', helpTitle: 'How communities work', helpTitleEl: 'Πώς δουλεύουν οι κοινότητες', section: 'Community', status: 'complete' },
   { path: '/feed', title: 'Feed', description: 'Updates from your network, communities, and people you follow. Sample posts appear only when the live feed is empty.', helpId: 'feed', helpTitle: 'What the feed is', helpTitleEl: 'Τι είναι το feed', section: 'Community', status: 'complete' },
-  { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκεις και κλείνεις mentor', section: 'Explore', status: 'complete' },
+  { path: '/mentoring', title: 'Find mentors', description: 'Directory of vetted mentors \u2014 filter by expertise, timezone, and rate.', helpId: 'mentoring', helpTitle: 'How to find and book a mentor', helpTitleEl: 'Πώς βρίσκετε μέντορα και κλείνετε συνεδρία', section: 'Explore', status: 'complete' },
 
   // ── Mentor sub-pages ──
 

@@ -132,7 +132,9 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['milestone', 'overdue', 'οροσημ', 'εκπροθεσμ'], tool: 'get_milestones' },
   { keys: ['job', 'open role', 'hiring', 'θεσεις εργασιας', 'αγγελι', 'προσληψ'], tool: 'get_jobs' },
   { keys: ['group', 'communit*', 'κοινοτητ'], tool: 'get_groups' },
-  { keys: ['endorse*', 'προσυπογραφ'], tool: 'get_endorsements' },
+  // The Endorsements page is «Συστάσεις», so that is the word a Greek reader
+  // asks with; «προσυπογραφή» is kept for anyone who learnt the older term.
+  { keys: ['endorse*', 'προσυπογραφ', 'συστασ'], tool: 'get_endorsements' },
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   { keys: ['session', 'συνεδρι'], tool: 'get_mentorship_sessions' },
   {
@@ -154,7 +156,7 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     tool: 'get_programs',
   },
   { keys: ['invite*', 'invitation*', 'referral*', 'προσκλησ', 'προσκαλεσ'], tool: 'get_invites' },
-  { keys: ['badge*', 'my level', 'xp', 'reputation', 'streak', 'σηματα', 'επιπεδο μου', 'φημη μου', 'σερι'], tool: 'get_reputation' },
+  { keys: ['badge*', 'my level', 'xp', 'reputation', 'streak', 'σηματα', 'εμβληματ', 'επιπεδο μου', 'φημη μου', 'σερι'], tool: 'get_reputation' },
   { keys: ['readiness score', 'my readiness', 'how ready', 'investor ready', 'ετοιμοτητα'], tool: 'get_readiness' },
   {
     keys: ['profile view*', 'my analytics', 'my stats', 'my statistics', 'my activity', 'προβολες', 'στατιστικα μου', 'αναλυτικα μου', 'δραστηριοτητα μου'],
@@ -584,8 +586,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'for you',
     'compatible',
     'ταιρι',
-    'σύσταση',
-    'συσταση',
+    // Not «σύσταση»: in the product that word is an endorsement, and asking
+    // for one used to plan a match search beside the endorsements read.
     'προτάσ',
     'προτασ',
   ]);
