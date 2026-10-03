@@ -140,3 +140,4 @@
 /terms
 /test-onboarding
 /themes/alliance
+/unauthorized

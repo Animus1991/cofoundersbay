@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenantMemberRole, Prisma } from '@prisma/client';
+import type { TenantAdminAccess } from './tenant-admin.guard';
 
 export type TenantCreateInput = {
   slug: string;
@@ -190,7 +197,13 @@ export class TenantService {
     });
   }
 
-  async addMember(tenantId: string, userId: string, role: TenantMemberRole = TenantMemberRole.member, invitedBy?: string) {
+  async addMember(
+    tenantId: string,
+    userId: string,
+    actor: TenantAdminAccess,
+    role: TenantMemberRole = TenantMemberRole.member,
+  ) {
+    this.assertAssignableRole(actor, role);
     await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
     await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
@@ -208,30 +221,103 @@ export class TenantService {
     }
 
     return this.prisma.tenantMembership.create({
-      data: { tenantId, userId, role, invitedBy },
+      data: { tenantId, userId, role, invitedBy: actor.userId },
     });
   }
 
-  async updateMember(tenantId: string, userId: string, data: { role?: TenantMemberRole; isActive?: boolean }) {
-    const membership = await this.prisma.tenantMembership.findUnique({
-      where: { tenantId_userId: { tenantId, userId } },
-    });
-    if (!membership) throw new NotFoundException('Membership not found');
-    return this.prisma.tenantMembership.update({
-      where: { id: membership.id },
-      data,
+  async updateMember(
+    tenantId: string,
+    userId: string,
+    data: { role?: TenantMemberRole; isActive?: boolean },
+    actor: TenantAdminAccess,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const membership = await tx.tenantMembership.findUnique({
+        where: { tenantId_userId: { tenantId, userId } },
+      });
+      if (!membership) throw new NotFoundException('Membership not found');
+
+      this.assertTargetManageable(actor, membership.userId, membership.role);
+      if (data.role !== undefined) this.assertAssignableRole(actor, data.role);
+      await this.assertLastOwnerPreserved(tx, tenantId, membership, data);
+
+      return tx.tenantMembership.update({
+        where: { id: membership.id },
+        data,
+      });
     });
   }
 
-  async removeMember(tenantId: string, userId: string) {
-    const membership = await this.prisma.tenantMembership.findUnique({
-      where: { tenantId_userId: { tenantId, userId } },
+  async removeMember(tenantId: string, userId: string, actor: TenantAdminAccess) {
+    return this.prisma.$transaction(async (tx) => {
+      const membership = await tx.tenantMembership.findUnique({
+        where: { tenantId_userId: { tenantId, userId } },
+      });
+      if (!membership) throw new NotFoundException('Membership not found');
+
+      this.assertTargetManageable(actor, membership.userId, membership.role);
+      await this.assertLastOwnerPreserved(tx, tenantId, membership, { isActive: false });
+
+      return tx.tenantMembership.update({
+        where: { id: membership.id },
+        data: { isActive: false },
+      });
     });
-    if (!membership) throw new NotFoundException('Membership not found');
-    return this.prisma.tenantMembership.update({
-      where: { id: membership.id },
-      data: { isActive: false },
+  }
+
+  private assertAssignableRole(actor: TenantAdminAccess, role: TenantMemberRole) {
+    if (!Object.values(TenantMemberRole).includes(role)) {
+      throw new BadRequestException('Invalid tenant member role');
+    }
+    if (actor.isPlatformAdmin) return;
+
+    // Ownership transfer is intentionally not an implicit member edit. A
+    // tenant owner may delegate admin, while an admin may delegate only
+    // non-administrative roles.
+    if (role === TenantMemberRole.owner) {
+      throw new ForbiddenException('Tenant ownership must be transferred explicitly');
+    }
+    if (actor.tenantRole === TenantMemberRole.admin && role === TenantMemberRole.admin) {
+      throw new ForbiddenException('Only a tenant owner can grant administrator access');
+    }
+  }
+
+  private assertTargetManageable(
+    actor: TenantAdminAccess,
+    targetUserId: string,
+    targetRole: TenantMemberRole,
+  ) {
+    if (actor.userId === targetUserId) {
+      throw new ForbiddenException('Use the dedicated account or ownership flow for your own membership');
+    }
+    if (actor.isPlatformAdmin) return;
+
+    if (
+      actor.tenantRole === TenantMemberRole.admin
+      && (targetRole === TenantMemberRole.owner || targetRole === TenantMemberRole.admin)
+    ) {
+      throw new ForbiddenException('Tenant administrators cannot modify owners or other administrators');
+    }
+  }
+
+  private async assertLastOwnerPreserved(
+    tx: Prisma.TransactionClient,
+    tenantId: string,
+    membership: { role: TenantMemberRole; isActive: boolean },
+    data: { role?: TenantMemberRole; isActive?: boolean },
+  ) {
+    const removesActiveOwner = membership.isActive
+      && membership.role === TenantMemberRole.owner
+      && (data.isActive === false || (data.role !== undefined && data.role !== TenantMemberRole.owner));
+
+    if (!removesActiveOwner) return;
+
+    const activeOwnerCount = await tx.tenantMembership.count({
+      where: { tenantId, role: TenantMemberRole.owner, isActive: true },
     });
+    if (activeOwnerCount <= 1) {
+      throw new ConflictException('The tenant must retain at least one active owner');
+    }
   }
 
   async delete(id: string) {

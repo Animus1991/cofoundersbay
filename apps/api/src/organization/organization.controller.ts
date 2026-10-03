@@ -72,13 +72,19 @@ export class OrganizationController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.organizationService.findById(id);
+  async findById(
+    @Request() req: { user: { id: string } },
+    @Param('id') id: string,
+  ) {
+    return this.organizationService.findById(id, req.user.id);
   }
 
   @Get('slug/:slug')
-  async findBySlug(@Param('slug') slug: string) {
-    return this.organizationService.findBySlug(slug);
+  async findBySlug(
+    @Request() req: { user: { id: string } },
+    @Param('slug') slug: string,
+  ) {
+    return this.organizationService.findBySlug(slug, req.user.id);
   }
 
   @Patch(':id')
@@ -101,11 +107,12 @@ export class OrganizationController {
   // Member management
   @Get(':id/members')
   async getMembers(
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
     @Query('role') role?: string,
     @Query('isActive') isActive?: string,
   ) {
-    return this.organizationService.getMembers(id, {
+    return this.organizationService.getMembers(id, req.user.id, {
       role,
       isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
     });
@@ -141,8 +148,11 @@ export class OrganizationController {
 
   // Mentor pool
   @Get(':id/mentors')
-  async getMentorPool(@Param('id') id: string) {
-    return this.organizationService.getMentorPool(id);
+  async getMentorPool(
+    @Request() req: { user: { id: string } },
+    @Param('id') id: string,
+  ) {
+    return this.organizationService.getMentorPool(id, req.user.id);
   }
 
   @Post(':id/mentors')

@@ -71,12 +71,13 @@ export class ProgramController {
 
   @Get('organization/:orgId')
   async findByOrganization(
+    @Request() req: { user: { id: string } },
     @Param('orgId') orgId: string,
     @Query('status') status?: string,
     @Query('programType') programType?: string,
     @Query('isPublic') isPublic?: string,
   ) {
-    return this.programService.findByOrganization(orgId, {
+    return this.programService.findByOrganization(orgId, req.user.id, {
       status,
       programType,
       isPublic: isPublic === 'true' ? true : isPublic === 'false' ? false : undefined,
@@ -84,8 +85,11 @@ export class ProgramController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string) {
-    return this.programService.findById(id);
+  async findById(
+    @Request() req: { user: { id: string } },
+    @Param('id') id: string,
+  ) {
+    return this.programService.findById(id, req.user.id);
   }
 
   @Patch(':id')
@@ -117,11 +121,12 @@ export class ProgramController {
 
   @Get(':id/participants')
   async getParticipants(
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
     @Query('status') status?: string,
     @Query('role') role?: string,
   ) {
-    return this.programService.getParticipants(id, { status, role });
+    return this.programService.getParticipants(id, req.user.id, { status, role });
   }
 
   @Patch(':id/participants/:participantId')

@@ -50,14 +50,28 @@ export class BuilderService {
     private readonly cache: CacheService,
   ) {}
 
-  /** Invalidate Redis cache for a workspace */
-  private invalidateWorkspaceCache(workspaceId: string) {
-    void this.cache.del(`cofounderbay:builder:workspace:${workspaceId}`).catch(() => {});
+  /** Invalidate the shared workspace snapshot before a mutation is reported as complete. */
+  private async invalidateWorkspaceCache(workspaceId: string) {
+    await this.cache.del(`cofounderbay:builder:workspace:${workspaceId}`);
   }
 
-  /** Invalidate Redis cache for a document */
-  private invalidateDocumentCache(documentId: string) {
-    void this.cache.del(`cofounderbay:builder:document:${documentId}`).catch(() => {});
+  /** Invalidate the shared document snapshot before a mutation is reported as complete. */
+  private async invalidateDocumentCache(documentId: string) {
+    await this.cache.del(`cofounderbay:builder:document:${documentId}`);
+  }
+
+  /**
+   * A cached allow must never outlive a collaborator or visibility mutation.
+   * Denials are deliberately not cached, so clearing the matching allow entries is sufficient.
+   */
+  private invalidateWorkspaceAccessCache(workspaceId: string, userId?: string) {
+    const exactPrefix = userId ? `${userId}:${workspaceId}:` : null;
+
+    for (const key of this.accessCache.keys()) {
+      if (exactPrefix ? key.startsWith(exactPrefix) : key.includes(`:${workspaceId}:`)) {
+        this.accessCache.delete(key);
+      }
+    }
   }
 
   /** Purge expired access cache entries (runs lazily on each check) */
@@ -304,7 +318,8 @@ export class BuilderService {
       },
     });
 
-    this.invalidateWorkspaceCache(workspaceId);
+    this.invalidateWorkspaceAccessCache(workspaceId);
+    await this.invalidateWorkspaceCache(workspaceId);
     this.logActivity(workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { changes: dto });
 
     return this.formatWorkspaceResponse(workspace);
@@ -317,7 +332,8 @@ export class BuilderService {
       where: { id: workspaceId },
     });
 
-    this.invalidateWorkspaceCache(workspaceId);
+    this.invalidateWorkspaceAccessCache(workspaceId);
+    await this.invalidateWorkspaceCache(workspaceId);
     return { success: true };
   }
 
@@ -332,7 +348,8 @@ export class BuilderService {
       },
     });
 
-    this.invalidateWorkspaceCache(workspaceId);
+    this.invalidateWorkspaceAccessCache(workspaceId);
+    await this.invalidateWorkspaceCache(workspaceId);
     this.logActivity(workspaceId, userId, 'workspace.archived', 'workspace', workspaceId);
 
     return this.formatWorkspaceResponse(workspace);
@@ -379,7 +396,7 @@ export class BuilderService {
     // Create default sections based on document type
     await this.createDefaultSections(document.id, dto.type);
 
-    this.invalidateWorkspaceCache(dto.workspaceId);
+    await this.invalidateWorkspaceCache(dto.workspaceId);
     this.logActivity(dto.workspaceId, userId, 'document.created', 'document', document.id);
 
     return document;
@@ -458,8 +475,8 @@ export class BuilderService {
       },
     });
 
-    this.invalidateDocumentCache(documentId);
-    this.invalidateWorkspaceCache(document.workspaceId);
+    await this.invalidateDocumentCache(documentId);
+    await this.invalidateWorkspaceCache(document.workspaceId);
     this.logActivity(document.workspaceId, userId, 'document.updated', 'document', documentId, { changes: dto });
 
     return updated;
@@ -497,7 +514,7 @@ export class BuilderService {
     // Update document completion percentage
     await this.updateDocumentCompletion(documentId);
 
-    this.invalidateDocumentCache(documentId);
+    await this.invalidateDocumentCache(documentId);
     this.logActivity(document.workspaceId, userId, 'section.updated', 'section', section.id);
 
     return section;
@@ -518,8 +535,8 @@ export class BuilderService {
       where: { id: documentId },
     });
 
-    this.invalidateDocumentCache(documentId);
-    this.invalidateWorkspaceCache(document.workspaceId);
+    await this.invalidateDocumentCache(documentId);
+    await this.invalidateWorkspaceCache(document.workspaceId);
     this.logActivity(document.workspaceId, userId, 'document.deleted', 'document', documentId);
 
     return { success: true };
@@ -589,7 +606,8 @@ export class BuilderService {
       },
     });
 
-    this.invalidateWorkspaceCache(workspaceId);
+    this.invalidateWorkspaceAccessCache(workspaceId, dto.userId);
+    await this.invalidateWorkspaceCache(workspaceId);
     this.logActivity(workspaceId, userId, 'collaborator.added', 'collaborator', collaborator.id);
 
     return collaborator;
@@ -597,6 +615,15 @@ export class BuilderService {
 
   async updateCollaborator(userId: string, workspaceId: string, collaboratorId: string, dto: UpdateCollaboratorDto) {
     await this.checkWorkspaceAccess(userId, workspaceId, 'owner');
+
+    const existing = await this.prisma.builderCollaborator.findFirst({
+      where: { id: collaboratorId, workspaceId },
+      select: { id: true, userId: true },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Collaborator not found');
+    }
 
     const collaborator = await this.prisma.builderCollaborator.update({
       where: { id: collaboratorId },
@@ -617,14 +644,17 @@ export class BuilderService {
       },
     });
 
+    this.invalidateWorkspaceAccessCache(workspaceId, existing.userId);
+    await this.invalidateWorkspaceCache(workspaceId);
+
     return collaborator;
   }
 
   async removeCollaborator(userId: string, workspaceId: string, collaboratorId: string) {
     await this.checkWorkspaceAccess(userId, workspaceId, 'owner');
 
-    const collaborator = await this.prisma.builderCollaborator.findUnique({
-      where: { id: collaboratorId },
+    const collaborator = await this.prisma.builderCollaborator.findFirst({
+      where: { id: collaboratorId, workspaceId },
     });
 
     if (!collaborator) {
@@ -639,7 +669,8 @@ export class BuilderService {
       where: { id: collaboratorId },
     });
 
-    this.invalidateWorkspaceCache(workspaceId);
+    this.invalidateWorkspaceAccessCache(workspaceId, collaborator.userId);
+    await this.invalidateWorkspaceCache(workspaceId);
     this.logActivity(workspaceId, userId, 'collaborator.removed', 'collaborator', collaboratorId);
 
     return { success: true };

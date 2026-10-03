@@ -181,13 +181,13 @@ export default function AdminBillingPage() {
   const invoices = Array.isArray(invoicesData) ? invoicesData : [];
   const coupons = Array.isArray(couponsData) ? couponsData : [];
 
-  const { mutate: extendTrial } = useMutation({
+  const { mutate: extendTrial, mutateAsync: extendTrialAsync } = useMutation({
     mutationFn: (id: string) => adminExtendTrial(id, 7),
     onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Trial extended by 7 days'); },
     onError: () => toastError('Failed to extend trial'),
   });
 
-  const { mutate: cancelSub } = useMutation({
+  const { mutate: cancelSub, mutateAsync: cancelSubAsync } = useMutation({
     mutationFn: ({ id, immediate }: { id: string; immediate: boolean }) => adminCancelSubscription(id, immediate),
     onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Subscription canceled'); },
     onError: () => toastError('Failed to cancel'),
@@ -219,7 +219,7 @@ export default function AdminBillingPage() {
     onError: () => toastError('Failed to create coupon'),
   });
 
-  const { mutate: removeCoupon } = useMutation({
+  const { mutate: removeCoupon, mutateAsync: removeCouponAsync } = useMutation({
     mutationFn: (id: string) => deleteCoupon(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'coupons') }); toastSuccess('Coupon deactivated'); },
     onError: () => toastError('Failed to remove coupon'),
@@ -289,7 +289,7 @@ export default function AdminBillingPage() {
       labelEl: 'Παράταση δοκιμής κατά 7 ημέρες',
       writes: true,
       options: subs.filter((s) => s.status === 'trialing').map(subRow),
-      run: (value) => { if (value) extendTrial(value); },
+      run: async (value) => { if (value) await extendTrialAsync(value); },
     },
     {
       id: 'cancel_subscription',
@@ -297,7 +297,7 @@ export default function AdminBillingPage() {
       labelEl: 'Ακύρωση συνδρομής',
       writes: true,
       options: subs.filter((s) => s.status !== 'canceled').map(subRow),
-      run: (value) => { if (value) cancelSub({ id: value, immediate: false }); },
+      run: async (value) => { if (value) await cancelSubAsync({ id: value, immediate: false }); },
     },
     {
       id: 'deactivate_coupon',
@@ -305,7 +305,7 @@ export default function AdminBillingPage() {
       labelEl: 'Απενεργοποίηση κουπονιού',
       writes: true,
       options: coupons.map((c) => ({ value: c.id, labelEn: c.code, labelEl: c.code })),
-      run: (value) => { if (value) removeCoupon(value); },
+      run: async (value) => { if (value) await removeCouponAsync(value); },
     },
   ]);
 

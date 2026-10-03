@@ -3,6 +3,51 @@ import { PrismaService } from '../prisma/prisma.service';
 import { OrganizationService } from './organization.service';
 import { Prisma } from '@prisma/client';
 
+const PUBLIC_PROGRAM_STATUSES = ['upcoming', 'active', 'completed'] as const;
+const PROGRAM_STATUSES = ['draft', 'upcoming', 'active', 'completed', 'archived'] as const;
+const PARTICIPANT_STATUSES = ['applied', 'accepted', 'active', 'completed', 'dropped', 'rejected'] as const;
+const PARTICIPANT_ROLES = ['participant', 'mentor', 'judge', 'organizer', 'reviewer', 'observer'] as const;
+
+const PUBLIC_PROGRAM_SELECT = {
+  id: true,
+  organizationId: true,
+  name: true,
+  slug: true,
+  description: true,
+  shortDescription: true,
+  programType: true,
+  status: true,
+  startDate: true,
+  endDate: true,
+  applicationDeadline: true,
+  capacity: true,
+  currentParticipants: true,
+  isPublic: true,
+  isFeatured: true,
+  logoUrl: true,
+  coverImageUrl: true,
+  curriculum: true,
+  requirements: true,
+  benefits: true,
+  createdAt: true,
+  updatedAt: true,
+  organization: {
+    select: { id: true, type: true, name: true, displayName: true, slug: true, logoUrl: true },
+  },
+  milestones: {
+    orderBy: { sortOrder: 'asc' as const },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      dueDate: true,
+      sortOrder: true,
+      isRequired: true,
+    },
+  },
+  _count: { select: { participants: true } },
+} satisfies Prisma.ProgramSelect;
+
 @Injectable()
 export class ProgramService {
   constructor(
@@ -28,7 +73,7 @@ export class ProgramService {
     benefits?: Record<string, unknown>;
     settings?: Record<string, unknown>;
   }) {
-    await this.organizationService.checkMemberAccess(orgId, userId);
+    await this.organizationService.checkAdminAccess(orgId, userId);
 
     // Check slug uniqueness within org
     const existing = await this.prisma.program.findFirst({
@@ -68,18 +113,53 @@ export class ProgramService {
     });
   }
 
-  async findById(id: string) {
-    const program = await this.prisma.program.findUnique({
+  async findById(id: string, userId: string) {
+    const scope = await this.prisma.program.findUnique({
       where: { id },
-      include: {
-        organization: true,
-        participants: {
-          include: { user: { select: { id: true, email: true, profile: true } } },
-        },
-        milestones: { orderBy: { sortOrder: 'asc' } },
-        _count: { select: { participants: true } },
+      select: {
+        organizationId: true,
+        isPublic: true,
+        status: true,
+        organization: { select: { isActive: true } },
       },
     });
+
+    if (!scope) {
+      throw new NotFoundException('Program not found');
+    }
+
+    const membership = await this.prisma.organizationMembership.findUnique({
+      where: {
+        organizationId_userId: { organizationId: scope.organizationId, userId },
+      },
+      select: { isActive: true },
+    });
+
+    const isPubliclyVisible = scope.organization.isActive
+      && scope.isPublic
+      && PUBLIC_PROGRAM_STATUSES.includes(scope.status as (typeof PUBLIC_PROGRAM_STATUSES)[number]);
+
+    if (!membership?.isActive && !isPubliclyVisible) {
+      // A private program is deliberately indistinguishable from a missing one.
+      throw new NotFoundException('Program not found');
+    }
+
+    const program = membership?.isActive
+      ? await this.prisma.program.findUnique({
+          where: { id },
+          include: {
+            organization: true,
+            participants: {
+              include: { user: { select: { id: true, email: true, profile: true } } },
+            },
+            milestones: { orderBy: { sortOrder: 'asc' } },
+            _count: { select: { participants: true } },
+          },
+        })
+      : await this.prisma.program.findUnique({
+          where: { id },
+          select: PUBLIC_PROGRAM_SELECT,
+        });
 
     if (!program) {
       throw new NotFoundException('Program not found');
@@ -88,21 +168,46 @@ export class ProgramService {
     return program;
   }
 
-  async findByOrganization(orgId: string, filters?: {
+  async findByOrganization(orgId: string, userId: string, filters?: {
     status?: string;
     programType?: string;
     isPublic?: boolean;
   }) {
+    const membership = await this.prisma.organizationMembership.findUnique({
+      where: { organizationId_userId: { organizationId: orgId, userId } },
+      select: { isActive: true },
+    });
+
+    if (membership?.isActive) {
+      return this.prisma.program.findMany({
+        where: {
+          organizationId: orgId,
+          ...(filters?.status && { status: filters.status as any }),
+          ...(filters?.programType && { programType: filters.programType as any }),
+          ...(filters?.isPublic !== undefined && { isPublic: filters.isPublic }),
+        },
+        include: { _count: { select: { participants: true } } },
+        orderBy: { startDate: 'desc' },
+      });
+    }
+
+    if (filters?.isPublic === false
+      || (filters?.status !== undefined
+        && !PUBLIC_PROGRAM_STATUSES.includes(filters.status as (typeof PUBLIC_PROGRAM_STATUSES)[number]))) {
+      return [];
+    }
+
     return this.prisma.program.findMany({
       where: {
         organizationId: orgId,
-        ...(filters?.status && { status: filters.status as any }),
+        organization: { isActive: true },
+        isPublic: true,
+        status: filters?.status
+          ? filters.status as any
+          : { in: [...PUBLIC_PROGRAM_STATUSES] as any },
         ...(filters?.programType && { programType: filters.programType as any }),
-        ...(filters?.isPublic !== undefined && { isPublic: filters.isPublic }),
       },
-      include: {
-        _count: { select: { participants: true } },
-      },
+      select: PUBLIC_PROGRAM_SELECT,
       orderBy: { startDate: 'desc' },
     });
   }
@@ -118,6 +223,7 @@ export class ProgramService {
     const where = {
       isPublic: true,
       status: { in: ['upcoming', 'active'] as any },
+      organization: { isActive: true },
       ...(programType && { programType: programType as any }),
       ...(search && {
         OR: [
@@ -130,10 +236,7 @@ export class ProgramService {
     const [programs, total] = await Promise.all([
       this.prisma.program.findMany({
         where,
-        include: {
-          organization: { select: { id: true, name: true, logoUrl: true, type: true } },
-          _count: { select: { participants: true } },
-        },
+        select: PUBLIC_PROGRAM_SELECT,
         orderBy: [{ isFeatured: 'desc' }, { startDate: 'asc' }],
         skip: (page - 1) * limit,
         take: limit,
@@ -173,11 +276,33 @@ export class ProgramService {
       throw new NotFoundException('Program not found');
     }
 
-    await this.organizationService.checkMemberAccess(program.organizationId, userId);
+    await this.organizationService.checkAdminAccess(program.organizationId, userId);
+
+    if (data.status !== undefined && !PROGRAM_STATUSES.includes(data.status as (typeof PROGRAM_STATUSES)[number])) {
+      throw new BadRequestException('Invalid program status');
+    }
+
+    const updateData: Prisma.ProgramUpdateInput = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.shortDescription !== undefined) updateData.shortDescription = data.shortDescription;
+    if (data.status !== undefined) updateData.status = data.status as any;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate;
+    if (data.endDate !== undefined) updateData.endDate = data.endDate;
+    if (data.applicationDeadline !== undefined) updateData.applicationDeadline = data.applicationDeadline;
+    if (data.capacity !== undefined) updateData.capacity = data.capacity;
+    if (data.isPublic !== undefined) updateData.isPublic = data.isPublic;
+    if (data.isFeatured !== undefined) updateData.isFeatured = data.isFeatured;
+    if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
+    if (data.coverImageUrl !== undefined) updateData.coverImageUrl = data.coverImageUrl;
+    if (data.curriculum !== undefined) updateData.curriculum = data.curriculum as Prisma.InputJsonValue;
+    if (data.requirements !== undefined) updateData.requirements = data.requirements as Prisma.InputJsonValue;
+    if (data.benefits !== undefined) updateData.benefits = data.benefits as Prisma.InputJsonValue;
+    if (data.settings !== undefined) updateData.settings = data.settings as Prisma.InputJsonValue;
 
     return this.prisma.program.update({
       where: { id },
-      data: data as any,
+      data: updateData,
     });
   }
 
@@ -190,7 +315,7 @@ export class ProgramService {
       throw new NotFoundException('Program not found');
     }
 
-    await this.organizationService.checkMemberAccess(program.organizationId, userId);
+    await this.organizationService.checkAdminAccess(program.organizationId, userId);
 
     // Soft delete by archiving
     return this.prisma.program.update({
@@ -207,6 +332,10 @@ export class ProgramService {
 
     if (!program) {
       throw new NotFoundException('Program not found');
+    }
+
+    if (!program.isPublic) {
+      await this.organizationService.checkMemberAccess(program.organizationId, userId);
     }
 
     if (program.status !== 'upcoming' && program.status !== 'active') {
@@ -252,9 +381,34 @@ export class ProgramService {
       throw new NotFoundException('Program not found');
     }
 
-    await this.organizationService.checkMemberAccess(program.organizationId, adminUserId);
+    await this.organizationService.checkAdminAccess(program.organizationId, adminUserId);
 
-    const updateData: Record<string, unknown> = { ...data };
+    if (data.status !== undefined
+      && !PARTICIPANT_STATUSES.includes(data.status as (typeof PARTICIPANT_STATUSES)[number])) {
+      throw new BadRequestException('Invalid participant status');
+    }
+    if (data.role !== undefined
+      && !PARTICIPANT_ROLES.includes(data.role as (typeof PARTICIPANT_ROLES)[number])) {
+      throw new BadRequestException('Invalid participant role');
+    }
+
+    const participant = await this.prisma.programParticipant.findFirst({
+      where: { id: participantId, programId },
+      select: { id: true },
+    });
+
+    if (!participant) {
+      throw new NotFoundException('Participant not found');
+    }
+
+    const updateData: Prisma.ProgramParticipantUpdateInput = {};
+    if (data.status !== undefined) updateData.status = data.status as any;
+    if (data.role !== undefined) updateData.role = data.role as any;
+    if (data.progress !== undefined) updateData.progress = data.progress;
+    if (data.score !== undefined) updateData.score = data.score;
+    if (data.rank !== undefined) updateData.rank = data.rank;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.feedback !== undefined) updateData.feedback = data.feedback as Prisma.InputJsonValue;
     if (data.status === 'accepted') {
       updateData.acceptedAt = new Date();
     } else if (data.status === 'completed') {
@@ -262,8 +416,8 @@ export class ProgramService {
     }
 
     return this.prisma.programParticipant.update({
-      where: { id: participantId },
-      data: updateData as any,
+      where: { id: participant.id },
+      data: updateData,
     });
   }
 
@@ -280,10 +434,21 @@ export class ProgramService {
    * The whole `profile` relation was spread into the response; only four of
    * its fields are ever read, and one of the rest is the person's email.
    */
-  async getParticipants(programId: string, filters?: {
+  async getParticipants(programId: string, requestingUserId: string, filters?: {
     status?: string;
     role?: string;
   }) {
+    const program = await this.prisma.program.findUnique({
+      where: { id: programId },
+      select: { organizationId: true },
+    });
+
+    if (!program) {
+      throw new NotFoundException('Program not found');
+    }
+
+    await this.organizationService.checkMemberAccess(program.organizationId, requestingUserId);
+
     const participants = await this.prisma.programParticipant.findMany({
       where: {
         programId,
@@ -362,7 +527,7 @@ export class ProgramService {
       throw new NotFoundException('Program not found');
     }
 
-    await this.organizationService.checkMemberAccess(program.organizationId, userId);
+    await this.organizationService.checkAdminAccess(program.organizationId, userId);
 
     return this.prisma.programMilestone.create({
       data: {
@@ -396,11 +561,20 @@ export class ProgramService {
       throw new NotFoundException('Milestone not found');
     }
 
-    await this.organizationService.checkMemberAccess(milestone.program.organizationId, userId);
+    await this.organizationService.checkAdminAccess(milestone.program.organizationId, userId);
+
+    const updateData: Prisma.ProgramMilestoneUpdateInput = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
+    if (data.sortOrder !== undefined) updateData.sortOrder = data.sortOrder;
+    if (data.requirements !== undefined) updateData.requirements = data.requirements as Prisma.InputJsonValue;
+    if (data.deliverables !== undefined) updateData.deliverables = data.deliverables as Prisma.InputJsonValue;
+    if (data.isRequired !== undefined) updateData.isRequired = data.isRequired;
 
     return this.prisma.programMilestone.update({
       where: { id: milestoneId },
-      data: data as any,
+      data: updateData,
     });
   }
 
@@ -414,7 +588,7 @@ export class ProgramService {
       throw new NotFoundException('Milestone not found');
     }
 
-    await this.organizationService.checkMemberAccess(milestone.program.organizationId, userId);
+    await this.organizationService.checkAdminAccess(milestone.program.organizationId, userId);
 
     await this.prisma.programMilestone.delete({
       where: { id: milestoneId },

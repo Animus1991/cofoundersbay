@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, UseGuards, HttpCode, HttpStatus,
+  Param, Body, Query, UseGuards, HttpCode, HttpStatus, Req, BadRequestException,
 } from '@nestjs/common';
 import { TenantService, TenantCreateInput, TenantUpdateInput, TenantBrandingInput } from './tenant.service';
 import { TenantMemberRole } from '@prisma/client';
@@ -8,6 +8,7 @@ import { TenantDomainService } from './tenant-domain.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { TenantAdminGuard, type TenantAdminAccess } from './tenant-admin.guard';
 
 @Controller('tenants')
 export class TenantController {
@@ -83,10 +84,21 @@ export class TenantController {
 
   /** Admin: update tenant */
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
-  async update(@Param('id') id: string, @Body() body: TenantUpdateInput) {
-    return this.tenants.update(id, body);
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
+  async update(
+    @Param('id') id: string,
+    @Body() body: TenantUpdateInput,
+    @Req() req: { tenantAdminAccess: TenantAdminAccess },
+  ) {
+    if (req.tenantAdminAccess.isPlatformAdmin) {
+      return this.tenants.update(id, body);
+    }
+
+    // Lifecycle status is a platform-level moderation/billing decision. Tenant
+    // owners can maintain their identity and settings without self-activating
+    // a draft or reactivating a suspended tenant.
+    const { status: _platformStatus, ...tenantOwnedFields } = body;
+    return this.tenants.update(id, tenantOwnedFields);
   }
 
   /** Admin: delete tenant */
@@ -102,32 +114,28 @@ export class TenantController {
 
   /** Admin: get tenant branding */
   @Get(':id/branding')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async getBranding(@Param('id') id: string) {
     return this.tenants.getBranding(id);
   }
 
   /** Admin: upsert branding */
   @Patch(':id/branding')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async upsertBranding(@Param('id') id: string, @Body() body: TenantBrandingInput) {
     return this.tenants.upsertBranding(id, body);
   }
 
   /** Admin: publish branding */
   @Post(':id/branding/publish')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async publishBranding(@Param('id') id: string) {
     return this.tenants.publishBranding(id);
   }
 
   /** Admin: unpublish branding */
   @Post(':id/branding/unpublish')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async unpublishBranding(@Param('id') id: string) {
     return this.tenants.unpublishBranding(id);
   }
@@ -136,8 +144,7 @@ export class TenantController {
 
   /** Admin: list tenant members */
   @Get(':id/members')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async getMembers(
     @Param('id') id: string,
     @Query('limit') limit?: string,
@@ -151,50 +158,59 @@ export class TenantController {
 
   /** Admin: add member */
   @Post(':id/members')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async addMember(
     @Param('id') id: string,
     @Body() body: { userId: string; role?: string },
+    @Req() req: { tenantAdminAccess: TenantAdminAccess },
   ) {
-    return this.tenants.addMember(id, body.userId, body.role as TenantMemberRole | undefined);
+    return this.tenants.addMember(
+      id,
+      body.userId,
+      req.tenantAdminAccess,
+      this.parseMemberRole(body.role),
+    );
   }
 
   /** Admin: update member role / active status */
   @Patch(':id/members/:userId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async updateMember(
     @Param('id') id: string,
     @Param('userId') userId: string,
     @Body() body: { role?: string; isActive?: boolean },
+    @Req() req: { tenantAdminAccess: TenantAdminAccess },
   ) {
-    return this.tenants.updateMember(id, userId, body as { role?: TenantMemberRole; isActive?: boolean });
+    const update: { role?: TenantMemberRole; isActive?: boolean } = {};
+    if (body.role !== undefined) update.role = this.parseMemberRole(body.role);
+    if (body.isActive !== undefined) update.isActive = body.isActive;
+    return this.tenants.updateMember(id, userId, update, req.tenantAdminAccess);
   }
 
   /** Admin: remove member */
   @Delete(':id/members/:userId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async removeMember(@Param('id') id: string, @Param('userId') userId: string) {
-    await this.tenants.removeMember(id, userId);
+  async removeMember(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Req() req: { tenantAdminAccess: TenantAdminAccess },
+  ) {
+    await this.tenants.removeMember(id, userId, req.tenantAdminAccess);
   }
 
   // ── Admin: Domain Management ─────────────────────────────────────────────
 
   /** Admin: list domains for a tenant */
   @Get(':id/domains')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async listDomains(@Param('id') id: string) {
     return this.domains.listDomainsForTenant(id);
   }
 
   /** Admin: add subdomain (e.g. athens.cofounderbay.com) */
   @Post(':id/domains/subdomain')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async addSubdomain(
     @Param('id') id: string,
     @Body() body: { subdomain: string },
@@ -204,8 +220,7 @@ export class TenantController {
 
   /** Admin: add custom domain */
   @Post(':id/domains/custom')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async addCustomDomain(
     @Param('id') id: string,
     @Body() body: { domainName: string },
@@ -215,46 +230,50 @@ export class TenantController {
 
   /** Admin: get DNS instructions for a domain */
   @Get(':id/domains/:domainId/dns-instructions')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
-  async getDnsInstructions(@Param('domainId') domainId: string) {
-    const { domain } = await this.domains.getDomainById(domainId);
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
+  async getDnsInstructions(@Param('id') id: string, @Param('domainId') domainId: string) {
+    const { domain } = await this.domains.getDomainById(id, domainId);
     return this.domains.getDnsInstructions(domain);
   }
 
   /** Admin: verify custom domain DNS */
   @Post(':id/domains/:domainId/verify')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
-  async verifyDomain(@Param('domainId') domainId: string) {
-    return this.domains.verifyCustomDomain(domainId);
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
+  async verifyDomain(@Param('id') id: string, @Param('domainId') domainId: string) {
+    return this.domains.verifyCustomDomain(id, domainId);
   }
 
   /** Admin: set primary domain */
   @Post(':id/domains/:domainId/set-primary')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async setPrimary(@Param('id') id: string, @Param('domainId') domainId: string) {
     return this.domains.setPrimaryDomain(id, domainId);
   }
 
   /** Admin: activate / deactivate domain */
   @Patch(':id/domains/:domainId/active')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   async toggleActive(
+    @Param('id') id: string,
     @Param('domainId') domainId: string,
     @Body() body: { isActive: boolean },
   ) {
-    return this.domains.toggleDomainActive(domainId, body.isActive);
+    return this.domains.toggleDomainActive(id, domainId, body.isActive);
   }
 
   /** Admin: delete domain */
   @Delete(':id/domains/:domainId')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'super_admin')
+  @UseGuards(JwtAuthGuard, TenantAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteDomain(@Param('domainId') domainId: string) {
-    await this.domains.deleteDomain(domainId);
+  async deleteDomain(@Param('id') id: string, @Param('domainId') domainId: string) {
+    await this.domains.deleteDomain(id, domainId);
+  }
+
+  private parseMemberRole(role?: string): TenantMemberRole {
+    if (role === undefined) return TenantMemberRole.member;
+    if (!Object.values(TenantMemberRole).includes(role as TenantMemberRole)) {
+      throw new BadRequestException('Invalid tenant member role');
+    }
+    return role as TenantMemberRole;
   }
 }

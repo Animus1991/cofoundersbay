@@ -1,10 +1,20 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailQueueService } from '../mailer/email-queue.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type DigestType = 'daily' | 'weekly' | 'monthly';
-export type DigestContentType = 'connections' | 'messages' | 'opportunities' | 'events' | 'updates';
+export type DigestContentType =
+  | 'connections'
+  | 'messages'
+  | 'opportunities'
+  | 'events'
+  | 'updates';
 
 interface DigestContent {
   type: DigestContentType;
@@ -20,7 +30,6 @@ interface DigestContent {
 
 interface DigestData {
   userId: string;
-  email: string;
   type: DigestType;
   frequency: DigestType;
   content: Record<DigestContentType, DigestContent | undefined>;
@@ -33,12 +42,74 @@ interface DigestData {
   };
 }
 
-function digestPeriodStart(type: DigestType, now: Date): Date {
-  const start = new Date(now);
-  if (type === 'daily') start.setUTCDate(start.getUTCDate() - 1);
-  if (type === 'weekly') start.setUTCDate(start.getUTCDate() - 7);
-  if (type === 'monthly') start.setUTCMonth(start.getUTCMonth() - 1);
-  return start;
+function daysInUtcMonth(year: number, month: number): number {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
+function shiftCalendarPeriod(
+  date: Date,
+  type: DigestType,
+  direction: -1 | 1,
+): Date {
+  const shifted = new Date(date);
+  if (type === 'daily') {
+    shifted.setUTCDate(shifted.getUTCDate() + direction);
+    return shifted;
+  }
+  if (type === 'weekly') {
+    shifted.setUTCDate(shifted.getUTCDate() + 7 * direction);
+    return shifted;
+  }
+
+  const sourceYear = shifted.getUTCFullYear();
+  const sourceMonth = shifted.getUTCMonth();
+  const sourceDay = shifted.getUTCDate();
+  const sourceIsMonthEnd =
+    sourceDay === daysInUtcMonth(sourceYear, sourceMonth);
+  const targetMonthIndex = sourceMonth + direction;
+  const targetYear = sourceYear + Math.floor(targetMonthIndex / 12);
+  const targetMonth = ((targetMonthIndex % 12) + 12) % 12;
+  const targetLastDay = daysInUtcMonth(targetYear, targetMonth);
+
+  // Set day to one before changing month to prevent JavaScript's implicit
+  // overflow (for example March 31 -> March 3 instead of February 28).
+  shifted.setUTCDate(1);
+  shifted.setUTCFullYear(
+    targetYear,
+    targetMonth,
+    sourceIsMonthEnd ? targetLastDay : Math.min(sourceDay, targetLastDay),
+  );
+  return shifted;
+}
+
+export function digestPeriodStart(type: DigestType, now: Date): Date {
+  return shiftCalendarPeriod(now, type, -1);
+}
+
+export function nextDigestDueAt(type: DigestType, lastSentAt: Date): Date {
+  return shiftCalendarPeriod(lastSentAt, type, 1);
+}
+
+export function isDigestDue(
+  type: DigestType,
+  lastSentAt: Date | null,
+  now: Date,
+): boolean {
+  return (
+    !lastSentAt || nextDigestDueAt(type, lastSentAt).getTime() <= now.getTime()
+  );
+}
+
+function cadenceBucketKey(type: DigestType, now: Date): string {
+  const bucket = new Date(now);
+  bucket.setUTCHours(0, 0, 0, 0);
+  if (type === 'weekly') {
+    const daysSinceMonday = (bucket.getUTCDay() + 6) % 7;
+    bucket.setUTCDate(bucket.getUTCDate() - daysSinceMonday);
+  } else if (type === 'monthly') {
+    bucket.setUTCDate(1);
+  }
+  return bucket.toISOString();
 }
 
 function escapeHtml(value: unknown): string {
@@ -54,6 +125,7 @@ function escapeHtml(value: unknown): string {
 export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(EmailDigestService.name);
   private digestJobs: Map<string, NodeJS.Timeout> = new Map();
+  private readonly inFlightPreferences = new Set<string>();
 
   constructor(
     private readonly config: ConfigService,
@@ -73,7 +145,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
 
   // Note: Cron jobs should be set up using a proper scheduler like @nestjs/schedule
   // For now, these methods can be called manually or via external scheduler
-  
+
   async sendDailyDigests() {
     this.logger.log('Starting daily digest generation');
     await this.generateDigests('daily');
@@ -91,81 +163,143 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
 
   async generateDigests(type: DigestType) {
     const now = new Date();
-    const periodStart = digestPeriodStart(type, now);
     const preferences = await this.prisma.activityDigestPreference.findMany({
       where: {
         frequency: type,
-        user: { email: { not: { equals: '' } }, emailVerified: true, moderationStatus: 'active' },
+        user: {
+          email: { not: { equals: '' } },
+          emailVerified: true,
+          moderationStatus: 'active',
+        },
       },
-      select: { id: true, userId: true, lastSentAt: true, user: { select: { email: true } } },
+      select: { id: true, userId: true, lastSentAt: true },
       orderBy: { userId: 'asc' },
     });
-    const summary = { eligible: preferences.length, sent: 0, empty: 0, skipped: 0, failed: 0 };
-    this.logger.log(`Generating ${type} digests for ${preferences.length} opted-in users`);
+    const summary = {
+      eligible: preferences.length,
+      sent: 0,
+      queued: 0,
+      disabled: 0,
+      empty: 0,
+      skipped: 0,
+      failed: 0,
+    };
+    this.logger.log(
+      `Generating ${type} digests for ${preferences.length} opted-in users`,
+    );
 
     for (const preference of preferences) {
-      if (preference.lastSentAt && preference.lastSentAt >= periodStart) {
-        summary.skipped += 1;
-        continue;
-      }
-      const reservation = await this.prisma.activityDigestPreference.updateMany({
-        where: {
-          id: preference.id,
-          frequency: type,
-          OR: [{ lastSentAt: null }, { lastSentAt: { lt: periodStart } }],
-        },
-        data: { lastSentAt: now },
-      });
-      if (reservation.count !== 1) {
+      if (!isDigestDue(type, preference.lastSentAt, now)) {
         summary.skipped += 1;
         continue;
       }
 
+      // This reservation prevents duplicate work inside one process without
+      // overloading lastSentAt with an untrue "sent" state. BullMQ's stable job
+      // id provides cross-process deduplication when the queue is configured.
+      if (this.inFlightPreferences.has(preference.id)) {
+        summary.skipped += 1;
+        continue;
+      }
+      this.inFlightPreferences.add(preference.id);
+
       try {
-        const digestData = await this.generateUserDigest(preference.userId, preference.user.email, type);
+        const since = preference.lastSentAt ?? digestPeriodStart(type, now);
+        const digestData = await this.generateUserDigest(
+          preference.userId,
+          type,
+          { since },
+        );
         if (!digestData) {
           summary.empty += 1;
           continue;
         }
-        await this.sendDigestEmail(digestData);
-        summary.sent += 1;
+        const deliveryWindow =
+          preference.lastSentAt?.toISOString() ?? cadenceBucketKey(type, now);
+        const idempotencyKey = `digest:${type}:${preference.userId}:${deliveryWindow}`;
+        const delivery = await this.sendDigestEmail(digestData, idempotencyKey);
+        if (delivery === 'ineligible') {
+          summary.skipped += 1;
+          continue;
+        }
+        if (delivery === 'disabled') {
+          summary.disabled += 1;
+          continue;
+        }
+
+        // Record delivery only after SMTP accepted the message or BullMQ
+        // durably accepted the deterministic job. A failed conditional update
+        // does not undo an already accepted delivery, but avoids overwriting a
+        // concurrent preference change.
+        await this.prisma.activityDigestPreference.updateMany({
+          where: {
+            id: preference.id,
+            frequency: type,
+            lastSentAt: preference.lastSentAt,
+          },
+          data: { lastSentAt: new Date() },
+        });
+        summary[delivery] += 1;
       } catch (error) {
         summary.failed += 1;
-        await this.prisma.activityDigestPreference.updateMany({
-          where: { id: preference.id, lastSentAt: now },
-          data: { lastSentAt: preference.lastSentAt },
-        });
-        this.logger.error(`Failed to generate digest for user ${preference.userId}`, error);
+        this.logger.error(
+          `Failed to generate digest for user ${preference.userId}`,
+          error,
+        );
+      } finally {
+        this.inFlightPreferences.delete(preference.id);
       }
     }
-    this.logger.log(`Completed ${type} digest generation: ${JSON.stringify(summary)}`);
+    this.logger.log(
+      `Completed ${type} digest generation: ${JSON.stringify(summary)}`,
+    );
     return summary;
   }
 
   async generateUserDigest(
     userId: string,
-    email: string,
     type: DigestType,
-    options: { ignoreFrequency?: boolean } = {},
+    options: { ignoreFrequency?: boolean; since?: Date } = {},
   ): Promise<DigestData | null> {
     const now = new Date();
-    const startDate = digestPeriodStart(type, now);
+    const startDate = options.since ?? digestPeriodStart(type, now);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
+        emailVerified: true,
+        moderationStatus: true,
         digestPreference: { select: { frequency: true } },
         notificationChannels: {
-          where: { channel: 'email', category: { in: ['connections', 'messages', 'opportunities', 'events', 'updates'] } },
+          where: {
+            channel: 'email',
+            category: {
+              in: [
+                'connections',
+                'messages',
+                'opportunities',
+                'events',
+                'updates',
+              ],
+            },
+          },
           select: { category: true, isEnabled: true },
         },
       },
     });
 
-    if (!user) return null;
-    if (!options.ignoreFrequency && user.digestPreference?.frequency !== type) return null;
+    if (!user || !user.emailVerified || user.moderationStatus !== 'active')
+      return null;
+    if (!options.ignoreFrequency && user.digestPreference?.frequency !== type)
+      return null;
 
-    const digestPrefs = { connections: true, messages: true, opportunities: true, events: true, updates: false };
+    const digestPrefs = {
+      connections: true,
+      messages: true,
+      opportunities: true,
+      events: true,
+      updates: false,
+    };
     for (const channel of user.notificationChannels) {
       if (channel.category in digestPrefs) {
         digestPrefs[channel.category as DigestContentType] = channel.isEnabled;
@@ -180,9 +314,12 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       events: undefined,
       updates: undefined,
     };
-    
+
     if (digestPrefs.connections) {
-      const connectionsData = await this.getConnectionsDigest(userId, startDate);
+      const connectionsData = await this.getConnectionsDigest(
+        userId,
+        startDate,
+      );
       if (connectionsData) content.connections = connectionsData;
     }
     if (digestPrefs.messages) {
@@ -190,7 +327,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       if (messagesData) content.messages = messagesData;
     }
     if (digestPrefs.opportunities) {
-      const opportunitiesData = await this.getOpportunitiesDigest(userId, startDate);
+      const opportunitiesData = await this.getOpportunitiesDigest(
+        userId,
+        startDate,
+      );
       if (opportunitiesData) content.opportunities = opportunitiesData;
     }
     if (digestPrefs.events) {
@@ -203,11 +343,11 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     }
 
     // Return null if no content
-    if (!Object.values(content).some((section) => section && section.count > 0)) return null;
+    if (!Object.values(content).some((section) => section && section.count > 0))
+      return null;
 
     return {
       userId,
-      email,
       type,
       frequency: type,
       content,
@@ -221,7 +361,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private async getConnectionsDigest(userId: string, since: Date): Promise<DigestContent | null> {
+  private async getConnectionsDigest(
+    userId: string,
+    since: Date,
+  ): Promise<DigestContent | null> {
     const connections = await this.prisma.connectionRequest.findMany({
       where: {
         OR: [{ requesterId: userId }, { receiverId: userId }],
@@ -229,8 +372,12 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
         updatedAt: { gte: since },
       },
       include: {
-        requester: { select: { id: true, email: true, profile: { select: { displayName: true } } } },
-        receiver: { select: { id: true, email: true, profile: { select: { displayName: true } } } },
+        requester: {
+          select: { id: true, profile: { select: { displayName: true } } },
+        },
+        receiver: {
+          select: { id: true, profile: { select: { displayName: true } } },
+        },
       },
       orderBy: { updatedAt: 'desc' },
       take: 10,
@@ -242,8 +389,9 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       type: 'connections',
       count: connections.length,
       items: connections.map((conn: any) => {
-        const otherUser = conn.requesterId === userId ? conn.receiver : conn.requester;
-        const name = otherUser.profile?.displayName || otherUser.email;
+        const otherUser =
+          conn.requesterId === userId ? conn.receiver : conn.requester;
+        const name = otherUser.profile?.displayName || 'a connection';
         return {
           id: conn.id,
           title: `New connection with ${name}`,
@@ -255,7 +403,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private async getMessagesDigest(userId: string, since: Date): Promise<DigestContent | null> {
+  private async getMessagesDigest(
+    userId: string,
+    since: Date,
+  ): Promise<DigestContent | null> {
     const conversations = await this.prisma.conversation.findMany({
       where: {
         participants: {
@@ -271,17 +422,16 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       },
       include: {
         messages: {
-          where: { createdAt: { gte: since }, senderId: { not: userId }, deletedAt: null },
+          where: {
+            createdAt: { gte: since },
+            senderId: { not: userId },
+            deletedAt: null,
+          },
           orderBy: { createdAt: 'desc' },
           take: 5,
           include: {
-            sender: { select: { email: true, profile: { select: { displayName: true } } } },
+            sender: { select: { profile: { select: { displayName: true } } } },
           },
-        },
-        participants: {
-          where: { userId: { not: userId } },
-          include: { user: { select: { email: true, profile: { select: { displayName: true } } } } },
-          take: 1,
         },
       },
       take: 10,
@@ -293,11 +443,12 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       type: 'messages',
       count: conversations.length,
       items: conversations.map((conv: any) => {
-        const otherParticipant = conv.participants[0];
         const latestMessage = conv.messages[0];
         return {
           id: conv.id,
-          title: `Messages from ${otherParticipant?.user.profile?.displayName || otherParticipant?.user.email || 'a connection'}`,
+          // In group conversations the first participant is not necessarily
+          // the author. Attribute the preview to the actual latest sender.
+          title: `Messages from ${latestMessage?.sender?.profile?.displayName || 'a connection'}`,
           description: latestMessage?.body?.substring(0, 100) || 'New messages',
           url: '/messages',
           createdAt: latestMessage?.createdAt || conv.updatedAt,
@@ -306,7 +457,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private async getOpportunitiesDigest(userId: string, since: Date): Promise<DigestContent | null> {
+  private async getOpportunitiesDigest(
+    userId: string,
+    since: Date,
+  ): Promise<DigestContent | null> {
     const opportunities = await this.prisma.opportunity.findMany({
       where: {
         createdAt: { gte: since },
@@ -324,16 +478,23 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       items: opportunities.map((opp: any) => ({
         id: opp.id,
         title: opp.title,
-        description: opp.description?.substring(0, 100) || 'New opportunity available',
+        description:
+          opp.description?.substring(0, 100) || 'New opportunity available',
         url: '/opportunities',
         createdAt: opp.createdAt,
       })),
     };
   }
 
-  private async getEventsDigest(userId: string, since: Date): Promise<DigestContent | null> {
+  private async getEventsDigest(
+    userId: string,
+    since: Date,
+  ): Promise<DigestContent | null> {
     const now = new Date();
-    const windowMs = Math.max(24 * 60 * 60 * 1000, now.getTime() - since.getTime());
+    const windowMs = Math.max(
+      24 * 60 * 60 * 1000,
+      now.getTime() - since.getTime(),
+    );
     const until = new Date(now.getTime() + windowMs);
     const events = await this.prisma.event.findMany({
       where: {
@@ -358,45 +519,102 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
-  private async getUpdatesDigest(userId: string, since: Date): Promise<DigestContent | null> {
+  private async getUpdatesDigest(
+    userId: string,
+    since: Date,
+  ): Promise<DigestContent | null> {
     // Platform updates need a persisted, auditable source before they can be
     // claimed in a personalized email.
     return null;
   }
 
   private webBaseUrl(): string {
-    const configured = this.config.get<string>('WEB_BASE_URL') ?? this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
+    const configured =
+      this.config.get<string>('WEB_BASE_URL') ??
+      this.config.get<string>('FRONTEND_URL') ??
+      'http://localhost:3000';
     const url = new URL(configured);
-    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('WEB_BASE_URL must use HTTP or HTTPS');
+    if (!['http:', 'https:'].includes(url.protocol))
+      throw new Error('WEB_BASE_URL must use HTTP or HTTPS');
     return url.origin;
   }
 
   private absoluteUrl(path: string): string {
-    return new URL(path.startsWith('/') ? path : `/${path}`, `${this.webBaseUrl()}/`).toString();
+    return new URL(
+      path.startsWith('/') ? path : `/${path}`,
+      `${this.webBaseUrl()}/`,
+    ).toString();
   }
 
-  private async sendDigestEmail(digestData: DigestData) {
+  private async currentRecipient(
+    userId: string,
+    type: DigestType,
+    ignoreFrequency = false,
+  ): Promise<string | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        emailVerified: true,
+        moderationStatus: true,
+        digestPreference: { select: { frequency: true } },
+      },
+    });
+    if (
+      !user?.email ||
+      !user.emailVerified ||
+      user.moderationStatus !== 'active'
+    )
+      return null;
+    if (!ignoreFrequency && user.digestPreference?.frequency !== type)
+      return null;
+    return user.email;
+  }
+
+  private async sendDigestEmail(
+    digestData: DigestData,
+    idempotencyKey: string,
+    ignoreFrequency = false,
+  ): Promise<'disabled' | 'sent' | 'queued' | 'ineligible'> {
+    // Re-read the address and eligibility immediately before enqueueing. This
+    // avoids sending to a stale address or to an account that was suspended,
+    // unverified, or opted out while content was being assembled.
+    const recipient = await this.currentRecipient(
+      digestData.userId,
+      digestData.type,
+      ignoreFrequency,
+    );
+    if (!recipient) return 'ineligible';
     const subject = `Your ${digestData.type} CoFounderBay Digest`;
-    
+
     // Generate HTML content
     const html = this.generateDigestHTML(digestData);
-    
+
     // Generate text content
     const text = this.generateDigestText(digestData);
 
-    const delivery = await this.emailQueue.enqueueSendEmail({
-      to: digestData.email,
-      subject,
-      html,
-      text,
-    });
-    if (delivery === 'disabled') throw new Error('Email delivery is disabled');
-    this.logger.log(`${delivery === 'queued' ? 'Queued' : 'Sent'} ${digestData.type} digest for user ${digestData.userId}`);
+    const delivery = await this.emailQueue.enqueueSendEmail(
+      {
+        to: recipient,
+        subject,
+        html,
+        text,
+      },
+      {
+        idempotencyKey,
+      },
+    );
+    if (delivery !== 'disabled') {
+      this.logger.log(
+        `${delivery === 'queued' ? 'Queued' : 'Sent'} ${digestData.type} digest for user ${digestData.userId}`,
+      );
+    }
+    return delivery;
   }
 
   private generateDigestHTML(data: DigestData): string {
     const typeTitle = data.type.charAt(0).toUpperCase() + data.type.slice(1);
-    
+
     let html = `
       <!DOCTYPE html>
       <html>
@@ -436,8 +654,8 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
           <div class="section">
             <div class="section-title">${content.count} New ${type.charAt(0).toUpperCase() + type.slice(1)}</div>
         `;
-        
-        content.items.forEach(item => {
+
+        content.items.forEach((item) => {
           html += `
             <div class="item">
               <div class="item-title">${escapeHtml(item.title)}</div>
@@ -447,7 +665,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
             </div>
           `;
         });
-        
+
         html += '</div>';
       }
     });
@@ -469,7 +687,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
 
   private generateDigestText(data: DigestData): string {
     const typeTitle = data.type.charAt(0).toUpperCase() + data.type.slice(1);
-    
+
     let text = `CoFounderBay ${typeTitle} Digest\n\n`;
     text += `Your personalized summary of the past ${data.type}\n\n`;
 
@@ -477,8 +695,8 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       if (content && content.count > 0) {
         text += `${content.count} New ${type.charAt(0).toUpperCase() + type.slice(1)}\n`;
         text += '─'.repeat(30) + '\n';
-        
-        content.items.forEach(item => {
+
+        content.items.forEach((item) => {
           text += `• ${item.title}\n`;
           if (item.description) {
             text += `  ${item.description}\n`;
@@ -488,13 +706,14 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
           }
           text += '\n';
         });
-        
+
         text += '\n';
       }
     });
 
     text += '─'.repeat(50) + '\n';
-    text += "You're receiving this because you subscribed to CoFounderBay digests.\n";
+    text +=
+      "You're receiving this because you subscribed to CoFounderBay digests.\n";
     text += `Manage preferences: ${this.absoluteUrl('/settings/notifications')}\n`;
     text += `Unsubscribe: ${this.absoluteUrl('/settings/notifications?digest=never')}\n`;
 
@@ -503,21 +722,21 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
 
   // Manual trigger for testing
   async sendTestDigest(userId: string, type: DigestType = 'daily') {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true },
+    const digestData = await this.generateUserDigest(userId, type, {
+      ignoreFrequency: true,
     });
-
-    if (!user?.email) {
-      throw new Error('User not found or no email address');
-    }
-
-    const digestData = await this.generateUserDigest(userId, user.email, type, { ignoreFrequency: true });
     if (!digestData) {
       throw new Error('No digest content available');
     }
 
-    await this.sendDigestEmail(digestData);
-    this.logger.log(`Test ${type} digest sent for user ${userId}`);
+    const delivery = await this.sendDigestEmail(
+      digestData,
+      `test-digest:${type}:${userId}:${Date.now()}`,
+      true,
+    );
+    if (delivery === 'ineligible')
+      throw new Error('User is not eligible for email delivery');
+    if (delivery === 'disabled') throw new Error('Email delivery is disabled');
+    this.logger.log(`Test ${type} digest ${delivery} for user ${userId}`);
   }
 }

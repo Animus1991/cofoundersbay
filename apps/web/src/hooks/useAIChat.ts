@@ -536,13 +536,18 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       setPendingActionId(action.id);
       try {
         const result = await executeCopilotAction(action);
-        invalidateFor(action.tool);
-        audit(action, result.ok ? 'applied' : 'failed');
         if (!result.ok) {
+          audit(action, 'failed');
           updateAction(action.id, { status: 'error' });
           setError(result.error ?? 'Action failed');
           return;
         }
+        // A page command is not applied when its request merely started. Its
+        // handler contract keeps `executeCopilotAction` pending until the
+        // underlying mutation settles, so cache refresh, audit and Undo all
+        // become visible only after a confirmed success.
+        invalidateFor(action.tool);
+        audit(action, 'applied');
         // Carried on the card so the undo can act on what was created, not on
         // what was asked for. Without it a create can only ever be `none`.
         updateAction(action.id, { status: 'done', undoContext: result.undo });

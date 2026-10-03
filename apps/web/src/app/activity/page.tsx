@@ -332,7 +332,7 @@ export default function ActivityPage() {
     ], activeTab, (v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }),
     choiceControl('activity_type', 'Activity type', 'Τύπος δραστηριότητας', FEED_TYPE_FILTERS.map((f) => ({ value: f.value, en: activityEn(f.key), el: activityEl(f.key) })), typeFilter, (v) => setTypeFilter(v as ActivityType)),
     { id: 'load_more', labelEn: 'Load more activity', labelEl: 'Φόρτωση περισσότερης δραστηριότητας', writes: false, unavailableEn: hasMore ? undefined : 'There is no more activity to load.', unavailableEl: hasMore ? undefined : 'Δεν υπάρχει άλλη δραστηριότητα.', run: () => void handleLoadMore() },
-    { id: 'mark_all_read', labelEn: 'Mark all notifications read', labelEl: 'Σήμανση όλων ως αναγνωσμένων', writes: true, unavailableEn: activeTab === 'notifications' && unreadCount === 0 ? 'Nothing is unread.' : undefined, unavailableEl: activeTab === 'notifications' && unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined, run: () => markAll.mutate() },
+    { id: 'mark_all_read', labelEn: 'Mark all notifications read', labelEl: 'Σήμανση όλων ως αναγνωσμένων', writes: true, unavailableEn: activeTab === 'notifications' && unreadCount === 0 ? 'Nothing is unread.' : undefined, unavailableEl: activeTab === 'notifications' && unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined, run: async () => { await markAll.mutateAsync(); } },
   ]);
 
   // Group items by date

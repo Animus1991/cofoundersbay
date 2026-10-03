@@ -17,12 +17,12 @@ export class TenantDomainService {
     return { domains };
   }
 
-  async getDomainById(domainId: string) {
+  async getDomainById(tenantId: string, domainId: string) {
     const domain = await this.prisma.tenantDomain.findUnique({
       where: { id: domainId },
       include: { tenant: true },
     });
-    if (!domain) throw new NotFoundException('Domain not found');
+    if (!domain || domain.tenantId !== tenantId) throw new NotFoundException('Domain not found');
     return { domain };
   }
 
@@ -169,12 +169,12 @@ export class TenantDomainService {
     return { domain };
   }
 
-  async verifyCustomDomain(domainId: string): Promise<{ verified: boolean; message: string }> {
+  async verifyCustomDomain(tenantId: string, domainId: string): Promise<{ verified: boolean; message: string }> {
     const domain = await this.prisma.tenantDomain.findUnique({
       where: { id: domainId },
     });
 
-    if (!domain) throw new NotFoundException('Domain not found');
+    if (!domain || domain.tenantId !== tenantId) throw new NotFoundException('Domain not found');
     if (domain.domainType !== 'custom') {
       throw new BadRequestException('Only custom domains need verification');
     }
@@ -257,12 +257,12 @@ export class TenantDomainService {
     return { domain: updated };
   }
 
-  async toggleDomainActive(domainId: string, isActive: boolean) {
+  async toggleDomainActive(tenantId: string, domainId: string, isActive: boolean) {
     const domain = await this.prisma.tenantDomain.findUnique({
       where: { id: domainId },
     });
 
-    if (!domain) throw new NotFoundException('Domain not found');
+    if (!domain || domain.tenantId !== tenantId) throw new NotFoundException('Domain not found');
     if (domain.verificationStatus !== 'verified' && isActive) {
       throw new BadRequestException('Cannot activate unverified domain');
     }
@@ -275,12 +275,12 @@ export class TenantDomainService {
     return { domain: updated };
   }
 
-  async deleteDomain(domainId: string) {
+  async deleteDomain(tenantId: string, domainId: string) {
     const domain = await this.prisma.tenantDomain.findUnique({
       where: { id: domainId },
     });
 
-    if (!domain) throw new NotFoundException('Domain not found');
+    if (!domain || domain.tenantId !== tenantId) throw new NotFoundException('Domain not found');
 
     await this.prisma.tenantDomain.delete({
       where: { id: domainId },

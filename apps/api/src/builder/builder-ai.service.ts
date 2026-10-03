@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { createHash } from 'crypto';
@@ -14,6 +19,8 @@ interface AIProviderConfig {
   maxTokens: number;
   temperature: number;
 }
+
+const BUILDER_AI_CACHE_POLICY_VERSION = 'v2';
 
 export interface GenerationResult {
   content: Record<string, any>;
@@ -37,13 +44,22 @@ export class BuilderAIService {
   ): Promise<GenerationResult> {
     const startTime = Date.now();
     const config = this.getAIConfig(dto.model);
+
+    await this.assertWorkspaceAccess(userId, dto.workspaceId, 'editor');
     
     // Build prompt based on document type and context
     const prompt = this.buildPrompt(dto);
-    const promptHash = this.hashPrompt(prompt);
+    const promptHash = this.hashPrompt([
+      BUILDER_AI_CACHE_POLICY_VERSION,
+      dto.workspaceId,
+      userId,
+      config.model,
+      prompt,
+    ].join('\n'));
 
-    // Check cache
-    const cached = await this.checkCache(promptHash);
+    // Cache hits are scoped to the authenticated actor and workspace. A prompt
+    // hash alone can otherwise disclose generated private context across teams.
+    const cached = await this.checkCache(promptHash, dto.workspaceId, userId, config.model);
     if (cached) {
       return {
         content: cached.response as Record<string, any>,
@@ -137,6 +153,8 @@ export class BuilderAIService {
     question: string,
     context: Record<string, any>,
   ): Promise<string> {
+    await this.assertWorkspaceAccess(userId, workspaceId, 'editor');
+
     const prompt = this.buildApplicationAnswerPrompt(question, context);
     const config = this.getAIConfig();
 
@@ -524,10 +542,18 @@ Return as JSON with an "answer" field containing the response.`;
     };
   }
 
-  private async checkCache(promptHash: string): Promise<any | null> {
+  private async checkCache(
+    promptHash: string,
+    workspaceId: string,
+    userId: string,
+    model: string,
+  ): Promise<any | null> {
     const cached = await this.prisma.builderAIGeneration.findFirst({
       where: {
         promptHash,
+        workspaceId,
+        userId,
+        model,
         status: 'completed',
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // 24 hour cache
@@ -537,6 +563,42 @@ Return as JSON with an "answer" field containing the response.`;
     });
 
     return cached;
+  }
+
+  private async assertWorkspaceAccess(
+    userId: string,
+    workspaceId: string,
+    requiredRole: 'viewer' | 'commenter' | 'editor' | 'owner',
+  ): Promise<void> {
+    const workspace = await this.prisma.builderWorkspace.findUnique({
+      where: { id: workspaceId },
+      select: {
+        ownerId: true,
+        collaborators: {
+          where: { userId, isActive: true },
+          select: { role: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException('Workspace not found');
+    }
+
+    if (workspace.ownerId === userId) {
+      return;
+    }
+
+    const collaborator = workspace.collaborators[0];
+    if (!collaborator) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const roleHierarchy = ['viewer', 'commenter', 'editor', 'owner'];
+    if (roleHierarchy.indexOf(collaborator.role) < roleHierarchy.indexOf(requiredRole)) {
+      throw new ForbiddenException('Insufficient permissions');
+    }
   }
 
   private hashPrompt(prompt: string): string {

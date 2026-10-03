@@ -136,7 +136,11 @@ export function usePageControls(controls: PageControl[]): void {
       // the same for the undo, which must answer from the rows as they are.
       controls: latest.current.map((c) => ({
         ...c,
-        run: (value?: string) => latest.current.find((x) => x.id === c.id)?.run(value),
+        run: async (value?: string) => {
+          const current = latest.current.find((x) => x.id === c.id);
+          if (!current) throw new Error(`The page command "${c.id}" is no longer available.`);
+          await current.run(value);
+        },
         undo: c.undo ? (value?: string) => latest.current.find((x) => x.id === c.id)?.undo?.(value) : undefined,
       })),
     });
