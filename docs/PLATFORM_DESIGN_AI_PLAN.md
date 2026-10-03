@@ -1227,3 +1227,355 @@ Guards: `decorativeIcons.test.ts` (nested `:has`, ετικέτα χωρίς `.sr
 ### 29.8 Τι δεν αποδεικνύουν
 
 Οι έλεγχοι αντίθεσης μετρούν ζεύγη tokens, όχι κάθε κατάσταση κειμένου σε κάθε επιφάνεια. Το sweep τρέχει ως `platform_admin` σε demo mode στα 1440px — δεν είναι authorization test. Τα 390px μετρήθηκαν δειγματοληπτικά, όχι σε κάθε route. `space-y-6` ως section rhythm είναι σύμβαση πλειοψηφίας, όχι φρουρός — νέα σελίδα μπορεί να ξεφύγει χωρίς lint. Οι «νόμιμες» hex περιοχές (canvas, branding) αξιολογήθηκαν ανά περίπτωση· το allowlist είναι η τεκμηρίωση, όχι απόδειξη ορθότητας.
+
+## 30. Έλεγχος 2026-10-03 και πλάνο επόμενου κύκλου — κάθε σελίδα, component, modal, button
+
+### 30.1 Git — καμία παράλειψη
+
+`git fetch origin --prune` στις 2026-10-03. Το τοπικό `cursor/ui-upgrade-cloudflare-preview-53e0` ήταν στο `9d8b6211`. Το `origin/claude/project-audit-upgrade-y2ebnr` (`3c2b32ca`) είναι αυστηρός απόγονος: merge-base με το `cursor/phone-component-sizes-53e0` είναι το `477ca958`, και το phone branch έχει **0** commits έξω από το Claude. Έγινε `git merge --ff-only` στο `3c2b32ca`. Μετά το fast-forward, **κάθε** remote έχει 0 commits που λείπουν από το HEAD:
+
+| remote | SHA | commits που δεν είναι στο HEAD |
+|---|---|---|
+| `claude/project-audit-upgrade-y2ebnr` | `3c2b32ca` | 0 |
+| `cursor/phone-component-sizes-53e0` | `477ca958` | 0 (πρόγονος) |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` | `9d8b6211` πριν το ff | 0 |
+| `integration/ai-platform-upgrade` | `0e792ce7` | 0 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe32` | 0 |
+| `main` | `91d6ea3a` | 0 · το HEAD είναι 368 commits μπροστά |
+
+Δεν έγινε merge του April `main`. Δεν υπάρχει δεύτερο tip με δουλειά που έμεινε έξω. Το §28 και το §29 είναι ήδη μέσα στο `3c2b32ca`· αυτό το τμήμα δεν τα ξανακάνει. Καταγράφει τι μετρήθηκε **τώρα** στον κώδικα και ποιο είναι το επόμενο βήμα, όχι μια λίστα ευχών.
+
+### 30.2 Μέτρηση σε αυτό το tip
+
+| αντικείμενο | μέτρηση | πηγή |
+|---|---|---|
+| σελίδες `page.tsx` | **160** | `apps/web/src/app` |
+| components `.tsx` | **261** | `apps/web/src/components` |
+| `<Button>` | **1324** σε αρχεία `.tsx` | κλήση του κοινού component |
+| native `<button>` | **571** σε 163 αρχεία | κυρίως canvas, research, chat, matches |
+| αρχεία με `Dialog` / `Sheet` | **54**, όλα με `DialogTitle` ή `SheetTitle` στο ίδιο αρχείο | δεν λείπει δείκτης τίτλου |
+| σελίδες με άμεσο `PageRail` ή παιδί που τον έχει | βλ. στήλη rail στον κατάλογο | το `rail-candidates` του §29.4 έδωσε 51 rails και 0 υποψήφιες |
+| λόγοι «ο assistant δεν ενεργεί» | **50** routes | `scripts/ai-coverage-reasons.json` |
+| σελίδες με `SampleDataNotice` στο `page.tsx` | βλ. κατάλογο | το δείγμα μένει δείγμα |
+
+### 30.3 Σύμβαση που ισχύει για κάθε button
+
+Κοινή πηγή: `components/ui/button.tsx` και το phone floor στο `globals.css` (κάτω από 640px).
+
+| variant | ρόλος | πού |
+|---|---|---|
+| `default` | η μία χρωματιστή ενέργεια της σειράς | αποθήκευση, δημιουργία, κύριο CTA |
+| `secondary` | γέμισμα χωρίς να ανταγωνίζεται το primary | δευτερεύουσα ενέργεια στην ίδια σειρά |
+| `outline` | hairline, ίδιο με κάρτα | ακύρωση δίπλα σε primary, φίλτρα |
+| `ghost` | χωρίς κουτί | toolbar, γραμμή πίνακα, icon δίπλα σε κείμενο |
+| `destructive` | διαγραφή / μη αναστρέψιμο | πάντα μέσα σε `confirm-dialog`, ποτέ μόνο του σε λίστα |
+| `link` | κείμενο με υπογράμμιση | μέσα σε παράγραφο· εξαιρείται από το ύψος 44px |
+
+| size | κάτω από `md` | `md`–`lg` | `lg`+ (root 82%) |
+|---|---|---|---|
+| `xs` | 28px (`h-7`)· στο τηλέφωνο το floor το πάει στα 44px | 28px | `min-height: 28px × --chrome-y` |
+| `sm` | 44px | 32px | 32px × chrome |
+| `md` (default) | 44px | 36px | 36px × chrome |
+| `lg` | 44px | 40px | 40px × chrome |
+| `xl` | 48px | 48px | 48px × chrome |
+| `icon` | 44×44 | 36×36 | 36×36 |
+
+Το floor (`:is(button, a, [role=tab], [role=button])` με `h-7`/`h-8`/`h-9`/`h-10`) καλύπτει και τα 571 native `<button>` **όταν** φορούν αυτές τις κλάσεις. Δεν αλλάζει tablet ούτε desktop: το media query κόβει στα 639.98px.
+
+**Επόμενο, ένα, για όλα τα κουμπιά:** φρουρός στο sweep που αποτυγχάνει αν σε 390px ένα `button` / `[role=button]` / tab έχει computed height < 44px, εκτός από `size=link` και κείμενο μέσα σε παράγραφο. Μέχρι να μπει, τα 571 native μένουν το μόνο σημείο που ένα νέο `h-6` ή arbitrary height μπορεί να ξεφύγει. Δεν ξαναγράφουμε τα 1324 call sites.
+
+Κάθε κουμπί που είναι μόνο εικονίδιο κρατά `aria-label` δίγλωσσο (`bilingualAria`). Το §28.4 μέτρησε 0 κενά εικονίδια σε 146 routes στα 1440 και στα 390. Νέο icon button χωρίς όνομα αποτυγχάνει το `decorativeIcons` + τη στήλη `blankIcons`.
+
+### 30.4 Σύμβαση που ισχύει για κάθε modal και sheet
+
+`DialogContent`: καρφωμένο πάνω στο τηλέφωνο (`top: max(0.75rem, safe-area)`), κεντραρισμένο από `md`, `max-h: min(92dvh, 720px)`, κλείσιμο 44×44 με `aria-label` «Close dialog. Κλείσιμο παραθύρου», `pr-12` στον τίτλο ώστε να μην πέφτει πάνω στο Χ. `Sheet`: τέσσερις πλευρές, κάτω με `safe-area-inset-bottom`, πλάτος `min(22rem, 92vw)`. Overlay και τα δύο `shadow-none`. `prefers-reduced-motion` σβήνει το animation του dialog.
+
+Τα 54 αρχεία έχουν δείκτη τίτλου. Ο τίτλος δεν είναι απόδειξη ότι το Radix τον συνδέει με `aria-labelledby` σε κάθε κατάσταση (κενό children, conditional render). **Επόμενο:** ένα τεστ που ανοίγει κάθε dialog σε demo και αποτυγχάνει αν το `dialog` δεν έχει accessible name. Δεν προσθέτουμε νέα modals σε αυτόν τον κύκλο.
+
+| αρχείο | είδος | επόμενο |
+|---|---|---|
+| `apps/web/src/app/saved-searches/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/pitch/[id]/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/jobs/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/mentoring/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/provider/services/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/provider/projects/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/research/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/org/[slug]/admin/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/org/applications/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/communities/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/feature-flags/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/reports/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/billing/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/programs/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/user-management/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/admin/taxonomy/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/matches/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/tenant/programs/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/tenant/members/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/recommendations/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/programs/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/opportunities/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/data-room/[id]/page.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/groups/components/CreateGroupModal.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/app/messages/ComposeMessageDialog.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/ui/rich-text-editor.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/ui/export-dialog.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/ui/image-cropper.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/ui/share-modal.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/ui/confirm-dialog.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/mentoring/SessionDialogs.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/auth/TwoFactorManagement.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/messaging/ConversationValidation.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/BoardTemplates.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/EntityReferenceSelector.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/BoardHistoryDrawer.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/ResearchNodeViewer.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/CanvasVersionPanel.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/research/BoardSettingsPanel.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/builder/VersionHistoryDrawer.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/builder/ReviewPanel.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/builder/CollabToolbar.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/builder/BuilderWorkspace.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/builder/BranchPanel.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/layout/MobileNav.tsx` | Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/layout/PageRail.tsx` | Dialog, Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/feed/CreatePost.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/collaboration/CollaborationStarter.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/common/ReportBlockModal.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/common/CommandPalette.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/common/ConnectionRequest.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/common/ScheduleCallModal.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/endorsements/GiveEndorsementDialog.tsx` | Dialog | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+| `apps/web/src/components/discover/SearchFilters.tsx` | Sheet | φρουρός accessible name· η σύμβαση του 30.4 ήδη ισχύει |
+
+### 30.5 Κάθε component — ανά φάκελο
+
+Τα 261 αρχεία κληρονομούν tokens, `focus-visible`, reduced-motion και το phone floor. Δεν ξανασχεδιάζονται ένα-ένα. Η στήλη «επόμενο» είναι το μόνο ανοιχτό για τον φάκελο· αν είναι «κανένα», το §29 τα πιστοποίησε και δεν ανοίγει νέα δουλειά χωρίς νέα μέτρηση.
+
+| φάκελος | αρχεία | επόμενο |
+|---|---|---|
+| `common` (55) | `AnimatedCard.tsx`, `AnimatedList.tsx`, `AppRouteLoading.tsx`, `BilingualText.tsx`, `ChatBubble.tsx`, `CommandPalette.tsx`, `ConnectionRequest.tsx`, `CookieConsent.tsx`, `DemoDataToggle.tsx`, `DomI18n.tsx`, `EmptyState.test.tsx`, `EmptyState.tsx`, `EmptyStates.tsx`, `ErrorBoundary.tsx`, `FirstRunTour.tsx`, `FormDraftNotice.tsx`, `HelpCallout.tsx`, `I18nProvider.tsx`, `LanguagePreferenceToggle.tsx`, `LanguageSwitcher.tsx`, `LazyComponents.tsx`, `LegalText.test.tsx`, `LegalText.tsx`, `LoadingCard.tsx`, `LocalTime.tsx`, `LocaleSync.tsx`, `MatchCard.tsx`, `NotificationCenter.tsx`, `OfflineIndicator.tsx`, `OnboardingSteps.tsx`, `OptimizedLink.tsx`, `PageContextualHelp.tsx`, `PageLoading.tsx`, `PageSkeletons.tsx`, `PageTransition.tsx`, `PersonActions.tsx`, `PreviewSessionGuard.tsx`, `ProfileCompletion.tsx`, `QuickActions.tsx`, `RelativeTime.tsx`, `ReportBlockModal.tsx`, `RoleBadge.tsx`, `RoleSwitcher.tsx`, `RouteError.tsx`, `SampleDataNotice.tsx`, `SanitizedHtml.tsx`, `ScheduleCallModal.tsx`, `ServiceWorkerRegistration.tsx`, `SkillChip.tsx`, `Spinner.tsx`, `StatCard.tsx`, `StatusText.tsx`, `ThemeToggle.tsx`, `UnavailableButton.tsx`, `UnavailableMenuItem.tsx` | τα 55 είναι τα shared controls (EmptyState, CommandPalette, ConnectionRequest, ReportBlock, ScheduleCall, SampleDataNotice). Επόμενο: το τεστ accessible name του 30.4 στα τρία modals του φακέλου. |
+| `ui` (39) | `accordion.test.tsx`, `accordion.tsx`, `avatar.tsx`, `badge.tsx`, `bulk-action-bar.tsx`, `button.test.tsx`, `button.tsx`, `card.tsx`, `checkbox.tsx`, `confirm-dialog.test.tsx`, `confirm-dialog.tsx`, `date-range-picker.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `enhanced-card.tsx`, `export-dialog.tsx`, `form-field.test.tsx`, `form-field.tsx`, `hairline-meter.tsx`, `image-cropper.tsx`, `input.tsx`, `label.tsx`, `progress.test.tsx`, `progress.tsx`, `rich-text-editor.tsx`, `select.tsx`, `settings-row.tsx`, `share-modal.test.tsx`, `share-modal.tsx`, `sheet.tsx`, `skeleton.tsx`, `skeletons.tsx`, `switch.tsx`, `table.tsx`, `tabs.tsx`, `textarea.tsx`, `toast.test.tsx`, `toast.tsx`, `tooltip.tsx` | primitives. Επόμενο: ο φρουρός ύψους 44px του 30.3, όχι νέα variants. |
+| `research` (34) | `AIAnalysisPanel.tsx`, `BoardExport.tsx`, `BoardHistoryDrawer.tsx`, `BoardMiniMap.test.tsx`, `BoardMiniMap.tsx`, `BoardSettingsPanel.tsx`, `BoardSummaryPanel.tsx`, `BoardTemplates.tsx`, `CanvasAlignmentGuides.tsx`, `CanvasBranchSelector.tsx`, `CanvasCommentPin.tsx`, `CanvasCopilotPanel.tsx`, `CanvasDrawToolbar.test.tsx`, `CanvasDrawToolbar.tsx`, `CanvasInspectorPanel.tsx`, `CanvasRulers.tsx`, `CanvasVersionPanel.tsx`, `CollaboratorsBar.tsx`, `CommentsPanel.tsx`, `EmptyCanvasStarter.tsx`, `EntityReferenceSelector.tsx`, `FlowDiagramNode.tsx`, `MermaidDiagramNode.tsx`, `NodeTagsEditor.tsx`, `PdfAnnotationViewer.tsx`, `ResearchConnectorLines.tsx`, `ResearchGroupFrame.tsx`, `ResearchNodeCard.tsx`, `ResearchNodeViewer.tsx`, `RichTextEditor.tsx`, `ShapeLibraryPanel.tsx`, `ShapeNode.tsx`, `VisualTemplateNode.tsx`, `WhiteboardNode.tsx` | canvas tools είναι native buttons· το h-7 μπήκε στο floor στη φάση 6. Επόμενο: ο ίδιος φρουρός στα 390px μέσα στο board, με τον inspector κλειστό (`data-phone-inspector=closed`). |
+| `layout` (23) | `AppShell.tsx`, `CommandPaletteHost.tsx`, `GlobalFloatingUi.tsx`, `LandingNav.tsx`, `MobileBottomNav.tsx`, `MobileNav.tsx`, `MobileNavigation.test.tsx`, `ModeSwitcher.tsx`, `NotificationsBell.tsx`, `PageRail.test.tsx`, `PageRail.tsx`, `PageRailContext.tsx`, `PhonePlaceholderFit.tsx`, `RailParts.test.tsx`, `RailParts.tsx`, `RoleTheme.tsx`, `SearchBar.tsx`, `SideNav.tsx`, `SidebarContext.tsx`, `SkipToContent.tsx`, `TopBar.tsx`, `UserMenu.test.tsx`, `UserMenu.tsx` | AppShell, rails, bottom nav. Επόμενο: κανένα οπτικό· το hover-peek του αριστερού sidebar έχει e2e. Μένει να μην αλλάξει το 82% στο desktop. |
+| `builder` (17) | `ActivityTimeline.tsx`, `ApplicationGenerator.tsx`, `ApplicationProgramsChrome.tsx`, `ArtifactDiffView.tsx`, `BranchPanel.tsx`, `BuilderStageChrome.tsx`, `BuilderWorkspace.tsx`, `BusinessModelCanvas.tsx`, `CollabToolbar.tsx`, `FinancialPlanning.tsx`, `IdeaCore.tsx`, `MVPPlanner.tsx`, `MarketAnalysis.tsx`, `PitchDeckBuilder.tsx`, `ReadinessScoring.tsx`, `ReviewPanel.tsx`, `VersionHistoryDrawer.tsx` | έγγραφα, pitch, versions, branches. Επόμενο: ο assistant δεν γράφει στο canvas/builder (§6). Τα draft μένουν προτάσεις φόρμας. |
+| `dashboard` (11) | `DashboardActivity.tsx`, `DashboardCalendar.tsx`, `DashboardGreeting.tsx`, `DashboardHero.tsx`, `DashboardJobs.tsx`, `DashboardMembers.tsx`, `DashboardNewsletter.tsx`, `DashboardPoll.tsx`, `DashboardStats.tsx`, `MetricTile.tsx`, `SectionCard.tsx` | widgets της αρχικής. Επόμενο: κανένα, όσο τα νούμερα έρχονται από τα entity reads. |
+| `gamification` (10) | `BadgesWidget.tsx`, `NextActionBanner.tsx`, `OnboardingChecklist.test.tsx`, `OnboardingChecklist.tsx`, `ReputationSystem.tsx`, `UserBadges.tsx`, `VentureReadinessCard.tsx`, `WorkspaceMetricsPanels.tsx`, `WorkspaceScoringWidget.tsx`, `XPProgressWidget.tsx` | readiness, badges, reputation widgets. Επόμενο: κανένα οπτικό· οι προτάσεις διαστάσεων μένουν δίγλωσσες από το `c85ac010`. |
+| `ai` (9) | `AIComposer.tsx`, `AIInsightButton.tsx`, `AIMatchExplainer.tsx`, `AIQuickAsk.tsx`, `ActionCard.test.tsx`, `ActionCard.tsx`, `CitationChip.tsx`, `CopilotEmptyState.tsx`, `CopilotWorkspace.tsx` | παράθυρο assistant. Επόμενο: κανένα chrome· το κύμα F είναι 100% στο γραμμένο σύνολο, όχι σε πραγματικούς χρήστες (§28.8). |
+| `admin` (5) | `AbuseMonitorPanel.tsx`, `AdminAnalyticsDashboard.test.tsx`, `AdminAnalyticsDashboard.tsx`, `ExperimentationPanel.tsx`, `ScoreInspector.tsx` | ExperimentationPanel. Επόμενο: destructive πάντα μέσω confirm-dialog. |
+| `feed` (5) | `CreatePost.test.tsx`, `CreatePost.tsx`, `FeedPostComposer.test.tsx`, `FeedPostComposer.tsx`, `PostCard.tsx` | composer + κάρτες. Επόμενο: κανένα API. Το `SampleDataNotice` μένει μέχρι προϊόντική απόφαση για Prisma. |
+| `providers` (5) | `ApiHealthProbe.tsx`, `PostHogProvider.tsx`, `QueryProvider.test.tsx`, `QueryProvider.tsx`, `TenantContext.tsx` | κάρτες υπηρεσιών. Επόμενο: κανένα, όσο το marketplace δηλώνει δείγμα. |
+| `auth` (4) | `AdminGuard.tsx`, `OAuthButtons.tsx`, `TwoFactorManagement.tsx`, `TwoFactorSetup.tsx` | 2FA dialog. Επόμενο: ο assistant δεν αγγίζει μυστικά· το modal μένει ανθρώπινο. |
+| `messaging` (4) | `ChatWindow.tsx`, `ConversationList.tsx`, `ConversationValidation.tsx`, `ThreadAvatar.tsx` | ChatWindow, validation. Επόμενο: κανένα αυτόνομο DM (§10). |
+| `video` (3) | `VideoCall.tsx`, `VideoCallDemo.tsx`, `VideoCallProvider.tsx` | VideoCall. Επόμενο: κανένα νέο transport. |
+| `workspace` (3) | `FilterBar.tsx`, `PageHeader.tsx`, `StatsCard.tsx` | χώρος εργασίας. Επόμενο: ίδιο chrome με τις σελίδες Work. |
+| `behavioral` (2) | `BehaviorAdminPanel.tsx`, `BehavioralNudge.tsx` | optimizer widgets. Επόμενο: κανένα, δεν αλλάζουμε το μοντέλο σε αυτόν τον κύκλο. |
+| `canvas` (2) | `ResearchCanvas.test.tsx`, `ResearchCanvas.tsx` | ResearchCanvas, 31 native buttons. Επόμενο: ο φρουρός 390px του research. |
+| `discover` (2) | `ProfileCard.tsx`, `SearchFilters.tsx` | ProfileCard, SearchFilters sheet. Επόμενο: το sheet στον φρουρό ονόματος. |
+| `endorsements` (2) | `GiveEndorsementDialog.test.tsx`, `GiveEndorsementDialog.tsx` | GiveEndorsementDialog. Επόμενο: κανένα· το write είναι ήδη partial με reversal. |
+| `icons` (2) | `CfbGlyph.test.tsx`, `CfbGlyph.tsx` | γλυφές. Επόμενο: κανένα· το `data-keep-icon` μένει η εξαίρεση. |
+| `members` (2) | `EnhancedMemberDirectory.tsx`, `MembersPageClient.tsx` | directory. Επόμενο: κανένα εκτός αν το sweep 390 δείξει overflow σε κάρτα. |
+| `mentoring` (2) | `BookingCalendar.tsx`, `SessionDialogs.tsx` | BookingCalendar, SessionDialogs. Επόμενο: τα session dialogs στον φρουρό ονόματος. Δεν ενώνουμε calendar με bookings. |
+| `messages` (2) | `MessageComposer.tsx`, `MessageThread.tsx` | composer. Επόμενο: κανένα· το fullHeight και το bottom nav έκλεισαν στο §11. |
+| `social` (2) | `InviteSystem.tsx`, `ShareButton.tsx` | InviteSystem. Επόμενο: η πρόσκληση μένει ανθρώπινη ενέργεια (ο λόγος του `/invite`). |
+| `activity` (1) | `ActivityFeed.tsx` | γραμμή δραστηριότητας. Επόμενο: κανένα. |
+| `analytics` (1) | `AdvancedAnalyticsDashboard.tsx` | γραφήματα με `--chart-*`. Επόμενο: κανένα hex έξω από το allowlist. |
+| `billing` (1) | `FeatureGate.tsx` | σύνοψη πλάνου. Επόμενο: καμία πληρωμή από τον assistant. |
+| `brand` (1) | `Logo.tsx` | λογότυπο. Επόμενο: κανένα· το «Bay» φορά το ακριβές accent (`53f8bdbe`). |
+| `charts` (1) | `MatchCompatibilityChart.tsx` | κοινός chart wrapper. Επόμενο: tokens, όχι νέα παλέτα. |
+| `chat` (1) | `UnifiedChatPopup.tsx` | UnifiedChatPopup, 15 native buttons. Επόμενο: ο φρουρός 44px. |
+| `collaboration` (1) | `CollaborationStarter.tsx` | CollaborationStarter dialog. Επόμενο: φρουρός ονόματος. |
+| `events` (1) | `EventCard.tsx` | EventCard. Επόμενο: κανένα. |
+| `notifications` (1) | `NotificationCenter.tsx` | λίστα. Επόμενο: κανένα· ο reader υπάρχει. |
+| `optimization` (1) | `VirtualList.tsx` | πάνελ optimizer. Επόμενο: κανένα σε αυτόν τον κύκλο. |
+| `profile` (1) | `ProfileCompleteness.tsx` | ProfileCompleteness. Επόμενο: κανένα. |
+| `recommendations` (1) | `SmartRecommendations.tsx` | SmartRecommendations. Επόμενο: δεν συγχωνεύεται με το `/matches` (§6). |
+| `search` (1) | `AdvancedSearch.tsx` | γραμμή αναζήτησης. Επόμενο: το PhonePlaceholderFit μένει· δεν ξαναβάζουμε και τις δύο γλώσσες όταν δεν χωρούν. |
+| `settings` (1) | `LinkedAccounts.tsx` | γραμμές ρυθμίσεων. Επόμενο: toggles μένουν ≥44px στο τηλέφωνο. |
+| `shared` (1) | `ContributionGraph.tsx` | κοινό κομμάτι. Επόμενο: κανένα. |
+| `theme` (1) | `ThemeSwitcher.tsx` | ThemeSwitcher. Επόμενο: κανένα· δεν αλλάζουμε primary hue (§10). |
+
+### 30.6 Κάθε σελίδα
+
+Στήλη **rail**: `ναι` αν το `page.tsx` ή το γνωστό παιδί (`FounderDashboardContent`, `BuilderWorkspace`, `PitchDeckBuilder`, `ApplicationGenerator`, `MembersPageClient`) περιέχει `PageRail`. Το §29.4 μέτρησε 0 σελίδες με 3+ οικογένειες controls χωρίς rail· όσες γράφουν `όχι` δεν είναι εκκρεμότητα rail.
+
+Στήλη **επόμενο**: ένα βήμα. «Κανένα» σημαίνει ότι η σελίδα είτε ανακατευθύνει, είτε ο λόγος στο `ai-coverage-reasons.json` απαγορεύει ενέργεια, και το οπτικό πέρασμα του §29 την καλύπτει ήδη μέσω AppShell. Δεν ανοίγουμε Feed Prisma, calendar union, fundraising models, jobs-create, ή συγχώνευση matches/recommendations.
+
+| route | rail | δείγμα | assistant | επόμενο |
+|---|---|---|---|---|
+| `/` | όχι | — | δεν ενεργεί | κανένα — public landing page, read before sign-in; the assistant is a signed-in feature |
+| `/achievements` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/activity` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/admin` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/admin/analytics` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/audit-log` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/automations` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/billing` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/admin/communities` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/admin/community-management` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/content-moderation` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/dashboard` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/domains` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/feature-flags` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/mentorship-management` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/programs` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/admin/reports` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/admin/security-monitoring` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/sso` | όχι | — | δεν ενεργεί | κανένα — identity-provider configuration across tenants: security settings the assistant does not change |
+| `/admin/system-settings` | όχι | — | δεν ενεργεί | κανένα — platform-wide settings, saved by a platform admin; the assistant does not change them |
+| `/admin/taxonomy` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/tenants` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/admin/user-detail/[id]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/admin/user-management` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/admin/users` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/ai` | όχι | — | δεν ενεργεί | κανένα — the assistant itself: the workspace the conversation runs in |
+| `/ai/capabilities` | όχι | — | δεν ενεργεί | κανένα — generated from the action declarations the assistant uses; reading it changes nothing |
+| `/analytics` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/api-status` | όχι | — | δεν ενεργεί | κανένα — a public health readout of the API; nothing to operate |
+| `/auth/oauth-callback` | όχι | — | δεν ενεργεί | κανένα — OAuth handshake; renders a spinner and redirects |
+| `/auth/sso-complete` | όχι | — | δεν ενεργεί | κανένα — SSO handshake; renders a spinner and redirects |
+| `/auth/verify-email` | όχι | — | δεν ενεργεί | κανένα — email verification from an emailed token |
+| `/builder` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/builder/applications` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/builder/pitch-deck` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/calendar` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/coaching` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/compare` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/connections` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/dashboard` | όχι | — | δεν ενεργεί | κανένα — redirects to the signed-in role's dashboard |
+| `/dashboard/founder` | ναι | — | δεν ενεργεί | κανένα — an overview that links to the pages that act; its figures come from the entity reads (milestones, messages, connections, events) |
+| `/dashboard/incubator` | όχι | — | δεν ενεργεί | κανένα — an overview that links to /org/* and /tenant/*, where the controls live |
+| `/dashboard/investor` | όχι | — | δεν ενεργεί | κανένα — an overview that links to the pipeline, watchlist and portfolio, where the deal commands live |
+| `/dashboard/mentor` | όχι | — | δεν ενεργεί | κανένα — an overview that links to /mentor/*, where the mentee and session controls live |
+| `/dashboard/provider` | όχι | — | δεν ενεργεί | κανένα — an overview that links to /provider/*, where the service and inquiry controls live |
+| `/data-room/[id]` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/demo` | όχι | — | δεν ενεργεί | κανένα — hands off to the demo session and redirects to /dashboard/founder |
+| `/discover` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/endorsements` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/events` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/events/[id]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/events/create` | όχι | — | δεν ενεργεί | κανένα — a form: create_event proposes it and the person confirms |
+| `/expert-reviews` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/feed` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/forgot-password` | όχι | — | δεν ενεργεί | κανένα — password reset request, typed by the person |
+| `/fundraising` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/groups` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/groups/[groupId]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/groups/manage` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/groups/moderation` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/help` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investor/analytics` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investor/dashboard` | όχι | — | δεν ενεργεί | κανένα — redirects to /dashboard/investor |
+| `/investor/pipeline` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investor/portfolio` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investor/scouting` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investor/watchlist` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/investors` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/invite` | όχι | — | δεν ενεργεί | κανένα — an invite form: the person names who to invite; the assistant does not send email on its own |
+| `/jobs` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/learning` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/login` | όχι | — | δεν ενεργεί | κανένα — sign-in: the person types their own credentials; the assistant never fills a password |
+| `/marketplace` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/matches` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/matches/[userId]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/matches/compare` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/members` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/mentor/availability` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/mentor/dashboard` | όχι | — | δεν ενεργεί | κανένα — redirects to /dashboard/mentor |
+| `/mentor/earnings` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/mentor/mentees` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/mentor/profile` | όχι | — | δεν ενεργεί | κανένα — a form for the mentor listing, filled and saved by the person |
+| `/mentor/requests` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/mentor/reviews` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/mentor/sessions` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/mentoring` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/messages` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/milestones` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/milestones/new` | όχι | — | δεν ενεργεί | κανένα — a form: create_milestone proposes it and the person confirms |
+| `/notifications` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/onboarding` | όχι | — | δεν ενεργεί | κανένα — redirects to /profile |
+| `/opportunities` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/org/[slug]` | όχι | — | δεν ενεργεί | κανένα — an organisation's public page, read without an account |
+| `/org/[slug]/admin` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/org/analytics` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/applications` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/cohorts` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/cohorts/[id]` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/org/dashboard` | όχι | — | δεν ενεργεί | κανένα — redirects to /dashboard/incubator |
+| `/org/events` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/members` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/mentors` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/programs` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/org/settings` | όχι | — | δεν ενεργεί | κανένα — organisation settings form, saved by an organisation admin |
+| `/org/startups` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/p/[username]` | όχι | — | δεν ενεργεί | κανένα — a person's public page, read without an account |
+| `/pitch/[id]` | όχι | — | δεν ενεργεί | κανένα — a shared pitch, read without an account |
+| `/pricing` | όχι | — | δεν ενεργεί | κανένα — public marketing page, read before sign-in |
+| `/privacy` | όχι | — | δεν ενεργεί | κανένα — legal text, read-only |
+| `/profile` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/profile/edit` | όχι | — | δεν ενεργεί | κανένα — a form: update_profile proposes the fields and the person saves |
+| `/profiles/[userId]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/programs` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/programs/[id]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/projects` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/projects/[projectId]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/projects/create` | όχι | — | δεν ενεργεί | κανένα — a form: draft_project fills its fields from the conversation and the person walks the steps and presses Create; no create-project write is declared |
+| `/provider/analytics` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/provider/dashboard` | όχι | — | δεν ενεργεί | κανένα — redirects to /dashboard/provider |
+| `/provider/inquiries` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/provider/profile` | όχι | — | δεν ενεργεί | κανένα — a form for the provider listing, filled and saved by the person |
+| `/provider/projects` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/provider/reviews` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/provider/services` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/readiness` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/recommendations` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/referrals` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/register` | όχι | — | δεν ενεργεί | κανένα — sign-up: the person types their own credentials; the assistant never fills a password |
+| `/reputation` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/research` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/research/[boardId]` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/research/canvas` | όχι | — | δεν ενεργεί | κανένα — redirects to /research |
+| `/reset-password` | όχι | — | δεν ενεργεί | κανένα — password reset from an emailed token, typed by the person |
+| `/saved-searches` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/search` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/settings` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/settings/ai` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/settings/billing` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/settings/data-export` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/settings/notifications` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/share/[token]` | όχι | — | δεν ενεργεί | κανένα — a shared research board, read-only by its link |
+| `/shortlist` | ναι | — | χειρίσιμο, ο rail είναι η επιφάνεια | ένταξη στο sweep 390px (το §29.8 το μέτρησε δειγματοληπτικά, όχι και στα 160) |
+| `/startups/[id]` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/t/[slug]` | όχι | — | δεν ενεργεί | κανένα — a tenant's public page, read without an account |
+| `/tenant/analytics` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/tenant/api-keys` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/tenant/automation` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/tenant/billing` | όχι | — | δεν ενεργεί | κανένα — billing: seats, the payment portal and the billing contact stay with the person; the assistant does not act on payment |
+| `/tenant/branding` | όχι | — | δεν ενεργεί | κανένα — tenant branding form (colours, logo), saved by a tenant admin |
+| `/tenant/dashboard` | όχι | — | δεν ενεργεί | κανένα — an overview that links to the /tenant/* pages that act |
+| `/tenant/domains` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/tenant/members` | όχι | — | ό,τι δηλώνει το action registry για τη διαδρομή | κανένα οπτικό· rail μόνο αν μελλοντική μέτρηση δείξει ≥3 οικογένειες controls |
+| `/tenant/programs` | ναι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/tenant/settings` | όχι | — | δεν ενεργεί | κανένα — tenant settings form, saved by a tenant admin |
+| `/tenant/sso` | όχι | — | δεν ενεργεί | κανένα — identity-provider configuration: security settings the assistant does not change |
+| `/tenant/webhooks` | όχι | ναι | διαβάζει όπου υπάρχει δήλωση· δεν επινοεί το δείγμα ως αλήθεια | μένει το SampleDataNotice· καμία νέα ενέργεια μέχρι να υπάρξει πηγή αλήθειας στο backend |
+| `/terms` | όχι | — | δεν ενεργεί | κανένα — legal text, read-only |
+| `/test-onboarding` | όχι | — | δεν ενεργεί | κανένα — a development harness for the onboarding flow, not a product page |
+| `/themes/alliance` | όχι | — | δεν ενεργεί | κανένα — a theme showcase, not a product page |
+| `/unauthorized` | όχι | — | δεν ενεργεί | κανένα — an access-denied notice with a link back |
+
+### 30.7 Σειρά υλοποίησης του επόμενου κύκλου
+
+| σειρά | δουλειά | αποδοχή | ρητά εκτός |
+|---|---|---|---|
+| 1 | φρουρός: σε 390px κανένα `button` / `[role=button]` / tab κάτω από 44px, εκτός link και κειμένου παραγράφου, και στα 160 routes | το sweep αποτυγχάνει στο πρώτο | δεν αλλάζει το CSS από `sm` και πάνω |
+| 2 | φρουρός: κάθε ανοιχτό `dialog` σε demo έχει accessible name | ένα αποτυχημένο όνομα σταματά τη σουίτα | δεν γράφονται νέοι τίτλοι αν το τεστ είναι πράσινο |
+| 3 | `space-y-6` στο πρώτο stack σελίδας γίνεται lint, όχι σύμβαση πλειοψηφίας (§29.8) | νέα σελίδα με `space-y-4` στο root αποτυγχάνει | τα tabs κρατούν `space-y-4` |
+| 4 | τα 50 routes του `ai-coverage-reasons.json` μένουν όπως είναι | το `aiCoverage.test.ts` συνεχίζει να αποτυγχάνει αν λείπει ή περισσεύει λόγος | δεν προστίθενται writes σε login, billing, SSO, νομικά, redirects |
+
+### 30.8 Τι δεν ισχυρίζεται αυτό το τμήμα
+
+Δεν ξαναέτρεξε typecheck, vitest, contrast ή το sweep των 142 routes· αυτά είναι τα νούμερα του §29.7 στο ίδιο tip `3c2b32ca`, όχι νέα μέτρηση αυτής της ώρας. Η απογραφή 160 / 261 / 1324 / 571 / 54 έγινε με ανάγνωση του δέντρου στο `3c2b32ca`. Το live preview επιβεβαιώνει ότι το `/demo` ανοίγει το `/dashboard/founder`· δεν είναι οπτική πιστοποίηση των 160 σελίδων.
+
+Δύο γραμμές του §6 δεν ισχύουν πια σε αυτό το tip και δεν μεταφέρθηκαν ως εκκρεμότητες: το `/startups/[id]` είναι σελίδα συμφωνίας επενδυτή (`getInvestorDeal`, στάδια pipeline), όχι 404. Το `/jobs` καλεί `createJobPosting` από dialog στη ίδια σελίδα· δεν λείπει route δημιουργίας. Το `/fundraising` δεν εισάγει `SampleDataNotice`, αλλά με `showDemoData` δείχνει γύρο και έγγραφα δείγματος — η ειλικρίνεια μένει στη σημαία `sample`, όχι σε νέο μοντέλο.
