@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Shield, ShieldCheck, ShieldAlert, Download, FileText, Copy, Check,
   AlertTriangle, Info, Unlock, Hash,
-  ChevronDown, Loader2,
+  Loader2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -31,7 +31,11 @@ import {
   exportConversationTranscript,
   type ConversationValidationMode as ApiValidationMode,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 export type ValidationMode = 'casual' | 'one_party' | 'two_party';
 
@@ -56,32 +60,32 @@ type ConversationValidationProps = {
 };
 
 const MODE_CONFIG: Record<ValidationMode, {
-  label: string;
-  description: string;
+  labelKey: 'val_casual' | 'val_one' | 'val_two';
+  descKey: 'val_casual_desc' | 'val_one_desc' | 'val_two_desc';
   icon: React.ElementType;
   color: string;
   bgColor: string;
 }> = {
   casual: {
-    label: 'Casual Chat',
-    description: 'Standard private messaging, no validation',
+    labelKey: 'val_casual',
+    descKey: 'val_casual_desc',
     icon: Unlock,
     color: 'text-muted-foreground',
     bgColor: 'bg-muted',
   },
   one_party: {
-    label: 'One-Party Validation',
-    description: 'You can save/validate your side of the conversation',
+    labelKey: 'val_one',
+    descKey: 'val_one_desc',
     icon: Shield,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning-bg',
   },
   two_party: {
-    label: 'Two-Party Validation',
-    description: 'Both parties agree to validated transcript',
+    labelKey: 'val_two',
+    descKey: 'val_two_desc',
     icon: ShieldCheck,
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500/10',
+    color: 'text-status-success',
+    bgColor: 'bg-status-success-bg',
   },
 };
 
@@ -92,8 +96,10 @@ function ValidationModeIndicator({ state }: { state: ConversationValidationState
 
   return (
     <div className={cn('flex items-center gap-1.5 rounded-full px-2 py-0.5', config.bgColor)}>
-      <Icon className={cn('h-3 w-3', config.color)} />
-      <span className={cn('text-xs font-medium', config.color)}>{config.label}</span>
+      <Icon className={cn('icon-sm', config.color)} />
+      <span className={cn('text-xs font-medium', config.color)}>
+        <BilingualText en={messagesEn(config.labelKey)} el={messagesEl(config.labelKey)} compact />
+      </span>
     </div>
   );
 }
@@ -112,9 +118,9 @@ export function ConversationValidationBadge({
     return (
       <div
         className={cn('flex h-6 w-6 items-center justify-center rounded-full', config.bgColor)}
-        title={config.label}
+        title={messagesEn(config.labelKey)}
       >
-        <Icon className={cn('h-3.5 w-3.5', config.color)} />
+        <Icon className={cn('icon-sm', config.color)} />
       </div>
     );
   }
@@ -139,9 +145,9 @@ export function ConversationValidationMenu({
   const updateModeMutation = useMutation({
     mutationFn: (mode: ValidationMode) => updateConversationValidationMode(conversationId, mode as ApiValidationMode),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       onModeChange?.(data.validationState.mode);
-      success('Validation mode updated', `Conversation is now in ${MODE_CONFIG[data.validationState.mode].label} mode`);
+      success('Validation mode updated', messagesEn(MODE_CONFIG[data.validationState.mode].labelKey));
       setShowModeDialog(false);
     },
     onError: () => {
@@ -152,7 +158,7 @@ export function ConversationValidationMenu({
   const acceptMutation = useMutation({
     mutationFn: () => acceptConversationValidation(conversationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       success('Validation accepted', 'Two-party validation is now active');
       setShowAcceptDialog(false);
     },
@@ -164,7 +170,7 @@ export function ConversationValidationMenu({
   const declineMutation = useMutation({
     mutationFn: () => declineConversationValidation(conversationId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       success('Validation declined', 'Conversation remains in casual mode');
       setShowAcceptDialog(false);
     },
@@ -210,34 +216,40 @@ export function ConversationValidationMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-            <Icon className={cn('h-3.5 w-3.5', config.color)} />
-            <span className="hidden sm:inline">{config.label}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-xl"
+            title={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
+            aria-label={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
+          >
+            <Icon className={cn('icon-sm', config.color)} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <div className="px-2 py-1.5">
-            <p className="text-xs font-medium text-foreground">Conversation Validation</p>
-            <p className="text-xs text-muted-foreground">{config.description}</p>
+            <p className="text-xs font-medium text-foreground"><BilingualText en="Conversation Validation" el="Επικύρωση συνομιλίας" compact /></p>
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={messagesEn(config.descKey)} el={messagesEl(config.descKey)} compact />
+            </p>
           </div>
           <DropdownMenuSeparator />
           
           <DropdownMenuItem onClick={() => setShowModeDialog(true)}>
-            <Shield className="mr-2 h-4 w-4" />
-            Change validation mode
+            <Shield className="mr-2 icon-sm" />
+            <BilingualText en="Change validation mode" el="Αλλαγή λειτουργίας επικύρωσης" compact />
           </DropdownMenuItem>
           
           {validationState.transcriptAvailable && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExport('txt')}>
-                <FileText className="mr-2 h-4 w-4" />
-                Export as Text (.txt)
+                <FileText className="mr-2 icon-sm" />
+                <BilingualText en="Export as Text (.txt)" el="Εξαγωγή ως κείμενο (.txt)" compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport('json')}>
-                <Download className="mr-2 h-4 w-4" />
-                Export as JSON (.json)
+                <Download className="mr-2 icon-sm" />
+                <BilingualText en="Export as JSON (.json)" el="Εξαγωγή ως JSON (.json)" compact />
               </DropdownMenuItem>
             </>
           )}
@@ -247,9 +259,9 @@ export function ConversationValidationMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={copyHash}>
                 {copied ? (
-                  <Check className="mr-2 h-4 w-4 text-emerald-500" />
+                  <Check className="mr-2 icon-sm text-status-success" />
                 ) : (
-                  <Hash className="mr-2 h-4 w-4" />
+                  <Hash className="mr-2 icon-sm" />
                 )}
                 {copied ? 'Hash copied!' : 'Copy validation hash'}
               </DropdownMenuItem>
@@ -260,15 +272,15 @@ export function ConversationValidationMenu({
 
       {/* Pending acceptance banner */}
       {isPendingAcceptance && (
-        <div className="mx-4 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+        <div className="mx-4 mb-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
+            <ShieldAlert className="icon-md shrink-0 text-status-warning mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
                 {otherUserName} requested two-party validation
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Both parties will be able to save and verify the conversation transcript
+                <BilingualText en="Both parties will be able to save and verify the conversation transcript" el="Και τα δύο μέρη θα μπορούν να αποθηκεύσουν και να επαληθεύσουν το αντίγραφο της συνομιλίας" wrap />
               </p>
               <div className="flex gap-2 mt-2">
                 <Button
@@ -278,9 +290,9 @@ export function ConversationValidationMenu({
                   disabled={acceptMutation.isPending}
                 >
                   {acceptMutation.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    <Loader2 className="icon-sm animate-spin mr-1" />
                   ) : (
-                    <Check className="h-3 w-3 mr-1" />
+                    <Check className="icon-sm mr-1" />
                   )}
                   Accept
                 </Button>
@@ -291,7 +303,7 @@ export function ConversationValidationMenu({
                   onClick={() => declineMutation.mutate()}
                   disabled={declineMutation.isPending}
                 >
-                  Decline
+                  <BilingualText en="Decline" el="Απόρριψη" compact />
                 </Button>
               </div>
             </div>
@@ -304,11 +316,11 @@ export function ConversationValidationMenu({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Conversation Validation Mode
+              <Shield className="icon-md text-primary-accessible" />
+              <BilingualText en="Conversation Validation Mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
             </DialogTitle>
             <DialogDescription>
-              Choose how this conversation should be validated
+              <BilingualText en="Choose how this conversation should be validated" el="Επιλέξτε πώς θα επικυρώνεται η συνομιλία" wrap />
             </DialogDescription>
           </DialogHeader>
 
@@ -327,25 +339,27 @@ export function ConversationValidationMenu({
                       'w-full flex items-start gap-3 rounded-lg border p-4 text-left transition-colors',
                       isActive
                         ? 'border-primary bg-primary/5'
-                        : 'border-border/60 hover:bg-muted/50'
+                        : 'border-border hover:bg-muted/50'
                     )}
                   >
                     <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', modeConfig.bgColor)}>
-                      <ModeIcon className={cn('h-5 w-5', modeConfig.color)} />
+                      <ModeIcon className={cn('icon-md', modeConfig.color)} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{modeConfig.label}</p>
+                        <p className="font-medium text-foreground">
+                          <BilingualText en={messagesEn(modeConfig.labelKey)} el={messagesEl(modeConfig.labelKey)} compact />
+                        </p>
                         {isActive && (
-                          <Badge variant="secondary" className="text-xs">Current</Badge>
+                          <Badge variant="secondary" className="text-xs"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {modeConfig.description}
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} />
                       </p>
                       {mode === 'two_party' && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
+                        <p className="text-xs text-status-warning mt-1 flex items-center gap-1">
+                          <AlertTriangle className="icon-sm" />
                           Requires acceptance from {otherUserName}
                         </p>
                       )}
@@ -356,15 +370,15 @@ export function ConversationValidationMenu({
             )}
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
             <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
+              <Info className="icon-sm shrink-0 text-muted-foreground mt-0.5" />
               <div className="text-xs text-muted-foreground">
-                <p className="font-medium text-foreground mb-1">About validation modes</p>
+                <p className="font-medium text-foreground mb-1"><BilingualText en="About validation modes" el="Σχετικά με τις λειτουργίες επικύρωσης" compact /></p>
                 <ul className="space-y-1">
-                  <li><strong>Casual:</strong> Standard messaging, no records saved</li>
-                  <li><strong>One-Party:</strong> You can save transcripts; other party is notified</li>
-                  <li><strong>Two-Party:</strong> Both agree to validated, verifiable transcript</li>
+                  <li><strong>Casual:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
+                  <li><strong>One-Party:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
+                  <li><strong>Two-Party:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
                 </ul>
               </div>
             </div>
@@ -414,21 +428,21 @@ export function TranscriptExportButton({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" disabled={isExporting}>
           {isExporting ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="icon-sm animate-spin" />
           ) : (
-            <Download className="h-3.5 w-3.5" />
+            <Download className="icon-sm" />
           )}
           Save Transcript
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleExport('txt')}>
-          <FileText className="mr-2 h-4 w-4" />
-          Plain Text (.txt)
+          <FileText className="mr-2 icon-sm" />
+          <BilingualText en="Plain Text (.txt)" el="Απλό κείμενο (.txt)" compact />
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('json')}>
-          <Download className="mr-2 h-4 w-4" />
-          JSON (.json)
+          <Download className="mr-2 icon-sm" />
+          <BilingualText en="JSON (.json)" el="JSON (.json)" compact />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -447,21 +461,21 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-      <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
+    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+      <Hash className="icon-sm text-muted-foreground shrink-0" />
       <code className="flex-1 text-xs font-mono text-muted-foreground truncate">
         {hash}
       </code>
-      <Button
+      <Button aria-label="Confirm"
         variant="ghost"
         size="icon"
         className="h-6 w-6 shrink-0"
         onClick={copyHash}
       >
         {copied ? (
-          <Check className="h-3 w-3 text-emerald-500" />
+          <Check className="icon-sm text-status-success" />
         ) : (
-          <Copy className="h-3 w-3" />
+          <Copy className="icon-sm" />
         )}
       </Button>
     </div>

@@ -24,6 +24,8 @@ import {
 } from '@/lib/api';
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 function SeatRow({
   seat, onRevoke, revoking,
@@ -41,17 +43,17 @@ function SeatRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{seat.user.email}</p>
         <p className="text-xs text-muted-foreground">
-          Allocated {new Date(seat.allocatedAt).toLocaleDateString()}
+          Allocated {new Date(seat.allocatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
         </p>
       </div>
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-destructive hover:text-destructive gap-1.5 shrink-0"
+        className="h-7 text-destructive-accessible hover:text-destructive-accessible gap-1.5 shrink-0"
         onClick={() => onRevoke(seat.userId)}
         disabled={revoking}
       >
-        {revoking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserMinus className="h-3.5 w-3.5" />}
+        {revoking ? <Loader2 className="icon-sm animate-spin" /> : <UserMinus className="icon-sm" />}
         Revoke
       </Button>
     </div>
@@ -72,13 +74,13 @@ export default function TenantBillingPage() {
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const { data: subData, isLoading: subLoading } = useQuery({
-    queryKey: ['billing', 'tenant', tenantId],
+    queryKey: qk('billing', 'tenant', tenantId),
     queryFn: () => getTenantBillingSubscription(tenantId),
     enabled: Boolean(tenantId),
   });
 
   const { data: seatsData, isLoading: seatsLoading } = useQuery({
-    queryKey: ['billing', 'tenant', tenantId, 'seats'],
+    queryKey: qk('billing', 'tenant', tenantId, 'seats'),
     queryFn: () => listTenantSeats(tenantId),
     enabled: Boolean(tenantId),
   });
@@ -92,7 +94,7 @@ export default function TenantBillingPage() {
   const { mutate: saveContact, isPending: savingContact } = useMutation({
     mutationFn: () => upsertTenantBillingContact(tenantId, contactForm),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId) });
       setShowContactForm(false);
       toastSuccess('Billing contact saved');
     },
@@ -103,8 +105,8 @@ export default function TenantBillingPage() {
     setRevokingId(userId);
     try {
       await revokeTenantSeat(tenantId, userId);
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId, 'seats'] });
-      qc.invalidateQueries({ queryKey: ['billing', 'tenant', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId, 'seats') });
+      qc.invalidateQueries({ queryKey: qk('billing', 'tenant', tenantId) });
       toastSuccess('Seat revoked');
     } catch {
       toastError('Failed to revoke seat');
@@ -120,38 +122,36 @@ export default function TenantBillingPage() {
   const seatPct = seatLimit ? Math.round((seatUsage / seatLimit) * 100) : null;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6 max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Organization Billing</h1>
-            <p className="text-sm text-muted-foreground">Manage your organization plan, seats, and billing details.</p>
-          </div>
+    <AppShell
+      title="Organization Billing"
+      description="Plan, seats, invoices, and payment methods for your workspace."
+      actions={(
+        <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
-              View plans
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+            <BilingualText en="View plans" el="Προβολή πλάνων" compact />
+            <ChevronRight className="icon-sm" />
           </Link>
-        </div>
+        </Button>
+      )}
+    >
+      <div className="space-y-6 max-w-3xl">
 
         {/* Plan Overview */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Current Plan</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Current Plan" el="Τρέχον πλάνο" compact /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Loading…</span>
+                <Loader2 className="icon-sm animate-spin" />
+                <span className="text-sm"><BilingualText en="Loading…" el="Φόρτωση…" compact /></span>
               </div>
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 shrink-0">
-                    <Building2 className="h-6 w-6 text-violet-500" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-status-accent-bg shrink-0">
+                    <Building2 className="icon-lg text-status-accent" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -164,11 +164,11 @@ export default function TenantBillingPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}
+                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xl font-bold">
+                    <p className="page-stat text-xl font-bold">
                       {formatCents(
                         sub.billingCycle === 'annual' ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0),
                         sub.plan?.currency,
@@ -179,9 +179,9 @@ export default function TenantBillingPage() {
                 </div>
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    Payment overdue. Update your payment method to avoid service interruption.
+                  <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
+                    <AlertTriangle className="icon-sm shrink-0" />
+                    <BilingualText en="Payment overdue. Update your payment method to avoid service interruption." el="Η πληρωμή καθυστερεί. Ενημερώστε τον τρόπο πληρωμής για να μη διακοπεί η υπηρεσία." wrap />
                   </div>
                 )}
 
@@ -191,15 +191,15 @@ export default function TenantBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                    {portalLoading ? <Loader2 className="icon-sm animate-spin" /> : <CreditCard className="icon-sm" />}
                     Manage billing
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="icon-sm" />
                   </Button>
                   {(sub.plan?.planType === 'team' || sub.plan?.planType === 'organization') && (
                     <Button size="sm" variant="outline" className="gap-2" asChild>
                       <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade Request">
-                        <Crown className="h-3.5 w-3.5" />
-                        Request enterprise upgrade
+                        <Crown className="icon-sm" />
+                        <BilingualText en="Request enterprise upgrade" el="Αίτημα αναβάθμισης enterprise" compact />
                       </a>
                     </Button>
                   )}
@@ -207,13 +207,13 @@ export default function TenantBillingPage() {
               </>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">No active subscription for this organization.</p>
-                <Link href="/pricing">
-                  <Button size="sm" className="gap-2">
-                    <Building2 className="h-3.5 w-3.5" />
-                    See organization plans
-                  </Button>
-                </Link>
+                <p className="text-sm text-muted-foreground"><BilingualText en="No active subscription for this organization." el="Δεν υπάρχει ενεργή συνδρομή για αυτόν τον οργανισμό." wrap /></p>
+                <Button size="sm" className="gap-2" asChild>
+                  <Link href="/pricing">
+                    <Building2 className="icon-sm" />
+                    <BilingualText en="See organization plans" el="Πλάνα οργανισμών" compact />
+                  </Link>
+                </Button>
               </div>
             )}
           </CardContent>
@@ -225,7 +225,7 @@ export default function TenantBillingPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">Seat Usage</CardTitle>
+                  <CardTitle className="text-base"><BilingualText en="Seat Usage" el="Χρήση θέσεων" compact /></CardTitle>
                   <CardDescription className="text-xs mt-0.5">
                     {seatLimit ? `${seatUsage} of ${seatLimit} seats used` : `${seatUsage} seats active`}
                   </CardDescription>
@@ -235,9 +235,9 @@ export default function TenantBillingPage() {
                     variant="outline"
                     className={cn(
                       'text-xs',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500/10 text-red-700 border-red-500/20' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500/10 text-amber-700 border-amber-500/20' :
-                      'bg-green-500/10 text-green-700 border-green-500/20',
+                      (seatPct ?? 0) >= 90 ? 'bg-status-danger-bg text-status-danger border-status-danger-border' :
+                      (seatPct ?? 0) >= 70 ? 'bg-status-warning-bg text-status-warning border-status-warning-border' :
+                      'bg-status-success-bg text-status-success border-status-success-border',
                     )}
                   >
                     {seatPct}% used
@@ -251,8 +251,8 @@ export default function TenantBillingPage() {
                   <div
                     className={cn(
                       'h-full rounded-full transition-all',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500' : 'bg-green-500',
+                      (seatPct ?? 0) >= 90 ? 'bg-status-danger-mark' :
+                      (seatPct ?? 0) >= 70 ? 'bg-status-warning-mark' : 'bg-status-success-mark',
                     )}
                     style={{ width: `${Math.min(seatPct ?? 0, 100)}%` }}
                   />
@@ -260,17 +260,17 @@ export default function TenantBillingPage() {
               )}
 
               {seatLimit && seatUsage >= seatLimit && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
+                <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
+                  <AlertTriangle className="icon-sm shrink-0" />
+                  <BilingualText en="Seat limit reached. Upgrade your plan or revoke unused seats to add more members." el="Εξαντλήθηκαν οι θέσεις. Αναβαθμίστε το πλάνο ή ανακαλέστε αχρησιμοποίητες θέσεις." wrap />
                 </div>
               )}
 
               <div className="space-y-0.5">
                 {seatsLoading ? (
-                  <p className="text-sm text-muted-foreground p-3">Loading seats…</p>
+                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="Loading seats…" el="Φόρτωση θέσεων…" compact /></p>
                 ) : seats.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-3">No seats allocated yet.</p>
+                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="No seats allocated yet." el="Δεν έχουν δοθεί θέσεις ακόμα." compact /></p>
                 ) : (
                   seats.map(seat => (
                     <SeatRow
@@ -285,7 +285,7 @@ export default function TenantBillingPage() {
 
               {seatLimit && seatUsage < seatLimit && (
                 <div className="pt-1 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="icon-sm text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     {seatLimit - seatUsage} seat{seatLimit - seatUsage !== 1 ? 's' : ''} available. Invite team members from the Members page.
                   </span>
@@ -299,7 +299,7 @@ export default function TenantBillingPage() {
         {sub?.plan?.features && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Plan Features</CardTitle>
+              <CardTitle className="text-base"><BilingualText en="Plan Features" el="Δυνατότητες πλάνου" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2">
@@ -307,7 +307,7 @@ export default function TenantBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}
@@ -321,9 +321,9 @@ export default function TenantBillingPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Billing Contact</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  Used for invoices and legal/tax documentation.
+                  <BilingualText en="Used for invoices and legal/tax documentation." el="Χρησιμοποιούνται σε τιμολόγια και νομικά/φορολογικά έγγραφα." wrap />
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
@@ -346,7 +346,7 @@ export default function TenantBillingPage() {
                     {contactForm.vatId && <p>VAT: {contactForm.vatId}</p>}
                   </>
                 ) : (
-                  <p>No billing contact set. Click Edit to add one.</p>
+                  <p><BilingualText en="No billing contact set. Click Edit to add one." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης. Πατήστε Επεξεργασία για προσθήκη." wrap /></p>
                 )}
               </div>
             ) : (
@@ -361,31 +361,31 @@ export default function TenantBillingPage() {
                     <Input type="email" value={contactForm.email} onChange={e => setContactForm(p => ({ ...p, email: e.target.value }))} placeholder="billing@org.com" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Company name</Label>
+                    <Label className="text-xs"><BilingualText en="Company name" el="Επωνυμία" compact /></Label>
                     <Input value={contactForm.company} onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))} placeholder="Acme Accelerator" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Legal entity name</Label>
+                    <Label className="text-xs"><BilingualText en="Legal entity name" el="Νομική επωνυμία" compact /></Label>
                     <Input value={contactForm.legalName} onChange={e => setContactForm(p => ({ ...p, legalName: e.target.value }))} placeholder="Acme Accelerator Ltd." />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">VAT / Tax ID</Label>
+                    <Label className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input value={contactForm.vatId} onChange={e => setContactForm(p => ({ ...p, vatId: e.target.value }))} placeholder="EU123456789" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Country</Label>
+                    <Label className="text-xs"><BilingualText en="Country" el="Χώρα" compact /></Label>
                     <Input value={contactForm.country} onChange={e => setContactForm(p => ({ ...p, country: e.target.value }))} placeholder="US" maxLength={2} />
                   </div>
                   <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs">Street address</Label>
+                    <Label className="text-xs"><BilingualText en="Street address" el="Διεύθυνση" compact /></Label>
                     <Input value={contactForm.addressLine1} onChange={e => setContactForm(p => ({ ...p, addressLine1: e.target.value }))} placeholder="123 Innovation Blvd" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">City</Label>
+                    <Label className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input value={contactForm.city} onChange={e => setContactForm(p => ({ ...p, city: e.target.value }))} placeholder="San Francisco" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Postal code</Label>
+                    <Label className="text-xs"><BilingualText en="Postal code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input value={contactForm.postalCode} onChange={e => setContactForm(p => ({ ...p, postalCode: e.target.value }))} placeholder="94107" />
                   </div>
                 </div>
@@ -395,10 +395,10 @@ export default function TenantBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                    {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                     Save contact
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </div>
             )}
@@ -407,21 +407,21 @@ export default function TenantBillingPage() {
 
         {/* Enterprise upgrade CTA */}
         {sub && sub.plan?.planType !== 'enterprise' && (
-          <Card className="border-primary/20 bg-primary/5">
+          <Card className="border-primary/15 bg-primary/5">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="icon-md text-primary-accessible" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Need enterprise features?</p>
+                <p className="font-semibold text-sm"><BilingualText en="Need enterprise features?" el="Χρειάζεστε δυνατότητες enterprise;" compact /></p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Custom domain, SSO, unlimited seats, white-labeling, dedicated support, and SLA guarantees.
+                  <BilingualText en="Custom domain, SSO, unlimited seats, white-labeling, dedicated support, and SLA guarantees." el="Προσαρμοσμένος τομέας, SSO, απεριόριστες θέσεις, white-labeling, αποκλειστική υποστήριξη και εγγυήσεις SLA." wrap />
                 </p>
               </div>
               <Button size="sm" variant="outline" className="shrink-0 gap-2" asChild>
                 <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade">
-                  <Mail className="h-3.5 w-3.5" />
-                  Contact sales
+                  <Mail className="icon-sm" />
+                  <BilingualText en="Contact sales" el="Επικοινωνία με πωλήσεις" compact />
                 </a>
               </Button>
             </CardContent>

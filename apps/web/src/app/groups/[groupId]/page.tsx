@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { errorMessage } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -9,11 +10,17 @@ import {
   Settings, UserPlus, LogOut, CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
+import { ListEmptyState } from '@/components/common/EmptyStates';
+import { STATUS } from '@/lib/semantic-colors';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 import {
   getGroup,
   joinGroup,
@@ -27,6 +34,8 @@ import {
   type GroupPost,
   type GroupComment,
 } from '@/lib/api';
+import { bilingualInline } from '@/lib/i18n/format';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -52,7 +61,7 @@ function PostCard({
   const { error: toastError } = useToast();
 
   const commentsQuery = useQuery({
-    queryKey: ['group-comments', post.id],
+    queryKey: qk('groups', 'comments', post.id),
     queryFn: () => listGroupComments(groupId, post.id, { limit: 20 }),
     enabled: showComments,
     staleTime: 30_000,
@@ -65,8 +74,8 @@ function PostCard({
       await createGroupComment(groupId, post.id, newComment.trim());
       setNewComment('');
       commentsQuery.refetch();
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to add comment');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to add comment'));
     } finally {
       setSubmittingComment(false);
     }
@@ -75,31 +84,31 @@ function PostCard({
   const isOwn = currentUserId && post.author.id === currentUserId;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
+    <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
-        <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-          <Pin className="h-3 w-3" />
+        <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
+          <Pin className="icon-sm" />
           Pinned post
         </div>
       )}
 
       <div className="flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
-          <AvatarImage src={post.author.avatarUrl ?? undefined} />
+          <AvatarImage src={post.author?.avatarUrl ?? undefined} />
           <AvatarFallback className="text-xs">{post.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div>
               <span className="text-sm font-semibold">{post.author.displayName}</span>
-              <span className="ml-2 text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</span>
+              <span className="ml-2 text-xs text-muted-foreground"><RelativeTime date={post.createdAt} format={formatRelativeTime} /></span>
             </div>
             {isOwn && (
-              <button
+              <button aria-label="Delete post"
                 onClick={() => onDelete(post.id)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="icon-sm" />
               </button>
             )}
           </div>
@@ -109,30 +118,30 @@ function PostCard({
 
       {/* Media */}
       {post.mediaUrls.length > 0 && (
-        <div className={cn('grid gap-2', post.mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
+        <div className={cn('grid grid-cols-1 gap-2', post.mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
           {post.mediaUrls.map((url, i) => (
-            <img key={i} src={url} alt="" className="rounded-lg object-cover max-h-64 w-full" />
+            <img key={i} src={url} alt="" className="rounded-lg object-cover max-h-64 w-full" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           ))}
         </div>
       )}
 
       {/* Reactions & stats row */}
-      <div className="flex items-center gap-3 pt-1 border-t border-border/30">
+      <div className="flex items-center gap-3 pt-1 border-t border-border">
         <div className="relative">
           <button
             onClick={() => setShowReactions((p) => !p)}
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
               post.myReaction
-                ? 'bg-primary/15 text-primary'
+                ? 'bg-primary/15 text-primary-accessible'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
-            {post.myReaction ?? <Heart className="h-3.5 w-3.5" />}
+            {post.myReaction ?? <Heart className="icon-sm" />}
             {post.reactionCount > 0 && <span>{post.reactionCount}</span>}
           </button>
           {showReactions && (
-            <div className="absolute bottom-full left-0 mb-1 flex items-center gap-1 rounded-xl border border-border/60 bg-popover p-1.5 shadow-xl z-10">
+            <div className="absolute bottom-full left-0 mb-1 flex items-center gap-1 rounded-xl border border-border bg-popover p-1.5 shadow-xl z-10">
               {REACTIONS.map((emoji) => (
                 <button
                   key={emoji}
@@ -149,13 +158,20 @@ function PostCard({
           )}
         </div>
 
+        {/* The count and the verb read as one phrase: "6 Comment" put a
+            number in front of an imperative. */}
         <button
+          type="button"
+          aria-expanded={showComments}
           onClick={() => setShowComments((p) => !p)}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
         >
-          <MessageCircle className="h-3.5 w-3.5" />
-          {post.commentCount > 0 && <span>{post.commentCount}</span>}
-          {showComments ? 'Hide' : 'Comment'}
+          <MessageCircle className="icon-sm" aria-hidden="true" />
+          {showComments
+            ? 'Hide comments'
+            : post.commentCount === 0
+              ? 'Comment'
+              : `${post.commentCount} ${post.commentCount === 1 ? 'comment' : 'comments'}`}
         </button>
       </div>
 
@@ -163,17 +179,17 @@ function PostCard({
       {showComments && (
         <div className="space-y-3 pt-1">
           {commentsQuery.isLoading && (
-            <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary/50" /></div>
+            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary/50" /></div>
           )}
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
               <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={c.author.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-[10px]">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                <AvatarImage src={c.author?.avatarUrl ?? undefined} />
+                <AvatarFallback className="text-2xs">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                 <span className="text-xs font-semibold">{c.author.displayName}</span>
-                <span className="ml-2 text-[10px] text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
+                <span className="ml-2 text-2xs text-muted-foreground"><RelativeTime date={c.createdAt} format={formatRelativeTime} /></span>
                 <p className="mt-0.5 text-xs text-foreground/90">{c.content}</p>
               </div>
             </div>
@@ -184,16 +200,16 @@ function PostCard({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
-                placeholder="Write a comment..."
-                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+                placeholder={bilingualInline("Write a comment…", "Γράψτε ένα σχόλιο…")}
+                className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
               />
-              <Button
+              <Button aria-label="Send"
                 size="icon"
                 className="h-8 w-8 shrink-0"
                 disabled={submittingComment || !newComment.trim()}
                 onClick={handleAddComment}
               >
-                {submittingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                {submittingComment ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
               </Button>
             </div>
           )}
@@ -213,6 +229,12 @@ export default function GroupDetailPage() {
   const [submittingPost, setSubmittingPost] = useState(false);
   const [togglingMembership, setTogglingMembership] = useState(false);
   const [activeSection, setActiveSection] = useState<'feed' | 'members'>('feed');
+  // `?section=members` - how the admin directory's "Manage Members" lands
+  // here. Read after mount (not via useSearchParams) so the first render
+  // matches the server's and no Suspense boundary is needed.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('section') === 'members') setActiveSection('members');
+  }, []);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -225,14 +247,14 @@ export default function GroupDetailPage() {
   }, []);
 
   const groupQuery = useQuery({
-    queryKey: ['group', groupId],
+    queryKey: qk('groups', 'one', groupId),
     queryFn: () => getGroup(groupId!),
     staleTime: 60_000,
     enabled: !!groupId,
   });
 
   const postsQuery = useQuery({
-    queryKey: ['group-posts', groupId],
+    queryKey: qk('groups', 'posts', groupId),
     queryFn: () => listGroupPosts(groupId!, { limit: 20 }),
     staleTime: 30_000,
     enabled: !!groupId,
@@ -253,10 +275,10 @@ export default function GroupDetailPage() {
         await joinGroup(group.id);
         success('Joined!', `Welcome to ${group.name}!`);
       }
-      queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Something went wrong.');
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'one', groupId) });
+      queryClient.invalidateQueries({ queryKey: qk('groups') });
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Something went wrong.'));
     } finally {
       setTogglingMembership(false);
     }
@@ -268,9 +290,9 @@ export default function GroupDetailPage() {
     try {
       await createGroupPost(group.id, { content: newPost.trim() });
       setNewPost('');
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to create post.');
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to create post.'));
     } finally {
       setSubmittingPost(false);
     }
@@ -280,10 +302,10 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       await deleteGroupPost(group.id, postId);
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
       success('Post deleted', '');
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to delete post.');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to delete post.'));
     }
   };
 
@@ -291,15 +313,79 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       await reactToGroupPost(group.id, postId, emoji);
-      queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
+      queryClient.invalidateQueries({ queryKey: qk('groups', 'posts', groupId) });
     } catch {}
   };
+
+  /*
+   * The page's own buttons, offered to the assistant. Neither membership
+   * command names an undo: `GroupsService.joinGroup` creates the row as a
+   * plain member and fires the community-join automation, and `leaveGroup`
+   * deletes the row outright - so leaving after a join leaves the automation's
+   * effects behind, and joining after a leave loses the old role and join date.
+   */
+  const feed = postsQuery.data?.posts ?? [];
+  const ownPosts = currentUserId ? feed.filter((p) => p.author?.id === currentUserId) : [];
+  const groupMembers = group?.members ?? [];
+  usePageControls([
+    choiceControl('group_section', 'Group section', 'Ενότητα ομάδας', [
+      { value: 'feed', en: 'Feed', el: 'Ροή' },
+      { value: 'members', en: 'Members', el: 'Μέλη' },
+    ], activeSection, (v) => setActiveSection(v as typeof activeSection)),
+    {
+      id: isMember ? 'leave_group' : 'join_group',
+      labelEn: isMember ? 'Leave this group' : 'Join this group',
+      labelEl: isMember ? 'Αποχώρηση από την ομάδα' : 'Συμμετοχή στην ομάδα',
+      writes: true,
+      unavailableEn: !group ? 'The group has not loaded.' : memberRole === 'owner' ? 'The owner cannot leave; transfer ownership first.' : undefined,
+      unavailableEl: !group ? 'Η ομάδα δεν έχει φορτωθεί.' : memberRole === 'owner' ? 'Ο ιδιοκτήτης δεν μπορεί να αποχωρήσει· μεταβιβάστε πρώτα την ιδιοκτησία.' : undefined,
+      run: handleToggleMembership,
+    },
+    {
+      id: 'delete_own_post',
+      labelEn: 'Delete one of my posts in this group',
+      labelEl: 'Διαγραφή δημοσίευσής μου στην ομάδα',
+      writes: true,
+      options: rowOptions(ownPosts, (p) => p.id, (p) => (p.content ?? '').slice(0, 60)),
+      unavailableEn: ownPosts.length === 0 ? 'You have no posts in this group.' : undefined,
+      unavailableEl: ownPosts.length === 0 ? 'Δεν έχετε δημοσιεύσεις σε αυτή την ομάδα.' : undefined,
+      run: async (value) => { if (value) await handleDeletePost(value); },
+    },
+    {
+      id: 'open_member',
+      labelEn: 'Open a member\'s profile',
+      labelEl: 'Άνοιγμα προφίλ μέλους',
+      writes: false,
+      options: rowOptions(groupMembers, (m) => m.userId, (m) => m.user?.displayName ?? m.userId),
+      unavailableEn: groupMembers.length === 0 ? 'No members are listed.' : undefined,
+      unavailableEl: groupMembers.length === 0 ? 'Δεν εμφανίζονται μέλη.' : undefined,
+      run: (value) => { if (value) router.push(`/profiles/${value}`); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'group_posts',
+      labelEn: 'Group posts',
+      labelEl: 'Δημοσιεύσεις ομάδας',
+      rows: postsQuery.data ? feed.map((p) => `${p.author?.displayName ?? '—'}: ${(p.content ?? '').slice(0, 120)}`) : undefined,
+      total: feed.length,
+      sample: false,
+    },
+    {
+      id: 'group_members',
+      labelEn: 'Group members',
+      labelEl: 'Μέλη ομάδας',
+      rows: group ? groupMembers.map((m) => `${m.user?.displayName ?? m.userId} · ${m.role}`) : undefined,
+      total: group?.memberCount ?? groupMembers.length,
+      sample: false,
+    },
+  ]);
 
   if (groupQuery.isLoading) {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          <Loader2 className="icon-xl animate-spin text-primary/50" />
         </div>
       </AppShell>
     );
@@ -309,8 +395,8 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <p className="text-muted-foreground">Group not found</p>
-          <Button variant="outline" onClick={() => router.push('/groups')}>Back to Groups</Button>
+          <p className="text-muted-foreground"><BilingualText en="Group not found" el="Η ομάδα δεν βρέθηκε" compact /></p>
+          <Button variant="outline" onClick={() => router.push('/groups')}><BilingualText en="Back to Groups" el="Πίσω στις ομάδες" compact /></Button>
         </div>
       </AppShell>
     );
@@ -326,44 +412,46 @@ export default function GroupDetailPage() {
           onClick={() => router.push('/groups')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="icon-sm" />
           Back to Groups
         </button>
 
-        <div className="rounded-2xl border border-border/60 bg-card/70 overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card/70 overflow-hidden">
           {group.coverImageUrl ? (
             <div
               className="h-40 w-full bg-cover bg-center"
               style={{ backgroundImage: `url(${group.coverImageUrl})` }}
             />
           ) : (
-            <div className="h-32 w-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" />
+            <div className="h-32 w-full bg-primary/[0.06]" />
           )}
 
           <div className="px-6 pb-5 -mt-8 relative">
-            <div className="flex items-end justify-between gap-4">
-              <div className="flex items-end gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
+            {/* On a phone the join button drops under the name instead of
+                being pushed off the card's right edge. */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex min-w-0 items-end gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-primary/10">
                   {group.avatarUrl ? (
-                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" />
+                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary" />
+                    <Users className="h-7 w-7 text-primary-accessible" />
                   )}
                 </div>
-                <div className="pb-1">
-                  <h1 className="font-display text-xl font-bold">{group.name}</h1>
-                  <div className="flex items-center gap-3 mt-1">
+                <div className="min-w-0 pb-1">
+                  <h2 className="font-display text-xl sm:text-2xl xl:text-3xl font-semibold">{group.name}</h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {group.privacy === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
                       <span className="capitalize">{group.privacy}</span>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      {group.memberCount.toLocaleString()} members
+                      <Users className="icon-sm" />
+                      <BilingualText en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact />
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MessageCircle className="h-3 w-3" />
-                      {group.postCount.toLocaleString()} posts
+                      <MessageCircle className="icon-sm" />
+                      <BilingualText en={`${group.postCount.toLocaleString('en-GB')} posts`} el={`${group.postCount.toLocaleString('el-GR')} δημοσιεύσεις`} compact />
                     </span>
                   </div>
                 </div>
@@ -371,16 +459,16 @@ export default function GroupDetailPage() {
 
               <Button
                 variant={isMember ? 'outline' : 'default'}
-                className="gap-2 shrink-0"
+                className="w-full gap-2 shrink-0 sm:w-auto"
                 disabled={togglingMembership}
                 onClick={handleToggleMembership}
               >
                 {togglingMembership ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : isMember ? (
-                  <><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Joined</>
+                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" /> <BilingualText en="Joined" el="Μέλος" compact /></>
                 ) : (
-                  <><UserPlus className="h-4 w-4" /> Join Group</>
+                  <><UserPlus className="icon-sm" aria-hidden="true" /> <BilingualText en="Join Group" el="Συμμετοχή" compact /></>
                 )}
               </Button>
             </div>
@@ -389,7 +477,7 @@ export default function GroupDetailPage() {
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl">{group.description}</p>
             )}
 
-            {group.tags.length > 0 && (
+            {(group.tags?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {group.tags.map((tag) => (
                   <span key={tag} className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-xs text-muted-foreground">
@@ -401,28 +489,30 @@ export default function GroupDetailPage() {
 
             {group.category && (
               <div className="mt-3">
-                <Badge variant="secondary">{group.category}</Badge>
+                <Badge variant="secondary"><StatusText value={group.category} /></Badge>
               </div>
             )}
           </div>
         </div>
 
         {/* Section tabs */}
-        <div className="flex gap-1 rounded-xl border border-border/60 bg-card/70 p-1 w-fit">
+        <div className="flex gap-1 rounded-xl border border-border bg-card/70 p-1 w-fit">
           {(['feed', 'members'] as const).map((s) => (
             <button
               key={s}
+              type="button"
+              aria-pressed={activeSection === s}
               onClick={() => setActiveSection(s)}
               className={cn(
-                'rounded-lg px-4 py-2 text-sm font-medium capitalize transition-colors',
+                'rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-ring',
                 activeSection === s
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              {s}
+              {s === 'feed' ? <BilingualText en="Feed" el="Ροή" compact /> : <BilingualText en="Members" el="Μέλη" compact />}
               {s === 'members' && (
-                <span className="ml-1.5 text-xs opacity-70">({group.memberCount})</span>
+                <span className="ml-1.5 text-xs">({group.memberCount})</span>
               )}
             </button>
           ))}
@@ -430,16 +520,16 @@ export default function GroupDetailPage() {
 
         {/* Feed section */}
         {activeSection === 'feed' && (
-          <div className="grid gap-5 lg:grid-cols-[1fr_280px]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
             <div className="space-y-4">
               {/* Create post */}
               {isMember && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    placeholder="Share something with the group..."
-                    className="w-full rounded-lg border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                    placeholder={bilingualInline("Share something with the group…", "Μοιραστείτε κάτι με την κοινότητα…")}
+                    className="w-full rounded-xl border border-input bg-secondary/30 px-3 py-2.5 text-sm outline-none resize-none"
                     rows={3}
                   />
                   <div className="flex justify-end">
@@ -448,7 +538,7 @@ export default function GroupDetailPage() {
                       disabled={submittingPost || !newPost.trim()}
                       onClick={handleCreatePost}
                     >
-                      {submittingPost ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {submittingPost ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
                       Post
                     </Button>
                   </div>
@@ -458,7 +548,7 @@ export default function GroupDetailPage() {
               {/* Posts */}
               {postsQuery.isLoading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary/50" />
+                  <Loader2 className="icon-lg animate-spin text-primary/50" />
                 </div>
               )}
 
@@ -466,19 +556,22 @@ export default function GroupDetailPage() {
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <p className="text-sm text-muted-foreground">Failed to load posts</p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="h-3.5 w-3.5" /> Retry
+                    <RefreshCw className="icon-sm" /> Retry
                   </Button>
                 </div>
               )}
 
-              {!postsQuery.isLoading && posts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <MessageCircle className="h-10 w-10 mb-3 text-muted-foreground/20" />
-                  <p className="text-sm font-medium">No posts yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {isMember ? 'Be the first to post in this group!' : 'Join to start posting.'}
-                  </p>
-                </div>
+              {!postsQuery.isLoading && !postsQuery.isError && posts.length === 0 && (
+                <ListEmptyState
+                  icon={MessageCircle}
+                  tone="primary"
+                  variant="dashed"
+                  size="compact"
+                  title="No posts yet"
+                  description={isMember
+                    ? 'Be the first to start a discussion — share an update, ask a question, or post a resource.'
+                    : 'Join this community to read and start discussions.'}
+                />
               )}
 
               {posts.map((post) => (
@@ -498,12 +591,12 @@ export default function GroupDetailPage() {
             <div className="space-y-4">
               {/* Rules */}
               {group.rules.length > 0 && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
                   <h3 className="text-sm font-semibold">Group Rules</h3>
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible text-2xs font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -517,20 +610,20 @@ export default function GroupDetailPage() {
               )}
 
               {/* Recent members */}
-              {group.members.length > 0 && (
-                <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3">
-                  <h3 className="text-sm font-semibold">Members ({group.memberCount})</h3>
+              {groupMembers.length > 0 && (
+                <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
+                  <h3 className="text-sm font-semibold"><BilingualText en={`Members (${group.memberCount})`} el={`Μέλη (${group.memberCount})`} compact /></h3>
                   <div className="space-y-2">
-                    {group.members.slice(0, 6).map((m) => (
+                    {groupMembers.slice(0, 6).map((m) => (
                       <div key={m.userId} className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 shrink-0">
                           <AvatarImage src={m.user?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-[10px]">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                          <AvatarFallback className="text-2xs">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-[10px] text-primary capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary-accessible"><StatusText value={m.role} /></p>
                           )}
                         </div>
                       </div>
@@ -538,10 +631,11 @@ export default function GroupDetailPage() {
                   </div>
                   {group.memberCount > 6 && (
                     <button
+                      type="button"
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary hover:underline"
+                      className="text-xs text-primary-accessible hover:underline focus-ring rounded-md"
                     >
-                      View all {group.memberCount} members →
+                      <BilingualText en={`View all ${group.memberCount} members →`} el={`Όλα τα ${group.memberCount} μέλη →`} compact />
                     </button>
                   )}
                 </div>
@@ -552,13 +646,14 @@ export default function GroupDetailPage() {
 
         {/* Members section */}
         {activeSection === 'members' && (
-          <div className="rounded-xl border border-border/60 bg-card/70 p-4">
-            <h3 className="text-sm font-semibold mb-4">All Members ({group.memberCount})</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {group.members.map((m) => (
-                <div
+          <div className="rounded-xl border border-border bg-card/70 p-4">
+            <h3 className="text-sm font-semibold mb-4"><BilingualText en={`All Members (${group.memberCount})`} el={`Όλα τα μέλη (${group.memberCount})`} compact /></h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {groupMembers.map((m) => (
+                <button
+                  type="button"
                   key={m.userId}
-                  className="flex items-center gap-3 rounded-xl border border-border/40 p-3 hover:border-primary/30 transition-colors cursor-pointer"
+                  className="flex w-full items-center gap-3 rounded-xl border border-border p-3 text-left hover:border-primary/30 transition-colors focus-ring"
                   onClick={() => router.push(`/profiles/${m.userId}`)}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
@@ -571,10 +666,10 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-[10px] text-primary capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary-accessible font-medium"><StatusText value={m.role} /></span>
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>

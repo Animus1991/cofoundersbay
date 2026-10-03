@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export type NewsletterItem = {
   id: string;
@@ -35,7 +36,7 @@ export function DashboardNewsletter({
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Mail className="h-4 w-4 text-primary" />
+          <Mail className="icon-sm text-primary-accessible" />
           Announcements & newsletter
         </CardTitle>
       </CardHeader>
@@ -45,7 +46,7 @@ export function DashboardNewsletter({
             <li key={item.id}>
               <Link
                 href={item.href ?? '#'}
-                className="block rounded-lg border border-border/60 bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
+                className="block rounded-lg border border-border bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
               >
                 <p className="font-medium text-foreground">{item.title}</p>
                 {item.excerpt && (
@@ -62,13 +63,15 @@ export function DashboardNewsletter({
         </ul>
         <div className="flex gap-2">
           <Input
-            placeholder="Your email"
+            placeholder={bilingualInline("Your email", "Το email σας")}
             className="flex-1 text-sm"
             type="email"
             aria-label="Newsletter email"
+            disabled
+            title="The newsletter has no subscription service yet"
           />
-          <Button size="sm" className="shrink-0">
-            <ArrowRight className="h-4 w-4" />
+          <Button aria-label="Subscribe" size="sm" className="shrink-0" disabled title="The newsletter has no subscription service yet">
+            <ArrowRight className="icon-sm" />
           </Button>
         </div>
       </CardContent>

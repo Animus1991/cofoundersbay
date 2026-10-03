@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function MarketplaceLoading() {
   return (
-    <AppShell title="Marketplace" description="Discover tools and resources to grow your startup">
+    <AppShell title="Marketplace" titleEl="Αγορά υπηρεσιών" description="Discover tools and resources to grow your startup" descriptionEl="Ανακαλύψτε εργαλεία και πόρους για να αναπτύξετε τη startup σας">
       {/* Search skeleton */}
       <Skeleton className="h-10 w-full rounded-xl" />
 
@@ -18,12 +18,12 @@ export default function MarketplaceLoading() {
       {/* Featured tools skeleton */}
       <div className="space-y-3">
         <Skeleton className="h-5 w-32" />
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-3 w-20" />
@@ -46,12 +46,12 @@ export default function MarketplaceLoading() {
       {/* All tools skeleton */}
       <div className="space-y-3">
         <Skeleton className="h-5 w-24" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-28" />
                     <Skeleton className="h-3 w-16" />

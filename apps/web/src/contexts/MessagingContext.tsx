@@ -17,6 +17,14 @@
  *   - NON-BREAKING: Consumers call opt-in hooks; nothing is forced on legacy code.
  *   - FAST: unread count exposed to ChatBubble is updated immediately on socket
  *     events instead of waiting up to 60 s for the polling interval.
+ *   - ONE COUNT: the sidebar, the phone navigation, the chat bubble, the chat
+ *     popup's tab and the founder dashboard all read `totalUnread` (directly or
+ *     through `useUnreadCounts`). They used to count separately - a 60 s poll
+ *     here, the popup's own list there - and disagreed after every read. The
+ *     conversation-list query cache (`queryKeys.conversationsList`) is the
+ *     channel: whoever fetches the list writes it there, this store derives
+ *     its map from every write, and marking a conversation read updates the
+ *     cached row as well, so the lists and the badges cannot drift apart.
  */
 
 import React, {
@@ -27,10 +35,26 @@ import React, {
   useReducer,
   useRef,
 } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { useSession } from '@/hooks/useSession';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import { listMessageConversations } from '@/lib/api';
+import { isApiCircuitOpen, probeApiHealth } from '@/lib/api';
 import { createMessagingSocket } from '@/lib/messagingSocket';
 import type { MessageItem } from '@/lib/api';
+import { queryKeys, qk } from '@/lib/query-keys';
+
+type ConversationList = Awaited<ReturnType<typeof listMessageConversations>>;
+
+/** The per-conversation unread map a conversation list implies. */
+function unreadMapOf(list: ConversationList | undefined): Record<string, number> | null {
+  const conversations = list?.conversations;
+  if (!Array.isArray(conversations)) return null;
+  const map: Record<string, number> = {};
+  for (const c of conversations) map[c.id] = c.unreadCount ?? 0;
+  return map;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -116,14 +140,18 @@ const MessagingContext = createContext<MessagingContextValue>({
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
+const SOCKET_CONNECT_DELAY_MS = 450;
+
 export function MessagingProvider({ children }: { children: React.ReactNode }) {
-  const { hasSession, mounted: sessionReady } = useSession();
+  const { mounted: sessionReady } = useSession();
+  const { isAuthenticated } = useAuthenticatedSession();
 
   const [state, dispatch] = useReducer(reducer, {
     unreadMap: {},
     activeConversationId: null,
   });
 
+  const queryClient = useQueryClient();
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Tracks whether the API is reachable — updated by cfb:api-online/offline events
@@ -138,18 +166,45 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
 
   // ── Bootstrap unread map from REST ──────────────────────────────────────────
   const refreshUnread = useCallback(async () => {
-    if (!hasSession || !apiOnlineRef.current) return;
+    if (!isAuthenticated || !apiOnlineRef.current) return;
     try {
-      const { conversations } = await listMessageConversations();
-      const map: Record<string, number> = {};
-      for (const c of conversations) {
-        map[c.id] = c.unreadCount ?? 0;
-      }
-      dispatch({ type: 'SET_UNREAD_MAP', map });
+      // Through the shared cache: the write below reaches the map via the
+      // subscription, and every list reading the same key sees it too.
+      await queryClient.fetchQuery({
+        queryKey: queryKeys.conversationsList,
+        queryFn: listMessageConversations,
+        staleTime: 0,
+      });
     } catch {
       // silently ignore — stale values are acceptable
     }
-  }, [hasSession]);
+  }, [isAuthenticated, queryClient]);
+
+  // An observer on the shared list, so `invalidateQueries(qk('conversations'))`
+  // (a report, a thread, a realtime event) refetches it and the count follows.
+  // Without one, an invalidation only marked the entry stale.
+  const apiAvailable = useApiAvailability();
+  useQuery({
+    queryKey: queryKeys.conversationsList,
+    queryFn: listMessageConversations,
+    enabled: sessionReady && isAuthenticated && apiAvailable,
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
+    retry: 0,
+  });
+
+  // Every write to the conversation list - this store's refresh, /messages,
+  // the chat popup, a mark-read below - sets the map it implies.
+  useEffect(() => {
+    const initial = unreadMapOf(queryClient.getQueryData<ConversationList>(queryKeys.conversationsList));
+    if (initial) dispatch({ type: 'SET_UNREAD_MAP', map: initial });
+    const hash = JSON.stringify(queryKeys.conversationsList);
+    return queryClient.getQueryCache().subscribe((event) => {
+      if (event.type !== 'updated' || JSON.stringify(event.query.queryKey) !== hash) return;
+      const map = unreadMapOf(event.query.state.data as ConversationList | undefined);
+      if (map) dispatch({ type: 'SET_UNREAD_MAP', map });
+    });
+  }, [queryClient]);
 
   // ── Track API availability — pause everything when server is down ────────────
   useEffect(() => {
@@ -165,7 +220,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     const handleOnline = () => {
       apiOnlineRef.current = true;
       // Re-bootstrap unread count and reconnect socket if session is active
-      if (sessionReady && hasSession && !socketRef.current) {
+      if (sessionReady && isAuthenticated && !socketRef.current) {
         refreshUnread();
         const socket = createMessagingSocket();
         socketRef.current = socket;
@@ -184,7 +239,7 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('cfb:api-offline', handleOffline);
       window.removeEventListener('cfb:api-online', handleOnline);
     };
-  }, [sessionReady, hasSession, refreshUnread]);
+  }, [sessionReady, isAuthenticated, refreshUnread]);
 
   // ── Shared socket for unread tracking only ──────────────────────────────────
   // This socket listens for new-message events to update the unread count in
@@ -192,22 +247,34 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
   // ChatPopup and MessagesPage still maintain their OWN sockets for sending /
   // receiving full message objects — this one is only for the count.
   useEffect(() => {
-    if (!sessionReady || !hasSession) return;
+    if (!sessionReady || !isAuthenticated) return;
 
-    refreshUnread();
+    let cancelled = false;
+    let socket: ReturnType<typeof createMessagingSocket> | null = null;
 
-    const socket = createMessagingSocket();
-    socketRef.current = socket;
+    const connectTimer = setTimeout(() => {
+      void (async () => {
+        if (cancelled) return;
 
-    socket.on('message:new', ({ message }: { message: MessageItem }) => {
-      const convId = message.conversationId;
-      if (!convId) return;
-      // Only increment if this conversation is NOT currently active (open)
-      // Use ref instead of state to avoid stale closure
-      if (activeConversationIdRef.current !== convId) {
-        dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
-      }
-    });
+        if (isApiCircuitOpen()) {
+          const ok = await probeApiHealth();
+          if (!ok || cancelled) return;
+        }
+
+        refreshUnread();
+
+        socket = createMessagingSocket();
+        socketRef.current = socket;
+
+        socket.on('message:new', ({ message }: { message: MessageItem }) => {
+          const convId = message.conversationId;
+          if (!convId) return;
+          if (activeConversationIdRef.current !== convId) {
+            dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
+          }
+        });
+      })();
+    }, SOCKET_CONNECT_DELAY_MS);
 
     // Periodic refresh every 90 s as a safety net — skipped if API is offline
     refreshTimerRef.current = setInterval(() => {
@@ -215,30 +282,46 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
     }, 90_000);
 
     return () => {
-      socket.disconnect();
+      cancelled = true;
+      clearTimeout(connectTimer);
+      socket?.disconnect();
       socketRef.current = null;
       if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionReady, hasSession]);
+  }, [sessionReady, isAuthenticated]);
 
-  // Re-run refreshUnread when hasSession changes (login/logout)
+  // Re-run refreshUnread when auth changes (login/logout)
   useEffect(() => {
-    if (sessionReady && hasSession) refreshUnread();
-    if (!hasSession) dispatch({ type: 'SET_UNREAD_MAP', map: {} });
-  }, [sessionReady, hasSession, refreshUnread]);
+    if (sessionReady && isAuthenticated) refreshUnread();
+    if (!isAuthenticated) dispatch({ type: 'SET_UNREAD_MAP', map: {} });
+  }, [sessionReady, isAuthenticated, refreshUnread]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
+
+  // Zero the row in the shared list as well, so a list read after this does
+  // not bring the old count back.
+  const zeroCachedRow = useCallback((conversationId: string) => {
+    queryClient.setQueryData<ConversationList>(queryKeys.conversationsList, (old) =>
+      old?.conversations
+        ? { ...old, conversations: old.conversations.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)) }
+        : old,
+    );
+  }, [queryClient]);
 
   const setActiveConversationId = useCallback((id: string | null) => {
     dispatch({ type: 'SET_ACTIVE', id });
     // Clear unread immediately when a conversation is activated
-    if (id) dispatch({ type: 'MARK_READ', conversationId: id });
-  }, []);
+    if (id) {
+      dispatch({ type: 'MARK_READ', conversationId: id });
+      zeroCachedRow(id);
+    }
+  }, [zeroCachedRow]);
 
   const markConversationRead = useCallback((conversationId: string) => {
     dispatch({ type: 'MARK_READ', conversationId });
-  }, []);
+    zeroCachedRow(conversationId);
+  }, [zeroCachedRow]);
 
   const incrementUnread = useCallback(
     (conversationId: string, delta = 1) => {

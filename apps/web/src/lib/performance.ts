@@ -3,6 +3,26 @@
  * Tracks Core Web Vitals and provides performance insights
  */
 
+
+/**
+ * The DOM lib does not model these entry types, so they were each read through
+ * `as any`. Declaring the fields we actually use keeps the casts honest and
+ * makes a typo a build error rather than a NaN metric.
+ */
+interface LargestContentfulPaintEntry extends PerformanceEntry {
+  renderTime: number;
+  loadTime: number;
+}
+
+interface FirstInputEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
+interface LayoutShiftEntry extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+}
+
 export interface PerformanceMetrics {
   FCP?: number; // First Contentful Paint
   LCP?: number; // Largest Contentful Paint
@@ -40,7 +60,7 @@ export class PerformanceMonitor {
         // LCP observer
         const lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
-          const lastEntry = entries[entries.length - 1] as any;
+          const lastEntry = entries[entries.length - 1] as LargestContentfulPaintEntry;
           this.metrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
           if (this.metrics.LCP) {
             this.reportMetric('LCP', this.metrics.LCP);
@@ -52,7 +72,7 @@ export class PerformanceMonitor {
         // FID observer
         const fidObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            this.metrics.FID = (entry as any).processingStart - entry.startTime;
+            this.metrics.FID = (entry as FirstInputEntry).processingStart - entry.startTime;
             this.reportMetric('FID', this.metrics.FID);
           }
         });
@@ -63,8 +83,9 @@ export class PerformanceMonitor {
         let clsValue = 0;
         const clsObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            if (!(entry as any).hadRecentInput) {
-              clsValue += (entry as any).value;
+            const shift = entry as LayoutShiftEntry;
+            if (!shift.hadRecentInput) {
+              clsValue += shift.value;
               this.metrics.CLS = clsValue;
               this.reportMetric('CLS', clsValue);
             }
@@ -76,7 +97,7 @@ export class PerformanceMonitor {
         // INP observer (Interaction to Next Paint)
         const inpObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
-            this.metrics.INP = (entry as any).duration;
+            this.metrics.INP = entry.duration;
             this.reportMetric('INP', this.metrics.INP ?? 0);
           }
         });
@@ -89,7 +110,9 @@ export class PerformanceMonitor {
 
     // TTFB from Navigation Timing
     if ('performance' in window && 'timing' in performance) {
-      const timing = performance.timing as any;
+      // performance.timing is deprecated but still the only source in some
+      // browsers; PerformanceTiming already types these fields.
+      const timing: PerformanceTiming = performance.timing;
       this.metrics.TTFB = timing.responseStart - timing.requestStart;
       if (this.metrics.TTFB) {
         this.reportMetric('TTFB', this.metrics.TTFB);

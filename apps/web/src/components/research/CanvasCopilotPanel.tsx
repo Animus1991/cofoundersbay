@@ -22,15 +22,18 @@ import {
   type ImportableDocument,
   type ResearchNode,
 } from '@/lib/api';
+import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Agent metadata ────────────────────────────────────────────────────────────
 
 const AGENT_META: Record<string, { icon: React.ElementType; color: string; accent: string }> = {
-  'canvas-strategy': { icon: Target,       color: 'text-violet-400', accent: 'border-violet-400/40 bg-violet-400/5' },
-  'canvas-product':  { icon: Layers,       color: 'text-blue-400',   accent: 'border-blue-400/40 bg-blue-400/5' },
-  'canvas-finance':  { icon: DollarSign,   color: 'text-emerald-400',accent: 'border-emerald-400/40 bg-emerald-400/5' },
-  'canvas-market':   { icon: TrendingUp,   color: 'text-amber-400',  accent: 'border-amber-400/40 bg-amber-400/5' },
-  'canvas-pitch':    { icon: Presentation, color: 'text-pink-400',   accent: 'border-pink-400/40 bg-pink-400/5' },
+  'canvas-strategy': { icon: Target,       color: 'text-violet-400', accent: 'border-violet-400/40 bg-violet-400/5' }, // categorical-palette
+  'canvas-product':  { icon: Layers,       color: 'text-blue-400',   accent: 'border-blue-400/40 bg-blue-400/5' }, // categorical-palette
+  'canvas-finance':  { icon: DollarSign,   color: 'text-emerald-400',accent: 'border-emerald-400/40 bg-emerald-400/5' }, // categorical-palette
+  'canvas-market':   { icon: TrendingUp,   color: 'text-amber-400',  accent: 'border-amber-400/40 bg-amber-400/5' }, // categorical-palette
+  'canvas-pitch':    { icon: Presentation, color: 'text-pink-400',   accent: 'border-pink-400/40 bg-pink-400/5' }, // categorical-palette
 };
 
 const FALLBACK_AGENTS: CanvasCopilotAgentConfig[] = [
@@ -139,24 +142,24 @@ function MermaidGenTab({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3">
-      <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-        <Spline className="w-3 h-3 inline-block mr-1 text-pink-400" />
+      <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
+        <Spline className="icon-sm inline-block mr-1 text-status-accent" />
         Describe a diagram and let AI generate Mermaid code for you, then add it directly to the canvas.
       </div>
 
       {/* Diagram type */}
       <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</label>
+        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</label>
         <div className="grid grid-cols-2 gap-1">
           {MERMAID_TYPES.map((mt) => (
             <button
               key={mt.value}
               onClick={() => setMermaidType(mt.value)}
               className={cn(
-                'text-[10px] px-2 py-1.5 rounded-lg border transition-colors text-left',
+                'text-2xs px-2 py-1.5 rounded-lg border transition-colors text-left',
                 mermaidType === mt.value
-                  ? 'border-pink-400/50 bg-pink-400/10 text-pink-400 font-medium'
-                  : 'border-border/50 text-muted-foreground hover:border-border',
+                  ? 'border-status-accent/50 bg-status-accent/10 text-status-accent font-medium'
+                  : 'border-border text-muted-foreground hover:border-border',
               )}
             >
               {mt.label}
@@ -167,13 +170,13 @@ function MermaidGenTab({
 
       {/* Prompt */}
       <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
+        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
         <textarea
           rows={4}
           value={mermaidPrompt}
           onChange={(e) => setMermaidPrompt(e.target.value)}
           placeholder={`e.g. "User registration flow with email verification and onboarding steps"`}
-          className="w-full resize-none text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-pink-400/60 placeholder:text-muted-foreground/50 leading-relaxed"
+          className="w-full resize-none text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50 leading-relaxed"
         />
       </div>
 
@@ -181,39 +184,39 @@ function MermaidGenTab({
       <button
         onClick={() => genMutation.mutate()}
         disabled={!mermaidPrompt.trim() || genMutation.isPending}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-ink text-xs font-medium transition-colors"
       >
         {genMutation.isPending
-          ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…</>
-          : <><Sparkles className="w-3.5 h-3.5" /> Generate Diagram</>}
+          ? <><Loader2 className="icon-sm animate-spin" /> Generating…</>
+          : <><Sparkles className="icon-sm" /> Generate Diagram</>}
       </button>
 
       {/* Generated code preview */}
       {generatedCode && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Generated Code</label>
-            <button onClick={handleCopy} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
-              {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Generated Code</label>
+            <button onClick={handleCopy} className="text-2xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              {copied ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
-          <pre className="text-[10px] bg-muted/40 border border-border/50 rounded-lg p-2.5 overflow-x-auto text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-48">
+          <pre className="text-2xs bg-muted/40 border border-border rounded-lg p-2.5 overflow-x-auto text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-48">
             {generatedCode}
           </pre>
           <button
             onClick={() => onAddToCanvas(generatedCode)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-status-success-mark hover:bg-status-success/90 text-ink text-xs font-medium transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="icon-sm" />
             Add to Canvas
           </button>
         </div>
       )}
 
       {genMutation.isError && (
-        <div className="flex items-center gap-2 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+        <div className="flex items-center gap-2 text-xs text-status-danger bg-status-danger/10 border border-status-danger/20 rounded-lg px-3 py-2">
+          <AlertCircle className="icon-sm shrink-0" />
           <span>{(genMutation.error as Error)?.message ?? 'Generation failed'}</span>
         </div>
       )}
@@ -256,7 +259,7 @@ export function CanvasCopilotPanel({
 
   // Fetch agents
   const { data: agentsData } = useQuery({
-    queryKey: ['copilot-agents', boardId],
+    queryKey: qk('ai', 'copilot-agents', boardId),
     queryFn: () => listCanvasCopilotAgents(boardId),
   });
   const agents = agentsData?.agents ?? FALLBACK_AGENTS;
@@ -264,7 +267,7 @@ export function CanvasCopilotPanel({
 
   // Fetch importable documents
   const { data: importableData, refetch: refetchImportable } = useQuery({
-    queryKey: ['importable-docs', boardId],
+    queryKey: qk('research-boards', 'importable-docs', boardId),
     queryFn: () => listImportableDocuments(boardId),
     enabled: tab === 'import',
   });
@@ -360,16 +363,16 @@ export function CanvasCopilotPanel({
       : `All ${nodes.length} nodes (nothing selected)`;
 
   return (
-    <div className="flex flex-col h-full bg-background border-l border-border">
+    <div className="flex flex-col h-full w-full sm:w-80 flex-none bg-background border-l border-border">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2 min-w-0">
-          <Brain className="w-4 h-4 text-violet-400 shrink-0" />
+          <Brain className="icon-sm text-status-accent shrink-0" />
           <span className="text-sm font-semibold truncate">Canvas Copilot</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 font-medium">BETA</span>
+          <span className="text-2xs px-1.5 py-0.5 rounded-full bg-status-accent/10 text-status-accent font-medium">BETA</span>
         </div>
-        <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
-          <X className="w-3.5 h-3.5 text-muted-foreground" />
+        <button aria-label="Close" onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors shrink-0">
+          <X className="icon-sm text-muted-foreground" />
         </button>
       </div>
 
@@ -387,11 +390,11 @@ export function CanvasCopilotPanel({
             className={cn(
               'flex items-center gap-1.5 px-3 py-2 text-xs font-medium border-b-2 transition-colors',
               tab === id
-                ? 'border-violet-500 text-violet-400'
+                ? 'border-status-accent text-status-accent'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
-            <Icon className="w-3.5 h-3.5" />
+            <Icon className="icon-sm" />
             {label}
           </button>
         ))}
@@ -401,8 +404,8 @@ export function CanvasCopilotPanel({
       {tab === 'chat' && (
         <div className="flex flex-col flex-1 min-h-0">
           {/* Agent selector */}
-          <div className="px-3 pt-2.5 pb-2 border-b border-border/50 shrink-0">
-            <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide font-medium">Specialist Agent</p>
+          <div className="px-3 pt-2.5 pb-2 border-b border-border shrink-0">
+            <p className="text-2xs text-muted-foreground mb-1.5 uppercase tracking-wide font-medium">Specialist Agent</p>
             <div className="grid grid-cols-5 gap-1">
               {agents.map((agent) => {
                 const meta = AGENT_META[agent.id] ?? AGENT_META['canvas-strategy'];
@@ -413,27 +416,27 @@ export function CanvasCopilotPanel({
                     onClick={() => { setActiveAgentId(agent.id); setChatHistory([]); }}
                     title={agent.description}
                     className={cn(
-                      'flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[10px] font-medium transition-all',
+                      'flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-2xs font-medium transition-all',
                       activeAgentId === agent.id
                         ? cn('border-2', meta.accent, meta.color)
-                        : 'border-border/50 text-muted-foreground hover:border-border hover:text-foreground',
+                        : 'border-border text-muted-foreground hover:border-border hover:text-foreground',
                     )}
                   >
-                    <Icon className={cn('w-3.5 h-3.5', activeAgentId === agent.id ? meta.color : '')} />
+                    <Icon className={cn('icon-sm', activeAgentId === agent.id ? meta.color : '')} />
                     <span className="leading-tight text-center">{agent.name.split(' ')[0]}</span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5 leading-tight">{activeAgent.description}</p>
+            <p className="text-2xs text-muted-foreground mt-1.5 leading-tight">{activeAgent.description}</p>
           </div>
 
           {/* Scope toggle */}
-          <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b border-border/40 shrink-0">
-            <span className="text-[10px] text-muted-foreground">Scope: <span className="text-foreground font-medium">{scopeLabel}</span></span>
+          <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b border-border shrink-0">
+            <span className="text-2xs text-muted-foreground">Scope: <span className="text-foreground font-medium">{scopeLabel}</span></span>
             <button
               onClick={() => setScopeAll((v) => !v)}
-              className={cn('text-[10px] px-2 py-0.5 rounded border transition-colors', scopeAll ? 'border-violet-400/50 text-violet-400 bg-violet-400/5' : 'border-border/50 text-muted-foreground hover:border-border')}
+              className={cn('text-2xs px-2 py-0.5 rounded border transition-colors', scopeAll ? 'border-status-accent/50 text-status-accent bg-status-accent/5' : 'border-border text-muted-foreground hover:border-border')}
             >
               {scopeAll ? 'Selected only' : 'All nodes'}
             </button>
@@ -443,14 +446,14 @@ export function CanvasCopilotPanel({
           <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-0">
             {chatHistory.length === 0 && (
               <div className="space-y-1.5">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Suggested</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Suggested</p>
                 {activeAgent.suggestedQuestions.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => { setInput(q); inputRef.current?.focus(); }}
-                    className="w-full text-left text-xs p-2 rounded-lg border border-border/50 hover:border-violet-400/40 hover:bg-violet-400/5 transition-all text-muted-foreground hover:text-foreground leading-relaxed"
+                    className="w-full text-left text-xs p-2 rounded-lg border border-border hover:border-status-accent/40 hover:bg-status-accent/5 transition-all text-muted-foreground hover:text-foreground leading-relaxed"
                   >
-                    <ChevronRight className="w-3 h-3 inline-block mr-1 text-violet-400" />
+                    <ChevronRight className="icon-sm inline-block mr-1 text-status-accent" />
                     {q}
                   </button>
                 ))}
@@ -459,7 +462,7 @@ export function CanvasCopilotPanel({
             {chatHistory.map((msg, i) => (
               <div key={i} className={cn('flex flex-col gap-1', msg.role === 'user' ? 'items-end' : 'items-start')}>
                 {msg.role === 'user' ? (
-                  <div className="bg-violet-500/15 text-foreground text-xs px-3 py-2 rounded-2xl rounded-tr-sm max-w-[90%] leading-relaxed">
+                  <div className="bg-status-accent/15 text-foreground text-xs px-3 py-2 rounded-2xl rounded-tr-sm max-w-[90%] leading-relaxed">
                     {msg.content}
                   </div>
                 ) : (
@@ -467,11 +470,11 @@ export function CanvasCopilotPanel({
                     <div className="text-xs leading-relaxed text-foreground/90 whitespace-pre-wrap">
                       {msg.content}
                     </div>
-                    <button
+                    <button aria-label="Copy message"
                       onClick={() => navigator.clipboard.writeText(msg.content)}
-                      className="absolute -top-1 -right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 bg-muted border border-border transition-opacity"
+                      className="absolute -top-1 -right-1 p-0.5 rounded opacity-0 group-hover:opacity-100 focus-within:opacity-100 bg-muted border border-border transition-opacity"
                     >
-                      <Copy className="w-2.5 h-2.5 text-muted-foreground" />
+                      <Copy className="w-2.5 h-2.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -479,16 +482,16 @@ export function CanvasCopilotPanel({
             ))}
             {chatMutation.isPending && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="w-3 h-3 animate-spin text-violet-400" />
+                <Loader2 className="icon-sm animate-spin text-status-accent" />
                 <span>Analyzing canvas…</span>
               </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="px-3 pb-3 pt-2 border-t border-border/40 shrink-0">
+          <div className="px-3 pb-3 pt-2 border-t border-border shrink-0">
             {chatHistory.length > 0 && (
-              <button onClick={() => setChatHistory([])} className="text-[10px] text-muted-foreground hover:text-foreground mb-1.5 flex items-center gap-1">
+              <button onClick={() => setChatHistory([])} className="text-2xs text-muted-foreground hover:text-foreground mb-1.5 flex items-center gap-1">
                 <RefreshCw className="w-2.5 h-2.5" /> New conversation
               </button>
             )}
@@ -500,16 +503,18 @@ export function CanvasCopilotPanel({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={`Ask ${activeAgent.name}…`}
-                className="flex-1 resize-none text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-violet-400/60 placeholder:text-muted-foreground/50 leading-relaxed"
+                className="flex-1 resize-none text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50 leading-relaxed"
               />
               <button
+                type="button"
                 onClick={sendMessage}
                 disabled={!input.trim() || chatMutation.isPending}
-                className="p-2 rounded-lg bg-violet-500 hover:bg-violet-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+                aria-label={bilingualAria('Send message', 'Αποστολή μηνύματος')}
+                className="p-2 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
               >
                 {chatMutation.isPending
-                  ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
-                  : <Send className="w-3.5 h-3.5 text-white" />}
+                  ? <Loader2 className="icon-sm text-white animate-spin" />
+                  : <Send className="icon-sm text-white" />}
               </button>
             </div>
           </div>
@@ -544,29 +549,29 @@ export function CanvasCopilotPanel({
       {/* ── EXPORT TAB ── */}
       {tab === 'export' && (
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
-          <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-            <Sparkles className="w-3 h-3 inline-block mr-1 text-amber-400" />
+          <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
+            <Sparkles className="icon-sm inline-block mr-1 text-status-warning" />
             Export {selectedCount > 0 ? `${selectedCount} selected` : `all ${nodes.length}`} canvas nodes to a new Builder document.
           </div>
 
           {/* Workspace ID */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
             <input
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              placeholder="Paste workspace UUID…"
-              className="w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-violet-400/60 placeholder:text-muted-foreground/50"
+              placeholder={bilingualInline("Paste workspace UUID…", "Επικολλήστε το UUID του χώρου εργασίας…")}
+              className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>
 
           {/* Document type */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
             <select
               value={exportDocType}
               onChange={(e) => setExportDocType(e.target.value)}
-              className="w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-violet-400/60"
+              className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60"
             >
               {EXPORT_DOC_TYPES.map((d) => (
                 <option key={d.value} value={d.value}>{d.label}</option>
@@ -576,12 +581,12 @@ export function CanvasCopilotPanel({
 
           {/* Title */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
             <input
               value={exportTitle}
               onChange={(e) => setExportTitle(e.target.value)}
-              placeholder="Auto-generated if empty"
-              className="w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-2.5 py-2 focus:outline-none focus:border-violet-400/60 placeholder:text-muted-foreground/50"
+              placeholder={bilingualInline("Auto-generated if empty", "Δημιουργείται αυτόματα αν μείνει κενό")}
+              className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>
 
@@ -594,22 +599,22 @@ export function CanvasCopilotPanel({
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={generateAI} onChange={(e) => setGenerateAI(e.target.checked)} className="rounded" />
               <span className="text-xs text-muted-foreground">
-                <Brain className="w-3 h-3 inline mr-1 text-violet-400" />
+                <Brain className="icon-sm inline mr-1 text-status-accent" />
                 AI-generate content from nodes
               </span>
             </label>
           </div>
 
           {exportMutation.isSuccess && (
-            <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-lg px-3 py-2">
-              <Check className="w-3.5 h-3.5 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/20 rounded-lg px-3 py-2">
+              <Check className="icon-sm shrink-0" />
               <span>Exported! Open Builder to view the document.</span>
             </div>
           )}
 
           {exportMutation.isError && (
-            <div className="flex items-center gap-2 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-status-danger bg-status-danger/10 border border-status-danger/20 rounded-lg px-3 py-2">
+              <AlertCircle className="icon-sm shrink-0" />
               <span>{(exportMutation.error as Error)?.message ?? 'Export failed'}</span>
             </div>
           )}
@@ -617,11 +622,11 @@ export function CanvasCopilotPanel({
           <button
             onClick={() => exportMutation.mutate()}
             disabled={!targetWorkspaceId.trim() || exportMutation.isPending}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-status-accent-mark hover:bg-status-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-ink text-xs font-medium transition-colors"
           >
             {exportMutation.isPending
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Exporting…</>
-              : <><ArrowUpRight className="w-3.5 h-3.5" /> Export to Builder</>}
+              ? <><Loader2 className="icon-sm animate-spin" /> Exporting…</>
+              : <><ArrowUpRight className="icon-sm" /> Export to Builder</>}
           </button>
         </div>
       )}
@@ -629,8 +634,8 @@ export function CanvasCopilotPanel({
       {/* ── IMPORT TAB ── */}
       {tab === 'import' && (
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-          <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-            <ArrowDownLeft className="w-3 h-3 inline-block mr-1 text-blue-400" />
+          <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
+            <ArrowDownLeft className="icon-sm inline-block mr-1 text-status-info" />
             Import Builder documents as linked canvas nodes.
           </div>
 
@@ -640,23 +645,23 @@ export function CanvasCopilotPanel({
             </div>
           ) : (
             importableDocs.map((doc: ImportableDocument) => (
-              <div key={doc.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border/50 hover:border-border transition-colors">
+              <div key={doc.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border hover:border-border transition-colors">
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{doc.title}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{doc.workspaceName} · {doc.type.replace(/_/g, ' ')}</p>
+                  <p className="text-2xs text-muted-foreground truncate">{doc.workspaceName} · {doc.type.replace(/_/g, ' ')}</p>
                 </div>
                 {doc.alreadyLinked ? (
-                  <span className="shrink-0 text-[10px] text-emerald-400 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Linked
+                  <span className="shrink-0 text-2xs text-status-success flex items-center gap-1">
+                    <Check className="icon-sm" /> Linked
                   </span>
                 ) : (
                   <button
                     onClick={() => importMutation.mutate(doc.id)}
                     disabled={importMutation.isPending}
-                    className="shrink-0 text-[10px] px-2 py-1 rounded border border-blue-400/40 text-blue-400 hover:bg-blue-400/10 transition-colors disabled:opacity-40"
+                    className="shrink-0 text-2xs px-2 py-1 rounded-md border border-primary/40 text-primary-accessible hover:bg-primary/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {importMutation.isPending && importMutation.variables === doc.id
-                      ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                      ? <Loader2 className="w-2.5 h-2.5 animate-spin" aria-hidden="true" />
                       : 'Import'}
                   </button>
                 )}

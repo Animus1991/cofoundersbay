@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -13,6 +14,10 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,10 +44,10 @@ export interface CanvasComment {
 // ── API helpers ────────────────────────────────────────────────────────────────
 
 async function listNodeComments(nodeId: string): Promise<CanvasComment[]> {
-  const result = await apiRequest<{ comments: CanvasComment[] }>(
+  const result = await apiRequest<{ comments?: CanvasComment[] }>(
     `/api/research/nodes/${nodeId}/comments`,
   );
-  return result.comments;
+  return result?.comments ?? [];
 }
 
 async function createComment(
@@ -50,7 +55,7 @@ async function createComment(
   body: string,
   opts?: { posX?: number; posY?: number; commentType?: string; parentId?: string },
 ): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/nodes/${nodeId}/comments`,
     {
       method: 'POST',
@@ -63,17 +68,19 @@ async function createComment(
       }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to add comment');
   return result.comment;
 }
 
 async function resolveComment(commentId: string): Promise<CanvasComment> {
-  const result = await apiRequest<{ comment: CanvasComment }>(
+  const result = await apiRequest<{ comment?: CanvasComment }>(
     `/api/research/comments/${commentId}`,
     {
       method: 'PATCH',
       body: JSON.stringify({ resolved: true }),
     },
   );
+  if (!result?.comment) throw new Error('Failed to resolve comment');
   return result.comment;
 }
 
@@ -91,9 +98,9 @@ function timeAgo(iso: string): string {
 
 function typeColor(type: string) {
   switch (type) {
-    case 'suggestion': return 'bg-purple-500';
-    case 'question':   return 'bg-blue-500';
-    case 'resolved':   return 'bg-green-500';
+    case 'suggestion': return 'bg-status-accent-mark';
+    case 'question':   return 'bg-status-info-mark';
+    case 'resolved':   return 'bg-status-success-mark';
     default:           return 'bg-primary';
   }
 }
@@ -114,7 +121,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
   const [submittingReply, setSubmittingReply] = useState(false);
 
   const replies = comment.replies ?? [];
-  const pinBg = comment.resolved ? 'bg-green-500' : typeColor(comment.commentType);
+  const pinBg = comment.resolved ? 'bg-status-success-mark' : typeColor(comment.commentType);
 
   const handleReply = async () => {
     if (!replyBody.trim()) return;
@@ -141,14 +148,14 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
         title={comment.body}
       >
         {comment.resolved
-          ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-          : <MessageSquare className="h-3.5 w-3.5 text-white" />
+          ? <CheckCircle2 className="icon-sm text-ink" />
+          : <MessageSquare className="icon-sm text-ink" />
         }
       </button>
 
       {/* Reply count badge */}
       {replies.length > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow">
+        <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 bg-primary text-primary-foreground text-2xs font-bold rounded-full flex items-center justify-center shadow">
           {replies.length}
         </span>
       )}
@@ -156,14 +163,14 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
       {/* Popover */}
       {open && (
         <div
-          className="absolute left-8 top-0 z-50 w-64 bg-card border border-border/70 rounded-lg shadow-xl"
+          className="absolute left-8 top-0 z-50 w-64 bg-card border border-border rounded-lg shadow-xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-start gap-2 p-3 border-b border-border/50">
+          <div className="flex items-start gap-2 p-3 border-b border-border">
             <Avatar className="h-6 w-6 shrink-0 mt-0.5">
               <AvatarImage src={comment.author?.avatarUrl} />
-              <AvatarFallback className="text-[9px]">
+              <AvatarFallback className="text-2xs">
                 {comment.author?.displayName?.charAt(0) ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -173,23 +180,23 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                   {comment.author?.displayName ?? 'Anonymous'}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[10px] text-muted-foreground">{timeAgo(comment.createdAt)}</span>
-                  <Button
+                  <span className="text-2xs text-muted-foreground"><RelativeTime date={comment.createdAt} format={timeAgo} /></span>
+                  <Button aria-label="Close"
                     variant="ghost"
                     size="sm"
                     className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
                     onClick={() => setOpen(false)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className={cn('text-[9px] px-1 py-0 mt-0.5 capitalize', {
-                  'border-purple-300 text-purple-600': comment.commentType === 'suggestion',
-                  'border-blue-300 text-blue-600': comment.commentType === 'question',
-                  'border-green-300 text-green-600': comment.resolved,
+                className={cn('text-2xs px-1 py-0 mt-0.5 capitalize', {
+                  'border-status-accent-border text-status-accent': comment.commentType === 'suggestion',
+                  'border-status-info-border text-status-info': comment.commentType === 'question',
+                  'border-status-success-border text-status-success': comment.resolved,
                 })}
               >
                 {comment.resolved ? 'resolved' : comment.commentType}
@@ -204,14 +211,14 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
 
           {/* Replies */}
           {replies.length > 0 && (
-            <div className="border-t border-border/40 px-3 py-1.5">
+            <div className="border-t border-border px-3 py-1.5">
               <button
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground"
                 onClick={() => setShowReplies((v) => !v)}
               >
                 {showReplies
-                  ? <ChevronDown className="h-3 w-3" />
-                  : <ChevronRight className="h-3 w-3" />
+                  ? <ChevronDown className="icon-sm" />
+                  : <ChevronRight className="icon-sm" />
                 }
                 {replies.length} repl{replies.length === 1 ? 'y' : 'ies'}
               </button>
@@ -219,10 +226,10 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 <div className="mt-1.5 space-y-2">
                   {replies.map((r) => (
                     <div key={r.id} className="flex gap-1.5">
-                      <CornerDownRight className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                      <CornerDownRight className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[10px] font-medium">{r.author?.displayName ?? 'User'}</span>
-                        <p className="text-[10px] text-muted-foreground">{r.body}</p>
+                        <span className="text-2xs font-medium">{r.author?.displayName ?? 'User'}</span>
+                        <p className="text-2xs text-muted-foreground">{r.body}</p>
                       </div>
                     </div>
                   ))}
@@ -232,15 +239,15 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
           )}
 
           {/* Actions */}
-          <div className="border-t border-border/40 p-2 space-y-2">
+          <div className="border-t border-border p-2 space-y-2">
             {/* Reply input */}
             <div className="flex gap-1.5">
               <Textarea
                 value={replyBody}
                 onChange={(e) => setReplyBody(e.target.value)}
-                placeholder="Reply…"
+                placeholder={bilingualInline("Reply…", "Απάντηση…")}
                 rows={1}
-                className="text-[11px] min-h-0 py-1.5 px-2 resize-none"
+                className="text-2xs min-h-0 py-1.5 px-2 resize-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -253,10 +260,11 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 className="h-7 w-7 p-0 shrink-0"
                 onClick={handleReply}
                 disabled={submittingReply || !replyBody.trim()}
+                aria-label={bilingualAria('Send reply', 'Αποστολή απάντησης')}
               >
                 {submittingReply
-                  ? <Loader2 className="h-3 w-3 animate-spin" />
-                  : <Send className="h-3 w-3" />
+                  ? <Loader2 className="icon-sm animate-spin" />
+                  : <Send className="icon-sm" />
                 }
               </Button>
             </div>
@@ -266,10 +274,10 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-[11px] text-green-600 border-green-200 hover:bg-green-50"
+                className="w-full h-7 text-2xs text-status-success border-status-success-border hover:bg-status-success-bg"
                 onClick={() => { onResolve(comment.id); setOpen(false); }}
               >
-                <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                <CheckCircle2 className="icon-sm mr-1.5" />
                 Resolve
               </Button>
             )}
@@ -309,12 +317,15 @@ export function CanvasCommentPins({
   const [newPinBody, setNewPinBody] = useState('');
   const [newPinType, setNewPinType] = useState<'general' | 'suggestion' | 'question'>('general');
   const [submitting, setSubmitting] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['node-comments', nodeId],
+    queryKey: qk('research-boards', 'node-comments', nodeId),
     queryFn: () => listNodeComments(nodeId),
-    enabled: enabled && !!nodeId,
-    refetchInterval: 30_000,
+    enabled: enabled && !!nodeId && apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const comments: CanvasComment[] = (data ?? []).filter(
@@ -353,7 +364,7 @@ export function CanvasCommentPins({
       success('Comment pinned');
       setPendingPin(null);
       setNewPinBody('');
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       onPinPlaced?.();
     } catch {
       showError('Failed to add comment');
@@ -365,7 +376,7 @@ export function CanvasCommentPins({
   const handleResolve = async (commentId: string) => {
     try {
       await resolveComment(commentId);
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       success('Comment resolved');
     } catch {
       showError('Failed to resolve comment');
@@ -375,7 +386,7 @@ export function CanvasCommentPins({
   const handleReply = async (parentId: string, body: string) => {
     try {
       await createComment(nodeId, body, { parentId, commentType: 'general' });
-      queryClient.invalidateQueries({ queryKey: ['node-comments', nodeId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'node-comments', nodeId) });
       success('Reply added');
     } catch {
       showError('Failed to add reply');
@@ -424,21 +435,21 @@ export function CanvasCommentPins({
           onClick={(e) => e.stopPropagation()}
         >
           <div
-            className="bg-card border border-border/70 rounded-lg shadow-xl p-3 w-56"
+            className="bg-card border border-border rounded-lg shadow-xl p-3 w-56"
             style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom left' }}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="h-3 w-3 text-primary" />
+                <Pin className="icon-sm text-primary-accessible" />
                 Add Pin Comment
               </div>
-              <Button
+              <Button aria-label="Cancel comment"
                 variant="ghost"
                 size="sm"
                 className="h-5 w-5 p-0"
                 onClick={() => setPendingPin(null)}
               >
-                <X className="h-3 w-3" />
+                <X className="icon-sm" />
               </Button>
             </div>
 
@@ -449,7 +460,7 @@ export function CanvasCommentPins({
                   key={t}
                   onClick={() => setNewPinType(t)}
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded border capitalize transition-colors',
+                    'text-2xs px-1.5 py-0.5 rounded border capitalize transition-colors',
                     newPinType === t
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50',
@@ -463,7 +474,7 @@ export function CanvasCommentPins({
             <Textarea
               value={newPinBody}
               onChange={(e) => setNewPinBody(e.target.value)}
-              placeholder="Add a comment…"
+              placeholder={bilingualInline("Add a comment…", "Προσθήκη σχολίου…")}
               rows={2}
               className="text-xs min-h-0 resize-none mb-2"
               autoFocus
@@ -480,7 +491,7 @@ export function CanvasCommentPins({
                 onClick={handleSubmitPin}
                 disabled={submitting || !newPinBody.trim()}
               >
-                {submitting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                {submitting ? <Loader2 className="icon-sm animate-spin mr-1" /> : null}
                 Pin
               </Button>
               <Button

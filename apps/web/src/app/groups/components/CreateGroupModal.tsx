@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { cn } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
+import { bilingualInline } from '@/lib/i18n/format';
+import { statusEl } from '@/components/common/StatusText';
 
 const CATEGORIES = ['Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
@@ -94,9 +96,9 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
             <textarea
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+              className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none"
               rows={3}
-              placeholder="What is this group about?"
+              placeholder={bilingualInline("What is this group about?", "Ποιο είναι το θέμα της κοινότητας;")}
             />
           </div>
 
@@ -106,11 +108,11 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               <select
                 value={form.category}
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none"
               >
                 <option value="">None</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c}>{bilingualInline(c, statusEl(c))}</option>
                 ))}
               </select>
             </div>
@@ -126,11 +128,11 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs font-medium transition-colors',
                       form.privacy === p
-                        ? 'border-primary bg-primary/15 text-primary'
-                        : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                        ? 'border-primary bg-primary/15 text-primary-accessible'
+                        : 'border-border text-muted-foreground hover:border-primary/40',
                     )}
                   >
-                    {p === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    {p === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
                     {p}
                   </button>
                 ))}
@@ -152,7 +154,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               Cancel
             </Button>
             <Button type="submit" className="flex-1 gap-2" disabled={loading || !form.name.trim()}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="icon-sm animate-spin" /> : null}
               Create Group
             </Button>
           </div>

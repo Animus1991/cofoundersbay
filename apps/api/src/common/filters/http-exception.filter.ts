@@ -197,8 +197,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
         return ErrorCode.NOT_FOUND;
       case HttpStatus.CONFLICT:
         return ErrorCode.CONFLICT;
-      // 423 Locked (not available in NestJS, mapped to CONFLICT)
-      case HttpStatus.CONFLICT:
+      // 423 Locked — no NestJS HttpStatus enum member, so match the numeric status
+      case 423:
         return ErrorCode.RESOURCE_LOCKED;
       case HttpStatus.TOO_MANY_REQUESTS:
         return ErrorCode.RATE_LIMITED;

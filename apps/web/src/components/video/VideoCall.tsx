@@ -56,23 +56,28 @@ export function VideoCall({ className }: VideoCallProps) {
               {state === 'error' && 'Error'}
             </Badge>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" />
               {participants.length} participant{participants.length !== 1 ? 's' : ''}
             </div>
             {isScreenSharing && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Monitor className="h-3 w-3 mr-1" />
+              <Badge variant="outline" className="bg-status-info-bg text-status-info border-status-info-border">
+                <Monitor className="icon-sm mr-1" />
                 Sharing
               </Badge>
             )}
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
+            <Button aria-label="Call settings" variant="ghost" size="sm" disabled title="Call settings are not available yet">
+              <Settings className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="sm">
-              <Maximize2 className="h-4 w-4" />
+            <Button
+              aria-label="Full screen"
+              variant="ghost"
+              size="sm"
+              onClick={() => void remoteVideoRef.current?.parentElement?.requestFullscreen?.()}
+            >
+              <Maximize2 className="icon-sm" />
             </Button>
             <Button 
               variant="destructive" 
@@ -80,7 +85,7 @@ export function VideoCall({ className }: VideoCallProps) {
               onClick={endCall}
               className="gap-1"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="icon-sm" />
               Leave
             </Button>
           </div>
@@ -99,7 +104,7 @@ export function VideoCall({ className }: VideoCallProps) {
           <div 
             ref={localVideoRef}
             className={cn(
-              'absolute bottom-4 right-4 w-48 h-36 bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-700',
+              'absolute bottom-4 right-4 w-48 h-36 bg-muted rounded-lg overflow-hidden border-2 border-border',
               'transition-all duration-200 hover:scale-105'
             )}
             id="local-video-container"
@@ -109,7 +114,7 @@ export function VideoCall({ className }: VideoCallProps) {
           {participants.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
-                <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <Users className="h-16 w-16 mx-auto mb-4 opacity-50" aria-hidden="true" />
                 <p className="text-lg font-medium">Waiting for others to join...</p>
                 <p className="text-sm opacity-75">Share this room URL to invite participants</p>
               </div>
@@ -127,10 +132,10 @@ export function VideoCall({ className }: VideoCallProps) {
           )}
 
           {state === 'error' && (
-            <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-status-danger-bg flex items-center justify-center">
               <div className="text-center text-white">
-                <div className="text-red-300 mb-4">
-                  <Phone className="h-12 w-12 mx-auto" />
+                <div className="text-status-danger mb-4">
+                  <Phone className="h-12 w-12 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-lg font-medium">Connection failed</p>
                 <p className="text-sm opacity-75">Please check your connection and try again</p>
@@ -148,7 +153,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            {isMuted ? <MicOff className="icon-sm" /> : <Mic className="icon-sm" />}
             {isMuted ? 'Unmute' : 'Mute'}
           </Button>
           
@@ -159,7 +164,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+            {isVideoOff ? <VideoOff className="icon-sm" /> : <Video className="icon-sm" />}
             {isVideoOff ? 'Start Video' : 'Stop Video'}
           </Button>
           
@@ -170,7 +175,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isScreenSharing ? <MonitorOff className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+            {isScreenSharing ? <MonitorOff className="icon-sm" /> : <Monitor className="icon-sm" />}
             {isScreenSharing ? 'Stop Share' : 'Share Screen'}
           </Button>
         </div>
@@ -179,17 +184,17 @@ export function VideoCall({ className }: VideoCallProps) {
         {participants.length > 0 && (
           <div className="w-64 border-l bg-muted/30 p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" />
               Participants
             </h3>
             <div className="space-y-2">
               {participants.map((participant) => (
                 <div key={participant.id} className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-success-mark"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
-                    {participant.audio && <Mic className="h-3 w-3 text-green-500" />}
-                    {participant.video && <Video className="h-3 w-3 text-green-500" />}
+                    {participant.audio && <Mic className="icon-sm text-status-success" />}
+                    {participant.video && <Video className="icon-sm text-status-success" />}
                   </div>
                 </div>
               ))}

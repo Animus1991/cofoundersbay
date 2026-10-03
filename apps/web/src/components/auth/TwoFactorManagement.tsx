@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface TwoFactorManagementProps {
   isEnabled: boolean;
@@ -50,40 +51,45 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
   if (isEnabled) {
     return (
       <>
-        <div className="flex items-start gap-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-medium text-emerald-700 dark:text-emerald-400">
-              Two-factor authentication is enabled
-            </h4>
-            <p className="mt-1 text-sm text-emerald-600/80 dark:text-emerald-400/80">
-              Your account is protected with an additional layer of security.
-            </p>
+        {/* Stacks below `sm`: icon 40 + gap 16 + a `flex-1` with no `min-w-0`
+            (so it could not shrink under its own text) + gap 16 + the button
+            put this row 4px past a 320px viewport and scrolled the page. */}
+        <div className="flex flex-col gap-3 rounded-lg border border-status-success-border bg-status-success-bg p-4 sm:flex-row sm:items-start sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-status-success-bg">
+              <ShieldCheck className="icon-md text-status-success " />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="font-medium text-status-success ">
+                <BilingualText en="Two-factor authentication is enabled" el="Ο έλεγχος δύο παραγόντων είναι ενεργός" wrap />
+              </h4>
+              <p className="mt-1 text-sm text-status-success ">
+                <BilingualText en="Your account is protected with an additional layer of security." el="Ο λογαριασμός σας έχει ένα επιπλέον επίπεδο ασφάλειας." wrap />
+              </p>
+            </div>
           </div>
           <Button
             variant="outline"
             onClick={() => setShowDisable(true)}
-            className="shrink-0"
+            className="shrink-0 self-start"
           >
-            <ShieldOff className="mr-2 h-4 w-4" />
-            Disable
+            <ShieldOff className="mr-2 icon-sm" />
+            <BilingualText en="Disable" el="Απενεργοποίηση" compact />
           </Button>
         </div>
 
         <Dialog open={showDisable} onOpenChange={setShowDisable}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
+              <DialogTitle><BilingualText en="Disable Two-Factor Authentication" el="Απενεργοποίηση ελέγχου δύο παραγόντων" wrap /></DialogTitle>
               <DialogDescription>
-                Enter a verification code from your authenticator app to confirm.
+                <BilingualText en="Enter a verification code from your authenticator app to confirm." el="Εισάγετε κωδικό από την εφαρμογή ελέγχου ταυτότητας για επιβεβαίωση." wrap />
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
+              <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-3 text-sm text-status-warning ">
+                <AlertTriangle className="icon-md shrink-0" />
                 <p>
                   Disabling 2FA will make your account less secure. You&apos;ll only need your
                   password to sign in.
@@ -91,8 +97,9 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Verification Code</label>
+                <label htmlFor="disable-verification-code" className="text-sm font-medium"><BilingualText en="Verification Code" el="Κωδικός επαλήθευσης" compact /></label>
                 <Input
+                  id="disable-verification-code"
                   type="text"
                   inputMode="numeric"
                   maxLength={6}
@@ -106,7 +113,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowDisable(false)}>
-                Cancel
+                <BilingualText en="Cancel" el="Ακύρωση" compact />
               </Button>
               <Button
                 variant="destructive"
@@ -124,29 +131,31 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
   return (
     <>
-      <div className="flex items-start gap-4 rounded-lg border p-4">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-          <Shield className="h-5 w-5 text-muted-foreground" />
+      <div className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-start sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
+            <Shield className="icon-md text-muted-foreground" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="font-medium"><BilingualText en="Two-factor authentication is disabled" el="Ο έλεγχος δύο παραγόντων είναι ανενεργός" wrap /></h4>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add an extra layer of security by requiring a verification code from your phone
+              when signing in.
+            </p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h4 className="font-medium">Two-factor authentication is disabled</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add an extra layer of security by requiring a verification code from your phone
-            when signing in.
-          </p>
-        </div>
-        <Button onClick={() => setShowSetup(true)} className="shrink-0">
-          <Shield className="mr-2 h-4 w-4" />
-          Enable
+        <Button onClick={() => setShowSetup(true)} className="shrink-0 self-start">
+          <Shield className="mr-2 icon-sm" />
+          <BilingualText en="Enable" el="Ενεργοποίηση" compact />
         </Button>
       </div>
 
       <Dialog open={showSetup} onOpenChange={setShowSetup}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
+            <DialogTitle><BilingualText en="Set Up Two-Factor Authentication" el="Ρύθμιση ελέγχου δύο παραγόντων" compact /></DialogTitle>
             <DialogDescription>
-              Secure your account with an authenticator app like Google Authenticator or Authy.
+              <BilingualText en="Secure your account with an authenticator app like Google Authenticator or Authy." el="Ασφαλίστε τον λογαριασμό σας με εφαρμογή όπως Google Authenticator ή Authy." wrap />
             </DialogDescription>
           </DialogHeader>
 

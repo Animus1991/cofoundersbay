@@ -125,14 +125,14 @@ export function OnboardingProgress({ steps }: { steps: Step[] }) {
                 isCompleted
                   ? 'border-primary bg-primary text-primary-foreground'
                   : isCurrent
-                    ? 'border-primary bg-primary/10 text-primary'
+                    ? 'border-primary bg-primary/10 text-primary-accessible'
                     : 'border-border bg-background text-muted-foreground'
               )}
             >
               {isCompleted ? (
-                <Check className="h-5 w-5" />
+                <Check className="icon-md" />
               ) : Icon ? (
-                <Icon className="h-5 w-5" />
+                <Icon className="icon-md" />
               ) : (
                 <span className="text-sm font-medium">{index + 1}</span>
               )}
@@ -163,7 +163,7 @@ export function OnboardingStepHeader({ steps }: { steps: Step[] }) {
 
   return (
     <div className="text-center mb-8 animate-fade-in">
-      <h2 className="text-2xl font-bold text-foreground mb-2">{step.title}</h2>
+      <h2 className="text-2xl font-semibold text-foreground mb-2">{step.title}</h2>
       {step.description && (
         <p className="text-muted-foreground max-w-md mx-auto">{step.description}</p>
       )}
@@ -193,14 +193,14 @@ export function OnboardingNavigation({
   };
 
   return (
-    <div className="flex items-center justify-between mt-8 pt-6 border-t border-border/60">
+    <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
       <Button
         variant="ghost"
         onClick={prevStep}
         disabled={!canGoPrev || isSubmitting}
         className={cn(!canGoPrev && 'invisible')}
       >
-        <ChevronLeft className="h-4 w-4 mr-1" />
+        <ChevronLeft className="icon-sm mr-1" />
         Back
       </Button>
 
@@ -211,7 +211,7 @@ export function OnboardingNavigation({
       <Button onClick={handleNext} disabled={!canGoNext || isSubmitting}>
         {isSubmitting ? (
           <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="icon-sm mr-2 animate-spin" />
             Processing...
           </>
         ) : isLastStep ? (
@@ -219,7 +219,7 @@ export function OnboardingNavigation({
         ) : (
           <>
             Next
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <ChevronRight className="icon-sm ml-1" />
           </>
         )}
       </Button>

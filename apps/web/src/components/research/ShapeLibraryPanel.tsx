@@ -5,6 +5,7 @@ import { X, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ResearchNodeType } from '@/lib/api';
 import type { ShapeVariant, ShapeMeta } from './ShapeNode';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /* ─── Shape template definition ────────────────────────────────────────── */
 
@@ -187,25 +188,27 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
 
   return (
     <div
-      className="absolute top-14 left-14 z-40 w-64 bg-card border rounded-xl shadow-xl flex flex-col overflow-hidden"
-      style={{ maxHeight: 'calc(100vh - 80px)' }}
+      className="absolute z-40 inset-x-2 top-2 sm:inset-x-auto sm:top-14 sm:left-14 sm:w-64 w-auto bg-card border rounded-xl shadow-xl flex flex-col overflow-hidden"
+      style={{ maxHeight: 'min(70dvh, calc(100% - 6rem))' }}
+      data-canvas-chrome
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b shrink-0 bg-muted/30">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground flex-1">Shape Library</span>
-        <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground">
-          <X className="w-3.5 h-3.5" />
+        <span className="text-2xs font-bold uppercase tracking-wider text-foreground flex-1">Shape Library</span>
+        <button aria-label="Close" onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground">
+          <X className="icon-sm" />
         </button>
       </div>
 
       {/* Search */}
       <div className="px-2.5 py-2 shrink-0 border-b">
         <div className="flex items-center gap-1.5 px-2 h-7 rounded-md border bg-background">
-          <Search className="w-3 h-3 text-muted-foreground/60 shrink-0" />
+          <Search className="icon-sm text-muted-foreground/60 shrink-0" />
           <input
-            className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
-            placeholder="Search shapes…"
+            className="flex-1 text-2xs bg-transparent outline-none placeholder:text-muted-foreground/50"
+            placeholder={bilingualInline("Search shapes…", "Αναζήτηση σχημάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -223,9 +226,9 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
                 className="flex items-center gap-1.5 w-full px-3 py-1.5 hover:bg-muted/40 transition-colors text-left"
                 onClick={() => toggleCat(cat.name)}
               >
-                {open ? <ChevronDown className="w-3 h-3 text-muted-foreground/60" /> : <ChevronRight className="w-3 h-3 text-muted-foreground/60" />}
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{cat.name}</span>
-                <span className="ml-auto text-[9px] text-muted-foreground/40">{cat.templates.length}</span>
+                {open ? <ChevronDown className="icon-sm text-muted-foreground/60" /> : <ChevronRight className="icon-sm text-muted-foreground/60" />}
+                <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{cat.name}</span>
+                <span className="ml-auto text-2xs text-muted-foreground/40">{cat.templates.length}</span>
               </button>
 
               {/* Shapes grid */}
@@ -245,7 +248,7 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
                       <div className="flex items-center justify-center w-[52px] h-[36px]">
                         {tpl.preview}
                       </div>
-                      <span className="text-[9px] text-muted-foreground font-medium text-center leading-tight max-w-full truncate">
+                      <span className="text-2xs text-muted-foreground font-medium text-center leading-tight max-w-full truncate">
                         {tpl.label}
                       </span>
                     </button>
@@ -256,7 +259,7 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
           );
         })}
         {filtered.length === 0 && (
-          <div className="flex items-center justify-center py-8 text-[11px] text-muted-foreground/50">
+          <div className="flex items-center justify-center py-8 text-2xs text-muted-foreground/50">
             No shapes match "{search}"
           </div>
         )}

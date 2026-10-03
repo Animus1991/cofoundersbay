@@ -16,6 +16,9 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { readinessEvidence } from '@/lib/readiness-evidence';
+import { qk } from '@/lib/query-keys';
 import {
   Target,
   Zap,
@@ -34,31 +37,32 @@ import {
 const DIMENSION_CONFIG: Array<{
   key: keyof GamificationReadinessSummary['dimensions'];
   label: string;
+  labelEl: string;
   icon: typeof Target;
   description: string;
 }> = [
-  { key: 'problemClarity',       label: 'Problem Clarity',       icon: Target,        description: 'Problem statement definition' },
-  { key: 'solutionClarity',      label: 'Solution Clarity',      icon: CheckCircle2,  description: 'Solution artifact completeness' },
-  { key: 'marketUnderstanding',  label: 'Market Understanding',  icon: BarChart3,     description: 'Market analysis depth' },
-  { key: 'productDefinition',    label: 'Product Definition',    icon: BookOpen,      description: 'PRD / MVP spec completeness' },
-  { key: 'teamCompleteness',     label: 'Team Completeness',     icon: Users,         description: 'Co-founders, mentors, collaborators' },
-  { key: 'executionReadiness',   label: 'Execution Readiness',   icon: TrendingUp,    description: 'Milestones × completion rate' },
-  { key: 'validationScore',      label: 'Validation Score',      icon: Star,          description: 'Expert reviews + feedback applied' },
-  { key: 'artifactCompleteness', label: 'Artifact Completeness', icon: Activity,      description: 'Avg document completion %' },
+  { key: 'problemClarity',       label: 'Problem Clarity',       labelEl: 'Σαφήνεια προβλήματος',       icon: Target,        description: 'Problem statement definition' },
+  { key: 'solutionClarity',      label: 'Solution Clarity',      labelEl: 'Σαφήνεια λύσης',            icon: CheckCircle2,  description: 'Solution artifact completeness' },
+  { key: 'marketUnderstanding',  label: 'Market Understanding',  labelEl: 'Κατανόηση αγοράς',          icon: BarChart3,     description: 'Market analysis depth' },
+  { key: 'productDefinition',    label: 'Product Definition',    labelEl: 'Ορισμός προϊόντος',         icon: BookOpen,      description: 'PRD / MVP spec completeness' },
+  { key: 'teamCompleteness',     label: 'Team Completeness',     labelEl: 'Πληρότητα ομάδας',          icon: Users,         description: 'Co-founders, mentors, collaborators' },
+  { key: 'executionReadiness',   label: 'Execution Readiness',   labelEl: 'Ετοιμότητα εκτέλεσης',      icon: TrendingUp,    description: 'Milestones × completion rate' },
+  { key: 'validationScore',      label: 'Validation Score',      labelEl: 'Βαθμός επικύρωσης',         icon: Star,          description: 'Expert reviews + feedback applied' },
+  { key: 'artifactCompleteness', label: 'Artifact Completeness', labelEl: 'Πληρότητα παραδοτέων',      icon: Activity,      description: 'Avg document completion %' },
 ];
 
 function scoreColor(score: number): string {
-  if (score >= 75) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
-  if (score >= 25) return 'text-orange-600 dark:text-orange-400';
-  return 'text-rose-600 dark:text-rose-400';
+  if (score >= 75) return 'text-status-success ';
+  if (score >= 50) return 'text-status-warning ';
+  if (score >= 25) return 'text-status-warning ';
+  return 'text-status-danger ';
 }
 
 function scoreBarColor(score: number): string {
-  if (score >= 75) return 'bg-emerald-500';
-  if (score >= 50) return 'bg-amber-500';
-  if (score >= 25) return 'bg-orange-500';
-  return 'bg-rose-500';
+  if (score >= 75) return 'bg-status-success-mark';
+  if (score >= 50) return 'bg-status-warning-mark';
+  if (score >= 25) return 'bg-status-warning-mark';
+  return 'bg-status-danger-mark';
 }
 
 function scoreBadgeVariant(score: number): 'default' | 'secondary' | 'outline' {
@@ -76,7 +80,7 @@ interface ReadinessPanelProps {
 
 export function WorkspaceReadinessPanel({ workspaceId, compact = false }: ReadinessPanelProps) {
   const { data, isLoading } = useQuery<GamificationReadinessSummary>({
-    queryKey: ['gamification-readiness', workspaceId],
+    queryKey: qk('gamification', 'readiness', workspaceId),
     queryFn: () => getWorkspaceReadiness(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -98,58 +102,66 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
     );
   }
 
-  if (!data) return null;
+  // `!data` is not enough of a guard. A payload can arrive without the fields
+  // this panel reads -- it did, because /builder had no demo handler for this
+  // endpoint and the generic fallback has none of them -- and `data.dimensions[key]`
+  // then threw and took the whole page down through the error boundary.
+  if (!data || !data.dimensions) return null;
 
   const dims = compact ? DIMENSION_CONFIG.slice(0, 4) : DIMENSION_CONFIG;
-  const isGated = data.bottleneckFactor < 0.95;
+  const score = typeof data.score === 'number' ? data.score : 0;
+  const bottleneck = typeof data.bottleneckFactor === 'number' ? data.bottleneckFactor : 1;
+  const isGated = bottleneck < 0.95;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Target className="h-4 w-4 text-primary" />
-            Startup Readiness
+            <Target className="icon-sm text-primary-accessible" />
+            <BilingualText en="Startup Readiness" el="Ετοιμότητα startup" compact />
           </CardTitle>
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(data.score))}>
-              {data.score}
+            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
+              {score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
           </div>
         </div>
-        <Progress value={data.score} className="h-2 mt-1" />
+        <Progress value={score} className="h-2 mt-1" />
         {isGated && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
-            Bottleneck suppression active (×{data.bottleneckFactor.toFixed(2)}) — strengthen critical dimensions
+          <p className="text-2xs text-status-warning mt-1">
+            <BilingualText
+              en={`Bottleneck suppression active (×${bottleneck.toFixed(2)}) — strengthen critical dimensions`}
+              el={`Ενεργή καταστολή στενωπού (×${bottleneck.toFixed(2)}) — ενισχύστε τις κρίσιμες διαστάσεις`}
+              wrap
+            />
           </p>
         )}
       </CardHeader>
       <CardContent className="space-y-2.5">
-        {dims.map(({ key, label, icon: Icon }) => {
-          const score   = data.dimensions[key];
+        {dims.map(({ key, label, labelEl, icon: Icon }) => {
+          const score   = data.dimensions?.[key] ?? 0;
           const detail  = data.dimensionBreakdown?.[key];
+          const evidence = readinessEvidence(key, detail?.signals, detail?.detail);
           return (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-medium truncate">{label}</span>
+                <div className="flex min-w-0 items-center gap-1.5">
+                  <Icon className="icon-sm shrink-0 text-muted-foreground" />
+                  <span className="text-xs font-medium truncate">
+                    <BilingualText en={label} el={labelEl} compact />
+                  </span>
                   {detail?.weight && (
-                    <span className="text-[9px] text-muted-foreground hidden md:block">
+                    <span className="text-2xs text-muted-foreground hidden md:block">
                       ×{(detail.weight * 100).toFixed(0)}%
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {detail?.detail && (
-                    <span className="text-[10px] text-muted-foreground hidden sm:block max-w-[140px] truncate">
-                      {detail.detail}
-                    </span>
-                  )}
                   <Badge
                     variant={scoreBadgeVariant(score)}
-                    className="text-[10px] px-1.5 py-0 h-4 tabular-nums"
+                    className="text-2xs px-1.5 py-0 h-4 tabular-nums"
                   >
                     {score}%
                   </Badge>
@@ -161,11 +173,26 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
                   style={{ width: `${score}%` }}
                 />
               </div>
+              {/* The evidence, on its own line.
+                  It used to sit on the title row at `max-w-[140px] truncate`,
+                  right-aligned against the badge. The sentences it carries are
+                  180-240px, so a 1440px measurement found all eight clipped —
+                  "Founder only — no technical cofounde…" — and the one text on
+                  the panel that answers "why is my score this" was the only one
+                  nobody could finish reading. The row has no room to give: the
+                  badge owns the right edge. A line of its own costs eight rows
+                  of height and makes the reading order what the reader expects:
+                  what it is, what it scored, how far along, and then why. */}
+              {evidence && (
+                <p className="text-2xs leading-snug text-muted-foreground">
+                  <BilingualText en={evidence.en} el={evidence.el} stacked wrap />
+                </p>
+              )}
             </div>
           );
         })}
         {compact && (
-          <p className="text-[10px] text-muted-foreground pt-1">
+          <p className="text-2xs text-muted-foreground pt-1">
             Showing top 4 dimensions · Full view in Readiness tab
           </p>
         )}
@@ -182,7 +209,7 @@ interface MomentumPanelProps {
 
 export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
   const { data, isLoading } = useQuery<GamificationMomentumSummary>({
-    queryKey: ['gamification-momentum', workspaceId],
+    queryKey: qk('gamification', 'momentum', workspaceId),
     queryFn: () => getWorkspaceMomentum(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -203,9 +230,13 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
 
   if (!data) return null;
 
-  const bd = data.breakdown;
-  const momentumLevel = bd.momentumLevel ?? (data.score >= 75 ? 'High-Velocity' : data.score >= 55 ? 'Strong' : data.score >= 35 ? 'Steady' : data.score >= 15 ? 'Low' : 'Stalled');
-  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-emerald-600 dark:text-emerald-400' : momentumLevel === 'Steady' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+  // Same shape of guard as the readiness panel above: `breakdown` and the
+  // numeric fields can all be absent on a partial payload.
+  const bd = data.breakdown ?? ({} as NonNullable<typeof data.breakdown>);
+  const score = typeof data.score === 'number' ? data.score : 0;
+  const velocity = typeof data.velocity === 'number' ? data.velocity : 0;
+  const momentumLevel = bd.momentumLevel ?? (score >= 75 ? 'High-Velocity' : score >= 55 ? 'Strong' : score >= 35 ? 'Steady' : score >= 15 ? 'Low' : 'Stalled');
+  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-status-success ' : momentumLevel === 'Steady' ? 'text-status-warning ' : 'text-status-danger ';
 
   const componentBars = [
     { label: 'Velocity',           value: bd.velocityScore             ?? 0 },
@@ -220,36 +251,36 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Zap className="h-4 w-4 text-amber-500" />
-            Team Momentum
+            <Zap className="icon-sm text-status-warning" />
+            <BilingualText en="Team Momentum" el="Ορμή ομάδας" compact />
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className={cn('text-xs font-medium', momentumColor)}>{momentumLevel}</span>
-            <span className={cn('text-2xl font-bold tabular-nums', scoreColor(data.score))}>
-              {data.score}
+            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
+              {score}
               <span className="text-xs text-muted-foreground font-normal">/100</span>
             </span>
           </div>
         </div>
-        <Progress value={data.score} className="h-1.5 mt-1" />
+        <Progress value={score} className="h-1.5 mt-1" />
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{data.velocity.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">actions/day (14d)</p>
+            <p className="page-stat font-bold tabular-nums">{velocity.toFixed(2)}</p>
+            <p className="text-2xs text-muted-foreground">actions/day (14d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.activeContributors}</p>
-            <p className="text-[10px] text-muted-foreground">contributors</p>
+            <p className="page-stat font-bold tabular-nums">{bd.activeContributors}</p>
+            <p className="text-2xs text-muted-foreground">contributors</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground">actions (7d)</p>
+            <p className="page-stat font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
+            <p className="text-2xs text-muted-foreground">actions (7d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-lg font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
-            <p className="text-[10px] text-muted-foreground">feedback loops</p>
+            <p className="page-stat font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
+            <p className="text-2xs text-muted-foreground">feedback loops</p>
           </div>
         </div>
         <div className="space-y-1.5">
@@ -278,7 +309,7 @@ interface ContributionPanelProps {
 
 export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
   const { data: contributors, isLoading } = useQuery<GamificationContributionSummary[]>({
-    queryKey: ['gamification-contributions', workspaceId],
+    queryKey: qk('gamification', 'contributions', workspaceId),
     queryFn: () => getWorkspaceContributions(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -297,14 +328,17 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
     );
   }
 
-  if (!contributors || contributors.length === 0) return null;
+  // Array.isArray, not a length check: an object response has no `length`, so
+  // `contributors.length === 0` is false and the map below then throws
+  // "contributors.slice is not a function" and takes the page with it.
+  if (!Array.isArray(contributors) || contributors.length === 0) return null;
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Users className="h-4 w-4 text-blue-500" />
-          Contributions
+          <Users className="icon-sm text-status-info" />
+          <BilingualText en="Contributions" el="Συνεισφορές" compact />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -316,15 +350,40 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs text-muted-foreground w-4 shrink-0">#{idx + 1}</span>
-                  <span className="text-xs font-medium truncate">{c.userId.slice(0, 8)}…</span>
+                  <span className="text-xs font-medium truncate" title={c.userId}>
+                    {c.userId}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground">
-                  <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
-                  <span title="Feedback applied">·{bd.feedbackApplied}FA</span>
-                  {recentActivity > 0 && (
-                    <span title="Recent activity (14d)" className="text-emerald-600 dark:text-emerald-400">·{recentActivity}↑</span>
-                  )}
-                  <Badge variant={scoreBadgeVariant(c.score)} className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                {/* Was `6C·9I ·0FA ·3↑`. The letters were invented here and
+                    explained only in a `title`, which never appears on a touch
+                    screen and was English either way, so half the product's
+                    readers had four numbers and no nouns.
+
+                    Icons were the first attempt and the wrong one: this file
+                    sits inside [data-surface="card"], where the sweep below
+                    globals.css line 2798 hides decorative svg.lucide on purpose
+                    (181 of them across 37 routes) and keeps only state glyphs.
+                    Three of the four icons rendered at display:none. The rule is
+                    right — an icon standing in for a noun is the same guess the
+                    letters were — so the nouns are written out, in both
+                    languages, and a count of zero is dropped rather than printed
+                    as `0FA`. */}
+                <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 shrink-0 text-2xs text-muted-foreground">
+                  {([
+                    { n: bd.artifactsCreated, en: 'created', el: 'δημιουργίες' },
+                    { n: bd.artifactsImproved, en: 'improved', el: 'βελτιώσεις' },
+                    { n: bd.feedbackApplied, en: 'applied', el: 'εφαρμοσμένα' },
+                    { n: recentActivity, en: 'in 14 days', el: 'σε 14 ημέρες', tone: 'text-status-success' },
+                  ] as const)
+                    .filter((part) => part.n > 0)
+                    .map((part, i, kept) => (
+                      <span key={part.en} className={cn('whitespace-nowrap', 'tone' in part ? part.tone : undefined)}>
+                        <span className="tabular-nums font-medium">{part.n}</span>{' '}
+                        <BilingualText en={part.en} el={part.el} compact />
+                        {i < kept.length - 1 && <span aria-hidden="true" className="ml-2 opacity-50">·</span>}
+                      </span>
+                    ))}
+                  <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
                     {c.score}
                   </Badge>
                 </div>
@@ -336,7 +395,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                 />
               </div>
               {c.rawScore > 0 && idx === 0 && (
-                <p className="text-[9px] text-muted-foreground">{c.explain}</p>
+                <p className="text-2xs text-muted-foreground">{c.explain}</p>
               )}
             </div>
           );
@@ -354,7 +413,7 @@ interface MentorMetricsPanelProps {
 
 export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
   const { data, isLoading } = useQuery<GamificationMentorMetrics>({
-    queryKey: ['gamification-mentor-metrics', workspaceId],
+    queryKey: qk('gamification', 'mentor-metrics', workspaceId),
     queryFn: () => getWorkspaceMentorMetrics(workspaceId),
     staleTime: 2 * 60_000,
     enabled: !!workspaceId,
@@ -379,8 +438,8 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-violet-500" />
-            Mentor Feedback Loop
+            <MessageSquare className="icon-sm text-status-accent" />
+            <BilingualText en="Mentor Feedback Loop" el="Βρόχος ανατροφοδότησης μέντορα" compact />
           </CardTitle>
           <Badge variant={scoreBadgeVariant(data.improvementScore)} className="tabular-nums">
             {data.improvementScore}/100
@@ -391,15 +450,15 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{data.feedbackCount}</p>
-            <p className="text-[10px] text-muted-foreground">received</p>
+            <p className="text-2xs text-muted-foreground">received</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{data.appliedFeedbackCount}</p>
-            <p className="text-[10px] text-muted-foreground">applied</p>
+            <p className="text-2xs text-muted-foreground">applied</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{Math.round(data.appliedFeedbackRate * 100)}%</p>
-            <p className="text-[10px] text-muted-foreground">apply rate</p>
+            <p className="text-2xs text-muted-foreground">apply rate</p>
           </div>
         </div>
 
@@ -423,19 +482,19 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         </div>
 
         {(data.unresolvedFeedback ?? 0) > 0 && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+          <p className="text-2xs text-status-warning ">
             {data.unresolvedFeedback} unresolved feedback item{data.unresolvedFeedback !== 1 ? 's' : ''} — consider applying
           </p>
         )}
 
         {data.avgResponseTimeHrs > 0 && (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Avg. response time: <span className="font-medium">{data.avgResponseTimeHrs.toFixed(1)}h</span>
           </p>
         )}
         {data.lastFeedbackAt && (
-          <p className="text-[10px] text-muted-foreground">
-            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+          <p className="text-2xs text-muted-foreground">
+            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
           </p>
         )}
       </CardContent>

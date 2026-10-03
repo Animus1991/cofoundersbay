@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
+
+import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -27,7 +30,10 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
+import { queryKeys, qk } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,6 +46,7 @@ import { useToast } from '@/components/ui/toast';
 import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -200,6 +207,7 @@ function TagInput({
   max?: number;
 }) {
   const [input, setInput] = useState('');
+  const inputId = useId();
 
   const addTag = (tag: string) => {
     const cleaned = tag.trim();
@@ -215,17 +223,18 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border/60 bg-background/50 min-h-[60px]">
+      <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
+      <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-background/50 min-h-[60px]">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
-            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
-              <X className="h-3 w-3" />
+            <button aria-label={`Remove ${tag}`} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+              <X className="icon-sm" />
             </button>
           </Badge>
         ))}
         <input
+          id={inputId}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -300,8 +309,8 @@ function SelectButtons({
             className={cn(
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
               selected.includes(opt.value)
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                ? 'border-primary bg-primary/10 text-primary-accessible'
+                : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
             {opt.label}
@@ -338,15 +347,17 @@ export default function ProfileEditPage() {
     }
   };
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // Bumped to open the cropper from the button beside the photo.
+  const [cropperSignal, setCropperSignal] = useState(0);
 
   const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
   });
 
   const { data: skillsData } = useQuery({
-    queryKey: ['skills'],
+    queryKey: qk('skills'),
     queryFn: () => listSkills(),
     staleTime: 10 * 60_000,
   });
@@ -400,6 +411,19 @@ export default function ProfileEditPage() {
     });
     setFormInitialized(true);
   }, [meData, formInitialized]);
+
+  // A draft the assistant proposed (draft_profile), applied once the saved
+  // profile has loaded so it lands on top of it rather than under it. The
+  // person still presses Save.
+  const draft = useFormDraft('profile', (f) => {
+    setForm((prev) => {
+      const next = { ...prev };
+      for (const key of ['displayName', 'headline', 'bio', 'location', 'websiteUrl', 'linkedinUrl', 'githubUrl', 'twitterUrl'] as const) {
+        if (typeof f[key] === 'string') next[key] = f[key] as string;
+      }
+      return next;
+    });
+  }, formInitialized);
 
   // Update form field
   const updateField = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
@@ -468,7 +492,7 @@ export default function ProfileEditPage() {
         rolePayload: Object.keys(rolePayload).length ? rolePayload : undefined,
         skillIds,
       });
-      queryClient.invalidateQueries({ queryKey: ['me', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
       // Sync updated name/avatar to localStorage so TopNav UserMenu reflects changes immediately
       if (typeof window !== 'undefined') {
         try {
@@ -495,10 +519,10 @@ export default function ProfileEditPage() {
 
   if (profileError) {
     return (
-      <AppShell title="Edit Profile">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
-          <p className="text-sm text-muted-foreground">Failed to load your profile.</p>
-          <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}>Try again</Button>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact /></p>
+          <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
         </div>
       </AppShell>
     );
@@ -506,9 +530,9 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <AppShell title="Edit Profile">
+      <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         </div>
       </AppShell>
     );
@@ -527,67 +551,75 @@ export default function ProfileEditPage() {
   return (
     <AppShell
       title="Edit Profile"
+      titleEl="Επεξεργασία προφίλ"
       description="Update your personal details and how you appear to others"
+      descriptionEl="Ενημερώστε τα στοιχεία σας και το πώς σας βλέπουν οι άλλοι"
       actions={
-        <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              <ArrowLeft className="h-4 w-4" />
-              Cancel
-            </Button>
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel" asChild>
+            <Link href="/profile">
+              <ArrowLeft className="icon-sm" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/profile">
+              <ArrowLeft className="icon-sm" />
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
+            </Link>
+          </Button>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save changes
+            {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
+            <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
           </Button>
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px] pb-10">
+      <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
+          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto hide-scrollbar">
               <TabsTrigger 
                 value="basic" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <User className="h-4 w-4" />
-                Basic Info
+                <User className="icon-sm" />
+                <BilingualText en="Basic Info" el="Βασικά στοιχεία" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="role" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Briefcase className="h-4 w-4" />
-                Role Details
+                <Briefcase className="icon-sm" />
+                <BilingualText en="Role Details" el="Λεπτομέρειες ρόλου" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="links" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Globe className="h-4 w-4" />
-                Social Links
+                <Globe className="icon-sm" />
+                <BilingualText en="Social Links" el="Κοινωνικοί σύνδεσμοι" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolio" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <LayoutDashboard className="h-4 w-4" />
-                Portfolio
+                <LayoutDashboard className="icon-sm" />
+                <BilingualText en="Portfolio" el="Χαρτοφυλάκιο" compact />
               </TabsTrigger>
             </TabsList>
 
             {/* Basic Info */}
             <TabsContent value="basic" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Avatar */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-primary" />
-                    Profile Photo
+                    <Camera className="icon-md text-primary-accessible" />
+                    <BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact />
                   </CardTitle>
-                  <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
+                  <CardDescription><BilingualText en="A friendly face helps others recognize you and builds trust" el="Ένα φιλικό πρόσωπο βοηθά τους άλλους να σας αναγνωρίζουν και χτίζει εμπιστοσύνη" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -596,6 +628,8 @@ export default function ProfileEditPage() {
                       aspectRatio={1}
                       outputSize={400}
                       title="Crop Profile Photo"
+                      label="Crop and upload your profile photo"
+                      openSignal={cropperSignal}
                       onCrop={async (blob, dataUrl) => {
                         setUploadingAvatar(true);
                         try {
@@ -614,35 +648,43 @@ export default function ProfileEditPage() {
                       <div className="relative group cursor-pointer">
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
                           <AvatarImage src={form.avatarUrl || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                          <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-semibold">
                             {form.displayName[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Camera className="h-8 w-8 text-white" />
+                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                          <Camera className="icon-xl text-white" />
                         </div>
                       </div>
                     </ImageCropperTrigger>
                     <div className="space-y-4 flex-1 w-full">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Input
-                          placeholder="Paste image URL..."
+                          aria-label={bilingualInline("Profile photo URL", "URL φωτογραφίας προφίλ")}
+                          placeholder={bilingualInline("Paste image URL…", "Επικολλήστε URL εικόνας…")}
                           value={form.avatarUrl}
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
                         />
+                        {/* It said "Crop & Upload" and did nothing: the only
+                            way in was the photo, which the help text below had
+                            to explain. Now both open the same dialog. */}
                         <Button
                           type="button"
                           variant="secondary"
                           className="gap-2 sm:w-auto w-full"
                           disabled={uploadingAvatar}
+                          onClick={() => setCropperSignal((n) => n + 1)}
                         >
-                          {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-                          Crop & Upload
+                          {uploadingAvatar ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
+                          <BilingualText en="Crop & Upload" el="Περικοπή και μεταφόρτωση" compact />
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Click the photo to crop & upload. Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
+                        <BilingualText
+                          en="Use the photo or the button to crop & upload. Recommended size: 400×400px. JPG, PNG or WebP. Max 5MB."
+                          el="Χρησιμοποιήστε τη φωτογραφία ή το κουμπί για περικοπή και μεταφόρτωση. Προτεινόμενο μέγεθος: 400×400px. JPG, PNG ή WebP. Έως 5MB."
+                        />
                       </p>
                     </div>
                   </div>
@@ -650,33 +692,34 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Name & Headline */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="h-5 w-5 text-primary" />
-                        Personal Identity
+                        <User className="icon-md text-primary-accessible" />
+                        <BilingualText en="Personal Identity" el="Προσωπικά στοιχεία" compact />
                       </CardTitle>
-                      <CardDescription>How you'll appear across the platform</CardDescription>
+                      <CardDescription><BilingualText en="How you'll appear across the platform" el="Πώς θα εμφανίζεστε σε όλη την πλατφόρμα" wrap /></CardDescription>
                     </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-primary border-primary/30 hover:bg-primary/10 self-start"
+                      className="gap-2 text-primary-accessible border-primary/30 hover:bg-primary/10 self-start"
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
-                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {aiLoading ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
                       {aiLoading ? 'Analyzing Profile...' : 'AI Suggestions'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name <span className="text-destructive">*</span></label>
+                    <label htmlFor="profile-display-name" className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /> <span className="text-destructive-accessible">*</span></label>
                     <Input
+                      id="profile-display-name"
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
                       placeholder="e.g. Jane Doe"
@@ -684,25 +727,26 @@ export default function ProfileEditPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Headline</label>
+                    <label htmlFor="profile-headline" className="text-sm font-medium"><BilingualText en="Headline" el="Τίτλος" compact /></label>
                     <Input
+                      id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
                       placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
                     />
-                    <p className="text-xs text-muted-foreground">Appears directly below your name everywhere on the site.</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium">About / Bio</label>
-                      <span className={cn("text-xs", form.bio.length > 400 ? "text-amber-500" : "text-muted-foreground")}>
+                      <label className="text-sm font-medium"><BilingualText en="About / Bio" el="Σχετικά / Βιογραφικό" compact /></label>
+                      <span className={cn("text-xs", form.bio.length > 400 ? "text-status-warning" : "text-muted-foreground")}>
                         {form.bio.length}/500
                       </span>
                     </div>
                     <Textarea
                       value={form.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
-                      placeholder="Tell the community about your background, what you're working on, and what you're looking for..."
+                      placeholder={bilingualInline("Tell the community about your background, what you're working on, and what you're looking for…", "Πείτε στην κοινότητα για το υπόβαθρό σας, τι φτιάχνετε και τι αναζητάτε…")}
                       rows={5}
                       className="resize-y"
                     />
@@ -710,33 +754,33 @@ export default function ProfileEditPage() {
 
                   {/* AI Suggestions panel */}
                   {showAISuggestions && aiSuggestions && (
-                    <div className="rounded-xl border border-primary/30 bg-gradient-to-r from-primary/5 to-transparent p-5 space-y-4 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-5 space-y-4 animate-in fade-in slide-in-from-top-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="h-4 w-4 text-primary" />
+                            <Sparkles className="icon-sm text-primary-accessible" />
                           </div>
-                          <span className="font-semibold text-foreground">AI Review</span>
+                          <span className="font-semibold text-foreground"><BilingualText en="AI Review" el="Αξιολόγηση AI" compact /></span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
                             {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
-                          <X className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)} aria-label={bilingualAria('Dismiss AI suggestions', 'Απόρριψη προτάσεων AI')}>
+                          <X className="icon-sm" />
                         </Button>
                       </div>
 
                       <div className="space-y-4 pt-2">
                         {aiSuggestions.headline && (
                           <div className="space-y-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Headline</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                               <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border shadow-sm italic">
                                 "{aiSuggestions.headline}"
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
                                 onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply
+                                <CheckCircle2 className="icon-sm" /> <BilingualText en="Apply" el="Εφαρμογή" compact />
                               </Button>
                             </div>
                           </div>
@@ -744,22 +788,22 @@ export default function ProfileEditPage() {
 
                         {aiSuggestions.bio && (
                           <div className="space-y-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Bio</p>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Bio" el="Προτεινόμενο βιογραφικό" compact /></p>
                             <div className="flex flex-col gap-3">
                               <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border shadow-sm whitespace-pre-wrap">
                                 {aiSuggestions.bio}
                               </p>
                               <Button size="sm" variant="secondary" className="gap-1.5 self-start"
                                 onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply Bio
+                                <CheckCircle2 className="icon-sm" /> <BilingualText en="Apply Bio" el="Εφαρμογή βιογραφικού" compact />
                               </Button>
                             </div>
                           </div>
                         )}
 
                         {aiSuggestions.improvements.length > 0 && (
-                          <div className="space-y-2 pt-2 border-t border-border/50">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actionable Feedback</p>
+                          <div className="space-y-2 pt-2 border-t border-border">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Actionable Feedback" el="Πρακτικές παρατηρήσεις" compact /></p>
                             <ul className="space-y-2">
                               {aiSuggestions.improvements.map((imp, i) => (
                                 <li key={i} className="flex items-start gap-2 text-sm text-foreground">
@@ -777,25 +821,27 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Location */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    Location & Timezone
+                    <MapPin className="icon-md text-primary-accessible" />
+                    <BilingualText en="Location & Timezone" el="Τοποθεσία & ζώνη ώρας" compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-5 sm:grid-cols-2 pt-6">
+                <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">City, Country</label>
+                    <label htmlFor="profile-location" className="text-sm font-medium"><BilingualText en="City, Country" el="Πόλη, χώρα" compact /></label>
                     <Input
+                      id="profile-location"
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
                       placeholder="e.g., Athens, Greece"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Timezone</label>
+                    <label htmlFor="profile-timezone" className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
                     <Input
+                      id="profile-timezone"
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
                       placeholder="e.g., Europe/Athens"
@@ -805,13 +851,13 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Skills & Industries */}
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
-                    Skills & Expertise
+                    <Target className="icon-md text-primary-accessible" />
+                    <BilingualText en="Skills & Expertise" el="Δεξιότητες & εξειδίκευση" compact />
                   </CardTitle>
-                  <CardDescription>What are your core strengths and areas of focus?</CardDescription>
+                  <CardDescription><BilingualText en="What are your core strengths and areas of focus?" el="Ποια είναι τα βασικά σας δυνατά σημεία και πεδία εστίασης;" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                   <TagInput
@@ -819,10 +865,10 @@ export default function ProfileEditPage() {
                     value={form.skills}
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
-                    placeholder="Type a skill and press Enter..."
+                    placeholder={bilingualInline("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
                     max={15}
                   />
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <TagInput
                       label="Industries"
                       value={form.industries}
@@ -847,16 +893,16 @@ export default function ProfileEditPage() {
             {/* Role Details */}
             <TabsContent value="role" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Role Selector */}
-              <Card className="shadow-sm border-primary/20 bg-primary/5">
+              <Card className="border-primary/15 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-primary" />
-                    Your Primary Role
+                    <Briefcase className="icon-md text-primary-accessible" />
+                    <BilingualText en="Your Primary Role" el="Ο κύριος ρόλος σας" compact />
                   </CardTitle>
-                  <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
+                  <CardDescription><BilingualText en="Select how you primarily participate in the ecosystem" el="Επιλέξτε πώς συμμετέχετε κυρίως στο οικοσύστημα" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {roleOptions.map((opt) => {
                       const Icon = opt.icon;
                       return (
@@ -868,14 +914,14 @@ export default function ProfileEditPage() {
                             'flex items-start gap-3 rounded-xl border p-4 text-left transition-all',
                             form.role === opt.value
                               ? 'border-primary bg-primary/10'
-                              : 'border-border/60 hover:border-primary/50'
+                              : 'border-border hover:border-primary/50'
                           )}
                         >
                           <div className={cn(
                             'rounded-lg p-2',
-                            form.role === opt.value ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'
+                            form.role === opt.value ? 'bg-primary/20 text-primary-accessible' : 'bg-secondary text-muted-foreground'
                           )}>
-                            <Icon className="h-5 w-5" />
+                            <Icon className="icon-md" />
                           </div>
                           <div>
                             <p className="font-medium text-foreground">{opt.label}</p>
@@ -893,8 +939,8 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Rocket className="h-4 w-4" />
-                      Founder Details
+                      <Rocket className="icon-sm" />
+                      <BilingualText en="Founder Details" el="Στοιχεία ιδρυτή" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -926,8 +972,8 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4" />
-                      Mentor Details
+                      <GraduationCap className="icon-sm" />
+                      <BilingualText en="Mentor Details" el="Στοιχεία μέντορα" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -936,7 +982,7 @@ export default function ProfileEditPage() {
                       value={form.expertiseAreas}
                       onChange={(v) => updateField('expertiseAreas', v)}
                       suggestions={expertiseOptions}
-                      placeholder="Add expertise..."
+                      placeholder={bilingualInline("Add expertise…", "Προσθήκη εξειδίκευσης…")}
                       max={10}
                     />
                     <SelectButtons
@@ -945,22 +991,22 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('availability', v as string)}
                       options={availabilityOptions}
                     />
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Meeting Preference</label>
+                        <label className="text-sm font-medium"><BilingualText en="Meeting Preference" el="Προτίμηση συνάντησης" compact /></label>
                         <select
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
-                          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                          className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
                         >
-                          <option value="">Select...</option>
-                          <option value="video">Video calls</option>
-                          <option value="in-person">In person</option>
-                          <option value="both">Both</option>
+                          <option value="">{bilingualInline("Select...", "Επιλέξτε…")}</option>
+                          <option value="video">{bilingualInline("Video calls", "Βιντεοκλήσεις")}</option>
+                          <option value="in-person">{bilingualInline("In person", "Δια ζώσης")}</option>
+                          <option value="both">{bilingualInline("Both", "Και τα δύο")}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Hourly Rate (optional)</label>
+                        <label className="text-sm font-medium"><BilingualText en="Hourly Rate (optional)" el="Ωριαία αμοιβή (προαιρετικά)" compact /></label>
                         <Input
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
@@ -977,8 +1023,8 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
-                      Investor Details
+                      <TrendingUp className="icon-sm" />
+                      <BilingualText en="Investor Details" el="Στοιχεία επενδυτή" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -996,9 +1042,9 @@ export default function ProfileEditPage() {
                       options={investmentStageOptions}
                       multiple
                     />
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Min Check Size</label>
+                        <label className="text-sm font-medium"><BilingualText en="Min Check Size" el="Ελάχιστο ποσό επένδυσης" compact /></label>
                         <Input
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
@@ -1006,7 +1052,7 @@ export default function ProfileEditPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Max Check Size</label>
+                        <label className="text-sm font-medium"><BilingualText en="Max Check Size" el="Μέγιστο ποσό επένδυσης" compact /></label>
                         <Input
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
@@ -1019,7 +1065,7 @@ export default function ProfileEditPage() {
                       value={form.geography}
                       onChange={(v) => updateField('geography', v)}
                       suggestions={['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM']}
-                      placeholder="Add region..."
+                      placeholder={bilingualInline("Add region…", "Προσθήκη περιοχής…")}
                       max={5}
                     />
                   </CardContent>
@@ -1031,8 +1077,8 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      Organization Details
+                      <Building2 className="icon-sm" />
+                      <BilingualText en="Organization Details" el="Στοιχεία οργανισμού" compact />
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -1056,19 +1102,19 @@ export default function ProfileEditPage() {
 
             {/* Social Links */}
             <TabsContent value="links" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-4 border-b border-border/50">
+              <Card className="shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-primary" />
-                    Web & Social Links
+                    <Globe className="icon-md text-primary-accessible" />
+                    <BilingualText en="Web & Social Links" el="Ιστότοπος & κοινωνικά δίκτυα" compact />
                   </CardTitle>
-                  <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
+                  <CardDescription><BilingualText en="Connect your other profiles so people can learn more about you" el="Συνδέστε τα άλλα προφίλ σας ώστε να σας γνωρίσουν καλύτερα" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" /> Personal Website
+                        <Globe className="icon-sm text-muted-foreground" /> <BilingualText en="Personal Website" el="Προσωπικός ιστότοπος" compact />
                       </label>
                       <Input
                         value={form.websiteUrl}
@@ -1078,7 +1124,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="h-4 w-4 text-blue-600" /> LinkedIn
+                        <Linkedin className="icon-sm text-status-info" /> LinkedIn
                       </label>
                       <Input
                         value={form.linkedinUrl}
@@ -1088,7 +1134,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Github className="h-4 w-4" /> GitHub
+                        <Github className="icon-sm" /> GitHub
                       </label>
                       <Input
                         value={form.githubUrl}
@@ -1116,17 +1162,17 @@ export default function ProfileEditPage() {
 
             {/* Portfolio Tab */}
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border/50 text-center py-12">
+              <Card className="shadow-sm border-border text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
-                    <LayoutDashboard className="h-8 w-8" />
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
+                    <LayoutDashboard className="icon-xl" />
                   </div>
-                  <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
+                  <h3 className="text-xl font-semibold"><BilingualText en="Portfolio Builder Coming Soon" el="Η δημιουργία portfolio έρχεται σύντομα" compact /></h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile.
+                    <BilingualText en="Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile." el="Σύντομα θα μπορείτε να προσθέτετε αναλυτικές μελέτες περίπτωσης, pitch decks, προηγούμενες startups και παρουσιάσεις έργων στο προφίλ σας." wrap />
                   </p>
                   <Button variant="outline" className="mt-4" onClick={() => setActiveTab('basic')}>
-                    Go back to Basic Info
+                    <BilingualText en="Go back to Basic Info" el="Επιστροφή στα βασικά στοιχεία" compact />
                   </Button>
                 </CardContent>
               </Card>
@@ -1136,22 +1182,22 @@ export default function ProfileEditPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="shadow-sm border-border/50 sticky top-6">
-            <CardHeader className="pb-4 border-b border-border/50">
-              <CardTitle className="text-base font-semibold">Profile Strength</CardTitle>
+          <Card className="shadow-sm border-border sticky top-6">
+            <CardHeader className="pb-4 border-b border-border">
+              <CardTitle className="text-base font-semibold"><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-2xl font-bold text-primary">{completionPercentage}%</span>
-                  <span className="text-sm text-muted-foreground pb-1">Complete</span>
+                  <span className="page-stat text-2xl font-bold text-primary-accessible">{completionPercentage}%</span>
+                  <span className="text-sm text-muted-foreground pb-1"><BilingualText en="Complete" el="Ολοκληρωμένο" compact /></span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-1000",
-                      completionPercentage >= 80 ? "bg-emerald-500" :
-                      completionPercentage >= 50 ? "bg-primary" : "bg-amber-500"
+                      completionPercentage >= 80 ? "bg-status-success-mark" :
+                      completionPercentage >= 50 ? "bg-primary" : "bg-status-warning-mark"
                     )}
                     style={{ width: `${completionPercentage}%` }}
                   />
@@ -1162,13 +1208,13 @@ export default function ProfileEditPage() {
                 <p className="text-sm font-medium text-foreground">Missing items:</p>
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
-                    <li className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/10 p-2 rounded-md">
-                      <CheckCircle2 className="h-4 w-4" /> Your profile is fully complete!
+                    <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
+                      <CheckCircle2 className="icon-sm" /> <BilingualText en="Your profile is fully complete!" el="Το προφίλ σας είναι πλήρες!" compact />
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
                       <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="h-4 w-4 text-amber-500" />
+                        <ShieldAlert className="icon-sm text-status-warning" />
                         <span className="capitalize">{item.label}</span>
                       </li>
                     ))
@@ -1181,25 +1227,33 @@ export default function ProfileEditPage() {
                 </ul>
               </div>
 
-              <div className="pt-4 border-t border-border/50 space-y-3">
+              <div className="pt-4 border-t border-border space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Save Changes
+                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
+                  <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />
                 </Button>
-                <div className="flex gap-2">
-                  <Link href="/profile" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs h-9">
-                      View Profile
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
-                    Add Links
+                {/* Stacked: side by side in this ~250px card, the two bilingual
+                    labels pushed "Add Links" 116px past the page edge. */}
+                <div className="grid grid-cols-1 gap-2">
+                  <Button variant="outline" className="w-full text-xs h-9" asChild>
+                    <Link href="/profile">
+                      <BilingualText en="View Profile" el="Προβολή προφίλ" compact />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full text-xs h-9" onClick={() => setActiveTab('links')}>
+                    <BilingualText en="Add Links" el="Προσθήκη συνδέσμων" compact />
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border bg-card/95 p-3 backdrop-blur-md lg:hidden">
+        <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save changes
+        </Button>
       </div>
     </AppShell>
   );

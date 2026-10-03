@@ -14,7 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ConnectionRequestProps = {
   open: boolean;
@@ -82,10 +84,10 @@ export function ConnectionRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-lg overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" />
+            <Send className="icon-md text-primary-accessible" />
             Request Connection
           </DialogTitle>
           <DialogDescription>
@@ -97,8 +99,8 @@ export function ConnectionRequestDialog({
         <div className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={recipient.avatarUrl || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary">
-              {recipient.displayName[0]?.toUpperCase()}
+            <AvatarFallback className="bg-primary/20 text-primary-accessible">
+              {initialsOf(recipient.displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -117,7 +119,7 @@ export function ConnectionRequestDialog({
         {/* Suggested messages */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             Quick suggestions
           </div>
           <div className="flex flex-wrap gap-2">
@@ -125,7 +127,7 @@ export function ConnectionRequestDialog({
               <button
                 key={i}
                 onClick={() => applySuggestion(suggestion)}
-                className="text-xs px-3 py-1.5 rounded-full bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors truncate max-w-[200px]"
+                className="max-w-full truncate rounded-full bg-secondary/60 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:max-w-[200px]"
               >
                 {suggestion.substring(0, 40)}...
               </button>
@@ -136,13 +138,13 @@ export function ConnectionRequestDialog({
         {/* Message input */}
         <div className="space-y-2">
           <Textarea
-            placeholder="Write a personalized message explaining why you'd like to connect..."
+            placeholder={bilingualInline("Write a personalized message explaining why you'd like to connect…", "Γράψτε ένα προσωπικό μήνυμα για το γιατί θέλετε να συνδεθείτε…")}
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
               setError(null);
             }}
-            rows={5}
+            rows={4}
             className={cn(
               'resize-none',
               error && 'border-destructive focus-visible:ring-destructive'
@@ -151,12 +153,12 @@ export function ConnectionRequestDialog({
           <div className="flex items-center justify-between text-xs">
             <span className={cn(
               'text-muted-foreground',
-              charCount > 500 && 'text-destructive'
+              charCount > 500 && 'text-destructive-accessible'
             )}>
               {charCount}/500 characters
             </span>
             {charCount < 20 && charCount > 0 && (
-              <span className="text-amber-400">
+              <span className={STATUS.warning.icon}>
                 {20 - charCount} more characters needed
               </span>
             )}
@@ -165,14 +167,14 @@ export function ConnectionRequestDialog({
 
         {/* Error message */}
         {error && (
-          <div className="flex items-center gap-2 text-sm text-destructive animate-fade-in">
-            <AlertCircle className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-sm text-destructive-accessible animate-fade-in">
+            <AlertCircle className="icon-sm" />
             {error}
           </div>
         )}
 
         {/* Tips */}
-        <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground">
+        <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground mb-1">Tips for a great intro:</p>
           <ul className="space-y-1 list-disc list-inside">
             <li>Mention specific interests or skills you share</li>
@@ -182,10 +184,10 @@ export function ConnectionRequestDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" className="min-h-10" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={!isValid || sending}>
+          <Button className="min-h-10" onClick={handleSend} disabled={!isValid || sending}>
             {sending ? 'Sending...' : 'Send Request'}
           </Button>
         </DialogFooter>
@@ -198,19 +200,19 @@ export function ConnectionRequestDialog({
 type ConnectionStatus = 'none' | 'pending' | 'connected' | 'declined';
 
 export function ConnectionStatusBadge({ status }: { status: ConnectionStatus }) {
-  const config: Record<ConnectionStatus, { label: string; className: string }> = {
-    none: { label: 'Not connected', className: 'bg-muted text-muted-foreground' },
-    pending: { label: 'Request pending', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-    connected: { label: 'Connected', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-    declined: { label: 'Request declined', className: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  const config: Record<ConnectionStatus, { label: string; chip: string }> = {
+    none: { label: 'Not connected', chip: STATUS.neutral.chip },
+    pending: { label: 'Request pending', chip: STATUS.warning.chip },
+    connected: { label: 'Connected', chip: STATUS.success.chip },
+    declined: { label: 'Request declined', chip: STATUS.danger.chip },
   };
 
-  const { label, className } = config[status];
+  const { label, chip } = config[status];
 
   return (
     <span className={cn(
       'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium',
-      className
+      chip
     )}>
       {label}
     </span>

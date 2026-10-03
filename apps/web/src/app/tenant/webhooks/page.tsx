@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   Webhook,
-  Plus,
   Copy,
   Edit,
   Trash2,
@@ -27,7 +26,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { UnavailableButton } from '@/components/common/UnavailableButton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { usePageList } from '@/lib/page-controls';
 
 type WebhookItem = {
   id: string;
@@ -79,14 +84,14 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
   const truncUrl = webhook.url.length > 48 ? webhook.url.slice(0, 48) + '…' : webhook.url;
 
   return (
-    <Card className={cn('transition-all', !active && 'opacity-60')}>
+    <Card className={cn('transition-all', !active && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded truncate max-w-xs">{truncUrl}</code>
-              <Button variant="ghost" size="icon">
-                <Copy className="icon-sm" />
+              <Button aria-label="Copy URL. Αντιγραφή URL" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(webhook.url)}>
+                <Copy className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
@@ -95,26 +100,34 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
               ))}
             </div>
             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-              {webhook.lastTriggered && <span className="flex items-center gap-1"><Clock className="icon-sm" />{webhook.lastTriggered}</span>}
+              {webhook.lastTriggered && <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />{webhook.lastTriggered}</span>}
               <span className="flex items-center gap-1">
-                <Activity className="icon-sm" />
-                {webhook.successRate}% success · {webhook.totalDeliveries} deliveries
+                <Activity className="icon-sm" aria-hidden="true" />
+                <BilingualText
+                  en={`${webhook.successRate}% success · ${webhook.totalDeliveries} deliveries`}
+                  el={`${webhook.successRate}% επιτυχία · ${webhook.totalDeliveries} παραδόσεις`}
+                  compact
+                />
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Switch checked={active} onCheckedChange={setActive} />
+            <Switch checked={active} onCheckedChange={setActive} aria-label={`Deliver to ${truncUrl}`} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="icon-sm" />
+                <Button aria-label="More options. Περισσότερες επιλογές" variant="ghost" size="icon">
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" />Resend Last</DropdownMenuItem>
-                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+                {/* No webhook service exists, so none of these can act.
+                    They stay visible - they are what this surface is for -
+                    and say why they are unavailable instead of silently
+                    closing the menu. */}
+                <UnavailableMenuItem icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Edit" el="Επεξεργασία" reasonEn="No webhook backend yet." reasonEl="Δεν υπάρχει ακόμη backend webhooks." />
+                <UnavailableMenuItem icon={<RefreshCw className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Resend Last" el="Επαναποστολή τελευταίου" reasonEn="No deliveries are sent yet." reasonEl="Δεν αποστέλλονται ακόμη παραδόσεις." />
+                <UnavailableMenuItem icon={<ArrowRight className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Logs" el="Αρχεία καταγραφής" reasonEn="No delivery log exists yet." reasonEl="Δεν υπάρχει ακόμη αρχείο παραδόσεων." />
+                <UnavailableMenuItem className="text-destructive-accessible" icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Delete" el="Διαγραφή" reasonEn="Sample endpoint - nothing to delete." reasonEl="Δείγμα - δεν υπάρχει κάτι να διαγραφεί." />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -132,43 +145,69 @@ export default function TenantWebhooksPage() {
     ? Math.round(webhooks.reduce((s, w) => s + w.successRate, 0) / webhooks.length)
     : 0;
 
+  // Samples only: there is no webhook service, so nothing here can be
+  // operated, but the assistant can say what the page shows and that it is
+  // illustrative.
+  usePageList([
+    {
+      id: 'webhooks',
+      labelEn: 'Webhook endpoints',
+      labelEl: 'Endpoints webhooks',
+      rows: webhooks.map((w) => `${w.url} · ${w.isActive ? 'active' : 'paused'} · ${w.events.join(', ')}`),
+      total: webhooks.length,
+      sample: webhooks.length > 0,
+    },
+  ]);
+
   return (
     <AppShell
       title="Webhooks"
       description="Send real-time event notifications to external services"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Webhook</Button>}
+      descriptionEl="Στείλτε ειδοποιήσεις συμβάντων σε πραγματικό χρόνο σε εξωτερικές υπηρεσίες"
+      actions={
+        // Had no handler; there is no webhook service to register one with.
+        <UnavailableButton
+          en="Add webhook"
+          el="Νέο webhook"
+          reasonEn="Sending events out needs a delivery service the platform does not run yet."
+          reasonEl="Η αποστολή συμβάντων χρειάζεται υπηρεσία παράδοσης που η πλατφόρμα δεν έχει ακόμη."
+        />
+      }
     >
       <div className="space-y-5">
-        <div className="grid gap-3 md:grid-cols-3">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Webhooks"
+            detail="These endpoints are illustrative - webhook delivery has no backend yet, so nothing here sends, retries or logs."
+            askAiPrompt="Why does the webhooks page show sample endpoints?"
+          />
+        )}
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-3 md:grid-cols-3">
           {[
-            { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },
-            { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
-            { label: 'Avg Success Rate', value: `${avgSuccess}%` },
+            { label: 'Active Webhooks', labelEl: 'Ενεργά webhooks', value: webhooks.filter(w => w.isActive).length },
+            { label: 'Total Deliveries', labelEl: 'Σύνολο παραδόσεων', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
+            { label: 'Avg Success Rate', labelEl: 'Μέση επιτυχία', value: `${avgSuccess}%` },
           ].map(s => (
-            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 
         {webhooks.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="p-12 text-center">
-              <Webhook className="icon-lg mx-auto text-muted-foreground/40 mb-3" />
-              <p className="font-medium">No webhooks configured</p>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">Connect Zapier, Slack, or any HTTP endpoint to receive real-time events</p>
-              <Button size="sm"><Plus className="mr-1.5 icon-sm" />Add Webhook</Button>
-            </CardContent>
-          </Card>
+          <EmptyTenantWebhooks />
         ) : (
           <>
             <div className="space-y-3">
               {webhooks.map(w => <WebhookCard key={w.id} webhook={w} />)}
             </div>
-            <Card className="border-dashed">
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-muted-foreground">Add another endpoint</p>
-                <Button size="sm" variant="outline" className="mt-2"><Plus className="mr-1.5 icon-sm" />Add Webhook</Button>
-              </CardContent>
-            </Card>
+            {/* The header's "Add webhook" is the one place to add one; this
+                card repeated it as a second disabled button. */}
+            <p className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
+              <BilingualText
+                en="New endpoints are added from the header once webhook delivery is available."
+                el="Νέα endpoints προστίθενται από την κεφαλίδα μόλις γίνει διαθέσιμη η αποστολή webhooks."
+                wrap
+              />
+            </p>
           </>
         )}
       </div>

@@ -1,33 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Flag, Calendar, Users, FileText, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { useModalA11y } from '@/hooks/useModalA11y';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { bilingualAria } from '@/lib/i18n/format';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { commonEn, commonEl } from '@/lib/i18n/strings-common';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import {
+  milestoneEn,
+  milestoneEl,
+  useMilestonePrimaryText,
+  MILESTONE_CATEGORY_KEYS,
+  MILESTONE_STATUS_KEYS,
+  MILESTONE_STATUS_ONE_KEYS,
+  MILESTONE_PRIORITY_KEYS,
+} from '@/lib/i18n/strings-milestones';
 import type { Milestone, MilestoneStatus, MilestonePriority } from '@/lib/api';
 
-const CATEGORIES = [
-  { value: 'product', label: 'Product' },
-  { value: 'fundraising', label: 'Fundraising' },
-  { value: 'hiring', label: 'Hiring' },
-  { value: 'partnerships', label: 'Partnerships' },
-  { value: 'growth', label: 'Growth' },
-  { value: 'other', label: 'Other' },
-];
-
-const STATUSES: { value: MilestoneStatus; label: string }[] = [
-  { value: 'todo', label: 'To Do' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'blocked', label: 'Blocked' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
-];
-
-const PRIORITIES: { value: MilestonePriority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'text-muted-foreground' },
-  { value: 'medium', label: 'Medium', color: 'text-amber-500' },
-  { value: 'high', label: 'High', color: 'text-red-500' },
+const CATEGORIES = ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
+const STATUSES: MilestoneStatus[] = ['todo', 'in_progress', 'blocked', 'completed', 'cancelled'];
+const PRIORITIES: { value: MilestonePriority; color: string }[] = [
+  { value: 'low', color: 'text-muted-foreground' },
+  { value: 'medium', color: 'text-status-warning' },
+  { value: 'high', color: 'text-status-danger' },
 ];
 
 interface FormData {
@@ -68,7 +68,10 @@ export function MilestoneFormModal({
   isSubmitting?: boolean;
   error?: string;
 }) {
+  const t = useMilestonePrimaryText();
+  const { open: openAskAi } = usePopupChat();
   const isEdit = !!initial;
+  const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
 
   const [form, setForm] = useState<FormData>({
     title: '',
@@ -131,42 +134,65 @@ export function MilestoneFormModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Panel */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl animate-fade-in">
+      {/* Panel — `useModalA11y` supplies what Radix would: focus in on open,
+          Tab trapped inside, Escape closes, body scroll locked, focus returned
+          to whatever opened it. The hook was written for exactly these
+          hand-rolled overlays and had never been attached to one. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="milestone-modal-title"
+        tabIndex={-1}
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-none animate-fade-in"
+        data-surface="overlay"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Flag className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">
-              {isEdit ? 'Edit milestone' : 'New milestone'}
-            </h2>
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h2 id="milestone-modal-title" className="page-section font-semibold text-foreground">
+            <BilingualText
+              en={isEdit ? milestoneEn('modal_edit') : milestoneEn('modal_new')}
+              el={isEdit ? milestoneEl('modal_edit') : milestoneEl('modal_new')}
+            />
+          </h2>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => openAskAi()}
+              className="inline-flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10"
+            >
+              <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={bilingualAria(commonEn('close'), commonEl('close'))}
+            >
+              <X className="icon-sm" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto p-5 space-y-4">
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive-accessible">
+              <AlertTriangle className="mt-0.5 icon-sm shrink-0" />
               {error}
             </div>
           )}
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Title <span className="text-destructive">*</span>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={milestoneEn('field_title')} el={milestoneEl('field_title')} compact /> <span className="text-destructive-accessible">*</span>
             </label>
             <Input
+              className="rounded-xl"
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
-              placeholder="e.g. Launch MVP to beta users"
+              placeholder={t(milestoneEn('title_ph'), milestoneEl('title_ph'))}
               required
               autoFocus
               maxLength={140}
@@ -175,42 +201,47 @@ export function MilestoneFormModal({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Description
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={milestoneEn('field_desc')} el={milestoneEl('field_desc')} compact />
             </label>
             <textarea
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
-              placeholder="What does this milestone represent?"
+              placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
               rows={2}
               maxLength={500}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 resize-none"
+              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
 
           {/* Status + Priority row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <BilingualText en={milestoneEn('field_status')} el={milestoneEl('field_status')} compact />
+              </label>
               <select
                 value={form.status}
                 onChange={(e) => set('status', e.target.value as MilestoneStatus)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
                 {STATUSES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  /* Singular: the select sets the status of one milestone. */
+                  <option key={s} value={s}>{t(milestoneEn(MILESTONE_STATUS_ONE_KEYS[s] ?? MILESTONE_STATUS_KEYS[s]), milestoneEl(MILESTONE_STATUS_ONE_KEYS[s] ?? MILESTONE_STATUS_KEYS[s]))}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Priority</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact />
+              </label>
               <select
                 value={form.priority}
                 onChange={(e) => set('priority', e.target.value as MilestonePriority)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
                 {PRIORITIES.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
+                  <option key={p.value} value={p.value}>{t(milestoneEn(MILESTONE_PRIORITY_KEYS[p.value]), milestoneEl(MILESTONE_PRIORITY_KEYS[p.value]))}</option>
                 ))}
               </select>
             </div>
@@ -219,23 +250,27 @@ export function MilestoneFormModal({
           {/* Category + Due date row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact />
+              </label>
               <select
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+                className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
               >
-                <option value="">None</option>
+                <option value="">{t(milestoneEn('cat_none'), milestoneEl('cat_none'))}</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                  <option key={c} value={c}>{t(milestoneEn(MILESTONE_CATEGORY_KEYS[c]), milestoneEl(MILESTONE_CATEGORY_KEYS[c]))}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                <Calendar className="h-3 w-3" /> Due date
+              <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <CfbGlyph name="calendar" className="icon-sm" />
+                <BilingualText en={milestoneEn('field_due')} el={milestoneEl('field_due')} compact />
               </label>
               <Input
+                className="rounded-xl"
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => set('dueDate', e.target.value)}
@@ -246,8 +281,8 @@ export function MilestoneFormModal({
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Progress
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <BilingualText en={milestoneEn('field_progress')} el={milestoneEl('field_progress')} compact />
               </label>
               <span className="text-xs font-semibold tabular-nums text-foreground">{form.progress}%</span>
             </div>
@@ -270,46 +305,53 @@ export function MilestoneFormModal({
 
           {/* Collaborator */}
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              <Users className="h-3 w-3" /> Collaborator user ID
+            <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <CfbGlyph name="people" className="icon-sm" />
+              <BilingualText en={milestoneEn('field_collab')} el={milestoneEl('field_collab')} compact />
             </label>
             <Input
+              className="rounded-xl"
               value={form.collaboratorId}
               onChange={(e) => set('collaboratorId', e.target.value)}
-              placeholder="Optional — paste a co-founder's user ID"
+              placeholder={t(milestoneEn('collab_ph'), milestoneEl('collab_ph'))}
             />
-            <p className="text-[11px] text-muted-foreground">
-              Both of you will be able to view and update this milestone.
+            <p className="text-2xs text-muted-foreground">
+              <BilingualText en={milestoneEn('collab_hint')} el={milestoneEl('collab_hint')} />
             </p>
           </div>
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              <FileText className="h-3 w-3" /> Private notes
+            <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <CfbGlyph name="book" className="icon-sm" />
+              <BilingualText en={milestoneEn('field_notes')} el={milestoneEl('field_notes')} compact />
             </label>
             <textarea
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
-              placeholder="Add context, blockers, or next actions…"
+              placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}
               rows={2}
               maxLength={1000}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 resize-none"
+              className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/40">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-              Cancel
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+            <Button type="button" variant="ghost" size="sm" className="rounded-xl" onClick={onClose}>
+              <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />
             </Button>
             <Button
               type="submit"
               size="sm"
               disabled={isSubmitting || !form.title.trim()}
-              className="min-w-[100px]"
+              className={`min-w-[100px] ${BUILDER_BTN}`}
             >
-              {isSubmitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create milestone'}
+              {isSubmitting
+                ? <BilingualText en={milestoneEn('saving')} el={milestoneEl('saving')} compact />
+                : isEdit
+                  ? <BilingualText en={milestoneEn('save_changes')} el={milestoneEl('save_changes')} compact />
+                  : <BilingualText en={milestoneEn('create')} el={milestoneEl('create')} compact />}
             </Button>
           </div>
         </form>

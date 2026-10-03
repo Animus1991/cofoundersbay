@@ -9,6 +9,8 @@ import {
   ChevronDown, Users, Crown,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,6 +33,20 @@ import {
 } from '@/lib/api';
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { bilingualInline } from '@/lib/i18n/format';
+
+const ALL_STATUSES = 'all';
+
+/** Who a subscription belongs to, as the row and the assistant both name it. */
+function subscriptionOwner(sub: BillingSubscription): string {
+  const owner = (sub as Record<string, unknown>).user as { email?: string } | null
+    ?? (sub as Record<string, unknown>).tenant as { name?: string } | null;
+  return (owner as { email?: string })?.email
+    ?? (owner as { name?: string })?.name
+    ?? sub.userId ?? sub.tenantId ?? '—';
+}
 
 function SubRow({
   sub, plans, onExtendTrial, onCancel, onOverride,
@@ -41,11 +57,7 @@ function SubRow({
   onCancel: (id: string, immediate: boolean) => void;
   onOverride: (sub: BillingSubscription) => void;
 }) {
-  const owner = (sub as Record<string, unknown>).user as { email?: string } | null
-    ?? (sub as Record<string, unknown>).tenant as { name?: string } | null;
-  const ownerLabel = (owner as { email?: string })?.email
-    ?? (owner as { name?: string })?.name
-    ?? sub.userId ?? sub.tenantId ?? '—';
+  const ownerLabel = subscriptionOwner(sub);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -58,7 +70,7 @@ function SubRow({
           <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
         </div>
         <p className="text-xs text-muted-foreground capitalize">
-          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString()}` : ''}
+          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
           {sub.seatLimit ? ` · ${sub.activeSeatCount}/${sub.seatLimit} seats` : ''}
         </p>
       </div>
@@ -70,16 +82,16 @@ function SubRow({
       </div>
       <div className="flex gap-1 shrink-0">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOverride(sub)}>
-          <Settings className="icon-sm mr-1" />Override
+          <Settings className="icon-sm mr-1" aria-hidden="true" /><BilingualText en="Override" el="Παράκαμψη" compact />
         </Button>
         {sub.status === 'trialing' && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onExtendTrial(sub.id)}>
-            <Clock className="icon-sm mr-1" />+7d
+            <Clock className="icon-sm mr-1" aria-hidden="true" />+7d
           </Button>
         )}
         {sub.status !== 'canceled' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => onCancel(sub.id, false)}>
-            <XCircle className="icon-sm mr-1" />Cancel
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
+            <XCircle className="icon-sm mr-1" /><BilingualText en="Cancel" el="Ακύρωση" compact />
           </Button>
         )}
       </div>
@@ -89,32 +101,34 @@ function SubRow({
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
   const statusColors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-    draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    void: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    paid: 'bg-status-success-bg text-status-success border-status-success-border',
+    open: 'bg-status-info-bg text-status-info border-status-info-border',
+    draft: 'bg-muted text-muted-foreground border-border',
+    void: 'bg-muted text-muted-foreground border-border',
+    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <FileText className="icon-sm text-muted-foreground shrink-0" />
+      <FileText className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
           <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}>{inv.status}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString()}</p>
+        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
       </div>
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
-        <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-            <Download className="h-3.5 w-3.5" />
-          </Button>
-        </a>
+        // A <button> inside an <a> is two interactive elements nested - one
+        // tab stop too many and axe nested-interactive. The link is the control.
+        <Button asChild variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+          <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer" aria-label={`Download invoice ${inv.invoiceNumber}`}>
+            <Download className="icon-sm" aria-hidden="true" />
+          </a>
+        </Button>
       )}
     </div>
   );
@@ -124,57 +138,65 @@ export default function AdminBillingPage() {
   const qc = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // Radix <Select.Item> forbids an empty-string value (it is reserved for
+  // "cleared"), so the no-filter option carries a sentinel that is mapped
+  // back to `undefined` at the query boundary.
+  const [statusFilter, setStatusFilter] = useState(ALL_STATUSES);
   const [overrideTarget, setOverrideTarget] = useState<BillingSubscription | null>(null);
   const [overridePlanId, setOverridePlanId] = useState('');
   const [showCouponForm, setShowCouponForm] = useState(false);
   const [couponForm, setCouponForm] = useState({ code: '', discountType: 'percent', discountValue: 10, maxRedemptions: '' as string | number });
+  const [tab, setTab] = useState('subscriptions');
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'stats'],
+    queryKey: qk('admin', 'billing', 'stats'),
     queryFn: getAdminBillingStats,
     staleTime: 60_000,
   });
 
   const { data: subsData, isLoading: subsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'subscriptions', statusFilter, search],
-    queryFn: () => listAdminSubscriptions({ status: statusFilter || undefined, search: search || undefined }),
+    queryKey: qk('admin', 'billing', 'subscriptions', statusFilter, search),
+    queryFn: () => listAdminSubscriptions({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter, search: search || undefined }),
     staleTime: 30_000,
   });
 
   const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'invoices', statusFilter],
-    queryFn: () => listAdminInvoices({ status: statusFilter || undefined }),
+    queryKey: qk('admin', 'billing', 'invoices', statusFilter),
+    queryFn: () => listAdminInvoices({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter }),
     staleTime: 30_000,
   });
 
   const { data: couponsData, isLoading: couponsLoading } = useQuery({
-    queryKey: ['admin', 'billing', 'coupons'],
+    queryKey: qk('admin', 'billing', 'coupons'),
     queryFn: listCoupons,
     staleTime: 60_000,
   });
 
-  const plans = statsData?.plans ?? [];
-  const subs = subsData ?? [];
-  const invoices = invoicesData ?? [];
-  const coupons = couponsData ?? [];
+  // `?? []` only guards nullishness. A payload that arrives as an object —
+  // a paginated envelope, or a stub answering an endpoint it does not model —
+  // passes straight through it and throws on the first `.map`. These four fed
+  // three tables and a card grid, and took the page to its error boundary.
+  const plans = Array.isArray(statsData?.plans) ? statsData.plans : [];
+  const subs = Array.isArray(subsData) ? subsData : [];
+  const invoices = Array.isArray(invoicesData) ? invoicesData : [];
+  const coupons = Array.isArray(couponsData) ? couponsData : [];
 
   const { mutate: extendTrial } = useMutation({
     mutationFn: (id: string) => adminExtendTrial(id, 7),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] }); toastSuccess('Trial extended by 7 days'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Trial extended by 7 days'); },
     onError: () => toastError('Failed to extend trial'),
   });
 
   const { mutate: cancelSub } = useMutation({
     mutationFn: ({ id, immediate }: { id: string; immediate: boolean }) => adminCancelSubscription(id, immediate),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] }); toastSuccess('Subscription canceled'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') }); toastSuccess('Subscription canceled'); },
     onError: () => toastError('Failed to cancel'),
   });
 
   const { mutate: applyOverride, isPending: overriding } = useMutation({
     mutationFn: () => adminOverrideSubscription(overrideTarget!.id, { planId: overridePlanId }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'billing', 'subscriptions'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'subscriptions') });
       setOverrideTarget(null);
       toastSuccess('Plan override applied');
     },
@@ -189,7 +211,7 @@ export default function AdminBillingPage() {
       maxRedemptions: couponForm.maxRedemptions ? Number(couponForm.maxRedemptions) : undefined,
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'billing', 'coupons'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'coupons') });
       setShowCouponForm(false);
       setCouponForm({ code: '', discountType: 'percent', discountValue: 10, maxRedemptions: '' });
       toastSuccess('Coupon created');
@@ -199,81 +221,189 @@ export default function AdminBillingPage() {
 
   const { mutate: removeCoupon } = useMutation({
     mutationFn: (id: string) => deleteCoupon(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'billing', 'coupons'] }); toastSuccess('Coupon deactivated'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk('admin', 'billing', 'coupons') }); toastSuccess('Coupon deactivated'); },
     onError: () => toastError('Failed to remove coupon'),
   });
 
   const mrr = statsData?.mrrCents ?? 0;
   const arr = mrr * 12;
 
-  return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Billing Administration</h1>
-            <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
-          </div>
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}>
-            <RefreshCw className="h-3.5 w-3.5" />
-            Refresh
-          </Button>
-        </div>
+  const subRow = (sub: BillingSubscription) => {
+    const name = `${subscriptionOwner(sub)} · ${sub.plan?.displayName ?? sub.planId}`;
+    return { value: sub.id, labelEn: name, labelEl: name };
+  };
+  usePageList([
+    {
+      id: 'subscriptions',
+      labelEn: 'Subscriptions',
+      labelEl: 'Συνδρομές',
+      rows: subsLoading ? undefined : subs.map((s) =>
+        `${subscriptionOwner(s)} · ${s.plan?.displayName ?? s.planId} · ${s.status}${s.cancelAtPeriodEnd ? ' (cancels at period end)' : ''}`,
+      ),
+    },
+    {
+      id: 'invoices',
+      labelEn: 'Invoices',
+      labelEl: 'Τιμολόγια',
+      rows: invoicesLoading ? undefined : invoices.map((i) => `${i.invoiceNumber} · ${formatCents(i.total, i.currency)} · ${i.status}`),
+    },
+    {
+      id: 'coupons',
+      labelEn: 'Coupons',
+      labelEl: 'Κουπόνια',
+      rows: couponsLoading ? undefined : coupons.map((c) =>
+        `${c.code} · ${c.discountType === 'percent' ? `${c.discountValue}% off` : formatCents(c.discountValue)} · ${c.timesRedeemed}${c.maxRedemptions ? `/${c.maxRedemptions}` : ''} redeemed`,
+      ),
+    },
+  ]);
+  usePageControls([
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: ALL_STATUSES, en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργή' },
+      { value: 'trialing', en: 'Trialing', el: 'Σε δοκιμή' },
+      { value: 'past_due', en: 'Past due', el: 'Ληξιπρόθεσμη' },
+      { value: 'canceled', en: 'Canceled', el: 'Ακυρωμένη' },
+    ], statusFilter, setStatusFilter),
+    choiceControl('billing_tab', 'Billing section', 'Ενότητα χρεώσεων', [
+      { value: 'subscriptions', en: 'Subscriptions', el: 'Συνδρομές' },
+      { value: 'invoices', en: 'Invoices', el: 'Τιμολόγια' },
+      { value: 'plans', en: 'Plans', el: 'Πακέτα' },
+      { value: 'coupons', en: 'Coupons', el: 'Κουπόνια' },
+    ], tab, setTab),
+    { id: 'refresh', labelEn: 'Refresh billing data', labelEl: 'Ανανέωση δεδομένων χρεώσεων', writes: false, run: () => void qc.invalidateQueries({ queryKey: qk('admin', 'billing') }) },
+    { id: 'new_coupon', labelEn: 'Open the new coupon form', labelEl: 'Άνοιγμα φόρμας νέου κουπονιού', writes: false, run: () => { setTab('coupons'); setShowCouponForm(true); } },
+    {
+      id: 'override_plan',
+      labelEn: 'Override a subscription plan',
+      labelEl: 'Αλλαγή πακέτου συνδρομής',
+      writes: false,
+      options: subs.map(subRow),
+      run: (value) => {
+        const sub = subs.find((s) => s.id === value);
+        if (sub) { setOverrideTarget(sub); setOverridePlanId(sub.planId); }
+      },
+    },
+    {
+      id: 'extend_trial',
+      labelEn: 'Extend trial by 7 days',
+      labelEl: 'Παράταση δοκιμής κατά 7 ημέρες',
+      writes: true,
+      options: subs.filter((s) => s.status === 'trialing').map(subRow),
+      run: (value) => { if (value) extendTrial(value); },
+    },
+    {
+      id: 'cancel_subscription',
+      labelEn: 'Cancel subscription',
+      labelEl: 'Ακύρωση συνδρομής',
+      writes: true,
+      options: subs.filter((s) => s.status !== 'canceled').map(subRow),
+      run: (value) => { if (value) cancelSub({ id: value, immediate: false }); },
+    },
+    {
+      id: 'deactivate_coupon',
+      labelEn: 'Deactivate coupon',
+      labelEl: 'Απενεργοποίηση κουπονιού',
+      writes: true,
+      options: coupons.map((c) => ({ value: c.id, labelEn: c.code, labelEl: c.code })),
+      run: (value) => { if (value) removeCoupon(value); },
+    },
+  ]);
 
-        {/* Revenue Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
+  /*
+   * The page rail: revenue figures, the status filter and Refresh are about
+   * the lists, not the lists themselves. The column keeps the tabs, the
+   * search and the rows.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'metrics',
+      glyph: 'chart',
+      labelEn: 'Revenue metrics',
+      labelEl: 'Οικονομικά',
+      badge: statsData?.pastDueSubs || null,
+      content: (
+        <div className="space-y-2">
           {[
-            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600' },
-            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-violet-600' },
-            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-amber-600' },
+            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-status-success' },
+            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-status-accent' },
+            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2">
-                  <Icon className={cn('icon-sm', color)} />
-                  <p className="text-sm text-muted-foreground">{label}</p>
-                </div>
-                <p className="text-xl font-bold mt-1">
-                  {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" /> : value}
-                </p>
-              </CardContent>
-            </Card>
+            <div key={label} className="rounded-lg border border-border p-3">
+              <div className="flex items-center gap-2">
+                <Icon className={cn('icon-sm', color)} aria-hidden="true" />
+                <p className="text-sm text-muted-foreground">{label}</p>
+              </div>
+              <p className="page-stat text-xl font-bold mt-1">
+                {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /> : value}
+              </p>
+            </div>
           ))}
         </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Status filter',
+      labelEl: 'Φίλτρο κατάστασης',
+      badge: statusFilter !== ALL_STATUSES ? 1 : null,
+      content: (
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger aria-label="Subscription status">
+            <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL_STATUSES}><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
+            <SelectItem value="active"><BilingualText en="Active" el="Ενεργή" compact /></SelectItem>
+            <SelectItem value="trialing"><BilingualText en="Trialing" el="Σε δοκιμή" compact /></SelectItem>
+            <SelectItem value="past_due"><BilingualText en="Past due" el="Ληξιπρόθεσμη" compact /></SelectItem>
+            <SelectItem value="canceled"><BilingualText en="Canceled" el="Ακυρωμένη" compact /></SelectItem>
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'Billing tools',
+      labelEl: 'Εργαλεία χρεώσεων',
+      content: (
+        <button
+          type="button"
+          onClick={() => qc.invalidateQueries({ queryKey: qk('admin', 'billing') })}
+          className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+        >
+          <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1"><BilingualText en="Refresh billing data" el="Ανανέωση δεδομένων" compact wrap /></span>
+        </button>
+      ),
+    },
+  ];
 
+  return (
+    <AppShell rail={rail}>
+      <div className="space-y-6">
         {/* Tabs */}
-        <Tabs defaultValue="subscriptions">
+        <Tabs value={tab} onValueChange={setTab}>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <TabsList>
-              <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices</TabsTrigger>
-              <TabsTrigger value="plans">Plans</TabsTrigger>
-              <TabsTrigger value="coupons">Coupons</TabsTrigger>
+              <TabsTrigger value="subscriptions"><BilingualText en="Subscriptions" el="Συνδρομές" compact /></TabsTrigger>
+              <TabsTrigger value="invoices"><BilingualText en="Invoices" el="Τιμολόγια" compact /></TabsTrigger>
+              <TabsTrigger value="plans"><BilingualText en="Plans" el="Πλάνα" compact /></TabsTrigger>
+              <TabsTrigger value="coupons"><BilingualText en="Coupons" el="Κουπόνια" compact /></TabsTrigger>
             </TabsList>
             <div className="flex gap-2 sm:ml-auto">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
-                  placeholder="Search…"
+                  aria-label={bilingualInline("Search billing records", "Αναζήτηση εγγραφών χρέωσης")}
+                  placeholder={bilingualInline("Search…", "Αναζήτηση…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-8 h-8 w-48 text-sm"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 w-32 text-xs">
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="trialing">Trialing</SelectItem>
-                  <SelectItem value="past_due">Past due</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -282,9 +412,9 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {subsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No subscriptions found</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {subs.map(sub => (
@@ -308,9 +438,9 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {invoicesLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : invoices.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No invoices found</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No invoices found" el="Δεν βρέθηκαν τιμολόγια" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {invoices.map(inv => <InvRow key={inv.id} inv={inv} />)}
@@ -325,28 +455,28 @@ export default function AdminBillingPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">Billing Plans</CardTitle>
-                  <p className="text-xs text-muted-foreground">Edit plan details via the API or admin actions.</p>
+                  <CardTitle className="text-base"><BilingualText en="Billing Plans" el="Πλάνα χρέωσης" compact /></CardTitle>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Edit plan details via the API or admin actions." el="Επεξεργαστείτε τα πλάνα μέσω API ή ενεργειών διαχείρισης." wrap /></p>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 {statsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : plans.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No plans configured</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No plans configured" el="Δεν έχουν οριστεί πλάνα" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {plans.map(plan => (
                       <div key={plan.id} className="flex items-center gap-3 p-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                          <Crown className="icon-sm text-muted-foreground" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
+                          <Crown className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
                             <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-slate-500">Private</Badge>}
+                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
@@ -370,15 +500,15 @@ export default function AdminBillingPage() {
           <TabsContent value="coupons" className="mt-4 space-y-4">
             <div className="flex justify-end">
               <Button size="sm" className="gap-2" onClick={() => setShowCouponForm(!showCouponForm)}>
-                <Plus className="h-3.5 w-3.5" />
-                New coupon
+                <Plus className="icon-sm" />
+                <BilingualText en="New coupon" el="Νέο κουπόνι" compact />
               </Button>
             </div>
 
             {showCouponForm && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Create coupon</CardTitle>
+                  <CardTitle className="text-sm"><BilingualText en="Create coupon" el="Δημιουργία κουπονιού" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
@@ -391,14 +521,14 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Discount type</Label>
+                      <Label className="text-xs"><BilingualText en="Discount type" el="Τύπος έκπτωσης" compact /></Label>
                       <Select value={couponForm.discountType} onValueChange={v => setCouponForm(p => ({ ...p, discountType: v }))}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger aria-label="Discount type" className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="percent">Percent</SelectItem>
-                          <SelectItem value="fixed">Fixed amount</SelectItem>
+                          <SelectItem value="percent"><BilingualText en="Percent" el="Ποσοστό" compact /></SelectItem>
+                          <SelectItem value="fixed"><BilingualText en="Fixed amount" el="Σταθερό ποσό" compact /></SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -411,10 +541,10 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Max redemptions (optional)</Label>
+                      <Label className="text-xs"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
                       <Input
                         type="number"
-                        placeholder="Unlimited"
+                        placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
                         value={couponForm.maxRedemptions}
                         onChange={e => setCouponForm(p => ({ ...p, maxRedemptions: e.target.value }))}
                       />
@@ -422,10 +552,10 @@ export default function AdminBillingPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => saveCoupon()} disabled={savingCoupon || !couponForm.code}>
-                      {savingCoupon && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                      {savingCoupon && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                       Create
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}>Cancel</Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                   </div>
                 </CardContent>
               </Card>
@@ -434,35 +564,35 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {couponsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : coupons.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">No coupons yet</div>
+                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No coupons yet" el="Δεν υπάρχουν κουπόνια ακόμα" compact /></div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {coupons.map(coupon => (
                       <div key={coupon.id} className="flex items-center gap-3 p-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                          <Tag className="icon-sm text-muted-foreground" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
+                          <Tag className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
+                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
                             {coupon.timesRedeemed}/{coupon.maxRedemptions ?? '∞'} used
-                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString()}` : ''}
+                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
                           </p>
                         </div>
                         {coupon.isActive && (
-                          <Button
+                          <Button aria-label="Delete"
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+                            className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="icon-sm" />
                           </Button>
                         )}
                       </div>
@@ -479,15 +609,15 @@ export default function AdminBillingPage() {
       <Dialog open={Boolean(overrideTarget)} onOpenChange={open => !open && setOverrideTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Override Subscription Plan</DialogTitle>
+            <DialogTitle><BilingualText en="Override Subscription Plan" el="Παράκαμψη πλάνου συνδρομής" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">Select a new plan to apply immediately. This bypasses payment.</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="Select a new plan to apply immediately. This bypasses payment." el="Επιλέξτε νέο πλάνο που εφαρμόζεται αμέσως, χωρίς πληρωμή." wrap /></p>
             <div className="space-y-1.5">
-              <Label className="text-xs">New plan</Label>
+              <Label className="text-xs"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select plan" />
+                <SelectTrigger aria-label="New plan">
+                  <SelectValue placeholder={bilingualInline("Select plan", "Επιλογή πακέτου")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map(p => (
@@ -498,9 +628,9 @@ export default function AdminBillingPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOverrideTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setOverrideTarget(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button onClick={() => applyOverride()} disabled={overriding || !overridePlanId}>
-              {overriding && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              {overriding && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
               Apply override
             </Button>
           </DialogFooter>

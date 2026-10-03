@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { votePoll } from '@/lib/api';
 import type { PollView } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
 
 export type PollOption = { id: string; label: string; votes: number };
 export type DashboardPollData = {
@@ -47,7 +48,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
       votePoll(pollId, optionId),
     onMutate: ({ optionId }) => setOptimisticVote(optionId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['polls', 'active'] });
+      void queryClient.invalidateQueries({ queryKey: qk('polls', 'active') });
       success('Vote recorded');
     },
     onError: (err) => {
@@ -67,7 +68,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
     <Card className={cn('', className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
+          <BarChart3 className="icon-sm text-primary-accessible" />
           Active poll
         </CardTitle>
       </CardHeader>
@@ -86,14 +87,14 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
                   className={cn(
                     'w-full rounded-lg border p-3 text-left text-sm transition-colors',
                     isSelected
-                      ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-border/60 hover:bg-secondary/60',
+                      ? 'border-primary bg-primary/10 text-primary-accessible'
+                      : 'border-border hover:bg-secondary/60',
                     voted && !isSelected && 'cursor-default opacity-80',
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex items-center gap-2">
-                      {isSelected && <Check className="h-4 w-4" />}
+                      {isSelected && <Check className="icon-sm" />}
                       {opt.label}
                     </span>
                     <span className="text-muted-foreground tabular-nums">{pct}%</span>

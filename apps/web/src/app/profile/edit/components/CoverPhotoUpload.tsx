@@ -3,7 +3,9 @@
 import { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface CoverPhotoUploadProps {
   currentCover?: string;
@@ -12,6 +14,7 @@ interface CoverPhotoUploadProps {
 }
 
 export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhotoUploadProps) {
+  const { error: toastError } = useToast();
   const [preview, setPreview] = useState<string | null>(currentCover || null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -46,12 +49,12 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      toastError('Please upload an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      toastError('File size must be less than 5MB');
       return;
     }
 
@@ -66,7 +69,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       await onUpload(file);
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
+      toastError('Upload failed. Please try again.');
       setPreview(currentCover || null);
     } finally {
       setUploading(false);
@@ -82,7 +85,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       setPreview(null);
     } catch (error) {
       console.error('Remove failed:', error);
-      alert('Remove failed. Please try again.');
+      toastError('Remove failed. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -115,8 +118,8 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
-                <Camera className="h-4 w-4 mr-2" />
-                Change
+                <Camera className="icon-sm mr-2" />
+                <BilingualText en="Change" el="Αλλαγή" compact />
               </Button>
               {onRemove && (
                 <Button
@@ -125,8 +128,8 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                   onClick={handleRemove}
                   disabled={uploading}
                 >
-                  <X className="h-4 w-4 mr-2" />
-                  Remove
+                  <X className="icon-sm mr-2" />
+                  <BilingualText en="Remove" el="Αφαίρεση" compact />
                 </Button>
               )}
             </div>
@@ -134,20 +137,20 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center p-6">
             <Upload className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2">Upload Cover Photo</h3>
+            <h3 className="font-semibold mb-2"><BilingualText en="Upload Cover Photo" el="Μεταφόρτωση εξωφύλλου" compact /></h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Drag and drop or click to browse
+              <BilingualText en="Drag and drop or click to browse" el="Σύρετε ή πατήστε για αναζήτηση" compact />
             </p>
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
-              <Camera className="h-4 w-4 mr-2" />
-              Choose File
+              <Camera className="icon-sm mr-2" />
+              <BilingualText en="Choose File" el="Επιλογή αρχείου" compact />
             </Button>
             <p className="text-xs text-muted-foreground mt-4">
-              Recommended: 1920x480px, Max 5MB
+              <BilingualText en="Recommended: 1920x480px, Max 5MB" el="Προτείνεται: 1920x480px, έως 5MB" compact />
             </p>
           </div>
         )}
@@ -156,7 +159,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
             <div className="text-white text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2"></div>
-              <p className="text-sm">Uploading...</p>
+              <p className="text-sm"><BilingualText en="Uploading..." el="Μεταφόρτωση…" compact /></p>
             </div>
           </div>
         )}

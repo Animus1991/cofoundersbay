@@ -1,6 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getMyGroups, deleteGroup } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import Link from 'next/link';
 import {
   Users,
@@ -32,7 +38,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type ManagedGroup = {
   id: string;
@@ -49,9 +63,9 @@ type ManagedGroup = {
 };
 
 const PRIVACY_CONFIG = {
-  public: { label: 'Public', icon: Globe, color: 'text-green-500' },
-  private: { label: 'Private', icon: Lock, color: 'text-amber-500' },
-  secret: { label: 'Secret', icon: Shield, color: 'text-red-500' },
+  public: { label: 'Public', labelEl: 'Δημόσια', icon: Globe, iconClass: STATUS.success.icon },
+  private: { label: 'Private', labelEl: 'Ιδιωτική', icon: Lock, iconClass: STATUS.warning.icon },
+  secret: { label: 'Secret', labelEl: 'Μυστική', icon: Shield, iconClass: STATUS.danger.icon },
 };
 
 const MOCK_GROUPS: ManagedGroup[] = [
@@ -61,40 +75,45 @@ const MOCK_GROUPS: ManagedGroup[] = [
   { id: '4', name: 'CleanTech Builders', description: 'Founders working on climate and sustainability', category: 'CleanTech', privacy: 'public', memberCount: 234, postCount: 78, role: 'admin', isActive: false, lastActivity: '1 week ago' },
 ];
 
-function GroupCard({ group }: { group: ManagedGroup }) {
+type GroupActions = {
+  onInvite: (g: ManagedGroup) => void;
+  onDelete: (g: ManagedGroup) => void;
+};
+
+function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & GroupActions) {
   const privacyCfg = PRIVACY_CONFIG[group.privacy];
   const PrivacyIcon = privacyCfg.icon;
 
   return (
-    <Card className={cn('transition-all hover:shadow-md hover:border-primary/20', !group.isActive && 'opacity-60')}>
+    <Card className={cn('transition-all hover:border-primary/30', !group.isActive && 'surface-inactive')}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-10 w-10 rounded-xl shrink-0">
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
                 {group.name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary transition-colors">
+                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                   {group.name}
                 </Link>
-                <Badge variant="secondary" className="text-xs">{group.category}</Badge>
-                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.color)}>
-                  <PrivacyIcon className="h-3 w-3" />
-                  {privacyCfg.label}
+                <Badge variant="secondary" className="text-xs"><StatusText value={group.category} /></Badge>
+                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.iconClass)}>
+                  <PrivacyIcon className="icon-sm" />
+                  <BilingualText en={privacyCfg.label} el={privacyCfg.labelEl} compact />
                 </Badge>
-                <Badge variant="secondary" className="text-xs capitalize">{group.role}</Badge>
-                {!group.isActive && <Badge variant="secondary" className="text-xs text-muted-foreground">Archived</Badge>}
+                <Badge variant="secondary" className="text-xs capitalize"><StatusText value={group.role} /></Badge>
+                {!group.isActive && <Badge variant="secondary" className="text-xs text-muted-foreground"><BilingualText en="Archived" el="Αρχειοθετημένη" compact /></Badge>}
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group.memberCount.toLocaleString()} members</span>
-                <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{group.postCount} posts</span>
-                <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />Active {group.lastActivity}</span>
+                <span className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact /></span>
+                <span className="flex items-center gap-1"><MessageSquare className="icon-sm" aria-hidden="true" /><BilingualText en={`${group.postCount} posts`} el={`${group.postCount} αναρτήσεις`} compact /></span>
+                <span className="flex items-center gap-1"><TrendingUp className="icon-sm" aria-hidden="true" /><BilingualText en={`Active ${group.lastActivity}`} el={`Δραστηριότητα ${group.lastActivity}`} compact /></span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
-                  <Badge variant="destructive" className="text-xs">{group.pendingRequests} pending</Badge>
+                  <Badge variant="destructive" className="text-xs"><BilingualText en={`${group.pendingRequests} pending`} el={`${group.pendingRequests} σε αναμονή`} compact /></Badge>
                 )}
               </div>
             </div>
@@ -102,21 +121,41 @@ function GroupCard({ group }: { group: ManagedGroup }) {
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/groups/${group.id}`}>
-                <Eye className="mr-1.5 h-3.5 w-3.5" />View
+                <Eye className="mr-1.5 icon-sm" /><BilingualText en="View" el="Προβολή" compact />
               </Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${group.name}`}>
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Group</DropdownMenuItem>
-                <DropdownMenuItem><UserPlus className="mr-2 h-4 w-4" />Invite Members</DropdownMenuItem>
-                <DropdownMenuItem><Settings className="mr-2 h-4 w-4" />Group Settings</DropdownMenuItem>
+                {/* All four had no handler. Editing and settings happen on
+                    the group itself; inviting shares its link; deleting is
+                    the owner's, and the server enforces that. */}
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${group.id}`}><Edit className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Edit Group" el="Επεξεργασία κοινότητας" compact /></Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => onInvite(group)}><UserPlus className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Invite Members" el="Πρόσκληση μελών" compact /></DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${group.id}?section=members`}><Settings className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Group Settings" el="Ρυθμίσεις κοινότητας" compact /></Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete Group</DropdownMenuItem>
+                {group.role === 'owner' ? (
+                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(group)}>
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete Group" el="Διαγραφή κοινότητας" compact />
+                  </DropdownMenuItem>
+                ) : (
+                  <UnavailableMenuItem
+                    className="text-destructive-accessible"
+                    icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Delete Group"
+                    el="Διαγραφή ομάδας"
+                    reasonEn="Only the owner can delete a group."
+                    reasonEl="Μόνο ο ιδιοκτήτης μπορεί να διαγράψει μια ομάδα."
+                  />
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -127,46 +166,132 @@ function GroupCard({ group }: { group: ManagedGroup }) {
 }
 
 export default function ManageGroupsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
 
-  const filtered = MOCK_GROUPS.filter(g =>
+  // The groups the viewer runs, from GET /groups/my; this list was a fixed
+  // array. Plain membership is not management, so members are left out.
+  const { data, isLoading } = useQuery({
+    queryKey: qk('groups', 'my'),
+    queryFn: getMyGroups,
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const live: ManagedGroup[] = useMemo(
+    () =>
+      (data?.groups ?? [])
+        .filter((g) => g.memberRole === 'owner' || g.memberRole === 'admin' || g.memberRole === 'moderator')
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          description: g.description ?? '',
+          category: g.category ?? '\u2014',
+          privacy: g.privacy,
+          memberCount: g.memberCount,
+          postCount: g.postCount,
+          role: g.memberRole as ManagedGroup['role'],
+          isActive: true,
+          lastActivity: new Date(g.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }),
+        })),
+    [data],
+  );
+  const showingSample = !isLoading && live.length === 0;
+  const groups: ManagedGroup[] = live.length > 0 ? live : isLoading || !showDemoData ? [] : MOCK_GROUPS;
+
+  const actions: GroupActions = {
+    onInvite: async (g) => {
+      try {
+        await navigator.clipboard.writeText(`${window.location.origin}/groups/${g.id}`);
+        success('Invite link copied', `Anyone with the link can find ${g.name}${g.privacy === 'public' ? ' and join' : ' and request to join'}.`);
+      } catch {
+        toastError('Could not copy', 'The browser refused clipboard access.');
+      }
+    },
+    onDelete: async (g) => {
+      if (showingSample) {
+        toastError('Nothing to delete', 'These are sample communities until you run one.');
+        return;
+      }
+      const ok = await confirm({
+        title: <BilingualText en={`Delete ${g.name}?`} el={`Διαγραφή: ${g.name};`} />,
+        description: <BilingualText en="The group, its posts and its member list are removed. This cannot be undone." el="Η κοινότητα, οι αναρτήσεις και τα μέλη της αφαιρούνται. Δεν αναιρείται." />,
+        confirmLabel: <BilingualText en="Delete group" el="Διαγραφή κοινότητας" compact />,
+      });
+      if (!ok) return;
+      try {
+        await deleteGroup(g.id);
+        success('Group deleted', g.name);
+      } catch (e) {
+        toastError('Could not delete the group', e instanceof Error ? e.message : undefined);
+      } finally {
+        void queryClient.invalidateQueries({ queryKey: qk('groups') });
+      }
+    },
+  };
+
+  const filtered = groups.filter(g =>
     !search || g.name.toLowerCase().includes(search.toLowerCase()) || g.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  const totalMembers = MOCK_GROUPS.reduce((s, g) => s + g.memberCount, 0);
-  const pendingTotal = MOCK_GROUPS.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
+  const totalMembers = groups.reduce((s, g) => s + g.memberCount, 0);
+  const pendingTotal = groups.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
+
+  // Offered to the assistant: the card menu's invite link and delete (which
+  // asks, and refuses the sample communities).
+  usePageList([
+    {
+      id: 'managed_groups',
+      labelEn: 'Groups you manage',
+      labelEl: 'Ομάδες που διαχειρίζεστε',
+      rows: isLoading ? undefined : filtered.map((g) => `${g.name} · ${g.category} · ${g.privacy} · ${g.memberCount} members${g.pendingRequests ? ` · ${g.pendingRequests} pending` : ''} · you are ${g.role}`),
+      total: groups.length,
+      sample: showingSample,
+    },
+  ]);
+  usePageControls([
+    { id: 'copy_invite_link', labelEn: 'Copy a group invite link', labelEl: 'Αντιγραφή συνδέσμου πρόσκλησης ομάδας', writes: false, options: rowOptions(filtered, (g) => g.id, (g) => g.name), run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onInvite(g); } },
+    { id: 'delete_group', labelEn: 'Delete group', labelEl: 'Διαγραφή ομάδας', writes: true, options: rowOptions(filtered.filter((g) => g.role === 'owner'), (g) => g.id, (g) => g.name), unavailableEn: showingSample ? 'These are sample communities until you run one.' : undefined, unavailableEl: showingSample ? 'Είναι δείγματα κοινοτήτων μέχρι να δημιουργήσετε μία.' : undefined, run: (v) => { const g = groups.find((x) => x.id === v); if (g) void actions.onDelete(g); } },
+  ]);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="h-6 w-6 text-primary" />
-              Manage Communities
-            </h1>
-            <p className="text-muted-foreground">Groups you own or administer</p>
-          </div>
-          <Button asChild>
-            <Link href="/groups">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Group
-            </Link>
-          </Button>
-        </div>
-
+    <AppShell
+      title="Manage communities"
+      titleEl="Διαχείριση κοινοτήτων"
+      description="Communities you own or administer — review members, pending requests, and activity at a glance."
+      descriptionEl="Κοινότητες που σας ανήκουν ή διαχειρίζεστε — μέλη, εκκρεμή αιτήματα και δραστηριότητα με μια ματιά."
+      actions={(
+        <Button asChild>
+          <Link href="/groups">
+            <Plus className="mr-2 icon-sm" />
+            <BilingualText en="Create community" el="Νέα κοινότητα" compact />
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
+        {showingSample && (
+          <SampleDataNotice
+            surface="Manage communities"
+            detail="You do not run a community yet, so these are samples that show the layout."
+            askAiPrompt="How do I start and run a community on CoFounderBay?"
+          />
+        )}
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
-            { label: 'Groups Managed', value: MOCK_GROUPS.length },
-            { label: 'Total Members', value: totalMembers.toLocaleString() },
-            { label: 'Pending Requests', value: pendingTotal },
+            { label: 'Groups Managed', labelEl: 'Κοινότητες που διαχειρίζεστε', value: groups.length },
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: totalMembers.toLocaleString('en-GB') },
+            { label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <p className="text-xl font-bold">{stat.value}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -174,23 +299,34 @@ export default function ManageGroupsPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+          <Input aria-label={bilingualAria("Search groups", "Αναζήτηση κοινοτήτων")} placeholder={bilingualInline("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Groups */}
         <div className="space-y-3">
           {filtered.map(group => (
-            <GroupCard key={group.id} group={group} />
+            <GroupCard key={group.id} group={group} {...actions} />
           ))}
           {filtered.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="font-medium">No groups found</p>
-                <p className="text-sm text-muted-foreground mt-1">Create a community to get started</p>
-              </CardContent>
-            </Card>
+            search ? (
+              <NoFilterResults entity="communities" onClear={() => setSearch('')} />
+            ) : (
+              <ListEmptyState
+                icon={Users}
+                tone="primary"
+                title="You don't manage any communities yet"
+                description="Create a community to bring people together. As owner you control privacy, membership, and moderation."
+                action={(
+                  <Button asChild className="gap-2">
+                    <Link href="/groups">
+                      <Plus className="icon-sm" />
+                      <BilingualText en="Create community" el="Νέα κοινότητα" compact />
+                    </Link>
+                  </Button>
+                )}
+              />
+            )
           )}
         </div>
       </div>

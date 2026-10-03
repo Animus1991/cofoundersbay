@@ -28,7 +28,7 @@ export default function Error({ statusCode }: Props) {
           padding: '0.5rem 1.25rem',
           background: '#22D3EE',
           color: '#000',
-          borderRadius: '8px',
+          borderRadius: '10px',
           textDecoration: 'none',
           fontWeight: 600,
         }}

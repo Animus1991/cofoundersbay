@@ -25,6 +25,8 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface BadgeItem {
   id: string;
@@ -47,17 +49,17 @@ const badgeIcons = {
 };
 
 const tierColors = {
-  bronze: 'text-orange-700 dark:text-orange-400',
-  silver: 'text-gray-600 dark:text-gray-300',
-  gold: 'text-yellow-700 dark:text-yellow-400',
-  platinum: 'text-cyan-700 dark:text-cyan-300',
+  bronze: 'text-status-warning ',
+  silver: 'text-muted-foreground ',
+  gold: 'text-status-warning ',
+  platinum: 'text-status-info ',
 };
 
 const tierBgColors = {
-  bronze: 'bg-orange-100 dark:bg-orange-950',
-  silver: 'bg-gray-100 dark:bg-gray-800',
-  gold: 'bg-yellow-100 dark:bg-yellow-950',
-  platinum: 'bg-cyan-100 dark:bg-cyan-950',
+  bronze: 'bg-status-warning-bg ',
+  silver: 'bg-muted ',
+  gold: 'bg-status-warning-bg ',
+  platinum: 'bg-status-info-bg ',
 };
 
 function rarityToTier(rarity: string): BadgeItem['tier'] {
@@ -194,7 +196,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const { data: apiBadges, isLoading } = useQuery({
-    queryKey: ['my-badges'],
+    queryKey: qk('gamification', 'my-badges'),
     queryFn: getMyBadges,
     staleTime: 5 * 60_000,
     enabled: live,
@@ -212,7 +214,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-24 w-full" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 w-full" />)}
         </div>
       </div>
@@ -231,23 +233,23 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
-                Achievements & Badges
+                <Trophy className="icon-md text-primary-accessible" />
+                <BilingualText en="Achievements & Badges" el="Επιτεύγματα & διακρίσεις" compact />
               </CardTitle>
               <CardDescription>
-                Unlock badges by engaging with the community
+                <BilingualText en="Unlock badges by engaging with the community" el="Κερδίστε διακρίσεις συμμετέχοντας στην κοινότητα" wrap />
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-xl font-bold">{earnedCount}/{totalCount}</div>
-              <div className="text-sm text-muted-foreground">Badges Earned</div>
+              <div className="page-stat text-xl font-bold">{earnedCount}/{totalCount}</div>
+              <div className="text-sm text-muted-foreground"><BilingualText en="Badges Earned" el="Διακρίσεις" compact /></div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Overall Progress</span>
+              <span className="text-muted-foreground"><BilingualText en="Overall Progress" el="Συνολική πρόοδος" compact /></span>
               <span className="font-medium">{completionPercentage.toFixed(0)}%</span>
             </div>
             <Progress value={completionPercentage} className="h-2" />
@@ -257,28 +259,28 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
 
       {/* Badges Grid */}
       <Tabs defaultValue="all" onValueChange={setSelectedCategory}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">All</TabsTrigger>
+        <TabsList className="w-full lg:grid lg:grid-cols-5">
+          <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
           <TabsTrigger value="engagement">
-            <MessageCircle className="h-4 w-4 mr-1" />
-            Engage
+            <MessageCircle className="icon-sm mr-1" />
+            <BilingualText en="Engage" el="Συμμετοχή" compact />
           </TabsTrigger>
           <TabsTrigger value="achievement">
-            <Trophy className="h-4 w-4 mr-1" />
-            Achieve
+            <Trophy className="icon-sm mr-1" />
+            <BilingualText en="Achieve" el="Επίτευξη" compact />
           </TabsTrigger>
           <TabsTrigger value="social">
-            <Users className="h-4 w-4 mr-1" />
-            Social
+            <Users className="icon-sm mr-1" />
+            <BilingualText en="Social" el="Κοινωνικά" compact />
           </TabsTrigger>
           <TabsTrigger value="professional">
-            <Briefcase className="h-4 w-4 mr-1" />
-            Pro
+            <Briefcase className="icon-sm mr-1" />
+            <BilingualText en="Pro" el="Pro" compact />
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value={selectedCategory} className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredBadges.map((badge) => {
               const Icon = badge.icon;
               const hasProgress = typeof badge.progress === 'number' && typeof badge.requirement === 'number';
@@ -290,7 +292,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                 <Card 
                   key={badge.id} 
                   className={cn(
-                    'relative overflow-hidden transition-all hover:shadow-lg',
+                    'relative overflow-hidden transition-all hover:border-primary/30',
                     badge.earned && 'border-primary/50',
                     !badge.earned && 'opacity-75'
                   )}
@@ -298,8 +300,8 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   {badge.earned && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="default" className="gap-1">
-                        <Award className="h-3 w-3" />
-                        Earned
+                        <Award className="icon-sm" />
+                        <BilingualText en="Earned" el="Κερδήθηκε" compact />
                       </Badge>
                     </div>
                   )}
@@ -309,13 +311,13 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                       'w-16 h-16 rounded-full flex items-center justify-center mb-3',
                       tierBgColors[badge.tier]
                     )}>
-                      <Icon className={cn('h-8 w-8', tierColors[badge.tier])} />
+                      <Icon className={cn('icon-xl', tierColors[badge.tier])} />
                     </div>
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="h-4 w-4 text-cyan-400" />}
-                      {badge.tier === 'gold' && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-primary-accessible" />}
+                      {badge.tier === 'gold' && <Sparkles className="icon-sm text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>
                   </CardHeader>
@@ -323,12 +325,12 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   <CardContent>
                     {badge.earned ? (
                       <div className="text-sm text-muted-foreground">
-                        Earned on {new Date(badge.earnedAt!).toLocaleDateString()}
+                        Earned on {new Date(badge.earnedAt!).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </div>
                     ) : hasProgress ? (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Progress</span>
+                          <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
                           <span className="font-medium">
                             {badge.progress}/{badge.requirement}
                           </span>
@@ -337,7 +339,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                       </div>
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        Not yet earned
+                        <BilingualText en="Not yet earned" el="Δεν έχει κερδηθεί" compact />
                       </div>
                     )}
 

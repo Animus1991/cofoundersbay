@@ -117,7 +117,7 @@ export const navSections: NavSection[] = [
     links: [
       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
-      { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
+      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
@@ -366,7 +366,8 @@ export const adminNavSections: NavSection[] = [
   {
     section: 'Platform Admin',
     links: [
-      { href: '/admin', label: 'Admin Dashboard', icon: Shield },
+      { href: '/admin/dashboard', label: 'Platform overview', icon: LayoutDashboard },
+      { href: '/admin', label: 'Admin console', icon: Shield },
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
       { href: '/admin/programs', label: 'Programs', icon: Award },

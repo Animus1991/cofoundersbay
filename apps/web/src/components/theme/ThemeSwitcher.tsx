@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus, Sunrise } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,8 +13,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
+import { BilingualText } from '@/components/common/BilingualText';
+import { translate } from '@/lib/i18n/translate';
 
-const themeConfig = [
+export const THEME_OPTIONS = [
   {
     name: 'dark' as ThemeName,
     label: 'Dark',
@@ -25,9 +28,9 @@ const themeConfig = [
   {
     name: 'light' as ThemeName,
     label: 'Light',
-    description: 'Classic light theme',
+    description: 'Soft lilac on cool grey',
     icon: Sun,
-    swatch: ['#f8fafc', '#6366f1', '#e2e8f0'],
+    swatch: ['#f6f6f7', '#bbaefb', '#6e659a'],
   },
   {
     name: 'system' as ThemeName,
@@ -38,10 +41,10 @@ const themeConfig = [
   },
   {
     name: 'alliance' as ThemeName,
-    label: 'Alliance',
-    description: 'Professional & clean',
+    label: 'Cyan',
+    description: 'Soft sky blue, cool and clear',
     icon: Palette,
-    swatch: ['#eef6f7', '#efa758', '#fafdfd'],
+    swatch: ['#f2f6f7', '#91bddd', '#527187'],
   },
   {
     name: 'cofounder' as ThemeName,
@@ -50,11 +53,26 @@ const themeConfig = [
     icon: Sparkles,
     swatch: ['#0a0a14', '#9333ea', '#00ccff'],
   },
+  {
+    name: 'minimal' as ThemeName,
+    label: 'Mint',
+    description: 'Warm cream with a soft mint',
+    icon: Minus,
+    swatch: ['#f7f5f0', '#7ac6aa', '#427864'],
+  },
+  {
+    name: 'apricot' as ThemeName,
+    label: 'Apricot',
+    description: 'Warm neutral with a soft apricot',
+    icon: Sunrise,
+    swatch: ['#f7f6f5', '#ddaf90', '#876752'],
+  },
 ];
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ className }: { className?: string }) {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark');
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -70,35 +88,42 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="relative">
-        <Moon className="h-5 w-5" />
+      // Placeholder until mount; the real switcher replaces it.
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')} disabled>
+        <Moon className="icon-sm" />
       </Button>
     );
   }
 
-  const CurrentIcon = themeConfig.find((t) => t.name === currentTheme)?.icon || Moon;
+  const CurrentIcon = THEME_OPTIONS.find((t) => t.name === currentTheme)?.icon || Moon;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <CurrentIcon className="h-5 w-5 transition-all" />
-          <span className="sr-only">Toggle theme</span>
+        <Button variant="ghost" size="icon" className={cn('relative h-9 w-9', className)} aria-label={t('Theme')}>
+          <CurrentIcon className="icon-sm transition-all" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+          <BilingualText en="Choose Theme" el={translate('el', 'Choose Theme')} compact />
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        {themeConfig.map((theme, idx) => {
+
+        {THEME_OPTIONS.map((theme, idx) => {
           const isActive = currentTheme === theme.name;
           return (
             <div key={theme.name}>
               {idx === 3 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                    Custom Themes
+                  <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <BilingualText
+                      en="Custom Themes"
+                      el={translate('el', 'Custom Themes')}
+                      compact
+                      secondaryClassName="text-muted-foreground"
+                    />
                   </DropdownMenuLabel>
                 </>
               )}
@@ -109,16 +134,28 @@ export function ThemeSwitcher() {
                   isActive && 'bg-accent/60'
                 )}
               >
-                <div className="flex shrink-0 overflow-hidden rounded-md border border-border/50" style={{ width: 36, height: 28 }}>
+                <div className="flex shrink-0 overflow-hidden rounded-md border border-border" style={{ width: 36, height: 28 }}>
                   <div style={{ background: theme.swatch[0], flex: 1 }} />
                   <div style={{ background: theme.swatch[1], width: 8 }} />
                   <div style={{ background: theme.swatch[2], width: 8 }} />
                 </div>
-                <div className="flex flex-col gap-0">
-                  <span className="text-sm font-medium leading-tight">{theme.label}</span>
-                  <span className="text-[11px] text-muted-foreground leading-tight">{theme.description}</span>
+                <div className="min-w-0 flex-1">
+                  <BilingualText
+                    en={theme.label}
+                    el={translate('el', theme.label)}
+                    stacked
+                    primaryClassName="text-sm font-medium leading-tight"
+                    secondaryClassName="leading-tight"
+                  />
+                  <BilingualText
+                    en={theme.description}
+                    el={translate('el', theme.description)}
+                    stacked
+                    primaryClassName="text-2xs leading-tight text-muted-foreground"
+                    secondaryClassName="text-2xs leading-tight text-muted-foreground"
+                  />
                 </div>
-                {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary shrink-0" />}
+                {isActive && <Check className="ml-auto icon-sm text-primary-accessible shrink-0" />}
               </DropdownMenuItem>
             </div>
           );

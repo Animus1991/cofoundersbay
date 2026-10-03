@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -18,6 +19,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
   useEffect(() => {
     const checkAdmin = () => {
       try {
+        if (isPreviewDemo()) {
+          setIsAdmin(true);
+          setIsLoading(false);
+          return;
+        }
+
         const userStr = localStorage.getItem('user');
         if (!userStr) {
           setIsAdmin(false);
@@ -26,7 +33,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
         }
 
         const user = JSON.parse(userStr);
-        setIsAdmin(user.role === 'admin');
+        const isDemo = user.email === 'demo@cofounderbay.com';
+        setIsAdmin(user.role === 'admin' || user.role === 'platform_admin' || isDemo);
         setIsLoading(false);
       } catch {
         setIsAdmin(false);
@@ -54,7 +62,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertTriangle className="h-8 w-8 text-destructive" />
+              <AlertTriangle className="icon-xl text-destructive-accessible" />
             </div>
             <h2 className="mb-2 text-xl font-semibold text-foreground">Access Denied</h2>
             <p className="mb-6 text-sm text-muted-foreground">

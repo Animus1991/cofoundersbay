@@ -2,6 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,19 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+
+/**
+ * Four different people from the demo world, so the specimen shows how the
+ * theme treats varied names, roles and tags - four copies of one card showed
+ * nothing but the card.
+ */
+const SPECIMEN = [
+  { name: 'Elena Papadopoulos', role: 'Founder & CEO at Harbor', badge: 'Founder', pitch: 'Building the operating system for early-stage founders. Looking for a technical cofounder.', tags: ['SaaS', 'Product', 'Seed'], place: 'Athens, Greece', sector: 'Software', banner: 'from-blue-500 via-indigo-500 to-violet-500' },
+  { name: 'Marcus Chen', role: 'Technical cofounder · Full-stack', badge: 'Builder', pitch: 'Ships MVPs in weeks. Looking for a complementary business founder.', tags: ['TypeScript', 'AI', 'Developer tools'], place: 'Berlin, Germany', sector: 'Developer tools', banner: 'from-cyan-500 via-sky-500 to-blue-600' },
+  { name: 'Dr. Sarah Kim', role: 'Startup mentor · Ex-Google · 3x founder', badge: 'Mentor', pitch: 'Helping first-time founders reach product-market fit.', tags: ['Go-to-market', 'Leadership', 'Mentoring'], place: 'London, UK', sector: 'Marketplaces', banner: 'from-emerald-500 via-teal-500 to-cyan-600' },
+  { name: 'Nikos Andreou', role: 'Angel investor · Seed', badge: 'Investor', pitch: 'Invests in Mediterranean B2B SaaS at pre-seed and seed.', tags: ['B2B', 'SaaS', 'Pre-seed'], place: 'Limassol, Cyprus', sector: 'Venture', banner: 'from-amber-500 via-orange-500 to-rose-500' },
+] as const;
 
 export default function AllianceThemePage() {
   const [activeTab, setActiveTab] = useState('discover');
@@ -34,22 +48,24 @@ export default function AllianceThemePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
-              <Sparkles className="h-4 w-4" />
-              <span className="text-sm font-medium">Alliance Theme Preview</span>
+              <Sparkles className="icon-sm" />
+              <span className="text-sm font-medium"><BilingualText en="Alliance theme preview · sample content" el="Προεπισκόπηση θέματος Alliance · δείγμα περιεχομένου" wrap /></span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-              Connect. Collaborate. Succeed.
+              <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join the premier network for startup founders, investors, and innovators
+              <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές startups, επενδυτές και καινοτόμους" wrap />
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
-                Get Started
-                <ChevronRight className="ml-2 h-5 w-5" />
+              <Button size="lg" className="bg-white text-slate-900 hover:bg-white/90" asChild>
+                <Link href="/register">
+                  <BilingualText en="Get Started" el="Ξεκινήστε" compact secondaryClassName="text-slate-700" />
+                  <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
+                </Link>
               </Button>
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
-                Learn More
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" asChild>
+                <Link href="/pricing"><BilingualText en="Learn More" el="Μάθετε περισσότερα" compact /></Link>
               </Button>
             </div>
           </div>
@@ -87,8 +103,8 @@ export default function AllianceThemePage() {
               className={cn(
                 'flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
               )}
             >
               <tab.icon className="h-4 w-4" />
@@ -99,39 +115,43 @@ export default function AllianceThemePage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-                <div className="h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative">
+            {SPECIMEN.map((person) => (
+              <Card key={person.name} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+                <div className={cn('h-32 bg-gradient-to-br relative', person.banner)}>
                   <div className="absolute inset-0 bg-black/20"></div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 hover:bg-white">Featured</Badge>
+                    <Badge className="bg-white/90 text-slate-900 hover:bg-white"><BilingualText en="Featured" el="Προβεβλημένο" compact /></Badge>
                   </div>
                 </div>
                 <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex-shrink-0 border-4 border-white dark:border-slate-800 -mt-12 relative z-10"></div>
-                    <div className="flex-1 pt-2">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xl font-bold">Sarah Johnson</h3>
+                  {/* Wraps on a phone: name, role and Connect in one row pushed
+                      Connect 80px past the card edge at 390px. */}
+                  <div className="mb-4 flex flex-wrap items-start gap-x-4 gap-y-2">
+                    <div className="relative z-10 -mt-12 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-blue-400 to-purple-400 text-lg font-semibold text-white" aria-hidden="true">
+                      {person.name.replace(/^Dr\.\s*/, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}
+                    </div>
+                    <div className="min-w-0 flex-1 basis-40 pt-2">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-bold sm:text-xl">{person.name}</h3>
                         <Badge variant="secondary" className="text-xs">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                          Pro
+                          <Star className="icon-sm mr-1 fill-status-warning text-yellow-400" aria-hidden="true" />
+                          {person.badge}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">CEO & Founder at TechVentures</p>
+                      <p className="text-sm text-muted-foreground">{person.role}</p>
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-full">
-                      <Users className="h-4 w-4 mr-2" />
-                      Connect
+                    <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="shrink-0 rounded-full">
+                      <Users className="icon-sm mr-2" />
+                      <BilingualText en="Connect" el="Σύνδεση" compact />
                     </Button>
                   </div>
 
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-                    Looking for technical co-founder to build next-gen AI platform. 10+ years in SaaS, 2 successful exits.
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {person.pitch}
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {['AI/ML', 'SaaS', 'B2B', 'Series A'].map((tag) => (
+                    {person.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="rounded-full">
                         {tag}
                       </Badge>
@@ -140,27 +160,27 @@ export default function AllianceThemePage() {
 
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      San Francisco, CA
+                      <MapPin className="icon-sm" />
+                      {person.place}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Building className="h-4 w-4" />
-                      Tech Industry
+                      <Building className="icon-sm" />
+                      {person.sector}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <Heart className="h-4 w-4 mr-2" />
-                      Like
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
+                      <Heart className="icon-sm mr-2" />
+                      <BilingualText en="Like" el="Μου αρέσει" compact />
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Message
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
+                      <MessageSquare className="icon-sm mr-2" />
+                      <BilingualText en="Message" el="Μήνυμα" compact />
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Share
+                    <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
+                      <Share2 className="icon-sm mr-2" />
+                      <BilingualText en="Share" el="Κοινοποίηση" compact />
                     </Button>
                   </div>
                 </CardContent>
@@ -171,7 +191,7 @@ export default function AllianceThemePage() {
           <div className="space-y-6">
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Trending Topics</h3>
+                <h3 className="font-bold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { tag: '#AIStartups', count: '2.5K posts' },
@@ -181,13 +201,13 @@ export default function AllianceThemePage() {
                   ].map((topic) => (
                     <div
                       key={topic.tag}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                     >
                       <div>
-                        <div className="font-semibold text-blue-600 dark:text-blue-400">{topic.tag}</div>
+                        <div className="font-semibold text-status-info ">{topic.tag}</div>
                         <div className="text-xs text-muted-foreground">{topic.count}</div>
                       </div>
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="icon-sm text-status-success" />
                     </div>
                   ))}
                 </div>
@@ -196,20 +216,20 @@ export default function AllianceThemePage() {
 
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
-                <Sparkles className="h-8 w-8 mb-3" />
-                <h3 className="font-bold text-lg mb-2">Upgrade to Pro</h3>
+                <Sparkles className="icon-xl mb-3" />
+                <h3 className="font-bold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
                 <p className="text-sm text-blue-100 mb-4">
-                  Unlock premium features and connect with top founders
+                  <BilingualText en="Unlock premium features and connect with top founders" el="Ξεκλειδώστε premium λειτουργίες και γνωρίστε κορυφαίους ιδρυτές" wrap />
                 </p>
-                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
-                  Get Started
+                <Button className="w-full bg-white text-slate-900 hover:bg-white/90" asChild>
+                  <Link href="/pricing"><BilingualText en="Get Started" el="Ξεκινήστε" compact secondaryClassName="text-slate-700" /></Link>
                 </Button>
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4">Upcoming Events</h3>
+                <h3 className="font-bold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { title: 'Startup Pitch Night', date: 'Tomorrow, 6 PM' },
@@ -218,10 +238,10 @@ export default function AllianceThemePage() {
                   ].map((event, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                     >
                       <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                        <Calendar className="h-6 w-6 text-white" />
+                        <Calendar className="icon-lg text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm truncate">{event.title}</div>

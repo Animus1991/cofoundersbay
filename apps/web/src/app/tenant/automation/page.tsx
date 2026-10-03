@@ -14,74 +14,82 @@ import {
 } from '@/lib/api';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
-  Workflow, Zap, Clock, Play, Pause, Trash2,
+  Zap, Clock, Play, Pause, Trash2,
   CheckCircle2, XCircle, AlertTriangle,
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
+import { EmptyTenantAutomations } from '@/components/common/EmptyStates';
+import { EmptyState } from '@/components/common/EmptyState';
+import Link from 'next/link';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
-const TRIGGER_LABELS: Record<string, string> = {
-  user_signup: 'User Signup',
-  onboarding_incomplete: 'Onboarding Incomplete',
-  profile_incomplete: 'Profile Incomplete',
-  match_generated: 'Match Generated',
-  match_not_viewed: 'Match Not Viewed',
-  connection_request_sent: 'Connection Sent',
-  connection_not_answered: 'Connection Unanswered',
-  connection_accepted: 'Connection Accepted',
-  mentor_request_submitted: 'Mentor Request',
-  mentor_request_accepted: 'Mentor Accepted',
-  mentor_session_idle: 'Mentor Session Idle',
-  community_join: 'Community Join',
-  community_inactive: 'Community Inactive',
-  content_reported_threshold: 'Report Threshold',
-  tenant_setup_incomplete: 'Tenant Setup Incomplete',
-  subscription_trial_ending: 'Trial Ending',
-  subscription_failed_payment: 'Failed Payment',
-  subscription_canceled: 'Subscription Canceled',
-  user_inactive: 'User Inactive',
-  scheduled: 'Scheduled',
-  manual: 'Manual',
+const TRIGGER_LABELS: Record<string, { en: string; el: string }> = {
+  user_signup: { en: 'User Signup', el: 'Εγγραφή χρήστη' },
+  onboarding_incomplete: { en: 'Onboarding Incomplete', el: 'Ημιτελής ένταξη' },
+  profile_incomplete: { en: 'Profile Incomplete', el: 'Ημιτελές προφίλ' },
+  match_generated: { en: 'Match Generated', el: 'Νέα αντιστοίχιση' },
+  match_not_viewed: { en: 'Match Not Viewed', el: 'Αντιστοίχιση χωρίς προβολή' },
+  connection_request_sent: { en: 'Connection Sent', el: 'Αίτημα σύνδεσης εστάλη' },
+  connection_not_answered: { en: 'Connection Unanswered', el: 'Αίτημα σύνδεσης χωρίς απάντηση' },
+  connection_accepted: { en: 'Connection Accepted', el: 'Σύνδεση έγινε δεκτή' },
+  mentor_request_submitted: { en: 'Mentor Request', el: 'Αίτημα καθοδήγησης' },
+  mentor_request_accepted: { en: 'Mentor Accepted', el: 'Ο μέντορας αποδέχτηκε' },
+  mentor_session_idle: { en: 'Mentor Session Idle', el: 'Αδρανής συνεδρία καθοδήγησης' },
+  community_join: { en: 'Community Join', el: 'Είσοδος σε κοινότητα' },
+  community_inactive: { en: 'Community Inactive', el: 'Αδρανής κοινότητα' },
+  content_reported_threshold: { en: 'Report Threshold', el: 'Όριο αναφορών' },
+  tenant_setup_incomplete: { en: 'Tenant Setup Incomplete', el: 'Ημιτελής ρύθμιση οργανισμού' },
+  subscription_trial_ending: { en: 'Trial Ending', el: 'Λήξη δοκιμής' },
+  subscription_failed_payment: { en: 'Failed Payment', el: 'Αποτυχημένη πληρωμή' },
+  subscription_canceled: { en: 'Subscription Canceled', el: 'Ακύρωση συνδρομής' },
+  user_inactive: { en: 'User Inactive', el: 'Αδρανής χρήστης' },
+  scheduled: { en: 'Scheduled', el: 'Προγραμματισμένο' },
+  manual: { en: 'Manual', el: 'Χειροκίνητο' },
 };
 
-const TRIGGER_CATEGORY: Record<string, { label: string; color: string }> = {
-  user_signup: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  onboarding_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  profile_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  connection_not_answered: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  connection_accepted: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_not_viewed: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_generated: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  mentor_request_submitted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_request_accepted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_session_idle: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  community_join: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  community_inactive: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  subscription_trial_ending: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_failed_payment: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_canceled: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  user_inactive: { label: 'Engagement', color: 'bg-rose-500/10 text-rose-600' },
-  content_reported_threshold: { label: 'Moderation', color: 'bg-red-500/10 text-red-600' },
-  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-indigo-500/10 text-indigo-600' },
+const TRIGGER_CATEGORY: Record<string, { label: string; labelEl: string; color: string }> = {
+  user_signup: { label: 'Onboarding', labelEl: 'Ένταξη', color: 'bg-status-info-bg text-status-info' },
+  onboarding_incomplete: { label: 'Onboarding', labelEl: 'Ένταξη', color: 'bg-status-info-bg text-status-info' },
+  profile_incomplete: { label: 'Onboarding', labelEl: 'Ένταξη', color: 'bg-status-info-bg text-status-info' },
+  connection_not_answered: { label: 'Matching', labelEl: 'Αντιστοιχίσεις', color: 'bg-status-accent-bg text-status-accent' },
+  connection_accepted: { label: 'Matching', labelEl: 'Αντιστοιχίσεις', color: 'bg-status-accent-bg text-status-accent' },
+  match_not_viewed: { label: 'Matching', labelEl: 'Αντιστοιχίσεις', color: 'bg-status-accent-bg text-status-accent' },
+  match_generated: { label: 'Matching', labelEl: 'Αντιστοιχίσεις', color: 'bg-status-accent-bg text-status-accent' },
+  mentor_request_submitted: { label: 'Mentorship', labelEl: 'Καθοδήγηση', color: 'bg-status-success-bg text-status-success' },
+  mentor_request_accepted: { label: 'Mentorship', labelEl: 'Καθοδήγηση', color: 'bg-status-success-bg text-status-success' },
+  mentor_session_idle: { label: 'Mentorship', labelEl: 'Καθοδήγηση', color: 'bg-status-success-bg text-status-success' },
+  community_join: { label: 'Community', labelEl: 'Κοινότητα', color: 'bg-status-success-bg text-status-success' },
+  community_inactive: { label: 'Community', labelEl: 'Κοινότητα', color: 'bg-status-success-bg text-status-success' },
+  subscription_trial_ending: { label: 'Billing', labelEl: 'Χρεώσεις', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_failed_payment: { label: 'Billing', labelEl: 'Χρεώσεις', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_canceled: { label: 'Billing', labelEl: 'Χρεώσεις', color: 'bg-status-warning-bg text-status-warning' },
+  user_inactive: { label: 'Engagement', labelEl: 'Συμμετοχή', color: 'bg-status-danger-bg text-status-danger' },
+  content_reported_threshold: { label: 'Moderation', labelEl: 'Εποπτεία', color: 'bg-status-danger-bg text-status-danger' },
+  tenant_setup_incomplete: { label: 'Tenant', labelEl: 'Οργανισμός', color: 'bg-status-accent-bg text-status-accent' },
 };
 
 // ── Config toggle panel ──────────────────────────────────────────────────────
 
 type ConfigKey = keyof Omit<TenantAutomationConfigItem, 'id' | 'tenantId' | 'maxEmailsPerUserPerDay' | 'maxNotificationsPerDay' | 'quietHoursStart' | 'quietHoursEnd' | 'timezone'>;
 
-const CONFIG_TOGGLES: { key: ConfigKey; label: string; description: string; icon: React.ElementType }[] = [
-  { key: 'automationsEnabled', label: 'Automation Engine', description: 'Master switch — enable or disable all automations for this organization', icon: Zap },
-  { key: 'onboardingAutomation', label: 'Onboarding', description: 'Welcome messages, profile nudges, and setup reminders', icon: Users },
-  { key: 'matchingAutomation', label: 'Matching', description: 'Match notifications, connection follow-ups, and nudges', icon: GitMerge },
-  { key: 'mentorshipAutomation', label: 'Mentorship', description: 'Mentor request notifications and idle session reminders', icon: Bell },
-  { key: 'communityAutomation', label: 'Community', description: 'Group join welcomes and community activity notifications', icon: Users },
-  { key: 'billingAutomation', label: 'Billing', description: 'Trial reminders, payment failure notices, renewal alerts', icon: CreditCard },
-  { key: 'reEngagementAutomation', label: 'Re-engagement', description: 'Inactive user prompts (use cautiously to avoid spam)', icon: RefreshCw },
+const CONFIG_TOGGLES: { key: ConfigKey; label: string; labelEl: string; description: string; descriptionEl: string; icon: React.ElementType }[] = [
+  { key: 'automationsEnabled', label: 'Automation Engine', labelEl: 'Μηχανή αυτοματισμών', description: 'Master switch — enable or disable all automations for this organization', descriptionEl: 'Κεντρικός διακόπτης — ενεργοποιεί ή απενεργοποιεί όλους τους αυτοματισμούς του οργανισμού', icon: Zap },
+  { key: 'onboardingAutomation', label: 'Onboarding', labelEl: 'Ένταξη', description: 'Welcome messages, profile nudges, and setup reminders', descriptionEl: 'Μηνύματα καλωσορίσματος, υπενθυμίσεις προφίλ και ρύθμισης', icon: Users },
+  { key: 'matchingAutomation', label: 'Matching', labelEl: 'Αντιστοιχίσεις', description: 'Match notifications, connection follow-ups, and nudges', descriptionEl: 'Ειδοποιήσεις αντιστοιχίσεων, συνέχεια συνδέσεων και υπενθυμίσεις', icon: GitMerge },
+  { key: 'mentorshipAutomation', label: 'Mentorship', labelEl: 'Καθοδήγηση', description: 'Mentor request notifications and idle session reminders', descriptionEl: 'Ειδοποιήσεις αιτημάτων καθοδήγησης και υπενθυμίσεις αδρανών συνεδριών', icon: Bell },
+  { key: 'communityAutomation', label: 'Community', labelEl: 'Κοινότητα', description: 'Group join welcomes and community activity notifications', descriptionEl: 'Καλωσόρισμα σε κοινότητες και ειδοποιήσεις δραστηριότητας', icon: Users },
+  { key: 'billingAutomation', label: 'Billing', labelEl: 'Χρεώσεις', description: 'Trial reminders, payment failure notices, renewal alerts', descriptionEl: 'Υπενθυμίσεις δοκιμής, ειδοποιήσεις αποτυχίας πληρωμής, ανανεώσεις', icon: CreditCard },
+  { key: 'reEngagementAutomation', label: 'Re-engagement', labelEl: 'Επανενεργοποίηση', description: 'Inactive user prompts (use cautiously to avoid spam)', descriptionEl: 'Υπενθυμίσεις σε αδρανείς χρήστες (με μέτρο, για να μη γίνονται ενοχλητικές)', icon: RefreshCw },
 ];
 
 function ConfigPanel({ tenantId }: { tenantId: string }) {
@@ -89,7 +97,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
   const { success, error: toastError } = useToast();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ['tenant-automation-config', tenantId],
+    queryKey: qk('tenant', 'automation-config', tenantId),
     queryFn: () => getTenantAutomationConfig(tenantId),
     enabled: !!tenantId,
   });
@@ -97,7 +105,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
   const update = useMutation({
     mutationFn: (data: Partial<TenantAutomationConfigItem>) => upsertTenantAutomationConfig(tenantId, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tenant-automation-config', tenantId] });
+      qc.invalidateQueries({ queryKey: qk('tenant', 'automation-config', tenantId) });
       success('Automation settings saved');
     },
     onError: () => toastError('Failed to save settings'),
@@ -119,24 +127,25 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="h-4 w-4 text-primary" />
-          Automation Settings
+          <Settings className="icon-sm text-primary-accessible" />
+          <BilingualText en="Automation Settings" el="Ρυθμίσεις αυτοματισμών" compact />
         </CardTitle>
         <CardDescription className="text-xs">
-          Control which automation categories are active for your organization.
+          <BilingualText en="Control which automation categories are active for your organization." el="Ορίστε ποιες κατηγορίες αυτοματισμών είναι ενεργές για τον οργανισμό σας." wrap />
         </CardDescription>
       </CardHeader>
       <CardContent className="divide-y divide-border/40">
-        {CONFIG_TOGGLES.map(({ key, label, description, icon: Icon }) => (
+        {CONFIG_TOGGLES.map(({ key, label, labelEl, description, descriptionEl, icon: Icon }) => (
           <div key={key} className="flex items-center justify-between py-3 gap-4">
             <div className="flex items-start gap-3 min-w-0">
-              <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <Icon className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-medium">{label}</p>
-                <p className="text-xs text-muted-foreground">{description}</p>
+                <p className="text-sm font-medium"><BilingualText en={label} el={labelEl} compact wrap /></p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={description} el={descriptionEl} wrap /></p>
               </div>
             </div>
             <Switch
+              aria-label={bilingualAria(label, labelEl)}
               checked={!!(current as any)[key]}
               disabled={update.isPending || (key !== 'automationsEnabled' && !current.automationsEnabled)}
               onCheckedChange={(val) => update.mutate({ [key]: val })}
@@ -152,6 +161,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
 
 function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tenantId: string; onRefresh: () => void }) {
   const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
 
   const setStatus = useMutation({
     mutationFn: (status: 'active' | 'paused') => setAutomationRuleStatus(rule.id, status),
@@ -174,60 +184,62 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
   const cat = TRIGGER_CATEGORY[rule.triggerType];
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-medium text-sm">{rule.name}</span>
             {rule.tenantId === null && (
-              <Badge variant="outline" className="text-xs text-muted-foreground">Platform</Badge>
+              <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Platform" el="Πλατφόρμα" compact /></Badge>
             )}
             <Badge variant="secondary" className={`text-xs ${cat?.color ?? 'bg-muted text-muted-foreground'}`}>
-              {cat?.label ?? 'Other'}
+              {cat ? <BilingualText en={cat.label} el={cat.labelEl} compact /> : <BilingualText en="Other" el="Άλλο" compact />}
             </Badge>
             <Badge variant="outline" className="text-xs">
-              {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
+              {TRIGGER_LABELS[rule.triggerType]
+                ? <BilingualText en={TRIGGER_LABELS[rule.triggerType].en} el={TRIGGER_LABELS[rule.triggerType].el} compact />
+                : rule.triggerType}
             </Badge>
             {rule.status === 'active'
-              ? <Badge className="bg-emerald-100 text-emerald-700 text-xs">Active</Badge>
+              ? <Badge className="bg-status-success-bg text-status-success text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
               : rule.status === 'paused'
-              ? <Badge className="bg-amber-100 text-amber-700 text-xs">Paused</Badge>
+              ? <Badge className="bg-status-warning-bg text-status-warning text-xs"><BilingualText en="Paused" el="Σε παύση" compact /></Badge>
               : <Badge variant="outline" className="text-xs">{rule.status}</Badge>}
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Zap className="h-3 w-3" />{rule.executionCount} runs</span>
+            <span className="flex items-center gap-1"><Zap className="icon-sm" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="h-3 w-3" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="icon-sm" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
-            <Play className="h-3.5 w-3.5" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" aria-label={`Run ${rule.name} now`} onClick={() => trigger.mutate()} disabled={trigger.isPending}>
+            <Play className="icon-sm" />
           </Button>
           {rule.status === 'active' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
-              <Pause className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" aria-label={`Pause ${rule.name}`} onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
+              <Pause className="icon-sm" />
             </Button>
           ) : rule.status !== 'archived' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-emerald-600" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" aria-label={`Activate ${rule.name}`} onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
+              <Zap className="icon-sm text-status-success" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
-            <Button
+            <Button aria-label="Delete"
               variant="ghost" size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}
+              className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
+              onClick={async () => { if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) remove.mutate(); }}
               disabled={remove.isPending}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="icon-sm" />
             </Button>
           )}
         </div>
@@ -245,7 +257,7 @@ export default function TenantAutomationPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const { data: rulesData, isLoading, refetch } = useQuery({
-    queryKey: ['tenant-automation-rules', tenantId, filter],
+    queryKey: qk('automation', 'rules', 'tenant', tenantId, filter),
     queryFn: () => listAutomationRules({ status: filter === 'all' ? undefined : filter, limit: 100 }),
     enabled: !!tenantId,
     staleTime: 30_000,
@@ -258,40 +270,131 @@ export default function TenantAutomationPage() {
   const totalRuns = rules.reduce((s, r) => s + r.executionCount, 0);
   const failureRules = rules.filter(r => r.failureCount > 0).length;
 
+  // The rule actions the rows offer, reachable by the assistant with the same
+  // endpoints. setRuleStatus writes one field (`status`), so pausing and
+  // activating undo each other exactly; running a rule and deleting one have
+  // no opposite.
+  const { success: toastOk, error: toastFail } = useToast();
+  const confirm = useConfirm();
+  const ruleRows = (list: typeof rules) => rowOptions(list, (r) => r.id, (r) => r.name);
+  const noRules = rules.length === 0 ? 'No rule is listed.' : undefined;
+  const noRulesEl = rules.length === 0 ? 'Δεν εμφανίζεται κανένας κανόνας.' : undefined;
+  const statusCommand = (id: string, en: string, el: string, next: 'active' | 'paused', from: 'active' | 'paused', back: string) => ({
+    id,
+    labelEn: en,
+    labelEl: el,
+    writes: true,
+    options: ruleRows(rules.filter((r) => r.status === from)),
+    unavailableEn: noRules,
+    unavailableEl: noRulesEl,
+    undo: (value?: string) => (value ? { control: back, value } : undefined),
+    run: async (value?: string) => {
+      if (!value) return;
+      try {
+        await setAutomationRuleStatus(value, next);
+        toastOk(next === 'active' ? 'Rule activated' : 'Rule paused');
+      } catch {
+        toastFail('Failed to update rule');
+      } finally {
+        void refetch();
+      }
+    },
+  });
+  usePageControls([
+    choiceControl('automation_tab', 'Automation tab', 'Καρτέλα αυτοματισμών', [
+      { value: 'rules', en: 'Rules', el: 'Κανόνες' },
+      { value: 'settings', en: 'Settings', el: 'Ρυθμίσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('rule_filter', 'Rule status', 'Κατάσταση κανόνα', [
+      { value: 'all', en: 'All', el: 'Όλοι' },
+      { value: 'active', en: 'Active', el: 'Ενεργοί' },
+      { value: 'paused', en: 'Paused', el: 'Σε παύση' },
+    ], filter, (v) => setFilter(v as typeof filter)),
+    statusCommand('pause_rule', 'Pause a rule', 'Παύση κανόνα', 'paused', 'active', 'activate_rule'),
+    statusCommand('activate_rule', 'Activate a rule', 'Ενεργοποίηση κανόνα', 'active', 'paused', 'pause_rule'),
+    {
+      id: 'run_rule',
+      labelEn: 'Run a rule now',
+      labelEl: 'Εκτέλεση κανόνα τώρα',
+      writes: true,
+      options: ruleRows(rules),
+      unavailableEn: noRules,
+      unavailableEl: noRulesEl,
+      run: async (value) => {
+        if (!value) return;
+        try { await triggerAutomationRule(value); toastOk('Rule triggered manually'); } catch { toastFail('Failed to trigger rule'); }
+      },
+    },
+    {
+      id: 'delete_rule',
+      labelEn: 'Delete a rule',
+      labelEl: 'Διαγραφή κανόνα',
+      writes: true,
+      options: ruleRows(rules.filter((r) => r.tenantId !== null)),
+      unavailableEn: rules.every((r) => r.tenantId === null) ? 'Only platform rules are listed; they cannot be deleted here.' : undefined,
+      unavailableEl: rules.every((r) => r.tenantId === null) ? 'Εμφανίζονται μόνο κανόνες πλατφόρμας· δεν διαγράφονται από εδώ.' : undefined,
+      run: async (value) => {
+        const rule = rules.find((r) => r.id === value);
+        if (!rule) return;
+        if (!(await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name)))) return;
+        try { await deleteAutomationRule(rule.id); toastOk('Rule deleted'); } catch { toastFail('Failed to delete rule'); } finally { void refetch(); }
+      },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'rules',
+      labelEn: 'Automation rules',
+      labelEl: 'Κανόνες αυτοματισμού',
+      rows: isLoading ? undefined : rules.map((r) => `${r.name} · ${r.status} · ${TRIGGER_LABELS[r.triggerType]?.en ?? r.triggerType} · ${r.executionCount} runs${r.failureCount ? ` · ${r.failureCount} failures` : ''}${r.tenantId === null ? ' · platform' : ''}`),
+      total: rules.length,
+    },
+  ]);
+
   if (!tenantId) {
+    // This was a dead end: an icon and one sentence, with nothing to act on and
+    // no explanation of why. It now uses the same EmptyState the rest of the app
+    // does, says what automations are for, and offers a way out.
     return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center py-20">
-          <Workflow className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">No organization context found.</p>
-        </div>
+      <AppShell title="Automation">
+        <EmptyState
+          title="No organization selected"
+          description="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up."
+          illustration="rocket"
+          askAiPrompt="I opened organization automations without an organization selected. Help me pick or create one and explain what automation rules I should turn on first."
+          action={
+            <>
+              <Button asChild>
+                <Link href="/tenant/dashboard"><BilingualText en="Choose an organization" el="Επιλέξτε οργανισμό" compact /></Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/org/dashboard"><BilingualText en="Browse organizations" el="Περιήγηση οργανισμών" compact /></Link>
+              </Button>
+            </>
+          }
+        />
       </AppShell>
     );
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Automation</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Event-driven workflows — triggers, conditions, actions for your organization.
-            </p>
-          </div>
-        </div>
+    <AppShell
+      title="Automation"
+      description="Event-driven workflows: triggers fire when events happen, conditions filter, actions notify or update data."
+      descriptionEl="Ροές εργασιών βάσει συμβάντων: τα εναύσματα ενεργοποιούνται όταν συμβαίνει κάτι, οι συνθήκες φιλτράρουν και οι ενέργειες ειδοποιούν ή ενημερώνουν δεδομένα."
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Active Rules', value: activeCount, color: 'text-emerald-600' },
-            { label: 'Total Runs', value: totalRuns, color: 'text-blue-600' },
-            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-amber-600' : 'text-muted-foreground' },
+            { label: 'Active Rules', labelEl: 'Ενεργοί κανόνες', value: activeCount, color: 'text-status-success' },
+            { label: 'Total Runs', labelEl: 'Σύνολο εκτελέσεων', value: totalRuns, color: 'text-status-info' },
+            { label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
-            <Card key={s.label} className="border-border/60">
+            <Card key={s.label} className="border-border">
               <CardContent className="py-3 px-4">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
                 <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
               </CardContent>
             </Card>
@@ -299,16 +402,18 @@ export default function TenantAutomationPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-border/50 gap-1">
+        <div className="flex border-b border-border gap-1">
           {(['rules', 'settings'] as const).map(tab => (
             <button
               key={tab}
+              type="button"
+              aria-pressed={activeTab === tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                activeTab === tab ? 'border-primary text-primary-accessible' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tab === 'rules' ? 'Rules' : 'Settings'}
+              {tab === 'rules' ? <BilingualText en="Rules" el="Κανόνες" compact /> : <BilingualText en="Settings" el="Ρυθμίσεις" compact />}
             </button>
           ))}
         </div>
@@ -321,12 +426,18 @@ export default function TenantAutomationPage() {
               {(['all', 'active', 'paused'] as const).map(f => (
                 <button
                   key={f}
+                  type="button"
+                  aria-pressed={filter === f}
                   onClick={() => setFilter(f)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     filter === f ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
                   }`}
                 >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f === 'all'
+                    ? <BilingualText en="All" el="Όλοι" compact />
+                    : f === 'active'
+                      ? <BilingualText en="Active" el="Ενεργοί" compact />
+                      : <BilingualText en="Paused" el="Σε παύση" compact />}
                 </button>
               ))}
             </div>
@@ -337,13 +448,7 @@ export default function TenantAutomationPage() {
               </div>
             )}
 
-            {!isLoading && rules.length === 0 && (
-              <div className="py-16 text-center rounded-xl border border-dashed border-border/60">
-                <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="font-medium">No automation rules yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Platform-wide rules will appear here once the automation engine seeds default rules.</p>
-              </div>
-            )}
+            {!isLoading && rules.length === 0 && <EmptyTenantAutomations />}
 
             {rules.map(rule => (
               <RuleRow key={rule.id} rule={rule} tenantId={tenantId} onRefresh={refetch} />

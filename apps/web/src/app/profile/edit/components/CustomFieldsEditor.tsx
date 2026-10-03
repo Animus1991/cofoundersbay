@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface CustomField {
   id: string;
@@ -84,14 +85,14 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold">Custom Fields</h3>
+          <h3 className="font-semibold"><BilingualText en="Custom Fields" el="Προσαρμοσμένα πεδία" compact /></h3>
           <p className="text-sm text-muted-foreground">
-            Add custom information to your profile
+            <BilingualText en="Add custom information to your profile" el="Προσθέστε δικές σας πληροφορίες στο προφίλ" wrap />
           </p>
         </div>
         <Button onClick={addField} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Field
+          <Plus className="icon-sm mr-2" />
+          <BilingualText en="Add Field" el="Προσθήκη πεδίου" compact />
         </Button>
       </div>
 
@@ -114,20 +115,20 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="cursor-move mt-2">
-                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                    <GripVertical className="icon-md text-muted-foreground" />
                   </div>
 
                   <div className="flex-1 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label>Field Type</Label>
+                        <Label><BilingualText en="Field Type" el="Τύπος πεδίου" compact /></Label>
                         <Select
                           value={field.type}
                           onValueChange={(value) =>
                             updateField(field.id, { type: value as CustomField['type'] })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger aria-label="Field Type">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -144,7 +145,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Field Label</Label>
+                        <Label><BilingualText en="Field Label" el="Ετικέτα πεδίου" compact /></Label>
                         <Input
                           placeholder="e.g., Company, Portfolio, etc."
                           value={field.label}
@@ -156,9 +157,9 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Value</Label>
+                      <Label><BilingualText en="Value" el="Τιμή" compact /></Label>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Icon className="icon-sm text-muted-foreground" />
                         <Input
                           type={field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'}
                           placeholder={
@@ -178,13 +179,13 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     </div>
                   </div>
 
-                  <Button
+                  <Button aria-label="Remove field"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeField(field.id)}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive-accessible hover:text-destructive-accessible"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               </CardContent>
@@ -195,14 +196,14 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
         {fields.length === 0 && (
           <Card className="border-dashed">
             <CardContent className="py-12 text-center">
-              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No custom fields yet</h3>
+              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
+              <h3 className="text-lg font-semibold mb-2"><BilingualText en="No custom fields yet" el="Δεν υπάρχουν προσαρμοσμένα πεδία ακόμα" compact /></h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Add custom fields to showcase additional information
+                <BilingualText en="Add custom fields to showcase additional information" el="Προσθέστε πεδία για επιπλέον πληροφορίες" wrap />
               </p>
               <Button onClick={addField} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Field
+                <Plus className="icon-sm mr-2" />
+                <BilingualText en="Add Your First Field" el="Προσθέστε το πρώτο πεδίο" compact />
               </Button>
             </CardContent>
           </Card>

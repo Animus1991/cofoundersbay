@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TenantMemberRole } from '@prisma/client';
+import { TenantMemberRole, Prisma } from '@prisma/client';
 
 export type TenantCreateInput = {
   slug: string;
@@ -76,7 +76,11 @@ export class TenantService {
   async findById(id: string) {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id },
-      include: { branding: true, ssoConfig: { include: { identityProvider: true } } },
+      // This method backs a public route and must return only public tenant
+      // presentation data. IdentityProvider contains oidcClientSecret and
+      // certificate material; SSO configuration is exposed only by the
+      // authenticated SSO administration controller.
+      include: { branding: true },
     });
     if (!tenant) throw new NotFoundException(`Tenant "${id}" not found`);
     return tenant;
@@ -102,7 +106,16 @@ export class TenantService {
     });
   }
 
-  async update(id: string, data: TenantUpdateInput) {
+  /**
+   * `settings` is a free-form preferences object the settings screen owns:
+   * timezone, language, currency and the membership and notification toggles.
+   * Typed as Prisma's own JSON input so it reaches the column without a cast
+   * at the call site.
+   */
+  async update(
+    id: string,
+    data: TenantUpdateInput & { settings?: Prisma.InputJsonValue },
+  ) {
     await this.prisma.tenant.findUniqueOrThrow({ where: { id } });
     if (data.slug) {
       const existing = await this.prisma.tenant.findUnique({ where: { slug: data.slug } });

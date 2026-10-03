@@ -432,6 +432,12 @@ model User {
   savedProfiles SavedProfile[] @relation("SavedByUser")
   savedByUsers  SavedProfile[] @relation("UserSaved")
 
+  // Investor pipeline — one row per startup an investor tracks, at whatever
+  // stage. The watchlist, the pipeline board and the portfolio are three
+  // filters over the same rows, not three tables.
+  investorDeals   InvestorDeal[] @relation("DealsByInvestor")
+  trackedByInvestors InvestorDeal[] @relation("DealsOnFounder")
+
   // Endorsements
   endorsementsGiven    Endorsement[] @relation("EndorsementsGiven")
   endorsementsReceived Endorsement[] @relation("EndorsementsReceived")
@@ -1343,6 +1349,12 @@ model Tenant {
 
   @@index([slug])
   @@index([status])
+  /// Workspace preferences the settings screen writes: timezone, default
+  /// language, currency and the membership and notification toggles. A single
+  /// nullable column rather than eight, because they are read and written
+  /// together and none of them is ever queried on.
+  settings         Json?
+
 }
 
 model TenantBranding {
@@ -2314,6 +2326,94 @@ model SavedProfile {
   @@index([savedById])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ── Investor pipeline ──────────────────────────────────────────────────────────
+
+/// One startup an investor is tracking.
+///
+/// `/investor/watchlist`, `/investor/pipeline` and `/investor/portfolio` were
+/// three screens with three unrelated shapes of invented data. They are three
+/// views of this one row: watching is `pipelineStage = discovered`, the board
+/// groups by `pipelineStage`, and the portfolio is `pipelineStage = invested`.
+/// Modelling it once is what keeps them agreeing — a deal moved to invested on
+/// the board appears in the portfolio because it is the same row.
+model InvestorDeal {
+  id         String @id @default(uuid())
+  investorId String
+  investor   User   @relation("DealsByInvestor", fields: [investorId], references: [id], onDelete: Cascade)
+
+  /// The founder on the platform, when the startup has one. Null for a deal
+  /// the investor added by hand about a company that is not a member.
+  founderId String?
+  founder   User?   @relation("DealsOnFounder", fields: [founderId], references: [id], onDelete: SetNull)
+
+  /// Shown as the startup's name. Kept on the row rather than read through
+  /// `founder` so a deal survives the founder leaving, and so an off-platform
+  /// company can be tracked at all.
+  name      String
+  tagline   String?
+  industry  String?
+  location  String?
+  website   String?
+  logoUrl   String?
+  /// The company's own stage: idea, pre_seed, seed, series_a…
+  companyStage String?
+  teamSize  Int?
+
+  /// Where it sits on the investor's board.
+  pipelineStage String @default("discovered") // discovered | reviewing | meeting | due_diligence | negotiating | invested | passed
+
+  starred       Boolean @default(false)
+  alertsEnabled Boolean @default(true)
+  /// The investor's private note. Never shown to the founder.
+  notes         String?
+  tags          String[] @default([])
+
+  /// What they are raising, in minor units of `currency`, so no float ever
+  /// touches money.
+  askAmountCents Int?
+  /// What was actually put in, and what it is currently held at. Both null
+  /// until `pipelineStage` reaches invested.
+  investedCents  Int?
+  currentValueCents Int?
+  currency       String @default("EUR")
+  investedAt     DateTime?
+  /// active | exited | written_off — meaningful only once invested.
+  status         String @default("active")
+
+  events InvestorDealEvent[]
+
+  lastActivityAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([investorId, name])
+  @@index([investorId, pipelineStage])
+  @@index([investorId, starred])
+  @@index([founderId])
+  @@index([lastActivityAt])
+}
+
+/// What happened on a deal, in order. Feeds the watchlist activity column and
+/// the deal's own history, so "last activity" is a fact with a row behind it
+/// rather than a string like "2 days ago" written into the page.
+model InvestorDealEvent {
+  id     String       @id @default(uuid())
+  dealId String
+  deal   InvestorDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  /// milestone | fundraise | team | deck | update | stage_change | note
+  type    String
+  title   String
+  body    String?
+  /// Set on stage_change so the history reads as a trail, not a list.
+  fromStage String?
+  toStage   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([dealId, createdAt])
 }
 
 // ── Endorsements ───────────────────────────────────────────────────────────────
@@ -5465,6 +5565,7 @@ model UserFollow {
 enum DigestFrequency {
   daily
   weekly
+  monthly
   never
 }
 

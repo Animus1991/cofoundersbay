@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { apiRequest } from '@/lib/api';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 // Role types matching backend
 export type UserRoleType =
@@ -98,6 +99,34 @@ const EMPTY_ROLE_STATE: DashboardContextResponse = {
   tenants: [],
 };
 
+/**
+ * Fixed role state for the preview demo. Defined once at module scope so its
+ * identity is stable across calls — see the bail-out in refreshRoles below.
+ */
+const PREVIEW_DEMO_ROLE_STATE: RoleContextState = {
+  primaryRole: 'existing_founder',
+  allRoles: [
+    {
+      id: 'preview-founder',
+      roleType: 'existing_founder',
+      scope: 'global',
+      isPrimary: true,
+      isVerified: true,
+    },
+  ],
+  permissions: ['*'],
+  dashboard: {
+    defaultRoute: '/dashboard/founder',
+    dashboardWidgets: [],
+    sidebarItems: [],
+    features: [],
+  },
+  organizations: [],
+  tenants: [],
+  isLoading: false,
+  error: null,
+};
+
 export function RoleProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { hasSession, mounted } = useSession();
@@ -116,6 +145,17 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isLoading: false,
         error: null,
       });
+      return;
+    }
+
+    if (isPreviewDemo()) {
+      // Bail out when the demo state is already applied. This branch is fixed
+      // data, but it used to build a fresh object (with fresh nested arrays) on
+      // every call, which React can never treat as equal — so each call re-rendered
+      // every useRole() consumer, SideNav included, to arrive at identical values.
+      setState((prev) =>
+        prev === PREVIEW_DEMO_ROLE_STATE ? prev : PREVIEW_DEMO_ROLE_STATE,
+      );
       return;
     }
 
@@ -235,6 +275,10 @@ export function useRole() {
     throw new Error('useRole must be used within a RoleProvider');
   }
   return context;
+}
+
+export function useRoleOptional() {
+  return useContext(RoleContext);
 }
 
 // HOC for role-based access control

@@ -23,18 +23,18 @@ import {
 
 function statusIcon(status: DiffStatus) {
   switch (status) {
-    case 'added':   return <Plus className="h-3 w-3 text-green-600" />;
-    case 'removed': return <Minus className="h-3 w-3 text-red-500" />;
-    case 'changed': return <Edit3 className="h-3 w-3 text-yellow-600" />;
-    default:        return <CheckCircle2 className="h-3 w-3 text-muted-foreground/40" />;
+    case 'added':   return <Plus className="icon-sm text-status-success" />;
+    case 'removed': return <Minus className="icon-sm text-status-danger" />;
+    case 'changed': return <Edit3 className="icon-sm text-status-warning" />;
+    default:        return <CheckCircle2 className="icon-sm text-muted-foreground/40" />;
   }
 }
 
 function statusLineClass(status: DiffStatus) {
   switch (status) {
-    case 'added':   return 'bg-green-50 border-l-2 border-green-400 dark:bg-green-950/20';
-    case 'removed': return 'bg-red-50 border-l-2 border-red-400 dark:bg-red-950/20 line-through opacity-70';
-    case 'changed': return 'bg-yellow-50 border-l-2 border-yellow-400 dark:bg-yellow-950/20';
+    case 'added':   return 'bg-status-success-bg border-l-2 border-status-success-border ';
+    case 'removed': return 'bg-status-danger-bg border-l-2 border-status-danger-border line-through opacity-70';
+    case 'changed': return 'bg-status-warning-bg border-l-2 border-status-warning-border ';
     default:        return '';
   }
 }
@@ -42,9 +42,9 @@ function statusLineClass(status: DiffStatus) {
 function DiffBadge({ status, count }: { status: DiffStatus; count: number }) {
   if (count === 0) return null;
   const cls: Record<DiffStatus, string> = {
-    added:     'bg-green-100 text-green-700 border-green-200',
-    removed:   'bg-red-100 text-red-700 border-red-200',
-    changed:   'bg-yellow-100 text-yellow-700 border-yellow-200',
+    added:     'bg-status-success-bg text-status-success border-status-success-border',
+    removed:   'bg-status-danger-bg text-status-danger border-status-danger-border',
+    changed:   'bg-status-warning-bg text-status-warning border-status-warning-border',
     unchanged: 'bg-muted text-muted-foreground',
   };
   const labels: Record<DiffStatus, string> = {
@@ -79,7 +79,7 @@ function RichTextDiffView({ diff }: { diff: RichTextDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-green-500" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         No differences found — content is identical.
       </div>
     );
@@ -103,8 +103,8 @@ function RichTextDiffView({ diff }: { diff: RichTextDiffResult }) {
           <div key={i} className={cn('px-3 py-0.5 rounded-sm', statusLineClass(block.status))}>
             {block.status === 'changed' ? (
               <div className="space-y-0.5">
-                <div className="line-through opacity-70 text-red-700 dark:text-red-400">{block.before}</div>
-                <div className="text-green-700 dark:text-green-400">{block.after}</div>
+                <div className="line-through opacity-70 text-status-danger ">{block.before}</div>
+                <div className="text-status-success ">{block.after}</div>
               </div>
             ) : (
               <span>{block.before}</span>
@@ -134,9 +134,9 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
     <div
       className={cn(
         'px-3 py-2 rounded-md text-sm',
-        field.status === 'added'   && 'bg-green-50 dark:bg-green-950/20',
-        field.status === 'removed' && 'bg-red-50 dark:bg-red-950/20',
-        field.status === 'changed' && 'bg-yellow-50 dark:bg-yellow-950/20',
+        field.status === 'added'   && 'bg-status-success-bg ',
+        field.status === 'removed' && 'bg-status-danger-bg ',
+        field.status === 'changed' && 'bg-status-warning-bg ',
       )}
     >
       <div className="flex items-center gap-2 mb-1">
@@ -149,7 +149,7 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
             variant="outline"
             className={cn(
               'text-xs',
-              field.numericDelta > 0 ? 'text-green-600' : 'text-red-600',
+              field.numericDelta > 0 ? 'text-status-success' : 'text-status-danger',
             )}
           >
             {field.numericDelta > 0 ? '+' : ''}{field.numericDelta}%
@@ -158,18 +158,18 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
       </div>
 
       {field.status === 'added' && (
-        <div className="text-green-700 dark:text-green-400">{renderValue(field.after)}</div>
+        <div className="text-status-success ">{renderValue(field.after)}</div>
       )}
       {field.status === 'removed' && (
-        <div className="text-red-600 dark:text-red-400 line-through">{renderValue(field.before)}</div>
+        <div className="text-status-danger line-through">{renderValue(field.before)}</div>
       )}
       {field.status === 'changed' && (
         <div className="flex items-start gap-2">
-          <div className="flex-1 text-red-600 dark:text-red-400 line-through opacity-80">
+          <div className="flex-1 text-status-danger line-through opacity-80">
             {renderValue(field.before)}
           </div>
-          <MoveRight className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
-          <div className="flex-1 text-green-700 dark:text-green-400">
+          <MoveRight className="icon-sm text-muted-foreground shrink-0 mt-0.5" />
+          <div className="flex-1 text-status-success ">
             {renderValue(field.after)}
           </div>
         </div>
@@ -177,7 +177,7 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
 
       {/* Sub-diffs */}
       {field.subDiffs && field.subDiffs.length > 0 && (
-        <div className="mt-2 ml-4 space-y-1 border-l-2 border-border/40 pl-2">
+        <div className="mt-2 ml-4 space-y-1 border-l-2 border-border pl-2">
           {field.subDiffs.map(sub => (
             <StructuredFieldRow key={sub.field} field={sub} />
           ))}
@@ -196,7 +196,7 @@ function StructuredDiffView({ diff }: { diff: StructuredDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-green-500" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         No field differences found.
       </div>
     );
@@ -220,7 +220,7 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-green-500" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         Canvas is identical — no node or connector changes.
       </div>
     );
@@ -230,10 +230,10 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
     <div className="space-y-2">
       {(connectorsAdded > 0 || connectorsRemoved > 0) && (
         <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-md text-xs text-muted-foreground">
-          <GitBranch className="h-3.5 w-3.5" />
-          Connectors: {connectorsAdded > 0 && <span className="text-green-600">+{connectorsAdded}</span>}
+          <GitBranch className="icon-sm" />
+          Connectors: {connectorsAdded > 0 && <span className="text-status-success">+{connectorsAdded}</span>}
           {connectorsAdded > 0 && connectorsRemoved > 0 && ' / '}
-          {connectorsRemoved > 0 && <span className="text-red-500">-{connectorsRemoved}</span>}
+          {connectorsRemoved > 0 && <span className="text-status-danger">-{connectorsRemoved}</span>}
         </div>
       )}
       {changedNodes.map(node => (
@@ -241,9 +241,9 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
           key={node.nodeId}
           className={cn(
             'px-3 py-2 rounded-md border text-sm',
-            node.status === 'added'   && 'bg-green-50 border-green-200 dark:bg-green-950/20',
-            node.status === 'removed' && 'bg-red-50 border-red-200 dark:bg-red-950/20',
-            node.status === 'changed' && 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20',
+            node.status === 'added'   && 'bg-status-success-bg border-status-success-border ',
+            node.status === 'removed' && 'bg-status-danger-bg border-status-danger-border ',
+            node.status === 'changed' && 'bg-status-warning-bg border-status-warning-border ',
           )}
         >
           <div className="flex items-center gap-2 mb-1">
@@ -253,10 +253,10 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
           </div>
 
           {node.status === 'added' && (
-            <p className="text-xs text-green-700">New node added to canvas</p>
+            <p className="text-xs text-status-success">New node added to canvas</p>
           )}
           {node.status === 'removed' && (
-            <p className="text-xs text-red-600">Node removed from canvas</p>
+            <p className="text-xs text-status-danger">Node removed from canvas</p>
           )}
           {node.status === 'changed' && (
             <div className="text-xs text-muted-foreground space-y-0.5">
@@ -320,9 +320,9 @@ export function ArtifactDiffView({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {detectedKind === 'rich-text' && <FileText className="h-4 w-4 text-muted-foreground" />}
-          {detectedKind === 'structured' && <Layers className="h-4 w-4 text-muted-foreground" />}
-          {detectedKind === 'canvas' && <GitBranch className="h-4 w-4 text-muted-foreground" />}
+          {detectedKind === 'rich-text' && <FileText className="icon-sm text-muted-foreground" />}
+          {detectedKind === 'structured' && <Layers className="icon-sm text-muted-foreground" />}
+          {detectedKind === 'canvas' && <GitBranch className="icon-sm text-muted-foreground" />}
           <span className="text-sm font-medium">{title ?? 'Changes'}</span>
         </div>
         <div className="flex items-center gap-1.5">

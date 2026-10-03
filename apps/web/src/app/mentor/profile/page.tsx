@@ -3,20 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  User,
-  Star,
-  BadgeCheck,
-  Clock,
-  Globe,
-  DollarSign,
-  Video,
-  Users,
-  Edit,
-  Save,
-  RefreshCw,
-  Plus,
-  X,
-  ChevronDown,
+  Star, BadgeCheck, Clock, Globe, DollarSign, Video, Users, Edit, Save, RefreshCw, Plus, X, ChevronDown,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -39,7 +26,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile } from '@/lib/api';
+import { getMeProfile, getMentorDashboardStats } from '@/lib/api';
+import { qk, queryKeys } from '@/lib/query-keys';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { mentorDemoRating } from '@/lib/demo/mentor-world';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
@@ -78,10 +70,24 @@ export default function MentorProfilePage() {
   const [tagInput, setTagInput] = useState('');
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
+
+  // The header said "4.9 (12 reviews)" for every mentor. It reads the rating
+  // the mentor dashboard reads: the stats endpoint, or in the showcase the
+  // reviews /mentor/reviews lists.
+  const { showDemoData } = useDemoData();
+  const { data: stats } = useQuery({
+    queryKey: qk('mentorships', 'dashboard', 'mentor'),
+    queryFn: getMentorDashboardStats,
+    enabled: hasSession && mounted,
+    retry: 0,
+  });
+  const demoRating = showDemoData ? mentorDemoRating() : null;
+  const ratingValue = stats?.averageRating ?? demoRating?.average ?? null;
+  const ratingNote = demoRating ? ` (${demoRating.count} reviews)` : '';
 
   const displayName = profile?.profile?.displayName ?? 'Mentor';
   const avatarUrl = profile?.profile?.avatarUrl;
@@ -99,8 +105,8 @@ export default function MentorProfilePage() {
 
   if (!mounted) {
     return (
-      <AppShell>
-        <div className="py-6 space-y-6">
+      <AppShell showHelp>
+        <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
         </div>
@@ -109,48 +115,42 @@ export default function MentorProfilePage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <User className="h-6 w-6 text-primary" />
-              Mentor Profile
-            </h1>
-            <p className="text-muted-foreground">How mentees see you on the platform</p>
-          </div>
+    <AppShell showHelp
+      actions={
+        <>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="space-y-6">
         {/* Preview Card */}
-        <Card className="border-primary/20 bg-primary/2">
+        <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/30">
+              <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/30">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="h-4 w-4 text-primary" />
-                  <Badge variant="secondary" className="text-xs">Mentor</Badge>
+                  <BadgeCheck className="icon-sm text-primary-accessible" />
+                  <Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your headline below...'}
                 </p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-400" /> 4.9 (12 reviews)</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {sessionDuration} min sessions</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {hoursPerWeek}h/week</span>
-                  <span className={cn('flex items-center gap-1', isFree ? 'text-green-500' : '')}>
-                    <DollarSign className="h-3 w-3" />
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {ratingValue != null ? `${ratingValue.toFixed(1)}${ratingNote}` : 'No reviews yet'}</span>
+                  <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
+                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
+                  <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
+                    <DollarSign className="icon-sm" />
                     {isFree ? 'Free' : `$${hourlyRate}/hr`}
                   </span>
                 </div>
@@ -160,20 +160,21 @@ export default function MentorProfilePage() {
         </Card>
 
         <Tabs defaultValue="basics">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basics">Basics</TabsTrigger>
-            <TabsTrigger value="expertise">Expertise</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing & Formats</TabsTrigger>
+          <TabsList className="w-full sm:grid sm:grid-cols-3">
+            <TabsTrigger value="basics"><BilingualText en="Basics" el="Βασικά" compact /></TabsTrigger>
+            <TabsTrigger value="expertise"><BilingualText en="Expertise" el="Εξειδίκευση" compact /></TabsTrigger>
+            <TabsTrigger value="pricing"><BilingualText en="Pricing & Formats" el="Τιμές & μορφές" compact /></TabsTrigger>
           </TabsList>
 
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">About You</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="About You" el="Σχετικά με εσάς" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Headline</Label>
+                  <Label htmlFor="mentor-headline"><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
+                    id="mentor-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
                     placeholder="e.g. Serial founder & GTM advisor | 2x exits"
@@ -182,20 +183,21 @@ export default function MentorProfilePage() {
                   <p className="text-xs text-muted-foreground">{headline.length}/120 chars</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Mentoring Bio</Label>
+                  <Label htmlFor="mentor-bio"><BilingualText en="Mentoring Bio" el="Βιογραφικό καθοδήγησης" compact /></Label>
                   <Textarea
+                    id="mentor-bio"
                     value={bio}
                     onChange={e => setBio(e.target.value)}
-                    placeholder="Describe your mentoring style, what you offer, and what kinds of founders you work best with..."
+                    placeholder={bilingualInline("Describe your mentoring style, what you offer, and what kinds of founders you work best with…", "Περιγράψτε το στυλ καθοδήγησής σας, τι προσφέρετε και με ποιους ιδρυτές δουλεύετε καλύτερα…")}
                     rows={5}
                     className="resize-none"
                   />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Years of Experience</Label>
+                    <Label><BilingualText en="Years of Experience" el="Χρόνια εμπειρίας" compact /></Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Years of Experience"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -204,9 +206,9 @@ export default function MentorProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Hours Available / Week</Label>
+                    <Label><BilingualText en="Hours Available / Week" el="Διαθέσιμες ώρες / εβδομάδα" compact /></Label>
                     <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '8', '10', '15', '20'].map(v => (
                           <SelectItem key={v} value={v}>{v}h/week</SelectItem>
@@ -217,10 +219,10 @@ export default function MentorProfilePage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Accepting New Mentees</p>
-                    <p className="text-xs text-muted-foreground">Toggle visibility in mentee search</p>
+                    <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους μαθητευόμενους" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση μαθητευόμενων" wrap /></p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Mentees" />
                 </div>
               </CardContent>
             </Card>
@@ -229,7 +231,7 @@ export default function MentorProfilePage() {
           {/* Expertise */}
           <TabsContent value="expertise" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Industries</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries" el="Κλάδοι" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -251,7 +253,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Startup Stages</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -273,7 +275,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Expertise Areas</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Expertise Areas" el="Πεδία εξειδίκευσης" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {EXPERTISE_AREAS.map(area => (
@@ -298,7 +300,7 @@ export default function MentorProfilePage() {
           {/* Pricing & Formats */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Session Formats</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Session Formats" el="Μορφές συνεδριών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {[
@@ -313,7 +315,7 @@ export default function MentorProfilePage() {
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
                         sessionFormats.includes(f.value)
                           ? 'border-primary bg-primary/5'
-                          : 'hover:border-border/80'
+                          : 'hover:border-border'
                       )}
                     >
                       <div>
@@ -331,18 +333,18 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Pricing</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Free Mentoring</p>
-                    <p className="text-xs text-muted-foreground">Offer sessions at no cost</p>
+                    <p className="text-sm font-medium"><BilingualText en="Free Mentoring" el="Δωρεάν καθοδήγηση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Offer sessions at no cost" el="Συνεδρίες χωρίς χρέωση" compact /></p>
                   </div>
-                  <Switch checked={isFree} onCheckedChange={setIsFree} />
+                  <Switch checked={isFree} onCheckedChange={setIsFree} aria-label="Free Mentoring" />
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
-                    <Label>Hourly Rate (USD)</Label>
+                    <Label><BilingualText en="Hourly Rate (USD)" el="Ωριαία αμοιβή (USD)" compact /></Label>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">$</span>
                       <Input
@@ -358,9 +360,9 @@ export default function MentorProfilePage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label>Default Session Duration</Label>
+                  <Label><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                   <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                    <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {[15, 30, 45, 60, 90, 120].map(d => (
                         <SelectItem key={d} value={String(d)}>

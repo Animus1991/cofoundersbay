@@ -3,16 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Briefcase,
-  Save,
-  RefreshCw,
-  BadgeCheck,
-  Globe,
-  DollarSign,
-  Star,
-  Building2,
-  Users,
-  TrendingUp,
+  Save, RefreshCw, BadgeCheck, Globe, DollarSign, Star, Building2, Users, TrendingUp,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -35,7 +26,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile } from '@/lib/api';
+import { getMeProfile, getProviderSummary } from '@/lib/api';
+import { qk, queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
@@ -82,9 +76,18 @@ export default function ProviderProfilePage() {
   const [selectedStages, setSelectedStages] = useState<string[]>(['Seed', 'Series A']);
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
+  });
+
+  // The header said "4.8 (8 reviews)" for every provider; it reads the rating
+  // the provider dashboard reads.
+  const { data: summary } = useQuery({
+    queryKey: qk('provider', 'summary'),
+    queryFn: getProviderSummary,
+    enabled: hasSession && mounted,
+    retry: 0,
   });
 
   const displayName = profile?.profile?.displayName ?? 'Provider';
@@ -104,7 +107,7 @@ export default function ProviderProfilePage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="py-6 space-y-6">
+        <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-48 w-full" />
         </div>
@@ -115,48 +118,42 @@ export default function ProviderProfilePage() {
   const serviceTypeLabel = SERVICE_TYPES.find(s => s.value === serviceType)?.label ?? serviceType;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Briefcase className="h-6 w-6 text-primary" />
-              Service Provider Profile
-            </h1>
-            <p className="text-muted-foreground">How startups discover your services</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
-        </div>
-
+        </>
+      }
+    >
+      <div className="space-y-6">
         {/* Preview Card */}
-        <Card className="border-primary/20">
+        <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/20">
+              <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
-                  <BadgeCheck className="h-4 w-4 text-primary" />
+                  <BadgeCheck className="icon-sm text-primary-accessible" />
                   <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your service headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-400" /> 4.8 (8 reviews)</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {clientsServed || '?'} clients</span>
-                  <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {yearsInBusiness}y in business</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {summary?.avgRating != null ? `${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)` : 'No reviews yet'}</span>
+                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {clientsServed || '?'} clients</span>
+                  <span className="flex items-center gap-1"><TrendingUp className="icon-sm" /> {yearsInBusiness}y in business</span>
                   {companyWebsite && (
-                    <span className="flex items-center gap-1"><Globe className="h-3 w-3" /> {companyWebsite}</span>
+                    <span className="flex items-center gap-1"><Globe className="icon-sm" /> {companyWebsite}</span>
                   )}
                 </div>
               </div>
@@ -165,31 +162,31 @@ export default function ProviderProfilePage() {
         </Card>
 
         <Tabs defaultValue="basics">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basics">Basics</TabsTrigger>
-            <TabsTrigger value="targeting">Targeting</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
+          <TabsList className="w-full sm:grid sm:grid-cols-3">
+            <TabsTrigger value="basics"><BilingualText en="Basics" el="Βασικά" compact /></TabsTrigger>
+            <TabsTrigger value="targeting"><BilingualText en="Targeting" el="Στόχευση" compact /></TabsTrigger>
+            <TabsTrigger value="pricing"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></TabsTrigger>
           </TabsList>
 
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Company Info</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Company Info" el="Στοιχεία εταιρείας" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Company Name</Label>
-                    <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
+                    <Label htmlFor="provider-company-name"><BilingualText en="Company Name" el="Επωνυμία" compact /></Label>
+                    <Input id="provider-company-name" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
                   </div>
                   <div className="space-y-2">
-                    <Label>Website</Label>
-                    <Input value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} placeholder="https://acmelegal.com" />
+                    <Label htmlFor="provider-website"><BilingualText en="Website" el="Ιστότοπος" compact /></Label>
+                    <Input id="provider-website" value={companyWebsite} onChange={e => setCompanyWebsite(e.target.value)} placeholder="https://acmelegal.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Service Type</Label>
+                  <Label><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
                   <Select value={serviceType} onValueChange={setServiceType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Service Type"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SERVICE_TYPES.map(s => (
                         <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -198,8 +195,9 @@ export default function ProviderProfilePage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Headline</Label>
+                  <Label htmlFor="provider-headline"><BilingualText en="Headline" el="Τίτλος" compact /></Label>
                   <Input
+                    id="provider-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
                     placeholder="e.g. Startup-focused legal services — term sheets, IP, incorporation"
@@ -207,20 +205,21 @@ export default function ProviderProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Description</Label>
+                  <Label htmlFor="provider-description"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
                   <Textarea
+                    id="provider-description"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Describe your services, your process, and what makes you different..."
+                    placeholder={bilingualInline("Describe your services, your process, and what makes you different…", "Περιγράψτε τις υπηρεσίες, τη μέθοδό σας και τι σας ξεχωρίζει…")}
                     rows={5}
                     className="resize-none"
                   />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Years in Business</Label>
+                    <Label><BilingualText en="Years in Business" el="Χρόνια λειτουργίας" compact /></Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger aria-label="Years in Business"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -229,8 +228,9 @@ export default function ProviderProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Clients Served</Label>
+                    <Label htmlFor="provider-clients-served"><BilingualText en="Clients Served" el="Πελάτες που εξυπηρετήθηκαν" compact /></Label>
                     <Input
+                      id="provider-clients-served"
                       type="number"
                       value={clientsServed}
                       onChange={e => setClientsServed(e.target.value)}
@@ -240,10 +240,10 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <p className="text-sm font-medium">Accepting New Clients</p>
-                    <p className="text-xs text-muted-foreground">Show in service provider discovery</p>
+                    <p className="text-sm font-medium"><BilingualText en="Accepting New Clients" el="Δέχεται νέους πελάτες" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Show in service provider discovery" el="Εμφάνιση στην αναζήτηση παρόχων" wrap /></p>
                   </div>
-                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} />
+                  <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Clients" />
                 </div>
               </CardContent>
             </Card>
@@ -252,7 +252,7 @@ export default function ProviderProfilePage() {
           {/* Targeting */}
           <TabsContent value="targeting" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Industries You Serve</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries You Serve" el="Κλάδοι που εξυπηρετείτε" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -274,7 +274,7 @@ export default function ProviderProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Startup Stages</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -299,7 +299,7 @@ export default function ProviderProfilePage() {
           {/* Pricing */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base">Pricing Model</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing Model" el="Μοντέλο τιμολόγησης" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {PRICING_MODELS.map(pm => (
@@ -308,7 +308,7 @@ export default function ProviderProfilePage() {
                       onClick={() => setPricingModel(pm.value)}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
-                        pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border/80'
+                        pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border'
                       )}
                     >
                       <p className="text-sm font-medium">{pm.label}</p>
@@ -320,7 +320,7 @@ export default function ProviderProfilePage() {
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <Label>Starting Price (USD)</Label>
+                  <Label><BilingualText en="Starting Price (USD)" el="Αρχική τιμή (USD)" compact /></Label>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">$</span>
                     <Input

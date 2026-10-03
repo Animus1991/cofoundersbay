@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,7 +29,9 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 
 export type ProfileCardData = {
   id: string;
@@ -52,18 +55,18 @@ export type ProfileCardData = {
 };
 
 const ROLE_RING_COLORS: Record<string, string> = {
-  founder: 'ring-indigo-500/60',
-  mentor: 'ring-cyan-500/60',
-  investor: 'ring-orange-500/60',
-  org: 'ring-purple-500/60',
-  admin: 'ring-red-500/60',
+  founder: 'ring-primary/50',
+  mentor: 'ring-status-info',
+  investor: 'ring-status-warning',
+  org: 'ring-status-accent',
+  admin: 'ring-status-danger',
 };
 
 function ProfileCompletenessBar({ score }: { score: number }) {
   const getColor = () => {
-    if (score >= 80) return 'bg-emerald-500';
-    if (score >= 50) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-status-success-mark';
+    if (score >= 50) return 'bg-status-warning-mark';
+    return 'bg-status-danger-mark';
   };
   
   return (
@@ -74,7 +77,7 @@ function ProfileCompletenessBar({ score }: { score: number }) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-[10px] text-muted-foreground font-medium">{score}%</span>
+      <span className="text-2xs text-muted-foreground font-medium">{score}%</span>
     </div>
   );
 }
@@ -111,6 +114,25 @@ function ProfileCardInner({
   className,
 }: ProfileCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
+  const [reporting, setReporting] = useState(false);
+  const { success, error: toastError } = useToast();
+
+  // "Share profile" and "Report" had no handler.
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/profiles/${profile.userId}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: profile.displayName, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      success('Profile link copied');
+    } catch (e) {
+      // A dismissed share sheet is not an error worth reporting.
+      if (e instanceof Error && e.name === 'AbortError') return;
+      toastError('Could not share', 'The browser refused the share or clipboard request.');
+    }
+  };
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -119,22 +141,23 @@ function ProfileCardInner({
 
   if (variant === 'compact') {
     return (
-      <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+      <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm font-semibold">
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors truncate"
+                  // tap-target-y + inline-flex: the name link measured 23px tall, a hair under the 24px target minimum, and inline-flex already takes it out of the inline flow so SC 2.5.8's inline-link exception does not apply.
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -144,8 +167,8 @@ function ProfileCardInner({
                 <p className="text-xs text-muted-foreground truncate">{profile.headline}</p>
               )}
             </div>
-            <Button size="sm" variant="ghost" onClick={onConnect}>
-              <UserPlus className="h-4 w-4" />
+            <Button aria-label="Connect" size="sm" variant="ghost" onClick={onConnect}>
+              <UserPlus className="icon-sm" />
             </Button>
           </div>
         </CardContent>
@@ -157,11 +180,11 @@ function ProfileCardInner({
     return (
       <Card className={cn('group relative overflow-hidden', className)}>
         {/* Featured gradient border */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-primary/[0.04] opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">
-            <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+            <Badge variant="secondary" className="bg-primary/20 text-primary-accessible border-primary/30">
               {profile.matchScore}% match
             </Badge>
           </div>
@@ -173,8 +196,8 @@ function ProfileCardInner({
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-12 w-12 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-base font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-base font-semibold">
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -182,12 +205,12 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                  className="text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {profile.displayName}
                 </Link>
                 {profile.isVerified && (
-                  <Badge variant="secondary" size="sm" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                  <Badge variant="secondary" size="sm" className="bg-status-success-bg text-status-success border-status-success-border">
                     Verified
                   </Badge>
                 )}
@@ -210,14 +233,14 @@ function ProfileCardInner({
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {profile.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="icon-sm" />
                 {profile.location}
               </span>
             )}
             {profile.lastActive && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatLastActive(profile.lastActive)}
+                <Clock className="icon-sm" />
+                <RelativeTime date={profile.lastActive} format={formatLastActive} />
               </span>
             )}
           </div>
@@ -271,6 +294,7 @@ function ProfileCardInner({
                   }
                 }}
                 label="Why this match?"
+                labelEl="Γιατί ταιριάζετε;"
                 variant="ghost"
                 size="sm"
               />
@@ -278,55 +302,62 @@ function ProfileCardInner({
           )}
 
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
-            <div className="flex items-center gap-2">
-              <Button onClick={onConnect} size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Connect
-              </Button>
-              <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Message
-              </Button>
-            </div>
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
+            <Button onClick={onConnect} size="sm" className="min-h-10 flex-1 gap-2">
+              <UserPlus className="icon-sm" />
+              Connect
+            </Button>
+            <Button onClick={onMessage} size="sm" variant="secondary" className="min-h-10 flex-1 gap-2">
+              <MessageCircle className="icon-sm" />
+              Message
+            </Button>
             <div className="flex items-center gap-1">
-              <Button
+              <Button aria-label="Save"
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
                 className={cn(
-                  'h-8 w-8',
-                  bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                  'h-10 w-10',
+                  bookmarked ? 'text-status-warning' : 'text-muted-foreground hover:text-status-warning'
                 )}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={`More actions for ${profile.displayName}`}>
+                    <MoreHorizontal className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Share2 className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem onSelect={() => void shareProfile()}>
+                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
                     Share profile
                   </DropdownMenuItem>
                   {profile.linkedinUrl && (
                     <DropdownMenuItem asChild>
                       <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
+                        <ExternalLink className="icon-sm mr-2" />
                         LinkedIn
                       </a>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
-                    <Flag className="h-4 w-4 mr-2" />
+                  <DropdownMenuItem className="text-destructive-accessible" onSelect={() => setReporting(true)}>
+                    <Flag className="icon-sm mr-2" aria-hidden="true" />
                     Report
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              {reporting && (
+                <ReportBlockModal
+                  open
+                  onOpenChange={setReporting}
+                  userId={profile.userId}
+                  userName={profile.displayName}
+                  mode="report"
+                />
+              )}
             </div>
           </div>
         </CardContent>
@@ -336,7 +367,7 @@ function ProfileCardInner({
 
   // Default variant
   return (
-    <Card className={cn('group hover:shadow-md transition-all hover:-translate-y-0.5', className)}>
+    <Card className={cn('group hover:border-primary/30 transition-all hover:-translate-y-0.5', className)}>
       <CardContent className="pt-5">
         {/* Header */}
         <div className="flex items-start gap-3">
@@ -344,12 +375,12 @@ function ProfileCardInner({
             <div className="relative">
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold">
-                  {profile.displayName[0]?.toUpperCase()}
+                <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                  {initialsOf(profile.displayName)}
                 </AvatarFallback>
               </Avatar>
               {profile.isVerified && (
-                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-card">
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-status-success-mark flex items-center justify-center ring-2 ring-card">
                   <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
@@ -359,10 +390,14 @@ function ProfileCardInner({
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+              {/* The name wraps rather than truncating. It shares this row with
+                  a role badge, and at 1024px "Elena Papadopoulos" was left 46px
+                  of the 141px it needs — two thirds of a person's name gone, in
+                  a card whose whole purpose is to introduce that person. */}
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors truncate"
+                  className="inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -370,30 +405,30 @@ function ProfileCardInner({
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
-                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    <Star className="h-3 w-3 fill-current" />
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
+                    <Star className="icon-sm fill-current" />
                     {profile.matchScore}%
                   </div>
                 )}
-                <Button
+                <Button aria-label="Save"
                   variant="ghost"
                   size="icon"
                   onClick={handleBookmark}
                   className={cn(
                     'h-8 w-8 flex-shrink-0',
-                    bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                    bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                   )}
                 >
-                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                  <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
                 </Button>
               </div>
             </div>
             {profile.headline && (
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{profile.headline}</p>
+              <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground line-clamp-2">{profile.headline}</p>
             )}
             {profile.location && (
-              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
+              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground">
+                <MapPin className="icon-sm" />
                 {profile.location}
               </div>
             )}
@@ -419,7 +454,8 @@ function ProfileCardInner({
               prompt={`Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`}
               agentId="matching"
               context={{ matchScore: profile.matchScore, targetName: profile.displayName, role: profile.role, skills: profile.skills }}
-              label="AI Match Analysis"
+              label="AI match analysis"
+              labelEl="Ανάλυση αντιστοίχισης με AI"
               variant="ghost"
               size="sm"
             />
@@ -427,13 +463,13 @@ function ProfileCardInner({
         )}
 
         {/* Actions */}
-        <div className="mt-4 flex items-center gap-2">
-          <Button onClick={onConnect} size="sm" variant="secondary" className="flex-1 gap-1.5">
-            <UserPlus className="h-3.5 w-3.5" />
+        <div className="mt-4 flex min-w-0 items-center gap-2">
+          <Button onClick={onConnect} size="sm" variant="secondary" className="min-h-10 flex-1 gap-1.5">
+            <UserPlus className="icon-sm" />
             Connect
           </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="gap-1.5">
-            <MessageCircle className="h-3.5 w-3.5" />
+          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5" aria-label="Message">
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       </CardContent>

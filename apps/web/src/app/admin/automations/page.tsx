@@ -15,17 +15,24 @@ import {
   type AutomationExecutionItem,
   type AutomationLogItem,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -43,6 +50,7 @@ const ACTION_TYPES = [
 ] as const;
 
 function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
   const { success, error: toastError } = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -80,10 +88,19 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
+      {/* A slide-over is a dialog: `useModalA11y` gives it the semantics, the
+          focus move, the Tab trap, Escape and the scroll lock it had none of. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="automation-rule-title"
+        tabIndex={-1}
+        className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto"
+      >
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Create Automation Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <h2 id="automation-rule-title" className="text-lg font-semibold"><BilingualText en="Create Automation Rule" el="Δημιουργία κανόνα αυτοματισμού" compact /></h2>
+          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -91,56 +108,56 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
-            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this rule do?" />
+            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder={bilingualInline("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Trigger</label>
+            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Type</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
             <textarea
               value={actionParamsRaw}
               onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
-            {paramsError && <p className="text-xs text-destructive">{paramsError}</p>}
+            {paramsError && <p className="text-xs text-destructive-accessible">{paramsError}</p>}
             <p className="text-xs text-muted-foreground">
               Keys depend on action type: <code>title</code>/<code>body</code> for notifications, <code>subject</code>/<code>bodyHtml</code> for emails, <code>url</code>/<code>method</code> for webhooks.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Delay (seconds)</label>
+              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
               <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Priority (lower = first)</label>
+              <label className="text-sm font-medium"><BilingualText en="Priority (lower = first)" el="Προτεραιότητα (μικρότερη = πρώτα)" compact /></label>
               <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>
         <div className="p-5 border-t flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={() => create.mutate()} disabled={create.isPending || !name.trim()}>
             {create.isPending ? 'Creating…' : 'Create Rule'}
           </Button>
@@ -182,8 +199,8 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Edit Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <h2 className="text-lg font-semibold"><BilingualText en="Edit Rule" el="Επεξεργασία κανόνα" compact /></h2>
+          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -191,51 +208,51 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             <Input value={name} onChange={e => setName(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
             <Input value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Trigger</label>
+            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
             <select
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Type</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
             <select
               value={actionType}
               onChange={e => setActionType(e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
             >
               {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
             <textarea
               value={actionParamsRaw}
               onChange={e => setActionParamsRaw(e.target.value)}
               rows={5}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none resize-none"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Delay (seconds)</label>
+              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
               <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium">Priority</label>
+              <label className="text-sm font-medium"><BilingualText en="Priority" el="Προτεραιότητα" compact /></label>
               <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>
         <div className="p-5 border-t flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
             {save.isPending ? 'Saving…' : 'Save Changes'}
           </Button>
@@ -271,10 +288,10 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    paused: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    active: 'bg-status-success-bg text-status-success ',
+    paused: 'bg-status-warning-bg text-status-warning ',
     draft: 'bg-muted text-muted-foreground',
-    archived: 'bg-muted text-muted-foreground/60 line-through',
+    archived: 'bg-muted text-muted-foreground line-through',
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? 'bg-muted text-muted-foreground'}`}>
@@ -284,31 +301,31 @@ function statusBadge(status: string) {
 }
 
 function execStatusIcon(status: string) {
-  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" />;
-  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
-  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
-  return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+  if (status === 'completed') return <CheckCircle2 className="icon-sm text-status-success" />;
+  if (status === 'failed') return <XCircle className="icon-sm text-destructive-accessible" />;
+  if (status === 'running') return <RefreshCw className="icon-sm text-status-info animate-spin" />;
+  if (status === 'skipped') return <SkipForward className="icon-sm text-muted-foreground" />;
+  return <Clock className="icon-sm text-muted-foreground" />;
 }
 
 function LogPanel({ executionId }: { executionId: string }) {
   const { data: logs = [], isLoading } = useQuery<AutomationLogItem[]>({
-    queryKey: ['automation-logs', executionId],
+    queryKey: qk('automation', 'logs', executionId),
     queryFn: () => getAutomationExecutionLogs(executionId),
     enabled: !!executionId,
   });
 
-  if (isLoading) return <p className="text-xs text-muted-foreground animate-pulse">Loading logs…</p>;
+  if (isLoading) return <p className="text-xs text-muted-foreground animate-pulse"><BilingualText en="Loading logs…" el="Φόρτωση αρχείου…" compact /></p>;
 
   return (
     <div className="space-y-1 max-h-48 overflow-y-auto font-mono text-xs">
-      {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
+      {logs.length === 0 && <p className="text-muted-foreground"><BilingualText en="No logs" el="Δεν υπάρχουν εγγραφές" compact /></p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" />}
-          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" />}
-          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" />}
-          <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-accessible mt-0.5 shrink-0" />}
+          {log.level === 'warn' && <AlertTriangle className="icon-sm text-status-warning mt-0.5 shrink-0" />}
+          {log.level === 'info' && <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />}
+          <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-status-warning' : 'text-muted-foreground'}>
             [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
         </div>
@@ -320,28 +337,32 @@ function LogPanel({ executionId }: { executionId: string }) {
 export default function AutomationsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
+  const { apiAvailable, pollInterval } = usePollingGuards();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
   const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [editRule, setEditRule] = useState<AutomationRuleItem | null>(null);
 
   const { data: rulesData, isLoading: rulesLoading } = useQuery({
-    queryKey: ['automation-rules'],
+    queryKey: qk('automation', 'rules'),
     queryFn: () => listAutomationRules({ limit: 100 }),
   });
 
   const { data: executions = [], isLoading: execLoading } = useQuery<AutomationExecutionItem[]>({
-    queryKey: ['automation-executions'],
+    queryKey: qk('automation', 'executions'),
     queryFn: () => listAutomationExecutions({ limit: 50 }),
-    enabled: activeTab === 'executions',
-    refetchInterval: 10000,
+    enabled: activeTab === 'executions' && apiAvailable,
+    refetchInterval: pollInterval(10_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const setStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'active' | 'paused' | 'archived' }) =>
       setAutomationRuleStatus(id, status),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') });
       success('Rule status updated');
     },
     onError: () => showError('Failed to update status'),
@@ -350,7 +371,7 @@ export default function AutomationsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteAutomationRule(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') });
       success('Rule deleted');
     },
     onError: () => showError('Failed to delete rule'),
@@ -359,7 +380,7 @@ export default function AutomationsPage() {
   const triggerMutation = useMutation({
     mutationFn: (id: string) => triggerAutomationRule(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automation-executions'] });
+      queryClient.invalidateQueries({ queryKey: qk('automation', 'executions') });
       success('Rule triggered manually');
     },
     onError: () => showError('Failed to trigger rule'),
@@ -370,32 +391,58 @@ export default function AutomationsPage() {
   const activeCount = rules.filter(r => r.status === 'active').length;
   const failureCount = rules.filter(r => r.failureCount > 0).length;
 
-  return (
-    <AppShell>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Automation Rules</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Event-driven workflows — triggers, conditions, actions
-            </p>
-          </div>
-          <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
-            <Plus className="h-3.5 w-3.5" />New Rule
-          </Button>
-        </div>
+  // Offered to the assistant: the tab, New Rule, and each rule's own
+  // buttons - edit, run now, pause, activate, delete (which still asks).
+  const ruleRows = (list: AutomationRuleItem[]) => rowOptions(list, (r) => r.id, (r) => r.name);
+  const ruleById = (id?: string) => rules.find((r) => r.id === id);
+  const deleteRule = async (rule: AutomationRuleItem) => {
+    if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
+  };
+  usePageList([
+    {
+      id: 'rules',
+      labelEn: 'Automation rules',
+      labelEl: 'Κανόνες αυτοματισμού',
+      rows: rulesLoading ? undefined : rules.map((r) => `${r.name} · ${r.status} · on ${r.triggerType}${r.failureCount ? ` · ${r.failureCount} failures` : ''}`),
+      total,
+    },
+  ]);
+  usePageControls([
+    choiceControl('automation_tab', 'Automation view', 'Προβολή αυτοματισμών', [
+      { value: 'rules', en: 'Rules', el: 'Κανόνες' },
+      { value: 'executions', en: 'Executions', el: 'Εκτελέσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    { id: 'new_rule', labelEn: 'Open the new rule form', labelEl: 'Άνοιγμα φόρμας νέου κανόνα', writes: false, run: () => setShowCreate(true) },
+    { id: 'edit_rule', labelEn: 'Edit automation rule', labelEl: 'Επεξεργασία κανόνα', writes: false, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) setEditRule(r); } },
+    { id: 'trigger_rule', labelEn: 'Run automation rule now', labelEl: 'Εκτέλεση κανόνα τώρα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), run: (v) => { if (v) triggerMutation.mutate(v); } },
+    // setRuleStatus writes `status` and nothing else (automation.service), so
+    // pausing an active rule is undone by activating it, and the reverse.
+    { id: 'pause_rule', labelEn: 'Pause automation rule', labelEl: 'Παύση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status === 'active')), undo: (v) => ({ control: 'activate_rule', value: v }), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'paused' }); } },
+    { id: 'activate_rule', labelEn: 'Activate automation rule', labelEl: 'Ενεργοποίηση κανόνα', writes: true, options: ruleRows(rules.filter((r) => r.status !== 'active')), undo: (v) => (ruleById(v)?.status === 'paused' ? { control: 'pause_rule', value: v } : undefined), run: (v) => { if (v) setStatusMutation.mutate({ id: v, status: 'active' }); } },
+    { id: 'delete_rule', labelEn: 'Delete automation rule', labelEl: 'Διαγραφή κανόνα', writes: true, options: ruleRows(rules), run: (v) => { const r = ruleById(v); if (r) void deleteRule(r); } },
+  ]);
 
+  return (
+    <AppShell
+      actions={
+        <>
+          <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
+            <Plus className="icon-sm" /><BilingualText en="New Rule" el="Νέος κανόνας" compact />
+          </Button>
+        </>
+      }
+    >
+      <div className="max-w-[84rem] mx-auto px-4 sm:px-6 py-8 space-y-6">
         <CreateRuleSlideOver
           open={showCreate}
           onClose={() => setShowCreate(false)}
-          onCreated={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') })}
         />
         {editRule && (
           <EditRuleSlideOver
             rule={editRule}
             onClose={() => setEditRule(null)}
-            onSaved={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: qk('automation', 'rules') })}
           />
         )}
 
@@ -403,29 +450,29 @@ export default function AutomationsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600' },
-            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600' },
-            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600' },
+            { icon: Zap, label: 'Active', value: activeCount, color: 'text-status-success' },
+            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-status-info' },
+            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-status-warning' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
               <stat.icon className={`icon-md ${stat.color}`} />
               <div>
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <p className="text-xl font-bold">{stat.value}</p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </div>
             </Card>
           ))}
         </div>
 
         {/* Tab toggle */}
-        <div className="flex border-b border-border/50 gap-1">
+        <div className="flex border-b border-border gap-1">
           {(['rules', 'executions'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -437,11 +484,11 @@ export default function AutomationsPage() {
         {/* Rules tab */}
         {activeTab === 'rules' && (
           <div className="space-y-3">
-            {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
+            {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading rules…" el="Φόρτωση κανόνων…" compact /></p>}
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
-                <Layers className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
+                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact /></p>
               </Card>
             )}
             {rules.map(rule => (
@@ -455,7 +502,7 @@ export default function AutomationsPage() {
                         {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
                       </Badge>
                       {rule.tenantId && (
-                        <Badge variant="secondary" className="text-xs">Tenant</Badge>
+                        <Badge variant="secondary" className="text-xs"><BilingualText en="Tenant" el="Οργανισμός" compact /></Badge>
                       )}
                     </div>
                     {rule.description && (
@@ -465,10 +512,10 @@ export default function AutomationsPage() {
                       <span>Priority: {rule.priority}</span>
                       <span>Runs: {rule.executionCount}</span>
                       {rule.failureCount > 0 && (
-                        <span className="text-amber-600 font-medium">⚠ {rule.failureCount} failures</span>
+                        <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
                       )}
                       {rule.lastRunAt && (
-                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString()}</span>
+                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                       )}
                       {rule.delaySeconds > 0 && (
                         <span>Delay: {rule.delaySeconds}s</span>
@@ -481,19 +528,21 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8"
                       title="Edit rule"
+                      aria-label={`Edit rule ${rule.name}`}
                       onClick={() => setEditRule(rule)}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="icon-sm" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
                       title="Manual trigger"
+                      aria-label={`Manually trigger ${rule.name}`}
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
-                      <Play className="h-3.5 w-3.5" />
+                      <Play className="icon-sm" />
                     </Button>
                     {rule.status === 'active' ? (
                       <Button
@@ -501,9 +550,10 @@ export default function AutomationsPage() {
                         size="icon"
                         className="h-8 w-8"
                         title="Pause"
+                        aria-label={`Pause ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
-                        <Pause className="h-3.5 w-3.5" />
+                        <Pause className="icon-sm" />
                       </Button>
                     ) : rule.status === 'paused' || rule.status === 'draft' ? (
                       <Button
@@ -511,21 +561,23 @@ export default function AutomationsPage() {
                         size="icon"
                         className="h-8 w-8"
                         title="Activate"
+                        aria-label={`Activate ${rule.name}`}
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                        <Zap className="icon-sm text-status-success" />
                       </Button>
                     ) : null}
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
                       title="Delete"
-                      onClick={() => {
-                        if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
+                      aria-label={`Delete ${rule.name}`}
+                      onClick={async () => {
+                        await deleteRule(rule);
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="icon-sm" />
                     </Button>
                   </div>
                 </div>
@@ -537,11 +589,11 @@ export default function AutomationsPage() {
         {/* Executions tab */}
         {activeTab === 'executions' && (
           <div className="space-y-2">
-            {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
+            {execLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading executions…" el="Φόρτωση εκτελέσεων…" compact /></p>}
             {!execLoading && executions.length === 0 && (
               <Card className="p-8 text-center">
-                <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm">No executions yet.</p>
+                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm"><BilingualText en="No executions yet." el="Δεν υπάρχουν εκτελέσεις ακόμα." compact /></p>
               </Card>
             )}
             {executions.map(exec => (
@@ -560,16 +612,16 @@ export default function AutomationsPage() {
                       {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(exec.createdAt).toLocaleString()}
+                      {new Date(exec.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                     </span>
                     <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
-                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
                   </div>
                 </Card>
                 {selectedExecution === exec.id && (
                   <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
                     {exec.errorMessage && (
-                      <p className="text-xs text-destructive mb-2 font-mono">{exec.errorMessage}</p>
+                      <p className="text-xs text-destructive-accessible mb-2 font-mono">{exec.errorMessage}</p>
                     )}
                     <LogPanel executionId={exec.id} />
                   </Card>

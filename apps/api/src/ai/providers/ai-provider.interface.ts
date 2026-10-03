@@ -1,3 +1,5 @@
+import type { ToolCatalogEntry } from '@cofounderbay/shared';
+
 /**
  * IAIProvider — contract that every AI backend must satisfy.
  *
@@ -10,8 +12,24 @@
  */
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  /**
+   * `tool` closes the function-calling loop.
+   *
+   * A turn where the model proposed a call ends with that proposal and nothing
+   * else; the user confirms, the *client* performs the action, and the result
+   * comes back as a `tool` message inside the history of a NEW turn. It is
+   * never a replay of the turn that proposed -- see the note on
+   * `continueAfterToolCall` in apps/web/src/lib/ai-api.ts, and the rule in
+   * AGENTS.md that forbids repeating an AI POST after partial streaming.
+   */
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  /**
+   * Which declared capability this result belongs to. Ollama and OpenAI name
+   * the field differently on the wire; the adapter maps it, so callers here
+   * only ever set `toolName`.
+   */
+  toolName?: string;
 }
 
 export interface ChatOptions {
@@ -19,6 +37,19 @@ export interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
   systemPrompt?: string;
+  /**
+   * Function-calling catalogue, derived from `ACTION_DECLARATIONS` in
+   * `@cofounderbay/shared`. Optional because not every provider or local model
+   * supports tools, and because omitting it has to keep the previous
+   * behaviour exactly: before this existed, no model in this product was ever
+   * offered one.
+   */
+  tools?: ToolCatalogEntry[];
+  /**
+   * Receives tool calls produced by this exact request. Providers are
+   * singletons, so tool-call state must stay request-local.
+   */
+  onToolCalls?: (toolCalls: unknown) => void;
 }
 
 export interface ProviderHealthStatus {

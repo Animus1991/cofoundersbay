@@ -11,11 +11,13 @@ import { BuilderCollabService } from './builder-collab.service';
 import { BuilderCollabPolicy } from './builder-collab.policy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
   imports: [
     PrismaModule,
     NotificationsModule,
+    GamificationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

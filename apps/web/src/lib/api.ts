@@ -1,8 +1,11 @@
+import { resolvePreviewApiNow } from '@/lib/preview-api';
+
 // Returns the API base URL evaluated at call time — not module load time.
-// Always uses NEXT_PUBLIC_API_URL if set (set it to http://localhost:3001 in .env.local).
-// Never derives host from window.location to avoid LAN IP (192.168.x.x) mismatches.
+// Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
+import { getApiOrigin } from './api-origin';
+
 function getApiBase(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return getApiOrigin();
 }
 
 export type AuthUser = { id: string; email: string; role: string; emailVerified?: boolean };
@@ -52,14 +55,29 @@ function clearLegacyTokens() {
   // Note: 'user' key is kept as display data, not a security concern
 }
 
+function isPreviewDemoSession() {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('cfb_preview_demo=1') ||
+      document.cookie.includes('cfb_session=preview-demo') ||
+      window.localStorage.getItem('cfb_demo_data') === '1' ||
+      window.location.hostname.endsWith('.trycloudflare.com')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function clearSessionIndicators() {
   if (typeof document === 'undefined') return;
+  if (isPreviewDemoSession()) return;
   document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
   document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
 }
 
 function broadcastLogout() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !isPreviewDemoSession()) {
     window.dispatchEvent(new CustomEvent('cfb:logout'));
   }
 }
@@ -174,6 +192,45 @@ function markApiReachable() {
   }
 }
 
+/** True while the client-side circuit breaker is suppressing API calls. */
+export function isApiCircuitOpen(): boolean {
+  if (typeof window === 'undefined') return false;
+  return Date.now() < apiUnavailableUntil;
+}
+
+/**
+ * True when the API is believed reachable. Unlike `isApiCircuitOpen`, this does
+ * NOT flip back to "reachable" merely because a backoff window elapsed — only a
+ * successful request/probe (markApiReachable) can do that. This prevents the
+ * re-enable→burst→fail oscillation that floods the console with connection-refused
+ * errors while the backend is down.
+ */
+export function isApiReachable(): boolean {
+  if (typeof window === 'undefined') return true;
+  return apiReachable;
+}
+
+/** Lightweight liveness probe — used to recover after API restarts. */
+export async function probeApiHealth(): Promise<boolean> {
+  if (typeof window === 'undefined') return true;
+  try {
+    const res = await fetchWithTimeout(`${getApiBase()}/api/health/liveness`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      markApiReachable();
+      return true;
+    }
+  } catch {
+    // fall through to re-arm backoff below
+  }
+  // Probe failed: re-arm/extend the circuit breaker so callers keep gating
+  // their requests instead of bursting and re-flooding the network.
+  markApiUnavailable();
+  return false;
+}
+
 function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -214,13 +271,29 @@ async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Re
   throw new ApiNetworkError('Unable to reach the API server.');
 }
 
-export async function apiRequest<T>(
-  path: string,
-  init?: RequestInit,
-  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
-): Promise<T> {
-  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
+export function withApiAbort<T>(operation: Promise<T>, signal?: AbortSignal | null): Promise<T> {
+  if (!signal) return operation;
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason ?? new DOMException('Request cancelled', 'AbortError'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    operation.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+    if (signal.aborted) onAbort();
+  });
+}
 
+function authenticatedRequestInit(init?: RequestInit): RequestInit {
   const headers = new Headers(init?.headers ?? {});
   const isForm = typeof FormData !== 'undefined' && init?.body instanceof FormData;
   if (!headers.has('Content-Type') && !isForm) headers.set('Content-Type', 'application/json');
@@ -232,27 +305,48 @@ export async function apiRequest<T>(
     if (csrf) headers.set('x-csrf-token', csrf);
   }
 
-  const doFetch = opts?.skipNetworkRetry
-    ? (u: string, i: RequestInit) => fetchWithTimeout(u, i)
-    : fetchWithNetworkRetry;
+  return { ...init, headers, credentials: 'include' };
+}
 
-  const res = await doFetch(url, { ...init, headers, credentials: 'include' });
+export async function apiFetch(
+  path: string,
+  init?: RequestInit,
+  opts?: {
+    retryOn401?: boolean;
+    skipNetworkRetry?: boolean;
+    fetcher?: (url: string, init: RequestInit) => Promise<Response>;
+  },
+): Promise<Response> {
+  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
+  const doFetch = opts?.fetcher ?? (opts?.skipNetworkRetry ? fetchWithTimeout : fetchWithNetworkRetry);
+  const request = () => {
+    init?.signal?.throwIfAborted();
+    return withApiAbort(doFetch(url, authenticatedRequestInit(init)), init?.signal);
+  };
+  const checkResponse = async (res: Response) => {
+    if (!res.ok) {
+      const errorInfo = await withApiAbort(safeReadErrorMessage(res), init?.signal);
+      throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+    }
+    return res;
+  };
+
+  const res = await request();
   if (res.status === 401 && (opts?.retryOn401 ?? true)) {
+    let refreshed = false;
     try {
+      await withApiAbort(res.body?.cancel().catch(() => {}) ?? Promise.resolve(), init?.signal);
+      init?.signal?.throwIfAborted();
       refreshInFlight ??= refreshAccessToken().finally(() => {
         refreshInFlight = null;
       });
-      await refreshInFlight;
+      await withApiAbort(refreshInFlight, init?.signal);
+      refreshed = true;
 
       // Retry with new cookie (set by refresh response)
-      const retryRes = await doFetch(url, { ...init, headers, credentials: 'include' });
-      if (!retryRes.ok) {
-        const errorInfo = await safeReadErrorMessage(retryRes);
-        throw new ApiError(retryRes.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
-      }
-      return (await readJsonIfAny<T>(retryRes)) as T;
+      return await checkResponse(await request());
     } catch (e) {
-      if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
+      if (e instanceof ApiError && (e.status === 401 || (!refreshed && [400, 403].includes(e.status)))) {
         clearLegacyTokens();
         clearSessionIndicators();
         broadcastLogout();
@@ -261,11 +355,21 @@ export async function apiRequest<T>(
     }
   }
 
-  if (!res.ok) {
-    const errorInfo = await safeReadErrorMessage(res);
-    throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+  return checkResponse(res);
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
+): Promise<T> {
+  init?.signal?.throwIfAborted();
+  if (isPreviewDemoSession()) {
+    return resolvePreviewApiNow(path.startsWith('/') ? path : `/${path}`, init) as T;
   }
-  return (await readJsonIfAny<T>(res)) as T;
+
+  const res = await apiFetch(path, init, opts);
+  return withApiAbort(readJsonIfAny<T>(res), init?.signal);
 }
 
 export async function register(body: { email: string; password: string; role?: string }) {
@@ -310,6 +414,16 @@ export async function logout() {
 
 /** Get current user from HttpOnly cookie session */
 export async function getMe(): Promise<{ user: AuthUser }> {
+  if (isPreviewDemoSession()) {
+    return {
+      user: {
+        id: 'preview-demo-user',
+        email: 'demo@cofounderbay.com',
+        role: 'founder',
+        emailVerified: true,
+      },
+    };
+  }
   return apiRequest<{ user: AuthUser }>(
     '/api/auth/me',
     { method: 'GET' },
@@ -359,6 +473,32 @@ export type OwnProfile = {
 export type PublicProfile = OwnProfile & { email?: string };
 
 export async function getMeProfile(): Promise<{ profile: OwnProfile | null; hasCompletedOnboarding: boolean }> {
+  if (isPreviewDemoSession()) {
+    return {
+      hasCompletedOnboarding: true,
+      profile: {
+        id: 'preview-demo-profile',
+        userId: 'preview-demo-user',
+        displayName: 'Alex Demo',
+        headline: 'Founder exploring CoFounderBay',
+        bio: 'This is a preview profile with sample data so you can walk the product without a backend.',
+        location: 'Athens, Greece',
+        timezone: 'Europe/Athens',
+        languages: ['English', 'Greek'],
+        avatarUrl: null,
+        rolePayload: { stage: 'idea', lookingFor: ['cofounder', 'mentor'] },
+        visibilityRules: null,
+        role: 'founder',
+        email: 'demo@cofounderbay.com',
+        skills: [
+          { skillId: 'product', skillName: 'Product', slug: 'product', level: 'advanced' },
+          { skillId: 'growth', skillName: 'Growth', slug: 'growth', level: 'intermediate' },
+        ],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    };
+  }
   return apiRequest('/api/me/profile');
 }
 
@@ -451,6 +591,24 @@ export type SearchHit = {
   matchReasons?: string[];
   lookingFor?: string | null;
   availability?: string | null;
+  /** Profile creation, epoch seconds. Present on directory search hits. */
+  createdAt?: number;
+  /**
+   * Last activity, epoch seconds, or null when the person has never been seen.
+   * This is the only presence the schema records, so anything the UI says
+   * about "online" has to come from here — never from a guess.
+   */
+  lastSeenAt?: number | null;
+};
+
+/**
+ * Directory-level counts for the same filter the hits were drawn with, so a
+ * header can show them beside `total` without mixing two different scopes.
+ */
+export type ProfileSearchStats = {
+  onlineNow: number;
+  newThisWeek: number;
+  mentors: number;
 };
 
 export async function searchProfiles(params: {
@@ -466,7 +624,7 @@ export async function searchProfiles(params: {
   sortBy?: 'relevance' | 'recent' | 'active';
   limit?: number;
   offset?: number;
-}): Promise<{ hits: SearchHit[]; total: number }> {
+}): Promise<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }> {
   const sp = new URLSearchParams();
   if (params.q) sp.set('q', params.q);
   if (params.roles?.length) sp.set('roles', params.roles.join(','));
@@ -480,7 +638,7 @@ export async function searchProfiles(params: {
   if (params.sortBy) sp.set('sortBy', params.sortBy);
   if (params.limit != null) sp.set('limit', String(params.limit));
   if (params.offset != null) sp.set('offset', String(params.offset));
-  return apiRequest<{ hits: SearchHit[]; total: number }>(`/api/search/profiles?${sp}`);
+  return apiRequest<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }>(`/api/search/profiles?${sp}`);
 }
 
 export async function getRecommendations(params?: { role?: string; limit?: number }): Promise<{ suggestions: SearchHit[] }> {
@@ -764,7 +922,7 @@ export async function deleteNotification(id: string): Promise<{ ok: true }> {
 }
 
 export type NotificationPreferences = {
-  digestFrequency: 'daily' | 'weekly' | 'never';
+  digestFrequency: 'daily' | 'weekly' | 'monthly' | 'never';
 };
 
 export async function getNotificationPreferences(): Promise<NotificationPreferences> {
@@ -1049,6 +1207,12 @@ export type DashboardStats = {
   matchesThisWeek: number;
   trendPercent: number;
   chartData: { label: string; value: number }[];
+  /** Platform-wide counts for directory headers. Optional: an older API
+   *  omits them, and a header that cannot count shows a dash. */
+  founders?: number;
+  mentors?: number;
+  successfulMatches?: number;
+  communities?: number;
 };
 
 export type DashboardActivityItem = {
@@ -1093,6 +1257,533 @@ export async function getDashboardActivity(params?: { limit?: number; offset?: n
   return apiRequest(url);
 }
 
+// --- Expert reviews ---------------------------------------------------------
+//
+// `ExpertReview` has been in the schema since it was written with no controller
+// over it, so /expert-reviews held its own fixed arrays and its "request a
+// review" button had nothing to call. These wrap the module that now reads it.
+
+export type ExpertReviewPerson = {
+  id: string;
+  displayName: string | null;
+  headline: string | null;
+  avatarUrl: string | null;
+};
+
+export type ExpertReviewType =
+  | 'pitch_deck'
+  | 'business_model'
+  | 'financial_model'
+  | 'legal_structure'
+  | 'market_analysis'
+  | 'go_to_market'
+  | 'technical_architecture'
+  | 'product_strategy'
+  | 'general';
+
+export type ExpertReviewStatus =
+  | 'requested'
+  | 'accepted'
+  | 'in_progress'
+  | 'submitted'
+  | 'declined'
+  | 'expired';
+
+export type ExpertReviewItem = {
+  id: string;
+  requester: ExpertReviewPerson;
+  expert: ExpertReviewPerson;
+  workspaceId: string | null;
+  reviewType: ExpertReviewType;
+  status: ExpertReviewStatus;
+  requestMessage: string | null;
+  documents: Record<string, unknown>[];
+  summaryFeedback: string | null;
+  strengths: Record<string, unknown>[];
+  improvements: Record<string, unknown>[];
+  scoreOverall: number | null;
+  scoresByArea: Record<string, number>;
+  isPaid: boolean;
+  agreedFee: number | null;
+  currency: string;
+  requestedAt: string;
+  acceptedAt: string | null;
+  dueDate: string | null;
+  submittedAt: string | null;
+  rating: number | null;
+  ratingComment: string | null;
+};
+
+export type ExpertDirectoryItem = {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  headline: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  skills: string[];
+  specializations: string[];
+  industries: string[];
+  isVerified: boolean;
+  isFree: boolean;
+  feeFrom: number | null;
+  currency: string;
+  completedReviews: number;
+  rating: number | null;
+};
+
+export type ExpertReviewSummary = {
+  total: number;
+  open: number;
+  submitted: number;
+  avgRating: number | null;
+  avgScore: number | null;
+};
+
+export async function listExpertReviews(params?: {
+  side?: 'requester' | 'expert';
+  status?: ExpertReviewStatus;
+  limit?: number;
+}): Promise<{ reviews: ExpertReviewItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.side) sp.set('side', params.side);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/expert-reviews${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getExpertReviewSummary(
+  side: 'requester' | 'expert' = 'requester',
+): Promise<ExpertReviewSummary> {
+  return apiRequest(`/api/expert-reviews/summary?side=${side}`);
+}
+
+export async function listExperts(params?: {
+  search?: string;
+  limit?: number;
+}): Promise<{ experts: ExpertDirectoryItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/expert-reviews/experts${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function requestExpertReview(body: {
+  expertId: string;
+  reviewType?: ExpertReviewType;
+  requestMessage?: string;
+  workspaceId?: string;
+  documents?: Record<string, unknown>[];
+  dueDate?: string;
+  isPaid?: boolean;
+  agreedFee?: number;
+  currency?: string;
+}): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest('/api/expert-reviews', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateExpertReview(
+  id: string,
+  body: {
+    status?: ExpertReviewStatus;
+    summaryFeedback?: string;
+    strengths?: Record<string, unknown>[];
+    improvements?: Record<string, unknown>[];
+    scoreOverall?: number;
+    scoresByArea?: Record<string, number>;
+    dueDate?: string | null;
+  },
+): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest(`/api/expert-reviews/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function rateExpertReview(
+  id: string,
+  body: { rating: number; ratingComment?: string },
+): Promise<{ review: ExpertReviewItem }> {
+  return apiRequest(`/api/expert-reviews/${id}/rating`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+// --- Provider services ----------------------------------------------------
+//
+// `ServiceOffer` and `ServiceInquiry` have been in the schema since it was
+// written and no controller read them, so the four provider screens each held
+// their own fixed array and the public marketplace sent people off-platform
+// through a `contactUrl`.
+//
+// All four are one entity filtered by status: an inquiry at `open` is an
+// enquiry, at `accepted` or `completed` it is a project, and one carrying a
+// rating is a review.
+
+export const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived'] as const;
+export type OfferStatus = (typeof OFFER_STATUSES)[number];
+
+export const INQUIRY_STATUSES = [
+  'open',
+  'in_discussion',
+  'accepted',
+  'declined',
+  'completed',
+  'cancelled',
+] as const;
+export type InquiryStatus = (typeof INQUIRY_STATUSES)[number];
+
+export type ServiceOfferItem = {
+  id: string;
+  title: string;
+  description: string;
+  shortTagline: string | null;
+  category: string;
+  subcategory: string | null;
+  tags: string[];
+  pricingModel: string;
+  priceFrom: number | null;
+  priceTo: number | null;
+  currency: string;
+  pricingNotes: string | null;
+  deliveryDays: number | null;
+  revisionsIncluded: number | null;
+  status: OfferStatus;
+  isFeatured: boolean;
+  viewCount: number;
+  inquiryCount: number;
+  /** Null until somebody rates it — distinct from a rating of zero. */
+  avgRating: number | null;
+  reviewCount: number;
+  completedProjects: number;
+  createdAt: string;
+  provider: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
+};
+
+export type ServiceInquiryItem = {
+  id: string;
+  status: InquiryStatus;
+  message: string;
+  responseMessage: string | null;
+  agreedScope: string | null;
+  budgetEstimate: number | null;
+  agreedPrice: number | null;
+  currency: string;
+  timelineExpected: string | null;
+  rating: number | null;
+  reviewComment: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+  offer: { id: string; title: string; category: string };
+  client: { id: string; displayName: string | null; avatarUrl: string | null };
+  provider: { id: string; displayName: string | null; avatarUrl: string | null };
+};
+
+export type ProviderSummary = {
+  offers: { total: number; active: number };
+  inquiryCounts: Record<InquiryStatus, number>;
+  openInquiries: number;
+  projects: number;
+  reviewCount: number;
+  /** Null when nothing is rated, so a tile can say so rather than show 0.0. */
+  avgRating: number | null;
+};
+
+export async function listServiceOffers(params?: {
+  category?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ offers: ServiceOfferItem[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.category) sp.set('category', params.category);
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  const qs = sp.toString();
+  return apiRequest(`/api/services/offers${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+/** The signed-in provider's own offers, drafts and paused ones included. */
+export async function listMyServiceOffers(params?: {
+  limit?: number;
+}): Promise<{ offers: ServiceOfferItem[]; total: number; hasMore: boolean }> {
+  const qs = params?.limit != null ? `?limit=${params.limit}` : '';
+  return apiRequest(`/api/services/offers/mine${qs}`, undefined, { retryOn401: false });
+}
+
+export async function createServiceOffer(body: {
+  title: string;
+  description: string;
+  shortTagline?: string;
+  category: string;
+  tags?: string[];
+  pricingModel?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  currency?: string;
+  deliveryDays?: number;
+  status?: OfferStatus;
+}): Promise<{ offerId: string }> {
+  return apiRequest('/api/services/offers', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateServiceOffer(
+  offerId: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    shortTagline: string;
+    category: string;
+    tags: string[];
+    priceFrom: number | null;
+    priceTo: number | null;
+    deliveryDays: number | null;
+    status: OfferStatus;
+  }>,
+): Promise<{ ok: boolean; offerId: string }> {
+  return apiRequest(`/api/services/offers/${offerId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function listServiceInquiries(params?: {
+  side?: 'provider' | 'client';
+  status?: InquiryStatus;
+  /** Two named views over the same rows, so pages do not invent their own. */
+  kind?: 'projects' | 'reviews';
+  limit?: number;
+}): Promise<{ inquiries: ServiceInquiryItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.side) sp.set('side', params.side);
+  if (params?.status) sp.set('status', params.status);
+  if (params?.kind) sp.set('kind', params.kind);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  const qs = sp.toString();
+  return apiRequest(`/api/services/inquiries${qs ? `?${qs}` : ''}`, undefined, {
+    retryOn401: false,
+  });
+}
+
+export async function getProviderSummary(): Promise<ProviderSummary> {
+  return apiRequest('/api/services/summary', undefined, { retryOn401: false });
+}
+
+/** A founder contacting a provider — the step the marketplace never had. */
+export async function createServiceInquiry(
+  offerId: string,
+  body: { message: string; budgetEstimate?: number; timelineExpected?: string },
+): Promise<{ inquiryId: string }> {
+  return apiRequest(`/api/services/offers/${offerId}/inquiries`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateServiceInquiry(
+  inquiryId: string,
+  body: Partial<{
+    status: InquiryStatus;
+    responseMessage: string;
+    agreedScope: string;
+    agreedPrice: number;
+  }>,
+): Promise<{ ok: boolean; inquiryId: string }> {
+  return apiRequest(`/api/services/inquiries/${inquiryId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function reviewServiceInquiry(
+  inquiryId: string,
+  body: { rating: number; reviewComment?: string },
+): Promise<{ ok: boolean; inquiryId: string }> {
+  return apiRequest(`/api/services/inquiries/${inquiryId}/review`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+// --- Investor pipeline ---------------------------------------------------
+//
+// The watchlist, the pipeline board and the portfolio are three views of one
+// `InvestorDeal` row. They used to be three screens over three unrelated
+// shapes of invented data, which is how a startup could sit at "invested" on
+// the board and be missing from the portfolio.
+
+export const PIPELINE_STAGES = [
+  'discovered',
+  'reviewing',
+  'meeting',
+  'due_diligence',
+  'negotiating',
+  'invested',
+  'passed',
+] as const;
+
+export type PipelineStage = (typeof PIPELINE_STAGES)[number];
+export type DealStatus = 'active' | 'exited' | 'written_off';
+
+export type InvestorDealEvent = {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  fromStage?: string | null;
+  toStage?: string | null;
+  createdAt: string;
+};
+
+export type InvestorDeal = {
+  id: string;
+  name: string;
+  tagline: string | null;
+  industry: string | null;
+  location: string | null;
+  website: string | null;
+  logoUrl: string | null;
+  companyStage: string | null;
+  teamSize: number | null;
+  pipelineStage: PipelineStage;
+  starred: boolean;
+  alertsEnabled: boolean;
+  notes: string | null;
+  tags: string[];
+  /** ISO 4217, e.g. "EUR". Money below is in minor units of this. */
+  currency: string;
+  askAmountCents: number | null;
+  investedCents: number | null;
+  currentValueCents: number | null;
+  investedAt: string | null;
+  status: DealStatus;
+  lastActivityAt: string;
+  createdAt: string;
+  founder: {
+    id: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    headline: string | null;
+  } | null;
+  recentEvents: InvestorDealEvent[];
+};
+
+export type InvestorSummary = {
+  stageCounts: Record<PipelineStage, number>;
+  totalDeals: number;
+  investments: number;
+  deployedCents: number;
+  currentValueCents: number;
+  /** Null when nothing is deployed — a 0% return and no investments at all
+   *  are different statements, and the page says so. */
+  returnPct: number | null;
+};
+
+export async function listInvestorDeals(params?: {
+  pipelineStage?: PipelineStage;
+  starred?: boolean;
+  status?: DealStatus;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ deals: InvestorDeal[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.pipelineStage) sp.set('pipelineStage', params.pipelineStage);
+  if (params?.starred !== undefined) sp.set('starred', String(params.starred));
+  if (params?.status) sp.set('status', params.status);
+  if (params?.search) sp.set('search', params.search);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  const qs = sp.toString();
+  return apiRequest(`/api/investor/deals${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function getInvestorSummary(): Promise<InvestorSummary> {
+  return apiRequest('/api/investor/summary', undefined, { retryOn401: false });
+}
+
+export async function getInvestorActivity(limit?: number): Promise<{
+  activity: Array<{
+    id: string;
+    dealId: string;
+    dealName: string;
+    logoUrl: string | null;
+    type: string;
+    title: string;
+    body: string | null;
+    createdAt: string;
+  }>;
+}> {
+  const qs = limit != null ? `?limit=${limit}` : '';
+  return apiRequest(`/api/investor/activity${qs}`, undefined, { retryOn401: false });
+}
+
+export async function getInvestorDeal(dealId: string): Promise<{ deal: InvestorDeal }> {
+  return apiRequest(`/api/investor/deals/${dealId}`);
+}
+
+export async function createInvestorDeal(body: {
+  name: string;
+  founderId?: string;
+  tagline?: string;
+  industry?: string;
+  location?: string;
+  website?: string;
+  companyStage?: string;
+  teamSize?: number;
+  pipelineStage?: PipelineStage;
+  askAmountCents?: number;
+  tags?: string[];
+  notes?: string;
+}): Promise<{ deal: InvestorDeal }> {
+  return apiRequest('/api/investor/deals', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateInvestorDeal(
+  dealId: string,
+  body: {
+    pipelineStage?: PipelineStage;
+    starred?: boolean;
+    alertsEnabled?: boolean;
+    notes?: string;
+    tags?: string[];
+    askAmountCents?: number | null;
+    investedCents?: number | null;
+    currentValueCents?: number | null;
+    status?: DealStatus;
+    teamSize?: number | null;
+  },
+): Promise<{ deal: InvestorDeal }> {
+  return apiRequest(`/api/investor/deals/${dealId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function deleteInvestorDeal(dealId: string): Promise<{ ok: boolean; dealId: string }> {
+  return apiRequest(`/api/investor/deals/${dealId}`, { method: 'DELETE' });
+}
+
+export async function addInvestorDealEvent(
+  dealId: string,
+  body: { type: string; title: string; body?: string },
+): Promise<{ event: InvestorDealEvent }> {
+  return apiRequest(`/api/investor/deals/${dealId}/events`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
 // --- Venture Readiness Score ---
 
 export interface VRSDimension {
@@ -1120,35 +1811,58 @@ export async function getVentureReadiness(): Promise<VentureReadiness> {
   return apiRequest('/api/dashboard/venture-readiness');
 }
 
+export interface GraphMeResponse {
+  me: {
+    id: string;
+    displayName: string | null;
+    headline: string | null;
+    avatarUrl: string | null;
+    primaryRole: string | null;
+    organizations: Array<{ id: string; name: string; type: string; role: string }>;
+    tenants: Array<{ id: string; name: string; slug: string; role: string }>;
+  };
+  unreadMessages: number;
+  pendingConnections: number;
+  unreadNotifications: number;
+  readiness: VentureReadiness | null;
+}
+
+/** Single-call summary used by the get_graph AI tool and available for any
+ * surface that needs "what does this user see right now" without stitching
+ * together profile + connections + messages + readiness itself. */
+export async function getGraphMe(): Promise<GraphMeResponse> {
+  return apiRequest('/api/graph/me');
+}
+
 // --- Analytics ---
 
 export interface UserMetrics {
   profileViews: number;
-  profileViewsChange: number;
+  profileViewsChange: number | null;
   newConnections: number;
-  newConnectionsChange: number;
+  newConnectionsChange: number | null;
   messagesSent: number;
-  messagesSentChange: number;
-  engagementRate: number;
-  engagementRateChange: number;
-  searchAppearances: number;
-  searchAppearancesChange: number;
-  activityScore: number;
-  activityScoreChange: number;
+  messagesSentChange: number | null;
+  engagementRate: number | null;
+  engagementRateChange: number | null;
+  searchAppearances: number | null;
+  searchAppearancesChange: number | null;
+  activityScore: number | null;
+  activityScoreChange: number | null;
 }
 
 export interface AnalyticsProfileView {
   date: string;
   views: number;
-  uniqueVisitors: number;
+  uniqueVisitors: number | null;
 }
 
 export interface AnalyticsEngagement {
   connections: number;
   messages: number;
-  likes: number;
-  comments: number;
-  shares: number;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
 }
 
 export interface AnalyticsTopContent {
@@ -1165,22 +1879,22 @@ export interface AnalyticsAchievement {
   title: string;
   description: string;
   icon: string;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: string;
 }
 
 export interface WeeklySummary {
-  mostActiveDay: string;
-  peakHour: string;
-  avgResponseTime: string;
-  totalInteractions: number;
+  mostActiveDay: string | null;
+  peakHour: string | null;
+  avgResponseTime: string | null;
+  totalInteractions: number | null;
 }
 
 export interface AnalyticsOverview {
   metrics: UserMetrics;
   profileViews: AnalyticsProfileView[];
   engagement: AnalyticsEngagement;
-  topContent: AnalyticsTopContent[];
+  topContent: AnalyticsTopContent[] | null;
   weeklySummary: WeeklySummary;
 }
 
@@ -1208,7 +1922,7 @@ export async function getAnalyticsEngagement(period = '7d'): Promise<AnalyticsEn
   return apiRequest(`/api/analytics/engagement?period=${period}`);
 }
 
-export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[]> {
+export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[] | null> {
   return apiRequest(`/api/analytics/top-content?limit=${limit}`);
 }
 
@@ -1308,6 +2022,11 @@ export async function listEvents(params?: {
   if (params?.limit != null) sp.set('limit', String(params.limit));
   const url = `/api/events${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url, undefined, { retryOn401: false });
+}
+
+/** One event, with the viewer's RSVP. GET /events/:eventId (OptionalJwtAuthGuard). */
+export async function getEvent(eventId: string): Promise<{ event: EventItem }> {
+  return apiRequest(`/api/events/${encodeURIComponent(eventId)}`, undefined, { retryOn401: false });
 }
 
 export async function createEvent(body: {
@@ -1773,13 +2492,23 @@ export async function listAdminUsers(params?: {
   return apiRequest(url);
 }
 
+/**
+ * Sets a user's moderation status.
+ *
+ * Pointed at `/moderation-status` with a `moderationStatus` field; the route
+ * is `/moderation` and the field is `status`. Both halves were wrong, so
+ * suspending or banning someone from the admin console hit a route that does
+ * not exist and failed silently — `apiRequest` casts the response without
+ * checking, and the page reported success either way.
+ */
 export async function updateAdminUserModeration(
   userId: string,
-  moderationStatus: 'active' | 'suspended' | 'banned',
-): Promise<{ ok: true }> {
-  return apiRequest(`/api/admin/users/${userId}/moderation-status`, {
+  status: 'active' | 'suspended' | 'banned',
+  reason?: string,
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/users/${userId}/moderation`, {
     method: 'PATCH',
-    body: JSON.stringify({ moderationStatus }),
+    body: JSON.stringify({ status, ...(reason ? { reason } : {}) }),
   });
 }
 
@@ -1819,6 +2548,16 @@ export async function sendConnectionRequest(body: {
     method: 'POST',
     body: JSON.stringify(body),
   });
+}
+
+/**
+ * Takes back a connection request the recipient has not answered. Only the
+ * sender may call it, and only while the request is still pending.
+ */
+export async function withdrawConnectionRequest(
+  connectionId: string,
+): Promise<{ ok: boolean; connectionId: string }> {
+  return apiRequest(`/api/connections/${connectionId}`, { method: 'DELETE' });
 }
 
 export async function listConnectionRequests(params?: {
@@ -1915,6 +2654,13 @@ export type EndorsementItem = {
     headline: string | null;
   };
   toUserId: string;
+  /** On the giver's list (`getGivenEndorsements`), the person it was written for. */
+  toUser?: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
   skill: string | null;
   content: string;
   relationship: string | null;
@@ -1940,6 +2686,37 @@ export async function getEndorsementsForUser(
 
 export async function getPendingEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
   return apiRequest('/api/endorsements/pending');
+}
+
+// --- Account data export ---
+
+export type AccountExportSection = 'profile' | 'messages' | 'connections' | 'activity' | 'milestones' | 'settings';
+
+/** The reader's own data, built on request by `GET /api/account/export` and never stored. */
+export type AccountExport = {
+  format: 'cofounderbay-export-v1';
+  exportedAt: string;
+  userId: string;
+  sections: AccountExportSection[];
+  /** Parts the server could not read, named rather than left out silently. */
+  unavailable: Array<{ section: AccountExportSection; part: string; reason: string }>;
+  data: Partial<Record<AccountExportSection, unknown>>;
+};
+
+export async function getAccountExport(sections: AccountExportSection[]): Promise<AccountExport> {
+  const sp = sections.length ? `?sections=${encodeURIComponent(sections.join(','))}` : '';
+  const res = await apiRequest<AccountExport>(`/api/account/export${sp}`);
+  return {
+    ...res,
+    sections: Array.isArray(res?.sections) ? res.sections : sections,
+    unavailable: Array.isArray(res?.unavailable) ? res.unavailable : [],
+    data: res?.data ?? {},
+  };
+}
+
+/** What the signed-in user has written for others, approved or still waiting. */
+export async function getGivenEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
+  return apiRequest('/api/endorsements/given');
 }
 
 export async function getEndorsementStats(): Promise<{ stats: EndorsementStats }> {
@@ -2360,6 +3137,8 @@ export interface MarketplaceServiceItem {
   websiteUrl: string | null;
   tags: string[];
   isFeatured: boolean;
+  /** Present on a provider's own listings; a deactivated one is theirs to see. */
+  isActive?: boolean;
   createdAt: string;
 }
 
@@ -2378,6 +3157,19 @@ export async function listMarketplaceServices(params?: {
   if (params?.offset != null) sp.set('offset', String(params.offset));
   const url = `/api/marketplace${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url, undefined, { retryOn401: false });
+}
+
+/** The signed-in provider's own listings, deactivated ones included. */
+export async function listMyMarketplaceServices(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<{ services: MarketplaceServiceItem[]; total: number; hasMore: boolean }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/marketplace/mine${sp.toString() ? `?${sp}` : ''}`, undefined, {
+    retryOn401: false,
+  });
 }
 
 export async function getMarketplaceService(id: string): Promise<MarketplaceServiceItem> {
@@ -2404,6 +3196,31 @@ export async function createMarketplaceService(body: {
     method: 'POST',
     body: JSON.stringify(body),
   });
+}
+
+/** PATCH /marketplace/:id - owner (or admin) only, enforced server-side. */
+export async function updateMarketplaceService(
+  id: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    category: MarketplaceCategory;
+    pricing: string;
+    contactUrl: string;
+    websiteUrl: string;
+    tags: string[];
+    isActive: boolean;
+  }>,
+): Promise<{ service: MarketplaceServiceItem }> {
+  return apiRequest(`/api/marketplace/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+/** DELETE /marketplace/:id - owner (or admin) only, enforced server-side. */
+export async function deleteMarketplaceService(id: string): Promise<{ ok?: boolean }> {
+  return apiRequest(`/api/marketplace/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -2440,6 +3257,24 @@ export interface AdminAuditLogItem {
 
 export async function getAdminStats(): Promise<{ stats: AdminPlatformStats }> {
   return apiRequest('/api/admin/stats');
+}
+
+/** `GET /admin/health`: the API process and its database, measured on request. */
+export interface AdminHealth {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  /** Seconds since this API process started. */
+  uptime: number;
+  services: {
+    database: { status: 'up' | 'down'; latency?: number };
+    /** Heap figures in MB. */
+    memory: { used: number; total: number; percentage: number };
+  };
+  version: string;
+}
+
+export async function getAdminHealth(): Promise<AdminHealth> {
+  return apiRequest('/api/admin/health');
 }
 
 export async function changeUserRole(userId: string, role: string): Promise<{ success: boolean }> {
@@ -2609,6 +3444,13 @@ export type OrgProfile = {
   industry: string | null;
   focus: string | null;
   size: string | null;
+  /** Declared on the model and returned by the profile read; the update
+   *  endpoint passes them straight through to Prisma. */
+  type?: string;
+  country?: string | null;
+  timezone?: string | null;
+  primaryColor?: string | null;
+  settings?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
   _count: {
@@ -2765,6 +3607,95 @@ export async function getOrgCohorts(slug: string, params?: {
   return apiRequest(`/api/org/${slug}/cohorts?${sp}`);
 }
 
+/**
+ * One cohort's dashboard, in a single request.
+ *
+ * Participants, the match suggestions between them, the mentoring they hold
+ * with each other, and the totals over all three - fetched together so the
+ * page does not flicker through five loading states.
+ */
+export type CohortParticipant = {
+  id: string;
+  userId: string;
+  role: 'founder' | 'mentor' | 'investor';
+  cohortRole: string;
+  name: string | null;
+  email: string;
+  headline: string | null;
+  avatarUrl: string | null;
+  location: string | null;
+  joinedAt: string;
+  status: 'active' | 'inactive' | 'pending';
+};
+
+export type CohortMatchPerson = {
+  id: string;
+  name: string | null;
+  role: string | null;
+  avatarUrl: string | null;
+};
+
+export type CohortMatch = {
+  id: string;
+  a: CohortMatchPerson;
+  b: CohortMatchPerson;
+  score: number;
+  status: 'pending' | 'viewed' | 'saved' | 'dismissed' | 'connected';
+  generatedAt: string;
+  reasons: string[];
+};
+
+export type CohortSession = {
+  id: string;
+  mentor: { id: string; name: string | null; avatarUrl: string | null };
+  mentee: { id: string; name: string | null; avatarUrl: string | null };
+  title: string | null;
+  scheduledAt: string;
+  duration: number;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  rating: number | null;
+};
+
+export type CohortDetail = {
+  cohort: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    capacity: number | null;
+    isPublic: boolean;
+    isActive: boolean;
+    imageUrl: string | null;
+    tags: string[];
+    organizerId: string;
+    createdAt: string;
+  };
+  participants: CohortParticipant[];
+  matches: CohortMatch[];
+  sessions: CohortSession[];
+  stats: {
+    participants: number;
+    founders: number;
+    mentors: number;
+    investors: number;
+    completedSessions: number;
+    upcomingSessions: number;
+    matches: number;
+    connectedMatches: number;
+    avgMatchScore: number | null;
+    avgSessionRating: number | null;
+  };
+};
+
+export async function getOrgCohortDetail(
+  slug: string,
+  cohortId: string,
+): Promise<CohortDetail> {
+  return apiRequest(`/api/org/${slug}/cohorts/${cohortId}`);
+}
+
 export type OrgMember = {
   id: string;
   displayName: string;
@@ -2842,6 +3773,56 @@ export async function getMatchScore(targetUserId: string): Promise<{
   reasons: string[];
 }> {
   return apiRequest(`/api/recommendations/score/${targetUserId}`);
+}
+
+/**
+ * One axis of a real compatibility breakdown, as the matching engine scores it.
+ * `key` is stable; `label` is the engine's own English wording.
+ */
+export type MatchBreakdownAxis = { key: string; label: string; score: number; color: string };
+
+/**
+ * The engine's full read on two people — the same computation that ranks
+ * recommendations, not a re-derivation of one number.
+ *
+ * `confidence` matters as much as `score`: a thin profile produces a
+ * confident-looking percentage from very little evidence, and the UI should
+ * be able to say so.
+ */
+export type MatchBreakdown = {
+  overall: { score: number; confidence: number };
+  breakdown: MatchBreakdownAxis[];
+  badges?: string[];
+  sharedStrengths?: string[];
+  frictionPoints?: string[];
+  reasons?: string[];
+};
+
+/**
+ * `/recommendations/vs/:id` answers strengths as `{ icon, label }` and friction
+ * points as `{ icon, title, description }` (matching.service), the shape
+ * `getMatchVs` declares. This reader declared plain strings, and both screens
+ * that use it - the /matches compatibility dialog and /matches/compare -
+ * rendered each object as a React child, which throws. The two shapes meet
+ * here: an object becomes its words, a string passes through.
+ */
+export function breakdownText(item: unknown): string | null {
+  if (typeof item === 'string') return item;
+  if (item && typeof item === 'object') {
+    const o = item as { label?: unknown; title?: unknown; description?: unknown };
+    if (typeof o.label === 'string') return o.label;
+    if (typeof o.title === 'string') return typeof o.description === 'string' && o.description ? `${o.title}: ${o.description}` : o.title;
+  }
+  return null;
+}
+
+export async function getMatchBreakdown(targetUserId: string): Promise<MatchBreakdown> {
+  const res = await apiRequest<MatchBreakdown & { sharedStrengths?: unknown[]; frictionPoints?: unknown[] }>(`/api/recommendations/vs/${targetUserId}`);
+  return {
+    ...res,
+    sharedStrengths: (res?.sharedStrengths ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
+    frictionPoints: (res?.frictionPoints ?? []).map(breakdownText).filter((t): t is string => Boolean(t)),
+  };
 }
 
 export async function submitMatchFeedback(
@@ -2975,7 +3956,22 @@ export async function createTenant(data: {
   return apiRequest('/api/tenants', { method: 'POST', body: JSON.stringify(data) });
 }
 
+/**
+ * Workspace preferences as the settings screen holds them. Kept as one object
+ * because they are read and written together.
+ */
+export type TenantSettings = {
+  timezone?: string;
+  language?: string;
+  currency?: string;
+  autoApprove?: boolean;
+  requireApproval?: boolean;
+  emailNotifications?: boolean;
+  weeklyDigest?: boolean;
+};
+
 export async function updateTenant(id: string, data: Partial<{
+  settings: TenantSettings;
   name: string;
   slug: string;
   displayName: string;
@@ -3162,7 +4158,10 @@ export async function getSSOAuthEvents(params?: { tenantId?: string; eventType?:
 
 /** List identity providers for a tenant (admin) */
 export async function listSSOProviders(tenantId: string): Promise<IdentityProviderItem[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/providers`);
+  // An envelope or an error body is not a list: /tenant/sso called
+  // `providers.filter` on one and fell into its error boundary.
+  const res = await apiRequest<IdentityProviderItem[] | { providers?: IdentityProviderItem[] }>(`/api/sso/tenants/${tenantId}/providers`);
+  return Array.isArray(res) ? res : Array.isArray(res?.providers) ? res.providers : [];
 }
 
 /** Create identity provider for a tenant (admin) */
@@ -3197,7 +4196,16 @@ export async function deleteSSOProvider(providerId: string): Promise<void> {
 
 /** Get SSO config for a tenant (admin) */
 export async function getTenantSSOConfig(tenantId: string): Promise<TenantSSOConfig | null> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/config`);
+  const res = await apiRequest<TenantSSOConfig | { config?: TenantSSOConfig } | null>(`/api/sso/tenants/${tenantId}/config`);
+  const cfg = res && 'ssoMode' in res ? res : res && 'config' in res ? res.config ?? null : null;
+  // No mode means no configuration row, not a configuration with empty fields.
+  return cfg && typeof cfg.ssoMode === 'string'
+    ? {
+        ...cfg,
+        allowedDomains: Array.isArray(cfg.allowedDomains) ? cfg.allowedDomains : [],
+        roleMappingRules: Array.isArray(cfg.roleMappingRules) ? cfg.roleMappingRules : [],
+      }
+    : null;
 }
 
 /** Upsert SSO config for a tenant (admin) */
@@ -3211,6 +4219,8 @@ export async function upsertTenantSSOConfig(tenantId: string, data: {
   allowPasswordFallback?: boolean;
   postLoginRedirect?: string;
   sessionDurationHours?: number;
+  /** Claim → role rules applied at SSO sign-in; the API stores them as given. */
+  roleMappingRules?: Array<{ claim: string; value: string; role: string }>;
 }): Promise<TenantSSOConfig> {
   return apiRequest(`/api/sso/tenants/${tenantId}/config`, { method: 'POST', body: JSON.stringify(data) });
 }
@@ -3228,7 +4238,8 @@ export type SSODomainMapping = {
 };
 
 export async function listSSODomainMappings(tenantId: string): Promise<SSODomainMapping[]> {
-  return apiRequest(`/api/sso/tenants/${tenantId}/domains`);
+  const res = await apiRequest<SSODomainMapping[] | { domains?: SSODomainMapping[] }>(`/api/sso/tenants/${tenantId}/domains`);
+  return Array.isArray(res) ? res : Array.isArray(res?.domains) ? res.domains : [];
 }
 
 export async function createSSODomainMapping(tenantId: string, domain: string, autoRedirectToSSO = false): Promise<SSODomainMapping> {
@@ -3860,8 +4871,9 @@ export interface ResearchBoardFull extends ResearchBoard {
 }
 
 // Board operations
-export async function listResearchBoards(): Promise<{ boards: ResearchBoard[] }> {
-  return apiRequest('/api/research/boards');
+export async function listResearchBoards(opts?: { archived?: boolean }): Promise<{ boards: ResearchBoard[] }> {
+  const q = opts?.archived ? '?archived=1' : '';
+  return apiRequest(`/api/research/boards${q}`);
 }
 
 export async function getResearchBoard(boardId: string): Promise<{ board: ResearchBoardFull }> {
@@ -4049,7 +5061,8 @@ export interface ResearchComment {
 }
 
 export async function listNodeComments(nodeId: string): Promise<{ comments: ResearchComment[] }> {
-  return apiRequest(`/api/research/nodes/${nodeId}/comments`);
+  const result = await apiRequest<{ comments?: ResearchComment[] }>(`/api/research/nodes/${nodeId}/comments`);
+  return { comments: result?.comments ?? [] };
 }
 
 export async function createNodeComment(
@@ -4271,6 +5284,8 @@ export interface ProgramItem {
   };
   createdAt: string;
   updatedAt: string;
+  /** From `getMyPrograms`: the caller's own participant status in this program. */
+  myStatus?: string;
 }
 
 export interface ProgramParticipantItem {
@@ -4281,7 +5296,101 @@ export interface ProgramParticipantItem {
   appliedAt: string;
   acceptedAt: string | null;
   completedAt: string | null;
-  user: { id: string; profile: { displayName: string | null; avatarUrl: string | null } | null };
+  /** The reviewer's score, when one has been recorded. */
+  score?: number | null;
+  user: {
+    id: string;
+    profile: {
+      displayName: string | null;
+      avatarUrl: string | null;
+      headline?: string | null;
+      location?: string | null;
+    } | null;
+  };
+}
+
+/** Moves an applicant along: accepted, rejected, active, completed, dropped. */
+export async function updateProgramParticipant(
+  programId: string,
+  participantId: string,
+  body: Partial<{ status: string; role: string; progress: number; score: number; notes: string }>,
+): Promise<{ participant: ProgramParticipantItem }> {
+  return apiRequest(`/api/programs/${programId}/participants/${participantId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+/**
+ * One program as the pages read it, from whatever the program endpoints send.
+ *
+ * The controller returns Prisma rows: `name` not `title`, participants
+ * counted under `_count` and `currentParticipants`, industries, location and
+ * remoteness inside the `settings` JSON, and `organization.type`. The web's
+ * `ProgramItem` was written against a shape no endpoint produces, and
+ * `apiRequest` casts without checking, so every program screen read
+ * `undefined` for the title and the counts against the real API. The shapes
+ * meet here, once. A row already in `ProgramItem` form passes through.
+ *
+ * `applicationCount` is every participant row (applicants included) and
+ * `participantCount` is the enrolled ones, the same split
+ * `/programs/:id/participants` makes by status.
+ */
+type RawProgram = Omit<Partial<ProgramItem>, 'organization' | 'benefits' | 'status' | 'programType'> & {
+  name?: string;
+  status?: string;
+  programType?: string;
+  benefits?: unknown;
+  currentParticipants?: number;
+  _count?: { participants?: number };
+  shortDescription?: string | null;
+  organization?: (Partial<ProgramItem['organization']> & { type?: string }) | null;
+  settings?: Record<string, unknown> | null;
+};
+
+const asStrings = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];
+
+export function toProgramItem(raw: RawProgram): ProgramItem {
+  const settings = (raw.settings ?? {}) as Record<string, unknown>;
+  const org = raw.organization ?? null;
+  return {
+    id: raw.id ?? '',
+    slug: raw.slug ?? raw.id ?? '',
+    title: raw.title ?? raw.name ?? 'Untitled program',
+    description: raw.description ?? raw.shortDescription ?? null,
+    programType: raw.programType ?? 'accelerator',
+    status: raw.status ?? 'draft',
+    startDate: raw.startDate ?? null,
+    endDate: raw.endDate ?? null,
+    applicationDeadline: raw.applicationDeadline ?? null,
+    capacity: raw.capacity ?? null,
+    isRemote: raw.isRemote ?? settings.isRemote === true,
+    location: raw.location ?? (typeof settings.location === 'string' ? settings.location : null),
+    industries: raw.industries ?? asStrings(settings.industries),
+    benefits: Array.isArray(raw.benefits) ? asStrings(raw.benefits) : [],
+    requirements: raw.requirements ?? null,
+    curriculum: raw.curriculum ?? null,
+    settings: raw.settings ?? null,
+    applicationCount: raw.applicationCount ?? raw._count?.participants ?? 0,
+    participantCount: raw.participantCount ?? raw.currentParticipants ?? 0,
+    organization: {
+      id: org?.id ?? '',
+      name: org?.name ?? '',
+      slug: org?.slug ?? '',
+      logoUrl: org?.logoUrl ?? null,
+      organizationType: org?.organizationType ?? org?.type ?? 'organization',
+    },
+    createdAt: raw.createdAt ?? '',
+    updatedAt: raw.updatedAt ?? '',
+    ...(raw.myStatus ? { myStatus: raw.myStatus } : {}),
+  };
+}
+
+/** Upcoming and running programs take applications until their deadline (program.service `apply`). */
+export function acceptsApplications(program: Pick<ProgramItem, 'status' | 'applicationDeadline'>, now = Date.now()): boolean {
+  if (program.status !== 'upcoming' && program.status !== 'active') return false;
+  return !program.applicationDeadline || Date.parse(program.applicationDeadline) > now;
 }
 
 export async function listPrograms(params?: {
@@ -4297,15 +5406,217 @@ export async function listPrograms(params?: {
   if (params?.search) q.set('search', params.search);
   if (params?.limit) q.set('limit', String(params.limit));
   if (params?.offset) q.set('offset', String(params.offset));
-  return apiRequest(`/api/programs?${q}`);
+  // The controller answers { programs, pagination: { total } }.
+  const res = await apiRequest<{ programs?: RawProgram[]; total?: number; pagination?: { total?: number } }>(`/api/programs?${q}`);
+  const programs = (res?.programs ?? []).map(toProgramItem);
+  return { programs, total: res?.total ?? res?.pagination?.total ?? programs.length };
 }
 
 export async function getProgram(id: string): Promise<{ program: ProgramItem }> {
-  return apiRequest(`/api/programs/${id}`);
+  // `GET /programs/:id` returns the row itself, not an envelope.
+  const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`);
+  const raw = res?.program ?? res;
+  // A body without an id is not a programme: normalising it drew an
+  // "Untitled program" with dashes for every field instead of the page's
+  // not-found state.
+  if (!raw || typeof (raw as { id?: unknown }).id !== 'string') throw new Error('Program not found');
+  return { program: toProgramItem(raw) };
 }
 
+/**
+ * The programs the caller takes part in, with their own status in each.
+ *
+ * `GET /programs/my-programs` answers with the caller's participant rows,
+ * each carrying its program, as a bare array. The client declared
+ * `{ programs }` and three organisation screens used it as "the
+ * organisation's programs", so against the API each read undefined. Those
+ * screens now ask `listOrganizationPrograms`; this one is what it says.
+ */
 export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
-  return apiRequest(`/api/programs/my-programs`);
+  const res = await apiRequest<Array<{ status?: string; program?: RawProgram }> | { programs?: RawProgram[] }>(`/api/programs/my-programs`);
+  if (Array.isArray(res)) {
+    return {
+      programs: res
+        .filter((row) => row?.program)
+        .map((row) => toProgramItem({ ...(row.program as RawProgram), myStatus: row.status })),
+    };
+  }
+  return { programs: (res?.programs ?? []).map(toProgramItem) };
+}
+
+/** The tenant-admin view: every program of the caller's organisation,
+ *  including drafts. `GET /programs/organization/:orgId` returns a bare array. */
+export async function listOrganizationPrograms(
+  organizationId: string,
+  params?: { status?: string; programType?: string },
+): Promise<ProgramItem[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  if (params?.programType) q.set('programType', params.programType);
+  const res = await apiRequest<RawProgram[] | { programs?: RawProgram[] }>(`/api/programs/organization/${organizationId}${q.toString() ? `?${q}` : ''}`, undefined, { retryOn401: false });
+  return (Array.isArray(res) ? res : res?.programs ?? []).map(toProgramItem);
+}
+
+export async function createProgram(
+  organizationId: string,
+  body: {
+    name: string;
+    slug: string;
+    description?: string;
+    programType: string;
+    startDate?: string;
+    endDate?: string;
+    capacity?: number;
+  },
+): Promise<ProgramItem> {
+  const res = await apiRequest<RawProgram>(`/api/programs/organization/${organizationId}`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return toProgramItem(res);
+}
+
+/**
+ * Updates a program. The controller has exposed PATCH all along; the web had
+ * no client for it, which is why "Archive" in the program menu did nothing.
+ */
+/**
+ * Updates the organisation. `PATCH /organizations/:id` has existed all along;
+ * the web had no client for it, which is why both Save buttons on
+ * /org/settings were decoration.
+ */
+export async function updateOrganization(
+  organizationId: string,
+  body: Partial<{
+    name: string;
+    description: string;
+    tagline: string;
+    website: string;
+    email: string;
+    location: string;
+    industry: string;
+    type: string;
+    country: string;
+    timezone: string;
+    primaryColor: string;
+    settings: Record<string, unknown>;
+  }>,
+): Promise<{ organization: OrgProfile }> {
+  return apiRequest(`/api/organizations/${organizationId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+/** An organisation row as `GET /organizations/slug/:slug` returns it. */
+export type OrganizationRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  logo?: string | null;
+  logoUrl?: string | null;
+  _count?: { memberships: number; programs: number };
+};
+
+export async function getOrganizationBySlug(slug: string): Promise<OrganizationRecord> {
+  return apiRequest(`/api/organizations/slug/${slug}`, undefined, { retryOn401: false });
+}
+
+/** A membership row from `GET /organizations/:id/members`. */
+export type OrgAdminMember = {
+  id: string;
+  userId: string;
+  role: string;
+  isActive: boolean;
+  title?: string | null;
+  department?: string | null;
+  joinedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    profile?: {
+      displayName?: string | null;
+      firstName?: string | null;
+      lastName?: string | null;
+      avatarUrl?: string | null;
+    } | null;
+  } | null;
+};
+
+export async function listOrganizationMembers(
+  organizationId: string,
+): Promise<OrgAdminMember[]> {
+  return apiRequest(`/api/organizations/${organizationId}/members`, undefined, { retryOn401: false });
+}
+
+export async function addOrganizationMember(
+  organizationId: string,
+  body: { userId: string; role: string; title?: string; department?: string },
+): Promise<OrgAdminMember> {
+  return apiRequest(`/api/organizations/${organizationId}/members`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function updateOrganizationMember(
+  organizationId: string,
+  memberId: string,
+  body: { role?: string; isActive?: boolean; title?: string; department?: string },
+): Promise<OrgAdminMember> {
+  return apiRequest(`/api/organizations/${organizationId}/members/${memberId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function removeOrganizationMember(
+  organizationId: string,
+  memberId: string,
+): Promise<void> {
+  return apiRequest(`/api/organizations/${organizationId}/members/${memberId}`, { method: 'DELETE' });
+}
+
+export type OrgMentorPoolItem = {
+  id: string;
+  userId: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  headline: string | null;
+  expertiseAreas: string[];
+  maxMentees: number | null;
+  currentMentees: number;
+  isActive: boolean;
+  assignedAt: string;
+};
+
+/** The organisation's mentor pool, with the people in it. */
+export async function getOrgMentorPool(
+  organizationId: string,
+): Promise<{ mentors: OrgMentorPoolItem[] }> {
+  return apiRequest(`/api/organizations/${organizationId}/mentors`, undefined, {
+    retryOn401: false,
+  });
+}
+
+export async function updateProgram(
+  id: string,
+  body: Partial<{
+    title: string;
+    description: string;
+    status: string;
+    startDate: string;
+    endDate: string;
+    capacity: number;
+  }>,
+): Promise<{ program: ProgramItem }> {
+  // The controller answers with the updated row itself.
+  const res = await apiRequest<RawProgram & { program?: RawProgram }>(`/api/programs/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
+  return { program: toProgramItem(res?.program ?? res) };
+}
+
+export async function deleteProgram(id: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/programs/${id}`, { method: 'DELETE' });
 }
 
 export async function applyToProgram(
@@ -4357,6 +5668,28 @@ export async function assessReadiness(dto: {
   return apiRequest(`/api/builder/readiness/assess`, {
     method: 'POST',
     body: JSON.stringify(dto),
+  });
+}
+
+/** Nest returns `{ assessment: { dimensions } }`; older/preview payloads were flat. */
+export function pickReadinessDimensions(response: unknown): ReadinessScore[] | null {
+  if (!response || typeof response !== 'object') return null;
+  const rec = response as { assessment?: { dimensions?: unknown }; dimensions?: unknown };
+  const dimensions = Array.isArray(rec.assessment?.dimensions)
+    ? rec.assessment.dimensions
+    : rec.dimensions;
+  return Array.isArray(dimensions) ? (dimensions as ReadinessScore[]) : null;
+}
+
+/**
+ * Archives a workspace. Used by the assistant to take back a workspace it just
+ * created — archiving rather than deleting, because that is the product's own
+ * word for putting one away and it leaves the row recoverable.
+ */
+export async function archiveWorkspace(workspaceId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/builder/workspaces/${workspaceId}/archive`, {
+    method: 'POST',
+    body: '{}',
   });
 }
 

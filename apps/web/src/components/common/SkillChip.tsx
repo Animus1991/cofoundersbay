@@ -21,7 +21,7 @@ export function SkillChip({
   className,
 }: SkillChipProps) {
   const sizeClasses = {
-    sm: 'px-2 py-0.5 text-[10px]',
+    sm: 'px-2 py-0.5 text-2xs',
     md: 'px-3 py-1 text-xs',
     lg: 'px-4 py-1.5 text-sm',
   };
@@ -32,19 +32,19 @@ export function SkillChip({
     <span
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border border-border/60 font-medium transition-all duration-200',
+        'inline-flex items-center gap-1.5 rounded-full border-0 font-medium transition-all duration-200',
         sizeClasses[size],
         active 
-          ? 'bg-primary/20 text-primary border-primary/30 shadow-sm' 
-          : 'bg-secondary/60 text-muted-foreground hover:text-foreground',
+          ? 'bg-primary/20 text-primary-accessible shadow-sm' 
+          : 'bg-transparent text-muted-foreground hover:text-foreground',
         isInteractive && 'cursor-pointer hover:scale-105 active:scale-95',
-        isInteractive && !active && 'hover:bg-secondary/80 hover:border-border',
+        isInteractive && !active && 'hover:bg-secondary/80',
         className,
       )}
     >
       {label}
       {removable && (
-        <button
+        <button aria-label={`Remove ${label}`}
           type="button"
           onClick={(e) => {
             e.stopPropagation();
@@ -52,7 +52,7 @@ export function SkillChip({
           }}
           className="rounded-full p-0.5 hover:bg-primary/20 transition-colors"
         >
-          <X className="h-3 w-3" />
+          <X className="icon-sm" />
         </button>
       )}
     </span>
@@ -97,7 +97,7 @@ export function SkillChipGroup({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary-accessible transition-colors"
         >
           + Add skill
         </button>

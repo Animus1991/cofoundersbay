@@ -20,6 +20,7 @@ import { EventsModule } from './events/events.module';
 import { MentoringModule } from './mentoring/mentoring.module';
 import { ModerationModule } from './moderation/moderation.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { GraphModule } from './graph/graph.module';
 import { PollsModule } from './polls/polls.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ConnectionsModule } from './connections/connections.module';
@@ -28,6 +29,7 @@ import { CommonModule } from './common/common.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ServicesModule } from './services/services.module';
+import { ExpertReviewsModule } from './expert-reviews/expert-reviews.module';
 import { SecurityModule } from './security/security.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { OpportunitiesModule } from './opportunities/opportunities.module';
@@ -41,8 +43,10 @@ import { TenantModule } from './tenant/tenant.module';
 import { SSOModule } from './sso/sso.module';
 import { AutomationModule } from './automation/automation.module';
 import { MilestonesModule } from './milestones/milestones.module';
+import { InvestorModule } from './investor/investor.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
+import { AccountExportModule } from './account-export/account-export.module';
 import { ResearchModule } from './research/research.module';
 import { BuilderModule } from './builder/builder.module';
 import { RolesModule } from './roles/roles.module';
@@ -95,12 +99,14 @@ function findEnvFiles(): string[] {
     MentoringModule,
     ModerationModule,
     DashboardModule,
+    GraphModule,
     PollsModule,
     JobsModule,
     ConnectionsModule,
     GroupsModule,
     AnalyticsModule,
     ServicesModule,
+    ExpertReviewsModule,
     SecurityModule,
     MonitoringModule,
     OpportunitiesModule,
@@ -114,8 +120,10 @@ function findEnvFiles(): string[] {
     SSOModule,
     AutomationModule,
     MilestonesModule,
+    InvestorModule,
     ShortlistModule,
     EndorsementsModule,
+    AccountExportModule,
     ResearchModule,
     BuilderModule,
     RolesModule,

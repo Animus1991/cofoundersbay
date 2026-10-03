@@ -6,7 +6,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   ArrowLeft, MoreVertical, AlertTriangle, Bookmark, Send,
-  Clock, TrendingUp, CheckCircle, Info, Brain, Zap, MessageCircle, ExternalLink,
+  Clock, TrendingUp, CheckCircle, Info, Sparkles, MessageCircle,
+  Link as LinkIcon, UserRound, ListChecks, Activity, ThumbsUp,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -14,80 +15,36 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
+import { cn, initialsOf } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { SectionCard } from '@/components/dashboard/SectionCard';
+import {
   getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
-  type MatchVsResult, type MatchVsBreakdownItem, type MatchVsFrictionPoint, type MatchVsStrength,
+  type MatchVsResult, type MatchVsBreakdownItem,
 } from '@/lib/api';
-
-// ── Section Label — JetBrains Mono, ALL CAPS ─────────────────────────────────
-
-function SectionLabel({ label }: { label: string }) {
-  return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
-      style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-      {label}
-    </p>
-  );
-}
 
 // ── Factor Row ────────────────────────────────────────────────────────────────
 
 function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {item.label}
-        </span>
-        <span className="text-[10px] font-semibold tabular-nums text-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {item.score}%
-        </span>
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="text-muted-foreground">{item.label}</span>
+        <span className="font-semibold tabular-nums text-foreground">{item.score}%</span>
       </div>
-      <div className="h-1 w-full rounded-full overflow-hidden bg-border">
-        <div
-          className="h-1 rounded-full transition-all duration-700"
-          style={{ width: `${item.score}%`, background: item.color }}
-        />
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${item.score}%`, background: item.color }} />
       </div>
-    </div>
-  );
-}
-
-// ── Compatibility Badge ───────────────────────────────────────────────────────
-
-function CompatBadge({ label }: { label: string }) {
-  const icon = label.toLowerCase().includes('vision') ? (
-    <Brain className="h-3.5 w-3.5" />
-  ) : (
-    <Zap className="h-3.5 w-3.5" />
-  );
-  return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded"
-      style={{
-        background: 'rgba(34,211,238,0.08)',
-        border: '1px solid rgba(34,211,238,0.2)',
-        color: '#22D3EE',
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: 11,
-        fontWeight: 600,
-      }}>
-      {icon}
-      {label}
-    </div>
-  );
-}
-
-// ── Trait Chip ────────────────────────────────────────────────────────────────
-
-function TraitChip({ item }: { item: MatchVsStrength }) {
-  return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border bg-card">
-      <span style={{ color: '#4ADE80', fontSize: 10 }}>■</span>
-      <span className="text-[11px] font-medium text-foreground"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        {item.label}
-      </span>
     </div>
   );
 }
@@ -95,39 +52,10 @@ function TraitChip({ item }: { item: MatchVsStrength }) {
 // ── Friction Icon helper ───────────────────────────────────────────────────────
 
 function FrictionIcon({ icon }: { icon: string }) {
-  const cls = "h-5 w-5";
-  if (icon === 'schedule') return <Clock className={cls} />;
-  if (icon === 'trending_up') return <TrendingUp className={cls} />;
-  return <AlertTriangle className={cls} />;
-}
-
-// ── Friction Points — single unified card with dividers ───────────────────────
-
-function FrictionSection({ points }: { points: MatchVsFrictionPoint[] }) {
-  if (points.length === 0) return null;
-  return (
-    <div className="rounded-lg overflow-hidden border"
-      style={{ background: 'rgba(251,146,60,0.05)', borderColor: 'rgba(251,146,60,0.2)' }}>
-      {points.map((point, i) => (
-        <div key={point.title}>
-          <div className="flex gap-3 p-4">
-            <div className="shrink-0 mt-0.5" style={{ color: '#FB923C' }}>
-              <FrictionIcon icon={point.icon} />
-            </div>
-            <div className="flex flex-col gap-1 flex-1">
-              <span className="text-sm font-semibold leading-none" style={{ color: '#FB923C' }}>
-                {point.title}
-              </span>
-              <span className="text-sm text-foreground leading-relaxed">{point.description}</span>
-            </div>
-          </div>
-          {i < points.length - 1 && (
-            <div className="mx-4" style={{ height: 1, background: 'rgba(251,146,60,0.13)' }} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  const cls = 'icon-sm';
+  if (icon === 'schedule') return <Clock className={cls} aria-hidden="true" />;
+  if (icon === 'trending_up') return <TrendingUp className={cls} aria-hidden="true" />;
+  return <AlertTriangle className={cls} aria-hidden="true" />;
 }
 
 // ── Work Style — smooth SVG line chart ────────────────────────────────────────
@@ -156,49 +84,26 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
   };
 
   return (
-    <div className="w-full">
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ overflow: 'visible' }}>
-        {/* Grid lines */}
-        {[0, 25, 50, 75, 100].map(pct => (
-          <line key={pct} x1={PAD.left} y1={yAt(pct)} x2={W - PAD.right} y2={yAt(pct)}
-            stroke="rgba(107,114,128,0.15)" strokeWidth={1} />
+    <figure className="w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ overflow: 'visible' }} role="img" aria-label="Work style: yours against your match's">
+        {[0, 25, 50, 75, 100].map((pct) => (
+          <line key={pct} x1={PAD.left} y1={yAt(pct)} x2={W - PAD.right} y2={yAt(pct)} stroke="hsl(var(--border))" strokeWidth={1} />
         ))}
-        {/* Source line */}
-        <path d={smoothPath(source)} fill="none" stroke="#4ADE80" strokeWidth={2}
-          strokeLinecap="round" strokeLinejoin="round" />
-        {/* Target line */}
-        <path d={smoothPath(target)} fill="none" stroke="#22D3EE" strokeWidth={2}
-          strokeLinecap="round" strokeLinejoin="round" />
-        {/* Source dots */}
-        {source.map((v, i) => (
-          <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#4ADE80" />
-        ))}
-        {/* Target dots */}
-        {target.map((v, i) => (
-          <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#22D3EE" />
-        ))}
-        {/* X-axis labels */}
+        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {source.map((v, i) => <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-success-mark))" />)}
+        {target.map((v, i) => <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-info-mark))" />)}
         {axes.map((axis, i) => (
-          <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9}
-            fill="rgba(107,114,128,0.7)"
-            fontFamily="'JetBrains Mono', monospace">
+          <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="hsl(var(--muted-foreground))">
             {axis}
           </text>
         ))}
       </svg>
-      <div className="flex justify-center gap-6 mt-3">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#4ADE80' }} />
-          You
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#22D3EE' }} />
-          Match
-        </div>
-      </div>
-    </div>
+      <figcaption className="mt-3 flex justify-center gap-6 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-success-mark" aria-hidden="true" />You</span>
+        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-info-mark" aria-hidden="true" />Match</span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -209,27 +114,44 @@ function DonutScore({ score }: { score: number }) {
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 100, height: 100 }}>
-      <svg width={100} height={100} viewBox="0 0 100 100">
-        {/* Background track */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#333333" strokeWidth={10} />
-        {/* Score arc — rotated so 0% starts at top */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#22D3EE" strokeWidth={10}
+    <div className="relative flex shrink-0 items-center justify-center" style={{ width: 104, height: 104 }} role="img" aria-label={`${score}% match`}>
+      <svg width={104} height={104} viewBox="0 0 100 100" aria-hidden="true">
+        {/* The track was a literal #333333, invisible on the dark card and
+            heavy on the light one; it is the muted token now. */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={9} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--primary))" strokeWidth={9}
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeDashoffset={circ / 4}
           strokeLinecap="round"
           style={{ transformOrigin: '50px 50px', transition: 'stroke-dasharray 1s ease' }} />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-extrabold tabular-nums leading-none"
-          style={{ color: '#22D3EE', fontSize: 22, fontFamily: "'JetBrains Mono', monospace" }}>
-          {score}%
-        </span>
-        <span className="uppercase tracking-wider mt-0.5"
-          style={{ color: 'var(--muted-foreground)', fontSize: 9, fontWeight: 600,
-            fontFamily: "'JetBrains Mono', monospace" }}>
-          MATCH
-        </span>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
+        <span className="text-2xl font-semibold tabular-nums leading-none text-foreground">{score}%</span>
+        <span className="text-2xs font-medium text-muted-foreground">match</span>
+      </div>
+    </div>
+  );
+}
+
+function PersonBlock({ name, role, avatarUrl, href, accent }: { name: string; role: string; avatarUrl?: string | null; href?: string; accent?: boolean }) {
+  const avatar = (
+    <Avatar className={cn('h-16 w-16 rounded-2xl ring-2', accent ? 'ring-primary/60' : 'ring-border')}>
+      <AvatarImage src={avatarUrl ?? undefined} alt={name} />
+      <AvatarFallback className={cn('rounded-2xl text-base font-semibold', accent ? 'bg-primary/10 text-primary-accessible' : 'bg-muted')}>
+        {initialsOf(name)}
+      </AvatarFallback>
+    </Avatar>
+  );
+  return (
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
+      {href ? <Link href={href} className="rounded-2xl focus-ring">{avatar}</Link> : avatar}
+      <div className="min-w-0">
+        {href ? (
+          <Link href={href} className="text-sm font-semibold text-foreground hover:text-primary-accessible">{name}</Link>
+        ) : (
+          <p className="text-sm font-semibold text-foreground">{name}</p>
+        )}
+        <p className="text-xs capitalize text-muted-foreground">{role}</p>
       </div>
     </div>
   );
@@ -256,20 +178,21 @@ export default function MatchDetailPage() {
   const router = useRouter();
   const { addToast } = useToast();
   const targetUserId = params?.userId as string;
-  const [shortlisted, setShortlisted] = useState(false);
-
-  // Fetch whether this user is already in shortlist
-  useQuery({
-    queryKey: ['shortlist', 'ids'],
+  // Whether this person is already shortlisted. It was set from an
+  // `onSuccess` option, which TanStack Query v5 no longer calls, so the page
+  // said "Shortlist" for people already on the list. The server answer is
+  // the default; a click overrides it until the next read.
+  const { data: shortlistData } = useQuery({
+    queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
     staleTime: 60_000,
-    onSuccess: (d: { ids: string[] }) => {
-      setShortlisted(d.ids.includes(targetUserId));
-    },
-  } as any);
+  });
+  const [shortlistOverride, setShortlistOverride] = useState<boolean | null>(null);
+  const shortlisted = shortlistOverride ?? Boolean(shortlistData?.ids?.includes(targetUserId));
+  const setShortlisted = (value: boolean) => setShortlistOverride(value);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['match-vs', targetUserId],
+    queryKey: qk('matching', 'vs', targetUserId),
     queryFn: () => getMatchVs(targetUserId),
     enabled: !!targetUserId,
   });
@@ -305,29 +228,84 @@ export default function MatchDetailPage() {
     recordMatchFeedback({ targetUserId, feedback: 'accepted', connectionStarted: true }).catch(() => {});
   };
 
+  /*
+   * Shortlist, propose and copy, offered to the assistant. Saving is undone
+   * by removing (the shortlist_add declaration: `deleteMany`, nobody told);
+   * removing names no undo because it drops the entry's private note.
+   */
+  usePageControls([
+    {
+      id: 'save_to_shortlist',
+      labelEn: 'Save this person to my shortlist',
+      labelEl: 'Αποθήκευση στη λίστα επιλογών',
+      writes: true,
+      unavailableEn: shortlisted ? 'Already on your shortlist.' : undefined,
+      unavailableEl: shortlisted ? 'Είναι ήδη στη λίστα σας.' : undefined,
+      undo: () => ({ control: 'remove_from_shortlist' }),
+      run: () => { if (!shortlisted) void handleShortlist(); },
+    },
+    {
+      id: 'remove_from_shortlist',
+      labelEn: 'Remove this person from my shortlist',
+      labelEl: 'Αφαίρεση από τη λίστα επιλογών',
+      writes: true,
+      unavailableEn: !shortlisted ? 'Not on your shortlist.' : undefined,
+      unavailableEl: !shortlisted ? 'Δεν είναι στη λίστα σας.' : undefined,
+      run: () => { if (shortlisted) void handleShortlist(); },
+    },
+    {
+      id: 'propose_collaboration',
+      labelEn: 'Send a collaboration request',
+      labelEl: 'Αποστολή αιτήματος συνεργασίας',
+      writes: true,
+      unavailableEn: connectMutation.isSuccess ? 'The request was sent.' : undefined,
+      unavailableEl: connectMutation.isSuccess ? 'Το αίτημα στάλθηκε.' : undefined,
+      run: handlePropose,
+    },
+    {
+      id: 'copy_match_link',
+      labelEn: 'Copy the link to this comparison',
+      labelEl: 'Αντιγραφή συνδέσμου σύγκρισης',
+      writes: false,
+      run: async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          addToast({ type: 'success', title: bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε') });
+        } catch {
+          addToast({ type: 'error', title: bilingualInline('Could not copy the link', 'Δεν αντιγράφηκε ο σύνδεσμος') });
+        }
+      },
+    },
+  ]);
+
   if (isLoading) {
     return (
       <AppShell>
-        <div className="max-w-2xl mx-auto">
-          {/* Header skeleton */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <Skeleton className="h-5 w-5 rounded" />
-            <Skeleton className="h-4 w-40 rounded" />
-            <Skeleton className="h-5 w-5 rounded" />
-          </div>
-          <PageSkeleton />
-        </div>
+        <PageSkeleton />
       </AppShell>
     );
   }
 
-  if (isError || !data) {
+  // The whole render below dereferences these unconditionally, so a 200 with a
+  // partial body has to take the same path as an outright failure.
+  //
+  // Guard `overall.score`, not `overall`. `overall` is { score, confidence }
+  // (see MatchCompatibility in lib/api.ts), so an earlier `typeof data?.overall
+  // !== 'number'` was true for every well-formed response — it sent the page to
+  // "Could not load compatibility data." always, and narrowed `overall` to
+  // `never`, which is where the three type errors came from.
+  if (
+    isError ||
+    typeof data?.overall?.score !== 'number' ||
+    !data.sourceProfile ||
+    !data.targetProfile
+  ) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Info className="h-8 w-8 text-muted-foreground" />
-          <p className="text-muted-foreground">Could not load compatibility data.</p>
-          <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
+          <Info className="icon-xl text-muted-foreground" />
+          <p className="text-muted-foreground"><BilingualText en="Could not load compatibility data." el="Τα στοιχεία συμβατότητας δεν φορτώθηκαν." compact wrap /></p>
+          <Button variant="outline" onClick={() => router.back()}><BilingualText en="Go Back" el="Επιστροφή" compact /></Button>
         </div>
       </AppShell>
     );
@@ -335,186 +313,140 @@ export default function MatchDetailPage() {
 
   const { overall, breakdown, badges, sharedStrengths, frictionPoints, workStyle, targetProfile, sourceProfile } = data;
 
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      addToast({ type: 'success', title: bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε') });
+    } catch {
+      addToast({ type: 'error', title: bilingualInline('Could not copy the link', 'Δεν αντιγράφηκε ο σύνδεσμος') });
+    }
+  };
+
+  /*
+   * The product's layout, not a page of its own. This screen had a second
+   * header bar in monospace, section labels in spaced monospace capitals
+   * ("01. CORE COMPATIBILITY"), a 42rem column in the middle of the page, and
+   * an action bar fixed to the bottom of the window across the sidebar -
+   * over the phone's bottom navigation, too. The actions now sit in the
+   * header row, the sections use the shared header, and the evidence reads
+   * in two columns beside the summary.
+   */
   return (
     <AppShell>
-      <div className="max-w-2xl mx-auto pb-28">
-
-        {/* ── Header bar ─────────────────────────────────────────────────────── */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background border-b border-border">
-          <button
-            onClick={() => router.back()}
-            className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
-          </button>
-          <span className="text-sm font-semibold"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            Compatibility Analysis
-          </span>
-          <button
-            className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors"
-            aria-label="More options"
-          >
-            <MoreVertical className="h-5 w-5 text-foreground" />
-          </button>
-        </div>
-
-        {/* ── Hero section ───────────────────────────────────────────────────── */}
-        <div className="bg-muted/30 border-b border-border px-6 py-8">
-          {/* Space-around row: source · score · target */}
-          <div className="flex items-start justify-around">
-            {/* Source user */}
-            <div className="flex flex-col items-center gap-3">
-              <Avatar className="h-20 w-20 rounded-lg ring-2 ring-border">
-                <AvatarImage src={sourceProfile.avatarUrl ?? undefined} alt={sourceProfile.displayName} />
-                <AvatarFallback className="rounded-lg text-base font-semibold bg-muted">
-                  {sourceProfile.displayName.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
-                  {sourceProfile.displayName}
-                </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {sourceProfile.role}
-                </span>
-              </div>
-            </div>
-
-            {/* Donut score — center */}
-            <DonutScore score={overall.score} />
-
-            {/* Target user — accent ring */}
-            <div className="flex flex-col items-center gap-3">
-              <Link href={`/profiles/${targetProfile.id}`}>
-                <Avatar className="h-20 w-20 rounded-lg ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': '#22D3EE' } as React.CSSProperties}>
-                  <AvatarImage src={targetProfile.avatarUrl ?? undefined} alt={targetProfile.displayName} />
-                  <AvatarFallback className="rounded-lg text-base font-semibold" style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>
-                    {targetProfile.displayName.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
-                  {targetProfile.displayName}
-                </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {targetProfile.role}
-                </span>
-                <Link href={`/profiles/${targetProfile.id}`}
-                  className="flex items-center gap-0.5 text-[10px] mt-0.5 transition-colors"
-                  style={{ color: '#22D3EE' }}>
-                  <ExternalLink className="h-2.5 w-2.5" />
-                  View profile
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Confidence indicator */}
-          <div className="flex flex-col items-center gap-1.5 mt-4">
-            <span className="text-[10px] text-muted-foreground"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {overall.confidence}% CONFIDENCE
-            </span>
-            <div className="w-28 h-0.5 rounded-full bg-border overflow-hidden">
-              <div className="h-full rounded-full bg-muted-foreground/60 transition-all duration-1000"
-                style={{ width: `${overall.confidence}%` }} />
-            </div>
-          </div>
-
-          {/* Compatibility badges */}
-          {badges.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-2 mt-5">
-              {badges.map(b => <CompatBadge key={b} label={b} />)}
-            </div>
-          )}
-        </div>
-
-        {/* ── Content sections ───────────────────────────────────────────────── */}
-        <div className="px-4 space-y-8 pt-6">
-
-          {/* 01. CORE COMPATIBILITY */}
-          <div className="space-y-3">
-            <SectionLabel label="01. CORE COMPATIBILITY" />
-            <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-              {breakdown.map(item => <FactorRow key={item.key} item={item} />)}
-            </div>
-          </div>
-
-          {/* 02. SHARED STRENGTHS */}
-          {sharedStrengths.length > 0 && (
-            <div className="space-y-3">
-              <SectionLabel label="02. SHARED STRENGTHS" />
-              <div className="flex flex-wrap gap-2">
-                {sharedStrengths.map(s => <TraitChip key={s.label} item={s} />)}
-              </div>
-            </div>
-          )}
-
-          {/* 03. POTENTIAL FRICTION POINTS */}
-          {frictionPoints.length > 0 && (
-            <div className="space-y-3">
-              <SectionLabel label="03. POTENTIAL FRICTION POINTS" />
-              <FrictionSection points={frictionPoints} />
-            </div>
-          )}
-
-          {/* 04. WORK STYLE OVERLAP */}
-          <div className="space-y-3">
-            <SectionLabel label="04. WORK STYLE OVERLAP" />
-            <div className="bg-card border border-border rounded-lg p-4">
-              <WorkStyleLineChart data={workStyle} />
-            </div>
-          </div>
-
-          {/* 05. WHY THIS MATCH */}
-          {data.reasons.length > 0 && (
-            <div className="space-y-3">
-              <SectionLabel label="05. WHY THIS MATCH" />
-              <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-                {data.reasons.map(r => (
-                  <div key={r} className="flex items-start gap-2.5">
-                    <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#4ADE80' }} />
-                    <span className="text-sm text-muted-foreground leading-relaxed">{r}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
-
-      {/* ── Sticky action bar ─────────────────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-background border-t border-border px-4 py-3">
-        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-2">
-          <Button
-            variant="outline"
-            className="gap-1.5 text-sm"
-            onClick={handleShortlist}
-          >
-            <Bookmark className={`h-4 w-4 ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Back">
+            <ArrowLeft className="icon-md" aria-hidden="true" />
+          </Button>
+          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+            <BilingualText en={`You and ${targetProfile.displayName}`} el={`Εσείς και ${targetProfile.displayName}`} />
+          </p>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleShortlist} aria-pressed={shortlisted}>
+            <Bookmark className={cn('icon-sm', shortlisted && 'fill-current text-status-warning')} aria-hidden="true" />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
-          <Link href={`/messages?to=${targetUserId}`} className="contents">
-            <Button variant="outline" className="gap-1.5 text-sm w-full">
-              <MessageCircle className="h-4 w-4" />
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link href={`/messages?to=${targetUserId}`}>
+              <MessageCircle className="icon-sm" aria-hidden="true" />
               Message
-            </Button>
-          </Link>
-          <Button
-            className="gap-1.5 font-bold text-black text-sm"
-            style={{ background: '#22D3EE' }}
-            onClick={handlePropose}
-            disabled={connectMutation.isPending}
-          >
-            <Send className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button size="sm" className="gap-1.5" onClick={handlePropose} disabled={connectMutation.isPending}>
+            <Send className="icon-sm" aria-hidden="true" />
             Collaborate
           </Button>
+          {/* Hand someone the link, or open the full profile. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}>
+                <MoreVertical className="icon-md" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => void copyLink()}>
+                <LinkIcon className="mr-2 icon-sm" />
+                <BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/profiles/${targetUserId}`}>
+                  <UserRound className="mr-2 icon-sm" />
+                  <BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact />
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Summary: the two of you, the score between you, how sure it is. */}
+        <div className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
+          <div className="flex items-center justify-between gap-4">
+            <PersonBlock name={sourceProfile.displayName} role={sourceProfile.role} avatarUrl={sourceProfile.avatarUrl} />
+            <DonutScore score={overall.score} />
+            <PersonBlock name={targetProfile.displayName} role={targetProfile.role} avatarUrl={targetProfile.avatarUrl} href={`/profiles/${targetProfile.id}`} accent />
+          </div>
+          <div className="mt-5 flex flex-col items-center gap-1.5">
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={`${overall.confidence}% confidence`} el={`${overall.confidence}% βεβαιότητα`} />
+            </p>
+            <div className="h-1 w-32 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+              <div className="h-full rounded-full bg-muted-foreground/60" style={{ width: `${overall.confidence}%` }} />
+            </div>
+          </div>
+          {badges.length > 0 && (
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {badges.map((b) => (
+                <Badge key={b} variant="info" className="gap-1"><Sparkles className="h-3 w-3" aria-hidden="true" />{b}</Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <SectionCard title="Core compatibility" titleEl="Βασική συμβατότητα" icon={ListChecks} contentClassName="space-y-4">
+              {breakdown.map((item) => <FactorRow key={item.key} item={item} />)}
+            </SectionCard>
+            <SectionCard title="Work style overlap" titleEl="Στυλ εργασίας" icon={Activity}>
+              <WorkStyleLineChart data={workStyle} />
+            </SectionCard>
+          </div>
+          <div className="space-y-6">
+            {data.reasons.length > 0 && (
+              <SectionCard title="Why this match" titleEl="Γιατί ταιριάζετε" icon={ThumbsUp} contentClassName="space-y-3">
+                {data.reasons.map((r) => (
+                  <p key={r} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                    <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
+                    <span>{r}</span>
+                  </p>
+                ))}
+              </SectionCard>
+            )}
+            {sharedStrengths.length > 0 && (
+              <SectionCard title="Shared strengths" titleEl="Κοινά δυνατά σημεία">
+                <div className="flex flex-wrap gap-2">
+                  {sharedStrengths.map((st) => (
+                    <Badge key={st.label} variant="success" className="gap-1">
+                      <CheckCircle className="h-3 w-3" aria-hidden="true" />
+                      {st.label}
+                    </Badge>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+            {frictionPoints.length > 0 && (
+              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-3">
+                {frictionPoints.map((point) => (
+                  <div key={point.title} className="flex gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+                    <span className="mt-0.5 shrink-0 text-status-warning"><FrictionIcon icon={point.icon} /></span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-status-warning">{point.title}</p>
+                      <p className="text-sm text-foreground">{point.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </SectionCard>
+            )}
+          </div>
         </div>
       </div>
     </AppShell>

@@ -11,7 +11,9 @@ export default function AuthLayout({
         <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     }>
-      {children}
+      <div style={{ paddingTop: 'calc(var(--banner-network, 0px) + var(--banner-demo, 0px))' }}>
+        {children}
+      </div>
     </Suspense>
   );
 }

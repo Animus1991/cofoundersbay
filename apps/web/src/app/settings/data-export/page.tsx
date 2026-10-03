@@ -1,415 +1,275 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Download, FileText, Database, Shield, Clock, Check,
-  AlertTriangle, Loader2, ArrowLeft, Archive, Trash2,
-  User, MessageCircle, Calendar, Briefcase, Settings,
+  Download, Shield, Check, AlertTriangle, Loader2, ArrowLeft, Archive, Trash2,
+  User, Users, MessageCircle, Calendar, Briefcase, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-
-type ExportStatus = 'idle' | 'processing' | 'ready' | 'expired';
-
-type ExportRequest = {
-  id: string;
-  status: ExportStatus;
-  requestedAt: string;
-  completedAt: string | null;
-  expiresAt: string | null;
-  downloadUrl: string | null;
-  fileSize: number | null;
-  dataTypes: string[];
-};
+import { getAccountExport, type AccountExport, type AccountExportSection } from '@/lib/api';
+import { bilingualInline, formatDate } from '@/lib/i18n/format';
+import { usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type DataCategory = {
-  id: string;
+  id: AccountExportSection;
   label: string;
+  labelEl: string;
   description: string;
+  descriptionEl: string;
   icon: React.ElementType;
   included: boolean;
 };
 
+/** One download made on this visit: exports are built on request, not stored. */
+type SessionExport = {
+  at: string;
+  sections: AccountExportSection[];
+  bytes: number;
+  unavailable: AccountExport['unavailable'];
+};
+
 const DATA_CATEGORIES: DataCategory[] = [
-  {
-    id: 'profile',
-    label: 'Profile Information',
-    description: 'Your name, bio, skills, and preferences',
-    icon: User,
-    included: true,
-  },
-  {
-    id: 'messages',
-    label: 'Messages',
-    description: 'All your conversations and attachments',
-    icon: MessageCircle,
-    included: true,
-  },
-  {
-    id: 'connections',
-    label: 'Connections',
-    description: 'Your network and connection history',
-    icon: User,
-    included: true,
-  },
-  {
-    id: 'activity',
-    label: 'Activity History',
-    description: 'Your actions and interactions on the platform',
-    icon: Calendar,
-    included: true,
-  },
-  {
-    id: 'milestones',
-    label: 'Milestones',
-    description: 'Your goals and progress tracking',
-    icon: Briefcase,
-    included: true,
-  },
-  {
-    id: 'settings',
-    label: 'Account Settings',
-    description: 'Your preferences and configurations',
-    icon: Settings,
-    included: true,
-  },
+  { id: 'profile', label: 'Profile information', labelEl: 'Στοιχεία προφίλ', description: 'Your account, name, bio and skills', descriptionEl: 'Ο λογαριασμός, το όνομα, το βιογραφικό και οι δεξιότητές σας', icon: User, included: true },
+  { id: 'messages', label: 'Messages', labelEl: 'Μηνύματα', description: 'The messages you sent', descriptionEl: 'Τα μηνύματα που στείλατε', icon: MessageCircle, included: true },
+  { id: 'connections', label: 'Connections', labelEl: 'Συνδέσεις', description: 'Requests you sent and received, and their outcome', descriptionEl: 'Αιτήματα που στείλατε και λάβατε, και η έκβασή τους', icon: Users, included: true },
+  { id: 'activity', label: 'Activity history', labelEl: 'Ιστορικό δραστηριότητας', description: 'Event RSVPs, groups, mentor bookings, endorsements, saved profiles, notifications', descriptionEl: 'Δηλώσεις σε εκδηλώσεις, ομάδες, κρατήσεις μεντόρων, συστάσεις, αποθηκευμένα προφίλ, ειδοποιήσεις', icon: Calendar, included: true },
+  { id: 'milestones', label: 'Milestones', labelEl: 'Ορόσημα', description: 'Goals you own or share', descriptionEl: 'Στόχοι που έχετε ή μοιράζεστε', icon: Briefcase, included: true },
+  { id: 'settings', label: 'Account settings', labelEl: 'Ρυθμίσεις λογαριασμού', description: 'Visibility, two-factor and linked sign-in providers', descriptionEl: 'Ορατότητα, έλεγχος δύο παραγόντων και συνδεδεμένοι πάροχοι σύνδεσης', icon: Settings, included: true },
 ];
 
-async function getExportStatus(): Promise<{ exports: ExportRequest[] }> {
-  const response = await fetch('/api/v1/user/data-export', {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-    },
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to get export status');
-  }
-  
-  return response.json();
-}
-
-async function requestExport(dataTypes: string[]): Promise<{ export: ExportRequest }> {
-  const response = await fetch('/api/v1/user/data-export', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-    },
-    body: JSON.stringify({ dataTypes }),
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to request export');
-  }
-  
-  return response.json();
-}
-
-function formatFileSize(bytes: number | null): string {
-  if (!bytes) return 'Unknown';
+function sizeLabel(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+/** Hand the browser a file, the way a download link would. */
+function saveJson(doc: AccountExport): number {
+  const text = JSON.stringify(doc, null, 2);
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cofounderbay-export-${doc.exportedAt.slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+  return blob.size;
 }
 
-function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
-  const statusConfig: Record<ExportStatus, { label: string; color: string; icon: React.ElementType }> = {
-    idle: { label: 'Pending', color: 'text-muted-foreground', icon: Clock },
-    processing: { label: 'Processing', color: 'text-amber-500', icon: Loader2 },
-    ready: { label: 'Ready', color: 'text-emerald-500', icon: Check },
-    expired: { label: 'Expired', color: 'text-destructive', icon: AlertTriangle },
-  };
-
-  const config = statusConfig[exportReq.status];
-  const StatusIcon = config.icon;
-
-  return (
-    <Card className="border-border/60">
-      <CardContent className="pt-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-              exportReq.status === 'ready' ? 'bg-emerald-500/10' : 'bg-muted'
-            )}>
-              <Archive className={cn(
-                'h-5 w-5',
-                exportReq.status === 'ready' ? 'text-emerald-500' : 'text-muted-foreground'
-              )} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <p className="font-medium text-foreground">Data Export</p>
-                <Badge
-                  variant="outline"
-                  className={cn('text-xs', config.color)}
-                >
-                  <StatusIcon className={cn(
-                    'h-3 w-3 mr-1',
-                    exportReq.status === 'processing' && 'animate-spin'
-                  )} />
-                  {config.label}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Requested {formatDate(exportReq.requestedAt)}
-              </p>
-              {exportReq.completedAt && (
-                <p className="text-xs text-muted-foreground">
-                  Completed {formatDate(exportReq.completedAt)}
-                </p>
-              )}
-              {exportReq.fileSize && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Size: {formatFileSize(exportReq.fileSize)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {exportReq.status === 'ready' && exportReq.downloadUrl && (
-            <a href={exportReq.downloadUrl} download>
-              <Button size="sm" className="gap-2">
-                <Download className="h-4 w-4" />
-                Download
-              </Button>
-            </a>
-          )}
-        </div>
-
-        {exportReq.status === 'processing' && (
-          <div className="mt-4">
-            <Progress value={33} className="h-1" />
-            <p className="text-xs text-muted-foreground mt-2">
-              This may take a few minutes depending on the amount of data...
-            </p>
-          </div>
-        )}
-
-        {exportReq.expiresAt && exportReq.status === 'ready' && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Download expires {formatDate(exportReq.expiresAt)}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
+/*
+ * The page used to "request" an export and poll for its status, but both
+ * requests went to a route that did not exist - no export was ever produced,
+ * and the polling never settled. The API now builds the reader's data when
+ * asked (GET /api/account/export) and nothing is stored, so the button
+ * downloads the file directly, and the list below is what this visit
+ * downloaded rather than a server-side history that was never kept.
+ */
 export default function DataExportPage() {
   const { success, error: showError } = useToast();
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
-    new Set(DATA_CATEGORIES.map((c) => c.id))
+  const [selectedCategories, setSelectedCategories] = useState<Set<AccountExportSection>>(
+    new Set(DATA_CATEGORIES.map((c) => c.id)),
   );
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['data-exports'],
-    queryFn: getExportStatus,
-    refetchInterval: (query) => {
-      const exports = query.state.data?.exports || [];
-      const hasProcessing = exports.some((e) => e.status === 'processing');
-      return hasProcessing ? 5000 : false;
-    },
-  });
+  const [downloads, setDownloads] = useState<SessionExport[]>([]);
 
   const exportMutation = useMutation({
-    mutationFn: () => requestExport(Array.from(selectedCategories)),
-    onSuccess: () => {
-      success('Export requested', 'We\'ll notify you when your data is ready to download.');
-      refetch();
+    mutationFn: () => getAccountExport(DATA_CATEGORIES.map((c) => c.id).filter((id) => selectedCategories.has(id))),
+    onSuccess: (doc) => {
+      const bytes = saveJson(doc);
+      setDownloads((prev) => [{ at: doc.exportedAt, sections: doc.sections, bytes, unavailable: doc.unavailable }, ...prev]);
+      success(
+        bilingualInline('Your data is downloading', 'Τα δεδομένα σας κατεβαίνουν'),
+        doc.unavailable.length
+          ? bilingualInline(`${doc.unavailable.length} part(s) could not be read; the file lists them.`, `${doc.unavailable.length} τμήμα(τα) δεν διαβάστηκαν· το αρχείο τα αναφέρει.`)
+          : bilingualInline('One JSON file with everything you selected.', 'Ένα αρχείο JSON με όσα επιλέξατε.'),
+      );
     },
-    onError: () => {
-      showError('Export failed', 'Could not request data export. Please try again.');
+    onError: (e) => {
+      showError(bilingualInline('Export failed', 'Η εξαγωγή απέτυχε'), e instanceof Error ? e.message : bilingualInline('Please try again.', 'Δοκιμάστε ξανά.'));
     },
   });
 
-  const exports = data?.exports || [];
-  const hasActiveExport = exports.some((e) => e.status === 'processing');
-
-  const toggleCategory = (id: string) => {
+  const toggleCategory = (id: AccountExportSection) => {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
 
+  // Offered to the assistant: which categories go in, and the download - the
+  // same toggle and request. Reading your own data writes nothing.
+  const categoryOption = (c: DataCategory) => ({ value: c.id, labelEn: c.label, labelEl: c.labelEl });
+  usePageList([
+    {
+      id: 'exports',
+      labelEn: 'Exports downloaded on this visit',
+      labelEl: 'Εξαγωγές που κατέβηκαν σε αυτή την επίσκεψη',
+      rows: downloads.map((d) => `${d.at.slice(0, 16).replace('T', ' ')} UTC · ${d.sections.join(', ')} · ${sizeLabel(d.bytes)}${d.unavailable.length ? ` · ${d.unavailable.length} part(s) unreadable` : ''}`),
+    },
+  ]);
+  usePageControls([
+    { id: 'include_category', labelEn: 'Include in the export', labelEl: 'Συμπερίληψη στην εξαγωγή', writes: false, options: DATA_CATEGORIES.filter((c) => !selectedCategories.has(c.id)).map(categoryOption), run: (v) => { if (v) toggleCategory(v as AccountExportSection); } },
+    { id: 'exclude_category', labelEn: 'Leave out of the export', labelEl: 'Εξαίρεση από την εξαγωγή', writes: false, options: DATA_CATEGORIES.filter((c) => selectedCategories.has(c.id)).map(categoryOption), run: (v) => { if (v) toggleCategory(v as AccountExportSection); } },
+    {
+      id: 'download_export',
+      labelEn: 'Download my data',
+      labelEl: 'Λήψη των δεδομένων μου',
+      writes: false,
+      unavailableEn: selectedCategories.size === 0 ? 'Choose at least one category.' : undefined,
+      unavailableEl: selectedCategories.size === 0 ? 'Επιλέξτε τουλάχιστον μία κατηγορία.' : undefined,
+      run: () => exportMutation.mutate(),
+    },
+  ]);
+
   return (
-    <AppShell title="Data Export" description="Download a copy of your data">
-      <div className="mx-auto max-w-2xl">
-        {/* Back link */}
-        <Link
-          href="/settings"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Settings
+    <AppShell title="Data export" titleEl="Εξαγωγή δεδομένων" description="Download a copy of your data" descriptionEl="Κατεβάστε ένα αντίγραφο των δεδομένων σας">
+      <div className="w-full space-y-6">
+        <Link href="/settings" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Back to Settings" el="Επιστροφή στις ρυθμίσεις" compact />
         </Link>
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Database className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">Export Your Data</h1>
-              <p className="text-sm text-muted-foreground">
-                Download a copy of your information from CoFounderBay
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* GDPR Info */}
-        <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
+        <Card className="border-primary/15 bg-primary/5">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <Shield className="icon-md mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />
               <div>
-                <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Under GDPR and similar regulations, you have the right to receive a copy of your personal data 
-                  in a portable format. This export includes all data we store about you.
+                <p className="mb-1 text-sm font-medium text-foreground"><BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact /></p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  <BilingualText
+                    en="Under GDPR you can receive a copy of your personal data in a portable format. The file is built when you ask for it and is not kept on our servers. Passwords, sign-in tokens and two-factor secrets are never included."
+                    el="Βάσει GDPR μπορείτε να λάβετε αντίγραφο των προσωπικών σας δεδομένων σε φορητή μορφή. Το αρχείο δημιουργείται όταν το ζητάτε και δεν φυλάσσεται στους διακομιστές μας. Κωδικοί, διακριτικά σύνδεσης και μυστικά δύο παραγόντων δεν περιλαμβάνονται ποτέ."
+                    wrap
+                  />
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Previous Exports */}
-        {exports.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold text-foreground mb-3">Previous Exports</h2>
-            <div className="space-y-3">
-              {exports.map((exportReq) => (
-                <ExportCard key={exportReq.id} exportReq={exportReq} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* New Export Request */}
-        <Card className="shadow-sm border-border/50">
+        <Card className="border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base">Request New Export</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Choose what to include" el="Επιλέξτε τι θα περιλαμβάνει" compact /></CardTitle>
             <CardDescription>
-              Select the data you want to include in your export
+              <BilingualText en="Select the data you want to include in your export" el="Επιλέξτε τα δεδομένα που θα περιλαμβάνει η εξαγωγή" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 mb-6">
+            <div className="mb-6 space-y-3">
               {DATA_CATEGORIES.map((category) => {
                 const Icon = category.icon;
                 const isSelected = selectedCategories.has(category.id);
-
                 return (
                   <label
                     key={category.id}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border/60 hover:bg-muted/30'
+                      'flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors focus-within:ring-2 focus-within:ring-ring',
+                      isSelected ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30',
                     )}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleCategory(category.id)}
-                      className="sr-only"
-                    />
-                    <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
-                      isSelected ? 'bg-primary/10' : 'bg-muted'
-                    )}>
-                      <Icon className={cn(
-                        'h-4 w-4',
-                        isSelected ? 'text-primary' : 'text-muted-foreground'
-                      )} />
+                    <input type="checkbox" checked={isSelected} onChange={() => toggleCategory(category.id)} className="sr-only" />
+                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', isSelected ? 'bg-primary/10' : 'bg-muted')}>
+                      <Icon className={cn('icon-sm', isSelected ? 'text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{category.label}</p>
-                      <p className="text-xs text-muted-foreground">{category.description}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground"><BilingualText en={category.label} el={category.labelEl} compact /></p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={category.description} el={category.descriptionEl} wrap /></p>
                     </div>
-                    <div className={cn(
-                      'h-5 w-5 rounded-md border-2 flex items-center justify-center transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary'
-                        : 'border-border'
-                    )}>
-                      {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                    <div className={cn('flex h-5 w-5 items-center justify-center rounded-sm border-2 transition-colors', isSelected ? 'border-primary bg-primary' : 'border-border')} aria-hidden="true">
+                      {isSelected && <Check className="icon-sm text-primary-foreground" />}
                     </div>
                   </label>
                 );
               })}
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t border-border/60">
-              <div className="text-xs text-muted-foreground">
-                {selectedCategories.size} of {DATA_CATEGORIES.length} categories selected
-              </div>
-              <Button
-                onClick={() => exportMutation.mutate()}
-                disabled={selectedCategories.size === 0 || hasActiveExport || exportMutation.isPending}
-                className="gap-2"
-              >
-                {exportMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-                {hasActiveExport ? 'Export in Progress' : 'Request Export'}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+              <p className="text-xs text-muted-foreground">
+                <BilingualText
+                  en={`${selectedCategories.size} of ${DATA_CATEGORIES.length} categories selected`}
+                  el={`${selectedCategories.size} από ${DATA_CATEGORIES.length} κατηγορίες`}
+                  compact
+                />
+              </p>
+              <Button onClick={() => exportMutation.mutate()} disabled={selectedCategories.size === 0 || exportMutation.isPending} className="gap-2">
+                {exportMutation.isPending ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Download className="icon-sm" aria-hidden="true" />}
+                {exportMutation.isPending
+                  ? <BilingualText en="Preparing…" el="Προετοιμασία…" compact />
+                  : <BilingualText en="Download my data" el="Λήψη των δεδομένων μου" compact />}
               </Button>
             </div>
-
-            {hasActiveExport && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                Please wait for the current export to complete before requesting a new one.
-              </p>
-            )}
           </CardContent>
         </Card>
 
-        {/* Delete Account Link */}
-        <div className="mt-8 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+        {downloads.length > 0 && (
+          <section aria-labelledby="export-history">
+            <h2 id="export-history" className="mb-3 text-sm font-semibold text-foreground">
+              <BilingualText en="Downloaded on this visit" el="Λήψεις σε αυτή την επίσκεψη" compact />
+            </h2>
+            <ul className="space-y-3">
+              {downloads.map((d) => (
+                <li key={d.at}>
+                  <Card className="border-border">
+                    <CardContent className="flex items-start gap-3 pt-5">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-success-bg">
+                        <Archive className="icon-md text-status-success" aria-hidden="true" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-foreground">
+                          <BilingualText en={formatDate(d.at, 'en', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} el={formatDate(d.at, 'el', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} compact />
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {d.sections.map((id) => {
+                            const c = DATA_CATEGORIES.find((x) => x.id === id);
+                            return c ? bilingualInline(c.label, c.labelEl) : id;
+                          }).join(' · ')} · {sizeLabel(d.bytes)}
+                        </p>
+                        {d.unavailable.length > 0 && (
+                          <p className="mt-1 flex items-start gap-1 text-xs text-status-warning">
+                            <AlertTriangle className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
+                            <BilingualText
+                              en={`Not readable: ${d.unavailable.map((u) => u.part).join(', ')}. The file names them too.`}
+                              el={`Δεν διαβάστηκαν: ${d.unavailable.map((u) => u.part).join(', ')}. Το αρχείο τα αναφέρει επίσης.`}
+                              wrap
+                            />
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <div className="flex items-start gap-3">
-            <Trash2 className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <Trash2 className="icon-md mt-0.5 shrink-0 text-destructive-accessible" aria-hidden="true" />
             <div>
-              <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
-              <p className="text-xs text-muted-foreground mb-3">
-                If you want to permanently delete your account and all associated data, 
-                you can do so from your account settings.
+              <p className="mb-1 text-sm font-medium text-foreground"><BilingualText en="Delete Your Account" el="Διαγραφή του λογαριασμού σας" compact /></p>
+              <p className="mb-3 text-xs text-muted-foreground">
+                <BilingualText
+                  en="Account deletion is handled by support: start from account settings."
+                  el="Τη διαγραφή λογαριασμού τη χειρίζεται η υποστήριξη: ξεκινήστε από τις ρυθμίσεις λογαριασμού."
+                  wrap
+                />
               </p>
-              <Link href="/settings">
-                <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
-                  Go to Account Settings
-                </Button>
-              </Link>
+              <Button variant="outline" size="sm" className="border-destructive/30 text-destructive-accessible hover:bg-destructive/10" asChild>
+                <Link href="/settings">
+                  <BilingualText en="Go to Account Settings" el="Μετάβαση στις ρυθμίσεις λογαριασμού" compact />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

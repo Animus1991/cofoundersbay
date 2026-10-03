@@ -5,6 +5,7 @@ import { AlertTriangle, RefreshCw, Home, Bug, MessageCircle, Copy, Check } from 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 // Error reporting service integration point
 async function reportError(error: Error, errorInfo: React.ErrorInfo | null, context?: Record<string, unknown>) {
@@ -86,11 +87,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return (
           <div className="flex items-center justify-center p-4 rounded-lg bg-destructive/5 border border-destructive/20">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-destructive shrink-0" />
-              <p className="text-sm text-muted-foreground">Failed to load content</p>
+              <AlertTriangle className="icon-md text-destructive-accessible shrink-0" />
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load content" el="Δεν ήταν δυνατή η φόρτωση του περιεχομένου" compact /></p>
               <Button onClick={this.handleRetry} size="sm" variant="ghost" className="gap-1.5">
-                <RefreshCw className="h-3.5 w-3.5" />
-                Retry
+                <RefreshCw className="icon-sm" />
+                <BilingualText en="Retry" el="Δοκιμάστε ξανά" compact />
               </Button>
             </div>
           </div>
@@ -103,19 +104,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <CardContent className="pt-6 text-center">
               {/* Error illustration */}
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="h-8 w-8 text-destructive" />
+                <AlertTriangle className="icon-xl text-destructive-accessible" />
               </div>
               
               <h2 className="mb-2 text-xl font-semibold text-foreground">
-                Something went wrong
+                <BilingualText en="Something went wrong" el="Κάτι πήγε στραβά" compact />
               </h2>
               <p className="mb-4 text-sm text-muted-foreground">
-                We encountered an unexpected error. Please try again or contact support if the problem persists.
+                <BilingualText en="We encountered an unexpected error. Please try again or contact support if the problem persists." el="Παρουσιάστηκε απρόσμενο σφάλμα. Δοκιμάστε ξανά ή επικοινωνήστε με την υποστήριξη αν συνεχιστεί." wrap />
               </p>
 
               {/* Error ID for support */}
               {this.state.errorId && (
-                <p className="mb-6 text-xs text-muted-foreground/60">
+                <p className="mb-6 text-xs text-muted-foreground">
                   Error ID: <code className="bg-secondary/40 px-1.5 py-0.5 rounded">{this.state.errorId}</code>
                 </p>
               )}
@@ -124,8 +125,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="mb-6 text-left">
                   <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
-                    <Bug className="h-4 w-4" />
-                    Error details
+                    <Bug className="icon-sm" />
+                    <BilingualText en="Error details" el="Λεπτομέρειες σφάλματος" compact />
                   </summary>
                   <pre className="mt-2 overflow-auto rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground max-h-48">
                     {this.state.error.message}
@@ -142,12 +143,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   onClick={() => (window.location.href = '/')}
                   className="gap-2"
                 >
-                  <Home className="h-4 w-4" />
-                  Go Home
+                  <Home className="icon-sm" />
+                  <BilingualText en="Go Home" el="Αρχική" compact />
                 </Button>
                 <Button onClick={this.handleRetry} className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Try Again
+                  <RefreshCw className="icon-sm" />
+                  <BilingualText en="Try Again" el="Δοκιμάστε ξανά" compact />
                 </Button>
               </div>
             </CardContent>
@@ -171,14 +172,14 @@ export function ErrorFallback({
   return (
     <div className="flex min-h-[300px] items-center justify-center p-6">
       <div className="text-center">
-        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Error loading content</h3>
+        <AlertTriangle className="mx-auto h-12 w-12 text-destructive-accessible mb-4" />
+        <h3 className="text-lg font-semibold mb-2"><BilingualText en="Error loading content" el="Σφάλμα φόρτωσης περιεχομένου" compact /></h3>
         <p className="text-sm text-muted-foreground mb-4">
           {error.message || 'An unexpected error occurred'}
         </p>
         <Button onClick={resetErrorBoundary} size="sm" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Retry
+          <RefreshCw className="icon-sm" />
+          <BilingualText en="Retry" el="Δοκιμάστε ξανά" compact />
         </Button>
       </div>
     </div>

@@ -16,7 +16,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 export type TimeSlot = {
   id: string;
@@ -154,7 +156,7 @@ export function BookingCalendar({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
       {/* Main content */}
       <div className="space-y-6">
         {/* Mentor info */}
@@ -163,8 +165,8 @@ export function BookingCalendar({
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12">
                 <AvatarImage src={mentor.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-sm">
-                  {mentor.displayName[0]?.toUpperCase()}
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
+                  {initialsOf(mentor.displayName)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -183,7 +185,7 @@ export function BookingCalendar({
                   ))}
                 </div>
                 {mentor.hourlyRate && (
-                  <p className="mt-3 text-sm font-medium text-primary">{mentor.hourlyRate}</p>
+                  <p className="mt-3 text-sm font-medium text-primary-accessible">{mentor.hourlyRate}</p>
                 )}
               </div>
             </div>
@@ -195,22 +197,22 @@ export function BookingCalendar({
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Select a date
+                <Calendar className="icon-md text-primary-accessible" />
+                <BilingualText en="Select a date" el="Επιλέξτε ημερομηνία" compact />
               </CardTitle>
-              <CardDescription>Choose a date to see available time slots</CardDescription>
+              <CardDescription><BilingualText en="Choose a date to see available time slots" el="Επιλέξτε ημερομηνία για να δείτε τις διαθέσιμες ώρες" wrap /></CardDescription>
             </CardHeader>
             <CardContent>
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button variant="ghost" size="icon" onClick={prevMonth}>
-                  <ChevronLeft className="h-5 w-5" />
+                <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
+                  <ChevronLeft className="icon-md" />
                 </Button>
-                <span className="font-semibold text-foreground">
-                  {currentMonth.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+                <span className="font-semibold text-foreground" aria-live="polite">
+                  {currentMonth.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'long', year: 'numeric' })}
                 </span>
-                <Button variant="ghost" size="icon" onClick={nextMonth}>
-                  <ChevronRight className="h-5 w-5" />
+                <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Next month">
+                  <ChevronRight className="icon-md" />
                 </Button>
               </div>
 
@@ -264,15 +266,15 @@ export function BookingCalendar({
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-primary" />
-                    Select a time
+                    <Clock className="icon-md text-primary-accessible" />
+                    <BilingualText en="Select a time" el="Επιλέξτε ώρα" compact />
                   </CardTitle>
                   <CardDescription>
-                    {selectedDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </CardDescription>
                 </div>
                 <Button variant="ghost" onClick={() => setStep('date')}>
-                  Change date
+                  <BilingualText en="Change date" el="Αλλαγή ημερομηνίας" compact />
                 </Button>
               </div>
             </CardHeader>
@@ -286,8 +288,8 @@ export function BookingCalendar({
                       className={cn(
                         'rounded-lg border px-3 py-2 text-sm transition-colors',
                         selectedSlot?.id === slot.id
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/60 text-foreground hover:border-primary/50'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
+                          : 'border-border text-foreground hover:border-primary/50'
                       )}
                     >
                       {formatTime(slot.startTime)}
@@ -296,7 +298,7 @@ export function BookingCalendar({
                 </div>
               ) : (
                 <p className="text-center text-sm text-muted-foreground py-8">
-                  No available slots for this date
+                  <BilingualText en="No available slots for this date" el="Δεν υπάρχουν διαθέσιμες ώρες για αυτή την ημερομηνία" compact />
                 </p>
               )}
             </CardContent>
@@ -309,11 +311,11 @@ export function BookingCalendar({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Check className="h-5 w-5 text-primary" />
-                  Confirm booking
+                  <Check className="icon-md text-primary-accessible" />
+                  <BilingualText en="Confirm booking" el="Επιβεβαίωση κράτησης" compact />
                 </CardTitle>
                 <Button variant="ghost" onClick={() => setStep('slot')}>
-                  Change time
+                  <BilingualText en="Change time" el="Αλλαγή ώρας" compact />
                 </Button>
               </div>
             </CardHeader>
@@ -321,13 +323,13 @@ export function BookingCalendar({
               {/* Selected datetime */}
               <div className="rounded-lg bg-secondary/40 p-4">
                 <div className="flex items-center gap-3 text-foreground">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <Calendar className="icon-md text-primary-accessible" />
                   <span className="font-medium">
-                    {selectedDate?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate?.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground mt-2">
-                  <Clock className="h-5 w-5 text-primary" />
+                  <Clock className="icon-md text-primary-accessible" />
                   <span className="font-medium">
                     {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.endTime)}
                   </span>
@@ -336,7 +338,7 @@ export function BookingCalendar({
 
               {/* Meeting type */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Meeting type</label>
+                <label className="text-sm font-medium text-foreground"><BilingualText en="Meeting type" el="Τύπος συνάντησης" compact /></label>
                 <div className="flex gap-2">
                   {mentor.meetingTypes.includes('video') && (
                     <button
@@ -344,12 +346,12 @@ export function BookingCalendar({
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'video'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/60 text-muted-foreground hover:text-foreground'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
+                          : 'border-border text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      <Video className="h-4 w-4" />
-                      Video call
+                      <Video className="icon-sm" />
+                      <BilingualText en="Video call" el="Βιντεοκλήση" compact />
                     </button>
                   )}
                   {mentor.meetingTypes.includes('in-person') && (
@@ -358,12 +360,12 @@ export function BookingCalendar({
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
                         meetingType === 'in-person'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/60 text-muted-foreground hover:text-foreground'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
+                          : 'border-border text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      <MapPin className="h-4 w-4" />
-                      In person
+                      <MapPin className="icon-sm" />
+                      <BilingualText en="In person" el="Δια ζώσης" compact />
                     </button>
                   )}
                 </div>
@@ -371,11 +373,11 @@ export function BookingCalendar({
 
               {/* Notes */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">What would you like to discuss?</label>
+                <label className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact /></label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Share your goals, challenges, or questions..."
+                  placeholder={bilingualInline("Share your goals, challenges, or questions…", "Μοιραστείτε στόχους, προκλήσεις ή ερωτήσεις…")}
                   rows={4}
                 />
               </div>
@@ -388,34 +390,34 @@ export function BookingCalendar({
       <div className="space-y-4">
         <Card className="sticky top-6">
           <CardHeader>
-            <CardTitle className="text-base">Booking Summary</CardTitle>
+            <CardTitle className="text-base"><BilingualText en="Booking Summary" el="Σύνοψη κράτησης" compact /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Mentor</span>
+                <span className="text-muted-foreground"><BilingualText en="Mentor" el="Μέντορας" compact /></span>
                 <span className="font-medium text-foreground">{mentor.displayName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Date</span>
+                <span className="text-muted-foreground"><BilingualText en="Date" el="Ημερομηνία" compact /></span>
                 <span className="font-medium text-foreground">
                   {selectedDate
-                    ? selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric' })
+                    ? selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' })
                     : 'Not selected'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Time</span>
+                <span className="text-muted-foreground"><BilingualText en="Time" el="Ώρα" compact /></span>
                 <span className="font-medium text-foreground">
                   {selectedSlot ? formatTime(selectedSlot.startTime) : 'Not selected'}
                 </span>
               </div>
               {mentor.hourlyRate && (
                 <>
-                  <div className="border-t border-border/60 my-2" />
+                  <div className="border-t border-border my-2" />
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Rate</span>
-                    <span className="font-semibold text-primary">{mentor.hourlyRate}</span>
+                    <span className="text-muted-foreground"><BilingualText en="Rate" el="Αμοιβή" compact /></span>
+                    <span className="font-semibold text-primary-accessible">{mentor.hourlyRate}</span>
                   </div>
                 </>
               )}
@@ -428,7 +430,7 @@ export function BookingCalendar({
                 disabled={!selectedDate}
                 onClick={() => setStep('slot')}
               >
-                Continue
+                <BilingualText en="Continue" el="Συνέχεια" compact />
               </Button>
             )}
             {step === 'slot' && (
@@ -437,7 +439,7 @@ export function BookingCalendar({
                 disabled={!selectedSlot}
                 onClick={() => setStep('confirm')}
               >
-                Continue
+                <BilingualText en="Continue" el="Συνέχεια" compact />
               </Button>
             )}
             {step === 'confirm' && (

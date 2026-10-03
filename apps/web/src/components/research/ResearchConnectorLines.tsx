@@ -2,6 +2,8 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { ResearchConnector, ResearchNode } from '@/lib/api';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface ResearchConnectorLinesProps {
   connectors: ResearchConnector[];
@@ -87,6 +89,7 @@ function cubicPath(from: EdgePoint, to: EdgePoint): { d: string; midX: number; m
 
 export function ResearchConnectorLines({ connectors, nodes, onDeleteConnector }: ResearchConnectorLinesProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const nodeMap = useMemo(() => {
     const map = new Map<string, ResearchNode>();
@@ -123,12 +126,21 @@ export function ResearchConnectorLines({ connectors, nodes, onDeleteConnector }:
     }).filter((p): p is NonNullable<typeof p> => p !== null);
   }, [connectors, nodeMap]);
 
-  const handleClick = useCallback((e: React.MouseEvent, connectorId: string) => {
+  const handleClick = useCallback(async (e: React.MouseEvent, connectorId: string) => {
     e.stopPropagation();
-    if (onDeleteConnector && confirm('Delete this connection?')) {
-      onDeleteConnector(connectorId);
-    }
-  }, [onDeleteConnector]);
+    if (!onDeleteConnector) return;
+    const ok = await confirm({
+      title: <BilingualText en="Delete this connection?" el="Διαγραφή αυτής της σύνδεσης;" />,
+      description: (
+        <BilingualText
+          en="Only the link between the two nodes is removed; the nodes stay."
+          el="Αφαιρείται μόνο ο σύνδεσμος μεταξύ των δύο κόμβων· οι κόμβοι παραμένουν."
+        />
+      ),
+      confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+    });
+    if (ok) onDeleteConnector(connectorId);
+  }, [onDeleteConnector, confirm]);
 
   if (svgPaths.length === 0) return null;
 

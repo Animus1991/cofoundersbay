@@ -30,21 +30,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   GitBranch,
-  GitPullRequest,
   History,
   Share2,
-  ChevronDown,
-  Plus,
   Loader2,
   ClipboardCheck,
   Copy,
   ExternalLink,
-  MoreHorizontal,
   CheckCircle2,
   XCircle,
   Clock,
   AlertCircle,
-  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
@@ -57,8 +52,14 @@ import {
   type ChangeProposal,
   type ArtifactShareLink,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { ReviewPanel } from './ReviewPanel';
 import { BranchPanel } from './BranchPanel';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBuilderPrimaryText } from './BuilderStageChrome';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -82,11 +83,25 @@ interface ShareDialogProps {
 
 function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialogProps) {
   const { success, error: toastError } = useToast();
+  const t = useBuilderPrimaryText();
   const [label, setLabel] = useState('');
   const [permission, setPermission] = useState<'view' | 'comment' | 'suggest'>('view');
   const [expiresIn, setExpiresIn] = useState('7');
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const permissionLabel = {
+    view: { en: builderEn('collab_perm_view'), el: builderEl('collab_perm_view') },
+    comment: { en: builderEn('collab_perm_comment'), el: builderEl('collab_perm_comment') },
+    suggest: { en: builderEn('collab_perm_suggest'), el: builderEl('collab_perm_suggest') },
+  } as const;
+
+  const expiryOptions = [
+    { v: '1', en: builderEn('collab_exp_1'), el: builderEl('collab_exp_1') },
+    { v: '7', en: builderEn('collab_exp_7'), el: builderEl('collab_exp_7') },
+    { v: '30', en: builderEn('collab_exp_30'), el: builderEl('collab_exp_30') },
+    { v: 'never', en: builderEn('collab_exp_never'), el: builderEl('collab_exp_never') },
+  ] as const;
 
   const handleCreate = async () => {
     setLoading(true);
@@ -130,66 +145,93 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
-          <DialogTitle>Share Document</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={builderEn('collab_share_title')} el={builderEl('collab_share_title')} compact />
+          </DialogTitle>
           <DialogDescription>
-            Create a shareable link for external stakeholders, mentors, or investors.
+            <BilingualText en={builderEn('collab_share_desc')} el={builderEl('collab_share_desc')} wrap />
           </DialogDescription>
         </DialogHeader>
 
         {generatedUrl ? (
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ExternalLink className="icon-sm text-muted-foreground shrink-0" />
               <span className="text-sm truncate flex-1 font-mono">{generatedUrl}</span>
-              <Button size="sm" variant="ghost" onClick={handleCopy}>
-                <Copy className="h-3.5 w-3.5" />
+              <Button
+                aria-label={bilingualAria(builderEn('collab_share_copied'), builderEl('collab_share_copied'))}
+                size="sm"
+                variant="ghost"
+                onClick={handleCopy}
+              >
+                <Copy className="icon-sm" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Share this link with anyone. Link expires{' '}
-              {expiresIn !== 'never' ? `in ${expiresIn} days` : 'never'}.
+              {expiresIn !== 'never' ? (
+                <BilingualText
+                  en={`Share this link with anyone. Link expires in ${expiresIn} days.`}
+                  el={`Κοινοποιήστε αυτόν τον σύνδεσμο. Λήγει σε ${expiresIn} ημέρες.`}
+                  wrap
+                />
+              ) : (
+                <BilingualText
+                  en="Share this link with anyone. Link never expires."
+                  el="Κοινοποιήστε αυτόν τον σύνδεσμο. Δεν λήγει ποτέ."
+                  wrap
+                />
+              )}
             </p>
           </div>
         ) : (
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Label (optional)</Label>
+              <Label>
+                <BilingualText en={builderEn('collab_share_label')} el={builderEl('collab_share_label')} compact />
+              </Label>
               <Input
-                placeholder="e.g. Investor preview, Mentor review..."
+                placeholder={t(
+                  'e.g. Investor preview, Mentor review…',
+                  'π.χ. προεπισκόπηση επενδυτή, αξιολόγηση μέντορα…',
+                )}
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Permission level</Label>
+              <Label>
+                <BilingualText en={builderEn('collab_share_permission')} el={builderEl('collab_share_permission')} compact />
+              </Label>
               <div className="flex gap-2">
-                {(['view', 'comment', 'suggest'] as const).map(p => (
+                {(['view', 'comment', 'suggest'] as const).map((p) => (
                   <Button
                     key={p}
                     size="sm"
                     variant={permission === p ? 'default' : 'outline'}
                     onClick={() => setPermission(p)}
-                    className="capitalize flex-1"
+                    className="flex-1"
                   >
-                    {p}
+                    <BilingualText en={permissionLabel[p].en} el={permissionLabel[p].el} compact />
                   </Button>
                 ))}
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Expires in</Label>
+              <Label>
+                <BilingualText en={builderEn('collab_expires')} el={builderEl('collab_expires')} compact />
+              </Label>
               <div className="flex gap-2 flex-wrap">
-                {[['1', '1 day'], ['7', '7 days'], ['30', '30 days'], ['never', 'Never']].map(([v, l]) => (
+                {expiryOptions.map((opt) => (
                   <Button
-                    key={v}
+                    key={opt.v}
                     size="sm"
-                    variant={expiresIn === v ? 'default' : 'outline'}
-                    onClick={() => setExpiresIn(v)}
+                    variant={expiresIn === opt.v ? 'default' : 'outline'}
+                    onClick={() => setExpiresIn(opt.v)}
                     className="flex-1 min-w-[70px]"
                   >
-                    {l}
+                    <BilingualText en={opt.en} el={opt.el} compact />
                   </Button>
                 ))}
               </div>
@@ -199,12 +241,16 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>
-            {generatedUrl ? 'Done' : 'Cancel'}
+            <BilingualText
+              en={generatedUrl ? builderEn('collab_done') : builderEn('collab_cancel')}
+              el={generatedUrl ? builderEl('collab_done') : builderEl('collab_cancel')}
+              compact
+            />
           </Button>
           {!generatedUrl && (
-            <Button onClick={handleCreate} disabled={loading}>
-              {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
-              Generate Link
+            <Button onClick={() => void handleCreate()} disabled={loading}>
+              {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
+              <BilingualText en={builderEn('collab_generate_link')} el={builderEl('collab_generate_link')} compact />
             </Button>
           )}
         </DialogFooter>
@@ -218,13 +264,13 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 function ProposalStatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'approved':
-      return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />;
+      return <CheckCircle2 className="icon-sm text-status-success" />;
     case 'changes_requested':
-      return <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />;
+      return <AlertCircle className="icon-sm text-status-warning" />;
     case 'closed':
-      return <XCircle className="h-3.5 w-3.5 text-gray-400" />;
+      return <XCircle className="icon-sm text-muted-foreground" />;
     default:
-      return <Clock className="h-3.5 w-3.5 text-blue-500" />;
+      return <Clock className="icon-sm text-status-info" />;
   }
 }
 
@@ -244,21 +290,26 @@ export function CollabToolbar({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showBranchPanel, setShowBranchPanel] = useState(false);
   const [showReviewPanel, setShowReviewPanel] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   // ── Data fetching ─────────────────────────────────────────────────────────
 
   const { data: branchesData } = useQuery({
-    queryKey: ['branches', documentId],
+    queryKey: qk('builder', 'branches', documentId),
     queryFn: () => listBranches(documentId),
-    refetchInterval: 30_000,
-    enabled: !!documentId,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
+    enabled: !!documentId && apiAvailable,
   });
 
   const { data: proposalsData } = useQuery({
-    queryKey: ['proposals', documentId],
+    queryKey: qk('builder', 'proposals', documentId),
     queryFn: () => listProposals(documentId),
-    refetchInterval: 30_000,
-    enabled: !!documentId,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
+    enabled: !!documentId && apiAvailable,
   });
 
   const branches: ArtifactBranch[] = Array.isArray(branchesData) ? branchesData : [];
@@ -269,7 +320,7 @@ export function CollabToolbar({
 
   return (
     <TooltipProvider>
-      <div className={cn('flex items-center gap-1.5', className)}>
+      <div className={cn('flex min-w-0 flex-wrap items-center gap-1.5', className)}>
 
         {/* ── Version History ────────────────────────────────────────────── */}
         {onHistoryClick && (
@@ -280,12 +331,17 @@ export function CollabToolbar({
                 size="sm"
                 className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
                 onClick={onHistoryClick}
+                aria-label={bilingualAria(builderEn('collab_history'), builderEl('collab_history'))}
               >
-                <History className="h-3.5 w-3.5 mr-1.5" />
-                <span className="text-xs hidden sm:inline">History</span>
+                <History className="icon-sm mr-1.5" aria-hidden="true" />
+                <span className="text-xs hidden sm:inline">
+                  <BilingualText en={builderEn('collab_history')} el={builderEl('collab_history')} compact />
+                </span>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>View version history</TooltipContent>
+            <TooltipContent>
+              <BilingualText en={builderEn('collab_history_tip')} el={builderEl('collab_history_tip')} compact />
+            </TooltipContent>
           </Tooltip>
         )}
 
@@ -297,17 +353,30 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowBranchPanel(true)}
+              // The label is `hidden sm:inline`: on a phone this is the only name.
+              aria-label={bilingualAria(
+                `${builderEn('collab_variants')}${openBranches.length ? ` (${openBranches.length} open)` : ''}`,
+                `${builderEl('collab_variants')}${openBranches.length ? ` (${openBranches.length} ανοιχτές)` : ''}`,
+              )}
             >
-              <GitBranch className="h-3.5 w-3.5 mr-1.5" />
-              <span className="text-xs hidden sm:inline">Variants</span>
+              <GitBranch className="icon-sm mr-1.5" aria-hidden="true" />
+              <span className="text-xs hidden sm:inline">
+                <BilingualText en={builderEn('collab_variants')} el={builderEl('collab_variants')} compact />
+              </span>
               {openBranches.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[9px] text-primary-foreground flex items-center justify-center font-medium">
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-2xs text-primary-foreground flex items-center justify-center font-medium">
                   {openBranches.length}
                 </span>
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Draft Variants — {openBranches.length} open</TooltipContent>
+          <TooltipContent>
+            <BilingualText
+              en={`${builderEn('collab_variants_tip')} — ${openBranches.length} open`}
+              el={`${builderEl('collab_variants_tip')} — ${openBranches.length} ανοιχτές`}
+              compact
+            />
+          </TooltipContent>
         </Tooltip>
 
         {/* ── Review Proposals ──────────────────────────────────────────── */}
@@ -318,20 +387,32 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowReviewPanel(true)}
+              aria-label={bilingualAria(
+                `${builderEn('collab_proposals')}${openProposals.length ? ` (${openProposals.length} pending)` : ''}`,
+                `${builderEl('collab_proposals')}${openProposals.length ? ` (${openProposals.length} σε εκκρεμότητα)` : ''}`,
+              )}
             >
-              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
-              <span className="text-xs hidden sm:inline">Proposals</span>
+              <ClipboardCheck className="icon-sm mr-1.5" aria-hidden="true" />
+              <span className="text-xs hidden sm:inline">
+                <BilingualText en={builderEn('collab_proposals')} el={builderEl('collab_proposals')} compact />
+              </span>
               {openProposals.length > 0 && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-4 px-1.5 text-[10px] bg-orange-100 text-orange-700 border-orange-200"
+                  className="ml-1 h-4 px-1.5 text-2xs bg-status-warning-bg text-status-warning border-status-warning-border"
                 >
                   {openProposals.length}
                 </Badge>
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Change Proposals — {openProposals.length} pending</TooltipContent>
+          <TooltipContent>
+            <BilingualText
+              en={`${builderEn('collab_proposals_tip')} — ${openProposals.length} pending`}
+              el={`${builderEl('collab_proposals_tip')} — ${openProposals.length} σε εκκρεμότητα`}
+              compact
+            />
+          </TooltipContent>
         </Tooltip>
 
         {/* ── Share ─────────────────────────────────────────────────────── */}
@@ -342,12 +423,17 @@ export function CollabToolbar({
               size="sm"
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowShareDialog(true)}
+              aria-label={bilingualAria(builderEn('collab_share'), builderEl('collab_share'))}
             >
-              <Share2 className="h-3.5 w-3.5 mr-1.5" />
-              <span className="text-xs hidden sm:inline">Share</span>
+              <Share2 className="icon-sm mr-1.5" aria-hidden="true" />
+              <span className="text-xs hidden sm:inline">
+                <BilingualText en={builderEn('collab_share')} el={builderEl('collab_share')} compact />
+              </span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Share document externally</TooltipContent>
+          <TooltipContent>
+            <BilingualText en={builderEn('collab_share_tip')} el={builderEl('collab_share_tip')} compact />
+          </TooltipContent>
         </Tooltip>
 
         {/* ── Dialogs / Panels ──────────────────────────────────────────── */}

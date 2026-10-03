@@ -97,13 +97,22 @@ export class OllamaService implements OnModuleInit, IAIProvider {
 
     const body: any = {
       model: targetModel,
-      messages: this.formatMessages(messages, options?.systemPrompt),
+      messages: this.toWireMessages(this.formatMessages(messages, options?.systemPrompt)),
       stream: false,
       options: {
         temperature: options?.temperature ?? 0.7,
         num_predict: options?.maxTokens ?? 1024,
       },
     };
+
+    // Only sent when a caller supplies a catalogue. Until this existed the
+    // request carried model/messages/options and nothing else, so no model in
+    // this product had ever been offered a tool -- and the rule-based planner
+    // documented as a fallback for 'when the LLM has no tools' was in fact the
+    // only path there was.
+    if (options?.tools?.length) {
+      body.tools = options.tools;
+    }
 
     try {
       const res = await fetch(`${this.baseUrl}/api/chat`, {
@@ -119,6 +128,7 @@ export class OllamaService implements OnModuleInit, IAIProvider {
       }
 
       const data = await res.json();
+      options?.onToolCalls?.(data.message?.tool_calls ?? null);
       return data.message?.content || '';
     } catch (err: any) {
       this.logger.error(`Ollama chat failed: ${err.message}`);
@@ -141,13 +151,19 @@ export class OllamaService implements OnModuleInit, IAIProvider {
 
     const body: any = {
       model: targetModel,
-      messages: this.formatMessages(messages, options?.systemPrompt),
+      messages: this.toWireMessages(this.formatMessages(messages, options?.systemPrompt)),
       stream: true,
       options: {
         temperature: options?.temperature ?? 0.7,
         num_predict: options?.maxTokens ?? 1024,
       },
     };
+
+    if (options?.tools?.length) {
+      body.tools = options.tools;
+    }
+
+    const streamedToolCalls: unknown[] = [];
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
@@ -186,6 +202,13 @@ export class OllamaService implements OnModuleInit, IAIProvider {
             if (data.message?.content) {
               yield data.message.content;
             }
+            // Ollama emits tool calls inside a streamed message rather than as
+            // character deltas, but it may emit more than one such message, so
+            // they are collected across the whole stream instead of the last
+            // one winning.
+            if (Array.isArray(data.message?.tool_calls)) {
+              streamedToolCalls.push(...data.message.tool_calls);
+            }
             if (data.done) {
               return;
             }
@@ -196,6 +219,10 @@ export class OllamaService implements OnModuleInit, IAIProvider {
       }
     } finally {
       clearTimeout(timeoutId);
+      // Request-local delivery prevents one concurrent user from consuming
+      // another user's proposals. This also reports calls collected before an
+      // early consumer stop or an aborted stream.
+      options?.onToolCalls?.(streamedToolCalls.length ? streamedToolCalls : null);
     }
   }
 
@@ -250,5 +277,19 @@ export class OllamaService implements OnModuleInit, IAIProvider {
 
     formatted.push(...messages);
     return formatted;
+  }
+
+  /**
+   * Ollama names the tool-result field `tool_name`, not `toolName`, and rejects
+   * unknown keys on a message. Everything else passes through untouched, so a
+   * conversation with no tool results produces byte-identical bodies to before
+   * the role existed.
+   */
+  private toWireMessages(messages: ChatMessage[]): Array<Record<string, unknown>> {
+    return messages.map((m) =>
+      m.role === 'tool'
+        ? { role: 'tool', content: m.content, ...(m.toolName ? { tool_name: m.toolName } : {}) }
+        : { role: m.role, content: m.content },
+    );
   }
 }

@@ -50,7 +50,7 @@ export function DashboardStats({
           <div className="h-5 w-24 animate-pulse rounded bg-muted" />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="h-20 animate-pulse rounded-lg bg-muted" />
             <div className="h-20 animate-pulse rounded-lg bg-muted" />
           </div>
@@ -66,23 +66,23 @@ export function DashboardStats({
         <CardTitle className="text-base font-medium text-muted-foreground">Overview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <StatCard
             label="Active profiles"
-            value={stats.activeProfiles.toLocaleString()}
-            icon={<Users className="h-5 w-5" />}
+            value={stats.activeProfiles.toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
             trend={stats.trendPercent != null ? { value: stats.trendPercent, label: 'vs last week' } : undefined}
           />
           <StatCard
             label="Matches this week"
             value={String(stats.matchesThisWeek)}
-            icon={<Zap className="h-5 w-5" />}
+            icon={<Zap className="icon-md" />}
           />
         </div>
         <div className="h-24 w-full" aria-hidden>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis hide domain={[0, 'auto']} />
               <Tooltip
                 contentStyle={{ fontSize: 12 }}

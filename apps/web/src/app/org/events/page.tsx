@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
@@ -19,6 +19,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createEvent, listEvents, type EventItem } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +34,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgEvents } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type OrgEvent = {
   id: string;
@@ -47,21 +58,70 @@ type OrgEvent = {
   description: string;
 };
 
-const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; color: string }> = {
-  workshop: { label: 'Workshop', color: 'bg-blue-500/10 text-blue-600' },
-  demo_day: { label: 'Demo Day', color: 'bg-purple-500/10 text-purple-600' },
-  networking: { label: 'Networking', color: 'bg-green-500/10 text-green-600' },
-  mentorship: { label: 'Mentorship', color: 'bg-amber-500/10 text-amber-600' },
-  keynote: { label: 'Keynote', color: 'bg-red-500/10 text-red-600' },
+const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; labelEl: string; tone: StatusTone }> = {
+  workshop: { label: 'Workshop', labelEl: 'Εργαστήριο', tone: 'info' },
+  demo_day: { label: 'Demo Day', labelEl: 'Demo Day', tone: 'accent' },
+  networking: { label: 'Networking', labelEl: 'Δικτύωση', tone: 'success' },
+  mentorship: { label: 'Mentorship', labelEl: 'Καθοδήγηση', tone: 'warning' },
+  keynote: { label: 'Keynote', labelEl: 'Κεντρική ομιλία', tone: 'danger' },
 };
 
-const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; color: string }> = {
-  upcoming: { label: 'Upcoming', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  ongoing: { label: 'Live', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
-  completed: { label: 'Completed', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 border-red-500/20' },
+const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; labelEl: string; tone: StatusTone }> = {
+  upcoming: { label: 'Upcoming', labelEl: 'Προσεχές', tone: 'info' },
+  ongoing: { label: 'Live', labelEl: 'Σε εξέλιξη', tone: 'success' },
+  completed: { label: 'Completed', labelEl: 'Ολοκληρώθηκε', tone: 'neutral' },
+  cancelled: { label: 'Cancelled', labelEl: 'Ακυρώθηκε', tone: 'danger' },
 };
 
+/**
+ * The page's own row from the events API row.
+ *
+ * `/api/events` has existed all along and this page never called it. The
+ * event model has no organisation scope yet, so this lists the events the
+ * viewer hosts — which for an organisation account is its programme calendar.
+ * Speakers have no field on the model and are left out rather than invented.
+ */
+const EVENT_TYPE_MAP: Record<string, OrgEvent['type']> = {
+  workshop: 'workshop',
+  demo_day: 'demo_day',
+  networking: 'networking',
+  meetup: 'networking',
+  webinar: 'keynote',
+  other: 'workshop',
+};
+
+function toOrgEvent(item: EventItem): OrgEvent {
+  const start = new Date(item.startAt);
+  const end = new Date(item.endAt);
+  const now = Date.now();
+  return {
+    id: item.id,
+    title: item.title,
+    type: EVENT_TYPE_MAP[item.eventType] ?? 'workshop',
+    status:
+      end.getTime() < now ? 'completed' : start.getTime() <= now ? 'ongoing' : 'upcoming',
+    // Pinned to UTC on both sides of hydration, the way every other date in
+    // this codebase is.
+    date: start.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }),
+    time: start.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'UTC',
+    }),
+    format: item.mode,
+    location: item.location ?? (item.isOnline ? 'Online' : '\u2014'),
+    attendees: item.attendeesCount,
+    capacity: item.capacity ?? 0,
+    description: item.description,
+  };
+}
+
+/** Shown to an organisation that has scheduled nothing yet. */
 const MOCK_EVENTS: OrgEvent[] = [
   {
     id: '1',
@@ -121,36 +181,47 @@ const MOCK_EVENTS: OrgEvent[] = [
   },
 ];
 
-function EventCard({ event }: { event: OrgEvent }) {
+function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: OrgEvent) => void }) {
   const typeCfg = TYPE_CONFIG[event.type];
   const statusCfg = STATUS_CONFIG[event.status];
-  const fill = Math.round((event.attendees / event.capacity) * 100);
+  const typeColors = STATUS[typeCfg.tone];
+  const statusColors = STATUS[statusCfg.tone];
+  // An event without a cap (the API's capacity is optional, mapped to 0) has
+  // no fill: dividing by it printed "156/0 attending · Infinity% full".
+  const capped = event.capacity > 0;
+  const fill = capped ? Math.round((event.attendees / event.capacity) * 100) : 0;
+  const fillColor = fill >= 90 ? STATUS.danger.icon : fill >= 70 ? STATUS.warning.icon : STATUS.success.icon;
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/20">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold">{event.title}</h3>
-              <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
-                {event.status === 'ongoing' && <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />}
-                {statusCfg.label}
+              <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
+                {event.status === 'ongoing' && <span className={cn('mr-1 inline-block h-1.5 w-1.5 rounded-full animate-pulse bg-status-success-mark')} />}
+                <BilingualText en={statusCfg.label} el={statusCfg.labelEl} compact />
               </Badge>
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />{event.date}
+                <Calendar className="icon-sm" aria-hidden="true" />{event.date}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />{event.time}
+                <Clock className="icon-sm" aria-hidden="true" />{event.time}
               </span>
               <span className="flex items-center gap-1">
-                {event.format === 'online' ? <Video className="icon-sm" /> : <Building className="icon-sm" />}
+                {event.format === 'online' ? <Video className="icon-sm" aria-hidden="true" /> : <Building className="icon-sm" aria-hidden="true" />}
                 {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />{event.attendees}/{event.capacity} attending
+                <Users className="icon-sm" aria-hidden="true" />
+                <BilingualText
+                  en={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} attending`}
+                  el={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} συμμετέχουν`}
+                  compact
+                />
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
@@ -162,23 +233,50 @@ function EventCard({ event }: { event: OrgEvent }) {
               </div>
             )}
             <div className="flex items-center gap-3 mt-3">
-              <Badge variant="secondary" className={cn('text-xs', typeCfg.color)}>{typeCfg.label}</Badge>
+              <Badge variant="secondary" className={cn('text-xs border', typeColors.chip)}><BilingualText en={typeCfg.label} el={typeCfg.labelEl} compact /></Badge>
               <span className="text-xs text-muted-foreground">
-                Capacity: <span className={cn('font-medium', fill >= 90 ? 'text-red-500' : fill >= 70 ? 'text-amber-500' : 'text-green-500')}>{fill}% full</span>
+                {capped ? (
+                  <span className={cn('font-medium', fillColor)}>
+                    <BilingualText en={`Capacity: ${fill}% full`} el={`Χωρητικότητα: ${fill}% πλήρης`} compact />
+                  </span>
+                ) : (
+                  <BilingualText en="No attendance cap" el="Χωρίς όριο συμμετοχής" compact />
+                )}
               </span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0">
-                <MoreVertical className="icon-sm" />
+              <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Duplicate</DropdownMenuItem>
-              <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              {/* None of these had a handler. EventsController serves create
+                  and read but no update or delete, so Edit and Delete say
+                  so; Duplicate re-creates the event a week later; the public
+                  page is /events/:id. */}
+              <UnavailableMenuItem
+                icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Edit"
+                el="Επεξεργασία"
+                reasonEn="Events cannot be edited after creation yet."
+                reasonEl="Οι εκδηλώσεις δεν επεξεργάζονται ακόμη μετά τη δημιουργία."
+              />
+              <DropdownMenuItem disabled={!onDuplicate} onSelect={() => onDuplicate?.(event)}>
+                <Copy className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Duplicate" el="Αντιγραφή" compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/events/${event.id}`}><ExternalLink className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Public Page" el="Δημόσια σελίδα" compact /></Link>
+              </DropdownMenuItem>
+              <UnavailableMenuItem
+                className="text-destructive-accessible"
+                icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                en="Delete"
+                el="Διαγραφή"
+                reasonEn="Events cannot be deleted yet."
+                reasonEl="Οι εκδηλώσεις δεν διαγράφονται ακόμη."
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -188,54 +286,118 @@ function EventCard({ event }: { event: OrgEvent }) {
 }
 
 export default function OrgEventsPage() {
+  // Illustrative rows are for the showcase; a real account with nothing
+  // to list sees the page's empty state, not invented people and records.
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const filtered = MOCK_EVENTS.filter(e => {
+  const { data, isLoading } = useQuery({
+    queryKey: qk('events', 'org'),
+    queryFn: () => listEvents({ scope: 'mine', limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.events ?? []).map(toOrgEvent), [data]);
+  const events = live.length > 0 ? live : isLoading || !showDemoData ? [] : MOCK_EVENTS;
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+
+  const duplicate = async (e: OrgEvent) => {
+    const src = (data?.events ?? []).find((x) => x.id === e.id);
+    if (!src) return;
+    const week = 7 * 86_400_000;
+    try {
+      const created = await createEvent({
+        title: `${src.title} (copy)`,
+        description: src.description || undefined,
+        type: src.eventType,
+        startAt: new Date(new Date(src.startAt).getTime() + week).toISOString(),
+        endAt: src.endAt ? new Date(new Date(src.endAt).getTime() + week).toISOString() : undefined,
+        timezone: src.timezone ?? undefined,
+        location: src.location ?? undefined,
+        isOnline: src.isOnline,
+        meetingUrl: src.meetingUrl ?? undefined,
+        capacity: src.capacity ?? undefined,
+      });
+      success('Event duplicated', `${created?.event?.title ?? src.title} - one week later.`);
+    } catch (err) {
+      toastError('Could not duplicate the event', err instanceof Error ? err.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: qk('events') });
+    }
+  };
+
+  const filtered = events.filter(e => {
     const q = search.toLowerCase();
     const matchesSearch = !search || e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q);
     const matchesTab = activeTab === 'all' || e.status === activeTab || (activeTab === 'active' && ['upcoming', 'ongoing'].includes(e.status));
     return matchesSearch && matchesTab;
   });
 
-  const upcoming = MOCK_EVENTS.filter(e => e.status === 'upcoming').length;
-  const totalAttendees = MOCK_EVENTS.reduce((s, e) => s + e.attendees, 0);
+  const upcoming = events.filter(e => e.status === 'upcoming').length;
+  const totalAttendees = events.reduce((s, e) => s + e.attendees, 0);
+  const activeCount = upcoming + events.filter(e => e.status === 'ongoing').length;
+  const completedCount = events.filter(e => e.status === 'completed').length;
+
+  const filtersActive = !!search || activeTab !== 'all';
+  const clearFilters = () => { setSearch(''); setActiveTab('all'); };
+
+  // Offered to the assistant: the tab, clearing the filters, and the card
+  // menu's Duplicate (a week later, refused on sample events).
+  usePageList([
+    {
+      id: 'events',
+      labelEn: 'Organisation events',
+      labelEl: 'Εκδηλώσεις οργανισμού',
+      rows: isLoading ? undefined : filtered.map((e) => `${e.title} · ${e.date} ${e.time} · ${e.format} · ${e.status} · ${e.attendees}/${e.capacity} attendees`),
+      total: events.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('event_tab', 'Event filter', 'Φίλτρο εκδηλώσεων', [
+      { value: 'all', en: 'All', el: 'Όλες' },
+      { value: 'active', en: 'Active', el: 'Ενεργές' },
+      { value: 'completed', en: 'Completed', el: 'Ολοκληρωμένες' },
+    ], activeTab, setActiveTab),
+    { id: 'clear_filters', labelEn: 'Clear the event filters', labelEl: 'Καθαρισμός φίλτρων εκδηλώσεων', writes: false, unavailableEn: filtersActive ? undefined : 'No filter is set.', unavailableEl: filtersActive ? undefined : 'Δεν υπάρχει φίλτρο.', run: clearFilters },
+    { id: 'duplicate_event', labelEn: 'Duplicate event a week later', labelEl: 'Αντίγραφο εκδήλωσης μια εβδομάδα αργότερα', writes: true, options: rowOptions(filtered, (e) => e.id, (e) => e.title), unavailableEn: live.length > 0 ? undefined : 'These events are samples; there is nothing to duplicate.', unavailableEl: live.length > 0 ? undefined : 'Οι εκδηλώσεις είναι δείγματα· δεν υπάρχει κάτι για αντιγραφή.', run: (v) => { const e = events.find((x) => x.id === v); if (e) void duplicate(e); } },
+  ]);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" />
-              Organization Events
-            </h1>
-            <p className="text-muted-foreground">Manage workshops, demo days, and cohort events</p>
-          </div>
-          <Button asChild>
-            <Link href="/events/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Event
-            </Link>
-          </Button>
-        </div>
+    <AppShell showHelp
+      title="Organization Events"
+      description="Demo days, office hours, workshops, and pitch nights for your cohorts."
+      descriptionEl="Demo days, ώρες γραφείου, εργαστήρια και βραδιές παρουσιάσεων για τους κύκλους σας."
+      actions={(
+        <Button asChild>
+          <Link href="/events/create">
+            <Plus className="mr-2 icon-sm" />
+            <BilingualText en="Create Event" el="Νέα εκδήλωση" compact />
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
-            { label: 'Upcoming Events', value: upcoming, icon: Calendar },
-            { label: 'Total Attendees (all)', value: totalAttendees, icon: Users },
-            { label: 'Events This Month', value: MOCK_EVENTS.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
+            { label: 'Upcoming Events', labelEl: 'Προσεχείς εκδηλώσεις', value: upcoming, icon: Calendar },
+            { label: 'Total Attendees (all)', labelEl: 'Συνολικοί συμμετέχοντες', value: totalAttendees, icon: Users },
+            // Every event not cancelled — it was labelled "This Month" but never filtered by date.
+            { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="text-xl font-bold">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
+                  <p className="page-stat text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
               </CardContent>
             </Card>
@@ -245,32 +407,23 @@ export default function OrgEventsPage() {
         {/* Search & Tabs */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Input aria-label="Search events. Αναζήτηση εκδηλώσεων" placeholder={bilingualInline('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({MOCK_EVENTS.length})</TabsTrigger>
-            <TabsTrigger value="active">Active ({upcoming + MOCK_EVENTS.filter(e => e.status === 'ongoing').length})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({MOCK_EVENTS.filter(e => e.status === 'completed').length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${events.length})`} el={`Όλες (${events.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="active"><BilingualText en={`Active (${activeCount})`} el={`Ενεργές (${activeCount})`} compact /></TabsTrigger>
+            <TabsTrigger value="completed"><BilingualText en={`Completed (${completedCount})`} el={`Ολοκληρωμένες (${completedCount})`} compact /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
             {filtered.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <h3 className="font-medium">No events found</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Create your first event to get started</p>
-                  <Button size="sm" className="mt-4" asChild>
-                    <Link href="/events/create">Create Event</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <EmptyOrgEvents filtersActive={filtersActive} onClearFilters={clearFilters} />
             )}
           </TabsContent>
         </Tabs>

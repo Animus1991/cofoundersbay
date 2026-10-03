@@ -22,28 +22,28 @@ import {
 
 // Role display configuration
 const ROLE_DISPLAY: Record<UserRoleType, { label: string; icon: React.ElementType; color: string }> = {
-  aspiring_founder: { label: 'Aspiring Founder', icon: Lightbulb, color: 'text-yellow-500' },
-  existing_founder: { label: 'Founder', icon: Briefcase, color: 'text-blue-500' },
-  cofounder_candidate: { label: 'Co-Founder Candidate', icon: Users, color: 'text-green-500' },
-  technical_talent: { label: 'Technical Talent', icon: Wrench, color: 'text-purple-500' },
-  business_operator: { label: 'Business Operator', icon: TrendingUp, color: 'text-orange-500' },
-  mentor: { label: 'Mentor', icon: GraduationCap, color: 'text-cyan-500' },
-  advisor: { label: 'Advisor', icon: Star, color: 'text-amber-500' },
-  coach: { label: 'Coach', icon: GraduationCap, color: 'text-teal-500' },
-  course_creator: { label: 'Course Creator', icon: GraduationCap, color: 'text-indigo-500' },
-  incubator_admin: { label: 'Incubator Admin', icon: Building2, color: 'text-rose-500' },
-  accelerator_admin: { label: 'Accelerator Admin', icon: Building2, color: 'text-pink-500' },
-  university_admin: { label: 'University Admin', icon: Building2, color: 'text-violet-500' },
-  venture_studio_admin: { label: 'Venture Studio Admin', icon: Building2, color: 'text-fuchsia-500' },
-  angel_investor: { label: 'Angel Investor', icon: TrendingUp, color: 'text-emerald-500' },
-  vc_scout: { label: 'VC Scout', icon: UserSearch, color: 'text-lime-500' },
-  vc_analyst: { label: 'VC Analyst', icon: TrendingUp, color: 'text-sky-500' },
-  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-blue-600' },
-  service_provider: { label: 'Service Provider', icon: Wrench, color: 'text-slate-500' },
-  legal_partner: { label: 'Legal Partner', icon: Scale, color: 'text-gray-600' },
-  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-green-600' },
-  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-orange-600' },
-  platform_admin: { label: 'Platform Admin', icon: Shield, color: 'text-red-500' },
+  aspiring_founder: { label: 'Aspiring Founder', icon: Lightbulb, color: 'text-status-warning' },
+  existing_founder: { label: 'Founder', icon: Briefcase, color: 'text-primary-accessible' },
+  cofounder_candidate: { label: 'Co-Founder Candidate', icon: Users, color: 'text-status-success' },
+  technical_talent: { label: 'Technical Talent', icon: Wrench, color: 'text-status-accent' },
+  business_operator: { label: 'Business Operator', icon: TrendingUp, color: 'text-status-warning' },
+  mentor: { label: 'Mentor', icon: GraduationCap, color: 'text-primary-accessible' },
+  advisor: { label: 'Advisor', icon: Star, color: 'text-status-warning' },
+  coach: { label: 'Coach', icon: GraduationCap, color: 'text-status-success' },
+  course_creator: { label: 'Course Creator', icon: GraduationCap, color: 'text-status-accent' },
+  incubator_admin: { label: 'Incubator Admin', icon: Building2, color: 'text-status-danger' },
+  accelerator_admin: { label: 'Accelerator Admin', icon: Building2, color: 'text-status-accent' },
+  university_admin: { label: 'University Admin', icon: Building2, color: 'text-status-accent' },
+  venture_studio_admin: { label: 'Venture Studio Admin', icon: Building2, color: 'text-status-accent' },
+  angel_investor: { label: 'Angel Investor', icon: TrendingUp, color: 'text-status-success' },
+  vc_scout: { label: 'VC Scout', icon: UserSearch, color: 'text-status-success' },
+  vc_analyst: { label: 'VC Analyst', icon: TrendingUp, color: 'text-primary-accessible' },
+  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-primary-accessible' },
+  service_provider: { label: 'Service Provider', icon: Wrench, color: 'text-muted-foreground' },
+  legal_partner: { label: 'Legal Partner', icon: Scale, color: 'text-muted-foreground' },
+  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-status-success' },
+  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-status-warning' },
+  platform_admin: { label: 'Platform Admin', icon: Shield, color: 'text-status-danger' },
 };
 
 interface RoleSwitcherProps {
@@ -73,7 +73,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
   if (isLoading) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="icon-sm animate-spin" />
         <span className="text-sm text-muted-foreground">Loading roles...</span>
       </div>
     );
@@ -93,13 +93,13 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
         >
-          <CurrentIcon className={`h-4 w-4 ${currentRoleConfig?.color || 'text-foreground'}`} />
-          <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <CurrentIcon className={`icon-sm ${currentRoleConfig?.color || 'text-foreground'}`} />
+          <ChevronDown className={`icon-sm transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isOpen && allRoles.length > 1 && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+            <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
             <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-popover border border-border rounded-lg shadow-lg py-1">
               {allRoles.map((role) => {
                 const roleConfig = ROLE_DISPLAY[role.roleType];
@@ -116,14 +116,14 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                     }`}
                   >
                     {switching === role.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" />
                     ) : (
-                      <Icon className={`h-4 w-4 ${roleConfig?.color || 'text-foreground'}`} />
+                      <Icon className={`icon-sm ${roleConfig?.color || 'text-foreground'}`} />
                     )}
                     <span className="flex-1 text-sm">{roleConfig?.label || role.roleType}</span>
-                    {isActive && <Check className="h-4 w-4 text-primary" />}
+                    {isActive && <Check className="icon-sm text-primary-accessible" />}
                     {role.isVerified && (
-                      <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
+                      <span className="text-xs bg-status-success-bg text-status-success px-1.5 py-0.5 rounded">Verified</span>
                     )}
                   </button>
                 );
@@ -155,9 +155,9 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
               }`}
             >
               {switching === role.id ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
               ) : (
-                <Icon className={`h-3.5 w-3.5 ${isActive ? '' : roleConfig?.color || ''}`} />
+                <Icon className={`icon-sm ${isActive ? '' : roleConfig?.color || ''}`} />
               )}
               <span>{roleConfig?.label || role.roleType}</span>
             </button>
@@ -174,7 +174,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 px-4 py-2 rounded-lg bg-card border border-border hover:bg-accent transition-colors w-full"
       >
-        <CurrentIcon className={`h-5 w-5 ${currentRoleConfig?.color || 'text-foreground'}`} />
+        <CurrentIcon className={`icon-md ${currentRoleConfig?.color || 'text-foreground'}`} />
         <div className="flex-1 text-left">
           <div className="text-sm font-medium">{currentRoleConfig?.label || primaryRole}</div>
           {allRoles.length > 1 && (
@@ -183,12 +183,12 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
             </div>
           )}
         </div>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`icon-sm transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && allRoles.length > 1 && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 max-h-[300px] overflow-y-auto">
             <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Switch Role
@@ -208,9 +208,9 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                   }`}
                 >
                   {switching === role.id ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="icon-md animate-spin" />
                   ) : (
-                    <Icon className={`h-5 w-5 ${roleConfig?.color || 'text-foreground'}`} />
+                    <Icon className={`icon-md ${roleConfig?.color || 'text-foreground'}`} />
                   )}
                   <div className="flex-1">
                     <div className="text-sm font-medium">{roleConfig?.label || role.roleType}</div>
@@ -218,9 +218,9 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                       <div className="text-xs text-muted-foreground capitalize">{role.scope} scope</div>
                     )}
                   </div>
-                  {isActive && <Check className="h-4 w-4 text-primary" />}
+                  {isActive && <Check className="icon-sm text-primary-accessible" />}
                   {role.isVerified && (
-                    <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
+                    <span className="text-xs bg-status-success-bg text-status-success px-1.5 py-0.5 rounded">Verified</span>
                   )}
                 </button>
               );

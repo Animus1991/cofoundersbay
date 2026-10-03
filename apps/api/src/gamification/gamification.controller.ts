@@ -43,8 +43,8 @@ export class GamificationController {
    * Returns total XP, level, streak, and 20 recent events for the caller.
    */
   @Get('users/me/xp')
-  async getMyXP(@CurrentUser() userId: string) {
-    return this.svc.calculateUserXP(userId);
+  async getMyXP(@CurrentUser() user: { id: string }) {
+    return this.svc.calculateUserXP(user.id);
   }
 
   /**
@@ -65,8 +65,8 @@ export class GamificationController {
    * Returns all earned badges for the caller.
    */
   @Get('users/me/badges')
-  async getMyBadges(@CurrentUser() userId: string) {
-    return this.svc.getUserBadges(userId);
+  async getMyBadges(@CurrentUser() user: { id: string }) {
+    return this.svc.getUserBadges(user.id);
   }
 
   /**
@@ -84,8 +84,8 @@ export class GamificationController {
    */
   @Post('users/me/badges/seen')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async markBadgesSeen(@CurrentUser() userId: string) {
-    await this.svc.markBadgesSeen(userId);
+  async markBadgesSeen(@CurrentUser() user: { id: string }) {
+    await this.svc.markBadgesSeen(user.id);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -97,8 +97,8 @@ export class GamificationController {
    * Returns current and longest streak for the caller.
    */
   @Get('users/me/streak')
-  async getMyStreak(@CurrentUser() userId: string) {
-    return this.svc.getStreak(userId);
+  async getMyStreak(@CurrentUser() user: { id: string }) {
+    return this.svc.getStreak(user.id);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -112,7 +112,7 @@ export class GamificationController {
    */
   @Post('events')
   async recordEvent(
-    @CurrentUser() userId: string,
+    @CurrentUser() user: { id: string },
     @Body() dto: RecordXPDto,
   ) {
     if (!dto.eventType) {
@@ -131,7 +131,7 @@ export class GamificationController {
       metadata: dto.metadata,
     };
 
-    return this.svc.recordXPEvent(userId, dto.eventType, opts);
+    return this.svc.recordXPEvent(user.id, dto.eventType, opts);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -192,11 +192,11 @@ export class GamificationController {
    */
   @Get('workspaces/:workspaceId/contributions/me')
   async getMyContribution(
-    @CurrentUser() userId: string,
+    @CurrentUser() user: { id: string },
     @Param('workspaceId') workspaceId: string,
   ) {
     const all = await this.svc.getContributionScores(workspaceId);
-    const mine = all.find((c) => c.userId === userId);
+    const mine = all.find((c) => c.userId === user.id);
     if (!mine) throw new NotFoundException('No contribution record found for this workspace');
     return mine;
   }
@@ -241,10 +241,10 @@ export class GamificationController {
    */
   @Get('users/me/explain')
   async getMyExplain(
-    @CurrentUser() userId: string,
+    @CurrentUser() user: { id: string },
     @Param('workspaceId') workspaceId?: string,
   ) {
-    return this.svc.getScoreExplain(userId, workspaceId);
+    return this.svc.getScoreExplain(user.id, workspaceId);
   }
 
   /**
@@ -253,10 +253,10 @@ export class GamificationController {
    */
   @Get('workspaces/:workspaceId/explain/me')
   async getWorkspaceExplain(
-    @CurrentUser() userId: string,
+    @CurrentUser() user: { id: string },
     @Param('workspaceId') workspaceId: string,
   ) {
-    return this.svc.getScoreExplain(userId, workspaceId);
+    return this.svc.getScoreExplain(user.id, workspaceId);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -269,9 +269,9 @@ export class GamificationController {
    */
   @Get('workspaces/:workspaceId/contributions/me/percentile')
   async getMyPercentile(
-    @CurrentUser() userId: string,
+    @CurrentUser() user: { id: string },
     @Param('workspaceId') workspaceId: string,
   ) {
-    return this.svc.getContributionPercentile(userId, workspaceId);
+    return this.svc.getContributionPercentile(user.id, workspaceId);
   }
 }

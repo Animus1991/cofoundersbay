@@ -13,8 +13,10 @@ import {
   FileText, Lock, AlertCircle, Eye, MessageSquare, Edit3,
   Loader2, ExternalLink, Calendar, User, Rocket, CheckCircle2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, errorStatus } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -53,10 +55,10 @@ interface SharedDocument {
 
 function PermissionBadge({ permission }: { permission: string }) {
   const meta = {
-    view:    { label: 'View Only',  color: 'text-gray-600 bg-gray-50 border-gray-200',    icon: Eye },
-    comment: { label: 'Can Comment',color: 'text-blue-600 bg-blue-50 border-blue-200',   icon: MessageSquare },
-    suggest: { label: 'Can Suggest',color: 'text-purple-600 bg-purple-50 border-purple-200', icon: Edit3 },
-    edit:    { label: 'Can Edit',   color: 'text-green-600 bg-green-50 border-green-200', icon: Edit3 },
+    view:    { label: 'View Only',  color: 'text-muted-foreground bg-muted border-border',    icon: Eye },
+    comment: { label: 'Can Comment',color: 'text-status-info bg-status-info-bg border-status-info-border',   icon: MessageSquare },
+    suggest: { label: 'Can Suggest',color: 'text-status-accent bg-status-accent-bg border-status-accent-border', icon: Edit3 },
+    edit:    { label: 'Can Edit',   color: 'text-status-success bg-status-success-bg border-status-success-border', icon: Edit3 },
   }[permission] ?? { label: permission, color: 'bg-muted', icon: Eye };
 
   const Icon = meta.icon;
@@ -89,8 +91,8 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
   if (!content || Object.keys(content).length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
-        <p className="text-sm">No content available in this version.</p>
+        <FileText className="icon-xl mx-auto mb-2 opacity-30" />
+        <p className="text-sm"><BilingualText en="No content available in this version." el="Δεν υπάρχει περιεχόμενο σε αυτή την έκδοση." wrap /></p>
       </div>
     );
   }
@@ -113,7 +115,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
       return (
         <div key={key} className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-sm font-medium">{val.toLocaleString()}</p>
+          <p className="text-sm font-medium">{val.toLocaleString('en-GB')}</p>
         </div>
       );
     }
@@ -124,7 +126,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
           <ul className="space-y-1">
             {val.slice(0, 10).map((item, i) => (
               <li key={i} className="flex items-start gap-1.5 text-sm">
-                <span className="text-primary mt-1 shrink-0">•</span>
+                <span className="text-primary-accessible mt-1 shrink-0">•</span>
                 {typeof item === 'string' ? item : JSON.stringify(item)}
               </li>
             ))}
@@ -192,14 +194,15 @@ export default function SharePage() {
         setStep('error');
         setErrorMessage('Document content could not be loaded.');
       }
-    } catch (err: any) {
-      if (err?.status === 401 || err?.status === 403) {
+    } catch (err: unknown) {
+      const status = errorStatus(err);
+      if (status === 401 || status === 403) {
         setPasswordError('Incorrect password. Please try again.');
         setStep('password');
-      } else if (err?.status === 404) {
+      } else if (status === 404) {
         setStep('error');
         setErrorMessage('This share link does not exist or has been revoked.');
-      } else if (err?.status === 410) {
+      } else if (status === 410) {
         setStep('error');
         setErrorMessage('This share link has expired.');
       } else {
@@ -226,8 +229,8 @@ export default function SharePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
-          <p className="text-sm text-muted-foreground">Loading shared document…</p>
+          <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-accessible" />
+          <p className="text-sm text-muted-foreground"><BilingualText en="Loading shared document…" el="Φόρτωση κοινόχρηστου εγγράφου…" compact /></p>
         </div>
       </div>
     );
@@ -242,10 +245,10 @@ export default function SharePage() {
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Lock className="h-6 w-6 text-primary" />
+                <Lock className="icon-lg text-primary-accessible" />
               </div>
             </div>
-            <CardTitle>Password Protected</CardTitle>
+            <CardTitle><BilingualText en="Password Protected" el="Προστατεύεται με κωδικό" compact /></CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {linkInfo?.label
                 ? `"${linkInfo.label}" is password protected.`
@@ -254,18 +257,18 @@ export default function SharePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="share-password">Password</Label>
+              <Label htmlFor="share-password"><BilingualText en="Password" el="Κωδικός" compact /></Label>
               <Input
                 id="share-password"
                 type="password"
-                placeholder="Enter password…"
+                placeholder={bilingualInline("Enter password…", "Συμπληρώστε κωδικό…")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handlePasswordSubmit()}
                 className={cn(passwordError && 'border-destructive')}
               />
               {passwordError && (
-                <p className="text-xs text-destructive">{passwordError}</p>
+                <p className="text-xs text-destructive-accessible">{passwordError}</p>
               )}
             </div>
             <Button
@@ -273,7 +276,7 @@ export default function SharePage() {
               onClick={handlePasswordSubmit}
               disabled={submittingPassword || !password.trim()}
             >
-              {submittingPassword && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+              {submittingPassword && <Loader2 className="icon-sm mr-2 animate-spin" />}
               View Document
             </Button>
           </CardContent>
@@ -289,11 +292,11 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
-            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive" />
-            <h2 className="font-semibold mb-2">Link Unavailable</h2>
+            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
+            <h1 className="font-semibold mb-2"><BilingualText en="Link Unavailable" el="Ο σύνδεσμος δεν είναι διαθέσιμος" compact /></h1>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
-              Go to CoFounderBay
+              <BilingualText en="Go to CoFounderBay" el="Μετάβαση στο CoFounderBay" compact />
             </Button>
           </CardContent>
         </Card>
@@ -310,7 +313,7 @@ export default function SharePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-primary shrink-0" />
+              <Rocket className="icon-md text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
             </div>
             {document && (
@@ -324,8 +327,8 @@ export default function SharePage() {
             {linkInfo && <PermissionBadge permission={linkInfo.permissions} />}
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                Expires {new Date(linkInfo.expiresAt).toLocaleDateString()}
+                <Calendar className="icon-sm" />
+                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </span>
             )}
             <Button
@@ -334,8 +337,8 @@ export default function SharePage() {
               onClick={() => window.location.href = '/'}
               className="text-xs"
             >
-              <ExternalLink className="h-3 w-3 mr-1.5" />
-              Sign In
+              <ExternalLink className="icon-sm mr-1.5" />
+              <BilingualText en="Sign In" el="Σύνδεση" compact />
             </Button>
           </div>
         </div>
@@ -356,15 +359,15 @@ export default function SharePage() {
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
-                        'text-green-600': document.status === 'approved',
-                        'text-blue-600': document.status === 'review',
-                        'text-yellow-600': document.status === 'in_progress',
+                        'text-status-success': document.status === 'approved',
+                        'text-status-info': document.status === 'review',
+                        'text-status-warning': document.status === 'in_progress',
                       })}
                     >
                       {document.status.replace('_', ' ')}
                     </Badge>
                   </div>
-                  <h1 className="text-2xl font-bold">{document.title}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-semibold">{document.title}</h1>
                   {document.description && (
                     <p className="text-muted-foreground mt-1">{document.description}</p>
                   )}
@@ -373,11 +376,11 @@ export default function SharePage() {
 
               {/* Workspace info */}
               {document.workspace && (
-                <Card className="border-border/40">
+                <Card className="border-border">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Rocket className="h-4 w-4 text-primary" />
+                        <Rocket className="icon-sm text-primary-accessible" />
                         <span className="font-medium text-sm">
                           {document.workspace.startupName ?? document.workspace.name}
                         </span>
@@ -394,7 +397,7 @@ export default function SharePage() {
                       )}
                       {document.owner && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-                          <User className="h-3 w-3" />
+                          <User className="icon-sm" />
                           {document.owner.displayName}
                         </div>
                       )}
@@ -407,7 +410,7 @@ export default function SharePage() {
               {document.completionPercent > 0 && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Completion</span>
+                    <span><BilingualText en="Completion" el="Ολοκλήρωση" compact /></span>
                     <span>{document.completionPercent}%</span>
                   </div>
                   <Progress value={document.completionPercent} className="h-1.5" />
@@ -420,11 +423,11 @@ export default function SharePage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Document Content
+                    <FileText className="icon-sm" />
+                    <BilingualText en="Document Content" el="Περιεχόμενο εγγράφου" compact />
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString()}
+                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                   </span>
                 </div>
               </CardHeader>
@@ -436,23 +439,23 @@ export default function SharePage() {
             {/* View-only notice */}
             {linkInfo?.permissions === 'view' && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg p-3">
-                <Eye className="h-3.5 w-3.5 shrink-0" />
-                You are viewing this document in read-only mode. To collaborate, request full access from the owner.
+                <Eye className="icon-sm shrink-0" />
+                <BilingualText en="You are viewing this document in read-only mode. To collaborate, request full access from the owner." el="Βλέπετε το έγγραφο μόνο για ανάγνωση. Για συνεργασία, ζητήστε πλήρη πρόσβαση από τον κάτοχο." wrap />
               </div>
             )}
 
             {/* CTA for authenticated actions */}
             {(linkInfo?.permissions === 'comment' || linkInfo?.permissions === 'suggest') && (
-              <Card className="border-primary/20 bg-primary/5">
+              <Card className="border-primary/15 bg-primary/5">
                 <CardContent className="p-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium">Want to leave feedback?</p>
+                    <p className="text-sm font-medium"><BilingualText en="Want to leave feedback?" el="Θέλετε να αφήσετε σχόλιο;" compact /></p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Sign in or create a free account to comment on this document.
+                      <BilingualText en="Sign in or create a free account to comment on this document." el="Συνδεθείτε ή δημιουργήστε δωρεάν λογαριασμό για να σχολιάσετε αυτό το έγγραφο." wrap />
                     </p>
                   </div>
-                  <Button size="sm" onClick={() => window.location.href = '/auth/login'}>
-                    Sign In
+                  <Button size="sm" onClick={() => window.location.href = '/login'}>
+                    <BilingualText en="Sign In" el="Σύνδεση" compact />
                   </Button>
                 </CardContent>
               </Card>
@@ -470,7 +473,7 @@ export default function SharePage() {
       {/* Footer */}
       <footer className="border-t mt-12 py-6 text-center text-xs text-muted-foreground">
         Shared via{' '}
-        <a href="/" className="text-primary hover:underline font-medium">
+        <a href="/" className="text-primary-accessible hover:underline font-medium">
           CoFounderBay
         </a>{' '}
         — Startup Builder Platform

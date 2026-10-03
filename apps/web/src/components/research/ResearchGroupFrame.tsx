@@ -121,7 +121,7 @@ export function ResearchGroupFrame({
       >
         {/* Drag grip */}
         <GripVertical
-          className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
+          className="icon-sm opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
           style={{ color: group.color }}
         />
 
@@ -139,12 +139,12 @@ export function ResearchGroupFrame({
             }}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 text-[12px] font-bold bg-transparent outline-none border-b-2 px-0 py-0"
+            className="flex-1 min-w-0 text-xs font-bold bg-transparent outline-none border-b-2 px-0 py-0"
             style={{ color: group.color, borderColor: group.color }}
           />
         ) : (
           <span
-            className="flex-1 min-w-0 text-[12px] font-bold uppercase tracking-wider truncate cursor-text"
+            className="flex-1 min-w-0 text-xs font-bold uppercase tracking-wider truncate cursor-text"
             style={{ color: group.color }}
             onDoubleClick={(e) => {
               if (group.locked) return;
@@ -158,15 +158,15 @@ export function ResearchGroupFrame({
         )}
 
         {/* Action buttons — visible on hover */}
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
           {/* Color picker */}
           <div ref={colorPickerRef} className="relative">
             <button
               onClick={(e) => { e.stopPropagation(); setShowColorPicker((v) => !v); }}
-              className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
               title="Change color"
             >
-              <Palette className="w-3 h-3" style={{ color: group.color }} />
+              <Palette className="icon-sm" style={{ color: group.color }} />
             </button>
             {showColorPicker && (
               <div
@@ -178,7 +178,7 @@ export function ResearchGroupFrame({
                     key={c.value}
                     onClick={() => { onUpdate({ color: c.value }); setShowColorPicker(false); }}
                     className={cn(
-                      'w-6 h-6 rounded-lg border-2 transition-all hover:scale-110',
+                      'w-6 h-6 rounded border-2 transition-all hover:scale-110',
                       group.color === c.value ? 'border-foreground scale-110' : 'border-transparent',
                     )}
                     style={{ backgroundColor: c.value }}
@@ -192,34 +192,34 @@ export function ResearchGroupFrame({
           {/* Collapse toggle */}
           <button
             onClick={(e) => { e.stopPropagation(); onUpdate({ collapsed: !group.collapsed }); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
             title={group.collapsed ? 'Expand' : 'Collapse'}
           >
             {group.collapsed
-              ? <Maximize2 className="w-3 h-3 text-muted-foreground" />
-              : <Minimize2 className="w-3 h-3 text-muted-foreground" />
+              ? <Maximize2 className="icon-sm text-muted-foreground" />
+              : <Minimize2 className="icon-sm text-muted-foreground" />
             }
           </button>
 
           {/* Lock toggle */}
           <button
             onClick={(e) => { e.stopPropagation(); onUpdate({ locked: !group.locked }); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
             title={group.locked ? 'Unlock' : 'Lock'}
           >
             {group.locked
-              ? <Lock className="w-3 h-3 text-muted-foreground" />
-              : <Unlock className="w-3 h-3 text-muted-foreground" />
+              ? <Lock className="icon-sm text-muted-foreground" />
+              : <Unlock className="icon-sm text-muted-foreground" />
             }
           </button>
 
           {/* Delete */}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/20 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
-            <X className="w-3 h-3 text-destructive" />
+            <X className="icon-sm text-destructive-accessible" />
           </button>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function ResearchGroupFrame({
       {/* Collapsed body hint */}
       {group.collapsed && (
         <div className="px-3 pb-2">
-          <span className="text-[10px] text-muted-foreground italic">Group collapsed — nodes still visible</span>
+          <span className="text-2xs text-muted-foreground italic">Group collapsed — nodes still visible</span>
         </div>
       )}
 
@@ -235,17 +235,17 @@ export function ResearchGroupFrame({
       {isSelected && !group.locked && !group.collapsed && (
         <>
           <div
-            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity rounded-r"
+            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity rounded-r"
             style={{ backgroundColor: `${group.color}20` }}
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }}
           />
           <div
-            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity rounded-b"
+            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity rounded-b"
             style={{ backgroundColor: `${group.color}20` }}
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }}
           />
           <div
-            className="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute -bottom-1.5 -right-1.5 w-4 h-4 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}
           >
             <svg viewBox="0 0 14 14" className="w-full h-full">

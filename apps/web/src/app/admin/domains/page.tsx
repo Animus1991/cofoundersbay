@@ -20,6 +20,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AppShell } from '@/components/layout/AppShell';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
+import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   Globe,
   Plus,
@@ -39,47 +44,47 @@ import {
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1"><CheckCircle2 className="icon-sm" /><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1"><Clock className="icon-sm" /><BilingualText en="Pending" el="Σε αναμονή" compact /></Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1"><XCircle className="icon-sm" /><BilingualText en="Failed" el="Απέτυχε" compact /></Badge>;
+    case 'expired':  return <Badge className="bg-muted text-muted-foreground border-border gap-1"><XCircle className="icon-sm" /><BilingualText en="Expired" el="Έληξε" compact /></Badge>;
   }
 }
 
 function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions }) {
   const copy = (text: string) => navigator.clipboard.writeText(text);
   return (
-    <div className="mt-3 rounded-lg border border-border/60 bg-muted/40 p-4 space-y-3 text-sm">
-      <p className="font-semibold text-foreground">DNS Setup Instructions</p>
+    <div className="mt-3 rounded-lg border border-border bg-muted/40 p-4 space-y-3 text-sm">
+      <p className="font-semibold text-foreground"><BilingualText en="DNS Setup Instructions" el="Οδηγίες ρύθμισης DNS" compact /></p>
       <div className="space-y-2">
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Step 1 – Verification TXT Record</p>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
-          <span className="text-muted-foreground">Type</span>
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide"><BilingualText en="Step 1 – Verification TXT Record" el="Βήμα 1 – Εγγραφή TXT επαλήθευσης" compact /></p>
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
+          <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.verification.type}</span>
           <span />
-          <span className="text-muted-foreground">Name</span>
+          <span className="text-muted-foreground"><BilingualText en="Name" el="Όνομα" compact /></span>
           <span className="break-all">{instructions.verification.name}</span>
-          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
-          <span className="text-muted-foreground">Value</span>
+          <button aria-label="Copy record name" onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <span className="text-muted-foreground"><BilingualText en="Value" el="Τιμή" compact /></span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy record value" onClick={() => copy(instructions.verification?.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Step 2 – CNAME Record</p>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
-          <span className="text-muted-foreground">Type</span>
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide"><BilingualText en="Step 2 – CNAME Record" el="Βήμα 2 – Εγγραφή CNAME" compact /></p>
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border">
+          <span className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></span>
           <span>{instructions.cname.type}</span>
           <span />
-          <span className="text-muted-foreground">Name</span>
+          <span className="text-muted-foreground"><BilingualText en="Name" el="Όνομα" compact /></span>
           <span className="break-all">{instructions.cname.name}</span>
-          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
-          <span className="text-muted-foreground">Value</span>
+          <button aria-label="Copy CNAME name" onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <span className="text-muted-foreground"><BilingualText en="Value" el="Τιμή" compact /></span>
           <span className="break-all">{instructions.cname.value}</span>
-          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button aria-label="Copy CNAME value" onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
         </div>
       </div>
       <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
@@ -99,9 +104,24 @@ function DomainRow({
   onRefresh: () => void;
 }) {
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
   const [loadingDns, setLoadingDns] = useState(false);
+
+  const handleRemove = async () => {
+    const ok = await confirm({
+      title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
+      description: (
+        <BilingualText
+          en="Sign-in and links on this domain will stop working for your members."
+          el="Η σύνδεση και οι σύνδεσμοι σε αυτό το domain θα σταματήσουν να λειτουργούν για τα μέλη σας."
+        />
+      ),
+      confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
+    });
+    if (ok) remove.mutate();
+  };
 
   const verify = useMutation({
     mutationFn: () => verifyTenantDomain(tenantId, domain.id),
@@ -134,24 +154,24 @@ function DomainRow({
   };
 
   return (
-    <div className="rounded-lg border border-border/60 bg-card p-4">
+    <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
-              {domain.isPrimary && <Badge variant="secondary" className="text-xs">Primary</Badge>}
+              {domain.isPrimary && <Badge variant="secondary" className="text-xs"><BilingualText en="Primary" el="Κύριος" compact /></Badge>}
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
-                : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
-              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs">SSL</Badge>}
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
+                : <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργός" compact /></Badge>}
+              {domain.sslStatus === 'active' && <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs">SSL</Badge>}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             )}
           </div>
@@ -167,14 +187,14 @@ function DomainRow({
               </Button>
               <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
                 <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
-                Verify
+                <BilingualText en="Verify" el="Επαλήθευση" compact />
               </Button>
             </>
           )}
           {!domain.isPrimary && domain.isActive && (
             <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
               <Star className="icon-sm" />
-              Set Primary
+              <BilingualText en="Set Primary" el="Ορισμός ως κύριου" compact />
             </Button>
           )}
           <Button
@@ -182,17 +202,17 @@ function DomainRow({
             variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-status-warning hover:text-status-warning' : 'text-status-success hover:text-status-success'}`}
           >
             <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
-          <Button
+          <Button aria-label="Remove domain"
             size="sm"
             variant="ghost"
-            onClick={() => { if (confirm('Delete this domain?')) remove.mutate(); }}
+            onClick={() => void handleRemove()}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
             <Trash2 className="icon-sm" />
           </Button>
@@ -210,7 +230,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
   const [customDomainInput, setCustomDomainInput] = useState('');
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['tenant', tenant.id, 'domains'],
+    queryKey: qk('tenant', tenant.id, 'domains'),
     queryFn: () => listTenantDomains(tenant.id),
     staleTime: 30_000,
   });
@@ -224,14 +244,24 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
     onSuccess: () => { setCustomDomainInput(''); refetch(); },
   });
 
-  const domains = data?.domains ?? [];
+  const domains = Array.isArray(data?.domains) ? data.domains : [];
+  usePageList([
+    {
+      id: 'organisation_domains',
+      labelEn: `Domains of ${tenant.displayName || tenant.name}`,
+      labelEl: `Domains του οργανισμού ${tenant.displayName || tenant.name}`,
+      rows: isLoading ? undefined : domains.map((d) => `${d.domainName} · ${d.domainType} · ${d.verificationStatus} · ${d.isActive ? 'active' : 'inactive'}${d.isPrimary ? ' · primary' : ''}`),
+      total: domains.length,
+      sample: false,
+    },
+  ]);
 
   return (
     <div className="space-y-4">
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading domains...</p>
+        <p className="text-sm text-muted-foreground"><BilingualText en="Loading domains..." el="Φόρτωση τομέων…" compact /></p>
       ) : domains.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No domains configured yet.</p>
+        <p className="text-sm text-muted-foreground"><BilingualText en="No domains configured yet." el="Δεν έχουν οριστεί τομείς ακόμα." compact /></p>
       ) : (
         <div className="space-y-2">
           {domains.map((d) => (
@@ -241,8 +271,8 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       )}
 
       {/* Add subdomain */}
-      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
-        <p className="text-sm font-medium">Add Platform Subdomain</p>
+      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
+        <p className="text-sm font-medium"><BilingualText en="Add Platform Subdomain" el="Προσθήκη υποτομέα πλατφόρμας" compact /></p>
         <p className="text-xs text-muted-foreground">Your org will be accessible at <code className="bg-muted px-1 rounded">[subdomain].cofounderbay.com</code></p>
         <div className="flex gap-2">
           <div className="relative flex-1">
@@ -263,15 +293,15 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             className="gap-1"
           >
             <Plus className="icon-sm" />
-            Add
+            <BilingualText en="Add" el="Προσθήκη" compact />
           </Button>
         </div>
-        {addSub.isError && <p className="text-xs text-destructive">{(addSub.error as Error).message}</p>}
+        {addSub.isError && <p className="text-xs text-destructive-accessible">{(addSub.error as Error).message}</p>}
       </div>
 
       {/* Add custom domain */}
-      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
-        <p className="text-sm font-medium">Add Custom Domain</p>
+      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
+        <p className="text-sm font-medium"><BilingualText en="Add Custom Domain" el="Προσθήκη προσαρμοσμένου τομέα" compact /></p>
         <p className="text-xs text-muted-foreground">Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code></p>
         <div className="flex gap-2">
           <Input
@@ -287,10 +317,10 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             className="gap-1"
           >
             <Plus className="icon-sm" />
-            Add
+            <BilingualText en="Add" el="Προσθήκη" compact />
           </Button>
         </div>
-        {addCustom.isError && <p className="text-xs text-destructive">{(addCustom.error as Error).message}</p>}
+        {addCustom.isError && <p className="text-xs text-destructive-accessible">{(addCustom.error as Error).message}</p>}
       </div>
     </div>
   );
@@ -300,47 +330,75 @@ export default function DomainsAdminPage() {
   const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
 
   const { data: tenantsData, isLoading } = useQuery({
-    queryKey: ['admin', 'tenants'],
+    queryKey: qk('admin', 'tenants'),
     queryFn: () => listTenants({ limit: 100 }),
     staleTime: 60_000,
   });
 
-  const tenants = tenantsData ?? [];
+  const tenants = Array.isArray(tenantsData) ? tenantsData : [];
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
 
-  return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="text-xl font-bold">Domain Management</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure subdomains and custom domains for each tenant organization.
-        </p>
-      </div>
+  // Picking an organisation is the page's one view control; its domains then
+  // publish themselves from the panel below.
+  usePageControls([
+    {
+      id: 'select_organisation',
+      labelEn: 'Organisation whose domains to show',
+      labelEl: 'Οργανισμός του οποίου τα domains εμφανίζονται',
+      writes: false,
+      options: rowOptions(tenants, (t) => t.id, (t) => t.displayName || t.name),
+      current: selectedTenantId ?? undefined,
+      unavailableEn: tenants.length === 0 ? 'No organisations are listed.' : undefined,
+      unavailableEl: tenants.length === 0 ? 'Δεν υπάρχουν οργανισμοί.' : undefined,
+      run: (value) => { if (value) setSelectedTenantId(value); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'organisations',
+      labelEn: 'Organisations',
+      labelEl: 'Οργανισμοί',
+      rows: isLoading ? undefined : tenants.map((t) => `${t.displayName || t.name} · /${t.slug}`),
+      total: tenants.length,
+      sample: false,
+    },
+  ]);
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+  return (
+    <AppShell
+      title="Domain Management"
+      titleEl="Διαχείριση τομέων"
+      description="Configure subdomains and custom domains for each tenant organization."
+      descriptionEl="Ρυθμίστε υποτομείς και προσαρμοσμένους τομείς για κάθε οργανισμό."
+    >
+      <div className="space-y-6">
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
         {/* Tenant selector */}
         <Card className="h-fit">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Organizations</CardTitle>
+            <CardTitle className="text-sm"><BilingualText en="Organizations" el="Οργανισμοί" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <p className="text-sm text-muted-foreground px-4 py-3">Loading...</p>
+              <p className="text-sm text-muted-foreground px-4 py-3"><BilingualText en="Loading..." el="Φόρτωση…" compact /></p>
             ) : tenants.length === 0 ? (
-              <p className="text-sm text-muted-foreground px-4 py-3">No tenants found.</p>
+              <p className="text-sm text-muted-foreground px-4 py-3"><BilingualText en="No tenants found." el="Δεν βρέθηκαν οργανισμοί." compact /></p>
             ) : (
               <div className="divide-y divide-border/50">
                 {tenants.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => setSelectedTenantId(t.id)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors ${
+                    aria-pressed={selectedTenantId === t.id}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-ring ${
                       selectedTenantId === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
                     }`}
                   >
                     {t.logoUrl
                       ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" /></div>}
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-accessible" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>
@@ -358,7 +416,7 @@ export default function DomainsAdminPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">Select an organization to manage its domains</p>
+                <p className="text-muted-foreground"><BilingualText en="Select an organization to manage its domains" el="Επιλέξτε οργανισμό για να διαχειριστείτε τους τομείς του" wrap /></p>
               </CardContent>
             </Card>
           ) : (
@@ -379,6 +437,7 @@ export default function DomainsAdminPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }

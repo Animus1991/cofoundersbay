@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { toPng } from 'html-to-image';
 import { useToast } from '@/components/ui/toast';
 import type { ResearchBoardFull } from '@/lib/api';
 
@@ -25,10 +26,26 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
   const [copied, setCopied] = useState(false);
 
   const exportAsImage = useCallback(async () => {
-    // Note: PNG export requires html2canvas library to be installed
-    // For now, show a message that this feature requires additional setup
-    showError('PNG Export', 'PNG export requires html2canvas library. Use JSON or Markdown export instead.');
-  }, [showError]);
+    if (!canvasRef.current) {
+      showError('PNG Export', 'Canvas is not ready.');
+      return;
+    }
+    setIsExporting(true);
+    setExportFormat('png');
+    try {
+      const dataUrl = await toPng(canvasRef.current, { cacheBust: true, pixelRatio: 2 });
+      const link = document.createElement('a');
+      link.download = `${board.title || 'research-board'}.png`;
+      link.href = dataUrl;
+      link.click();
+      success('Export complete', 'Board exported as PNG');
+    } catch {
+      showError('PNG Export', 'Could not export. Try fitting the view first.');
+    } finally {
+      setIsExporting(false);
+      setExportFormat(null);
+    }
+  }, [board.title, canvasRef, success, showError]);
 
   const exportAsJSON = useCallback(() => {
     setIsExporting(true);
@@ -92,7 +109,7 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
       }
 
       markdown += `---\n\n`;
-      markdown += `*Exported on ${new Date().toLocaleDateString()}*\n\n`;
+      markdown += `*Exported on ${new Date().toLocaleDateString('en-GB', { timeZone: 'UTC' })}*\n\n`;
 
       // Group nodes by type
       const nodesByType: Record<string, typeof board.nodes> = {};
@@ -172,35 +189,35 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={isExporting}>
           {isExporting ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <Loader2 className="icon-sm animate-spin mr-2" />
           ) : (
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="icon-sm mr-2" />
           )}
           Export
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         <DropdownMenuItem onClick={exportAsImage} disabled={isExporting}>
-          <FileImage className="h-4 w-4 mr-2" />
+          <FileImage className="icon-sm mr-2" />
           Export as PNG
-          {exportFormat === 'png' && <Loader2 className="h-4 w-4 ml-auto animate-spin" />}
+          {exportFormat === 'png' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={exportAsJSON} disabled={isExporting}>
-          <FileText className="h-4 w-4 mr-2" />
+          <FileText className="icon-sm mr-2" />
           Export as JSON
-          {exportFormat === 'json' && <Loader2 className="h-4 w-4 ml-auto animate-spin" />}
+          {exportFormat === 'json' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={exportAsMarkdown} disabled={isExporting}>
-          <FileText className="h-4 w-4 mr-2" />
+          <FileText className="icon-sm mr-2" />
           Export as Markdown
-          {exportFormat === 'markdown' && <Loader2 className="h-4 w-4 ml-auto animate-spin" />}
+          {exportFormat === 'markdown' && <Loader2 className="icon-sm ml-auto animate-spin" />}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={copyShareLink}>
           {copied ? (
-            <Check className="h-4 w-4 mr-2 text-green-500" />
+            <Check className="icon-sm mr-2 text-status-success" />
           ) : (
-            <Copy className="h-4 w-4 mr-2" />
+            <Copy className="icon-sm mr-2" />
           )}
           Copy Share Link
         </DropdownMenuItem>

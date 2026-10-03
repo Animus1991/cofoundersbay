@@ -17,11 +17,15 @@ export interface AgentConfig {
   maxTokens?: number;
 }
 
+// Page "Ask AI" questions are shown to the user as their own message, so the
+// grounding rule lives here rather than in the question text.
+const GROUNDING_RULE = `Ground every figure and name in the context you are given. Never invent users, revenue, ARR, valuations, press coverage, investors, funds, or team members; if a number is missing, say that it is missing.`;
+
 export abstract class BaseAgent {
   abstract readonly config: AgentConfig;
 
   getSystemPrompt(context?: AgentContext): string {
-    let prompt = this.config.systemPrompt;
+    let prompt = `${this.config.systemPrompt}\n\n${GROUNDING_RULE}`;
 
     if (context?.userData) {
       prompt += `\n\nUser Context:\n${JSON.stringify(context.userData, null, 2)}`;

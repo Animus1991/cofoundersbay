@@ -22,9 +22,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 type NotificationType = 'message' | 'connection' | 'match' | 'event' | 'system';
 
@@ -58,11 +59,11 @@ const notificationIcons: Record<NotificationType, React.ComponentType<{ classNam
 };
 
 const notificationColors: Record<NotificationType, string> = {
-  message: 'text-blue-400 bg-blue-400/10',
-  connection: 'text-emerald-400 bg-emerald-400/10',
-  match: 'text-pink-400 bg-pink-400/10',
-  event: 'text-purple-400 bg-purple-400/10',
-  system: 'text-amber-400 bg-amber-400/10',
+  message: 'text-status-accent bg-status-accent-bg',
+  connection: 'text-status-success bg-status-success-bg',
+  match: 'text-status-accent bg-status-accent-bg',
+  event: 'text-status-accent bg-status-accent-bg',
+  system: 'text-status-warning bg-status-warning-bg',
 };
 
 function formatTimestamp(date: Date): string {
@@ -76,7 +77,7 @@ function formatTimestamp(date: Date): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 function NotificationItem({
@@ -101,9 +102,9 @@ function NotificationItem({
     >
       {notification.actor ? (
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={notification.actor.avatarUrl || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary text-sm">
-            {notification.actor.name[0]?.toUpperCase()}
+          <AvatarImage src={notification.actor?.avatarUrl || undefined} />
+          <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
+            {initialsOf(notification.actor.name)}
           </AvatarFallback>
         </Avatar>
       ) : (
@@ -113,7 +114,7 @@ function NotificationItem({
             colorClass
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="icon-md" />
         </div>
       )}
       <div className="flex-1 min-w-0">
@@ -130,11 +131,11 @@ function NotificationItem({
             <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />
           )}
         </div>
-        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+        <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mt-0.5">
           {notification.body}
         </p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
-          {formatTimestamp(notification.timestamp)}
+        <p className="text-xs text-muted-foreground mt-1">
+          <RelativeTime date={notification.timestamp} format={formatTimestamp} />
         </p>
       </div>
     </div>
@@ -165,10 +166,15 @@ export function NotificationCenter({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
+          <Bell className="icon-md" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -176,7 +182,7 @@ export function NotificationCenter({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-[480px] overflow-hidden p-0">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-border/60">
+        <div className="flex items-center justify-between p-3 border-b border-border">
           <h3 className="font-semibold text-foreground">Notifications</h3>
           <div className="flex items-center gap-1">
             {unreadCount > 0 && (
@@ -186,7 +192,7 @@ export function NotificationCenter({
                 className="h-7 text-xs"
                 onClick={() => onMarkAllAsRead?.()}
               >
-                <CheckCheck className="h-3 w-3 mr-1" />
+                <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
             )}
@@ -206,7 +212,7 @@ export function NotificationCenter({
             ))
           ) : (
             <div className="py-12 text-center">
-              <Bell className="mx-auto h-8 w-8 text-muted-foreground/40 mb-3" />
+              <Bell className="mx-auto icon-xl text-muted-foreground/40 mb-3" />
               <p className="text-sm text-muted-foreground">No notifications yet</p>
             </div>
           )}
@@ -217,11 +223,11 @@ export function NotificationCenter({
           <>
             <DropdownMenuSeparator />
             <div className="p-2">
-              <Link href="/notifications">
-                <Button variant="ghost" size="sm" className="w-full justify-center">
+              <Button variant="ghost" size="sm" className="w-full justify-center" asChild>
+                <Link href="/notifications">
                   View all notifications
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </>
         )}
@@ -237,7 +243,7 @@ export function NotificationBadge({ count }: { count: number }) {
   return (
     <Badge
       variant="destructive"
-      className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-[10px] font-bold"
+      className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-2xs font-bold"
     >
       {count > 99 ? '99+' : count}
     </Badge>

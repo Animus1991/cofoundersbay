@@ -227,12 +227,12 @@ export function ImageCropper({
 
         {!imageSrc ? (
           <div
-            className="border-2 border-dashed border-border/60 rounded-xl p-10 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+            className="border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
             onClick={() => fileInputRef.current?.click()}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
           >
-            <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+            <Upload className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
             <p className="text-sm font-medium">Drop image here or click to browse</p>
             <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP up to 10MB</p>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
@@ -261,18 +261,18 @@ export function ImageCropper({
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <ZoomOut className="h-4 w-4 text-muted-foreground shrink-0" />
+                <ZoomOut className="icon-sm text-muted-foreground shrink-0" />
                 <input
                   type="range" min="0.5" max="3" step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
                   className="flex-1 accent-primary"
                 />
-                <ZoomIn className="h-4 w-4 text-muted-foreground shrink-0" />
+                <ZoomIn className="icon-sm text-muted-foreground shrink-0" />
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setRotation(r => r - 90)}>
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Rotate
+                  <RotateCcw className="icon-sm mr-1" /> Rotate
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); setOffset({ x: 0, y: 0 }); }}>
                   Reset
@@ -285,10 +285,10 @@ export function ImageCropper({
 
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleClose}>
-                <X className="h-4 w-4 mr-1.5" /> Cancel
+                <X className="icon-sm mr-1.5" /> Cancel
               </Button>
               <Button className="flex-1" onClick={handleCrop}>
-                <Check className="h-4 w-4 mr-1.5" /> Apply Crop
+                <Check className="icon-sm mr-1.5" /> Apply Crop
               </Button>
             </div>
           </div>
@@ -305,14 +305,54 @@ interface ImageCropperTriggerProps {
   aspectRatio?: number;
   outputSize?: number;
   title?: string;
+  /** What the trigger does, for anyone who cannot see the image inside it. */
+  label?: string;
+  /**
+   * Lets a second control open the same dialog.
+   *
+   * On the profile editor the photo and a button beside it both mean "crop and
+   * upload"; without this the button had nothing to open and simply sat there
+   * looking like the primary action.
+   */
+  openSignal?: number;
   children: React.ReactNode;
 }
 
-export function ImageCropperTrigger({ onCrop, cropShape, aspectRatio, outputSize, title, children }: ImageCropperTriggerProps) {
+export function ImageCropperTrigger({
+  onCrop, cropShape, aspectRatio, outputSize, title, label, openSignal, children,
+}: ImageCropperTriggerProps) {
   const [open, setOpen] = useState(false);
+
+  // A bump from outside opens it. The initial value is ignored so the dialog
+  // does not appear on mount.
+  const lastSignal = useRef(openSignal);
+  useEffect(() => {
+    if (openSignal !== undefined && openSignal !== lastSignal.current) {
+      lastSignal.current = openSignal;
+      setOpen(true);
+    }
+  }, [openSignal]);
+
   return (
     <>
-      <div onClick={() => setOpen(true)} className="cursor-pointer">{children}</div>
+      {/* A div with onClick was invisible to the keyboard: the only way to
+          change your photo was a mouse. Given the role it already plays, it
+          needs the name, the focus stop and the two keys that operate it. */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={label ?? title ?? 'Crop and upload an image'}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className="cursor-pointer rounded-xl focus-ring"
+      >
+        {children}
+      </div>
       <ImageCropper
         open={open}
         onClose={() => setOpen(false)}

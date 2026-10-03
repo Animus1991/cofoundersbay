@@ -11,6 +11,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { researchEn, researchEl, useResearchPrimaryText } from '@/lib/i18n/strings-research';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const SUGGESTED_TAGS = [
   'research', 'market-analysis', 'competitor', 'funding', 'team',
@@ -75,7 +78,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-7 gap-1">
-            <Tag className="h-3 w-3" />
+            <Tag className="icon-sm" />
             {tags.length > 0 && <span className="text-xs">{tags.length}</span>}
           </Button>
         </DropdownMenuTrigger>
@@ -89,18 +92,18 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
                   className={cn('gap-1 pr-1', getTagColor(tag))}
                 >
                   {tag}
-                  <button
+                  <button aria-label={`Remove ${tag}`}
                     onClick={() => removeTag(tag)}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="icon-sm" />
                   </button>
                 </Badge>
               ))}
             </div>
 
             <Input
-              placeholder="Add tag..."
+              placeholder={bilingualInline("Add tag…", "Προσθήκη ετικέτας…")}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -139,11 +142,11 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
             className={cn('gap-1 pr-1', getTagColor(tag))}
           >
             {tag}
-            <button
+            <button aria-label={`Remove ${tag}`}
               onClick={() => removeTag(tag)}
               className="ml-1 hover:bg-black/10 rounded-full p-0.5"
             >
-              <X className="h-3 w-3" />
+              <X className="icon-sm" />
             </button>
           </Badge>
         ))}
@@ -151,18 +154,18 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
 
       <div className="flex gap-2">
         <Input
-          placeholder="Add a tag..."
+          placeholder={bilingualInline("Add a tag…", "Προσθήκη ετικέτας…")}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <Button
+        <Button aria-label="Add tag"
           variant="outline"
           size="sm"
           onClick={() => inputValue.trim() && addTag(inputValue)}
           disabled={!inputValue.trim()}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" />
         </Button>
       </div>
 
@@ -204,6 +207,7 @@ export function NodeFilterBar({
   searchQuery,
   onSearchChange,
 }: NodeFilterBarProps) {
+  const t = useResearchPrimaryText();
   const toggleTag = useCallback((tag: string) => {
     if (selectedTags.includes(tag)) {
       onTagsChange(selectedTags.filter((t) => t !== tag));
@@ -217,17 +221,21 @@ export function NodeFilterBar({
   };
 
   return (
-    <div className="flex items-center gap-4 p-3 bg-card/95 backdrop-blur border-b">
+    <div className="flex items-center gap-3 px-1 py-1">
       <Input
-        placeholder="Search nodes..."
+        placeholder={t(researchEn('search_nodes'), researchEl('search_nodes'))}
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="w-64"
+        className="h-8 w-full max-w-xs rounded-xl"
+        autoFocus
+        aria-label={t(researchEn('search_nodes'), researchEl('search_nodes'))}
       />
 
       {availableTags.length > 0 && (
         <div className="flex items-center gap-2 flex-1 overflow-x-auto">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">Filter:</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            <BilingualText en={researchEn('filter_tags')} el={researchEl('filter_tags')} compact />
+          </span>
           {availableTags.map((tag) => (
             <button
               key={tag}
@@ -235,8 +243,8 @@ export function NodeFilterBar({
               className={cn(
                 'text-xs px-2 py-1 rounded-full border whitespace-nowrap transition-all',
                 selectedTags.includes(tag)
-                  ? cn(getTagColor(tag), 'ring-2 ring-primary ring-offset-1')
-                  : 'hover:bg-accent'
+                  ? cn(getTagColor(tag), 'border-foreground/30')
+                  : 'hover:bg-muted/40'
               )}
             >
               {tag}
@@ -247,9 +255,9 @@ export function NodeFilterBar({
               variant="ghost"
               size="sm"
               onClick={() => onTagsChange([])}
-              className="text-xs h-6"
+              className="text-xs h-7 rounded-xl"
             >
-              Clear
+              <BilingualText en={researchEn('clear_filters')} el={researchEl('clear_filters')} compact />
             </Button>
           )}
         </div>

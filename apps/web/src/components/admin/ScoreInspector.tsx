@@ -13,12 +13,15 @@ import {
   AdminScoreInspectReport,
   AdminXPBreakdownItem,
 } from '@/lib/api';
+import { useChartTheme } from '@/lib/chart-theme';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const STATUS_COLORS: Record<string, string> = {
-  pending:  'bg-amber-100 text-amber-700',
-  reviewed: 'bg-blue-100 text-blue-700',
-  actioned: 'bg-rose-100 text-rose-700',
-  dismissed:'bg-gray-100 text-gray-500',
+  pending:  'bg-status-warning-bg text-status-warning',
+  reviewed: 'bg-status-info-bg text-status-info',
+  actioned: 'bg-status-danger-bg text-status-danger',
+  dismissed:'bg-muted text-muted-foreground',
 };
 
 function Section({
@@ -31,16 +34,16 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden">
+    <div className="border border-border rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-3.5 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-3.5 bg-muted hover:bg-muted transition-colors text-left"
       >
-        <div className="flex items-center gap-2 font-semibold text-sm text-gray-700">
-          <Icon className="w-4 h-4" />
+        <div className="flex items-center gap-2 font-semibold text-sm text-foreground">
+          <Icon className="icon-sm" />
           {title}
         </div>
-        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+        {open ? <ChevronUp className="icon-sm text-muted-foreground" /> : <ChevronDown className="icon-sm text-muted-foreground" />}
       </button>
       {open && <div className="p-5 bg-white">{children}</div>}
     </div>
@@ -49,26 +52,27 @@ function Section({
 
 function XPEventRow({ e }: { e: AdminXPBreakdownItem }) {
   return (
-    <tr className="border-b border-gray-50 hover:bg-gray-50 text-sm">
+    <tr className="border-b border-border hover:bg-muted text-sm">
       <td className="py-2 pr-3">
-        <span className="font-mono text-xs bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">
+        <span className="font-mono text-xs bg-status-accent-bg text-status-accent px-1.5 py-0.5 rounded">
           {e.eventType}
         </span>
       </td>
-      <td className="py-2 pr-3 tabular-nums text-gray-500">{e.baseXp}</td>
-      <td className="py-2 pr-3 tabular-nums font-medium text-gray-900">{e.finalXp}</td>
-      <td className="py-2 pr-3 tabular-nums text-gray-500">×{e.weightMultiplier.toFixed(2)}</td>
+      <td className="py-2 pr-3 tabular-nums text-muted-foreground">{e.baseXp}</td>
+      <td className="py-2 pr-3 tabular-nums font-medium text-foreground">{e.finalXp}</td>
+      <td className="py-2 pr-3 tabular-nums text-muted-foreground">×{e.weightMultiplier.toFixed(2)}</td>
       <td className="py-2 pr-3">
         {e.isDiminished && (
-          <span className="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">DR</span>
+          <span className="text-xs bg-status-warning-bg text-status-warning px-1.5 py-0.5 rounded">DR</span>
         )}
       </td>
-      <td className="py-2 text-xs text-gray-400">{e.explain}</td>
+      <td className="py-2 text-xs text-muted-foreground">{e.explain}</td>
     </tr>
   );
 }
 
 export function ScoreInspector() {
+  const theme = useChartTheme();
   const [userId, setUserId] = useState('');
   const [query, setQuery] = useState('');
   const [report, setReport] = useState<AdminScoreInspectReport | null>(null);
@@ -98,41 +102,41 @@ export function ScoreInspector() {
         .slice(0, 10)
     : [];
 
-  const pendingFlags = report?.anomalies.filter((a) => a.status === 'pending') ?? [];
+  const pendingFlags = report?.anomalies?.filter((a) => a.status === 'pending') ?? [];
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Score Inspector</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Full per-user scoring audit: XP breakdown, badges, streak, contributions, anomaly flags.
+        <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Score Inspector" el="Επιθεωρητής βαθμολογίας" compact /></h2>
+        <p className="text-sm text-muted-foreground mt-0.5">
+          <BilingualText en="Full per-user scoring audit: XP breakdown, badges, streak, contributions, anomaly flags." el="Πλήρης έλεγχος βαθμολογίας ανά χρήστη: ανάλυση XP, διακρίσεις, σερί, συνεισφορές, επισημάνσεις ανωμαλιών." wrap />
         </p>
       </div>
 
       {/* Search bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <input
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void runInspection()}
-            placeholder="Enter user ID…"
-            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            placeholder={bilingualInline("Enter user ID…", "Συμπληρώστε αναγνωριστικό χρήστη…")}
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-border rounded-xl focus:outline-none"
           />
         </div>
         <button
           onClick={() => void runInspection()}
           disabled={loading || !userId.trim()}
-          className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? 'Loading…' : 'Inspect'}
         </button>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-lg px-4 py-3 text-sm text-rose-700">
+        <div className="bg-status-danger-bg border border-status-danger-border rounded-lg px-4 py-3 text-sm text-status-danger">
           {error}
         </div>
       )}
@@ -140,52 +144,52 @@ export function ScoreInspector() {
       {report && (
         <div className="space-y-4">
           {/* Summary card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className="bg-white rounded-xl border border-border p-5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 {report.avatarUrl ? (
-                  <img src={report.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+                  <img src={report.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={48} height={48} />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg">
+                  <div className="w-12 h-12 rounded-full bg-status-accent-bg flex items-center justify-center text-status-accent font-bold text-lg">
                     {(report.displayName ?? report.email)[0]?.toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-foreground">
                     {report.displayName ?? '—'}{' '}
-                    <span className="text-gray-400 font-normal text-sm">({report.role})</span>
+                    <span className="text-muted-foreground font-normal text-sm">({report.role})</span>
                   </div>
-                  <div className="text-sm text-gray-500">{report.email}</div>
-                  <div className="text-xs text-gray-400 mt-0.5 font-mono">{report.userId}</div>
+                  <div className="text-sm text-muted-foreground">{report.email}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5 font-mono">{report.userId}</div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-indigo-600">{report.totalXp} XP</div>
-                <div className="text-sm text-gray-500">
+                <div className="page-stat text-2xl font-bold text-status-accent">{report.totalXp} XP</div>
+                <div className="text-sm text-muted-foreground">
                   Level {report.level} · {report.levelLabel}
                 </div>
               </div>
             </div>
 
             {/* Human summary */}
-            <div className="mt-4 bg-indigo-50 rounded-lg px-4 py-3 text-sm text-indigo-800">
-              <Shield className="inline w-3.5 h-3.5 mr-1 opacity-70" />
+            <div className="mt-4 bg-status-accent-bg rounded-lg px-4 py-3 text-sm text-status-accent">
+              <Shield className="inline icon-sm mr-1 opacity-70" />
               {report.humanSummary}
             </div>
 
             {/* Suppression warning */}
             {report.suppressedUntil && (
-              <div className="mt-3 bg-rose-50 border border-rose-200 rounded-lg px-4 py-2.5 text-sm text-rose-700 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+              <div className="mt-3 bg-status-danger-bg border border-status-danger-border rounded-lg px-4 py-2.5 text-sm text-status-danger flex items-center gap-2">
+                <AlertTriangle className="icon-sm shrink-0" />
                 Burst suppression active until{' '}
-                <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString()}</span>
+                <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
               </div>
             )}
 
             {/* Open flags warning */}
             {pendingFlags.length > 0 && (
-              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-700 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+              <div className="mt-3 bg-status-warning-bg border border-status-warning-border rounded-lg px-4 py-2.5 text-sm text-status-warning flex items-center gap-2">
+                <AlertTriangle className="icon-sm shrink-0" />
                 {pendingFlags.length} open abuse flag{pendingFlags.length > 1 ? 's' : ''} pending review
               </div>
             )}
@@ -196,33 +200,33 @@ export function ScoreInspector() {
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={xpChartData} layout="vertical" margin={{ left: 20, right: 20, top: 4, bottom: 4 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="type" tick={{ fontSize: 10 }} width={130} />
+                <YAxis type="category" dataKey="type" tick={{ fontSize: 11 }} width={130} />
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { count: number } }) =>
                     [`${v} XP (${props.payload?.count ?? 0} events)`, 'Total XP']
                   }
                   contentStyle={{ fontSize: 12 }}
                 />
-                <Bar dataKey="xp" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="xp" fill={theme.series[0]} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
             <div className="mt-3 overflow-auto max-h-40">
-              <table className="w-full text-xs text-gray-600">
+              <table className="w-full text-xs text-muted-foreground">
                 <thead>
-                  <tr className="text-left border-b border-gray-100">
-                    <th className="pb-1.5 font-medium">Event</th>
-                    <th className="pb-1.5 font-medium text-right">Events</th>
-                    <th className="pb-1.5 font-medium text-right">Total XP</th>
-                    <th className="pb-1.5 font-medium text-right">Avg XP</th>
+                  <tr className="text-left border-b border-border">
+                    <th className="pb-1.5 font-medium"><BilingualText en="Event" el="Συμβάν" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Events" el="Συμβάντα" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Total XP" el="Σύνολο XP" compact /></th>
+                    <th className="pb-1.5 font-medium text-right"><BilingualText en="Avg XP" el="Μέσο XP" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
                   {Object.entries(report.xpByEventType).map(([type, v]) => (
-                    <tr key={type} className="border-b border-gray-50">
+                    <tr key={type} className="border-b border-border">
                       <td className="py-1 font-mono text-xs">{type}</td>
                       <td className="py-1 text-right tabular-nums">{v.count}</td>
                       <td className="py-1 text-right tabular-nums font-medium">{v.totalXp}</td>
-                      <td className="py-1 text-right tabular-nums text-gray-400">{v.avgXp}</td>
+                      <td className="py-1 text-right tabular-nums text-muted-foreground">{v.avgXp}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -235,13 +239,13 @@ export function ScoreInspector() {
             <div className="overflow-auto max-h-64">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
-                    <th className="pb-2 font-medium">Type</th>
-                    <th className="pb-2 font-medium">Base</th>
-                    <th className="pb-2 font-medium">Final</th>
-                    <th className="pb-2 font-medium">Mult</th>
-                    <th className="pb-2 font-medium">Flag</th>
-                    <th className="pb-2 font-medium">Explain</th>
+                  <tr className="text-left text-xs text-muted-foreground border-b border-border">
+                    <th className="pb-2 font-medium"><BilingualText en="Type" el="Τύπος" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Base" el="Βάση" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Final" el="Τελικό" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Mult" el="Πολλ." compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Flag" el="Σήμανση" compact /></th>
+                    <th className="pb-2 font-medium"><BilingualText en="Explain" el="Εξήγηση" compact /></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,19 +260,19 @@ export function ScoreInspector() {
           {/* Badges */}
           <Section title={`Badges (${report.badges.length})`} icon={Award}>
             {report.badges.length === 0 ? (
-              <p className="text-sm text-gray-400">No badges earned yet.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No badges earned yet." el="Δεν έχουν κερδηθεί διακρίσεις ακόμα." compact /></p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {report.badges.map((b) => (
                   <div
                     key={b.badgeId}
-                    className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
+                    className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-1.5 text-sm"
                   >
-                    <Award className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="font-medium text-gray-800">{b.name}</span>
-                    <span className="text-xs text-gray-400">· {b.category}</span>
+                    <Award className="icon-sm text-status-warning" />
+                    <span className="font-medium text-foreground">{b.name}</span>
+                    <span className="text-xs text-muted-foreground">· {b.category}</span>
                     {!b.seen && (
-                      <span className="text-xs bg-green-100 text-green-600 px-1 rounded">new</span>
+                      <span className="text-xs bg-status-success-bg text-status-success px-1 rounded">new</span>
                     )}
                   </div>
                 ))}
@@ -281,50 +285,50 @@ export function ScoreInspector() {
             {report.streak ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-400 text-xs">Current Streak</p>
-                  <p className="font-bold text-2xl text-indigo-600">{report.streak.currentStreak}d</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Current Streak" el="Τρέχον σερί" compact /></p>
+                  <p className="font-bold text-2xl text-status-accent">{report.streak.currentStreak}d</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs">Longest</p>
-                  <p className="font-semibold text-gray-800">{report.streak.longestStreak}d</p>
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Longest" el="Μεγαλύτερο" compact /></p>
+                  <p className="font-semibold text-foreground">{report.streak.longestStreak}d</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs">Last Active</p>
-                  <p className="text-gray-700">
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></p>
+                  <p className="text-foreground">
                     {report.streak.lastActiveDate
-                      ? new Date(report.streak.lastActiveDate).toLocaleDateString()
+                      ? new Date(report.streak.lastActiveDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })
                       : '—'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs">Grace Used</p>
-                  <p className="text-gray-700">
+                  <p className="text-muted-foreground text-xs"><BilingualText en="Grace Used" el="Χάρη που χρησιμοποιήθηκε" compact /></p>
+                  <p className="text-foreground">
                     {report.streak.graceUsedAt
-                      ? new Date(report.streak.graceUsedAt).toLocaleDateString()
+                      ? new Date(report.streak.graceUsedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })
                       : 'No'}
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-400">No streak record found.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No streak record found." el="Δεν βρέθηκε σερί." compact /></p>
             )}
           </Section>
 
           {/* Anomaly Flags */}
           <Section title={`Abuse Flags (${report.anomalies.length})`} icon={AlertTriangle}>
             {report.anomalies.length === 0 ? (
-              <p className="text-sm text-gray-400">No abuse flags on this user.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No abuse flags on this user." el="Καμία επισήμανση κατάχρησης για αυτόν τον χρήστη." compact /></p>
             ) : (
               <div className="space-y-2">
                 {report.anomalies.map((a) => (
-                  <div key={a.flagId} className="flex items-start gap-3 border border-gray-100 rounded-lg p-3">
+                  <div key={a.flagId} className="flex items-start gap-3 border border-border rounded-lg p-3">
                     <div
                       className="w-2 h-2 rounded-full mt-1.5 shrink-0"
                       style={{ background: `hsl(${(1 - a.severity) * 120}, 70%, 50%)` }}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 text-sm font-medium text-gray-800">
-                        <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
                           {a.type}
                         </span>
                         <span
@@ -332,15 +336,15 @@ export function ScoreInspector() {
                         >
                           {a.status}
                         </span>
-                        <span className="ml-auto text-xs text-gray-400">
+                        <span className="ml-auto text-xs text-muted-foreground">
                           severity {(a.severity * 100).toFixed(0)}%
                         </span>
                       </div>
                       {a.description && (
-                        <p className="text-xs text-gray-500 mt-0.5">{a.description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {new Date(a.createdAt).toLocaleString()}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(a.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                       </p>
                     </div>
                   </div>
@@ -354,16 +358,16 @@ export function ScoreInspector() {
             <Section title={`Workspace Contributions (${report.contributions.length})`} icon={TrendingUp}>
               <div className="space-y-2">
                 {report.contributions.map((c) => (
-                  <div key={c.workspaceId} className="flex items-center justify-between text-sm border-b border-gray-50 py-1.5">
-                    <span className="font-mono text-xs text-gray-500">{c.workspaceId}</span>
+                  <div key={c.workspaceId} className="flex items-center justify-between text-sm border-b border-border py-1.5">
+                    <span className="font-mono text-xs text-muted-foreground">{c.workspaceId}</span>
                     <div className="flex items-center gap-3">
-                      <div className="w-28 bg-gray-100 rounded-full h-1.5">
+                      <div className="w-28 bg-muted rounded-full h-1.5">
                         <div
-                          className="bg-indigo-500 h-1.5 rounded-full"
+                          className="bg-primary h-1.5 rounded-full"
                           style={{ width: `${Math.min(100, c.score)}%` }}
                         />
                       </div>
-                      <span className="font-semibold text-gray-800 w-8 text-right">{c.score}</span>
+                      <span className="font-semibold text-foreground w-8 text-right">{c.score}</span>
                     </div>
                   </div>
                 ))}
@@ -374,9 +378,9 @@ export function ScoreInspector() {
       )}
 
       {!report && !loading && !error && (
-        <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
           <Search className="w-10 h-10 mb-3 opacity-30" />
-          <p className="text-sm">Enter a user ID above to inspect their scoring profile.</p>
+          <p className="text-sm"><BilingualText en="Enter a user ID above to inspect their scoring profile." el="Εισάγετε αναγνωριστικό χρήστη παραπάνω για να δείτε τη βαθμολογία του." wrap /></p>
         </div>
       )}
     </div>

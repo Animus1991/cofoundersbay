@@ -6,6 +6,10 @@ node_modules
 dist
 .next
 out
+.open-next
+.wrangler
+test-results
+playwright-report
 .turbo
 tmp
 out-tsc
@@ -70,3 +74,12 @@ apps/api/.dev-prisma-state.json
 # Replit
 .cache/
 .local/
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
+
+# Setup templates hold placeholders only and must stay tracked; the
+# patterns above still ignore every real environment file.
+!.env.example

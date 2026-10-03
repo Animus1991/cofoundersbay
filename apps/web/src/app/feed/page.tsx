@@ -1,20 +1,31 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
-  Send, Image as ImageIcon, Link2, Smile, TrendingUp,
+  Send, Link2, Smile, TrendingUp,
   Users, Sparkles, Filter, Clock, Flame, ThumbsUp,
   Award, Rocket, Target, Briefcase, GraduationCap,
-  Plus, RefreshCw, ChevronDown, X, Flag, Settings,
+  Plus, RefreshCw, ChevronDown, X, Flag, Settings, CalendarDays,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { FeedPostComposer } from '@/components/feed/FeedPostComposer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -25,8 +36,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { cn, initialsOf } from '@/lib/utils';
+import { feedEn, feedEl } from '@/lib/i18n/strings-feed';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -53,11 +68,11 @@ type FeedComment = {
 };
 
 const POST_TYPE_CONFIG: Record<PostType, { icon: typeof Rocket; color: string; label: string }> = {
-  update: { icon: Sparkles, color: 'text-blue-500', label: 'Update' },
-  milestone: { icon: Target, color: 'text-emerald-500', label: 'Milestone' },
-  question: { icon: MessageCircle, color: 'text-amber-500', label: 'Question' },
-  announcement: { icon: TrendingUp, color: 'text-purple-500', label: 'Announcement' },
-  achievement: { icon: Award, color: 'text-pink-500', label: 'Achievement' },
+  update: { icon: Sparkles, color: 'text-primary-accessible', label: 'Update' },
+  milestone: { icon: Target, color: 'text-status-success', label: 'Milestone' },
+  question: { icon: MessageCircle, color: 'text-status-warning', label: 'Question' },
+  announcement: { icon: TrendingUp, color: 'text-status-accent', label: 'Announcement' },
+  achievement: { icon: Award, color: 'text-status-accent', label: 'Achievement' },
 };
 
 const DEMO_POSTS: FeedPost[] = [
@@ -157,83 +172,6 @@ const DEMO_POSTS: FeedPost[] = [
   },
 ];
 
-function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) => void }) {
-  const [content, setContent] = useState('');
-  const [postType, setPostType] = useState<PostType>('update');
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleSubmit = () => {
-    if (!content.trim()) return;
-    onPost(content, postType);
-    setContent('');
-    setIsExpanded(false);
-  };
-
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback>ME</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <Textarea
-              placeholder="Share an update, ask a question, or celebrate a milestone..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onFocus={() => setIsExpanded(true)}
-              className={cn(
-                'resize-none border-0 p-0 focus-visible:ring-0 bg-transparent',
-                isExpanded ? 'min-h-[100px]' : 'min-h-[40px]'
-              )}
-            />
-
-            {isExpanded && (
-              <div className="mt-3 flex items-center justify-between border-t pt-3">
-                <div className="flex gap-2">
-                  {(Object.entries(POST_TYPE_CONFIG) as [PostType, typeof POST_TYPE_CONFIG.update][]).map(
-                    ([type, config]) => {
-                      const Icon = config.icon;
-                      return (
-                        <Button
-                          key={type}
-                          variant={postType === type ? 'secondary' : 'ghost'}
-                          size="sm"
-                          onClick={() => setPostType(type)}
-                          className="gap-1"
-                        >
-                          <Icon className={cn('h-4 w-4', config.color)} />
-                          <span className="hidden sm:inline">{config.label}</span>
-                        </Button>
-                      );
-                    }
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
-                    <ImageIcon className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Link2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmit}
-                    disabled={!content.trim()}
-                  >
-                    <Send className="h-4 w-4 mr-1" />
-                    Post
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function PostCard({
   post,
   onLike,
@@ -241,6 +179,7 @@ function PostCard({
   onComment,
   onShare,
   onView,
+  onReport,
 }: {
   post: FeedPost;
   onLike: () => void;
@@ -248,6 +187,8 @@ function PostCard({
   onComment: () => void;
   onShare: () => void;
   onView?: () => void;
+  /** Opens the report dialog for the post's author. */
+  onReport: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -256,8 +197,10 @@ function PostCard({
 
   // Track view when component mounts
   useEffect(() => {
-    if (onView) onView();
-  }, [onView]);
+    onView?.();
+    // Record a view once per post, not whenever the parent callback identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id]);
 
   const initials = post.author.displayName
     .split(' ')
@@ -266,16 +209,19 @@ function PostCard({
     .join('')
     .toUpperCase();
 
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
 
   return (
-    <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
+    <Card
+      id={`post-${post.id}`}
+      tabIndex={-1}
+      className="overflow-hidden shadow-sm border-border hover:border-primary/30 transition-colors scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
+    >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -288,18 +234,23 @@ function PostCard({
                   {post.author.displayName}
                 </a>
                 <Badge variant="outline" className={cn('text-xs', config.color)}>
-                  <TypeIcon className="h-3 w-3 mr-1" />
+                  <TypeIcon className="icon-sm mr-1" />
                   {config.label}
                 </Badge>
                 {post.personalizationScore && (
-                  <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                  <Badge variant="secondary" className="text-xs bg-status-info-bg text-status-info border-status-info-border">
+                    <Sparkles className="icon-sm mr-1" />
                     {Math.round(post.personalizationScore * 100)}% match
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{post.author.headline}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{timeAgo}</p>
+              {/* Computed in an effect, not during render: the server's
+                  "now" is not the browser's, and the two disagreeing is
+                  what made this page fail hydration on every load. */}
+              <p className="text-xs text-muted-foreground mt-0.5">
+                <RelativeTime date={post.createdAt} />
+              </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   <span className="font-medium">Why you're seeing this:</span> {post.relevanceReasons.join(', ')}
@@ -310,22 +261,23 @@ function PostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria('Open post actions', 'Άνοιγμα ενεργειών δημοσίευσης')}>
+                <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onBookmark}>
-                <Bookmark className="h-4 w-4 mr-2" />
+                <Bookmark className="icon-sm mr-2" />
                 {post.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link2 className="h-4 w-4 mr-2" />
+              {/* Copy Link and Report had no handler. */}
+              <DropdownMenuItem onSelect={onShare}>
+                <Link2 className="icon-sm mr-2" aria-hidden="true" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Flag className="h-4 w-4 mr-2" />
+              <DropdownMenuItem className="text-destructive-accessible" onSelect={onReport}>
+                <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -359,9 +311,9 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onLike}
-            className={cn(post.isLiked && 'text-primary')}
+            className={cn(post.isLiked && 'text-primary-accessible')}
           >
-            <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} />
+            <Heart className={cn('icon-sm mr-1', post.isLiked && 'fill-current')} />
             Like
           </Button>
           <Button
@@ -369,20 +321,26 @@ function PostCard({
             size="sm"
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="icon-sm mr-1" />
             Comment
           </Button>
           <Button variant="ghost" size="sm" onClick={onShare}>
-            <Share2 className="h-4 w-4 mr-1" />
+            <Share2 className="icon-sm mr-1" />
             Share
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            className={cn(post.isBookmarked && 'text-primary')}
+            className={cn(post.isBookmarked && 'text-primary-accessible')}
+            aria-label={
+              post.isBookmarked
+                ? bilingualAria('Remove bookmark', 'Αφαίρεση σελιδοδείκτη')
+                : bilingualAria('Bookmark post', 'Σελιδοδείκτης δημοσίευσης')
+            }
+            aria-pressed={post.isBookmarked}
           >
-            <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
         </div>
 
@@ -394,21 +352,27 @@ function PostCard({
                 <AvatarFallback className="text-xs">ME</AvatarFallback>
               </Avatar>
               <div className="flex-1 flex gap-2">
+                {/* The page passed onComment={() => {}}: Send cleared the
+                    box and nothing was stored - there is no comment route
+                    for feed posts. Until there is, the box says so instead
+                    of swallowing what someone wrote. */}
                 <Textarea
-                  placeholder="Write a comment..."
+                  placeholder={bilingualInline('Comments on feed posts are not saved yet', 'Τα σχόλια σε δημοσιεύσεις δεν αποθηκεύονται ακόμη')}
+                  aria-label={bilingualAria('Comment', 'Σχόλιο')}
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   className="min-h-[60px] resize-none"
+                  disabled
                 />
-                <Button
+                <Button aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')}
                   size="sm"
-                  disabled={!commentText.trim()}
+                  disabled
                   onClick={() => {
                     onComment();
                     setCommentText('');
                   }}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -431,10 +395,10 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
   const topicsToShow = topics || defaultTopics;
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="pb-3 border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
-          <Flame className="h-4 w-4 text-orange-500" />
+          <Flame className="icon-sm text-status-warning" />
           Trending Topics
         </h3>
       </CardHeader>
@@ -448,11 +412,11 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground w-4">{i + 1}</span>
-                <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                     +{topic.growth}%
                   </Badge>
                 )}
@@ -477,10 +441,10 @@ function SuggestedConnections() {
   ];
 
   return (
-    <Card className="shadow-sm border-border/50">
-      <CardHeader className="pb-3 border-b border-border/50">
+    <Card className="shadow-sm border-border">
+      <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="icon-sm text-primary-accessible" />
           Suggested Connections
         </h3>
       </CardHeader>
@@ -489,8 +453,8 @@ function SuggestedConnections() {
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                  {person.name.split(' ').map((n) => n[0]).join('')}
+                <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
+                  {initialsOf(person.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
@@ -503,8 +467,10 @@ function SuggestedConnections() {
             </div>
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="w-full mt-3">
-          View All
+        <Button asChild variant="ghost" size="sm" className="w-full mt-3">
+          <Link href="/discover">
+            <BilingualText en="View All" el="Προβολή όλων" compact />
+          </Link>
         </Button>
       </CardContent>
     </Card>
@@ -514,31 +480,55 @@ function SuggestedConnections() {
 export default function FeedPage() {
   const { success } = useToast();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
-  const [showPreferences, setShowPreferences] = useState(false);
+  const { openRailSection } = usePageRail();
 
   // Fetch personalized feed
+  // `useInfiniteQuery` was imported and never used, and "Load More" sat below a
+  // fixed first page doing nothing — while the endpoint has taken an `offset`
+  // and returned `hasMore` all along. This asks for the next page it advertises.
+  const PAGE_SIZE = 20;
   const {
-    data: feedData,
+    data: feedPages,
     isLoading: feedLoading,
     error: feedError,
     refetch: refetchFeed,
-  } = useQuery({
-    queryKey: ['feed', 'personalized', activeTab],
-    queryFn: () => getPersonalizedFeed({
-      limit: 20,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: qk('feed', 'personalized', activeTab),
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => getPersonalizedFeed({
+      limit: PAGE_SIZE,
+      offset: pageParam as number,
       contentTypes: activeTab === 'trending' ? undefined : ['update', 'milestone', 'question', 'announcement', 'achievement'],
       refresh: activeTab === 'trending',
     }),
+    getNextPageParam: (last, all) =>
+      last?.hasMore ? all.reduce((n, page) => n + (page?.posts?.length ?? 0), 0) : undefined,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Whatever the reader composed this session leads; the feed follows.
+  const [composed, setComposed] = useState<FeedPost[]>([]);
+  useEffect(() => {
+    setComposed(readComposedPosts());
+  }, []);
+
+  const feedData = feedPages
+    ? { posts: [...composed, ...feedPages.pages.flatMap((page) => page?.posts ?? [])] }
+    : composed.length
+      ? { posts: composed }
+      : undefined;
 
   // Fetch feed preferences
   const {
     data: preferences,
     isLoading: prefsLoading,
   } = useQuery({
-    queryKey: ['feed', 'preferences'],
+    queryKey: qk('feed', 'preferences'),
     queryFn: getFeedPreferences,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
@@ -547,7 +537,7 @@ export default function FeedPage() {
   const {
     data: trendingData,
   } = useQuery({
-    queryKey: ['feed', 'trending-topics'],
+    queryKey: qk('feed', 'trending-topics'),
     queryFn: () => getTrendingTopics(10),
     staleTime: 15 * 60 * 1000, // 15 minutes
   });
@@ -557,7 +547,7 @@ export default function FeedPage() {
     mutationFn: updateFeedPreferences,
     onSuccess: () => {
       success('Feed preferences updated');
-      queryClient.invalidateQueries({ queryKey: ['feed', 'preferences'] });
+      queryClient.invalidateQueries({ queryKey: qk('feed', 'preferences') });
       refetchFeed(); // Refresh feed with new preferences
     },
   });
@@ -567,12 +557,33 @@ export default function FeedPage() {
     mutationFn: recordFeedInteraction,
   });
 
-  const posts = feedData?.posts || [];
+  const posts = feedData?.posts?.length
+    ? feedData.posts
+    : isPreviewDemo()
+      ? DEMO_POSTS
+      : [];
 
   const handlePost = (content: string, type: PostType) => {
-    // In a real implementation, this would create a new post via API
-    success('Post published!');
-    refetchFeed();
+    // There is no feed module in the API — `/api/feed/*` is served by the
+    // browser's demo shim alone — so this used to toast "Post published!" over
+    // a post that went nowhere. It now goes somewhere the reader can see, for
+    // the session, the way the fundraising and readiness demos already work.
+    setComposed(addComposedPost({
+      content,
+      type: type as FeedPost['type'],
+      author: {
+        id: 'me',
+        displayName: 'You',
+        headline: undefined,
+      },
+    }));
+    success(
+      bilingualInline('Posted', 'Δημοσιεύτηκε'),
+      bilingualInline(
+        'Kept for this session — the feed has no server to store it yet.',
+        'Κρατείται για αυτή τη συνεδρία — το feed δεν έχει ακόμη διακομιστή να το αποθηκεύσει.',
+      ),
+    );
   };
 
   const handleLike = (postId: string, isCurrentlyLiked: boolean) => {
@@ -583,7 +594,7 @@ export default function FeedPage() {
     });
 
     // Update UI optimistically
-    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
         ...old,
@@ -608,7 +619,7 @@ export default function FeedPage() {
     });
 
     // Update UI optimistically
-    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+    queryClient.setQueryData(qk('feed', 'personalized', activeTab), (old: any) => {
       if (!old) return old;
       return {
         ...old,
@@ -621,8 +632,26 @@ export default function FeedPage() {
     success('Bookmark updated');
   };
 
+  const [reporting, setReporting] = useState<{ id: string; name: string } | null>(null);
+
+  // A shared link is /feed?post=<id>: bring that post into view and mark it,
+  // once it is in the list.
+  const [linkedPost, setLinkedPost] = useState<string | null>(null);
+  useEffect(() => {
+    setLinkedPost(new URLSearchParams(window.location.search).get('post'));
+  }, []);
+  useEffect(() => {
+    if (!linkedPost) return;
+    const el = document.getElementById(`post-${linkedPost}`);
+    if (!el) return;
+    el.setAttribute('data-linked', 'true');
+    el.scrollIntoView({ block: 'start' });
+    el.focus({ preventScroll: true });
+  });
+
   const handleShare = (postId: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/feed/post/${postId}`);
+    // Was /feed/post/:id, which does not exist. The feed scrolls to ?post=.
+    navigator.clipboard.writeText(`${window.location.origin}/feed?post=${encodeURIComponent(postId)}`);
     success('Link copied to clipboard!');
     
     // Record interaction
@@ -644,45 +673,201 @@ export default function FeedPage() {
     updatePrefsMutation.mutate(newPrefs);
   };
 
+  // The rows on screen - `posts` above, demo posts included.
+  usePageList([
+    {
+      id: 'posts',
+      labelEn: 'Posts',
+      labelEl: 'Αναρτήσεις',
+      rows: feedLoading ? undefined : posts.map((p) =>
+        [
+          p.author?.displayName ?? 'Post',
+          p.type,
+          `"${p.content ?? ''}"`.slice(0, 60),
+          `${p.likes ?? 0} likes${p.isLiked ? ' (liked)' : ''}${p.isBookmarked ? ' (saved)' : ''}`,
+        ].join(' · '),
+      ),
+      sample: !feedData?.posts?.length && isPreviewDemo(),
+    },
+  ]);
+  const byAuthor = (list: FeedPost[]) => rowOptions(list, (p) => p.id, (p) => p.author?.displayName ?? 'Post');
+  usePageControls([
+    choiceControl('feed_tab', 'Feed', 'Ροή', [
+      { value: 'all', en: 'All', el: 'Όλα' },
+      { value: 'following', en: 'Following', el: 'Ακολουθώ' },
+      { value: 'trending', en: 'Trending', el: 'Τάσεις' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    { id: 'refresh', labelEn: 'Refresh the feed', labelEl: 'Ανανέωση ροής', writes: false, run: () => void refetchFeed() },
+    {
+      id: 'load_more',
+      labelEn: 'Load more posts',
+      labelEl: 'Φόρτωση περισσότερων αναρτήσεων',
+      writes: false,
+      unavailableEn: hasNextPage ? undefined : 'There are no more posts to load.',
+      unavailableEl: hasNextPage ? undefined : 'Δεν υπάρχουν άλλες αναρτήσεις.',
+      run: () => void fetchNextPage(),
+    },
+    // Like and save each flip one flag on the post; the other command flips it back.
+    { id: 'like_post', labelEn: 'Like post', labelEl: 'Μου αρέσει η ανάρτηση', writes: true, options: byAuthor(posts.filter((p) => !p.isLiked)), undo: (v) => ({ control: 'unlike_post', value: v }), run: (v) => { if (v) handleLike(v, false); } },
+    { id: 'unlike_post', labelEn: 'Unlike post', labelEl: 'Αναίρεση «μου αρέσει»', writes: true, options: byAuthor(posts.filter((p) => p.isLiked)), undo: (v) => ({ control: 'like_post', value: v }), run: (v) => { if (v) handleLike(v, true); } },
+    { id: 'save_post', labelEn: 'Save post', labelEl: 'Αποθήκευση ανάρτησης', writes: true, options: byAuthor(posts.filter((p) => !p.isBookmarked)), undo: (v) => ({ control: 'unsave_post', value: v }), run: (v) => { if (v) handleBookmark(v, false); } },
+    { id: 'unsave_post', labelEn: 'Remove post from saved', labelEl: 'Αφαίρεση από αποθηκευμένα', writes: true, options: byAuthor(posts.filter((p) => p.isBookmarked)), undo: (v) => ({ control: 'save_post', value: v }), run: (v) => { if (v) handleBookmark(v, true); } },
+    { id: 'share_post', labelEn: 'Copy a link to post', labelEl: 'Αντιγραφή συνδέσμου ανάρτησης', writes: false, options: byAuthor(posts), run: (v) => { if (v) handleShare(v); } },
+    {
+      id: 'report_author',
+      labelEn: 'Report post author',
+      labelEl: 'Αναφορά συντάκτη ανάρτησης',
+      writes: false,
+      options: rowOptions(posts, (p) => p.id, (p) => p.author?.displayName ?? 'Post'),
+      run: (v) => {
+        const post = posts.find((p) => p.id === v);
+        if (post) setReporting({ id: post.author.id, name: post.author.displayName });
+      },
+    },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'trending',
+      glyph: 'chart',
+      labelEn: 'Trending topics',
+      labelEl: 'Τάσεις',
+      content: <TrendingTopics topics={trendingData?.topics} />,
+    },
+    {
+      id: 'suggested',
+      glyph: 'people',
+      labelEn: 'Suggested connections',
+      labelEl: 'Προτάσεις συνδέσεων',
+      content: <SuggestedConnections />,
+    },
+    {
+      id: 'preferences',
+      glyph: 'sliders',
+      labelEn: 'Feed preferences',
+      labelEl: 'Προτιμήσεις ροής',
+      content: preferences ? (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
+            </label>
+            <div className="flex flex-wrap gap-1">
+              {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
+                <Badge
+                  key={type}
+                  variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newTypes = preferences.contentTypes.includes(type)
+                      ? preferences.contentTypes.filter(t => t !== type)
+                      : [...preferences.contentTypes, type];
+                    handlePreferencesUpdate({ contentTypes: newTypes });
+                  }}
+                >
+                  {type}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-2 block">
+              <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
+            </label>
+            <div className="flex flex-wrap gap-1">
+              {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
+                <Badge
+                  key={topic}
+                  variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newTopics = preferences.topics.includes(topic)
+                      ? preferences.topics.filter(t => t !== topic)
+                      : [...preferences.topics, topic];
+                    handlePreferencesUpdate({ topics: newTopics });
+                  }}
+                >
+                  #{topic}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en="Preferences are unavailable right now." el="Οι προτιμήσεις δεν είναι διαθέσιμες αυτή τη στιγμή." compact />
+        </p>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Sparkles} en="Open groups" el="Άνοιγμα κοινοτήτων" onClick={() => router.push('/groups')} />
+          <RailAction icon={CalendarDays} en="Open events" el="Άνοιγμα εκδηλώσεων" onClick={() => router.push('/events')} />
+          <RailAction icon={Users} en="Open members" el="Άνοιγμα μελών" onClick={() => router.push('/members')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
-      title="Feed"
-      description="Stay updated with your network"
+      showHelp
+      rail={rail}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="following">Following</TabsTrigger>
-              <TabsTrigger value="trending">Trending</TabsTrigger>
+              <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
+              <TabsTrigger value="following"><BilingualText en="Following" el="Ακολουθώ" compact /></TabsTrigger>
+              <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
+          {/* The label is `hidden sm:inline`, so below 640px this button had
+              no accessible name — named on desktop, anonymous on a phone,
+              which is why mobile /feed failed button-name (critical). A
+              responsive class can hide text from the screen; it must not be
+              the only thing naming the control. */}
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowPreferences(!showPreferences)}
+            onClick={() => openRailSection('preferences')}
+            aria-label={bilingualAria('Preferences', 'Προτιμήσεις')}
             className="gap-1"
           >
-            <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Preferences</span>
+            <Settings className="icon-sm" aria-hidden="true" />
+            <span className="hidden sm:inline"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></span>
           </Button>
         </div>
       }
     >
       <div className="pb-10">
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-          {/* Main Feed */}
-          <div className="space-y-6">
+        {isPreviewDemo() && (!feedData?.posts?.length) && (
+          <SampleDataNotice
+            className="mb-6"
+            surface="Feed"
+            detail="There is no live Feed module yet. These posts are sample network activity so you can review the layout."
+            askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
+          />
+        )}
+        {/* The reading column owns the feed; trending, suggested people and
+            preferences live in the right rail, so below `lg` they come back as
+            a sheet instead of a column the posts push off-screen. */}
+        <div className="space-y-6">
 
             {/* Create Post */}
-            <CreatePostCard onPost={handlePost} />
+            <FeedPostComposer onPost={handlePost} />
 
             {/* Posts */}
             <div className="space-y-4">
               {feedLoading ? (
                 // Loading skeletons
                 Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="overflow-hidden shadow-sm border-border/50">
+                  <Card key={i} className="overflow-hidden shadow-sm border-border">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-start justify-between">
                         <div className="flex gap-3">
@@ -713,83 +898,40 @@ export default function FeedPage() {
                   onComment={() => {}}
                   onShare={() => handleShare(post.id)}
                   onView={() => handlePostView(post.id)}
+                  onReport={() => setReporting({ id: post.author.id, name: post.author.displayName })}
                 />
               ))}
             </div>
 
-            {/* Load More */}
-            <div className="flex justify-center">
-              <Button variant="outline">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Load More
-              </Button>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6 hidden lg:block sticky top-6 self-start">
-            <TrendingTopics topics={trendingData?.topics} />
-            <SuggestedConnections />
-            
-            {/* Feed Preferences */}
-            {showPreferences && preferences && (
-              <Card className="shadow-sm border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
-                    Feed Preferences
-                  </h3>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Content Types</label>
-                      <div className="flex flex-wrap gap-1">
-                        {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
-                          <Badge
-                            key={type}
-                            variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => {
-                              const newTypes = preferences.contentTypes.includes(type)
-                                ? preferences.contentTypes.filter(t => t !== type)
-                                : [...preferences.contentTypes, type];
-                              handlePreferencesUpdate({ contentTypes: newTypes });
-                            }}
-                          >
-                            {type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Topics of Interest</label>
-                      <div className="flex flex-wrap gap-1">
-                        {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
-                          <Badge
-                            key={topic}
-                            variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
-                            className="cursor-pointer"
-                            onClick={() => {
-                              const newTopics = preferences.topics.includes(topic)
-                                ? preferences.topics.filter(t => t !== topic)
-                                : [...preferences.topics, topic];
-                              handlePreferencesUpdate({ topics: newTopics });
-                            }}
-                          >
-                            #{topic}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Load More — shown only when the endpoint says there is more,
+                so it never promises a page that does not exist. */}
+            {hasNextPage && (
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => void fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  <RefreshCw className={cn('icon-sm mr-2', isFetchingNextPage && 'animate-spin')} />
+                  <BilingualText
+                    en={isFetchingNextPage ? 'Loading…' : 'Load More'}
+                    el={isFetchingNextPage ? 'Φόρτωση…' : 'Περισσότερα'}
+                    compact
+                  />
+                </Button>
+              </div>
             )}
-          </div>
         </div>
       </div>
+      {reporting && (
+        <ReportBlockModal
+          open
+          onOpenChange={(open) => { if (!open) setReporting(null); }}
+          userId={reporting.id}
+          userName={reporting.name}
+          mode="report"
+        />
+      )}
     </AppShell>
   );
 }

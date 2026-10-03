@@ -1,14 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import {
+  listExpertReviews,
+  listExperts,
+  type ExpertReviewItem,
+  type ExpertDirectoryItem,
+} from '@/lib/api';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
-  Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
-  Plus, ChevronRight, TrendingUp, Award, MessageCircle, Eye,
-  BarChart3, Lightbulb, DollarSign, Scale, Palette, Code2,
-  Target, Search, Filter, RefreshCw, ExternalLink,
+  AlertTriangle,
+  Award,
+  BarChart3,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Code2,
+  DollarSign,
+  Eye,
+  FileText,
+  Lightbulb,
+  MessageCircle,
+  Palette,
+  Plus,
+  RefreshCw,
+  Scale,
+  Search,
+  Star,
+  Target,
+  TrendingUp,
+  XCircle,
+  X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +45,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
+import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { bilingualInline } from '@/lib/i18n/format';
+
+/** Why the one disabled control is disabled, in both languages. */
+const MESSAGE_HINT = bilingualAria(
+  'A conversation opens once expert reviews are live',
+  'Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών',
+);
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,35 +94,60 @@ interface ExpertProfile {
   avatar?: string;
   domains: ReviewType[];
   completedReviews: number;
-  rating: number;
+  /* Null until somebody has rated a review this expert delivered. Zero would
+     read as a bad expert rather than a new one. */
+  rating: number | null;
   bio: string;
   feeFrom?: number;
-  responseTime: string;
+  currency?: string;
+  /* Nothing records how fast an expert replies. */
+  responseTime?: string;
   isVerified: boolean;
   badges?: string[];
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; color: string }> = {
-  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  business_model:         { label: 'Business Model',        icon: Target,      color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
-  financial_model:        { label: 'Financial Model',       icon: DollarSign,  color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-  legal_structure:        { label: 'Legal Structure',       icon: Scale,       color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   color: 'bg-teal-500/10 text-teal-600 border-teal-500/20' },
-  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
-  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   color: 'bg-pink-500/10 text-pink-600 border-pink-500/20' },
-  general:                { label: 'General Review',        icon: Eye,         color: 'bg-muted text-muted-foreground border-border' },
+const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
+  pitch_deck: 'info',
+  business_model: 'accent',
+  financial_model: 'success',
+  legal_structure: 'warning',
+  market_analysis: 'info',
+  go_to_market: 'warning',
+  technical_architecture: 'accent',
+  product_strategy: 'accent',
+  general: 'neutral',
 };
 
-const STATUS_CONFIG: Record<ReviewStatus, { label: string; color: string; icon: React.ElementType }> = {
-  requested:   { label: 'Requested',   color: 'bg-blue-500/10 text-blue-600',    icon: Clock },
-  accepted:    { label: 'Accepted',    color: 'bg-teal-500/10 text-teal-600',    icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600',  icon: RefreshCw },
-  submitted:   { label: 'Submitted',   color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle2 },
-  declined:    { label: 'Declined',    color: 'bg-destructive/10 text-destructive', icon: XCircle },
-  expired:     { label: 'Expired',     color: 'bg-muted text-muted-foreground',  icon: AlertTriangle },
+const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; labelEl: string; icon: React.ElementType; tone: StatusTone }> = {
+  pitch_deck:             { label: 'Pitch Deck',        labelEl: 'Pitch deck',                icon: FileText,    tone: 'info' },
+  business_model:         { label: 'Business Model',    labelEl: 'Επιχειρηματικό μοντέλο',    icon: Target,      tone: 'accent' },
+  financial_model:        { label: 'Financial Model',   labelEl: 'Οικονομικό μοντέλο',        icon: DollarSign,  tone: 'success' },
+  legal_structure:        { label: 'Legal Structure',   labelEl: 'Νομική δομή',               icon: Scale,       tone: 'warning' },
+  market_analysis:        { label: 'Market Analysis',   labelEl: 'Ανάλυση αγοράς',            icon: BarChart3,   tone: 'info' },
+  go_to_market:           { label: 'Go-to-Market',      labelEl: 'Είσοδος στην αγορά',        icon: TrendingUp,  tone: 'warning' },
+  technical_architecture: { label: 'Tech Architecture', labelEl: 'Τεχνική αρχιτεκτονική',     icon: Code2,       tone: 'accent' },
+  product_strategy:       { label: 'Product Strategy',  labelEl: 'Στρατηγική προϊόντος',      icon: Lightbulb,   tone: 'accent' },
+  general:                { label: 'General Review',    labelEl: 'Γενική αξιολόγηση',         icon: Eye,         tone: 'neutral' },
+};
+
+const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
+  requested: 'info',
+  accepted: 'success',
+  in_progress: 'warning',
+  submitted: 'success',
+  declined: 'danger',
+  expired: 'neutral',
+};
+
+const STATUS_CONFIG: Record<ReviewStatus, { label: string; labelEl: string; tone: StatusTone; icon: React.ElementType }> = {
+  requested:   { label: 'Requested', labelEl: 'Ζητήθηκε',   tone: 'info',    icon: Clock },
+  accepted:    { label: 'Accepted', labelEl: 'Αποδεκτή',    tone: 'success', icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', labelEl: 'Σε εξέλιξη', tone: 'warning', icon: RefreshCw },
+  submitted:   { label: 'Submitted', labelEl: 'Υποβλήθηκε',   tone: 'success', icon: CheckCircle2 },
+  declined:    { label: 'Declined', labelEl: 'Απορρίφθηκε',    tone: 'danger',  icon: XCircle },
+  expired:     { label: 'Expired', labelEl: 'Έληξε',     tone: 'neutral', icon: AlertTriangle },
 };
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -197,12 +264,12 @@ function ReviewCard({ review }: { review: ExpertReview }) {
   const TypeIcon = type.icon;
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-              {review.expertName.split(' ').map((n) => n[0]).join('')}
+            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
+              {initialsOf(review.expertName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -211,28 +278,37 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0', status.color)}>
-                <StatusIcon className="h-3 w-3" />
-                {status.label}
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
+                <StatusIcon className="icon-sm" />
+                <BilingualText en={status.label} el={status.labelEl} compact />
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', type.color)}>
-                <TypeIcon className="h-3 w-3" />{type.label}
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
+                <TypeIcon className="icon-sm" />
+                <BilingualText en={type.label} el={type.labelEl} compact />
               </span>
               {review.isPaid && review.agreedFee && (
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" /> €{review.agreedFee}
+                <span className="text-2xs text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="icon-sm" /> €{review.agreedFee}
                 </span>
               )}
               {!review.isPaid && (
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5">Free</Badge>
+                <Badge variant="outline" className="text-2xs h-4 px-1.5">
+                  <BilingualText en="Free" el="Δωρεάν" compact />
+                </Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className="text-[11px] text-amber-600 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
+                  <Clock className="icon-sm" />
+                  {/* Pinned to UTC on both sides so the server pass and
+                      hydration agree on the day. */}
+                  <BilingualText
+                    en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                    el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                    compact
+                  />
                 </span>
               )}
             </div>
@@ -241,20 +317,17 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             {review.scoreOverall && (
               <div className="mt-2 flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground">Overall score:</span>
-                  <span className={cn(
-                    'text-sm font-bold',
-                    review.scoreOverall >= 8 ? 'text-emerald-600'
-                      : review.scoreOverall >= 6 ? 'text-amber-600'
-                      : 'text-destructive',
-                  )}>
+                  <span className="text-xs text-muted-foreground">
+                    <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />
+                  </span>
+                  <span className={cn('text-sm font-bold', scoreTenPointClass(review.scoreOverall))}>
                     {review.scoreOverall}/10
                   </span>
                 </div>
                 {review.rating && (
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} />
                     ))}
                   </div>
                 )}
@@ -262,29 +335,43 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             )}
 
             {review.summaryFeedback && (
-              <p className="mt-2 text-xs text-muted-foreground line-clamp-2 italic">
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2 italic">
                 "{review.summaryFeedback}"
               </p>
             )}
 
             <div className="mt-3 flex items-center justify-between">
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                  <MessageCircle className="h-3 w-3" /> Message expert
+                {/* A review carries the expert's name but no user id, so there
+                    is no conversation to open. Disabled and labelled beats a
+                    button that looks live. */}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 gap-1 text-xs"
+                  disabled
+                  title={MESSAGE_HINT}
+                  aria-label={MESSAGE_HINT}
+                >
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
                 </Button>
-                {review.status === 'submitted' && (
-                  <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                    <ExternalLink className="h-3 w-3" /> View full review
-                  </Button>
-                )}
+                {/* "View full review" is gone rather than wired: the control
+                    immediately to its right — "See feedback" — already expands
+                    the full review in place, and did so while this one did
+                    nothing. Two buttons for one action is the defect. */}
               </div>
               {review.strengthsJson || review.improvementsJson ? (
                 <button
                   onClick={() => setExpanded((v) => !v)}
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
-                  {expanded ? 'Collapse' : 'See feedback'}
-                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
+                  <BilingualText
+                    en={expanded ? 'Collapse' : 'See feedback'}
+                    el={expanded ? 'Σύμπτυξη' : 'Δείτε την ανατροφοδότηση'}
+                    compact
+                  />
+                  <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
                 </button>
               ) : null}
             </div>
@@ -294,17 +381,17 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
       {/* Expanded feedback */}
       {expanded && (review.strengthsJson || review.improvementsJson || review.scoresByArea) && (
-        <div className="border-t border-border/60 bg-muted/30 p-4 space-y-4">
+        <div className="border-t border-border bg-muted/30 p-4 space-y-4">
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Scores by Area" el="Βαθμοί ανά τομέα" compact /></p>
               <div className="space-y-1.5">
                 {Object.entries(review.scoresByArea).map(([area, score]) => (
                   <div key={area} className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground capitalize w-24 shrink-0">{area}</span>
+                    <span className="text-2xs text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
-                    <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive')}>
+                    <span className={cn('text-xs font-semibold w-8 text-right', scoreTenPointClass(score))}>
                       {score}/10
                     </span>
                   </div>
@@ -316,7 +403,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 mb-2">✅ Strengths</p>
+              <p className={cn('mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider', STATUS.success.icon)}><CheckCircle2 className="h-3 w-3" aria-hidden="true" /><BilingualText en="Strengths" el="Δυνατά σημεία" compact /></p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -331,7 +418,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-600 mb-2">⚡ Recommendations</p>
+              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -350,11 +437,11 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
 function ExpertCard({ expert }: { expert: ExpertProfile }) {
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
+    <div className="rounded-xl border border-border bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-            {expert.name.split(' ').map((n) => n[0]).join('')}
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
+            {initialsOf(expert.name)}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -363,47 +450,74 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20"><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>
                 )}
                 {expert.badges?.map((b) => (
-                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-[10px]">{b}</Badge>
+                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-2xs">{b}</Badge>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{expert.title}</p>
             </div>
-            {expert.feeFrom && (
-              <p className="text-sm font-semibold text-foreground shrink-0">From €{expert.feeFrom}</p>
+            {expert.feeFrom != null && (
+              <p className="text-sm font-semibold text-foreground shrink-0">
+                {/* The euro sign used to be written in, whatever the expert
+                    charges in. */}
+                <BilingualText en="From" el="Από" compact />{' '}
+                {new Intl.NumberFormat('en-GB', {
+                  style: 'currency',
+                  currency: expert.currency || 'USD',
+                  maximumFractionDigits: 0,
+                }).format(expert.feeFrom)}
+              </p>
             )}
           </div>
 
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{expert.bio}</p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2">{expert.bio}</p>
 
           <div className="mt-2 flex flex-wrap gap-1">
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', cfg.color)}>
-                  {cfg.label}
+                <span key={d} className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
+                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
                 </span>
               );
             })}
           </div>
 
-          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} />{' '}
+              {expert.rating ?? '\u2014'}{' '}
+              <BilingualText
+                en={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'review' : 'reviews'})`}
+                el={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'})`}
+                compact
+              />
             </span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Turnaround: {expert.responseTime}
-            </span>
+            {expert.responseTime && (
+              <span className="flex items-center gap-1">
+                <Clock className="icon-sm" />{' '}
+                <BilingualText en="Turnaround:" el="Χρόνος παράδοσης:" compact /> {expert.responseTime}
+              </span>
+            )}
           </div>
 
+          {/* These experts are constants. Mentors are real, bookable and
+              messageable, and a structured review is one of the things they
+              do — so that is where both buttons lead. */}
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Plus className="h-3 w-3" /> Request review
+            <Button size="sm" className="h-auto min-h-7 flex-1 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <Plus className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
+              </Link>
             </Button>
-            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="h-3 w-3" /> Message
+            <Button size="sm" variant="outline" className="h-auto min-h-7 gap-1 py-1 text-xs leading-snug" asChild>
+              <Link href="/mentoring">
+                <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+              </Link>
             </Button>
           </div>
         </div>
@@ -414,65 +528,279 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+/**
+ * Which review domains a free-text list of skills names.
+ *
+ * An expert records the words they typed; this page files them under nine
+ * review types. Matching is the honest join, and no match means no chip rather
+ * than filing everyone under "general".
+ */
+const DOMAIN_KEYWORDS: Record<ReviewType, string[]> = {
+  pitch_deck: ['pitch', 'deck', 'storytelling', 'narrative'],
+  business_model: ['business model', 'bmc', 'monetisation', 'monetization', 'pricing'],
+  financial_model: ['financial', 'finance', 'unit economics', 'cfo', 'accounting'],
+  legal_structure: ['legal', 'counsel', 'incorporation', 'contract', 'compliance'],
+  market_analysis: ['market', 'research', 'tam', 'competitive', 'analysis'],
+  go_to_market: ['go-to-market', 'gtm', 'growth', 'sales', 'marketing', 'demand'],
+  technical_architecture: ['architecture', 'engineering', 'infrastructure', 'cto', 'platform'],
+  product_strategy: ['product', 'roadmap', 'discovery', 'ux', 'design'],
+  general: [],
+};
+
+function domainsFrom(words: readonly string[]): ReviewType[] {
+  /*
+   * Whole words, not substrings.
+   *
+   * Plain `includes` filed a mentor under Legal Structure because the
+   * keyword "ip" sits inside "Leadership". Every non-letter becomes a
+   * space and both sides are padded, so a keyword matches only where a word
+   * actually starts and ends - and a multi-word keyword like
+   * "go-to-market" still matches, because it is normalised the same way.
+   */
+  const normalise = (text: string) => ` ${text.toLowerCase().replace(/[^a-z]+/g, ' ').trim()} `;
+  const haystack = normalise(words.join(' '));
+  return (Object.keys(DOMAIN_KEYWORDS) as ReviewType[]).filter(
+    (type) =>
+      DOMAIN_KEYWORDS[type].length > 0 &&
+      DOMAIN_KEYWORDS[type].some((keyword) => haystack.includes(normalise(keyword))),
+  );
+}
+
+/** `[{ area, comment }]` out of a free JSON column, defensively. */
+function notes(raw: Record<string, unknown>[], key: 'comment' | 'recommendation') {
+  return raw
+    .map((entry) => ({
+      area: typeof entry?.area === 'string' ? entry.area : '',
+      [key]: typeof entry?.[key] === 'string' ? (entry[key] as string) : '',
+    }))
+    .filter((entry) => entry.area.length > 0) as never;
+}
+
+/**
+ * One review, from the ExpertReview row it already is.
+ *
+ * This page is the requester's side, so the person named on every card is the
+ * expert - the requester is whoever is reading.
+ */
+function toPageReview(row: ExpertReviewItem): ExpertReview {
+  return {
+    id: row.id,
+    expertName: row.expert?.displayName ?? 'An expert',
+    expertTitle: row.expert?.headline ?? '',
+    expertAvatar: row.expert?.avatarUrl ?? undefined,
+    reviewType: row.reviewType,
+    status: row.status,
+    requestMessage: row.requestMessage ?? undefined,
+    dueDate: row.dueDate ?? undefined,
+    submittedAt: row.submittedAt ?? undefined,
+    scoreOverall: row.scoreOverall ?? undefined,
+    summaryFeedback: row.summaryFeedback ?? undefined,
+    strengthsJson: notes(row.strengths, 'comment'),
+    improvementsJson: notes(row.improvements, 'recommendation'),
+    scoresByArea: Object.keys(row.scoresByArea).length > 0 ? row.scoresByArea : undefined,
+    isPaid: row.isPaid,
+    agreedFee: row.agreedFee ?? undefined,
+    rating: row.rating ?? undefined,
+  };
+}
+
+/** One expert, from the directory the module serves. */
+function toPageExpert(row: ExpertDirectoryItem): ExpertProfile {
+  return {
+    id: row.userId,
+    name: row.displayName ?? 'An expert',
+    title: row.headline ?? '',
+    avatar: row.avatarUrl ?? undefined,
+    domains: domainsFrom([...row.specializations, ...row.skills, ...row.industries]),
+    completedReviews: row.completedReviews,
+    rating: row.rating,
+    bio: row.bio ?? '',
+    feeFrom: row.isFree ? undefined : (row.feeFrom ?? undefined),
+    currency: row.currency,
+    // No column records a turnaround, and none records a verification badge
+    // beyond the one the mentor profile already carries.
+    responseTime: undefined,
+    isVerified: row.isVerified,
+  };
+}
+
 export default function ExpertReviewsPage() {
   const [activeTab, setActiveTab] = useState('my-reviews');
   const [searchExperts, setSearchExperts] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
   const { showDemoData } = useDemoData();
+  const router = useRouter();
+  const { openRailSection } = usePageRail();
 
-  const myReviews = showDemoData ? DEMO_REVIEWS : [];
+  /*
+   * The founder's own reviews, from the module that now reads ExpertReview.
+   * `side: 'requester'` is what keeps an expert's own requests out of the
+   * queue of requests made of them.
+   */
+  const { data: reviewData, isLoading: reviewsLoading } = useQuery({
+    queryKey: qk('expert-reviews', 'requester'),
+    queryFn: () => listExpertReviews({ side: 'requester', limit: 50 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const liveReviews = useMemo(
+    () => (reviewData?.reviews ?? []).map(toPageReview),
+    [reviewData],
+  );
+
+  const myReviews =
+    liveReviews.length > 0
+      ? liveReviews
+      : reviewsLoading
+        ? []
+        : showDemoData
+          ? DEMO_REVIEWS
+          : [];
+
+  /*
+   * The expert directory. This list used to render unconditionally, so a real
+   * founder browsed four experts who do not exist.
+   */
+  const { data: expertData, isLoading: expertsLoading } = useQuery({
+    queryKey: qk('expert-reviews', 'experts'),
+    queryFn: () => listExperts({ limit: 24 }),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
+  const liveExperts = useMemo(
+    () => (expertData?.experts ?? []).map(toPageExpert),
+    [expertData],
+  );
+
+  const experts =
+    liveExperts.length > 0
+      ? liveExperts
+      : expertsLoading
+        ? []
+        : showDemoData
+          ? DEMO_EXPERTS
+          : [];
   const submitted = myReviews.filter((r) => r.status === 'submitted');
   const pending = myReviews.filter((r) => r.status !== 'submitted' && r.status !== 'declined');
 
-  const filteredExperts = DEMO_EXPERTS.filter((e) => {
+  const filteredExperts = experts.filter((e) => {
     const q = searchExperts.toLowerCase();
     const matchesSearch = !q || e.name.toLowerCase().includes(q) || e.title.toLowerCase().includes(q) || e.bio.toLowerCase().includes(q);
     const matchesDomain = selectedDomain === 'all' || e.domains.includes(selectedDomain);
     return matchesSearch && matchesDomain;
   });
 
+  // Offered to the assistant: the tab and the expertise filter; the reviews
+  // and the experts on screen go out as lists.
+  usePageList([
+    { id: 'my_reviews', labelEn: 'My reviews', labelEl: 'Οι αξιολογήσεις μου', rows: reviewsLoading ? undefined : myReviews.map((r) => `${r.expertName} · ${REVIEW_TYPE_CONFIG[r.reviewType]?.label ?? r.reviewType} · ${r.status}${r.scoreOverall != null ? ` · score ${r.scoreOverall}` : ''}${r.dueDate ? ` · due ${r.dueDate.slice(0, 10)}` : ''}`), sample: liveReviews.length === 0 },
+    { id: 'experts', labelEn: 'Experts', labelEl: 'Ειδικοί', rows: expertsLoading ? undefined : filteredExperts.map((e) => `${e.name} · ${e.title} · ${e.domains.map((d) => REVIEW_TYPE_CONFIG[d]?.label ?? d).join(', ')} · ${e.completedReviews} reviews${e.rating != null ? ` · ${e.rating.toFixed(1)}★` : ''}`), total: experts.length, sample: liveExperts.length === 0 },
+  ]);
+  usePageControls([
+    choiceControl('expert_tab', 'Expert reviews section', 'Ενότητα αξιολογήσεων', [
+      { value: 'my-reviews', en: 'My reviews', el: 'Οι αξιολογήσεις μου' },
+      { value: 'find-experts', en: 'Find experts', el: 'Εύρεση ειδικών' },
+      { value: 'insights', en: 'Insights', el: 'Αναλύσεις' },
+    ], activeTab, setActiveTab),
+    choiceControl('expertise', 'Expertise filter', 'Φίλτρο ειδίκευσης', [
+      { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
+      ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({ value: key, en: cfg.label, el: cfg.labelEl })),
+    ], selectedDomain, (v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }),
+  ]);
+
   const avgScore = submitted.length
     ? (submitted.filter((r) => r.scoreOverall).reduce((acc, r) => acc + (r.scoreOverall ?? 0), 0) / submitted.filter((r) => r.scoreOverall).length)
     : null;
 
-  return (
-    <AppShell
-      title="Expert Reviews"
-      description="Get structured feedback on your pitch, financials, strategy, and more from domain experts"
-    >
-      <div className="space-y-6 pb-10">
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total reviews', value: myReviews.length, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
-            { label: 'In progress', value: pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Completed', value: submitted.length, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <Card key={label} className="shadow-sm border-border/50">
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+  /*
+   * The column leads with the tabs and the reviews. The four counts and the
+   * domain chips sat above the first card; they live in the rail now. Request
+   * review stays: it is this page's next step, not another surface.
+   */
+  const listingFilters = selectedDomain !== 'all' ? 1 : 0;
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total reviews', labelEl: 'Συνολικές αξιολογήσεις', value: myReviews.length, icon: FileText, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'pending', label: 'In progress', labelEl: 'Σε εξέλιξη', value: pending.length, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
+            { key: 'done', label: 'Completed', labelEl: 'Ολοκληρωμένες', value: submitted.length, icon: CheckCircle2, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'avg', label: 'Avg score', labelEl: 'Μέση βαθμολογία', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'bg-status-info-bg text-status-info' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Expertise',
+      labelEl: 'Εξειδίκευση',
+      badge: listingFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Domain"
+            titleEl="Τομέας"
+            options={[
+              { value: 'all', en: 'All areas', el: 'Όλοι οι τομείς' },
+              ...(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, (typeof REVIEW_TYPE_CONFIG)[ReviewType]][]).map(([key, cfg]) => ({
+                value: key,
+                en: cfg.label,
+                el: cfg.labelEl,
+                icon: cfg.icon,
+              })),
+            ]}
+            value={selectedDomain}
+            onChange={(v) => { setSelectedDomain(v as ReviewType | 'all'); setActiveTab('find-experts'); }}
+          />
+          {listingFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => setSelectedDomain('all')} />
+          )}
         </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Target} en="Open readiness" el="Άνοιγμα ετοιμότητας" onClick={() => router.push('/readiness')} />
+          <RailAction icon={FileText} en="Open pitch deck" el="Άνοιγμα pitch deck" onClick={() => router.push('/builder/pitch-deck')} />
+          <RailAction icon={DollarSign} en="Open fundraising" el="Άνοιγμα χρηματοδότησης" onClick={() => router.push('/fundraising')} />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell showHelp rail={rail} askAi="Which expert review should I request first — pitch deck, financial model, or go-to-market — given my current readiness gaps?">
+      <div className="space-y-6 pb-10">
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3">
             <TabsList className="h-9">
-              <TabsTrigger value="my-reviews" className="text-xs">My Reviews</TabsTrigger>
-              <TabsTrigger value="find-experts" className="text-xs">Find Experts</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
+              <TabsTrigger value="my-reviews" className="text-xs">
+                <BilingualText en="My Reviews" el="Οι αξιολογήσεις μου" compact />
+              </TabsTrigger>
+              <TabsTrigger value="find-experts" className="text-xs">
+                <BilingualText en="Find Experts" el="Εύρεση ειδικών" compact />
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs">
+                <BilingualText en="Insights" el="Αναλύσεις" compact />
+              </TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="h-3.5 w-3.5" /> Request review
+              <Plus className="icon-sm" />{' '}
+              <BilingualText en="Request review" el="Αίτημα αξιολόγησης" compact wrap />
             </Button>
           </div>
 
@@ -480,77 +808,78 @@ export default function ExpertReviewsPage() {
           <TabsContent value="my-reviews" className="mt-4 space-y-3">
             {pending.length > 0 && (
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Active Requests</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  <BilingualText en="Active Requests" el="Ενεργά αιτήματα" compact />
+                </p>
                 <div className="space-y-3">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {submitted.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Completed Reviews</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  <BilingualText en="Completed Reviews" el="Ολοκληρωμένες αξιολογήσεις" compact />
+                </p>
                 <div className="space-y-3">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {myReviews.length === 0 && (
-              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
+              <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <Award className="h-7 w-7 text-primary" />
+                  <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">No reviews yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Request expert feedback on your pitch, financials, or strategy.</p>
+                  <p className="font-medium text-foreground"><BilingualText en="No reviews yet" el="Δεν υπάρχουν κριτικές ακόμα" compact /></p>
+                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Request expert feedback on your pitch, financials, or strategy." el="Ζητήστε γνώμη ειδικού για το pitch, τα οικονομικά ή τη στρατηγική σας." wrap /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find-experts')}>Find an expert</Button>
+                <Button size="sm" onClick={() => setActiveTab('find-experts')}><BilingualText en="Find an expert" el="Βρείτε ειδικό" compact /></Button>
               </div>
             )}
           </TabsContent>
 
           {/* Find Experts */}
           <TabsContent value="find-experts" className="mt-4 space-y-4">
-            {/* Search + domain filter */}
-            <div className="flex gap-2 flex-wrap">
-              <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-8 h-9 text-sm" />
-              </div>
-            </div>
-
-            {/* Domain chips */}
-            <div className="flex flex-wrap gap-1.5">
-              <button
-                onClick={() => setSelectedDomain('all')}
-                className={cn('rounded-full border px-3 py-1 text-xs transition-all', selectedDomain === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:border-border')}
-              >
-                All domains
-              </button>
-              {(Object.entries(REVIEW_TYPE_CONFIG) as [ReviewType, typeof REVIEW_TYPE_CONFIG[ReviewType]][]).map(([key, cfg]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedDomain(key)}
-                  className={cn(
-                    'flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all',
-                    selectedDomain === key ? cfg.color + ' border-current' : 'border-border/60 text-muted-foreground hover:border-border',
-                  )}
-                >
-                  <cfg.icon className="h-3 w-3" />{cfg.label}
-                </button>
-              ))}
+            {/* Search — domain lives in the rail. */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+              <Input placeholder={bilingualInline("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
             </div>
 
             <div className="space-y-3">
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  No experts match your search. <button className="text-primary hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
+                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact />{' '}
+                  {listingFilters > 0 ? (
+                    <button className="text-primary-accessible hover:underline" onClick={() => openRailSection('filters')}>
+                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                    </button>
+                  ) : (
+                    <button className="text-primary-accessible hover:underline" onClick={() => setSearchExperts('')}>
+                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
 
             {/* CTA for becoming an expert */}
-            <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <Award className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">Are you a domain expert?</p>
-              <p className="text-xs text-muted-foreground mb-3">Join as an expert reviewer and earn while helping founders.</p>
-              <Button variant="outline" size="sm">Apply as expert</Button>
+            <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
+              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
+              <p className="mb-1 text-sm font-medium text-foreground">
+                <BilingualText en="Are you a domain expert?" el="Είστε ειδικός στον τομέα σας;" />
+              </p>
+              <p className="mb-3 text-xs leading-snug text-muted-foreground">
+                <BilingualText
+                  en="Join as an expert reviewer and earn while helping founders."
+                  el="Γίνετε αξιολογητής και κερδίστε βοηθώντας ιδρυτές."
+                />
+              </p>
+              {/* Mentor signup is the form that exists and is wired. */}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/mentor/profile">
+                  <BilingualText en="Apply as expert" el="Αίτηση ως ειδικός" compact wrap />
+                </Link>
+              </Button>
             </div>
           </TabsContent>
 
@@ -558,7 +887,7 @@ export default function ExpertReviewsPage() {
           <TabsContent value="insights" className="mt-4 space-y-4">
             {submitted.length === 0 ? (
               <div className="text-center py-12 text-sm text-muted-foreground">
-                Complete your first review to see insights.
+                <BilingualText en="Complete your first review to see insights." el="Ολοκληρώστε την πρώτη σας αξιολόγηση για να δείτε στοιχεία." wrap />
               </div>
             ) : (
               <>
@@ -567,8 +896,12 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary" />
-                        {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
+                        <BarChart3 className="icon-sm text-primary-accessible" />
+                        <BilingualText
+                          en={`${REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores`}
+                          el={`${REVIEW_TYPE_CONFIG[r.reviewType].labelEl} — Αναλυτικές βαθμολογίες`}
+                          compact
+                        />
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -578,7 +911,7 @@ export default function ExpertReviewsPage() {
                           <Progress value={score * 10} className="flex-1 h-2" />
                           <span className={cn(
                             'text-xs font-bold w-8 text-right',
-                            score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive',
+                            scoreTenPointClass(score),
                           )}>
                             {score}/10
                           </span>
@@ -593,13 +926,13 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className="h-4 w-4 text-amber-500" /> Top Recommendations
+                        <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> <BilingualText en="Top Recommendations" el="Κορυφαίες προτάσεις" compact />
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
-                        <div key={`${r.id}-${i}`} className="flex gap-2 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div key={`${r.id}-${i}`} className={cn('flex gap-2 rounded-lg border px-3 py-2', STATUS.warning.border, STATUS.warning.bg)}>
+                          <AlertTriangle className={cn('icon-sm shrink-0 mt-0.5', STATUS.warning.icon)} />
                           <div>
                             <p className="text-xs font-semibold text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>

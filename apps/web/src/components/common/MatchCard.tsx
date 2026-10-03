@@ -2,13 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { UserPlus, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { SkillChip } from './SkillChip';
+import { BilingualText } from './BilingualText';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
@@ -43,17 +46,46 @@ type MatchCardProps = {
 
 // ── Score tier helpers ────────────────────────────────────────────────────────
 
+type MatchTier = 'excellent' | 'strong' | 'good' | 'potential';
+
+const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
+  excellent: 'success',
+  strong: 'info',
+  good: 'warning',
+  potential: 'danger',
+};
+
+const TIER_STROKE: Record<MatchTier, string> = {
+  excellent: 'hsl(var(--status-success-mark))',
+  strong: 'hsl(var(--status-info-mark))',
+  good: 'hsl(var(--status-warning-mark))',
+  potential: 'hsl(var(--status-danger-mark))',
+};
+
+function tierGlow(stroke: string) {
+  return `color-mix(in srgb, ${stroke} 12%, transparent)`;
+}
+
+const TIER_LABEL: Record<MatchTier, { en: string; el: string }> = {
+  excellent: { en: 'Excellent', el: 'Εξαιρετική' },
+  strong: { en: 'Strong', el: 'Ισχυρή' },
+  good: { en: 'Good', el: 'Καλή' },
+  potential: { en: 'Low', el: 'Χαμηλή' },
+};
+
 function getScoreTier(score: number) {
-  if (score >= 80) return { label: 'EXCELLENT', color: '#4ADE80', glow: 'rgba(74,222,128,0.12)' };
-  if (score >= 65) return { label: 'STRONG',    color: '#22D3EE', glow: 'rgba(34,211,238,0.12)' };
-  if (score >= 45) return { label: 'GOOD',      color: '#FB923C', glow: 'rgba(251,146,60,0.10)' };
-  return              { label: 'LOW',       color: '#F87171', glow: 'rgba(248,113,113,0.08)' };
+  let tier: MatchTier = 'potential';
+  if (score >= 80) tier = 'excellent';
+  else if (score >= 65) tier = 'strong';
+  else if (score >= 45) tier = 'good';
+  const stroke = TIER_STROKE[tier];
+  return { label: TIER_LABEL[tier], tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
 }
 
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  const { label, color } = getScoreTier(score);
+  const { label, stroke } = getScoreTier(score);
   const r = 18, cx = 22, cy = 22;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
@@ -63,20 +95,20 @@ function ScoreBadge({ score }: { score: number }) {
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(107,114,128,0.2)" strokeWidth={4} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={4}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={stroke} strokeWidth={4}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className="absolute text-[11px] font-black tabular-nums"
-          style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="absolute text-2xs font-black tabular-nums"
+          style={{ color: stroke, fontFamily: 'var(--font-mono)' }}>
           {score}%
         </span>
       </div>
-      <span className="text-[8px] font-bold tracking-wider"
-        style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
-        {label}
+      <span className="text-2xs font-bold uppercase tracking-wider"
+        style={{ color: stroke, fontFamily: 'var(--font-mono)' }}>
+        <BilingualText en={label.en} el={label.el} compact />
       </span>
     </div>
   );
@@ -108,7 +140,7 @@ function MatchCardInner({
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [showReasons, setShowReasons] = useState(false);
-  const { color, glow } = getScoreTier(compatibilityScore);
+  const { stroke, glow, colors } = getScoreTier(compatibilityScore);
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -119,7 +151,7 @@ function MatchCardInner({
     <Card
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
-        'hover:shadow-lg',
+        'hover:border-primary/30',
         isSelected && 'ring-2 ring-primary ring-offset-1',
         onClick && 'cursor-pointer',
         className
@@ -134,7 +166,7 @@ function MatchCardInner({
       {/* Left score-color border strip */}
       <div
         className="absolute left-0 inset-y-0 w-0.5 transition-all duration-200 group-hover:w-1"
-        style={{ background: color }}
+        style={{ background: stroke }}
       />
 
       {/* Selection checkbox */}
@@ -142,13 +174,14 @@ function MatchCardInner({
         <button
           onClick={(e) => { e.stopPropagation(); onSelect(); }}
           className="absolute left-3 top-3 z-20"
-          aria-label={isSelected ? 'Deselect' : 'Select'}
+          aria-pressed={Boolean(isSelected)}
+          aria-label={bilingualAria(`Select ${displayName}`, `Επιλογή: ${displayName}`)}
         >
           <div className={cn(
-            'h-5 w-5 rounded border-2 flex items-center justify-center transition-colors',
-            isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
+            'h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors',
+            isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border hover:border-primary'
           )}>
-            {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+            {isSelected && <Check className="icon-sm text-primary-foreground" />}
           </div>
         </button>
       )}
@@ -162,7 +195,7 @@ function MatchCardInner({
         {/* Profile header */}
         <div className="flex items-start gap-3">
           <Link href={`/profiles/${userId}`}>
-            <Avatar className="h-11 w-11 rounded-lg border border-border/60 transition-transform group-hover:scale-105 shrink-0">
+            <Avatar className="h-11 w-11 rounded-lg border border-border transition-transform group-hover:scale-105 shrink-0">
               <AvatarImage src={avatarUrl || undefined} alt={displayName} />
               <AvatarFallback className="rounded-lg bg-muted text-foreground text-sm font-semibold">
                 {displayName.slice(0, 2).toUpperCase()}
@@ -172,7 +205,7 @@ function MatchCardInner({
           <div className="flex-1 min-w-0 pr-14">
             <Link
               href={`/profiles/${userId}`}
-              className="text-base font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+              className="text-base font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
             >
               {displayName}
             </Link>
@@ -180,7 +213,7 @@ function MatchCardInner({
               <RoleBadge role={role} size="sm" showIcon />
             </div>
             {headline && (
-              <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{headline}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2 leading-relaxed">{headline}</p>
             )}
           </div>
         </div>
@@ -190,13 +223,13 @@ function MatchCardInner({
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3 shrink-0" />
+                <MapPin className="icon-sm shrink-0" />
                 {location}
               </span>
             )}
             {timezone && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3 shrink-0" />
+                <Clock className="icon-sm shrink-0" />
                 {timezone}
               </span>
             )}
@@ -218,12 +251,15 @@ function MatchCardInner({
         {/* Match reasons toggle */}
         <button
           onClick={() => setShowReasons(!showReasons)}
-          className="mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors"
-          style={{ color }}
+          aria-expanded={showReasons}
+          // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
+          className={cn('mt-3 flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
         >
-          <Sparkles className="h-3 w-3" />
-          {showReasons ? 'Hide reasons' : 'Why this match?'}
-          {showReasons ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          <Sparkles className="icon-sm" />
+          {showReasons
+            ? <BilingualText en="Hide reasons" el="Απόκρυψη λόγων" compact />
+            : <BilingualText en="Why this match?" el="Γιατί ταιριάζετε;" compact />}
+          {showReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
         </button>
 
         {/* Match reasons (collapsible) */}
@@ -231,7 +267,7 @@ function MatchCardInner({
           <div className="mt-2 space-y-1.5">
             {matchReasons.map((reason, i) => (
               <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
-                <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
+                <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: stroke }} />
                 <span className="text-foreground flex-1">{reason.text}</span>
               </div>
             ))}
@@ -239,66 +275,74 @@ function MatchCardInner({
         )}
 
         {/* Divider */}
-        <div className="mt-4 border-t border-border/50" />
+        <div className="mt-4 border-t border-border" />
 
         {/* Action buttons */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {onPass && (
             <button
               onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              aria-label={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
+              title={bilingualAria(`Pass on ${displayName}`, `Παράλειψη: ${displayName}`)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
             >
-              <X className="h-4 w-4" />
+              <X className="icon-sm" />
             </button>
           )}
           {onLike && (
             <button
               onClick={onLike}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-pink-500 hover:border-pink-400/40 transition-colors"
+              aria-label={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
+              title={bilingualAria(`Connect with ${displayName}`, `Σύνδεση με ${displayName}`)}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
             >
-              <Heart className="h-4 w-4" />
+              <UserPlus className="icon-sm" />
             </button>
           )}
           <button
             onClick={handleBookmark}
+            aria-pressed={bookmarked}
+            aria-label={
+              bookmarked
+                ? bilingualAria(`${displayName} is on your shortlist`, `${displayName}: στη λίστα επιλογών`)
+                : bilingualAria(`Save ${displayName} to shortlist`, `Αποθήκευση ${displayName} στη λίστα`)
+            }
             className={cn(
-              'h-8 w-8 flex items-center justify-center rounded-full transition-colors',
-              bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
+              'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
+              bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
             )}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </button>
 
-          <div className="flex-1" />
-
-          {/* Compatibility breakdown / analysis */}
+          <div className="flex min-w-0 flex-1 basis-full flex-wrap items-center justify-end gap-1.5 sm:basis-auto">
           {onBreakdown ? (
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 h-8 text-xs font-medium px-2.5"
-              style={{ borderColor: `${color}40`, color }}
+              className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.border, colors.text)}
+              style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}
               onClick={onBreakdown}
             >
-              <TrendingUp className="h-3.5 w-3.5" />
-              Breakdown
+              <TrendingUp className="icon-sm" />
+              <BilingualText en="Breakdown" el="Ανάλυση" compact />
             </Button>
           ) : (
-            <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
-                style={{ borderColor: `${color}40`, color }}>
-                <TrendingUp className="h-3.5 w-3.5" />
-                Compatibility
-              </Button>
-            </Link>
+            <Button size="sm" variant="outline" className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.text)} style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }} asChild>
+              <Link href={`/matches/${userId}`}>
+                <TrendingUp className="icon-sm" />
+                <BilingualText en="Compatibility" el="Συμβατότητα" compact />
+              </Link>
+            </Button>
           )}
 
           {onMessage && (
-            <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">
-              <MessageCircle className="h-3.5 w-3.5" />
-              Message
+            <Button onClick={onMessage} size="sm" className="h-10 gap-1.5 px-2.5 text-xs">
+              <MessageCircle className="icon-sm" />
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
           )}
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal' | 'apricot';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -35,12 +35,24 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     if (typeof window === 'undefined') return;
     const root = document.documentElement;
     
-    // Handle dark/light mode
+    // Named palettes live on data-theme. Do not clear it for alliance /
+    // cofounder / system — those are first-class themes on this line.
     root.classList.remove('dark', 'light');
-    if (newTheme === 'system') {
+    if (newTheme === 'minimal' || newTheme === 'apricot') {
+      root.classList.add('light');
+      root.setAttribute('data-theme', newTheme);
+    } else if (newTheme === 'alliance') {
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'alliance');
+    } else if (newTheme === 'cofounder') {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'cofounder');
+    } else if (newTheme === 'system') {
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.add(systemDark ? 'dark' : 'light');
+      root.setAttribute('data-theme', 'system');
     } else {
+      root.removeAttribute('data-theme');
       root.classList.add(newTheme);
     }
 

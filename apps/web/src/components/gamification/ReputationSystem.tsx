@@ -2,20 +2,21 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  TrendingUp, 
-  Award, 
-  Star, 
-  Zap, 
-  Target,
-  ArrowUp,
-  ArrowDown,
+import {
   Activity,
+  ArrowDown,
+  ArrowUp,
+  Award,
   Calendar,
-  Users,
-  MessageCircle,
+  Flame,
   Handshake,
   Lightbulb,
+  MessageCircle,
+  Star,
+  Target,
+  TrendingUp,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { getMyXP, type GamificationRecentEvent } from '@/lib/api';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface ReputationActivity {
   id: string;
@@ -140,7 +143,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
   const [activeTab, setActiveTab] = useState('overview');
 
   const { data: xpData, isLoading } = useQuery({
-    queryKey: ['my-xp'],
+    queryKey: qk('gamification', 'my-xp'),
     queryFn: getMyXP,
     staleTime: 3 * 60_000,
     enabled: externalPoints === undefined,
@@ -158,7 +161,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
     ? xpData.recentEvents.slice(0, 8).map(xpEventToActivity)
     : [];
 
-  const currentStreak = xpData?.streak.currentStreak ?? 0;
+  const currentStreak = xpData?.streak?.currentStreak ?? 0;
 
   if (isLoading && externalPoints === undefined) {
     return (
@@ -173,28 +176,29 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
   return (
     <div className="space-y-6">
       {/* Current Level Card */}
-      <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+      <Card className="border-primary/15 bg-primary/[0.03]">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Award className="h-8 w-8 text-primary" />
+                <Award className="icon-xl text-primary-accessible" />
               </div>
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
                 <CardDescription className="text-base">
-                  {currentPoints.toLocaleString()} reputation points
+                  {currentPoints.toLocaleString('en-GB')} reputation points
                 </CardDescription>
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant="default" className="text-base px-3 py-1">
-                <Zap className="h-4 w-4 mr-1" />
-                {currentPoints.toLocaleString()} XP
+                <Zap className="icon-sm mr-1" />
+                {currentPoints.toLocaleString('en-GB')} XP
               </Badge>
               {currentStreak > 0 && (
                 <Badge variant="secondary" className="text-xs gap-1">
-                  🔥 {currentStreak}-day streak
+                  <Flame className="h-3 w-3 text-status-warning" aria-hidden="true" />
+                  {currentStreak}-day streak
                 </Badge>
               )}
             </div>
@@ -207,7 +211,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progress to {nextLevel.name}</span>
                   <span className="font-medium">
-                    {pointsToNextLevel.toLocaleString()} points needed
+                    {pointsToNextLevel.toLocaleString('en-GB')} points needed
                   </span>
                 </div>
                 <Progress value={levelProgress} className="h-3" />
@@ -215,11 +219,11 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             </>
           )}
           
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="h-3 w-3 text-primary" />
+                  <Star className="icon-sm text-primary-accessible" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -231,17 +235,17 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="earn">How to Earn</TabsTrigger>
+          <TabsTrigger value="overview"><BilingualText en="Overview" el="Επισκόπηση" compact /></TabsTrigger>
+          <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
+          <TabsTrigger value="earn"><BilingualText en="How to Earn" el="Πώς κερδίζεται" compact /></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           {/* Level Progression */}
           <Card>
             <CardHeader>
-              <CardTitle>Level Progression</CardTitle>
-              <CardDescription>Your journey through the ranks</CardDescription>
+              <CardTitle><BilingualText en="Level Progression" el="Πρόοδος επιπέδων" compact /></CardTitle>
+              <CardDescription><BilingualText en="Your journey through the ranks" el="Η πορεία σας στα επίπεδα" compact /></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -271,14 +275,14 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex-1">
                         <div className="font-semibold">{level.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {level.minPoints.toLocaleString()} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString()} points
+                          {level.minPoints.toLocaleString('en-GB')} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString('en-GB')} points
                         </div>
                       </div>
                       {isCurrentLevel && (
-                        <Badge variant="default">Current</Badge>
+                        <Badge variant="default"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                       )}
                       {isPastLevel && !isCurrentLevel && (
-                        <Badge variant="outline">Completed</Badge>
+                        <Badge variant="outline"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></Badge>
                       )}
                     </div>
                   );
@@ -291,13 +295,13 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
         <TabsContent value="activity" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest reputation changes</CardDescription>
+              <CardTitle><BilingualText en="Recent Activity" el="Πρόσφατη δραστηριότητα" compact /></CardTitle>
+              <CardDescription><BilingualText en="Your latest reputation changes" el="Οι πιο πρόσφατες αλλαγές φήμης" compact /></CardDescription>
             </CardHeader>
             <CardContent>
               {recentActivities.length === 0 && (
                 <div className="py-8 text-center text-sm text-muted-foreground">
-                  No XP activity yet. Start building to earn your first points.
+                  <BilingualText en="No XP activity yet. Start building to earn your first points." el="Δεν υπάρχει δραστηριότητα XP ακόμα. Ξεκινήστε για να κερδίσετε τους πρώτους πόντους." wrap />
                 </div>
               )}
               <div className="space-y-3">
@@ -313,26 +317,26 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           'flex h-10 w-10 items-center justify-center rounded-full',
-                          isEarned ? 'bg-green-100 dark:bg-green-950' : 'bg-red-100 dark:bg-red-950'
+                          isEarned ? 'bg-status-success-bg ' : 'bg-status-danger-bg '
                         )}>
                           <Icon className={cn(
-                            'h-5 w-5',
-                            isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            'icon-md',
+                            isEarned ? 'text-status-success ' : 'text-status-danger '
                           )} />
                         </div>
                         <div>
                           <div className="font-medium">{activity.action}</div>
                           <div className="text-sm text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString()} at{' '}
+                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { timeZone: 'UTC' })} at{' '}
                             {new Date(activity.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
                       </div>
                       <div className={cn(
                         'flex items-center gap-1 font-bold',
-                        isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        isEarned ? 'text-status-success ' : 'text-status-danger '
                       )}>
-                        {isEarned ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                        {isEarned ? <ArrowUp className="icon-sm" /> : <ArrowDown className="icon-sm" />}
                         {Math.abs(activity.points)}
                       </div>
                     </div>
@@ -346,11 +350,11 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
         <TabsContent value="earn" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Ways to Earn Points</CardTitle>
-              <CardDescription>Complete these actions to increase your reputation</CardDescription>
+              <CardTitle><BilingualText en="Ways to Earn Points" el="Τρόποι να κερδίσετε πόντους" compact /></CardTitle>
+              <CardDescription><BilingualText en="Complete these actions to increase your reputation" el="Ολοκληρώστε αυτές τις ενέργειες για να αυξήσετε τη φήμη σας" wrap /></CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {pointsEarningGuide.map((item, index) => {
                   const Icon = item.icon;
                   return (
@@ -360,12 +364,12 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary" />
+                          <Icon className="icon-md text-primary-accessible" />
                         </div>
                         <span className="font-medium">{item.action}</span>
                       </div>
                       <Badge variant="secondary" className="gap-1">
-                        <Zap className="h-3 w-3" />
+                        <Zap className="icon-sm" />
                         +{item.points}
                       </Badge>
                     </div>

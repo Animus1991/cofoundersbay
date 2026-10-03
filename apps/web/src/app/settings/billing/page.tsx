@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  CreditCard, Crown, ExternalLink, AlertTriangle, CheckCircle2,
-  Clock, XCircle, Download, FileText, ChevronRight, Loader2,
-  Shield, Zap, Users, Building2, RefreshCw,
+  Check, Download, FileText, Loader2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,33 +17,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import {
-  getBillingSubscription, getUserInvoices, createBillingPortal, createBillingCheckout,
+  getBillingSubscription, getUserInvoices, createBillingPortal,
   getBillingContact, upsertBillingContact, type BillingInvoice, type BillingContact,
 } from '@/lib/api';
-import { formatCents, STATUS_COLORS } from '@/lib/billing';
+import { formatCents, PLAN_FEATURE_LABELS, PLAN_HIGHLIGHTS, type PlanFeatureKey } from '@/lib/billing';
+import { HairlineMeter } from '@/components/ui/hairline-meter';
+import { SettingsRow } from '@/components/ui/settings-row';
 import { cn } from '@/lib/utils';
-
-const PLAN_ICONS: Record<string, React.ElementType> = {
-  free: Zap,
-  premium: Crown,
-  individual_premium: Crown,
-  team: Users,
-  organization: Building2,
-  enterprise: Shield,
-};
+import { StatusText } from '@/components/common/StatusText';
+import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    void: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    paid: 'bg-status-success-bg text-status-success border-status-success-border',
+    open: 'bg-status-info-bg text-status-info border-status-info-border',
+    draft: 'bg-muted text-muted-foreground border-border',
+    void: 'bg-muted text-muted-foreground border-border',
+    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   return (
-    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-gray-600')}>
-      {status}
+    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-muted text-muted-foreground')}>
+      <StatusText value={status} />
     </Badge>
+  );
+}
+
+/** What a plan includes: one quiet list, shared with /pricing through PLAN_HIGHLIGHTS. */
+function PlanHighlights({ items }: { items: { en: string; el: string }[] }) {
+  return (
+    <ul className="space-y-1.5 border-t border-border pt-3 text-sm text-muted-foreground">
+      {items.map((item) => (
+        <li key={item.en} className="flex items-start gap-2">
+          <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
+          <span className="min-w-0"><BilingualText en={item.en} el={item.el} wrap /></span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -50,7 +61,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-        <FileText className="h-4 w-4 text-muted-foreground" />
+        <FileText className="icon-sm text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -58,26 +69,27 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           <InvoiceStatusBadge status={invoice.status} />
         </div>
         <p className="text-xs text-muted-foreground">
-          {new Date(invoice.periodStart).toLocaleDateString()} – {new Date(invoice.periodEnd).toLocaleDateString()}
+          {new Date(invoice.periodStart).toLocaleDateString('en-GB', { timeZone: 'UTC' })} – {new Date(invoice.periodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
         </p>
       </div>
       <div className="text-right shrink-0">
         <p className="text-sm font-semibold">{formatCents(invoice.total, invoice.currency)}</p>
         {invoice.paidAt && (
-          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString()}</p>
+          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
         )}
       </div>
       {invoice.hostedInvoiceUrl && (
-        <a
-          href={invoice.hostedInvoiceUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="shrink-0"
-        >
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Download className="h-3.5 w-3.5" />
-          </Button>
-        </a>
+        // One control, not a button nested in a link (axe nested-interactive).
+        <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+          <a
+            href={invoice.hostedInvoiceUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={bilingualAria(`Download invoice ${invoice.invoiceNumber}`, `Λήψη τιμολογίου ${invoice.invoiceNumber}`)}
+          >
+            <Download className="icon-sm" aria-hidden="true" />
+          </a>
+        </Button>
       )}
     </div>
   );
@@ -92,17 +104,17 @@ export default function UserBillingPage() {
   });
 
   const { data: subData, isLoading: subLoading } = useQuery({
-    queryKey: ['billing', 'subscription'],
+    queryKey: qk('billing', 'subscription'),
     queryFn: getBillingSubscription,
   });
 
   const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
-    queryKey: ['billing', 'invoices'],
+    queryKey: qk('billing', 'invoices'),
     queryFn: getUserInvoices,
   });
 
   const { data: contactData } = useQuery({
-    queryKey: ['billing', 'contact'],
+    queryKey: qk('billing', 'contact'),
     queryFn: getBillingContact,
   });
 
@@ -131,7 +143,7 @@ export default function UserBillingPage() {
   const { mutate: saveContact, isPending: savingContact } = useMutation({
     mutationFn: () => upsertBillingContact(contactForm),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['billing', 'contact'] });
+      qc.invalidateQueries({ queryKey: qk('billing', 'contact') });
       setShowContactForm(false);
       toastSuccess('Billing contact saved');
     },
@@ -141,174 +153,215 @@ export default function UserBillingPage() {
   const sub = subData?.subscription;
   const invoices = invoicesData?.invoices ?? [];
 
-  const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
-
-  const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    trialing: <Clock className="h-4 w-4 text-blue-600" />,
-    past_due: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    canceled: <XCircle className="h-4 w-4 text-gray-500" />,
-    incomplete: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    incomplete_expired: <XCircle className="h-4 w-4 text-gray-500" />,
-    paused: <Clock className="h-4 w-4 text-muted-foreground" />,
-    unpaid: <AlertTriangle className="h-4 w-4 text-red-600" />,
-  };
-  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="h-4 w-4 text-muted-foreground" />;
+  // Offered to the assistant: the portal, the contact form, and opening an
+  // invoice - the same handlers and links; the invoices go out as a list.
+  usePageList([
+    {
+      id: 'invoices',
+      labelEn: 'Invoices',
+      labelEl: 'Τιμολόγια',
+      rows: invoicesLoading ? undefined : invoices.map((i) =>
+        `${i.invoiceNumber} · ${formatCents(i.total, i.currency)} · ${i.status} · ${i.periodStart.slice(0, 10)} to ${i.periodEnd.slice(0, 10)}${i.paidAt ? ` · paid ${i.paidAt.slice(0, 10)}` : ''}`,
+      ),
+    },
+  ]);
+  const withLinks = invoices.filter((i) => i.hostedInvoiceUrl);
+  usePageControls([
+    {
+      id: 'open_billing_portal',
+      labelEn: 'Open the billing portal',
+      labelEl: 'Άνοιγμα πύλης χρεώσεων',
+      writes: false,
+      unavailableEn: sub ? undefined : 'There is no subscription to manage.',
+      unavailableEl: sub ? undefined : 'Δεν υπάρχει συνδρομή για διαχείριση.',
+      run: () => openPortal(),
+    },
+    { id: 'edit_billing_contact', labelEn: 'Edit the billing contact', labelEl: 'Επεξεργασία στοιχείων χρέωσης', writes: false, run: () => setShowContactForm(true) },
+    {
+      id: 'open_invoice',
+      labelEn: 'Open an invoice',
+      labelEl: 'Άνοιγμα τιμολογίου',
+      writes: false,
+      options: rowOptions(withLinks, (i) => i.id, (i) => i.invoiceNumber),
+      unavailableEn: withLinks.length ? undefined : 'No invoice has a document to open.',
+      unavailableEl: withLinks.length ? undefined : 'Κανένα τιμολόγιο δεν έχει έγγραφο.',
+      run: (v) => {
+        const url = withLinks.find((i) => i.id === v)?.hostedInvoiceUrl;
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      },
+    },
+  ]);
 
   return (
     <AppShell
-      title="Billing & Subscription"
-      description="Manage your plan, invoices, and billing details"
       actions={
-        <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" asChild>
           <Link href="/settings">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              Settings
-            </Button>
+            <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
           </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
-              View plans
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
 
-        {/* Current Plan */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="pb-3 border-b border-border/50">
-            <CardTitle className="text-base">Current Plan</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {subLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Loading subscription…</span>
-              </div>
-            ) : sub ? (
-              <>
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <PlanIcon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold">{sub.plan?.displayName ?? 'Unknown Plan'}</span>
-                      <Badge
-                        variant="outline"
-                        className={cn('text-xs capitalize gap-1', STATUS_COLORS[sub.status] ?? '')}
-                      >
-                        {statusIcon}
-                        {sub.status.replace('_', ' ')}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} billing
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+          <Card className="border-border shadow-none">
+            <CardHeader className="pb-2">
+              <p className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
+                <BilingualText en="Current plan" el="Τρέχον πλάνο" />
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {subLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="icon-sm animate-spin" />
+                  <span className="text-sm"><BilingualText en="Loading subscription…" el="Φόρτωση συνδρομής…" compact /></span>
+                </div>
+              ) : sub ? (
+                <>
+                  <div>
+                    <p className="text-lg font-semibold">{sub.plan?.displayName ?? <BilingualText en="Unknown plan" el="Άγνωστο πλάνο" compact />}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
+                      {sub.billingCycle === 'annual'
+                        ? <BilingualText en="/year" el="/έτος" compact />
+                        : <BilingualText en="/mo" el="/μήνα" compact />}
                       {sub.currentPeriodEnd && (
-                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}</>
+                        <> · <BilingualText
+                          en={`Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
+                          el={`Ανανεώνεται ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`}
+                          compact
+                        /></>
                       )}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xl font-bold">
-                      {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">/{sub.billingCycle === 'annual' ? 'year' : 'month'}</p>
-                  </div>
-                </div>
-
-                {sub.cancelAtPeriodEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
-                    Reactivate in the billing portal to continue.
-                  </div>
-                )}
-
-                {sub.status === 'trialing' && sub.trialEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-700">
-                    <Clock className="h-4 w-4 shrink-0" />
-                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
-                  </div>
-                )}
-
-                {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                    Payment failed. Please update your payment method to avoid service interruption.
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-2 pt-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-2"
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-primary-accessible hover:underline"
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-                    Manage payment &amp; billing
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
-                  {(sub.plan?.name === 'free' || !sub) && (
-                    <Link href="/pricing">
-                      <Button size="sm" className="gap-2">
-                        <Crown className="h-3.5 w-3.5" />
-                        Upgrade plan
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">You are on the free plan.</p>
-                <Link href="/pricing">
-                  <Button size="sm" className="gap-2">
-                    <Crown className="h-3.5 w-3.5" />
-                    Upgrade to Pro
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    {portalLoading
+                      ? <BilingualText en="Opening…" el="Άνοιγμα…" compact />
+                      : <BilingualText en="Adjust plan" el="Προσαρμογή πλάνου" compact />}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-lg font-semibold"><BilingualText en="Free" el="Δωρεάν" compact /></p>
+                    <p className="text-sm text-muted-foreground">$0<BilingualText en="/mo" el="/μήνα" compact /></p>
+                  </div>
+                  <PlanHighlights items={PLAN_HIGHLIGHTS.free} />
+                </>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Plan features */}
+          {(sub?.plan?.name === 'free' || !sub) && (
+            <Card className="border-primary/15 bg-primary/[0.03]">
+              <CardHeader className="pb-2">
+                <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
+                  <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-lg font-semibold">Pro</p>
+                  <p className="text-sm text-muted-foreground">
+                    <BilingualText en="Unlock more usage on matching, messages, and mentor booking." el="Περισσότερη χρήση σε αντιστοιχίσεις, μηνύματα και κρατήσεις μεντόρων." wrap />
+                  </p>
+                </div>
+                {/* "Everything in Free" is the first line; the card already says it is an upgrade. */}
+                <PlanHighlights items={PLAN_HIGHLIGHTS.pro.slice(1)} />
+                <Button size="sm" asChild>
+                  <Link href="/pricing"><BilingualText en="Upgrade" el="Αναβάθμιση" compact /></Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {sub?.cancelAtPeriodEnd && (
+          <p className="text-sm text-status-warning">
+            <BilingualText
+              en={`Subscription cancels on ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
+              el={`Η συνδρομή λήγει στις ${new Date(sub.currentPeriodEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              wrap
+            />
+          </p>
+        )}
+        {sub?.status === 'trialing' && sub.trialEnd && (
+          <p className="text-sm text-status-info">
+            <BilingualText
+              en={`Free trial ends ${new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.`}
+              el={`Η δωρεάν δοκιμή λήγει στις ${new Date(sub.trialEnd).toLocaleDateString('el-GR', { timeZone: 'UTC' })}.`}
+              wrap
+            />
+          </p>
+        )}
+        {sub?.status === 'past_due' && (
+          <p className="text-sm text-status-danger"><BilingualText en="Payment failed. Update the payment method in Adjust plan." el="Η πληρωμή απέτυχε. Ενημερώστε τον τρόπο πληρωμής στην Προσαρμογή πλάνου." wrap /></p>
+        )}
+
         {sub?.plan?.features && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Your plan includes</CardTitle>
+          <Card className="border-border shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base"><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.entries(sub.plan.features as Record<string, unknown>)
-                  .filter(([, v]) => Boolean(v))
-                  .map(([k, v]) => (
-                    <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                      <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
-                    </div>
-                  ))}
-              </div>
+            <CardContent className="space-y-4">
+              {Object.entries(sub.plan.features as Record<string, unknown>)
+                .filter(([, v]) => Boolean(v))
+                .map(([k, v]) => {
+                  const known = PLAN_FEATURE_LABELS[k as PlanFeatureKey];
+                  return (
+                    <HairlineMeter
+                      key={k}
+                      label={known ? <BilingualText en={known.en} el={known.el} compact /> : k.replace(/([A-Z])/g, ' $1').trim()}
+                      caption={typeof v === 'string' ? String(v) : undefined}
+                      percent={v === true || v === 'Unlimited' ? 0 : 0}
+                      trailing={v === true ? <BilingualText en="Included" el="Περιλαμβάνεται" compact /> : typeof v === 'string' ? String(v) : undefined}
+                    />
+                  );
+                })}
             </CardContent>
           </Card>
         )}
 
+        <Card className="border-border shadow-none">
+          <CardContent className="pt-2">
+            <SettingsRow
+              label={<BilingualText en="Payment method" el="Τρόπος πληρωμής" compact />}
+              helper={<BilingualText en="Opens the Stripe billing portal." el="Ανοίγει την πύλη χρεώσεων του Stripe." wrap />}
+            >
+              <button
+                type="button"
+                className="text-sm font-medium text-primary-accessible hover:underline"
+                onClick={() => openPortal(undefined)}
+                disabled={portalLoading}
+              >
+                {portalLoading
+                  ? <BilingualText en="Opening…" el="Άνοιγμα…" compact />
+                  : <BilingualText en="Manage" el="Διαχείριση" compact />}
+              </button>
+            </SettingsRow>
+          </CardContent>
+        </Card>
+
         {/* Billing Contact */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="pb-3 border-b border-border/50">
+        <Card className="border-border shadow-none">
+          <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base">Billing Contact</CardTitle>
-                <CardDescription className="text-xs mt-0.5">Used on invoices and for tax compliance.</CardDescription>
+                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
+                <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
-                {showContactForm ? 'Cancel' : (contactData as { billingContact?: BillingContact | null })?.billingContact ? 'Edit' : 'Add'}
+              <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
+                {showContactForm
+                  ? <BilingualText en="Cancel" el="Ακύρωση" compact />
+                  : (contactData as { billingContact?: BillingContact | null })?.billingContact
+                    ? <BilingualText en="Edit" el="Επεξεργασία" compact />
+                    : <BilingualText en="Add" el="Προσθήκη" compact />}
               </Button>
             </div>
           </CardHeader>
@@ -322,27 +375,29 @@ export default function UserBillingPage() {
                 {bc.addressLine1 && (
                   <p>{bc.addressLine1}, {bc.city} {bc.postalCode}, {bc.country}</p>
                 )}
-                {bc.vatId && <p>VAT: {bc.vatId}</p>}
+                {bc.vatId && <p><BilingualText en="VAT" el="ΑΦΜ" compact />: {bc.vatId}</p>}
                 </>); })()}
               </div>
             ) : !showContactForm ? (
-              <p className="text-sm text-muted-foreground">No billing contact set.</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No billing contact set." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης." compact /></p>
             ) : null}
 
             {showContactForm && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Full name *</Label>
+                    <Label htmlFor="billing-contact-name" className="text-xs"><BilingualText en="Full name" el="Ονοματεπώνυμο" compact /> *</Label>
                     <Input
+                      id="billing-contact-name"
                       placeholder="Jane Doe"
                       value={contactForm.name}
                       onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Email *</Label>
+                    <Label htmlFor="billing-contact-email" className="text-xs">Email *</Label>
                     <Input
+                      id="billing-contact-email"
                       type="email"
                       placeholder="billing@company.com"
                       value={contactForm.email}
@@ -350,40 +405,45 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Company</Label>
+                    <Label htmlFor="billing-contact-company" className="text-xs"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
                     <Input
+                      id="billing-contact-company"
                       placeholder="Acme Inc."
                       value={contactForm.company}
                       onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">VAT / Tax ID</Label>
+                    <Label htmlFor="billing-contact-vat" className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input
+                      id="billing-contact-vat"
                       placeholder="EU123456789"
                       value={contactForm.vatId}
                       onChange={e => setContactForm(p => ({ ...p, vatId: e.target.value }))}
                     />
                   </div>
-                  <div className="col-span-2 space-y-1.5">
-                    <Label className="text-xs">Address</Label>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label htmlFor="billing-contact-address" className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
                     <Input
+                      id="billing-contact-address"
                       placeholder="123 Main Street"
                       value={contactForm.addressLine1}
                       onChange={e => setContactForm(p => ({ ...p, addressLine1: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">City</Label>
+                    <Label htmlFor="billing-contact-city" className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input
+                      id="billing-contact-city"
                       placeholder="Athens"
                       value={contactForm.city}
                       onChange={e => setContactForm(p => ({ ...p, city: e.target.value }))}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs">Postal Code</Label>
+                    <Label htmlFor="billing-contact-postal" className="text-xs"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input
+                      id="billing-contact-postal"
                       placeholder="10431"
                       value={contactForm.postalCode}
                       onChange={e => setContactForm(p => ({ ...p, postalCode: e.target.value }))}
@@ -396,10 +456,10 @@ export default function UserBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                    Save contact
+                    {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
+                    <BilingualText en="Save contact" el="Αποθήκευση στοιχείων" compact />
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </div>
             )}
@@ -407,20 +467,20 @@ export default function UserBillingPage() {
         </Card>
 
         {/* Invoice history */}
-        <Card className="shadow-sm border-border/50">
-          <CardHeader className="pb-3 border-b border-border/50">
-            <CardTitle className="text-base">Invoice History</CardTitle>
+        <Card className="border-border shadow-none">
+          <CardHeader className="pb-3 border-b border-border">
+            <CardTitle className="text-base"><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {invoicesLoading ? (
               <div className="flex items-center justify-center p-8 gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">Loading invoices…</span>
+                <Loader2 className="icon-sm animate-spin" />
+                <span className="text-sm"><BilingualText en="Loading invoices…" el="Φόρτωση τιμολογίων…" compact /></span>
               </div>
             ) : invoices.length === 0 ? (
               <div className="p-8 text-center">
-                <FileText className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
-                <p className="text-sm text-muted-foreground">No invoices yet</p>
+                <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
+                <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
               </div>
             ) : (
               <div className="divide-y divide-border/50">

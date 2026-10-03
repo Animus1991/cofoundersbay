@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Users,
   Search,
@@ -17,6 +17,12 @@ import {
   Copy,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useTenant } from '@/components/providers/TenantContext';
+import { getTenantMembers, updateTenantMember, removeTenantMember, type TenantMemberItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EmptyTenantMembers } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,9 +52,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
+import { statusEl } from '@/components/common/StatusText';
+
+/**
+ * The page's own row from the tenant membership row.
+ *
+ * `/api/tenants/:id/members` and its client have existed all along, and
+ * `TenantContext` already resolves which tenant this is — the page just never
+ * asked either of them.
+ *
+ * Four fields have no source and stay absent rather than being filled:
+ * presence, an engagement score, milestones completed and sessions attended
+ * are all activity the membership row does not record. The header tiles read
+ * dashes for them, which is what this page used to do with `Math.round(total
+ * * 0.08)` before that was removed.
+ */
+function toPageMember(row: TenantMemberItem): Member {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.user.profile?.displayName ?? row.user.email,
+    email: row.user.email,
+    avatarUrl: row.user.profile?.avatarUrl ?? undefined,
+    role: row.role,
+    status: row.isActive ? 'active' : 'suspended',
+    // The API sends an ISO timestamp, which the card printed as it came.
+    joinedAt: new Date(row.joinedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+    lastActive: '',
+  };
+}
 
 type Member = {
+  /** The member's user id on live rows - the membership routes key on it. */
+  userId?: string;
   id: string;
   name: string;
   email: string;
@@ -63,17 +106,17 @@ type Member = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-green-500/10 text-green-600 border-green-500/20',
-  pending:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  suspended: 'bg-red-500/10 text-red-600 border-red-500/20',
+  active:    'bg-status-success-bg text-status-success border-status-success-border',
+  pending:   'bg-status-warning-bg text-status-warning border-status-warning-border',
+  suspended: 'bg-status-danger-bg text-status-danger border-status-danger-border',
 };
 
 function EngagementBar({ score }: { score: number }) {
-  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
+  const color = score >= 70 ? 'bg-status-success-mark' : score >= 40 ? 'bg-status-warning-mark' : 'bg-status-danger-mark';
   return (
     <div className="space-y-0.5">
-      <div className="flex justify-between text-[10px] text-muted-foreground">
-        <span>Engagement</span>
+      <div className="flex justify-between text-2xs text-muted-foreground">
+        <span><BilingualText en="Engagement" el="Συμμετοχή" compact /></span>
         <span className="tabular-nums">{score}%</span>
       </div>
       <div className="h-1 rounded-full bg-secondary overflow-hidden">
@@ -83,18 +126,26 @@ function EngagementBar({ score }: { score: number }) {
   );
 }
 
-function MemberCard({ member }: { member: Member }) {
+const TENANT_ROLES = ['member', 'mentor', 'admin'] as const;
+
+type MemberActions = {
+  /** Absent on sample rows. */
+  onRole?: (m: Member, role: string) => void;
+  onRemove?: (m: Member) => void;
+};
+
+function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberActions) {
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <Avatar className="h-12 w-12">
               <AvatarImage src={member.avatarUrl} />
-              <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
             </Avatar>
             {member.isOnline && (
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-status-success-mark border-2 border-background" />
             )}
           </div>
           <div className="flex-1 min-w-0 space-y-2">
@@ -102,36 +153,59 @@ function MemberCard({ member }: { member: Member }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm">{member.name}</span>
-                  <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5', STATUS_COLORS[member.status])}>
-                    {member.status}
+                  <Badge variant="outline" className={cn('text-2xs h-4 px-1.5', STATUS_COLORS[member.status])}>
+                    <StatusText value={member.status} />
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">{member.email}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="shrink-0">
-                    <MoreVertical className="icon-sm" />
+                  <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
-                  <DropdownMenuItem><Shield className="mr-2 icon-sm" />Change Role</DropdownMenuItem>
+                  {/* All three had no handler. PATCH and DELETE
+                      /tenants/:id/members/:userId exist. */}
+                  {member.userId ? (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/messages?to=${member.userId}`}><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem disabled><Mail className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Send Message" el="Αποστολή μηνύματος" compact /></DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+                  <p className="flex items-center gap-2 px-2 py-1 text-xs font-medium text-muted-foreground">
+                    <Shield className="icon-sm" aria-hidden="true" /><BilingualText en="Change Role" el="Αλλαγή ρόλου" compact />
+                  </p>
+                  {TENANT_ROLES.map((r) => (
+                    <DropdownMenuItem
+                      key={r}
+                      className="pl-8 capitalize"
+                      disabled={!onRole || member.role === r}
+                      onSelect={() => onRole?.(member, r)}
+                    >
+                      <StatusText value={r} />
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-destructive-accessible" disabled={!onRemove} onSelect={() => onRemove?.(member)}>
+                    <UserX className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Remove Member" el="Αφαίρεση μέλους" compact />
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" size="sm">{member.role}</Badge>
+              <Badge variant="secondary" size="sm"><StatusText value={member.role} /></Badge>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Clock className="icon-sm" />Joined {member.joinedAt}
+                <Clock className="icon-sm" aria-hidden="true" /><BilingualText en={`Joined ${member.joinedAt}`} el={`Μέλος από ${member.joinedAt}`} compact />
               </span>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Activity className="icon-sm" />Active {member.lastActive}
+                <Activity className="icon-sm" aria-hidden="true" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
+                <span className="text-2xs text-status-success flex items-center gap-0.5">
                   <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
                 </span>
               )}
@@ -155,12 +229,12 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" /> Invite Members
+            <Send className="icon-md text-primary-accessible" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Email addresses</label>
+            <label className="text-sm font-medium"><BilingualText en="Email addresses" el="Διευθύνσεις email" compact /></label>
             <Textarea
               placeholder="john@startup.com, jane@venture.com (one per line or comma-separated)"
               value={emails}
@@ -170,32 +244,32 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Assign role</label>
+            <label className="text-sm font-medium"><BilingualText en="Assign role" el="Ανάθεση ρόλου" compact /></label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger aria-label="Assign role"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="founder">Founder</SelectItem>
-                <SelectItem value="mentor">Mentor</SelectItem>
-                <SelectItem value="investor">Investor</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="founder"><BilingualText en="Founder" el="Ιδρυτής" compact /></SelectItem>
+                <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>
+                <SelectItem value="investor"><BilingualText en="Investor" el="Επενδυτής" compact /></SelectItem>
+                <SelectItem value="admin"><BilingualText en="Admin" el="Διαχειριστής" compact /></SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">Or share invite link</p>
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Or share invite link" el="Ή μοιραστείτε σύνδεσμο πρόσκλησης" compact /></p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
+              <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
-                {copied ? <CheckCircle2 className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button className="gap-1.5" disabled={!emails.trim()}>
-            <Send className="h-4 w-4" /> Send Invites
+            <Send className="icon-sm" /> <BilingualText en="Send Invites" el="Αποστολή προσκλήσεων" compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -203,22 +277,65 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   );
 }
 
+
 export default function TenantMembersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showInvite, setShowInvite] = useState(false);
 
-  const members: Member[] = [
-    { id: '1', name: 'John Doe',      email: 'john@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Jan 2025', lastActive: '2 hours ago',  engagementScore: 82, isOnline: true,  milestonesCompleted: 5, sessionsAttended: 8 },
-    { id: '2', name: 'Jane Smith',    email: 'jane@example.com',  role: 'Mentor',   status: 'active',    joinedAt: 'Feb 2025', lastActive: '1 day ago',    engagementScore: 91, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 14 },
-    { id: '3', name: 'Mike Johnson',  email: 'mike@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Feb 2025', lastActive: '3 days ago',   engagementScore: 56, isOnline: false, milestonesCompleted: 3, sessionsAttended: 4 },
-    { id: '4', name: 'Sarah Williams',email: 'sarah@example.com', role: 'Admin',    status: 'active',    joinedAt: 'Dec 2024', lastActive: '1 hour ago',   engagementScore: 95, isOnline: true,  milestonesCompleted: 0, sessionsAttended: 22 },
-    { id: '5', name: 'Tom Brown',     email: 'tom@example.com',   role: 'Founder',  status: 'pending',   joinedAt: 'Mar 2025', lastActive: 'Never',        engagementScore: 12, isOnline: false, milestonesCompleted: 0, sessionsAttended: 0 },
-    { id: '6', name: 'Lisa Martinez', email: 'lisa@example.com',  role: 'Investor', status: 'active',    joinedAt: 'Jan 2025', lastActive: '1 week ago',   engagementScore: 44, isOnline: false, milestonesCompleted: 0, sessionsAttended: 3 },
-    { id: '7', name: 'Alex Chen',     email: 'alex@example.com',  role: 'Founder',  status: 'active',    joinedAt: 'Mar 2025', lastActive: '4 hours ago',  engagementScore: 73, isOnline: true,  milestonesCompleted: 2, sessionsAttended: 6 },
-    { id: '8', name: 'Nina Patel',    email: 'nina@example.com',  role: 'Mentor',   status: 'suspended', joinedAt: 'Nov 2024', lastActive: '2 weeks ago',  engagementScore: 20, isOnline: false, milestonesCompleted: 0, sessionsAttended: 1 },
-  ];
+  /*
+   * The tenant's real members. The seed below is what a tenant with none
+   * loaded sees, so the screen still teaches its shape.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+  const { data, isLoading } = useQuery({
+    queryKey: qk('tenant', 'members', tenantId),
+    queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(
+    () => (Array.isArray(data) ? data : []).map(toPageMember),
+    [data],
+  );
+  // A workspace with nobody on its roster sees the empty state, not seven
+  // invented people (John Doe, Jane Smith) it used to.
+  const members: Member[] = live;
+  const queryClient = useQueryClient();
+  const { success: toastOk, error: toastFail } = useToast();
+  const confirm = useConfirm();
+  const refreshMembers = () => void queryClient.invalidateQueries({ queryKey: qk('tenant', 'members', tenantId) });
+  const memberActions: MemberActions = live.length > 0 && tenantId ? {
+    onRole: async (m, role) => {
+      if (!m.userId) return;
+      try {
+        await updateTenantMember(tenantId, m.userId, { role });
+        toastOk('Role changed', bilingualInline(`${m.name} is now ${role}.`, `${m.name}: ${statusEl(role) ?? role}.`));
+      } catch (e) {
+        toastFail('Could not change the role', e instanceof Error ? e.message : undefined);
+      } finally { refreshMembers(); }
+    },
+    onRemove: async (m) => {
+      if (!m.userId) return;
+      const ok = await confirm({
+        title: <BilingualText en={`Remove ${m.name}?`} el={`Αφαίρεση: ${m.name};`} />,
+        description: <BilingualText en="They lose access to this workspace. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον χώρο εργασίας. Ο λογαριασμός του/της δεν διαγράφεται." />,
+        confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
+      });
+      if (!ok) return;
+      try {
+        await removeTenantMember(tenantId, m.userId);
+        toastOk('Member removed', m.name);
+      } catch (e) {
+        toastFail('Could not remove the member', e instanceof Error ? e.message : undefined);
+      } finally { refreshMembers(); }
+    },
+  } : {};
+
 
   const filteredMembers = members.filter((m) => {
     const matchesSearch =
@@ -231,18 +348,86 @@ export default function TenantMembersPage() {
   });
 
   const roles = [...new Set(members.map((m) => m.role))];
-  const onlineCount = members.filter((m) => m.isOnline).length;
-  const avgEngagement = Math.round(members.filter((m) => m.engagementScore != null).reduce((s, m) => s + (m.engagementScore ?? 0), 0) / members.length);
+  /*
+   * Both stay null when nothing records them, which is the case for a real
+   * tenant today: the membership row carries no presence and no engagement.
+   * Zero and "not recorded" are different statements, and the tiles say which.
+   * Averaged over the rows that carry a score, never over all of them.
+   */
+  const withPresence = members.filter((m) => m.isOnline !== undefined);
+  const onlineCount = withPresence.length > 0
+    ? withPresence.filter((m) => m.isOnline).length
+    : null;
+
+  const scored = members.filter((m) => m.engagementScore != null);
+  const avgEngagement = scored.length > 0
+    ? Math.round(scored.reduce((sum, m) => sum + (m.engagementScore ?? 0), 0) / scored.length)
+    : null;
 
   const activeTab = roleFilter === 'all' ? 'all' : roleFilter;
+
+  // Offered to the assistant: role and status filters, Invite, and the card
+  // menu's role change and removal - the same actions, which refuse the
+  // sample rows exactly as the disabled menu items do.
+  const liveOnlyEn = memberActions.onRole ? undefined : 'These members are samples until the workspace roster loads.';
+  const liveOnlyEl = memberActions.onRole ? undefined : 'Τα μέλη είναι δείγματα μέχρι να φορτώσει το μητρώο του χώρου.';
+  const memberById = (id?: string) => members.find((m) => m.id === id);
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Members',
+      labelEl: 'Μέλη',
+      rows: isLoading ? undefined : filteredMembers.map((m) => `${m.name} · ${m.email} · ${m.role} · ${m.status}`),
+      total: members.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', [{ value: 'all', en: 'All roles', el: 'Όλοι οι ρόλοι' }, ...roles.map((r) => ({ value: r, en: r, el: r }))], roleFilter, setRoleFilter),
+    choiceControl('status_filter', 'Status filter', 'Φίλτρο κατάστασης', [
+      { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+      { value: 'active', en: 'Active', el: 'Ενεργά' },
+      { value: 'pending', en: 'Pending', el: 'Σε αναμονή' },
+      { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+    ], statusFilter, setStatusFilter),
+    { id: 'invite_members', labelEn: 'Open the invite form', labelEl: 'Άνοιγμα φόρμας πρόσκλησης', writes: false, run: () => setShowInvite(true) },
+    ...TENANT_ROLES.map((role) => ({
+      id: `make_${role}`,
+      labelEn: `Change member role to ${role}`,
+      labelEl: `Αλλαγή ρόλου μέλους σε ${role}`,
+      writes: true,
+      options: rowOptions(filteredMembers.filter((m) => m.role !== role), (m) => m.id, (m) => m.name),
+      unavailableEn: liveOnlyEn,
+      unavailableEl: liveOnlyEl,
+      // tenant.service updateMember writes the fields it is sent - here only
+      // `role` - so the command for the previous role restores it.
+      undo: (v?: string) => {
+        const prior = memberById(v)?.role;
+        return prior && prior !== role && (TENANT_ROLES as readonly string[]).includes(prior) ? { control: `make_${prior}`, value: v } : undefined;
+      },
+      run: (v?: string) => { const m = memberById(v); if (m) void memberActions.onRole?.(m, role); },
+    })),
+    {
+      id: 'remove_member',
+      labelEn: 'Remove member',
+      labelEl: 'Αφαίρεση μέλους',
+      writes: true,
+      options: rowOptions(filteredMembers, (m) => m.id, (m) => m.name),
+      unavailableEn: liveOnlyEn,
+      unavailableEl: liveOnlyEl,
+      run: (v) => { const m = memberById(v); if (m) void memberActions.onRemove?.(m); },
+    },
+  ]);
 
   return (
     <AppShell
       title="Members"
+      titleEl="Μέλη"
       description="Manage and track your organization's member engagement"
+      descriptionEl="Διαχειριστείτε και παρακολουθήστε τη συμμετοχή των μελών του οργανισμού σας"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Invite Member
+          <Plus className="icon-sm" /> <BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact />
         </Button>
       }
     >
@@ -251,19 +436,19 @@ export default function TenantMembersPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary' },
-            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600' },
-            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length, icon: Users, color: 'text-primary-accessible' },
+            { label: 'Online Now', labelEl: 'Συνδεδεμένοι τώρα', value: onlineCount ?? '—', icon: Activity, color: 'text-status-success' },
+            { label: 'Avg Engagement', labelEl: 'Μέση συμμετοχή', value: avgEngagement == null ? '—' : `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
                   <Icon className={cn('icon-sm', color)} />
                 </div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -273,18 +458,18 @@ export default function TenantMembersPage() {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Input aria-label={bilingualInline("Search members by name or email", "Αναζήτηση μελών με όνομα ή email")} placeholder={bilingualInline("Search by name or email…", "Αναζήτηση με όνομα ή email…")} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[150px]">
-              <SelectValue placeholder="Status" />
+            <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">
+              <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="suspended">Suspended</SelectItem>
+              <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
+              <SelectItem value="active"><BilingualText en="Active" el="Ενεργό" compact /></SelectItem>
+              <SelectItem value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /></SelectItem>
+              <SelectItem value="suspended"><BilingualText en="Suspended" el="Σε αναστολή" compact /></SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -292,10 +477,14 @@ export default function TenantMembersPage() {
         {/* Role Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setRoleFilter(v)}>
           <TabsList className="flex-wrap h-auto gap-1">
-            <TabsTrigger value="all">All ({members.length})</TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${members.length})`} el={`Όλα (${members.length})`} compact /></TabsTrigger>
             {roles.map((role) => (
               <TabsTrigger key={role} value={role}>
-                {role} ({members.filter((m) => m.role === role).length})
+                <BilingualText
+                  en={`${role} (${members.filter((m) => m.role === role).length})`}
+                  el={`${statusEl(role) ?? role} (${members.filter((m) => m.role === role).length})`}
+                  compact
+                />
               </TabsTrigger>
             ))}
           </TabsList>
@@ -303,19 +492,20 @@ export default function TenantMembersPage() {
           <TabsContent value={activeTab} className="mt-4">
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {filteredMembers.length} member{filteredMembers.length !== 1 ? 's' : ''} found
+                <BilingualText
+                  en={`${filteredMembers.length} member${filteredMembers.length !== 1 ? 's' : ''} found`}
+                  el={`${filteredMembers.length} ${filteredMembers.length !== 1 ? 'μέλη' : 'μέλος'}`}
+                  compact
+                />
               </p>
               {filteredMembers.map((member) => (
-                <MemberCard key={member.id} member={member} />
+                <MemberCard key={member.id} member={member} {...memberActions} />
               ))}
               {filteredMembers.length === 0 && (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="font-medium">No members found</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
-                  </CardContent>
-                </Card>
+                <EmptyTenantMembers
+                  filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
+                  onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
+                />
               )}
             </div>
           </TabsContent>

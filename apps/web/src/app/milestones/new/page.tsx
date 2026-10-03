@@ -1,9 +1,11 @@
 'use client';
 
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Target } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,20 +16,25 @@ import { useToast } from '@/components/ui/toast';
 import { createMilestone, type MilestoneStatus, type MilestonePriority } from '@/lib/api';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import { qk } from '@/lib/query-keys';
+import {
+  milestoneEn,
+  milestoneEl,
+  useMilestonePrimaryText,
+  MILESTONE_CATEGORY_KEYS,
+  MILESTONE_PRIORITY_KEYS,
+} from '@/lib/i18n/strings-milestones';
 
-const CATEGORIES = [
-  { value: 'product', label: 'Product' },
-  { value: 'fundraising', label: 'Fundraising' },
-  { value: 'hiring', label: 'Hiring' },
-  { value: 'partnerships', label: 'Partnerships' },
-  { value: 'growth', label: 'Growth' },
-  { value: 'other', label: 'Other' },
-];
-
-const PRIORITIES: { value: MilestonePriority; label: string; color: string }[] = [
-  { value: 'low', label: 'Low', color: 'bg-muted text-muted-foreground' },
-  { value: 'medium', label: 'Medium', color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  { value: 'high', label: 'High', color: 'bg-red-500/15 text-red-600 dark:text-red-400' },
+const CATEGORIES = ['product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
+const PRIORITIES: { value: MilestonePriority; color: string }[] = [
+  { value: 'low', color: 'bg-muted text-muted-foreground' },
+  { value: 'medium', color: 'bg-status-warning-bg text-status-warning ' },
+  { value: 'high', color: 'bg-status-danger-bg text-status-danger ' },
 ];
 
 export default function NewMilestonePage() {
@@ -35,6 +42,8 @@ export default function NewMilestonePage() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const t = useMilestonePrimaryText();
+  const { open: openAskAi } = usePopupChat();
 
   const collaboratorId = searchParams?.get('with') ?? searchParams?.get('collaborator') ?? '';
 
@@ -44,6 +53,17 @@ export default function NewMilestonePage() {
   const [category, setCategory] = useState('product');
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
+
+  // A draft the assistant proposed (draft_milestone): the fields arrive filled
+  // and the person still presses Create.
+  const draft = useFormDraft('milestone', (f) => {
+    if (typeof f.title === 'string') setTitle(f.title);
+    if (typeof f.description === 'string') setDescription(f.description);
+    if (typeof f.notes === 'string') setNotes(f.notes);
+    if (typeof f.dueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f.dueDate)) setDueDate(f.dueDate);
+    if (typeof f.category === 'string' && (CATEGORIES as readonly string[]).includes(f.category)) setCategory(f.category);
+    if (f.priority === 'low' || f.priority === 'medium' || f.priority === 'high') setPriority(f.priority);
+  });
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -58,12 +78,12 @@ export default function NewMilestonePage() {
         collaboratorId: collaboratorId || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['milestones'] });
-      success('Milestone created', 'Your milestone has been added to your tracker.');
+      queryClient.invalidateQueries({ queryKey: qk('milestones') });
+      success('Milestone created', 'Added to your tracker.');
       router.push('/milestones');
     },
-    onError: (err) => {
-      showError('Failed to create milestone', err instanceof Error ? err.message : 'Please try again');
+    onError: () => {
+      showError('Failed to create milestone', 'Please try again');
     },
   });
 
@@ -71,30 +91,41 @@ export default function NewMilestonePage() {
 
   return (
     <AppShell
-      title="New Milestone"
-      description="Set a goal and track your progress"
+      showHelp
+      askAi="Propose the next Harbor milestone from Idea Core, the GTM board, or the $750K seed (Athens Tech Angels, $375K committed)."
       actions={
-        <Link href="/milestones">
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to milestones
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" className={`gap-1.5 ${BUILDER_BTN}`} onClick={() => openAskAi()}>
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
           </Button>
-        </Link>
+          <Button variant="ghost" size="sm" className={`gap-2 ${BUILDER_BTN}`} aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))} asChild>
+            <Link href="/milestones">
+              <ArrowLeft className="icon-sm" />
+              <BilingualText en={milestoneEn('back')} el={milestoneEl('back')} compact />
+            </Link>
+          </Button>
+        </div>
       }
+      contentClassName="builder-copy overflow-x-clip"
     >
-      <div className="max-w-2xl mx-auto">
-        <Card>
+      <div className="max-w-2xl space-y-4">
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
+        </p>
+        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <Card className="rounded-xl">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Target className="h-5 w-5 text-primary" />
-              </div>
+              <CfbGlyph name="flag" className="icon-md shrink-0 text-muted-foreground" />
               <div>
-                <CardTitle>Create Milestone</CardTitle>
-                <CardDescription>
+                <CardTitle>
+                  <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />
+                </CardTitle>
+                <CardDescription className="type-identity">
                   {collaboratorId
-                    ? 'Define a shared goal with your collaborator'
-                    : 'Define a goal and start tracking your progress'}
+                    ? <BilingualText en={milestoneEn('create_shared')} el={milestoneEl('create_shared')} />
+                    : <BilingualText en={milestoneEn('create_solo')} el={milestoneEl('create_solo')} />}
                 </CardDescription>
               </div>
             </div>
@@ -107,14 +138,14 @@ export default function NewMilestonePage() {
                 if (canSubmit) mutation.mutate();
               }}
             >
-              {/* Title */}
               <div className="space-y-1.5">
                 <Label htmlFor="title">
-                  Milestone title <span className="text-destructive">*</span>
+                  <BilingualText en={milestoneEn('field_title')} el={milestoneEl('field_title')} compact /> <span className="text-destructive-accessible">*</span>
                 </Label>
                 <Input
                   id="title"
-                  placeholder="e.g. Launch MVP, Close seed round, Hire CTO…"
+                  className="rounded-xl"
+                  placeholder={t(milestoneEn('title_ph'), milestoneEl('title_ph'))}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   autoFocus
@@ -122,12 +153,14 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              {/* Description */}
               <div className="space-y-1.5">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">
+                  <BilingualText en={milestoneEn('field_desc')} el={milestoneEl('field_desc')} compact />
+                </Label>
                 <Textarea
                   id="description"
-                  placeholder="What does achieving this milestone look like?"
+                  className="rounded-xl"
+                  placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
@@ -135,31 +168,30 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              {/* Category + Priority row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Category</Label>
+                  <Label><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></Label>
                   <div className="flex flex-wrap gap-1.5">
                     {CATEGORIES.map((c) => (
                       <button
-                        key={c.value}
+                        key={c}
                         type="button"
-                        onClick={() => setCategory(c.value)}
+                        onClick={() => setCategory(c)}
                         className={cn(
-                          'rounded-full px-3 py-1 text-xs font-medium border transition-all',
-                          category === c.value
-                            ? 'bg-primary text-primary-foreground border-primary'
-                            : 'bg-background border-border text-muted-foreground hover:border-primary/50',
+                          'rounded-full border px-3 py-1 text-xs font-medium transition-all',
+                          category === c
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-background text-muted-foreground hover:border-primary/50',
                         )}
                       >
-                        {c.label}
+                        <BilingualText en={milestoneEn(MILESTONE_CATEGORY_KEYS[c])} el={milestoneEl(MILESTONE_CATEGORY_KEYS[c])} compact />
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Priority</Label>
+                  <Label><BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact /></Label>
                   <div className="flex gap-1.5">
                     {PRIORITIES.map((p) => (
                       <button
@@ -167,24 +199,26 @@ export default function NewMilestonePage() {
                         type="button"
                         onClick={() => setPriority(p.value)}
                         className={cn(
-                          'flex-1 rounded-lg px-2 py-1.5 text-xs font-medium border transition-all',
+                          'flex-1 rounded-xl border px-2 py-1.5 text-xs font-medium transition-all',
                           priority === p.value
                             ? `${p.color} border-transparent ring-2 ring-primary/30`
-                            : 'bg-background border-border text-muted-foreground hover:border-primary/40',
+                            : 'border-border bg-background text-muted-foreground hover:border-primary/40',
                         )}
                       >
-                        {p.label}
+                        <BilingualText en={milestoneEn(MILESTONE_PRIORITY_KEYS[p.value])} el={milestoneEl(MILESTONE_PRIORITY_KEYS[p.value])} compact />
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Due date */}
               <div className="space-y-1.5">
-                <Label htmlFor="dueDate">Due date (optional)</Label>
+                <Label htmlFor="dueDate">
+                  <BilingualText en={milestoneEn('due_optional')} el={milestoneEl('due_optional')} compact />
+                </Label>
                 <Input
                   id="dueDate"
+                  className="rounded-xl"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
@@ -192,12 +226,14 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              {/* Notes */}
               <div className="space-y-1.5">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">
+                  <BilingualText en={milestoneEn('field_notes')} el={milestoneEl('field_notes')} compact />
+                </Label>
                 <Textarea
                   id="notes"
-                  placeholder="Additional context, blockers, or resources…"
+                  className="rounded-xl"
+                  placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
@@ -205,12 +241,16 @@ export default function NewMilestonePage() {
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-border/40">
-                <Link href="/milestones">
-                  <Button type="button" variant="ghost">Cancel</Button>
-                </Link>
-                <Button type="submit" disabled={!canSubmit}>
-                  {mutation.isPending ? 'Creating…' : 'Create milestone'}
+              <div className="flex items-center justify-end gap-3 border-t border-border pt-2">
+                <Button type="button" variant="ghost" className="rounded-xl" asChild>
+                  <Link href="/milestones">
+                    <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />
+                  </Link>
+                </Button>
+                <Button type="submit" className={BUILDER_BTN} disabled={!canSubmit}>
+                  {mutation.isPending
+                    ? <BilingualText en={milestoneEn('creating')} el={milestoneEl('creating')} compact />
+                    : <BilingualText en={milestoneEn('create')} el={milestoneEl('create')} compact />}
                 </Button>
               </div>
             </form>

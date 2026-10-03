@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { getNativeWebSocketOrigin } from '@/lib/api-origin';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
@@ -27,9 +29,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { qk } from '@/lib/query-keys';
 
 // Use NotificationItem from @/lib/api
 
@@ -45,14 +50,14 @@ const NOTIFICATION_ICONS = {
 };
 
 const NOTIFICATION_COLORS = {
-  message: 'text-blue-500',
-  connection: 'text-green-500',
-  like: 'text-red-500',
-  comment: 'text-purple-500',
-  event: 'text-orange-500',
-  job: 'text-cyan-500',
-  achievement: 'text-yellow-500',
-  system: 'text-gray-500',
+  message: 'text-status-info',
+  connection: 'text-status-success',
+  like: 'text-status-danger',
+  comment: 'text-status-accent',
+  event: 'text-status-warning',
+  job: 'text-status-info',
+  achievement: 'text-status-warning',
+  system: 'text-muted-foreground',
 };
 
 function NotificationRow({
@@ -65,7 +70,6 @@ function NotificationRow({
   onDelete: (id: string) => void;
 }) {
   const Icon = NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || NOTIFICATION_ICONS.system;
-  const timeAgo = getTimeAgo(notification.createdAt);
 
   return (
     <div
@@ -83,7 +87,7 @@ function NotificationRow({
       }}
     >
       <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -97,10 +101,10 @@ function NotificationRow({
           {notification.body}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          <span className="text-xs text-muted-foreground"><RelativeTime date={notification.createdAt} format={getTimeAgo} /></span>
           <div className="flex items-center gap-1">
             {!notification.readAt && (
-              <Button
+              <Button aria-label="Mark as read"
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0"
@@ -109,10 +113,10 @@ function NotificationRow({
                   onMarkAsRead(notification.id);
                 }}
               >
-                <Check className="h-3 w-3" />
+                <Check className="icon-sm" />
               </Button>
             )}
-            <Button
+            <Button aria-label="Delete notification"
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"
@@ -121,7 +125,7 @@ function NotificationRow({
                 onDelete(notification.id);
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -137,7 +141,7 @@ function getTimeAgo(date: string | Date): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(date).toLocaleDateString();
+  return new Date(date).toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function NotificationCenter() {
@@ -145,9 +149,10 @@ export function NotificationCenter() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const queryClient = useQueryClient();
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications', filter, categoryFilter],
+    queryKey: qk('notifications', filter, categoryFilter),
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filter === 'unread') params.append('unread', 'true');
@@ -156,14 +161,17 @@ export function NotificationCenter() {
       const result = await listNotifications();
       let items = result?.notifications ?? [];
       if (filter === 'unread') {
-        items = items.filter((n: any) => !n.readAt);
+        items = items.filter((n) => !n.readAt);
       }
       if (categoryFilter !== 'all') {
-        items = items.filter((n: any) => n.type === categoryFilter);
+        items = items.filter((n) => n.type === categoryFilter);
       }
       return items;
     },
-    refetchInterval: 30000,
+    enabled: apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const markAsReadMutation = useMutation({
@@ -171,7 +179,7 @@ export function NotificationCenter() {
       await markNotificationRead(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
@@ -180,7 +188,7 @@ export function NotificationCenter() {
       await markAllNotificationsRead();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
@@ -190,33 +198,33 @@ export function NotificationCenter() {
       await markNotificationRead(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: qk('notifications') });
     },
   });
 
   const unreadCount = notifications.filter((n: NotificationItem) => n.readAt === null).length;
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'WebSocket' in window) {
-      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'notification') {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-          
-          if (Notification.permission === 'granted') {
-            new Notification(data.title, {
-              body: data.message,
-              icon: '/logo.png',
-            });
-          }
-        }
-      };
+    if (!apiAvailable || typeof window === 'undefined' || !('WebSocket' in window)) return;
 
-      return () => ws.close();
-    }
-  }, [queryClient]);
+    const ws = new WebSocket(getNativeWebSocketOrigin());
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'notification') {
+        queryClient.invalidateQueries({ queryKey: qk('notifications') });
+
+        if (Notification.permission === 'granted') {
+          new Notification(data.title, {
+            body: data.message,
+            icon: '/logo.png',
+          });
+        }
+      }
+    };
+
+    return () => ws.close();
+  }, [queryClient, apiAvailable]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
@@ -235,8 +243,13 @@ export function NotificationCenter() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        >
+          <Bell className="icon-md" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -259,11 +272,13 @@ export function NotificationCenter() {
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={unreadCount === 0}
               >
-                <CheckCheck className="h-4 w-4 mr-1" />
+                <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Notification settings" asChild>
+                <Link href="/settings/notifications">
+                  <Settings className="icon-sm" />
+                </Link>
               </Button>
             </div>
           </div>
@@ -289,7 +304,7 @@ export function NotificationCenter() {
                   className="cursor-pointer gap-1"
                   onClick={() => setCategoryFilter(category.value)}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="icon-sm" />
                   {category.label}
                 </Badge>
               );
@@ -304,7 +319,7 @@ export function NotificationCenter() {
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <Bell className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+              <Bell className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
               <h4 className="font-semibold mb-1">No notifications</h4>
               <p className="text-sm text-muted-foreground">
                 You're all caught up!

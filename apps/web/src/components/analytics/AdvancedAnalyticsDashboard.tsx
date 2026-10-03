@@ -19,6 +19,7 @@ import {
   LineChart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface AnalyticsMetric {
   label: string;
@@ -46,42 +47,42 @@ export function AdvancedAnalyticsDashboard() {
       value: '2,847',
       change: 12.5,
       trend: 'up',
-      icon: <Eye className="h-4 w-4" />,
+      icon: <Eye className="icon-sm" />,
     },
     {
       label: 'Connections',
       value: 156,
       change: 8.2,
       trend: 'up',
-      icon: <Users className="h-4 w-4" />,
+      icon: <Users className="icon-sm" />,
     },
     {
       label: 'Messages Sent',
       value: 423,
       change: -3.1,
       trend: 'down',
-      icon: <MessageSquare className="h-4 w-4" />,
+      icon: <MessageSquare className="icon-sm" />,
     },
     {
       label: 'Events Attended',
       value: 12,
       change: 20.0,
       trend: 'up',
-      icon: <Calendar className="h-4 w-4" />,
+      icon: <Calendar className="icon-sm" />,
     },
     {
       label: 'Post Engagement',
       value: '1,234',
       change: 15.3,
       trend: 'up',
-      icon: <Heart className="h-4 w-4" />,
+      icon: <Heart className="icon-sm" />,
     },
     {
       label: 'Profile Shares',
       value: 89,
       change: 5.7,
       trend: 'up',
-      icon: <Share2 className="h-4 w-4" />,
+      icon: <Share2 className="icon-sm" />,
     },
   ];
 
@@ -131,21 +132,21 @@ export function AdvancedAnalyticsDashboard() {
       title: 'Networking Pro',
       description: 'Connected with 100+ founders',
       date: '2 days ago',
-      icon: <Users className="h-5 w-5" />,
-      color: 'text-primary',
+      icon: <Users className="icon-md" />,
+      color: 'text-primary-accessible',
     },
     {
       title: 'Active Contributor',
       description: 'Posted 50+ valuable insights',
       date: '1 week ago',
-      icon: <Activity className="h-5 w-5" />,
+      icon: <Activity className="icon-md" />,
       color: 'text-accent',
     },
     {
       title: 'Event Enthusiast',
       description: 'Attended 10+ events',
       date: '2 weeks ago',
-      icon: <Calendar className="h-5 w-5" />,
+      icon: <Calendar className="icon-md" />,
       color: 'text-secondary',
     },
   ];
@@ -155,9 +156,9 @@ export function AdvancedAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h2>
+          <h2 className="text-3xl font-semibold tracking-tight"><BilingualText en="Analytics Dashboard" el="Πίνακας αναλυτικών" compact /></h2>
           <p className="text-muted-foreground">
-            Track your performance and engagement metrics
+            <BilingualText en="Track your performance and engagement metrics" el="Παρακολουθήστε απόδοση και συμμετοχή" wrap />
           </p>
         </div>
         <Tabs value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
@@ -171,7 +172,7 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {metrics.map((metric, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -181,17 +182,17 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-muted-foreground">{metric.icon}</div>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold">{metric.value}</div>
+              <div className="page-stat text-xl font-bold">{metric.value}</div>
               <p className={cn(
                 "text-xs flex items-center gap-1 mt-1",
-                metric.trend === 'up' ? 'text-green-600' : 
-                metric.trend === 'down' ? 'text-red-600' : 
+                metric.trend === 'up' ? 'text-status-success' : 
+                metric.trend === 'down' ? 'text-status-danger' : 
                 'text-muted-foreground'
               )}>
                 <TrendingUp className={cn(
-                  "h-3 w-3",
+                  "icon-sm",
                   metric.trend === 'down' && 'rotate-180'
-                )} />
+                )} aria-hidden="true" />
                 {Math.abs(metric.change)}% from last period
               </p>
             </CardContent>
@@ -200,16 +201,16 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Engagement Chart */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LineChart className="h-5 w-5" />
-              Weekly Engagement
+              <LineChart className="icon-md" />
+              <BilingualText en="Weekly Engagement" el="Εβδομαδιαία συμμετοχή" compact />
             </CardTitle>
             <CardDescription>
-              Profile views and interactions over the past week
+              <BilingualText en="Profile views and interactions over the past week" el="Προβολές προφίλ και αλληλεπιδράσεις την τελευταία εβδομάδα" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -250,11 +251,11 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Connection Growth
+              <BarChart3 className="icon-md" />
+              <BilingualText en="Connection Growth" el="Αύξηση συνδέσεων" compact />
             </CardTitle>
             <CardDescription>
-              Your network expansion over time
+              <BilingualText en="Your network expansion over time" el="Η ανάπτυξη του δικτύου σας στον χρόνο" compact />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -279,16 +280,16 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Additional Analytics */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Top Skills */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Top Skills
+              <Target className="icon-md" />
+              <BilingualText en="Top Skills" el="Κορυφαίες δεξιότητες" compact />
             </CardTitle>
             <CardDescription>
-              Most endorsed skills on your profile
+              <BilingualText en="Most endorsed skills on your profile" el="Οι δεξιότητες με τις περισσότερες συστάσεις" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -315,11 +316,11 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Activity Breakdown
+              <PieChart className="icon-md" />
+              <BilingualText en="Activity Breakdown" el="Ανάλυση δραστηριότητας" compact />
             </CardTitle>
             <CardDescription>
-              How you spend your time on the platform
+              <BilingualText en="How you spend your time on the platform" el="Πώς περνάτε τον χρόνο σας στην πλατφόρμα" wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -349,11 +350,11 @@ export function AdvancedAnalyticsDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
-            Recent Achievements
+            <Award className="icon-md" />
+            <BilingualText en="Recent Achievements" el="Πρόσφατα επιτεύγματα" compact />
           </CardTitle>
           <CardDescription>
-            Your latest milestones and accomplishments
+            <BilingualText en="Your latest milestones and accomplishments" el="Τα πιο πρόσφατα ορόσημα και επιτεύγματά σας" wrap />
           </CardDescription>
         </CardHeader>
         <CardContent>

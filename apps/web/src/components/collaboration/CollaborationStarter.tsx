@@ -37,7 +37,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getOrCreateDirectConversation } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,14 +149,14 @@ export function CollaborationStarter({
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="relative">
-                <Avatar className="h-11 w-11 ring-2 ring-emerald-400/40">
-                  <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
-                    {otherUser.displayName[0]?.toUpperCase()}
+                <Avatar className="h-11 w-11 ring-2 ring-status-success">
+                  <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
+                    {initialsOf(otherUser.displayName)}
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>
-                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400 text-white">
-                  <Handshake className="h-3 w-3" />
+                <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-status-success-mark text-ink">
+                  <Handshake className="icon-sm" />
                 </span>
               </div>
               <div>
@@ -182,26 +182,26 @@ export function CollaborationStarter({
                   onClick={() => handleAction(action)}
                   disabled={loading === action.id}
                   className={cn(
-                    'w-full flex items-center gap-3 rounded-xl border border-border/60 bg-card px-4 py-3',
+                    'w-full flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3',
                     'text-left transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-sm',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                    'focus-visible:outline-none',
                     loading === action.id && 'opacity-60 pointer-events-none',
                   )}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary">
                     <Icon className="h-4.5 w-4.5 text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{action.label}</p>
                     <p className="text-xs text-muted-foreground">{action.description}</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ChevronRight className="icon-sm text-muted-foreground shrink-0" />
                 </button>
               );
             })}
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
             <p className="text-xs text-muted-foreground">You can always do this later from your connections</p>
             <Button
               variant="ghost"
@@ -220,10 +220,10 @@ export function CollaborationStarter({
   if (mode === 'banner') {
     return (
       <div className={cn(
-        'flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3',
+        'flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3',
         className,
       )}>
-        <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" />
+        <Sparkles className="icon-sm shrink-0 text-status-success" />
         <p className="flex-1 text-sm text-foreground">
           <span className="font-medium">New connection:</span>{' '}
           {otherUser.displayName} accepted your request.
@@ -236,15 +236,15 @@ export function CollaborationStarter({
             onClick={handleMessage}
             disabled={loading === 'message'}
           >
-            <MessageCircle className="h-3 w-3" />
+            <MessageCircle className="icon-sm" />
             Message
           </Button>
-          <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-            <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-              <FolderPlus className="h-3 w-3" />
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
+            <Link href={`/projects/create?collaborator=${otherUser.id}`}>
+              <FolderPlus className="icon-sm" />
               Collaborate
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
         {onDismiss && (
           <button
@@ -252,7 +252,7 @@ export function CollaborationStarter({
             className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Dismiss"
           >
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         )}
       </div>
@@ -262,7 +262,7 @@ export function CollaborationStarter({
   // ── Inline mode (default — compact action strip below a connection card) ───
   return (
     <div className={cn(
-      'flex flex-wrap items-center gap-2 rounded-b-xl border-t border-border/40 bg-muted/30 px-4 py-2.5',
+      'flex flex-wrap items-center gap-2 rounded-b-xl border-t border-border bg-muted/30 px-4 py-2.5',
       className,
     )}>
       <span className="text-xs text-muted-foreground mr-1">Next step:</span>
@@ -273,21 +273,21 @@ export function CollaborationStarter({
         onClick={handleMessage}
         disabled={loading === 'message'}
       >
-        <MessageCircle className="h-3 w-3" />
+        <MessageCircle className="icon-sm" />
         Message
       </Button>
-      <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-        <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-          <FolderPlus className="h-3 w-3" />
+      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
+        <Link href={`/projects/create?collaborator=${otherUser.id}`}>
+          <FolderPlus className="icon-sm" />
           Start project
-        </Button>
-      </Link>
-      <Link href={`/milestones/new?with=${otherUser.id}`}>
-        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground">
-          <Target className="h-3 w-3" />
+        </Link>
+      </Button>
+      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground" asChild>
+        <Link href={`/milestones/new?with=${otherUser.id}`}>
+          <Target className="icon-sm" />
           Set milestone
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

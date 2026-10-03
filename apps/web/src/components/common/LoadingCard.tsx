@@ -11,7 +11,7 @@ export function LoadingCard({ variant = 'default', className, style }: LoadingCa
   switch (variant) {
     case 'profile':
       return (
-        <div style={style} className={cn('rounded-xl border border-border/60 bg-card/80 p-6 space-y-4', className)}>
+        <div style={style} className={cn('rounded-xl border border-border bg-card/80 p-6 space-y-4', className)}>
           <div className="flex items-start gap-4">
             <Skeleton className="h-16 w-16 rounded-full" />
             <div className="flex-1 space-y-2">
@@ -33,10 +33,10 @@ export function LoadingCard({ variant = 'default', className, style }: LoadingCa
 
     case 'stat':
       return (
-        <div style={style} className={cn('rounded-xl border border-border/60 bg-card/80 p-4 space-y-2', className)}>
+        <div style={style} className={cn('rounded-xl border border-border bg-card/80 p-4 space-y-2', className)}>
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-8 w-8 rounded-md" />
           </div>
           <Skeleton className="h-8 w-20" />
           <Skeleton className="h-3 w-32" />
@@ -72,7 +72,7 @@ export function LoadingCard({ variant = 'default', className, style }: LoadingCa
 
     default:
       return (
-        <div style={style} className={cn('rounded-xl border border-border/60 bg-card/80 p-6 space-y-3', className)}>
+        <div style={style} className={cn('rounded-xl border border-border bg-card/80 p-6 space-y-3', className)}>
           <Skeleton className="h-5 w-1/3" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-full" />
@@ -99,12 +99,12 @@ export function LoadingCardGrid({
   const colsClass = {
     1: 'grid-cols-1',
     2: 'md:grid-cols-2',
-    3: 'md:grid-cols-2 lg:grid-cols-3',
+    3: 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
     4: 'md:grid-cols-2 lg:grid-cols-4',
   };
 
   return (
-    <div className={cn('grid gap-4', colsClass[columns], className)}>
+    <div className={cn('grid grid-cols-1 gap-4', colsClass[columns], className)}>
       {Array.from({ length: count }).map((_, i) => (
         <LoadingCard 
           key={i} 

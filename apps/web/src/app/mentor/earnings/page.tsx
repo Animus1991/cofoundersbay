@@ -3,100 +3,82 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  Calendar,
-  Download,
-  ArrowUpRight,
-  Star,
-  CheckCircle2,
-  BarChart3,
-  CreditCard,
+  DollarSign, Clock, Download, ArrowUpRight, Star, CheckCircle2, BarChart3, CreditCard,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { downloadCsv } from '@/lib/csv';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
+import { MENTOR_DEMO_EARNINGS } from '@/lib/demo/mentor-world';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
-const MOCK_TRANSACTIONS = [
-  { id: '1', mentee: { name: 'Alex K.', avatarUrl: null }, type: 'session', duration: 60, amount: 120, currency: 'USD', date: '2025-01-22', status: 'paid', topic: 'Product strategy review' },
-  { id: '2', mentee: { name: 'Maria P.', avatarUrl: null }, type: 'session', duration: 30, amount: 60, currency: 'USD', date: '2025-01-20', status: 'paid', topic: 'Fundraising pitch feedback' },
-  { id: '3', mentee: { name: 'Nikos L.', avatarUrl: null }, type: 'session', duration: 45, amount: 90, currency: 'USD', date: '2025-01-18', status: 'paid', topic: 'GTM strategy' },
-  { id: '4', mentee: { name: 'Sofia A.', avatarUrl: null }, type: 'session', duration: 60, amount: 120, currency: 'USD', date: '2025-01-15', status: 'pending', topic: 'Co-founder selection' },
-  { id: '5', mentee: { name: 'Panos D.', avatarUrl: null }, type: 'session', duration: 30, amount: 60, currency: 'USD', date: '2025-01-12', status: 'paid', topic: 'MVP validation' },
-  { id: '6', mentee: { name: 'Elena T.', avatarUrl: null }, type: 'session', duration: 60, amount: 120, currency: 'USD', date: '2025-01-10', status: 'paid', topic: 'Investor readiness' },
-];
+/*
+ * Sample rows are dated relative to today. They were fixed to January 2025,
+ * and once the period select started bounding the history (default: this
+ * month) every one of them fell outside it - demo mode showed $0 earned and an
+ * empty session history, which is the opposite of what a sample is for.
+ */
+const DAY = 86_400_000;
+const daysAgo = (n: number) => new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
+// The same rows the mentor dashboard counts its month from (demo/mentor-world).
+const MOCK_TRANSACTION_ROWS = MENTOR_DEMO_EARNINGS;
+function mockTransactions() {
+  return MOCK_TRANSACTION_ROWS.map((r) => ({
+    id: r.id,
+    mentee: { name: r.name, avatarUrl: null as string | null },
+    type: 'session',
+    duration: r.duration,
+    amount: r.amount,
+    currency: 'USD',
+    date: daysAgo(r.ago),
+    status: r.status as 'paid' | 'pending',
+    topic: r.topic,
+  }));
+}
 
-const MOCK_MONTHLY = [
-  { month: 'Aug', earned: 180, sessions: 3 },
-  { month: 'Sep', earned: 300, sessions: 5 },
-  { month: 'Oct', earned: 240, sessions: 4 },
-  { month: 'Nov', earned: 420, sessions: 7 },
-  { month: 'Dec', earned: 360, sessions: 6 },
-  { month: 'Jan', earned: 570, sessions: 6 },
+const MOCK_MONTHLY_TOTALS = [
+  { earned: 180, sessions: 3 },
+  { earned: 300, sessions: 5 },
+  { earned: 240, sessions: 4 },
+  { earned: 420, sessions: 7 },
+  { earned: 360, sessions: 6 },
+  { earned: 570, sessions: 6 },
+];
+/** The last six month names, oldest first, ending with the current month. */
+function mockMonthly() {
+  const now = new Date();
+  return MOCK_MONTHLY_TOTALS.map((m, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (MOCK_MONTHLY_TOTALS.length - 1 - i), 1);
+    return { month: d.toLocaleString('en-GB', { month: 'short' }), ...m };
+  });
+}
+
+const PERIODS: { value: string; en: string; el: string; days: number }[] = [
+  { value: 'this_month', en: 'This month', el: 'Αυτός ο μήνας', days: 31 },
+  { value: 'last_month', en: 'Last month', el: 'Προηγούμενος μήνας', days: 62 },
+  { value: 'last_3', en: 'Last 3 months', el: 'Τελευταίοι 3 μήνες', days: 92 },
+  { value: 'last_6', en: 'Last 6 months', el: 'Τελευταίοι 6 μήνες', days: 183 },
+  { value: 'ytd', en: 'Year to date', el: 'Από την αρχή του έτους', days: 366 },
 ];
 
 
 function formatCurrency(cents: number, currency = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents);
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  trend,
-  iconColor = 'text-primary',
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  sub?: string;
-  trend?: { value: number; positive: boolean };
-  iconColor?: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-            {trend && (
-              <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-green-500' : 'text-red-500')}>
-                {trend.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {trend.positive ? '+' : ''}{trend.value}% vs last month
-              </p>
-            )}
-          </div>
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className={cn('h-5 w-5', iconColor)} />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 export default function MentorEarningsPage() {
@@ -105,13 +87,30 @@ export default function MentorEarningsPage() {
   const [period, setPeriod] = useState('this_month');
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
 
-  const transactions = showDemoData ? MOCK_TRANSACTIONS : [];
-  const monthlyData = showDemoData ? MOCK_MONTHLY : [];
+  const allTransactions = showDemoData ? mockTransactions() : [];
+  const monthlyData = showDemoData ? mockMonthly() : [];
+
+  /* The period select used to be set dressing - it now bounds the session
+     history it sits above. */
+  const activePeriod = PERIODS.find((p) => p.value === period) ?? PERIODS[0];
+  const cutoff = Date.now() - activePeriod.days * DAY;
+  const transactions = allTransactions.filter((t) => new Date(t.date).getTime() >= cutoff);
+
+  const exportCsv = () => {
+    if (!transactions.length) return;
+    // Through the shared quoting: a mentee name with a comma used to split
+    // into two columns here (only the topic was quoted).
+    downloadCsv(
+      `earnings-${period}`,
+      ['Date', 'Mentee', 'Topic', 'Duration (min)', 'Amount', 'Currency', 'Status'],
+      transactions.map((t) => [t.date, t.mentee.name, t.topic, t.duration, t.amount, t.currency, t.status]),
+    );
+  };
 
   const totalEarned = transactions.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.amount, 0);
   const pendingAmount = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
@@ -119,12 +118,38 @@ export default function MentorEarningsPage() {
   const paidCount = transactions.filter(t => t.status === 'paid').length;
   const avgPerSession = paidCount > 0 ? totalEarned / paidCount : 0;
 
+  usePageList([
+    {
+      id: 'sessions',
+      labelEn: 'Paid sessions',
+      labelEl: 'Πληρωμένες συνεδρίες',
+      rows: transactions.map((t) => `${t.date.slice(0, 10)} · ${t.mentee.name} · ${t.topic} · ${t.duration} min · $${t.amount} · ${t.status}`),
+      total: allTransactions.length,
+      sample: showDemoData,
+    },
+  ]);
+  // Offered to the assistant: the rail's period and export. Above the
+  // loading return: a hook after it runs on some renders and not others
+  // (React #310 on this page in the round-12 sweep).
+  usePageControls([
+    choiceControl('period', 'Earnings period', 'Περίοδος εσόδων', PERIODS, period, setPeriod),
+    {
+      id: 'export_csv',
+      labelEn: 'Export sessions as CSV',
+      labelEl: 'Εξαγωγή συνεδριών σε CSV',
+      writes: false,
+      unavailableEn: transactions.length ? undefined : 'There are no sessions in this period to export.',
+      unavailableEl: transactions.length ? undefined : 'Δεν υπάρχουν συνεδρίες σε αυτή την περίοδο για εξαγωγή.',
+      run: exportCsv,
+    },
+  ]);
+
   if (!mounted) {
     return (
-      <AppShell>
-        <div className="py-6 space-y-6">
+      <AppShell showHelp>
+        <div className="space-y-6">
           <Skeleton className="h-10 w-60" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -132,112 +157,165 @@ export default function MentorEarningsPage() {
     );
   }
 
-  return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-primary" />
-              Earnings
-            </h1>
-            <p className="text-muted-foreground">Track your mentoring income and session history</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="this_month">This month</SelectItem>
-                <SelectItem value="last_month">Last month</SelectItem>
-                <SelectItem value="last_3">Last 3 months</SelectItem>
-                <SelectItem value="last_6">Last 6 months</SelectItem>
-                <SelectItem value="ytd">Year to date</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </div>
-        </div>
+  const figures = [
+    { id: 'earned', icon: DollarSign, en: 'Total Earned', el: 'Συνολικά έσοδα', value: formatCurrency(totalEarned), subEn: 'from paid sessions', subEl: 'από πληρωμένες συνεδρίες', tone: 'text-primary-accessible' },
+    { id: 'pending', icon: Clock, en: 'Pending Payout', el: 'Εκκρεμής πληρωμή', value: formatCurrency(pendingAmount), subEn: 'awaiting release', subEl: 'αναμένει αποδέσμευση', tone: 'text-status-warning' },
+    { id: 'sessions', icon: BarChart3, en: 'Sessions', el: 'Συνεδρίες', value: String(totalSessions), subEn: 'this period', subEl: 'σε αυτή την περίοδο', tone: 'text-primary-accessible' },
+    { id: 'avg', icon: Star, en: 'Avg. Per Session', el: 'Μέσος όρος ανά συνεδρία', value: formatCurrency(avgPerSession), subEn: 'blended rate', subEl: 'μικτή τιμή', tone: 'text-primary-accessible' },
+  ];
+  const pendingCount = transactions.filter((t) => t.status === 'pending').length;
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <StatCard
-            icon={DollarSign}
-            label="Total Earned"
-            value={formatCurrency(totalEarned)}
-            sub="from paid sessions"
-            trend={{ value: 58, positive: true }}
-          />
-          <StatCard
-            icon={Clock}
-            label="Pending Payout"
-            value={formatCurrency(pendingAmount)}
-            sub="awaiting release"
-            iconColor="text-amber-500"
-          />
-          <StatCard
-            icon={BarChart3}
-            label="Sessions"
-            value={String(totalSessions)}
-            sub="this period"
-            trend={{ value: 20, positive: true }}
-          />
-          <StatCard
-            icon={Star}
-            label="Avg. Per Session"
-            value={formatCurrency(avgPerSession)}
-            sub="blended rate"
-          />
+  /*
+   * The page rail. The column is the session history, the monthly chart and
+   * the payout settings - the three things this page is for. The four totals
+   * that opened it, the period that bounds them and the export are about that
+   * history, so they sit one gesture away; the badge on the totals is the
+   * number of sessions still awaiting payout.
+   */
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'figures',
+      glyph: 'wallet',
+      labelEn: 'Earnings totals',
+      labelEl: 'Σύνολα εσόδων',
+      badge: pendingCount || null,
+      content: (
+        <ul className="space-y-2">
+          {figures.map(({ id, icon: Icon, en, el, value, subEn, subEl, tone }) => (
+            <li key={id} className="rounded-lg border border-border p-3">
+              <div className="flex items-center gap-2">
+                <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
+                <span className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact wrap /></span>
+              </div>
+              <p className="page-stat mt-1 text-xl font-bold tabular-nums">{value}</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en={subEn} el={subEl} compact wrap /></p>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'period',
+      glyph: 'calendar',
+      labelEn: 'Period',
+      labelEl: 'Περίοδος',
+      badge: period !== PERIODS[0].value ? 1 : null,
+      content: (
+        <div className="space-y-1" role="radiogroup" aria-label={bilingualAria('Period', 'Περίοδος')}>
+          {PERIODS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              role="radio"
+              aria-checked={period === p.value}
+              onClick={() => setPeriod(p.value)}
+              className={cn(
+                'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                period === p.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+              )}
+            >
+              <BilingualText en={p.en} el={p.el} compact wrap />
+            </button>
+          ))}
         </div>
+      ),
+    },
+    {
+      id: 'export',
+      glyph: 'book',
+      labelEn: 'Export',
+      labelEl: 'Εξαγωγή',
+      content: (
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={!transactions.length}
+          className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Download className="icon-sm shrink-0" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <BilingualText
+              en={`Export ${transactions.length} sessions as CSV`}
+              el={`Εξαγωγή ${transactions.length} συνεδριών σε CSV`}
+              compact
+              wrap
+            />
+          </span>
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <AppShell showHelp rail={rail}>
+      <div className="space-y-6">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Earnings"
+            detail="Transactions and monthly totals are illustrative - there is no mentor earnings ledger yet."
+            askAiPrompt="Why does the earnings page show sample transactions?"
+          />
+        )}
+
+        {/* The period lives in the rail; the column still says which one is
+            on, because a history with no stated range reads as all of it. */}
+        <p className="text-sm text-muted-foreground">
+          <BilingualText
+            en={`${activePeriod.en} · ${totalSessions} sessions · ${formatCurrency(totalEarned)} earned`}
+            el={`${activePeriod.el} · ${totalSessions} συνεδρίες · ${formatCurrency(totalEarned)} έσοδα`}
+            compact
+            wrap
+          />
+        </p>
 
         <Tabs defaultValue="transactions">
           <TabsList>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="chart">Monthly Overview</TabsTrigger>
-            <TabsTrigger value="payout">Payout Settings</TabsTrigger>
+            <TabsTrigger value="transactions"><BilingualText en="Transactions" el="Συναλλαγές" compact /></TabsTrigger>
+            <TabsTrigger value="chart"><BilingualText en="Monthly Overview" el="Μηνιαία επισκόπηση" compact /></TabsTrigger>
+            <TabsTrigger value="payout"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></TabsTrigger>
           </TabsList>
 
           {/* Transactions */}
           <TabsContent value="transactions">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Session History</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Session History" el="Ιστορικό συνεδριών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
                   {transactions.map(tx => (
-                    <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
+                    // Amount and status stack on the right; the date joins the
+                    // topic line below sm. Five columns in one row drew the
+                    // name, amount and duration on top of each other at 390px.
+                    <div key={tx.id} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 sm:gap-4">
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={tx.mentee.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                        <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
                           {tx.mentee.name[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{tx.mentee.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{tx.topic}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{tx.mentee.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {tx.date}</span>
+                        </p>
                       </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-sm font-semibold">{formatCurrency(tx.amount)}</p>
-                        <p className="text-xs text-muted-foreground">{tx.duration} min</p>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(tx.amount)}</p>
+                        <Badge
+                          variant={tx.status === 'paid' ? 'secondary' : 'outline'}
+                          className={cn(
+                            'text-xs',
+                            tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
+                          )}
+                        >
+                          {tx.status === 'paid' ? (
+                            <><CheckCircle2 className="icon-sm mr-1" /><BilingualText en="Paid" el="Πληρώθηκε" compact /></>
+                          ) : 'Pending'}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant={tx.status === 'paid' ? 'secondary' : 'outline'}
-                        className={cn(
-                          'text-xs shrink-0',
-                          tx.status === 'paid' ? 'text-green-600 bg-green-500/10' : 'text-amber-600 bg-amber-500/10'
-                        )}
-                      >
-                        {tx.status === 'paid' ? (
-                          <><CheckCircle2 className="h-3 w-3 mr-1" />Paid</>
-                        ) : 'Pending'}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground w-20 text-right">{tx.date}</p>
+                      <p className="hidden w-24 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:block">{tx.date}</p>
                     </div>
                   ))}
                 </div>
@@ -249,13 +327,13 @@ export default function MentorEarningsPage() {
           <TabsContent value="chart">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Monthly Earnings</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Monthly Earnings" el="Μηνιαία έσοδα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-3 h-48">
                   {monthlyData.map(m => (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-primary">{formatCurrency(m.earned)}</span>
+                      <span className="text-xs font-semibold text-primary-accessible">{formatCurrency(m.earned)}</span>
                       <div
                         className="w-full rounded-t bg-primary/80 hover:bg-primary transition-colors min-h-[4px]"
                         style={{ height: `${monthlyData.length ? (m.earned / Math.max(...monthlyData.map(d => d.earned))) * 160 : 4}px` }}
@@ -268,18 +346,18 @@ export default function MentorEarningsPage() {
                 <div className="border-t border-border my-4" />
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
+                    <p className="page-stat text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
                     <p className="text-xs text-muted-foreground">6-month total</p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
-                    <p className="text-xs text-muted-foreground">Total sessions</p>
+                    <p className="page-stat text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Total sessions" el="Σύνολο συνεδριών" compact /></p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold">
+                    <p className="page-stat text-xl font-bold">
                       {(() => { const tot = monthlyData.reduce((s, m) => s + m.sessions, 0); return formatCurrency(tot ? monthlyData.reduce((s, m) => s + m.earned, 0) / tot : 0); })()}
                     </p>
-                    <p className="text-xs text-muted-foreground">Avg per session</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Avg per session" el="Μέσος όρος ανά συνεδρία" compact /></p>
                   </div>
                 </div>
               </CardContent>
@@ -289,24 +367,24 @@ export default function MentorEarningsPage() {
           {/* Payout */}
           <TabsContent value="payout">
             <Card>
-              <CardHeader><CardTitle className="text-base">Payout Settings</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
-                  <CreditCard className="h-8 w-8 text-muted-foreground" />
+                  <CreditCard className="icon-xl text-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">No payout method connected</p>
-                    <p className="text-xs text-muted-foreground">Connect Stripe or bank account to receive payouts</p>
+                    <p className="text-sm font-medium"><BilingualText en="No payout method connected" el="Δεν έχει συνδεθεί τρόπος πληρωμής" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Connect Stripe or bank account to receive payouts" el="Συνδέστε Stripe ή τραπεζικό λογαριασμό για να πληρώνεστε" wrap /></p>
                   </div>
-                  <Button size="sm">
-                    <ArrowUpRight className="mr-2 h-4 w-4" />
-                    Connect
+                  <Button size="sm" disabled title="Payout providers are not connected yet">
+                    <ArrowUpRight className="mr-2 icon-sm" />
+                    <BilingualText en="Connect" el="Σύνδεση" compact />
                   </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
                     <div key={method} className="flex items-center justify-between p-3 rounded-lg border">
                       <span className="text-sm font-medium">{method}</span>
-                      <Button variant="outline" size="sm">Connect</Button>
+                      <Button variant="outline" size="sm" disabled title="Payout providers are not connected yet"><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
                     </div>
                   ))}
                 </div>

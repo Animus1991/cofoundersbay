@@ -1,43 +1,36 @@
 import Link from 'next/link';
+import { Home, Compass } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/brand/Logo';
+
+export const metadata = {
+  title: 'Page not found',
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
-    <html lang="en">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', background: '#0f172a', color: '#f8fafc' }}>
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1rem',
-            textAlign: 'center',
-            padding: '2rem',
-          }}
-        >
-          <p style={{ fontSize: '5rem', fontWeight: 700, margin: 0, lineHeight: 1 }}>404</p>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>Page not found</h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.875rem', margin: 0 }}>
-            The page you are looking for does not exist.
-          </p>
-          <Link
-            href="/"
-            style={{
-              marginTop: '0.5rem',
-              padding: '0.5rem 1.25rem',
-              background: '#22D3EE',
-              color: '#000',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-            }}
-          >
+    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <Logo size="sm" />
+      <p className="mt-8 text-6xl font-bold tracking-tight text-foreground">404</p>
+      <h1 className="mt-3 text-xl font-semibold text-foreground">Page not found</h1>
+      <p className="mt-2 max-w-md text-sm text-muted-foreground">
+        The page you are looking for does not exist, was moved, or is temporarily unavailable.
+      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <Button asChild>
+          <Link href="/" className="gap-2">
+            <Home className="icon-sm" />
             Back to home
           </Link>
-        </div>
-      </body>
-    </html>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href="/discover" className="gap-2">
+            <Compass className="icon-sm" />
+            Discover people
+          </Link>
+        </Button>
+      </div>
+    </main>
   );
 }

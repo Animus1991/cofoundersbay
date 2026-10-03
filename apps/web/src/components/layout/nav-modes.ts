@@ -123,7 +123,7 @@ export const founderWorkSections: NavSection[] = [
     links: [
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
       { href: '/builder/pitch-deck', label: 'Pitch Deck', icon: Presentation },
-      { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
+      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
     ],
@@ -138,6 +138,7 @@ export const founderWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
+      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
@@ -173,6 +174,7 @@ export const mentorWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
+      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
@@ -206,6 +208,7 @@ export const investorWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
+      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
@@ -240,6 +243,7 @@ export const providerWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
+      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
@@ -287,7 +291,8 @@ export const adminWorkSections: NavSection[] = [
   {
     section: 'Overview',
     links: [
-      { href: '/admin', label: 'Admin Dashboard', icon: Shield },
+      { href: '/admin/dashboard', label: 'Platform overview', icon: LayoutDashboard },
+      { href: '/admin', label: 'Admin console', icon: Shield },
       { href: '/admin/analytics', label: 'Global Analytics', icon: BarChart3 },
     ],
   },
@@ -368,7 +373,7 @@ export const defaultWorkSections: NavSection[] = [
     section: 'Workspace',
     links: [
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
-      { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
+      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
     ],
@@ -376,6 +381,7 @@ export const defaultWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
+      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
       { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
@@ -391,6 +397,7 @@ export const exploreSections: NavSection[] = [
     section: 'Discover',
     links: [
       { href: '/matches', label: 'Matches', icon: Heart },
+      { href: '/ai', label: 'Ask AI', icon: BrainCircuit },
       { href: '/recommendations', label: 'For You', icon: Sparkles },
       { href: '/discover', label: 'Explore', icon: Compass },
       { href: '/search', label: 'Search', icon: Search },
@@ -467,6 +474,7 @@ export const accountSections: NavSection[] = [
     section: 'Settings',
     links: [
       { href: '/settings', label: 'General', icon: Settings },
+      { href: '/settings/ai', label: 'AI Preferences', icon: Sparkles },
       { href: '/settings/notifications', label: 'Notification Prefs', icon: Bell },
       { href: '/settings/billing', label: 'Billing', icon: DollarSign },
       { href: '/settings/data-export', label: 'Data Export', icon: Boxes },
@@ -549,6 +557,14 @@ export function getWorkSectionsForRole(role: string | undefined): NavSection[] {
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: Get sections for a specific mode
 // ─────────────────────────────────────────────────────────────────────────────
+
+export function getActiveNavHref(pathname: string | null, sections: NavSection[]): string | undefined {
+  if (!pathname) return undefined;
+  return sections.flatMap((section) => section.links).reduce<string | undefined>((active, { href }) => {
+    const matches = pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
+    return matches && href.length > (active?.length ?? 0) ? href : active;
+  }, undefined);
+}
 
 export function getSectionsForMode(mode: SidebarMode, role?: string): NavSection[] {
   switch (mode) {

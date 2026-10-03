@@ -11,7 +11,6 @@ import {
   List,
   MapPin,
   Briefcase,
-  Filter,
   X,
   UserPlus,
   MessageCircle,
@@ -23,43 +22,55 @@ import {
   BadgeCheck,
   Circle,
   Award,
+  Compass,
+  Target,
 } from 'lucide-react';
 import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
+import { useHydrated } from '@/components/common/RelativeTime';
 import { useToast } from '@/components/ui/toast';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
 
 const ROLE_OPTIONS = [
-  { value: 'all', label: 'All Roles' },
-  { value: 'founder', label: 'Founder' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'investor', label: 'Investor' },
-  { value: 'org', label: 'Organization' },
+  { value: 'all', label: 'All Roles', labelEl: 'Όλοι οι ρόλοι' },
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός' },
 ] as const;
 const INDUSTRIES = ['All Industries', 'Technology', 'Healthcare', 'Finance', 'E-commerce', 'Education', 'Real Estate', 'SaaS', 'AI/ML', 'Blockchain'];
-const LOCATIONS = ['All Locations', 'Remote', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
+const INDUSTRY_EL: Record<string, string> = {
+  'All Industries': 'Όλοι οι κλάδοι', Technology: 'Τεχνολογία', Healthcare: 'Υγεία', Finance: 'Χρηματοοικονομικά',
+  'E-commerce': 'Ηλεκτρονικό εμπόριο', Education: 'Εκπαίδευση', 'Real Estate': 'Ακίνητα',
+};
+// The demo world lives in Greece and Cyprus; its cities come first, the
+// existing ones stay.
+const LOCATIONS = ['All Locations', 'Remote', 'Athens', 'Thessaloniki', 'Limassol', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
+const LOCATION_EL: Record<string, string> = {
+  'All Locations': 'Όλες οι τοποθεσίες', Remote: 'Εξ αποστάσεως', Athens: 'Αθήνα', Thessaloniki: 'Θεσσαλονίκη', Limassol: 'Λεμεσός',
+  'New York': 'Νέα Υόρκη', London: 'Λονδίνο', Berlin: 'Βερολίνο', Singapore: 'Σιγκαπούρη',
+};
 const AVAILABILITY_OPTIONS = [
-  { value: 'all', label: 'All' },
-  { value: 'full-time', label: 'Full-time' },
-  { value: 'part-time', label: 'Part-time' },
-  { value: 'weekends', label: 'Weekends only' },
-  { value: 'flexible', label: 'Flexible' },
+  { value: 'all', label: 'All', labelEl: 'Όλες' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
 ] as const;
 
 const SKILL_PILLS = [
@@ -68,13 +79,43 @@ const SKILL_PILLS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return 'text-emerald-600';
-  if (score >= 50) return 'text-amber-600';
+  if (score >= 80) return 'text-status-success';
+  if (score >= 50) return 'text-status-warning';
   return 'text-muted-foreground';
 }
 
-function onlineStatus() {
-  return Math.random() > 0.6;
+/**
+ * "Online" is a five-minute window on `lastSeenAt` — the only presence the
+ * schema records, and the same window the directory counts server-side. A
+ * member whose activity was never recorded has no dot rather than a guessed
+ * one.
+ */
+const ONLINE_WINDOW_SECONDS = 5 * 60;
+
+function isRecentlyActive(lastSeenAt: number | null | undefined): boolean {
+  if (lastSeenAt == null) return false;
+  return Date.now() / 1000 - lastSeenAt <= ONLINE_WINDOW_SECONDS;
+}
+
+/**
+ * How much of the profile is filled in, as a percentage of eight signals that
+ * are all present on a search hit. This replaces a "contribution score" that
+ * was `Math.random()`: it changed on every render, differed between the server
+ * and the client, and described nothing. Completeness is a smaller claim, but
+ * it is one the row in front of you can actually support.
+ */
+function profileCompleteness(member: SearchHit): number {
+  const signals = [
+    Boolean(member.headline),
+    Boolean(member.bio),
+    Boolean(member.location),
+    Boolean(member.avatarUrl),
+    (member.skillNames?.length ?? 0) > 0,
+    (member.industries?.length ?? 0) > 0,
+    Boolean(member.lookingFor),
+    Boolean(member.availability),
+  ];
+  return Math.round((signals.filter(Boolean).length / signals.length) * 100);
 }
 
 interface MemberCardProps {
@@ -86,8 +127,11 @@ interface MemberCardProps {
 
 function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps) {
   const isGridView = viewMode === 'grid';
-  const contribScore = Math.floor(30 + Math.random() * 70);
-  const isOnline = Math.random() > 0.55;
+  const completeness = profileCompleteness(member);
+  // Reading the clock during render would differ between the server pass and
+  // hydration, so the dot appears one frame after mount instead.
+  const hydrated = useHydrated();
+  const isOnline = hydrated && isRecentlyActive(member.lastSeenAt);
 
   if (isGridView) {
     return (
@@ -97,20 +141,20 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold text-base">
-                  {member.displayName[0]?.toUpperCase()}
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-base">
+                  {initialsOf(member.displayName)}
                 </AvatarFallback>
               </Avatar>
               {isOnline && (
                 <span className="absolute bottom-3 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-status-success-mark ring-1 ring-background" />
                 </span>
               )}
             </Link>
 
             <Link
               href={`/profiles/${member.userId}`}
-              className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors mb-1"
+              className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
             >
               {member.displayName}
             </Link>
@@ -146,39 +190,39 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
               {isOnline && (
-                <span className="flex items-center gap-1 text-emerald-600">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Online
+                <span className="flex items-center gap-1 text-status-success">
+                  <span className="h-1.5 w-1.5 rounded-full bg-status-success-mark" />
+                  <BilingualText en="Online" el="Σε σύνδεση" compact />
                 </span>
               )}
             </div>
 
             {/* Contribution score */}
             <div className="w-full mb-3">
-              <div className="flex items-center justify-between text-[10px] mb-1">
-                <span className="text-muted-foreground">Contribution</span>
-                <span className={cn('font-semibold', scoreColor(contribScore))}>{contribScore}</span>
+              <div className="flex items-center justify-between text-2xs mb-1">
+                <span className="text-muted-foreground"><BilingualText en="Profile completeness" el="Πληρότητα προφίλ" compact /></span>
+                <span className={cn('font-semibold', scoreColor(completeness))}>{completeness}%</span>
               </div>
               <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
                 <div
-                  className={cn('h-full rounded-full transition-all', contribScore >= 80 ? 'bg-emerald-500' : contribScore >= 50 ? 'bg-amber-500' : 'bg-primary/60')}
-                  style={{ width: `${contribScore}%` }}
+                  className={cn('h-full rounded-full transition-all', completeness >= 80 ? 'bg-status-success-mark' : completeness >= 50 ? 'bg-status-warning-mark' : 'bg-primary/60')}
+                  style={{ width: `${completeness}%` }}
                 />
               </div>
             </div>
 
             <div className="flex gap-2 w-full">
               <Button size="sm" onClick={onConnect} className="flex-1 gap-1.5">
-                <UserPlus className="h-3.5 w-3.5" />
-                Connect
+                <UserPlus className="icon-sm" />
+                <BilingualText en="Connect" el="Σύνδεση" compact />
               </Button>
-              <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                <MessageCircle className="h-3.5 w-3.5" />
+              <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+                <MessageCircle className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -194,13 +238,13 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
-                {member.displayName[0]?.toUpperCase()}
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
+                {initialsOf(member.displayName)}
               </AvatarFallback>
             </Avatar>
             {isOnline && (
               <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+                <span className="h-2.5 w-2.5 rounded-full bg-status-success-mark ring-1 ring-background" />
               </span>
             )}
           </Link>
@@ -210,7 +254,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div>
                 <Link
                   href={`/profiles/${member.userId}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {member.displayName}
                 </Link>
@@ -222,11 +266,11 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={onConnect} className="gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5" />
-                  Connect
+                  <UserPlus className="icon-sm" />
+                  <BilingualText en="Connect" el="Σύνδεση" compact />
                 </Button>
-                <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" />
+                <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+                  <MessageCircle className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -256,19 +300,19 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
               {member.industries && member.industries.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <Briefcase className="h-3.5 w-3.5" />
+                  <Briefcase className="icon-sm" />
                   {member.industries.slice(0, 2).join(', ')}
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5" />
-                <span className={scoreColor(contribScore)}>Score {contribScore}</span>
+                <Activity className="icon-sm" />
+                <span className={scoreColor(completeness)}>{completeness}% complete</span>
               </div>
             </div>
           </div>
@@ -319,6 +363,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
 }
 
 export function MembersPageClient() {
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<(typeof ROLE_OPTIONS)[number]['value']>('all');
@@ -326,11 +371,10 @@ export function MembersPageClient() {
   const [selectedLocation, setSelectedLocation] = useState('All Locations');
   const [selectedAvailability, setSelectedAvailability] = useState<(typeof AVAILABILITY_OPTIONS)[number]['value']>('all');
   const [sortBy, setSortBy] = useState<SortBy>('relevance');
-  const [showFilters, setShowFilters] = useState(false);
   const [activeSkill, setActiveSkill] = useState('All Skills');
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy],
+    queryKey: qk('members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy),
     queryFn: () => searchProfiles({
       q: searchQuery.trim() || undefined,
       roles: selectedRole !== 'all' ? [selectedRole] : undefined,
@@ -345,6 +389,14 @@ export function MembersPageClient() {
 
   const members = data?.hits ?? [];
   const total = data?.total ?? 0;
+  /*
+   * Counted server-side over the same filter as the results. They used to be
+   * `total * 0.08`, `* 0.05` and `* 0.1` with invented fallbacks, which put
+   * three numbers that no one had counted beside one that had been. An API
+   * that does not send them yet shows a dash rather than a plausible guess.
+   */
+  const stats = data?.stats;
+  const dash = '—';
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -363,7 +415,6 @@ export function MembersPageClient() {
     setSearchQuery('');
   };
 
-  const router = useRouter();
   const { success, error: showError } = useToast();
 
   const connectMutation = useMutation({
@@ -383,253 +434,212 @@ export function MembersPageClient() {
 
   const featuredMembers = members.slice(0, 3);
 
+  usePageControls([
+    choiceControl('role', 'Role filter', 'Φίλτρο ρόλου', ROLE_OPTIONS.map((r) => ({ value: r.value, en: r.label, el: r.labelEl })), selectedRole, (v) => setSelectedRole(v as typeof selectedRole)),
+    choiceControl('view', 'Members layout', 'Διάταξη μελών', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as ViewMode)),
+    choiceControl('sort', 'Sort members', 'Ταξινόμηση μελών', [
+      { value: 'relevance', en: 'Most Relevant', el: 'Πιο σχετικά' },
+      { value: 'recent', en: 'Newest First', el: 'Νεότερα πρώτα' },
+      { value: 'active', en: 'Most Active', el: 'Πιο ενεργά' },
+    ], sortBy, (v) => setSortBy(v as SortBy)),
+    // Every filter the rail offers, so the assistant can set any of them.
+    choiceControl('industry', 'Industry filter', 'Φίλτρο κλάδου', INDUSTRIES.map((i) => ({ value: i, en: i, el: INDUSTRY_EL[i] ?? i })), selectedIndustry, setSelectedIndustry),
+    choiceControl('location', 'Location filter', 'Φίλτρο τοποθεσίας', LOCATIONS.map((l) => ({ value: l, en: l, el: LOCATION_EL[l] ?? l })), selectedLocation, setSelectedLocation),
+    choiceControl('availability', 'Availability filter', 'Φίλτρο διαθεσιμότητας', AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.labelEl })), selectedAvailability, (v) => setSelectedAvailability(v as typeof selectedAvailability)),
+    choiceControl('skill', 'Skill filter', 'Φίλτρο δεξιότητας', SKILL_PILLS.map((s) => ({ value: s, en: s, el: s === 'All Skills' ? 'Όλες οι δεξιότητες' : s })), activeSkill, setActiveSkill),
+    { id: 'clear_filters', labelEn: 'Clear member filters', labelEl: 'Καθαρισμός φίλτρων μελών', writes: false, run: clearFilters },
+  ]);
+  // The assistant sees the members the page shows, as the page shows them.
+  usePageList([
+    {
+      id: 'members',
+      labelEn: 'Members',
+      labelEl: 'Μέλη',
+      rows: isLoading ? undefined : members.map((m) =>
+        [m.displayName, m.headline, m.role, m.location].filter(Boolean).join(' · '),
+      ),
+      total,
+    },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'people',
+      labelEn: 'Directory',
+      labelEl: 'Κατάλογος',
+      content: (
+        <RailStats
+          items={[
+            { key: 'total', label: 'Total members', labelEl: 'Σύνολο μελών', value: total.toLocaleString('en-GB'), icon: Users, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'online', label: 'Online now', labelEl: 'Σε σύνδεση τώρα', value: stats ? stats.onlineNow : dash, icon: Activity, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'new', label: 'New this week', labelEl: 'Νέα αυτή την εβδομάδα', value: stats ? stats.newThisWeek : dash, icon: TrendingUp, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'mentors', label: 'Mentors', labelEl: 'Μέντορες', value: stats ? stats.mentors : dash, icon: Award, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters & view',
+      labelEl: 'Φίλτρα & προβολή',
+      badge: activeFiltersCount + (activeSkill !== 'All Skills' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_OPTIONS.map((r) => ({ value: r.value, en: r.label, el: r.labelEl }))}
+            value={selectedRole}
+            onChange={(v) => setSelectedRole(v)}
+          />
+          <RailOptions
+            title="Industry"
+            titleEl="Κλάδος"
+            options={INDUSTRIES.map((industry) => ({ value: industry, en: industry, el: INDUSTRY_EL[industry] ?? industry }))}
+            value={selectedIndustry}
+            onChange={setSelectedIndustry}
+          />
+          <RailOptions
+            title="Location"
+            titleEl="Τοποθεσία"
+            options={LOCATIONS.map((location) => ({ value: location, en: location, el: LOCATION_EL[location] ?? location }))}
+            value={selectedLocation}
+            onChange={setSelectedLocation}
+          />
+          <RailOptions
+            title="Availability"
+            titleEl="Διαθεσιμότητα"
+            options={AVAILABILITY_OPTIONS.map((a) => ({ value: a.value, en: a.label, el: a.labelEl }))}
+            value={selectedAvailability}
+            onChange={(v) => setSelectedAvailability(v)}
+          />
+          <RailOptions
+            title="Skill"
+            titleEl="Δεξιότητα"
+            options={SKILL_PILLS.map((skill) => ({ value: skill, en: skill, el: skill }))}
+            value={activeSkill}
+            onChange={setActiveSkill}
+          />
+          <RailOptions
+            title="Layout"
+            titleEl="Διάταξη"
+            options={[
+              { value: 'grid' as ViewMode, en: 'Grid', el: 'Πλέγμα', icon: Grid3x3 },
+              { value: 'list' as ViewMode, en: 'List', el: 'Λίστα', icon: List },
+            ]}
+            value={viewMode}
+            onChange={setViewMode}
+          />
+          <RailOptions
+            title="Sort"
+            titleEl="Ταξινόμηση"
+            options={[
+              { value: 'relevance' as SortBy, en: 'Most Relevant', el: 'Πιο σχετικά' },
+              { value: 'recent' as SortBy, en: 'Newest First', el: 'Νεότερα πρώτα' },
+              { value: 'active' as SortBy, en: 'Most Active', el: 'Πιο ενεργά' },
+            ]}
+            value={sortBy}
+            onChange={setSortBy}
+          />
+          {activeFiltersCount > 0 && (
+            <RailAction icon={X} en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" onClick={clearFilters} />
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Compass} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={UserPlus} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
+      /* The count belongs in both halves. Leaving `descriptionEl` to the
+         registry would pair "…with 1,240 members" against a Greek line with no
+         number in it, which reads as two different sentences rather than one
+         sentence twice. */
       title="Member Directory"
-      description={`Discover and connect with ${total.toLocaleString()} members`}
+      description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
+      descriptionEl={`Ανακαλύψτε και συνδεθείτε με ${total.toLocaleString('el-GR')} μέλη`}
+      rail={rail}
     >
       <div className="space-y-4 pb-10">
-
-        {/* Stats bar */}
-        {!isLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-violet-500',  bg: 'bg-violet-500/10'  },
-              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
-              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
-            ].map((s) => {
-              const SIcon = s.icon;
-              return (
-                <Card key={s.label} className="shadow-sm border-border/50">
-                  <CardContent className="flex items-center gap-3 p-3">
-                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                      <SIcon className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
-        {/* Skill filter pills */}
-        <div className="flex gap-1.5 flex-wrap">
-          {SKILL_PILLS.map((skill) => (
-            <button
-              key={skill}
-              onClick={() => setActiveSkill(skill)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-all',
-                activeSkill === skill
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground',
-              )}
-            >
-              {skill}
-            </button>
-          ))}
-        </div>
 
         {/* Featured spotlight */}
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
+              <Sparkles className="icon-sm text-primary-accessible" />
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><BilingualText en="Featured Members" el="Προτεινόμενα μέλη" compact /></h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {featuredMembers.map((member) => (
-                <div key={member.userId} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.02] p-3">
+                <div key={member.userId} className="flex items-center gap-3 rounded-xl border border-primary/15 bg-primary/[0.03] p-3">
                   <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
                     <Avatar className="h-10 w-10 ring-1 ring-primary/30">
                       <AvatarImage src={member.avatarUrl ?? undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">{initialsOf(member.displayName)}</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">{member.displayName}</Link>
-                    <p className="text-[11px] text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
+                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                    <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+                  <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Search and View Controls */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search members by name, skills, or bio..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant={showFilters ? 'default' : 'outline'}
-              onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
-            >
-              <Filter className="h-4 w-4" />
-              Filters
-              {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-
-            <div className="flex rounded-lg border border-border/60">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-r-none"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-l-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+        {/* Search — filters and layout live in the rail. */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+          <Input
+            aria-label={bilingualInline("Search members by name, skills, or bio", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό")}
+            placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
         </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <Card className="shadow-sm border-primary/20">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
-                  <Select
-                    value={selectedRole}
-                    onValueChange={(value) => setSelectedRole(value as (typeof ROLE_OPTIONS)[number]['value'])}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLE_OPTIONS.map((role) => (
-                        <SelectItem key={role.value} value={role.value}>
-                          {role.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Industry</label>
-                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INDUSTRIES.map((industry) => (
-                        <SelectItem key={industry} value={industry}>
-                          {industry}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
-                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LOCATIONS.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Availability</label>
-                  <Select
-                    value={selectedAvailability}
-                    onValueChange={(value) => setSelectedAvailability(value as (typeof AVAILABILITY_OPTIONS)[number]['value'])}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABILITY_OPTIONS.map((avail) => (
-                        <SelectItem key={avail.value} value={avail.value}>
-                          {avail.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {activeFiltersCount > 0 && (
-                <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/60">
-                  <span className="text-sm text-muted-foreground">
-                    {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
-                  </span>
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
-                    <X className="h-3.5 w-3.5" />
-                    Clear all
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
 
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${total.toLocaleString()} member${total !== 1 ? 's' : ''} found`}
+            {isLoading
+              ? <BilingualText en="Loading…" el="Φόρτωση…" compact />
+              : <BilingualText en={`${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`} el={`${total.toLocaleString('el-GR')} ${total !== 1 ? 'μέλη' : 'μέλος'}`} compact />}
           </p>
-
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">Most Relevant</SelectItem>
-                <SelectItem value="recent">Newest First</SelectItem>
-                <SelectItem value="active">Most Active</SelectItem>
-              </SelectContent>
-            </Select>
         </div>
 
         {/* Members Grid/List */}
         {isError ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <Users className="h-8 w-8 text-muted-foreground/40" />
-              <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+              <Users className="icon-xl text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load members. Please check your connection." el="Δεν ήταν δυνατή η φόρτωση των μελών. Ελέγξτε τη σύνδεσή σας." wrap /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent>
           </Card>
         ) : isLoading ? (
           <div className={cn(
-            'grid gap-4',
+            'grid grid-cols-1 gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -639,21 +649,21 @@ export function MembersPageClient() {
         ) : members.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No members found</h3>
+              <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
+              <h3 className="text-lg font-semibold mb-2"><BilingualText en="No members found" el="Δεν βρέθηκαν μέλη" compact /></h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Try adjusting your search or filters
+                <BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap />
               </p>
               {activeFiltersCount > 0 && (
                 <Button variant="secondary" onClick={clearFilters}>
-                  Clear filters
+                  <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
                 </Button>
               )}
             </CardContent>
           </Card>
         ) : (
           <div className={cn(
-            'grid gap-4',
+            'grid grid-cols-1 gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {members.map((member) => (

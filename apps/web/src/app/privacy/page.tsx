@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { Shield, ArrowLeft, Eye, Database, Lock, Globe, UserCheck, Mail, Settings, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { LegalText } from '@/components/common/LegalText';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
+const LAST_UPDATED_EL = '20 Μαρτίου 2026';
 
 const sections = [
   {
@@ -214,52 +217,59 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back to CoFounderBay</span>
+            <ArrowLeft className="icon-sm" />
+            {/* "CoFounderBay" alone on a phone, so the bar keeps one line. */}
+            <span className="text-sm font-medium"><span className="hidden sm:inline">Back to </span>CoFounderBay</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/terms">
-              <Button variant="ghost" size="sm" className="text-xs">Terms of Service</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+          <div className="flex items-center gap-1 sm:gap-3">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+              <Link href="/terms"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+              <Link href="/help"><BilingualText en="Help Center" el="Κέντρο βοήθειας" compact /></Link>
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
+      <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Shield className="h-7 w-7 text-primary" />
+            <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Privacy Policy</h1>
-          <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
+          <p className="text-muted-foreground">
+            <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
+          </p>
+          {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+            <BilingualText en="The policy below is written in English; the English text is the version that applies." el="Η παρακάτω πολιτική είναι γραμμένη στα Αγγλικά· ισχύει το αγγλικό κείμενο." keepSecondaryOnMobile wrap />
+          </p>
         </div>
       </section>
 
       {/* Quick Summary */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Privacy at a Glance</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Privacy at a Glance" el="Το απόρρητο με μια ματιά" compact /></h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Database, label: 'Data Collection', desc: 'We collect only what we need' },
-              { icon: Lock, label: 'Security', desc: 'Your data is encrypted' },
-              { icon: UserCheck, label: 'Your Rights', desc: 'Access, correct, delete' },
-              { icon: Trash2, label: 'No Selling', desc: 'We never sell your data' },
+              { icon: Database, label: 'Data Collection', labelEl: 'Συλλογή δεδομένων', desc: 'We collect only what we need', descEl: 'Συλλέγουμε μόνο ό,τι χρειαζόμαστε' },
+              { icon: Lock, label: 'Security', labelEl: 'Ασφάλεια', desc: 'Your data is encrypted', descEl: 'Τα δεδομένα σας κρυπτογραφούνται' },
+              { icon: UserCheck, label: 'Your Rights', labelEl: 'Τα δικαιώματά σας', desc: 'Access, correct, delete', descEl: 'Πρόσβαση, διόρθωση, διαγραφή' },
+              { icon: Trash2, label: 'No Selling', labelEl: 'Καμία πώληση', desc: 'We never sell your data', descEl: 'Δεν πουλάμε ποτέ τα δεδομένα σας' },
             ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border/60 bg-card p-4">
+              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <item.icon className="h-4 w-4 text-primary" />
+                  <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                  <p className="text-sm font-medium text-foreground"><BilingualText en={item.label} el={item.labelEl} compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={item.desc} el={item.descEl} wrap /></p>
                 </div>
               </div>
             ))}
@@ -268,10 +278,10 @@ export default function PrivacyPage() {
       </section>
 
       {/* Table of Contents */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
                 key={section.id}
@@ -290,42 +300,38 @@ export default function PrivacyPage() {
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
           {sections.map((section) => (
-            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border/60">
+            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <section.icon className="h-4 w-4 text-primary" />
+                    <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
                 </div>
-                <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed">
-                    {section.content}
-                  </p>
-                </div>
+                <LegalText content={section.content} />
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Footer CTA */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
+        <div className="mt-12 rounded-xl border border-border bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            Your privacy matters to us. If you have any questions, please don't hesitate to reach out.
+            <BilingualText en="Your privacy matters to us. If you have any questions, please don't hesitate to reach out." el="Το απόρρητό σας μας ενδιαφέρει. Για οποιαδήποτε ερώτηση, επικοινωνήστε μαζί μας." wrap />
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/terms">
-              <Button variant="outline" size="sm">Read Terms of Service</Button>
-            </Link>
-            <Link href="/settings">
-              <Button size="sm">Manage Privacy Settings</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/terms"><BilingualText en="Read Terms of Service" el="Διαβάστε τους όρους χρήσης" compact /></Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/settings"><BilingualText en="Manage Privacy Settings" el="Διαχείριση ρυθμίσεων απορρήτου" compact /></Link>
+            </Button>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>

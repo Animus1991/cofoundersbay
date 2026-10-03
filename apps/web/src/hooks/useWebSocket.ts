@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getSocketOrigin } from '@/lib/api-origin';
 
 interface UseWebSocketOptions {
   url?: string;
@@ -17,7 +18,7 @@ interface WebSocketState {
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const {
-    url = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3001',
+    url = getSocketOrigin(),
     autoConnect = true,
     onConnect,
     onDisconnect,
@@ -71,7 +72,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     setState({ connected: false, connecting: false, error: null });
   }, []);
 
-  const emit = useCallback((event: string, data?: any) => {
+  // Socket payloads are opaque to this hook; `unknown` keeps callers honest
+  // without pretending we know the shape.
+  const emit = useCallback((event: string, data?: unknown) => {
     if (!socketRef.current?.connected) {
       console.warn('Socket not connected, cannot emit:', event);
       return;
@@ -79,13 +82,22 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     socketRef.current.emit(event, data);
   }, []);
 
-  const on = useCallback((event: string, handler: (...args: any[]) => void) => {
-    if (!socketRef.current) return;
-    socketRef.current.on(event, handler);
-    return () => {
-      socketRef.current?.off(event, handler);
-    };
-  }, []);
+  /**
+   * Generic in the handler's arguments so each caller declares the payload it
+   * expects, instead of the hook asserting `any` on everyone's behalf. The one
+   * cast is at the socket.io boundary, where the payload really is untyped.
+   */
+  const on = useCallback(
+    <TArgs extends unknown[] = unknown[]>(event: string, handler: (...args: TArgs) => void) => {
+      if (!socketRef.current) return;
+      const listener = handler as (...args: unknown[]) => void;
+      socketRef.current.on(event, listener);
+      return () => {
+        socketRef.current?.off(event, listener);
+      };
+    },
+    [],
+  );
 
   useEffect(() => {
     if (autoConnect) {

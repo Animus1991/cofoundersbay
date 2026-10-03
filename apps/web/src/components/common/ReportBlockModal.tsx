@@ -19,6 +19,9 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { blockUser, createUserReport } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ReportReason = 
   | 'harassment'
@@ -152,7 +155,8 @@ export function ReportBlockModal({
           ? 'Our team will review the report, and this user can no longer contact you.'
           : 'Our team will review this report within 24 hours.',
       );
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
+      // Every public profile view: /profiles/[id] keys by id, /p/[username] by handle.
+      queryClient.invalidateQueries({ queryKey: qk('public-profile') });
       handleClose();
     },
     onError: (error) => {
@@ -165,8 +169,9 @@ export function ReportBlockModal({
     onSuccess: () => {
       onBlocked?.(userId);
       success('User blocked', `${userName} has been blocked. They can no longer contact you.`);
-      queryClient.invalidateQueries({ queryKey: ['user', userId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      // Every public profile view: /profiles/[id] keys by id, /p/[username] by handle.
+      queryClient.invalidateQueries({ queryKey: qk('public-profile') });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       handleClose();
     },
     onError: (error) => {
@@ -206,8 +211,8 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
-                What would you like to do?
+                <Shield className="icon-md text-primary-accessible" />
+                <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact />
               </DialogTitle>
               <DialogDescription>
                 Choose an action for {userName}
@@ -217,30 +222,30 @@ export function ReportBlockModal({
             <div className="space-y-3 py-4">
               <button
                 onClick={() => setStep('report')}
-                className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
-                  <Flag className="h-5 w-5 text-amber-500" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
+                  <Flag className="icon-md text-status-warning" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Report user</p>
+                  <p className="font-medium text-foreground"><BilingualText en="Report user" el="Αναφορά χρήστη" compact /></p>
                   <p className="text-sm text-muted-foreground">
-                    Report inappropriate behavior to our moderation team
+                    <BilingualText en="Report inappropriate behavior to our moderation team" el="Αναφέρετε ακατάλληλη συμπεριφορά στην ομάδα εποπτείας" wrap />
                   </p>
                 </div>
               </button>
               
               <button
                 onClick={() => setStep('block')}
-                className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
+                className="w-full flex items-start gap-3 rounded-lg border border-border p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                  <Ban className="h-5 w-5 text-destructive" />
+                  <Ban className="icon-md text-destructive-accessible" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">Block user</p>
+                  <p className="font-medium text-foreground"><BilingualText en="Block user" el="Αποκλεισμός χρήστη" compact /></p>
                   <p className="text-sm text-muted-foreground">
-                    Prevent this user from contacting you
+                    <BilingualText en="Prevent this user from contacting you" el="Να μη μπορεί να επικοινωνήσει μαζί σας" wrap />
                   </p>
                 </div>
               </button>
@@ -252,18 +257,18 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Flag className="h-5 w-5 text-amber-500" />
+                <Flag className="icon-md text-status-warning" />
                 Report {userName}
               </DialogTitle>
               <DialogDescription>
-                Help us understand what happened
+                <BilingualText en="Help us understand what happened" el="Βοηθήστε μας να καταλάβουμε τι συνέβη" compact />
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div>
                 <Label className="text-sm font-medium mb-3 block">
-                  Why are you reporting this user?
+                  <BilingualText en="Why are you reporting this user?" el="Γιατί αναφέρετε αυτόν τον χρήστη;" compact />
                 </Label>
                 <div className="space-y-2">
                   {REPORT_REASONS.map((reason) => (
@@ -273,7 +278,7 @@ export function ReportBlockModal({
                         'flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-colors',
                         selectedReason === reason.value
                           ? 'border-primary bg-primary/5'
-                          : 'border-border/60 hover:bg-muted/30'
+                          : 'border-border hover:bg-muted/30'
                       )}
                     >
                       <input
@@ -282,7 +287,7 @@ export function ReportBlockModal({
                         value={reason.value}
                         checked={selectedReason === reason.value}
                         onChange={() => setSelectedReason(reason.value)}
-                        className="mt-1 h-4 w-4 text-primary border-border focus:ring-primary"
+                        className="mt-1 h-4 w-4 text-primary-accessible border-border"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{reason.label}</p>
@@ -296,13 +301,13 @@ export function ReportBlockModal({
               {selectedReason && (
                 <div>
                   <Label htmlFor="details" className="text-sm font-medium mb-2 block">
-                    Additional details (optional)
+                    <BilingualText en="Additional details (optional)" el="Επιπλέον λεπτομέρειες (προαιρετικά)" compact />
                   </Label>
                   <Textarea
                     id="details"
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    placeholder="Provide any additional context that might help us investigate..."
+                    placeholder={bilingualInline("Provide any additional context that might help us investigate…", "Δώστε ό,τι επιπλέον στοιχείο μπορεί να βοηθήσει τον έλεγχο…")}
                     rows={3}
                     maxLength={1000}
                     className="resize-none"
@@ -321,7 +326,7 @@ export function ReportBlockModal({
                     onChange={(e) => setAlsoBlock(e.target.checked)}
                     className="rounded border-border"
                   />
-                  <span className="text-sm text-foreground">Also block this user</span>
+                  <span className="text-sm text-foreground"><BilingualText en="Also block this user" el="Αποκλεισμός και αυτού του χρήστη" compact /></span>
                 </label>
               )}
             </div>
@@ -329,11 +334,11 @@ export function ReportBlockModal({
             <div className="flex justify-end gap-2 pt-2">
               {mode === 'both' && (
                 <Button variant="ghost" onClick={() => setStep('select')} disabled={isLoading}>
-                  Back
+                  <BilingualText en="Back" el="Πίσω" compact />
                 </Button>
               )}
               <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-                Cancel
+                <BilingualText en="Cancel" el="Ακύρωση" compact />
               </Button>
               <Button
                 onClick={handleSubmitReport}
@@ -341,9 +346,9 @@ export function ReportBlockModal({
                 className="gap-2"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Flag className="h-4 w-4" />
+                  <Flag className="icon-sm" />
                 )}
                 Submit Report
               </Button>
@@ -355,33 +360,33 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5 text-destructive" />
+                <Ban className="icon-md text-destructive-accessible" />
                 Block {userName}?
               </DialogTitle>
               <DialogDescription>
-                This action can be undone from your settings
+                <BilingualText en="This action can be undone from your settings" el="Αυτή η ενέργεια αναιρείται από τις ρυθμίσεις σας" wrap />
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4">
-              <div className="rounded-lg border border-border/60 bg-muted/30 p-4 space-y-3">
+              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
                 <p className="text-sm text-foreground">When you block someone:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
-                    They won't be able to message you
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
+                    <BilingualText en="They won't be able to message you" el="Δεν θα μπορεί να σας στείλει μήνυμα" wrap />
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
-                    They won't see your profile
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
+                    <BilingualText en="They won't see your profile" el="Δεν θα βλέπει το προφίλ σας" compact />
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
-                    They won't appear in your matches
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
+                    <BilingualText en="They won't appear in your matches" el="Δεν θα εμφανίζεται στις αντιστοιχίσεις σας" wrap />
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
-                    They won't be notified that you blocked them
+                    <Check className="icon-sm shrink-0 mt-0.5 text-muted-foreground" />
+                    <BilingualText en="They won't be notified that you blocked them" el="Δεν θα ειδοποιηθεί ότι τον αποκλείσατε" wrap />
                   </li>
                 </ul>
               </div>
@@ -390,11 +395,11 @@ export function ReportBlockModal({
             <div className="flex justify-end gap-2 pt-2">
               {mode === 'both' && (
                 <Button variant="ghost" onClick={() => setStep('select')} disabled={isLoading}>
-                  Back
+                  <BilingualText en="Back" el="Πίσω" compact />
                 </Button>
               )}
               <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-                Cancel
+                <BilingualText en="Cancel" el="Ακύρωση" compact />
               </Button>
               <Button
                 variant="destructive"
@@ -403,9 +408,9 @@ export function ReportBlockModal({
                 className="gap-2"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Ban className="h-4 w-4" />
+                  <Ban className="icon-sm" />
                 )}
                 Block User
               </Button>

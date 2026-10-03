@@ -2,66 +2,157 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Font fallbacks ──
+   The real values are injected on <html> by next/font (app/layout.tsx) via a
+   generated class. This rule uses the `html` type selector on purpose: at
+   specificity (0,0,1) it can never beat that class, so it only applies when the
+   layout is not mounted (isolated component rendering, tests). Without a
+   definition, `var(--font-inter)` would be invalid-at-computed-value-time and the
+   entire font-family declaration — including its system-ui fallback — would be
+   discarded. */
+html {
+  --font-inter: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display-brand: var(--font-inter);
+  --font-co-mark: var(--font-inter);
+  --banner-network: 0px;
+  --banner-demo: 0px;
+  /* −1% component height. font-size / line-height never read this. */
+  --chrome-y: 0.99;
+  /* Product chrome cluster (AI-converged). Locked founder dash pages
+     keep the hold/kicker ladder and do not read these. */
+  --type-caption: 12.61px;
+  --type-support: 12.7361px;
+  --type-ui: 13.50px;
+  --type-identity: 14.28px;
+  --type-page: 15.42px;
+}
+
 @layer base {
+  /* iOS Safari zooms the whole page whenever a focused form control renders
+     below 16px. Primitives already use `text-base sm:text-sm`; this catches
+     raw <input>/<select>/<textarea> that bypass them. `!important` because a
+     Tailwind text utility on the element would otherwise win. */
+  @media (max-width: 639.98px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   :root {
-    /* ── Font family CSS variables (set here since next/font/google is not used) ── */
-    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-sora: 'Sora', system-ui, sans-serif;
-    --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
-
-    /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
-    --background:       220 16% 96%;
-    --foreground:       220 26% 9%;
-    --card:             0 0% 100%;
-    --card-foreground:  220 26% 9%;
+    /* ── Light theme ──
+       Surfaces step the way cursor.com's do: page, card and inset sit a few
+       points of lightness apart (card/page 1.07:1 here, 1.06 measured on
+       cursor.com), so a card reads as a place rather than as a box. Every
+       theme below holds the same three ratios:
+         card on page   1.05-1.09
+         --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
+         --input        1.17-1.19 on its card — a field edge as quiet as a card's */
+    --background:       232 7% 96.6%;
+    --foreground:       232 10% 21%;
+    --card:             232 12% 99.4%;
+    --card-foreground:  232 10% 21%;
     --popover:          0 0% 100%;
-    --popover-foreground: 220 26% 9%;
+    --popover-foreground: 232 10% 21%;
 
-    /* Primary: professional blue-violet — modern, trustworthy */
-    --primary:          236 72% 55%;
-    --primary-foreground: 0 0% 100%;
+    /* One tone recipe, four hues (lilac here; cyan, mint and apricot in the
+       named themes). Every accent theme carries chroma 30 and the same
+       relative luminance as the reference buttons (0.49: Cursor #7bafe9,
+       Windsurf #34e8bb, Windsurf #f09f6d), so no theme is louder than
+       another — only the hue changes. Read from the reference pixels, then solved for contrast:
+       .probes/sample_pixels.mjs, .probes/tone_solver2.cjs.
 
-    /* Secondary: subtle gray for secondary actions */
-    --secondary:        220 13% 94%;
-    --secondary-foreground: 220 18% 16%;
+       --primary        the accent wherever it is solid: buttons, active pills,
+                        rings, bars, avatars, badges, chart series. A lively
+                        fill with a near-black ink label of its own hue
+                        (--primary-foreground, 9.6:1) - Cursor's "Upgrade",
+                        Windsurf's "Download"
+       --primary-mid    the deeper tone, only for faint tints (/5../40), which
+                        a pastel cannot carry
+       --primary-accessible  link and emphasis text, >=5:1 on a card
+       --ink            the label on any lively status mark */
+    --primary: 250 74% 82.6%;
+    --primary-foreground: 250 30% 9.5%;
+    --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
+    --primary-accessible: 250 40.7% 55%;
+    --ink:              232 20% 10%;
 
-    /* Muted: for subtitles, disabled states */
-    --muted:            220 12% 92%;
-    --muted-foreground: 220 10% 42%; /* Improved contrast for WCAG AA */
+    /* Secondary / muted sit a couple of points off the card, not a new colour. */
+    --secondary:        232 7% 95.4%;
+    --secondary-foreground: 232 8% 24%;
 
-    /* Accent: vibrant for highlights, badges */
-    --accent:           236 72% 55%;
-    --accent-foreground: 0 0% 100%;
+    --muted:            232 7% 94.8%;
+    --muted-foreground: 232 6% 45%;  /* ~5.2 on card — helper, not a second shout */
 
-    --destructive:      0 84% 60%;
+    /* Accent is the hover surface (shadcn's meaning: every `hover:bg-accent`
+       row, menu item and toolbar button). It followed primary, so hovering a
+       list row painted it solid lilac — the loudest thing on the page for as
+       long as the pointer rested there. A quiet step off the card instead,
+       as on cursor.com and windsurf.com. */
+    --accent:           232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+
+    --destructive:      4 32.5% 40%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 4 33.5% 38.8%;
 
-    /* Borders: subtle, consistent */
-    --border:           220 13% 90%;
-    --input:            0 0% 100%;
-    --ring:             236 72% 55%;
-    --radius:           8px;
+    /* Borders: a hairline, spent sparingly.
+       cursor.com draws its card edge at 1.15:1 and its button edge at 1.18:1,
+       with no shadow behind either -- the surface step does most of the
+       separating and the line only confirms it. At 1.44:1 every card here
+       was outlined rather than placed, and that line was repeated on chips,
+       tiles and rows inside the card. `--border` now sits in cursor.com's
+       band, so `/60` and `/40` fade toward nothing, which is what an inner
+       divider should do. A control's own boundary is `--input`, kept firmer
+       than a card edge because it is the only thing that marks the field. */
+    --border:           232 5% 93.6%;  /* 1.14 on card — a hairline, not a frame */
+    /* Fields share the card's whisper (1.19, was 1.22-3.14 by theme). The
+       field is found by its fill, label and placeholder; focus is the strong
+       signal: a 2px --ring outline (globals "Shared keyboard indicator") and
+       the edge taking --ring while typing. */
+    --input:            232 5% 92%;
+    --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
+    /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
+       sm/DEFAULT 6 · md/lg 10 · xl 12 · 2xl 14 · 3xl 18.
+       Softer than cursor.com (cards ~12, buttons ~8) by one notch, same
+       proportions: inner corners still step down from the container. */
+    --radius:           14px;
 
-    /* Typography scale — refined for readability */
-    --font-size-xs:     0.75rem;    /* 12px */
-    --font-size-sm:     0.875rem;   /* 14px */
-    --font-size-base:   0.9375rem;  /* 15px */
-    --font-size-lg:     1rem;       /* 16px */
-    --font-size-xl:     1.125rem;   /* 18px */
-    --font-size-2xl:    1.25rem;    /* 20px */
-    --font-size-3xl:    1.5rem;     /* 24px */
-    --font-size-4xl:    2rem;       /* 32px */
+    /* Typography scale — Cursor.com steps, then +2% on the UI/copy half
+       (2xs–base; two requested +1% passes). Display steps (lg+) stay. */
+    --font-size-2xs:    0.765075rem; /* 12.24px captions */
+    --font-size-xs:     0.82883125rem;/* 13.26px helpers */
+    --font-size-sm:     0.8925875rem; /* 14.28px nav / UI */
+    --font-size-base:   1.0201rem;    /* 16.32px body / titles */
+    --font-size-lg:     1.125rem;   /* 18px */
+    --font-size-xl:     1.25rem;    /* 20px */
+    --font-size-2xl:    1.5rem;     /* 24px  page titles */
+    --font-size-3xl:    1.625rem;   /* 26px  cursor.com h1 */
+    --font-size-4xl:    2.25rem;    /* 36px  heading-lg */
 
-    /* Gradients */
-    --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
-    --gradient-card:    linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
+    /* Gradients. The hero is one flat dark tone carrying white type; a
+       surface that shifts hue across its width pulls the eye off the words. */
+    --gradient-hero:    linear-gradient(hsl(222 26% 10%), hsl(222 26% 10%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(252 34% 70%));
+    --gradient-card:    linear-gradient(hsl(var(--card)), hsl(var(--card)));
 
-    /* Shadows — subtle, professional (ChatGPT style) */
-    --shadow-glow:      0 0 0 1px hsl(var(--border));
-    --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border) / 0.7);
-    --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.06), 0 1px 4px hsl(0 0% 0% / 0.04);
-    --shadow-modal:     0 16px 40px hsl(0 0% 0% / 0.10), 0 4px 12px hsl(0 0% 0% / 0.06);
+    /* ── Shadows ──────────────────────────────────────────────────────────
+       Nothing in the page flow casts one: cursor.com's cards, tiles and
+       buttons carry none, and a shadow under a hairline is a second edge.
+       Only what floats over the page -- menus, popovers, dialogs, toasts --
+       gets a soft, wide, low-opacity spread (cursor.com's flyout is 2-5%
+       black), and it is tinted with the ground's hue so it reads as depth
+       rather than haze. `--shadow-strength` scales it for the dark themes,
+       where the same opacity would not register. Both are read by the
+       box-shadow ladder in tailwind.config.ts, so every theme declares them. */
+    --shadow-color:     232 28% 18%;
+    --shadow-strength:  1;
+
+    --shadow-glow:      none;
+    --shadow-card:      none;
+    --shadow-elevated:  0 4px 20px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 7%));
+    --shadow-modal:     0 12px 40px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%));
 
     /* ── Standardized spacing scale ── */
     --spacing-card-compact: 1rem;      /* 16px - p-4 */
@@ -71,6 +162,8 @@
     --spacing-section-xs: 1rem;         /* 16px - space-y-4 */
 
     /* ── Standardized icon sizes ── */
+    --icon-2xs: 12px; /* h-3 w-3 */
+    --icon-xs: 14px;  /* h-3.5 w-3.5 */
     --icon-sm: 16px;  /* h-4 w-4 */
     --icon-md: 20px;  /* h-5 w-5 */
     --icon-lg: 24px;  /* h-6 w-6 */
@@ -78,149 +171,530 @@
   }
 
   .dark {
-    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(235 80% 15%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(222 30% 14% / 0.8), hsl(222 30% 10% / 0.6));
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
-    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
-    --background: 222 35% 8%;
-    --foreground: 210 40% 96%;
-    --card: 222 30% 12%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 30% 10%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 235 88% 66%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 218 18% 18%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 218 18% 16%;
-    --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
-    --accent: 292 84% 66%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 46%;
+    --gradient-hero: linear-gradient(hsl(222 22% 10.2%), hsl(222 22% 10.2%));
+    --shadow-color: 222 60% 2%;
+    --shadow-strength: 3;
+    /* card/page 1.06 (cursor.com dark 1.07); the popover sits one step above
+       the card so a menu over a card still separates without a heavy shadow. */
+    --background: 222 28% 7.4%;
+    --foreground: 220 10% 93%;
+    --card: 222 22% 10.2%;
+    --card-foreground: 220 10% 93%;
+    --popover: 222 20% 11.4%;
+    --popover-foreground: 220 10% 93%;
+    --primary: 248 47% 76.6%;
+    --primary-foreground: 248 32% 12%;
+    --primary-accessible: 248 50% 82%;
+    --secondary: 232 16% 13.8%;
+    --secondary-foreground: 232 10% 93%;
+    --muted: 232 16% 13%;
+    --muted-foreground: 232 8% 62%;
+    --accent: 232 14% 15.5%;           /* hover surface, not a lilac fill */
+    --accent-foreground: 220 10% 93%;
+    --destructive: 4 23.5% 47%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 18% 20%;
-    --input: 220 18% 20%;
-    --ring: 235 88% 66%;
+    --destructive-accessible: 4 30% 70%;
+    --border: 232 12% 13.6%;           /* ~1.12 on card */
+    --input: 232 12% 15%;              /* ~1.16 on card */
+    --ring: 248 47% 76.6%;
+    color-scheme: dark;
   }
 
   /* ── System theme: distinct slate-blue palette ── */
   [data-theme="system"] {
+    --shadow-color: 215 50% 5%;
+    --shadow-strength: 3;
     --background: 215 28% 17%;
     --foreground: 210 20% 98%;
-    --card: 215 25% 21%;
+    --card: 215 25% 19.4%;
     --card-foreground: 210 20% 98%;
-    --popover: 215 25% 21%;
+    --popover: 215 24% 20.6%;
     --popover-foreground: 210 20% 98%;
-    --primary: 199 89% 48%;
+    --primary: 199 36% 40%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 20% 26%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 20% 26%;
-    --muted-foreground: 215 16% 70%;
-    --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 50%;
+    --primary-accessible: 199 28% 62%;
+    --secondary: 215 20% 22.6%;
+    --secondary-foreground: 210 12% 94%;
+    --muted: 215 20% 22%;
+    --muted-foreground: 215 10% 68%;
+    --accent: 215 20% 23.6%;           /* hover surface */
+    --accent-foreground: 210 20% 98%;
+    --destructive: 2 23.5% 46.8%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 20% 30%;
-    --input: 215 20% 30%;
-    --ring: 199 89% 48%;
-    --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
+    --destructive-accessible: 2 30% 70%;
+    --border: 215 16% 22.8%;           /* ~1.12 on card */
+    --input: 215 16% 24.4%;            /* ~1.16 on card */
+    --ring: 199 36% 40%;
+    --gradient-hero: linear-gradient(hsl(215 26% 13%), hsl(215 26% 13%));
+    color-scheme: dark;
   }
 
-  /* ── Alliance theme: warm cream & amber ── */
+  /* ── "Cyan" (id: alliance) — Cursor's soft sky blue on a cool page.
+     Neutral-cool surfaces; the accent lives in the accent-lock block below. ── */
   [data-theme="alliance"] {
-    --background: 195 26% 96%;
+    --shadow-color: 200 40% 18%;
+    --shadow-strength: 1;
+    --background: 210 8% 96.4%;
     --foreground: 220 100% 3%;
-    --card: 0 0% 100%;
+    --card: 210 12% 99.4%;
     --card-foreground: 220 100% 3%;
-    --popover: 180 25% 98%;
+    --popover: 0 0% 100%;
     --popover-foreground: 220 100% 3%;
-    --primary: 34 100% 52%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 200 15% 88%;
+    --secondary: 210 8% 94.6%;
     --secondary-foreground: 220 100% 3%;
-    --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 46%;
-    --accent: 34 100% 52%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --muted: 210 8% 94.2%;
+    --muted-foreground: 210 5% 41%; /* 5.46 on card, 4.92 on muted */
+    --accent: 210 10% 94%;             /* hover surface */
+    --accent-foreground: 220 15% 10%;
+    --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 200 15% 88%;
-    --input: 200 15% 88%;
-    --ring: 34 100% 52%;
-    --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
+    --destructive-accessible: 2 33.5% 38.8%;
+    --border: 210 8% 93.4%;            /* ~1.13 on card */
+    --input: 210 8% 91.8%;             /* ~1.18 on card */
+    --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
+    color-scheme: light;
   }
 
   /* ── Cofounder theme: dark purple/cyan ── */
   [data-theme="cofounder"] {
+    --shadow-color: 240 60% 2%;
+    --shadow-strength: 3;
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
-    --card: 240 8% 8%;
+    --card: 240 7% 6.8%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 8% 8%;
+    --popover: 240 7% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 262 83% 58%;
+    --primary: 258 28% 54%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 6% 15%;
+    --primary-accessible: 258 22% 72%;
+    --secondary: 240 6% 10.4%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 6% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 280 100% 70%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --muted: 240 6% 9.8%;
+    --muted-foreground: 240 5% 64%;
+    --accent: 240 6% 11.6%;            /* hover surface */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 2 23% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 18%;
-    --input: 240 6% 18%;
-    --ring: 262 83% 58%;
-    --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
+    --destructive-accessible: 2 25% 64%;
+    --border: 240 6% 10.8%;            /* ~1.12 on card */
+    --input: 240 6% 12.2%;             /* ~1.15 on card */
+    --ring: 258 28% 54%;
+    --gradient-hero: linear-gradient(hsl(240 7% 6.8%), hsl(240 7% 6.8%));
+    color-scheme: dark;
+  }
+
+  /* ── "Mint" (id: minimal) ─────────────────────────────────────────────────
+     Windsurf's cream page and soft mint, on the same tone recipe as the
+     other accent themes. This block used to appear twice, verbatim; the
+     first copy was dead (the second always won) and is gone.
+     Light-first, near-monochrome on warm paper, one mint accent.
+     Scoped to [data-theme="minimal"] so alliance/cofounder/system are untouched.
+     Token names on this line: --primary-accessible / --destructive-accessible
+     (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
+  [data-theme="minimal"] {
+    --background:        40 57.1% 91.8%; /* Windsurf page #f6eede */
+    --foreground:        30 8% 11%;
+    --card:              37 57.1% 94.5%; /* Windsurf card #f9f3e9 */
+    --card-foreground:   30 8% 12%;
+    --popover:           0 0% 100%;
+    --popover-foreground: 30 8% 12%;
+
+    --secondary:         40 38% 89.4%;
+    --secondary-foreground: 30 8% 16%;
+    --muted:             40 34% 88.8%;
+    --muted-foreground:  30 8% 33%;
+
+    --accent:            43 24.1% 82.9%;
+    --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
+
+    --destructive:       6 33.5% 38.8%;  /* white on it: 7.03 */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 6 33.5% 38.8%; /* 6.92 on card */
+
+    --border:            38 30% 87.6%;  /* ~1.15 on card */
+    --input:             38 28% 86.2%;  /* ~1.19 on card — was 3.14, a drawn box */
+
+    color-scheme: light;
+  }
+
+  /* ── "Apricot" (id: apricot) — a soft orange on a warm neutral page, same
+     tone recipe. Destructive leans rose (350) so a delete never reads as
+     the brand. ── */
+  [data-theme="apricot"] {
+    --shadow-color: 24 30% 18%;
+    --shadow-strength: 1;
+    --background: 30 25% 95.5%;
+    --foreground: 24 10% 12%;
+    --card: 30 30% 98.4%;
+    --card-foreground: 24 10% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 10% 13%;
+    --secondary: 30 18% 93%;
+    --secondary-foreground: 24 10% 17%;
+    --muted: 30 18% 92.6%;
+    --muted-foreground: 26 8% 38%;
+    --accent: 30 22% 92.6%;            /* hover surface */
+    --accent-foreground: 24 10% 12%;
+    --destructive: 350 30% 42.6%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 350 33% 38.8%;
+    --border: 30 16% 92.6%;            /* ~1.13 on card */
+    --input: 30 16% 91%;               /* ~1.18 on card */
+    --gradient-hero: linear-gradient(hsl(24 14% 13%), hsl(24 14% 13%));
+    color-scheme: light;
   }
 
   .role-founder {
-    --primary: 235 88% 66%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 292 84% 66%;
-    --accent-foreground: 0 0% 100%;
+    --primary: 250 74% 82.6%;
+    --primary-foreground: 250 30% 9.5%;
+    --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
+    --primary-accessible: 250 40.7% 55%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 250 40.7% 55%;
+  }
+  html.dark.role-founder {
+    --primary: 248 47% 76.6%;
+    --primary-accessible: 248 50% 82%;
+    --accent: 232 14% 15.5%;
+    --ring: 248 47% 76.6%;
+    --primary-foreground: 248 32% 12%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-mentor {
-    --primary: 200 84% 55%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 180 72% 52%;
-    --accent-foreground: 0 0% 100%;
+    --primary: 190 74% 58.7%;
+    --primary-foreground: 190 30% 9.5%;
+    --primary-mid: 190 45.9% 38%;             /* tints only (/5../40) */
+    --primary-accessible: 190 40.7% 36.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 190 40.7% 36.5%;
+  }
+  html.dark.role-mentor {
+    --primary: 190 28.5% 61.4%;
+    --primary-accessible: 190 37.5% 76%;
+    --accent: 232 14% 15.5%;
+    --ring: 190 28.5% 61.4%;
+    --primary-foreground: 190 30% 10%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-investor {
-    --primary: 32 92% 60%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 14 82% 54%;
-    --accent-foreground: 0 0% 100%;
+    --primary: 32 74% 67%;
+    --primary-foreground: 32 30% 9.5%;
+    --primary-mid: 32 45.9% 41%;              /* tints only (/5../40) */
+    --primary-accessible: 32 40.7% 39.25%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 32 40.7% 39.25%;
+  }
+  html.dark.role-investor {
+    --primary: 32 28.5% 61.4%;
+    --primary-accessible: 32 30% 70%;
+    --accent: 232 14% 15.5%;
+    --ring: 32 28.5% 61.4%;
+    --primary-foreground: 32 30% 10%;
+    --accent-foreground: 220 10% 93%;
   }
 
   .role-org {
-    --primary: 268 84% 68%;
-    --primary-foreground: 0 0% 100%;
-    --accent: 248 70% 60%;
-    --accent-foreground: 0 0% 100%;
+    --primary: 262 74% 81.8%;
+    --primary-foreground: 262 30% 9.5%;
+    --primary-mid: 262 45.9% 57.75%;          /* tints only (/5../40) */
+    --primary-accessible: 262 40.7% 54.5%;
+    --accent: 232 10% 94.2%;
+    --accent-foreground: 232 10% 21%;
+    --ring: 262 40.7% 54.5%;
+  }
+  html.dark.role-org {
+    --primary: 258 35.5% 69%;
+    --primary-accessible: 258 37.5% 76%;
+    --accent: 232 14% 15.5%;
+    --ring: 258 35.5% 69%;
+    --primary-foreground: 258 28% 12%;
+    --accent-foreground: 220 10% 93%;
+  }
+
+  /* ── Accent locks ──
+     A chosen accent theme outranks the role palette: `html[data-theme]`
+     (0,1,1) beats `.role-*` (0,1,0). Before this the role class quietly
+     replaced every named theme's primary, so picking a theme changed the
+     page and not the accent. The default light/dark themes keep the role
+     hues. Values from .probes/tone_solver.cjs. */
+  html[data-theme="alliance"] {
+    --primary: 212 71.4% 72.5%;           /* Cursor "Upgrade" #7bafe9, a touch lighter */
+    --primary-foreground: 0 0% 9.4%;      /* its label, #181818 */
+    --primary-mid: 212 44.3% 48.25%;          /* tints only (/5../40) */
+    --primary-accessible: 212 39.3% 45.5%;
+    --accent: 210 10% 94%;
+    --accent-foreground: 220 15% 10%;
+    --ring: 212 39.3% 45.5%;
+  }
+  html[data-theme="minimal"] {
+    --primary: 165 79.6% 52.7%;           /* Windsurf "Download" #34e8bb, a touch deeper */
+    --primary-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
+    --primary-mid: 165 49.4% 34.25%;          /* tints only (/5../40) */
+    --primary-accessible: 165 43.8% 31.5%;
+    --accent: 43 24.1% 82.9%;                  /* Windsurf active nav #ded8c9 */
+    --accent-foreground: 30 8% 11%;
+    --ring: 165 43.8% 31.5%;
+  }
+  html[data-theme="apricot"] {
+    --primary: 28 76% 67.5%;              /* #f09f6d nudged golden-pastel, a touch deeper */
+    --primary-foreground: 20 30% 9%;
+    --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
+    --primary-accessible: 23 44.8% 41.5%;
+    --accent: 30 22% 92.6%;
+    --accent-foreground: 24 10% 12%;
+    --ring: 23 44.8% 41.5%;
+  }
+  /* Dark surfaces already fill with a pastel and a dark label; their tints
+     come from that same tone. */
+  html.dark,
+  html[data-theme="cofounder"],
+  html[data-theme="system"] {
+    --primary-mid: var(--primary);
+  }
+
+  /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
+     Light surfaces: :root + alliance. Dark surfaces: .dark + cofounder + system. ── */
+  :root,
+  [data-theme="alliance"],
+  [data-theme="minimal"] {
+    /* Two bands, and the gap between them is the hierarchy: the brand
+       carries ~30 chroma, every status tone ~21, the page itself ~5. A
+       chip tells you what a thing is; it is not competing to be read
+       first, which is why cursor.com's deltas never shout either. */
+    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.44 on card */
+    --status-success-bg: 158 11.4% 95.6%;
+    --status-success-border: 158 6% 90.6%;
+    --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
+    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 36 11.4% 95.6%;
+    --status-warning-border: 36 6% 90.6%;
+    --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
+    --status-danger-fg:  4 23.5% 44.75%;   /* 5.04 on tint, 5.50 on card */
+    --status-danger-bg:  4 11.4% 95.6%;
+    --status-danger-border: 4 6% 90.6%;
+    --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
+    --status-info-fg:    212 24.7% 42.5%;   /* 5.01 on tint, 5.46 on card */
+    --status-info-bg:    212 11.4% 95.6%;
+    --status-info-border: 212 6% 90.6%;
+    --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-accent-fg:  250 21.6% 48.5%;   /* 5.02 on tint, 5.50 on card */
+    --status-accent-bg:  250 11.4% 95.6%;
+    --status-accent-border: 250 6% 90.6%;
+    --status-accent-mark: 250 46% 77.5%;   /* 2.06 on card, ink 8.48 */
+    --status-neutral-fg:     232 6% 40%;
+    --status-neutral-bg:     232 6% 95.0%;
+    --status-neutral-border: 232 4.5% 91.0%;
+    --status-neutral-mark:   232 8% 66%;
+
+    /* Categorical chart tones, slots 2-6 (slot 1 is --primary, resolved in
+       lib/chart-theme.ts). One hue each, >=35 deg from the accent so a series
+       never reads as "another accent", in the same pastel mark band (S~46,
+       Y~0.44 on the card) as the status marks, so a chart sits with the
+       page instead of shouting over it. */
+    --chart-2: 165 39% 55%;   /* teal-green */
+    --chart-3: 30 42% 60%;    /* clay */
+    --chart-4: 335 35% 72%;   /* rose */
+    --chart-5: 200 39% 65%;   /* steel blue */
+    --chart-6: 95 28% 55%;    /* olive */
+  }
+
+  /* Each accent theme moves the one status hue that would collide with its
+     own accent (mint pushes success to leaf green, apricot pushes warning
+     to ochre and danger to rose, cyan pushes info to blue) and tints
+     `status-accent` with its own hue. Same band: fg chroma 21, >=5:1 on
+     its tint and on the card (.probes/status_solver.cjs). */
+  html[data-theme="alliance"] {
+    --status-success-fg: 158 30.4% 34.5%;   /* 5.04 on tint, 5.45 on card */
+    --status-success-bg: 158 11.4% 95.6%;
+    --status-success-border: 158 6% 90.6%;
+    --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
+    --status-warning-fg: 36 27.8% 37.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 36 11.4% 95.6%;
+    --status-warning-border: 36 6% 90.6%;
+    --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
+    --status-danger-fg:  4 23.5% 44.75%;   /* 5.04 on tint, 5.51 on card */
+    --status-danger-bg:  4 11.4% 95.6%;
+    --status-danger-border: 4 6% 90.6%;
+    --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
+    --status-info-fg:    232 22.2% 47.25%;   /* 5.04 on tint, 5.52 on card */
+    --status-info-bg:    232 11.4% 95.6%;
+    --status-info-border: 232 6% 90.6%;
+    --status-info-mark:  232 46% 76.5%;   /* 2.06 on card, ink 8.46 */
+    --status-accent-fg:  212 24.7% 42.5%;   /* 5.01 on tint, 5.47 on card */
+    --status-accent-bg:  212 11.4% 95.6%;
+    --status-accent-border: 212 6% 90.6%;
+    --status-accent-mark: 212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-neutral-fg:     210 6% 40%;
+    --status-neutral-bg:     210 6% 95.0%;
+    --status-neutral-border: 210 4.5% 91.0%;
+    --status-neutral-mark:   210 8% 66%;
+
+    --chart-2: 165 35% 55%;   /* teal-green */
+    --chart-3: 30 42% 60%;    /* clay */
+    --chart-4: 335 35% 72%;   /* rose */
+    --chart-5: 255 39% 74%;   /* violet */
+    --chart-6: 95 28% 55%;    /* olive */
+  }
+  html[data-theme="minimal"] {
+    --status-success-fg: 135 32.6% 32.25%;   /* 5.03 on tint, 5.52 on card */
+    --status-success-bg: 135 17% 90.6%;
+    --status-success-border: 135 6% 85.6%;
+    --status-success-mark: 135 46% 58%;   /* 2.07 on card, ink 8.44 */
+    --status-warning-fg: 36 30.2% 34.75%;   /* 5.05 on tint, 5.58 on card */
+    --status-warning-bg: 36 17% 90.6%;
+    --status-warning-border: 36 6% 85.6%;
+    --status-warning-mark: 36 46% 64.25%;   /* 2.07 on card, ink 8.44 */
+    --status-danger-fg:  4 25.3% 41.5%;   /* 5.01 on tint, 5.71 on card */
+    --status-danger-bg:  4 17% 90.6%;
+    --status-danger-border: 4 6% 85.6%;
+    --status-danger-mark: 4 46% 74.5%;   /* 2.06 on card, ink 8.48 */
+    --status-info-fg:    212 26.8% 39.25%;   /* 5.04 on tint, 5.67 on card */
+    --status-info-bg:    212 17% 90.6%;
+    --status-info-border: 212 6% 85.6%;
+    --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-accent-fg:  165 33.1% 31.75%;   /* 5.02 on tint, 5.50 on card */
+    --status-accent-bg:  165 17% 90.6%;
+    --status-accent-border: 165 6% 85.6%;
+    --status-accent-mark: 165 46% 56.25%;   /* 2.07 on card, ink 8.44 */
+    --status-neutral-fg:     38 6% 40%;
+    --status-neutral-bg:     38 6% 90.0%;
+    --status-neutral-border: 38 4.5% 86.0%;
+    --status-neutral-mark:   38 8% 66%;
+
+    --chart-2: 255 35% 74%;   /* violet */
+    --chart-3: 28 46% 65%;    /* apricot */
+    --chart-4: 335 35% 72%;   /* rose */
+    --chart-5: 205 39% 65%;   /* blue */
+    --chart-6: 55 31% 55%;    /* olive-gold */
+  }
+  html[data-theme="apricot"] {
+    --status-success-fg: 158 30.9% 34%;   /* 5.02 on tint, 5.44 on card */
+    --status-success-bg: 158 9.3% 94.6%;
+    --status-success-border: 158 6% 89.6%;
+    --status-success-mark: 158 46% 56.75%;   /* 2.07 on card, ink 8.44 */
+    --status-warning-fg: 46 30.2% 34.75%;   /* 5.01 on tint, 5.43 on card */
+    --status-warning-bg: 46 9.3% 94.6%;
+    --status-warning-border: 46 6% 89.6%;
+    --status-warning-mark: 46 46% 59%;   /* 2.07 on card, ink 8.45 */
+    --status-danger-fg:  350 23.5% 44.75%;   /* 5.04 on tint, 5.53 on card */
+    --status-danger-bg:  350 9.3% 94.6%;
+    --status-danger-border: 350 6% 89.6%;
+    --status-danger-mark: 350 46% 75%;   /* 2.07 on card, ink 8.44 */
+    --status-info-fg:    212 25.1% 41.75%;   /* 5.04 on tint, 5.51 on card */
+    --status-info-bg:    212 9.3% 94.6%;
+    --status-info-border: 212 6% 89.6%;
+    --status-info-mark:  212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-accent-fg:  23 26.3% 40%;   /* 5.04 on tint, 5.49 on card */
+    --status-accent-bg:  23 9.3% 94.6%;
+    --status-accent-border: 23 6% 89.6%;
+    --status-accent-mark: 23 46% 69.25%;   /* 2.07 on card, ink 8.44 */
+    --status-neutral-fg:     30 6% 40%;
+    --status-neutral-bg:     30 6% 94.0%;
+    --status-neutral-border: 30 4.5% 90.0%;
+    --status-neutral-mark:   30 8% 66%;
+
+    --chart-2: 165 35% 55%;   /* mint */
+    --chart-3: 255 35% 74%;   /* violet */
+    --chart-4: 335 35% 72%;   /* rose */
+    --chart-5: 205 39% 65%;   /* blue */
+    --chart-6: 120 28% 52%;   /* green */
+  }
+
+  .dark,
+  [data-theme="cofounder"],
+  [data-theme="system"] {
+    /* Dark text tones are already light pastels; they are the marks too. */
+    --status-success-mark: var(--status-success-fg);
+    --status-warning-mark: var(--status-warning-fg);
+    --status-danger-mark:  var(--status-danger-fg);
+    --status-info-mark:    var(--status-info-fg);
+    --status-accent-mark:  var(--status-accent-fg);
+    --status-neutral-mark: var(--status-neutral-fg);
+    --status-success-fg:     145 21.5% 62.8%;
+    --status-success-bg:     145 12.5% 12%;
+    --status-success-border: 145 5% 24%;
+    --status-warning-fg:     32 25% 68%;
+    --status-warning-bg:     32 12.5% 12%;
+    --status-warning-border: 32 5% 24%;
+    --status-danger-fg:      4 25% 68%;
+    --status-danger-bg:      4 12.5% 12%;
+    --status-danger-border:  4 5% 24%;
+    --status-info-fg:        217 25% 68%;
+    --status-info-bg:        217 12.5% 12%;
+    --status-info-border:    217 5% 24%;
+    --status-accent-fg:      248 32% 75%;
+    --status-accent-bg:      248 10% 15%;
+    --status-accent-border:  248 5.5% 21.8%;
+    --status-neutral-fg:     232 6% 64%;
+    --status-neutral-bg:     232 11% 13.2%;
+    --status-neutral-border: 232 6.5% 15.4%;
   }
 
   * {
     @apply border-border;
   }
 
+  /* Corners stay plain circular arcs, as on cursor.com. No
+     `corner-shape: squircle`: at the same radius a superellipse pulls the
+     curve tight into the corner and leaves long straight runs either side,
+     which reads as abrupt rather than soft. */
+
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Desktop density from origin/claude 141552e: 82% of the phone/tablet
+     scale from `lg` up, as a percentage so a raised browser default still
+     applies. Body stays in rem so it participates. Two floors they measured
+     but did not hold: 12px type (cursor.com caption) and 24px controls
+     (WCAG 2.5.8 — 24px becomes 19.7px at 82%). */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 82%;
+    }
+    button,
+    [type='button'],
+    [type='submit'],
+    [type='reset'],
+    [role='button'],
+    [role='switch'],
+    [role='tab'],
+    [role='menuitem'],
+    [role='checkbox'],
+    [role='radio'] {
+      min-height: 24px;
+    }
+    [role='switch'] {
+      min-width: 24px;
+    }
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    min-height: 100vh;
+    min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
-    font-size: 14px;
-    line-height: 1.55;
-    letter-spacing: -0.012em;
+    /* UI/copy half +2% (16.32px). Display titles stay on the Cursor steps. */
+    font-size: 1.0201rem;
+    line-height: 1.5;
+    letter-spacing: -0.011em;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Same 16.32px body against the 82% desktop root (16.3216 / 13.12). */
+  @media (min-width: 1024px) {
+    body {
+      font-size: 1.24402439rem;
+    }
   }
 
   /* Custom scrollbar — thin & minimal */
@@ -240,13 +714,13 @@
 
   /* Text selection */
   ::selection {
-    background: hsl(var(--primary) / 0.2);
+    background: hsl(var(--primary-mid) / 0.2);
     color: hsl(var(--foreground));
   }
 
-  /* Better focus-visible defaults */
+  /* Keyboard focus: a whisper outside the control, never a second inner frame. */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 1px solid hsl(var(--foreground) / 0.22);
     outline-offset: 2px;
   }
 
@@ -283,12 +757,14 @@
     }
   }
 
-  /* Better input focus ring */
+  /* Fields already carry a border. A second ring on focus draws a frame
+     inside a frame — it reads as kitsch and shrinks the field. The caret
+     (and a quieter existing-border, never `--ring`) is the indicator. */
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.5);
+    box-shadow: none;
   }
 
   /* Smooth transitions on interactive elements — only on hover/focus to reduce idle layout cost */
@@ -329,6 +805,10 @@
     backdrop-filter: blur(18px);
   }
 
+  .cfb-page-header {
+    @apply flex flex-col justify-between gap-3 sm:flex-row sm:items-end;
+  }
+
   /* Staggered animation delays */
   .stagger-1 { animation-delay: 0.05s; }
   .stagger-2 { animation-delay: 0.1s; }
@@ -361,7 +841,7 @@
 
   /* Role-specific gradients */
   .gradient-founder {
-    background: linear-gradient(135deg, hsl(235 88% 66%), hsl(292 84% 66%));
+    background: linear-gradient(135deg, hsl(248 66% 60%), hsl(252 52% 72%));
   }
 
   .gradient-mentor {
@@ -378,7 +858,7 @@
 
   /* Glow effects per role */
   .role-founder .glow-role {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(168, 85, 247, 0.15);
+    box-shadow: 0 0 20px rgba(103, 86, 220, 0.22), 0 0 40px rgba(103, 86, 220, 0.1);
   }
 
   .role-mentor .glow-role {
@@ -393,12 +873,13 @@
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(99, 102, 241, 0.15);
   }
 
-  /* Hover lift effect */
+  /* Hover answers with a firmer edge, never with motion or a shadow
+     (cursor.com: border at 10% foreground on hover). */
   .hover-lift {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
   .hover-lift:hover {
-    transform: translateY(-4px);
+    border-color: hsl(var(--foreground) / 0.12);
   }
 
   /* Focus ring animation */
@@ -408,26 +889,16 @@
 
   /* Interactive card */
   .card-interactive {
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
   }
   .card-interactive:hover {
-    transform: translateY(-2px);
-    border-color: hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--foreground) / 0.12);
   }
 
   /* Backdrop blur levels */
   .blur-backdrop-sm { backdrop-filter: blur(8px); }
   .blur-backdrop-md { backdrop-filter: blur(16px); }
   .blur-backdrop-lg { backdrop-filter: blur(24px); }
-
-  /* Hero radial background — very subtle, works in both themes */
-  .bg-hero-radial {
-    background: radial-gradient(
-      ellipse 80% 50% at 50% -5%,
-      hsl(var(--primary) / 0.06) 0%,
-      transparent 60%
-    );
-  }
 
   /* Subtle shadow — replaces glow in light mode */
   .shadow-glow-sm {
@@ -494,24 +965,57 @@
   .bg-white\/12 { background-color: rgb(255 255 255 / 0.12); }
   .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
 
-  /* Skip-to-content — screen reader + keyboard accessible */
+  /* Skip-to-content — stays in the tab order, but has no paint until focused (WCAG 2.4.1) */
   .skip-to-content {
+    font-size: 13.50px;
+  }
+  .skip-to-content:not(:focus) {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%) translateY(-120%);
-    top: 0.75rem;
-    z-index: 9999;
-    padding: 0.5rem 1.25rem;
-    border-radius: var(--radius);
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: transform 0.15s ease;
+    /* Off-screen in both axes. `left` alone leaves the box at y=0 with a 1px
+       height, which is inside the viewport: enough for a sliver of paint if any
+       theme ever gives it a background, and enough to fail a bounding-box
+       assertion that the link is not on screen. */
+    left: -10000px;
+    top: -10000px;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
     white-space: nowrap;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    opacity: 0;
+    pointer-events: none;
   }
   .skip-to-content:focus {
-    transform: translateX(-50%) translateY(0);
+    position: fixed;
+    top: 0.75rem;
+    left: 50%;
+    z-index: 9999;
+    width: auto;
+    height: auto;
+    margin: 0;
+    clip: auto;
+    clip-path: none;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%);
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius);
+    /* The foreground token is theme-aware (dark on the orange themes, white
+       elsewhere), so this pair clears 4.5:1 in every theme. */
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 13.36px;
+    font-weight: 600;
+    white-space: nowrap;
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Hide scrollbar while keeping scroll functionality */
@@ -521,6 +1025,35 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* KPI strips run two-up on a phone (one tile per row pushed the page's
+     content a screen down). An odd last tile takes the whole row until the
+     breakpoint where the strip gains columns. One utility per breakpoint,
+     written out so Tailwind keeps them. */
+  @media (max-width: 639.98px) {
+    .kpi-odd-span-sm > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 767.98px) {
+    .kpi-odd-span-md > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  @media (max-width: 1023.98px) {
+    .kpi-odd-span-lg > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+
+  /* A tab strip that continues past its edge fades on that edge
+     (TabsList sets data-fade while it overflows). */
+  .tab-strip[data-fade='end'] {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 2rem), transparent);
+  }
+  .tab-strip[data-fade='start'] {
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to left, #000 calc(100% - 2rem), transparent);
+  }
+  .tab-strip[data-fade='both'] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent);
   }
 
   /* Screen-reader only utility */
@@ -573,13 +1106,13 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
-  50%       { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary-mid) / 0.4); }
+  50%       { box-shadow: 0 0 0 6px hsl(var(--primary-mid) / 0); }
 }
 
 @keyframes pulse-glow-ring {
-  0%, 100% { box-shadow: 0 0 12px 2px hsl(var(--primary) / 0.25); }
-  50%       { box-shadow: 0 0 28px 8px hsl(var(--primary) / 0.45); }
+  0%, 100% { box-shadow: 0 0 12px 2px hsl(var(--primary-mid) / 0.25); }
+  50%       { box-shadow: 0 0 28px 8px hsl(var(--primary-mid) / 0.45); }
 }
 
 @keyframes cfb-page-out {
@@ -597,15 +1130,102 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer {
+    animation: none !important;
+  }
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Reduced motion (WCAG 2.3.3 Animation from Interactions)
+   Honors the OS "Reduce motion" setting. Decorative entrance/loop animations
+   are removed so the UI is calm and stable, while functional loading spinners
+   (.animate-spin) keep rotating so progress is still communicated. This also
+   eliminates the idle GPU cost of infinite loops (shimmer/pulse/bounce).
+   ────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html.scroll-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  /* Decorative entrance + infinite loop animations → render final state instantly */
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-fade-in-down,
+  .animate-fade-in-left,
+  .animate-scale-in,
+  .animate-bounce-subtle,
+  .animate-pulse-glow,
+  .shimmer,
+  .focus-ring-animated:focus-visible {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Hover lifts / interactive card translation → no movement */
+  .hover-lift,
+  .hover-lift-sm,
+  .card-interactive,
+  .card-hover {
+    transition: none !important;
+  }
+  .hover-lift:hover,
+  .hover-lift-sm:hover,
+  .card-interactive:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  /* Collapse generic transitions to near-instant (keeps state changes legible) */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  /* Keep functional spinners animating — progress feedback must survive */
+  .animate-spin {
+    animation: spin 0.8s linear infinite !important;
+  }
+
+  /* Disable View Transition page animations */
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none !important;
+    }
+  }
+}
+
 /* ── Enhanced component utilities ── */
 @layer utilities {
-  /* Better focus styles */
+  /* Keyboard focus: a whisper outside the control, never a second inner frame. */
   .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-1;
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 1px solid hsl(var(--foreground) / 0.22);
+    outline-offset: 2px;
   }
   
   /* Smooth transitions */
@@ -615,7 +1235,7 @@
   
   /* Card hover effect */
   .card-hover {
-    @apply transition-all duration-150 hover:shadow-lg hover:-translate-y-px;
+    @apply transition-colors duration-150 hover:border-foreground/[0.12];
   }
   
   /* Button variants */
@@ -623,9 +1243,9 @@
     @apply text-foreground/70 hover:text-foreground hover:bg-secondary/50;
   }
   
-  /* Input improvements */
+  /* A field's edge is `--input`, the one boundary firmer than a card's. */
   .input-clean {
-    @apply border-border/60 hover:border-ring/40 focus:border-ring;
+    @apply border-input hover:border-foreground/15;
   }
   
   /* Text improvements */
@@ -638,14 +1258,763 @@
   }
 
   /* ── Standardized icon sizes ── */
+  /* ── One stroke weight across both icon families ──
+     The product draws from two sets: its own `CfbGlyph`, deliberately drawn at
+     1.75, and lucide, which ships every glyph at 2. They sit side by side in
+     the same row — on /readiness it was 40 icons at 2 against 27 at 1.75 — and
+     two weights at one size is what makes a set look unruly rather than drawn.
+     CSS wins over the presentation attribute, so this needs no change at any
+     call site, and charts are untouched: their widths are on `path`, not on a
+     `svg.lucide`. */
+  svg.lucide {
+    stroke-width: 1.75;
+  }
+
   .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
   .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
 
-  /* ── Card padding standards ── */
-  .card-compact { @apply p-4; }      /* Compact cards - lists, dense info */
-  .card-comfortable { @apply p-6; }  /* Comfortable cards - default */
+  /* Collapsed sidebar rail: every chrome glyph shares the larger 20px size. */
+  aside[data-rail] .icon-sm,
+  aside[data-rail] .icon-md,
+  aside[data-rail] svg.h-4,
+  aside[data-rail] svg.w-4,
+  aside[data-rail] svg.lucide {
+    height: 20px;
+    width: 20px;
+  }
+
+  aside[data-rail] [data-sidebar-edge-toggle] svg.lucide {
+    height: 14px;
+    width: 14px;
+  }
+
+  /* Quiet wells for original glyphs — identity without decoration. */
+  .icon-well {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/6 text-muted-foreground;
+  }
+  .icon-well-sm {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/6 text-muted-foreground;
+  }
+
+  /* ── Bilingual secondary text ──
+     The secondary language must read as subordinate to the primary without
+     becoming illegible. Sizing is relative (0.85em) so the ratio holds in an
+     h1, in body copy and in a badge alike, with a 12px floor via max() so it
+     never drops below cursor.com's caption size in already-small containers.
+     Replaces the previous hardcoded text-[9px] / text-[10px].
+     Colour is deliberately NOT set here: it stays a Tailwind class on the
+     element so tailwind-merge can resolve a caller-supplied override
+     (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
+  .bilingual-secondary {
+    font-size: max(12.2412px, 0.765075rem, 0.85em);
+    line-height: 1.35;                 /* room for Greek diacritics */
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  /* Greek set in capitals with open tracking drops its accents and loses its
+     word shapes: "ΔΡΑΣΤΗΡΙΟΤΗΤΑ & ΦΗΜΗ" under "ACTIVITY & REPUTATION" read as
+     a second shout rather than a translation. An uppercase label keeps its
+     capitals in English and reads Greek in sentence case, whichever of the
+     two is the primary line. */
+  .uppercase [lang='el'],
+  .uppercase[lang='el'] {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Separator between primary and secondary in inline mode. */
+  .bilingual-separator {
+    @apply select-none text-muted-foreground/40;
+    font-size: max(12.2412px, 0.765075rem, 0.85em);
+  }
+
+  /* Phone/tablet (16px root): same computed pixels as cursor.com. Desktop
+     overrides below restate each step against the 82% root so the px hold. */
+  .text-2xs {
+    font-size: max(0.765075rem, 12.2412px);
+    line-height: 1rem;
+  }
+
+  .text-xs {
+    font-size: 0.82883125rem;
+    line-height: 1.25rem;
+  }
+
+  .text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
+  .text-base { font-size: 1.0201rem; line-height: 1.5rem; }
+  .text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+  .text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+  .text-4xl { font-size: 2.25rem; line-height: 2.7rem; }
+  .text-5xl { font-size: 3rem; }
+  .text-6xl { font-size: 3.75rem; }
+  .text-7xl { font-size: 4.5rem; }
+
+  @media (max-width: 1023.98px) {
+    .sm\:text-xs  { font-size: 0.82883125rem; line-height: 1.25rem; }
+    .sm\:text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
+    .sm\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+    .sm\:text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+    .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .sm\:text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+    .lg\:text-5xl { font-size: 3rem; }
+    .xl\:text-3xl { font-size: 1.625rem; line-height: 2.03125rem; }
+    .sm\:text-4xl { font-size: 2.25rem; line-height: 2.7rem; }
+    .sm\:text-5xl { font-size: 3rem; }
+    .sm\:text-6xl { font-size: 3.75rem; }
+    .md\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
+    .md\:text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+    .md\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .md\:text-6xl { font-size: 3.75rem; }
+  }
+
+  /* ── Web view type scale ────────────────────────────────────────────────
+     Cursor.com steps, then +2% on 2xs–base (two Overview +1% passes).
+       Display half unchanged:
+       12.24 caption · 13.26 helper · 14.28 nav/UI · 16.32 body
+       18 · 20 · 24 page title · 26 h1 · 36 · 48 · 60 · 72 display
+     Rem values are those pixels against the 82% desktop root (13.12px),
+     so a raised browser default still scales the ladder. The phone rules
+     above use the same pixels at a 16px root. typeScaleOrder.test.ts
+     requires this block to stay ascending and to list every responsive
+     variant the product uses. */
+  @media (min-width: 1024px) {
+    .text-2xs {
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
+    }
+
+    .text-xs {
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
+    }
+
+    .text-sm {
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
+    }
+
+    .text-base {
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
+    }
+
+    .text-lg {
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
+    }
+
+    .text-xl {
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
+    }
+
+    .text-2xl {
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
+    }
+
+    .text-3xl {
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
+    }
+
+    .text-4xl {
+      font-size: 2.74390244rem;
+      line-height: 3.29268293rem;
+    }
+
+    .text-5xl {
+      font-size: 3.65853659rem;
+    }
+
+    .text-6xl {
+      font-size: 4.57317073rem;
+    }
+
+    .text-7xl {
+      font-size: 5.48780488rem;
+    }
+
+    .sm\:text-xs {
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
+    }
+
+    .sm\:text-sm {
+      font-size: 1.08852134rem;
+      line-height: 1.60060976rem;
+    }
+
+    .sm\:text-lg {
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
+    }
+
+    .sm\:text-xl {
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
+    }
+
+    .sm\:text-2xl {
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
+    }
+
+    .sm\:text-3xl {
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
+    }
+
+    .xl\:text-3xl {
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
+    }
+
+    .lg\:text-5xl {
+      font-size: 3.65853659rem;
+    }
+
+    .sm\:text-4xl {
+      font-size: 2.74390244rem;
+      line-height: 3.29268293rem;
+    }
+
+    .sm\:text-5xl {
+      font-size: 3.65853659rem;
+    }
+
+    .sm\:text-6xl {
+      font-size: 4.57317073rem;
+    }
+
+    .md\:text-lg {
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
+    }
+
+    .md\:text-xl {
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
+    }
+
+    .md\:text-2xl {
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
+    }
+
+    .md\:text-6xl {
+      font-size: 4.57317073rem;
+    }
+
+    .lg\:text-xs {
+      font-size: 1.01076982rem;
+      line-height: 1.52439024rem;
+    }
+
+    .lg\:text-6xl {
+      font-size: 4.57317073rem;
+    }
+
+    .lg\:text-7xl {
+      font-size: 5.48780488rem;
+    }
+
+    aside .text-2xs {
+      /* 12.2412px floor; painted caption is 12.61px */
+      font-size: max(0.93301829rem, 12.61px);
+      line-height: max(1.24402439rem, 16.3216px);
+    }
+
+    aside .text-xs {
+      font-size: 13.50px;
+      line-height: 1.35;
+    }
+
+    aside .text-sm {
+      font-size: 13.50px;
+      line-height: 1.4;
+    }
+
+    aside .text-base {
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
+    }
+
+    aside .text-lg {
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
+    }
+
+    aside .text-xl {
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
+    }
+
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 {
+      height: 1.0506rem;
+      width: 1.0506rem;
+    }
+
+    aside .icon-md,
+    header .icon-md {
+      height: 1.31325rem;
+      width: 1.31325rem;
+    }
+
+    aside .icon-lg,
+    header .icon-lg {
+      height: 1.5759rem;
+      width: 1.5759rem;
+    }
+
+    aside .nav-section-label {
+      /* 12.2412px floor; painted caption is 12.61px */
+      font-size: max(0.93301829rem, 12.61px);
+      line-height: max(1.24402439rem, 16.3216px);
+    }
+  }
+
+  /* ── Desktop spatial scale, anchored in pixels ──────────────────────────
+     The 82% desktop root shrinks every rem, and the type scale has been
+     retuned nine times to compensate. The *spatial* scales never were, so
+     they had all quietly drifted about a fifth smaller than the values their
+     own comments state, while the text beside them stayed put:
+
+       .icon-sm says 16px, rendered 13.12px
+       .card-comfortable says p-6 = 24px, rendered 19.68px
+       Button size="sm" says h-8 = 32px, rendered 26.24px
+       Button size="xs" says h-7 = 28px, rendered 22.96px -- under the 24px
+         floor of WCAG 2.5.8, which is a pixel floor and not a rem one
+
+     That is the whole of the "cramped" feeling: glyphs too small for their
+     labels, controls too short for their text, and cards whose padding lost
+     a fifth of its breathing room. Restoring the declared sizes is not a
+     redesign -- it is making the rendered value equal the documented one.
+
+     Type is deliberately untouched here. It is the one scale that was tuned
+     on purpose, and it stays exactly where it was set. */
+  @media (min-width: 1024px) {
+    .icon-sm  { height: 16px; width: 16px; }
+    .icon-md  { height: 20px; width: 20px; }
+    .icon-lg  { height: 24px; width: 24px; }
+    .icon-xl  { height: 32px; width: 32px; }
+
+    /* Tailwind's bare h-3/h-4/h-5/h-6 on an svg is the same intent written a
+       different way, and roughly half the product's glyphs are written that
+       way. Left to drift they would now be visibly smaller than the icon-*
+       beside them, which is a worse inconsistency than the one being fixed. */
+    svg.h-3 { height: 12px; }
+    svg.w-3 { width: 12px; }
+    svg.h-4 { height: 16px; }
+    svg.w-4 { width: 16px; }
+    svg.h-5 { height: 20px; }
+    svg.w-5 { width: 20px; }
+    svg.h-6 { height: 24px; }
+    svg.w-6 { width: 24px; }
+
+    /* The chrome no longer needs its own, larger icon scale: it existed only
+       because the page's glyphs were stuck at 13.12px, and the rail's were
+       lifted to 13.78px to compensate. Both are 16px now, which is what the
+       rail asked for and what puts the two surfaces back in agreement. */
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 { height: 16px; width: 16px; }
+
+    aside .icon-md,
+    header .icon-md { height: 20px; width: 20px; }
+
+    aside .icon-lg,
+    header .icon-lg { height: 24px; width: 24px; }
+
+    /* Collapsed 68px rail: one glyph size, matching the larger bottom chrome
+       (bell / language / theme sit on `icon-md`). Higher specificity than
+       `aside .icon-sm` so the 16px page restore does not shrink the stack. */
+    aside[data-rail] .icon-sm,
+    aside[data-rail] .icon-md,
+    aside[data-rail] svg.h-4,
+    aside[data-rail] svg.w-4,
+    aside[data-rail] svg.lucide {
+      height: 20px;
+      width: 20px;
+    }
+
+    aside[data-rail] [data-sidebar-edge-toggle] svg.lucide {
+      height: 14px;
+      width: 14px;
+    }
+
+    /* Restate after the 16px icon restore so section glyphs stay 1.08 × title. */
+    h3.page-section > svg,
+    h3.page-section svg.icon-sm,
+    h3.page-section svg.lucide,
+    h3.page-section svg.h-4,
+    h3.founder-dash-section > svg,
+    h3.founder-dash-section svg.icon-sm,
+    h3.founder-dash-section svg.lucide {
+      height: 1.08em;
+      width: 1.08em;
+    }
+
+    /* Startup Builder titles and overview type follow the same Cursor ladder. */
+    .builder-type :is(h2, h3, .builder-title).text-base {
+      font-size: 1.24402439rem;
+      line-height: 1.82926829rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-lg,
+    .builder-type :is(h2, h3).sm\:text-lg {
+      font-size: 1.37195122rem;
+      line-height: 1.98170732rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-xl,
+    .builder-type :is(h2, h3).sm\:text-xl {
+      font-size: 1.52439024rem;
+      line-height: 2.13414634rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-2xl,
+    .builder-type :is(h2, h3).sm\:text-2xl {
+      font-size: 1.82926829rem;
+      line-height: 2.43902439rem;
+    }
+    .builder-type :is(h2, h3, .builder-title).text-3xl,
+    .builder-type :is(h2, h3).sm\:text-3xl {
+      font-size: 1.98170732rem;
+      line-height: 2.47713415rem;
+    }
+    .builder-type [role='tab'][data-state='active'] {
+      box-shadow: none;
+      border-width: 0;
+    }
+
+  }
+
+  /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
+     is 19.67px once the desktop root is 82% -- and because these are utilities
+     they also beat the `min-height: 24px` base rule that was meant to hold the
+     line. Use these instead on anything a pointer has to hit.
+     `tap-target` for an icon-only control, `tap-target-y` where only the height
+     is short (a text button or a name link in a row). */
+  .tap-target {
+    min-height: max(1.5rem, 24px);
+    min-width: max(1.5rem, 24px);
+  }
+
+  .tap-target-y {
+    min-height: max(1.5rem, 24px);
+  }
+
+  /* ── Phones: one language on the inline variants ──
+     Both languages on a single line makes every string roughly twice as long.
+     Measured on a 360px viewport, that was the single biggest source of broken
+     layout on this product: 35 clipped text nodes and 48 elements past the
+     viewport edge on the founder dashboard alone. Milestone titles were losing
+     ~94% of their width — "Complete MVP v1" rendered as "C…" — and
+     "Open tracker · Άνοιγμα παρακολούθησης" ran to x=539 in a 360px window.
+     Hiding the secondary here takes those to 4 and 10.
+
+     Only the inline variants are affected. `stacked` puts the second language on
+     its own line, which fits and is what the mobile bottom nav uses, so it keeps
+     both. No information is lost either way: the primary line is already the
+     reader's chosen language, and the top-bar switcher changes which one that is.
+
+     !important because a call site may pass a display utility through
+     secondaryClassName; the intent here is not overridable per-site. */
+  @media (max-width: 639.98px) {
+    .bilingual-secondary--inline,
+    .bilingual-separator--inline {
+      display: none !important;
+    }
+
+    /* The canvas inspector is a 220px column from `sm` up. On a phone that
+       column covers the notes, so it stays closed until the layers button
+       opens it. The attribute is present at every width; this query is the
+       only place it takes effect. */
+    [data-phone-inspector='closed'] {
+      display: none;
+    }
+
+    /* The stacked second line uses the caption step (12.24px). "Εξερεύνηση"
+       is 71.5px at that size and does not fit a five-column tab at 375px.
+       11px is the floor, and it measures 64px. */
+    [data-mobile-tabs] .bilingual-secondary {
+      font-size: 11px;
+      line-height: 1.15;
+    }
+
+    /* Call sites pin h-7 / h-8 / h-9 / h-10 (28 / 32 / 36 / 40px) for the
+       desktop ladder. Those utilities are not breakpoint-scoped, so a phone
+       inherited them and the 44px touch height on Button never applied.
+       Restore the floor here only — h-7 joins the list because the canvas
+       toolbars and panel controls it covers stay reachable on phones, and
+       28px is a fingertip miss away from the one next to it. From 640px
+       the utilities mean what they say again. Square controls grow on both
+       axes; a full-width button only grows in height. */
+    :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .min-h-7, .min-h-8, .min-h-9, .min-h-10) {
+      height: auto;
+      min-height: 44px;
+    }
+    :is(button, a, [role='button']):is(.w-7, .w-8, .w-9),
+    :is(button, a, [role='button']).h-10.w-10 {
+      width: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* A control paints its own foreground; the page's muted token is not readable
+     on it. Measured on the primary fill: #94a3b8 on #6756dc is 2.07:1, and axe
+     flagged it on /discover, /profile, /connections, /projects, /milestones,
+     /fundraising and /readiness -- every filled button with a bilingual label
+     had an unreadable second line. Inheriting keeps whatever the control chose
+     (5.32:1 on the primary fill); the size difference still carries the
+     hierarchy, which is what the smaller line was for. */
+  button .bilingual-secondary,
+  button .bilingual-separator,
+  [role='button'] .bilingual-secondary,
+  [role='button'] .bilingual-separator,
+  [role='tab'] .bilingual-secondary,
+  [role='tab'] .bilingual-separator,
+  /* Any element that declares its own foreground has taken responsibility for
+     the contrast on it -- a filled Button rendered `asChild` is an <a>, not a
+     <button>, so the element selectors above miss it. Keying on the foreground
+     class is both broader and more precise than tagging the component: it says
+     "wherever the surface sets its own text colour, the second language uses
+     that colour too". */
+  .text-primary-foreground .bilingual-secondary,
+  .text-primary-foreground .bilingual-separator,
+  .text-secondary-foreground .bilingual-secondary,
+  .text-secondary-foreground .bilingual-separator,
+  .text-destructive-foreground .bilingual-secondary,
+  .text-destructive-foreground .bilingual-separator,
+  .text-accent-foreground .bilingual-secondary,
+  .text-accent-foreground .bilingual-separator {
+    color: inherit;
+  }
+
+  /* The same argument, one level up: a call site may put the muted token on a
+     wrapper *around* a bilingual label, which colours both languages and not
+     just the second. The Readiness CTA "Άνοιγμα Builder" does exactly that for
+     its subtitle, measuring the same 2.07:1 on the primary fill — it went
+     unseen only because the text was escaping the button's box entirely and
+     axe was comparing it against the page.
+
+     Scoped to surfaces that declare their own foreground, deliberately: an
+     `outline` or `ghost` button sits on the page background, where the muted
+     token is both readable and the right choice, and those variants carry
+     `text-foreground` rather than a `*-foreground` pair. Size still carries
+     the hierarchy the muted colour was providing. */
+  .text-primary-foreground .text-muted-foreground,
+  .text-secondary-foreground .text-muted-foreground,
+  .text-destructive-foreground .text-muted-foreground,
+  .text-accent-foreground .text-muted-foreground {
+    color: inherit;
+  }
+
+  /* Top-bar chips hold their second language only where the bar has room.
+     Measured at 834px: the header's right-hand cluster is `shrink-0` and the
+     two demo chips rendered both languages in full, taking it to 794px and the
+     header to 988px inside an 834px viewport -- the whole page scrolled
+     sideways. The bar is already at capacity on a tablet, so these chips join
+     the one-language rule up to `lg` instead of `sm`. Nothing is lost: each
+     chip carries a Tooltip with the full bilingual text. */
+  @media (max-width: 1279.98px) {
+    .bilingual-secondary--chrome,
+    .bilingual-separator--chrome {
+      display: none !important;
+    }
+  }
+
+  /* ── Card padding standards ──
+     Responsive on purpose. CardContent/CardFooter apply .card-comfortable
+     unconditionally, and because these are declared in @layer utilities *after*
+     Tailwind emits .p-3/.p-4, they also beat a per-card `p-3` passed at the call
+     site — so this rule alone decided the padding of every card in the product.
+     At 24px a side on a 360px phone, a stat card in a two-column grid spent 48 of
+     its 160px on padding and left the label 72px, which truncated
+     "Κορυφαίες αντιστοιχίσεις" by 47%. Stepping down to 16px on phones returns
+     that space and keeps the roomier desktop rhythm above sm. */
+  .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
+  .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
+
+  /* ── An item that is switched off ──
+     Paused webhooks, disabled flags, inactive API keys, unlisted services were
+     all drawn at `opacity-60`. Opacity fades the text with the card, and at 60%
+     the muted secondary line lands near 2.5:1 on the card in every theme -
+     axe failed /admin/feature-flags (8 nodes), /provider/services (7) and
+     /tenant/webhooks (4) on exactly that. "Off" is a state, and the state is
+     already said by the switch and the badge beside it; the card only has to
+     look quieter, which a recessed fill and a dashed edge do without taking
+     any contrast from the words. */
+  .surface-inactive {
+    background-color: hsl(var(--muted) / 0.45);
+    border-style: dashed;
+    box-shadow: none;
+  }
+
+  /* ── The seam under a card heading ──
+     `CardContent` carries `pt-0`, so the whole distance from a card's title to
+     its first line of body is this one value: the header's bottom padding. It
+     was the card's full padding — 24px above the title and 24px below it — and
+     equal space on both sides is what makes a heading read as floating between
+     two blocks instead of belonging to the one under it. Proximity is the only
+     thing marking that ownership, so the space below has to be the smaller of
+     the two.
+
+     Two thirds: 16px under 24px of padding, 12px under 16px. Call sites cannot
+     express this — the 23 headers on the founder pages ask for `pb-2`, `pb-3`
+     or nothing and every one of them rendered 24px, because `.card-comfortable`
+     above is declared after Tailwind's `pb-*` in the same layer and wins on
+     source order. Stated here, once, it is the same distance on every card in
+     the product.
+
+     Two classes, not one: `p-6`/`sm:p-6` at a call site carries (0,1,0) and a
+     `sm:` variant lands late enough in the sheet to beat a single-class rule.
+     (0,2,0) settles it for good. A card that genuinely needs a different seam
+     asks with `!pb-…`, which is the honest way to say "this one is special". */
+  .card-comfortable.card-header { padding-bottom: calc(12px * var(--chrome-y)); }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header { padding-bottom: calc(16px * var(--chrome-y)); }
+  }
+
+  /* (The header→body seam and the explicit-zero overrides live unlayered at
+     the bottom of this file — unlayered rules always beat layered ones, and
+     the [data-theme="minimal"] block below is unlayered too.) */
+
+  /* ── The same padding, in the pixels it claims ──
+     `p-6` is 24px everywhere but the desktop app, where the 82% root renders
+     it 19.68px — so the roomier desktop rhythm this comment describes was the
+     one place that never got it. Stated after the definitions above because
+     these carry the same specificity and source order decides between them.
+
+     Vertical rhythm goes with it: a card whose padding grows while the space
+     around it stays put reads as more crowded, not less. */
+  @media (min-width: 1024px) {
+    .card-comfortable { padding: calc(24px * var(--chrome-y)) 24px; }
+    .card-compact { padding: calc(16px * var(--chrome-y)) 16px; }
+    .card-comfortable.card-header { padding-bottom: calc(16px * var(--chrome-y)); }
+
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 24px; }
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 32px; }
+
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-5 { gap: 20px; }
+    .gap-6 { gap: 24px; }
+
+    /* The raw padding utilities, for the same reason. A card written `p-4` was
+       getting 13.12px of breathing room where it asked for 16, and `p-3` was
+       down to 9.84px — which is where the crowding that survived the
+       card-level fix above was coming from. Only the steps the product
+       actually uses are restated; anything else keeps its rem. */
+    .p-2   { padding: calc(8px * var(--chrome-y)) 8px; }
+    .p-2\.5 { padding: calc(10px * var(--chrome-y)) 10px; }
+    .p-3   { padding: calc(12px * var(--chrome-y)) 12px; }
+    .p-3\.5 { padding: calc(14px * var(--chrome-y)) 14px; }
+    .p-4   { padding: calc(16px * var(--chrome-y)) 16px; }
+    .p-5   { padding: calc(20px * var(--chrome-y)) 20px; }
+    .p-6   { padding: calc(24px * var(--chrome-y)) 24px; }
+
+    .px-2   { padding-left: 8px; padding-right: 8px; }
+    .px-2\.5 { padding-left: 10px; padding-right: 10px; }
+    .px-3   { padding-left: 12px; padding-right: 12px; }
+    .px-3\.5 { padding-left: 14px; padding-right: 14px; }
+    .px-4   { padding-left: 16px; padding-right: 16px; }
+    .px-5   { padding-left: 20px; padding-right: 20px; }
+    .px-6   { padding-left: 24px; padding-right: 24px; }
+
+    .py-1   { padding-top: calc(4px * var(--chrome-y)); padding-bottom: calc(4px * var(--chrome-y)); }
+    .py-1\.5 { padding-top: calc(6px * var(--chrome-y)); padding-bottom: calc(6px * var(--chrome-y)); }
+    .py-2   { padding-top: calc(8px * var(--chrome-y)); padding-bottom: calc(8px * var(--chrome-y)); }
+    .py-2\.5 { padding-top: calc(10px * var(--chrome-y)); padding-bottom: calc(10px * var(--chrome-y)); }
+    .py-3   { padding-top: calc(12px * var(--chrome-y)); padding-bottom: calc(12px * var(--chrome-y)); }
+    .py-3\.5 { padding-top: calc(14px * var(--chrome-y)); padding-bottom: calc(14px * var(--chrome-y)); }
+    .py-4   { padding-top: calc(16px * var(--chrome-y)); padding-bottom: calc(16px * var(--chrome-y)); }
+    .py-5   { padding-top: calc(20px * var(--chrome-y)); padding-bottom: calc(20px * var(--chrome-y)); }
+    .py-6   { padding-top: calc(24px * var(--chrome-y)); padding-bottom: calc(24px * var(--chrome-y)); }
+
+    /* The side utilities, restated after the shorthands above — and why that
+       order is the whole fix. Tailwind emits `p-*`, then `px-*`/`py-*`, then
+       `pt-*`/`pr-*`/`pb-*`/`pl-*`, so a side class beats the shorthand it
+       refines: `px-3 pl-9` means 12px on the right and 36px on the left. The
+       px anchors above restated only the shorthands, and they sit later in the
+       sheet than Tailwind's side classes, so on desktop the shorthand won
+       instead. Measured: 13 search fields across /events, /jobs, /groups,
+       /members, /mentoring, /marketplace, /opportunities, /messages, /shortlist,
+       /investors, /learning, /research — each an `Input` carrying `px-3` with a
+       call-site `pl-9` or `pl-10` — started their placeholder 12.8px *under*
+       the magnifier icon. The same inversion undid every `p-4 pt-0` and
+       `p-4 pb-2` written on a desktop card. Restating the side steps the
+       product uses, here, after the shorthands, puts the precedence back where
+       Tailwind has it. */
+    .pt-0 { padding-top: 0; }
+    .pt-0\.5 { padding-top: calc(2px * var(--chrome-y)); }
+    .pt-1 { padding-top: calc(4px * var(--chrome-y)); }
+    .pt-1\.5 { padding-top: calc(6px * var(--chrome-y)); }
+    .pt-2 { padding-top: calc(8px * var(--chrome-y)); }
+    .pt-2\.5 { padding-top: calc(10px * var(--chrome-y)); }
+    .pt-3 { padding-top: calc(12px * var(--chrome-y)); }
+    .pt-4 { padding-top: calc(16px * var(--chrome-y)); }
+    .pt-5 { padding-top: calc(20px * var(--chrome-y)); }
+    .pt-6 { padding-top: calc(24px * var(--chrome-y)); }
+    .pt-8 { padding-top: calc(32px * var(--chrome-y)); }
+
+    .pr-0 { padding-right: 0; }
+    .pr-0\.5 { padding-right: 2px; }
+    .pr-1 { padding-right: 4px; }
+    .pr-2 { padding-right: 8px; }
+    .pr-3 { padding-right: 12px; }
+    .pr-4 { padding-right: 16px; }
+    .pr-6 { padding-right: 24px; }
+    .pr-7 { padding-right: 28px; }
+    .pr-8 { padding-right: 32px; }
+    .pr-10 { padding-right: 40px; }
+    .pr-12 { padding-right: 48px; }
+    .pr-14 { padding-right: 56px; }
+    .pr-16 { padding-right: 64px; }
+    .pr-20 { padding-right: 80px; }
+    .pr-40 { padding-right: 160px; }
+    .pr-44 { padding-right: 176px; }
+
+    .pb-0 { padding-bottom: 0; }
+    .pb-0\.5 { padding-bottom: calc(2px * var(--chrome-y)); }
+    .pb-1 { padding-bottom: calc(4px * var(--chrome-y)); }
+    .pb-1\.5 { padding-bottom: calc(6px * var(--chrome-y)); }
+    .pb-2 { padding-bottom: calc(8px * var(--chrome-y)); }
+    .pb-2\.5 { padding-bottom: calc(10px * var(--chrome-y)); }
+    .pb-3 { padding-bottom: calc(12px * var(--chrome-y)); }
+    .pb-4 { padding-bottom: calc(16px * var(--chrome-y)); }
+    .pb-5 { padding-bottom: calc(20px * var(--chrome-y)); }
+    .pb-6 { padding-bottom: calc(24px * var(--chrome-y)); }
+    .pb-8 { padding-bottom: calc(32px * var(--chrome-y)); }
+    .pb-10 { padding-bottom: calc(40px * var(--chrome-y)); }
+    .pb-16 { padding-bottom: calc(64px * var(--chrome-y)); }
+    .pb-20 { padding-bottom: 80px; }
+    .pb-24 { padding-bottom: 96px; }
+    .pb-28 { padding-bottom: 112px; }
+
+    .pl-0 { padding-left: 0; }
+    .pl-0\.5 { padding-left: 2px; }
+    .pl-1 { padding-left: 4px; }
+    .pl-1\.5 { padding-left: 6px; }
+    .pl-2 { padding-left: 8px; }
+    .pl-3 { padding-left: 12px; }
+    .pl-4 { padding-left: 16px; }
+    .pl-5 { padding-left: 20px; }
+    .pl-6 { padding-left: 24px; }
+    .pl-7 { padding-left: 28px; }
+    .pl-8 { padding-left: 32px; }
+    .pl-9 { padding-left: 36px; }
+    .pl-10 { padding-left: 40px; }
+  }
 
   /* ── Spacing rhythm ── */
   .section-spacing { @apply space-y-8; }    /* Major sections */
@@ -659,5 +2028,1012 @@
   .hover-lift-sm:hover {
     @apply -translate-y-0.5; /* 2px lift - subtle, professional */
   }
+
+  /* ── Safe areas + mobile ergonomics ── */
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+  .safe-x {
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  }
+  @media (min-width: 1024px) {
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+  }
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .overflow-touch {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   "minimal" — component layer (Claude 803ddb2)
+
+   Everything here is scoped to [data-theme="minimal"]. No other theme sees a
+   single one of these rules, and nothing is removed. Token name on this line
+   is --primary-accessible (not Claude's --primary-emphasis).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="minimal"] {
+  /* ── 1. One elevation ────────────────────────────────────────────────── */
+  .shadow-sm,
+  .shadow,
+  .shadow-md,
+  .shadow-lg,
+  .hover\:shadow-md:hover,
+  .hover\:shadow-lg:hover {
+    box-shadow: none;
+  }
+
+  /* …except the things that genuinely float. */
+  [role='dialog'],
+  [data-radix-popper-content-wrapper] > * {
+    box-shadow: 0 1px 2px hsl(30 8% 12% / 0.04), 0 12px 32px -8px hsl(30 8% 12% / 0.12);
+  }
+
+  /* ── 2. The page title is not a box ──────────────────────────────────── */
+  #main-content > div > section:first-child,
+  #main-content > section:first-child {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 1rem;
+  }
+
+  /* ── 3. Focus you cannot miss ────────────────────────────────────────── */
+  :focus-visible {
+    outline: 1px solid hsl(var(--foreground) / 0.22);
+    outline-offset: 2px;
+  }
+
+  /* …except fields that already have a border: a second stroke sits inside
+     the first (Ask AI, selects, every search bar) and looks smaller/kitsch. */
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible,
+  [role='combobox']:focus,
+  [role='combobox']:focus-visible,
+  [data-radix-select-trigger]:focus,
+  [data-radix-select-trigger]:focus-visible {
+    outline: none;
+    outline-offset: 0;
+    box-shadow: none;
+  }
+
+  /* ── 6. Fewer weights ────────────────────────────────────────────────── */
+  .font-bold,
+  .font-extrabold,
+  .font-black {
+    font-weight: 600;
+  }
+
+  /* ── 7. Calm by default ──────────────────────────────────────────────── */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-b,
+  .bg-gradient-to-t,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background-image: none;
+  }
+
+  .hover-lift:hover,
+  .card-interactive:hover {
+    transform: none;
+  }
+
+  .animate-bounce-subtle,
+  .animate-pulse-slow,
+  .animate-spin-slow,
+  .animate-scale-in,
+  .animate-fade-in-up {
+    animation: none;
+  }
+
+  /* ── Chrome recedes ──────────────────────────────────────────────────── */
+  aside[aria-label='Main navigation'],
+  header.sticky {
+    background: hsl(var(--background));
+    backdrop-filter: none;
+  }
+
+  /* ── Room to breathe ───────────────────────────────────────────────────
+     Was a flat 28px on every card at every width: on a 360px phone a
+     two-column stat card spent 56 of its ~160px on padding, which is what
+     squeezed the labels. 20px below sm, the intended 28px from sm up. */
+  .card-comfortable {
+    padding: calc(1.25rem * var(--chrome-y)) 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .card-comfortable {
+      padding: calc(1.75rem * var(--chrome-y)) 1.75rem;
+    }
+  }
+  /* Stated in pixels from `lg`, where the 82% root turns the 28px intended
+     just above into 22.96px — narrower than the 24px every other theme gets,
+     which inverts what this theme is for. This rule is unlayered and carries
+     (0,2,0), so it also has to restate the anchor the utilities layer applies
+     to the other themes; it cannot simply fall through to it. */
+  @media (min-width: 1024px) {
+    .card-comfortable {
+      padding: calc(28px * var(--chrome-y)) 28px;
+    }
+  }
+  /* The seam, restated for this theme for the same reason the padding is: these
+     rules are unlayered and carry (0,2,0), so the `.card-header` rule in the
+     utilities layer cannot reach a card inside it. Two thirds again. */
+  .card-comfortable.card-header {
+    padding-bottom: calc(14px * var(--chrome-y));
+  }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header {
+      padding-bottom: calc(18px * var(--chrome-y));
+    }
+  }
+
+  #main-content {
+    padding-top: 1.5rem;
+  }
+}
+
+/* CardContent/CardFooter carry `pt-0` so a card's body and footer sit under
+   the header's own bottom padding — but `.card-comfortable` is declared after
+   Tailwind's utilities in the same layer (and again, unlayered, inside the
+   minimal theme), so `pt-0` never won and every header↔body seam paid the
+   padding twice. Restoring the intent for every theme: a second
+   card-comfortable block drops only its top padding. A headerless
+   CardContent is a first child, so it keeps its full padding. */
+.card-comfortable ~ .card-comfortable {
+  padding-top: 0;
+}
+
+/* ── −1% component height ───────────────────────────────────────────────
+   Boxes only: min-height, height, and (above) padding-block. font-size and
+   line-height are not listed. `lg:h-auto` is restated after so stacked CTAs
+   are not clipped. The 24px WCAG 2.5.8 floor is not scaled. */
+.h-7 { height: calc(1.75rem * var(--chrome-y)); }
+.h-8 { height: calc(2rem * var(--chrome-y)); }
+.h-9 { height: calc(2.25rem * var(--chrome-y)); }
+.h-10 { height: calc(2.5rem * var(--chrome-y)); }
+.h-11 { height: calc(2.75rem * var(--chrome-y)); }
+.h-12 { height: calc(3rem * var(--chrome-y)); }
+.h-14 { height: calc(3.5rem * var(--chrome-y)); }
+.h-16 { height: calc(4rem * var(--chrome-y)); }
+
+.min-h-7 { min-height: calc(1.75rem * var(--chrome-y)); }
+.min-h-8 { min-height: calc(2rem * var(--chrome-y)); }
+.min-h-9 { min-height: calc(2.25rem * var(--chrome-y)); }
+.min-h-10 { min-height: calc(2.5rem * var(--chrome-y)); }
+.min-h-11 { min-height: calc(2.75rem * var(--chrome-y)); }
+.min-h-12 { min-height: calc(3rem * var(--chrome-y)); }
+.min-h-14 { min-height: calc(3.5rem * var(--chrome-y)); }
+.min-h-16 { min-height: calc(4rem * var(--chrome-y)); }
+
+@media (min-width: 768px) {
+  .md\:h-8 { height: calc(2rem * var(--chrome-y)); }
+  .md\:h-9 { height: calc(2.25rem * var(--chrome-y)); }
+  .md\:h-10 { height: calc(2.5rem * var(--chrome-y)); }
+  .md\:min-h-8 { min-height: calc(2rem * var(--chrome-y)); }
+  .md\:min-h-9 { min-height: calc(2.25rem * var(--chrome-y)); }
+  .md\:min-h-10 { min-height: calc(2.5rem * var(--chrome-y)); }
+}
+
+@media (min-width: 1024px) {
+  .lg\:h-auto { height: auto; }
+}
+
+[data-radix-select-trigger],
+[role='combobox'] {
+  min-height: calc(2.5rem * var(--chrome-y));
+}
+[role='tablist'],
+[role='tab'] {
+  min-height: calc(2.75rem * var(--chrome-y));
+}
+
+
+
+
+
+
+/* ── Page rail content ──────────────────────────────────────────────────────
+   Tailwind's `sm:` and `lg:` are viewport queries, not container queries. A
+   block authored for a ~1200px column keeps its `lg:grid-cols-4` when it is
+   moved into a 320px rail, because the viewport is still wide - so four
+   ~60px columns get made and the labels overlap into noise. That is exactly
+   what happened to the "where to go next" and "next steps" sections.
+
+   Tailwind 3.4 has no container queries and the plugin would be a dependency
+   for this one rule, so the panel states the constraint its width implies:
+   inside it, a grid is one column. Specificity does the work (0,2,0 beats a
+   utility's 0,1,0), so no `!important` is needed and nothing else is touched.
+
+   Content that genuinely reads better in columns at 320px opts out with
+   `data-rail-keep-layout`. The expand dialog does not carry the attribute at
+   all, so the same content renders there at its designed layout. */
+[data-rail-content] .grid:not([data-rail-keep-layout]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Widths chosen for a page column overflow a rail. Cap them rather than let
+   the panel scroll sideways. */
+[data-rail-content] .max-w-md,
+[data-rail-content] .max-w-lg,
+[data-rail-content] .max-w-xl,
+[data-rail-content] .max-w-2xl {
+  max-width: 100%;
+}
+
+/* Page cards keep 24–28px padding. In the ~240px rail that leaves ~160px
+   for copy, so Greek labels (streak, recent activity) walk off the card.
+   Tighten padding only inside the rail. */
+[data-rail-content] .card-comfortable {
+  padding: 14px;
+}
+[data-rail-content] .card-comfortable.card-header {
+  padding-bottom: 10px;
+}
+[data-rail-content] .card-comfortable ~ .card-comfortable {
+  padding-top: 0;
+}
+
+/* ── App chrome type (1.08 from the caption floor) ───────────────────────
+   Claude `b05b51b8` last push is 22.12 / 21.13 / 19.21 / 12.35 (phone
+   labels 10.24). Tight title≈section is good; the set is too large and
+   the 12.35→22.12 span is 9.77px. No smaller system exists on that
+   branch, so chrome is a geometric 1.08 from the same 12.2412px floor
+   as `aside .text-2xs` (between a minor and a major second):
+
+     n=0 label   = 12.2412px          (floor)
+     n=2 compact = 12.2412 × 1.08²    → 14.28px = ladder sm / rail
+     n=3 figure  = 12.2412 × 1.08³    → 15.42px
+     n=4 section = 12.2412 × 1.08⁴    → 16.65px
+     n=5 title   = ladder lg          → 18px   (1.08⁵ ≈ 17.99)
+
+   Adjacent chrome steps stay ~1.08. Title→section ≈ 1.35px.
+   Title→label span = 5.76px (Claude 9.77). Same px every breakpoint —
+   Claude phone inverted section above title. Roles stay; `.text-*` does
+   not change. Element+class so these beat later `sm:text-*`. */
+h1.page-title,
+h1.founder-dash-h1,
+p.page-stat,
+h3.page-stat,
+span.page-stat,
+div.page-stat,
+dd.page-stat,
+p.founder-dash-stat {
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
+}
+p.page-stat-label,
+p.page-stat-meta,
+span.page-stat-label,
+div.page-stat-label,
+div.page-stat-meta,
+p.founder-dash-stat-label,
+p.founder-dash-stat-meta {
+  font-size: max(12.2412px, 0.765075rem);
+  line-height: max(16.3216px, 1rem);
+}
+h3.page-section,
+h3.founder-dash-section {
+  font-size: max(12.2412px, 1.03046733rem);
+  line-height: 1.485rem;
+}
+/* Glyph in the title row = 1.08 × that title, not a fixed 16px next to 16.65. */
+h3.page-section > svg,
+h3.page-section svg.icon-sm,
+h3.page-section svg.lucide,
+h3.founder-dash-section > svg,
+h3.founder-dash-section svg.icon-sm,
+h3.founder-dash-section svg.lucide {
+  height: 1.08em;
+  width: 1.08em;
+}
+p.page-figure,
+p.founder-dash-figure {
+  font-size: max(12.2412px, 0.95413642rem);
+  line-height: 1.423125rem;
+}
+@media (min-width: 640px) {
+  h1.page-title,
+  h1.founder-dash-h1,
+  p.page-stat,
+  h3.page-stat,
+  span.page-stat,
+  div.page-stat,
+  dd.page-stat,
+  p.founder-dash-stat {
+    font-size: max(12.2412px, 1.11375rem);
+    line-height: 1.60875rem;
+  }
+  p.page-stat-label,
+  p.page-stat-meta,
+  span.page-stat-label,
+  div.page-stat-label,
+  div.page-stat-meta,
+  p.founder-dash-stat-label,
+  p.founder-dash-stat-meta {
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1rem);
+  }
+  h3.page-section,
+  h3.founder-dash-section {
+    font-size: max(12.2412px, 1.03046733rem);
+    line-height: 1.485rem;
+  }
+}
+@media (min-width: 1024px) {
+  h1.page-title,
+  h1.founder-dash-h1,
+  p.page-stat,
+  h3.page-stat,
+  span.page-stat,
+  div.page-stat,
+  dd.page-stat,
+  p.founder-dash-stat {
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
+  }
+  p.page-stat-label,
+  p.page-stat-meta,
+  span.page-stat-label,
+  div.page-stat-label,
+  div.page-stat-meta,
+  p.founder-dash-stat-label,
+  p.founder-dash-stat-meta {
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1.24402439rem);
+  }
+  h3.page-section,
+  h3.founder-dash-section {
+    font-size: max(12.2412px, 1.25666748rem);
+    line-height: 1.81097561rem;
+  }
+  p.page-figure,
+  p.founder-dash-figure {
+    font-size: max(12.2412px, 1.16358100rem);
+    line-height: 1.73551823rem;
+  }
+}
+
+/* Dense cards + the ~240px rail stay on ladder `sm`. Do not key this off
+   leftover `text-sm` on canvas titles — that split 14.28 vs 18 on the
+   same page. */
+h3.page-section.page-section--compact,
+[data-rail-content] h3.page-section,
+[data-rail-content] h3.founder-dash-section {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+
+@media (min-width: 640px) {
+  h3.page-section.page-section--compact,
+  [data-rail-content] h3.page-section,
+  [data-rail-content] h3.founder-dash-section {
+    font-size: 0.88366163rem;
+    line-height: 1.299375rem;
+  }
+}
+@media (min-width: 1024px) {
+  h3.page-section.page-section--compact,
+  [data-rail-content] h3.page-section,
+  [data-rail-content] h3.founder-dash-section {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* ── Product type standard ───────────────────────────────────────────────
+   One ladder for every page in the shell and its page-tools rail: the
+   sizes tuned on Overview, Readiness and Analytics. Each step is ~1.08 ×
+   the one below it, and every Tailwind step lands on one of them:
+
+     caption 12.24   2xs, stat labels, the bilingual floor
+     meta    13.13   xs, tabs, small buttons, chips
+     body    14.14   sm, copy, inputs, rail card titles
+     figure  15.27   in-card figures ($375K)
+     section 16.49   card and section titles, base, lg
+     title   17.82   h1, stat figures, xl and above (ceiling below)
+
+   The readiness gauge (32px) is the one display figure. Same pixels on
+   phone and desktop. The left SideNav keeps its own chrome ladder.
+   Declared before the ceiling so `text-lg sm:text-xl` still reaches the
+   title step from `sm` up. */
+#main-content .text-2xs {
+  font-size: max(0.765075rem, 12.2412px);
+  line-height: 1rem;
+}
+#main-content .text-xs {
+  font-size: 0.82054294rem;
+  line-height: 1.2375rem;
+}
+#main-content .text-sm {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+/* Tailwind's base (16.32) and lg (18) sat 0.2px either side of the section
+   and title steps; lg outranked the page title. Both are headings here. */
+#main-content .text-base,
+#main-content .text-lg,
+#main-content p.page-section,
+#main-content h2.page-section {
+  font-size: 1.03046733rem;
+  line-height: 1.485rem;
+}
+/* Responsive variants after the plain steps, so `text-base sm:text-sm`
+   (inputs, selects) still resolves to its sm step. */
+@media (min-width: 640px) {
+  #main-content .sm\:text-xs {
+    font-size: 0.82054294rem;
+    line-height: 1.2375rem;
+  }
+  #main-content .sm\:text-sm {
+    font-size: 0.88366163rem;
+    line-height: 1.299375rem;
+  }
+  #main-content .sm\:text-lg {
+    font-size: 1.03046733rem;
+    line-height: 1.485rem;
+  }
+}
+@media (min-width: 768px) {
+  #main-content .md\:text-lg {
+    font-size: 1.03046733rem;
+    line-height: 1.485rem;
+  }
+}
+/* Tabs switch the copy under them, so they sit a step below it. After
+   `.text-sm`: the trigger carries that class. */
+#main-content [role='tab'] {
+  font-size: 0.82054294rem;
+  line-height: 1.2375rem;
+}
+/* The rail is ~240px wide: every heading step stays on its title size. */
+#main-content [data-rail-content] .text-base,
+#main-content [data-rail-content] .text-lg,
+#main-content [data-rail-content] .sm\:text-lg {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+
+@media (min-width: 1024px) {
+  #main-content .text-2xs {
+    font-size: max(0.93301829rem, 12.2412px);
+    line-height: max(1.24402439rem, 16.3216px);
+  }
+  #main-content .text-xs {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content .text-sm {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+  #main-content .text-base,
+  #main-content .text-lg,
+  #main-content p.page-section,
+  #main-content h2.page-section {
+    font-size: 1.25666748rem;
+    line-height: 1.81097561rem;
+  }
+  #main-content .sm\:text-xs,
+  #main-content .lg\:text-xs {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content .sm\:text-sm {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+  #main-content .sm\:text-lg,
+  #main-content .md\:text-lg {
+    font-size: 1.25666748rem;
+    line-height: 1.81097561rem;
+  }
+  #main-content [role='tab'] {
+    font-size: 1.00066212rem;
+    line-height: 1.50914634rem;
+  }
+  #main-content [data-rail-content] .text-base,
+  #main-content [data-rail-content] .text-lg,
+  #main-content [data-rail-content] .sm\:text-lg {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* ── App type ceiling + floor (all #main-content components) ─────────────
+   The 1.08 chrome cluster tops at lg = 18px. Reusable and page-local
+   leftovers still used xl/2xl/3xl (20/24/26) and text-[11px] (below the
+   12.2412 floor). That is a larger set and a wider span than the
+   preference. Cap those steps inside the shell only — landing, auth
+   marketing and legal stay outside #main-content. The ladder `.text-*`
+   rules are unchanged (typeScaleOrder). Rail stays on sm. Canvas rulers
+   at 9px are not listed. No :is() — Lightning CSS has merged that into
+   invalid selectors here before. */
+#main-content .text-xl,
+#main-content .sm\:text-xl,
+#main-content .md\:text-xl,
+#main-content .lg\:text-xl,
+#main-content .text-2xl,
+#main-content .sm\:text-2xl,
+#main-content .md\:text-2xl,
+#main-content .text-3xl,
+#main-content .sm\:text-3xl,
+#main-content .xl\:text-3xl,
+#main-content .text-4xl,
+#main-content .sm\:text-4xl,
+#main-content .text-5xl,
+#main-content .text-6xl,
+#main-content .text-7xl,
+#main-content .text-\[2\.75rem\] {
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
+}
+#main-content .text-\[11px\],
+#main-content .text-\[10px\],
+#main-content .text-\[11\.76px\],
+#main-content .text-\[12\.74px\] {
+  font-size: 12.2412px;
+  line-height: 1rem;
+}
+#main-content [data-rail-content] .text-xl,
+#main-content [data-rail-content] .sm\:text-xl,
+#main-content [data-rail-content] .text-2xl,
+#main-content [data-rail-content] .sm\:text-2xl,
+#main-content [data-rail-content] .text-3xl {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+@media (min-width: 1024px) {
+  #main-content .text-xl,
+  #main-content .sm\:text-xl,
+  #main-content .md\:text-xl,
+  #main-content .lg\:text-xl,
+  #main-content .text-2xl,
+  #main-content .sm\:text-2xl,
+  #main-content .md\:text-2xl,
+  #main-content .text-3xl,
+  #main-content .sm\:text-3xl,
+  #main-content .xl\:text-3xl,
+  #main-content .text-4xl,
+  #main-content .sm\:text-4xl,
+  #main-content .text-5xl,
+  #main-content .text-6xl,
+  #main-content .text-7xl,
+  #main-content .text-\[2\.75rem\] {
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
+  }
+  #main-content [data-rail-content] .text-xl,
+  #main-content [data-rail-content] .sm\:text-xl,
+  #main-content [data-rail-content] .text-2xl,
+  #main-content [data-rail-content] .sm\:text-2xl,
+  #main-content [data-rail-content] .text-3xl {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* Chrome roles beat the ceiling (`#main-content .text-xl` is 1,1,0;
+   `#main-content p.page-figure` is 1,1,1). Without this, $375K and
+   leftover `text-xl` on figures snapped to the 18px cap. */
+#main-content h1.page-title,
+#main-content h1.founder-dash-h1,
+#main-content p.page-stat,
+#main-content h3.page-stat,
+#main-content span.page-stat,
+#main-content div.page-stat,
+#main-content dd.page-stat,
+#main-content p.founder-dash-stat {
+  font-size: max(12.2412px, 1.11375rem);
+  line-height: 1.60875rem;
+}
+#main-content p.page-stat-label,
+#main-content p.page-stat-meta,
+#main-content span.page-stat-label,
+#main-content div.page-stat-label,
+#main-content div.page-stat-meta,
+#main-content p.founder-dash-stat-label,
+#main-content p.founder-dash-stat-meta {
+  font-size: max(12.2412px, 0.765075rem);
+  line-height: max(16.3216px, 1rem);
+}
+#main-content h3.page-section,
+#main-content h3.founder-dash-section {
+  font-size: max(12.2412px, 1.03046733rem);
+  line-height: 1.485rem;
+}
+#main-content p.page-figure,
+#main-content p.founder-dash-figure {
+  font-size: max(12.2412px, 0.95413642rem);
+  line-height: 1.423125rem;
+}
+#main-content h3.page-section.page-section--compact,
+#main-content [data-rail-content] h3.page-section,
+#main-content [data-rail-content] h3.founder-dash-section {
+  font-size: 0.88366163rem;
+  line-height: 1.299375rem;
+}
+@media (min-width: 1024px) {
+  #main-content h1.page-title,
+  #main-content h1.founder-dash-h1,
+  #main-content p.page-stat,
+  #main-content h3.page-stat,
+  #main-content span.page-stat,
+  #main-content div.page-stat,
+  #main-content dd.page-stat,
+  #main-content p.founder-dash-stat {
+    font-size: max(12.2412px, 1.35823171rem);
+    line-height: 1.96189025rem;
+  }
+  #main-content p.page-stat-label,
+  #main-content p.page-stat-meta,
+  #main-content span.page-stat-label,
+  #main-content div.page-stat-label,
+  #main-content div.page-stat-meta,
+  #main-content p.founder-dash-stat-label,
+  #main-content p.founder-dash-stat-meta {
+    font-size: max(12.2412px, 0.765075rem);
+    line-height: max(16.3216px, 1.24402439rem);
+  }
+  #main-content h3.page-section,
+  #main-content h3.founder-dash-section {
+    font-size: max(12.2412px, 1.25666748rem);
+    line-height: 1.81097561rem;
+  }
+  #main-content p.page-figure,
+  #main-content p.founder-dash-figure {
+    font-size: max(12.2412px, 1.16358100rem);
+    line-height: 1.73551823rem;
+  }
+  #main-content h3.page-section.page-section--compact,
+  #main-content [data-rail-content] h3.page-section,
+  #main-content [data-rail-content] h3.founder-dash-section {
+    font-size: 1.07763613rem;
+    line-height: 1.58460366rem;
+  }
+}
+
+/* Named type roles. Outside the page (the SideNav mode switcher) they keep
+   the chrome sizes below; inside #main-content they are the standard's
+   steps, so the AI workspace reads on the same ladder as every page. */
+.type-caption {
+  font-size: 12.61px;
+  line-height: 1.35;
+}
+.type-support {
+  font-size: 12.7361px;
+  line-height: 1.35;
+}
+.type-ui {
+  font-size: 13.50px;
+  line-height: 1.35;
+}
+.type-identity {
+  font-size: 14.28px;
+  line-height: 1.3;
+}
+.type-page {
+  font-size: 15.42px;
+  line-height: 1.3;
+}
+#main-content .type-caption,
+#main-content .type-caption.text-2xs,
+#main-content .type-caption.text-xs,
+#main-content .type-caption.text-sm,
+#main-content .type-caption.text-\[11px\] {
+  font-size: max(0.765075rem, 12.2412px);
+  line-height: 1.35;
+}
+#main-content .type-support,
+#main-content .type-support.type-caption,
+#main-content .type-support.text-xs,
+#main-content .type-support.text-sm,
+#main-content .type-ui,
+#main-content .type-ui.text-2xs,
+#main-content .type-ui.text-xs,
+#main-content .type-ui.text-sm,
+#main-content .type-ui.text-base,
+#main-content .type-ui.sm\:text-sm,
+#main-content input.type-ui {
+  font-size: 0.82054294rem;
+  line-height: 1.35;
+}
+#main-content .type-identity,
+#main-content .type-identity.text-sm,
+#main-content .type-identity.text-xs {
+  font-size: 0.88366163rem;
+  line-height: 1.3;
+}
+#main-content .type-page,
+#main-content .type-page.text-xl,
+#main-content .type-page.text-2xl,
+#main-content h1.type-page {
+  font-size: 1.11375rem;
+  line-height: 1.3;
+}
+@media (min-width: 1024px) {
+  #main-content .type-caption,
+  #main-content .type-caption.text-2xs,
+  #main-content .type-caption.text-xs,
+  #main-content .type-caption.text-sm,
+  #main-content .type-caption.text-\[11px\] {
+    font-size: max(0.93301829rem, 12.2412px);
+  }
+  #main-content .type-support,
+  #main-content .type-support.type-caption,
+  #main-content .type-support.text-xs,
+  #main-content .type-support.text-sm,
+  #main-content .type-ui,
+  #main-content .type-ui.text-2xs,
+  #main-content .type-ui.text-xs,
+  #main-content .type-ui.text-sm,
+  #main-content .type-ui.text-base,
+  #main-content .type-ui.sm\:text-sm,
+  #main-content input.type-ui {
+    font-size: 1.00066212rem;
+  }
+  #main-content .type-identity,
+  #main-content .type-identity.text-sm,
+  #main-content .type-identity.text-xs {
+    font-size: 1.07763613rem;
+  }
+  #main-content .type-page,
+  #main-content .type-page.text-xl,
+  #main-content .type-page.text-2xl,
+  #main-content h1.type-page {
+    font-size: 1.35823171rem;
+  }
+}
+
+/* The readiness gauge is the page's one figure. The #main-content ceiling
+   had flattened leftover `text-[2.75rem]` to 18px inside a 184px ring. */
+#main-content .score-emblem-figure {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+@media (min-width: 1024px) {
+  #main-content .score-emblem-figure {
+    font-size: 32px;
+    line-height: 1;
+  }
+}
+
+/* Shared keyboard indicator: the previous 1px/22%-opacity stroke vanished on
+   light cards and form fields explicitly suppressed it. Keep a consistent
+   external indicator, including select triggers and toast actions. */
+:where(a, button, input, textarea, select, [role='combobox'], [role='button'], [tabindex]):focus-visible,
+.focus-ring:focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 2px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Cursor.com rule — every theme, every page, every surface.
+
+   One hairline per floating or in-flow surface, spent sparingly. Nested
+   frames inside a card fade toward nothing. Outlined buttons share the
+   card's edge (never a field's --input, never a second shadow). Decorative
+   glyphs beside copy disappear; chrome (nav, dialogs, icon-only controls)
+   keeps its icons. Corners stay the 14px / 10px ladder from --radius.
+
+   Selectors use [class~="border"] rather than .border: Tailwind's CSS
+   pipeline treats the `.border` utility as the `*` preflight and the
+   sheet fails to parse.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* In-flow boxes: a 1px hairline, no shadow, no 2px frame. */
+#main-content div[class~="border"],
+#main-content section[class~="border"],
+#main-content article[class~="border"],
+#main-content aside[class~="border"],
+#main-content li[class~="border"],
+#main-content form[class~="border"],
+#main-content [data-surface="card"],
+#main-content [data-surface="card"]:hover {
+  box-shadow: none;
+}
+#main-content div[class~="border-2"],
+#main-content section[class~="border-2"],
+#main-content article[class~="border-2"],
+#main-content form[class~="border-2"] {
+  border-width: 1px;
+}
+
+/* Nested rounded boxes inside a card: the inner line is half as present. */
+#main-content [data-surface="card"] div[class~="border"],
+#main-content [data-surface="card"] section[class~="border"],
+#main-content [data-surface="card"] article[class~="border"],
+#main-content [data-surface="card"] li[class~="border"],
+#main-content [data-surface="card"] form[class~="border"] {
+  border-color: hsl(var(--border) / 0.45);
+  box-shadow: none;
+}
+
+/* A lightly tinted accent card (cursor.com "Upgrade available") keeps a
+   matching whisper of the same hue, not a grey then a blue. */
+#main-content .bg-primary\/5,
+#main-content .bg-primary\/10 {
+  border-color: hsl(var(--primary-mid) / 0.16);
+}
+
+[data-surface="overlay"],
+.fixed[class~="shadow-2xl"],
+[class~="shadow-modal"],
+[class~="shadow-flyout"] {
+  box-shadow: none;
+}
+[data-surface="overlay"] {
+  border-color: hsl(var(--border));
+}
+/* Decorative glyphs go; the icon of an icon-only control stays (it is the
+   control). "Icon-only" = no child other than the icon and a
+   screen-reader-only name. */
+[data-surface="overlay"] svg.cfb-glyph:not(:is(button, a, [role="button"], [role="menuitem"]):not(:has(> :not(svg):not(.sr-only):not(.hidden))) svg) {
+  display: none;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────
+   cursor.com "Adjust Plan": 1px hairline, transparent fill, 8px corner.
+   cursor.com "Upgrade": fill, no extra edge.
+   Applies on every page and every overlay, including asChild <a> buttons.
+   Fields (combobox / checkbox / switch) keep --input, not this hairline. */
+button[class~="border-2"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+[data-slot="button"][class~="border-2"],
+[role="button"][class~="border-2"]:not([data-surface="card"]),
+a[class~="inline-flex"][class~="border-2"] {
+  border-width: 1px;
+}
+button[class~="border"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+button[class~="border-input"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+button[class~="border-border"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
+[data-slot="button"][class~="border"],
+[data-slot="button"][class~="border-input"],
+[data-slot="button"][class~="border-border"],
+[role="button"][class~="border"]:not([data-surface="card"]),
+[role="button"][class~="border-input"]:not([data-surface="card"]),
+[role="button"][class~="border-border"]:not([data-surface="card"]),
+a[class~="inline-flex"][class~="border"],
+a[class~="inline-flex"][class~="border-input"],
+a[class~="inline-flex"][class~="border-border"] {
+  border-color: hsl(var(--border));
+  box-shadow: none;
+}
+button[class~="border"]:not([role="combobox"]):hover,
+button[class~="border-input"]:not([role="combobox"]):hover,
+button[class~="border-border"]:not([role="combobox"]):hover,
+[data-slot="button"][class~="border"]:hover,
+[data-slot="button"][class~="border-input"]:hover,
+[data-slot="button"][class~="border-border"]:hover,
+[role="button"][class~="border"]:not([data-surface="card"]):hover,
+[role="button"][class~="border-input"]:not([data-surface="card"]):hover,
+[role="button"][class~="border-border"]:not([data-surface="card"]):hover,
+a[class~="inline-flex"][class~="border"]:hover,
+a[class~="inline-flex"][class~="border-input"]:hover,
+a[class~="inline-flex"][class~="border-border"]:hover {
+  border-color: hsl(var(--foreground) / 0.12);
+}
+button.bg-primary,
+button.bg-destructive,
+[data-slot="button"].bg-primary,
+[data-slot="button"].bg-destructive,
+a[class~="inline-flex"].bg-primary,
+a[class~="inline-flex"].bg-destructive {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ── Decorative icons ─────────────────────────────────────────────────────
+   Glyphs beside copy on labeled buttons and inside cards go away.
+   Icons that *are* the control stay: nav/chrome, close (X), chevrons
+   inside a control, checkbox, spinner - and every icon-only control. So do
+   glyphs that carry state rather than decoration (check, empty circle,
+   lock) and any icon inside [data-keep-icon], where the icon is content.
+   "Labeled" means an element child other than the icon, its sr-only name,
+   or a responsive label (`hidden sm:inline`): below its breakpoint that
+   label is display:none, so it cannot stand in for the icon there, and the
+   control keeps its icon at every width, as its author drew it. Reading any
+   non-svg child as a label blanked 364 icon-only buttons
+   (copy, delete, more options, help) whose only other child was their
+   screen-reader name. :has() cannot nest: one inside another invalidates
+   the whole selector list and every rule here silently stops applying. */
+#main-content [data-page-header] > svg.cfb-glyph,
+#main-content [data-surface="card"] [data-glyph-well],
+#main-content [data-surface="card"] .icon-well,
+#main-content [data-surface="card"] .icon-well-sm {
+  display: none;
+}
+#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph:not([data-keep-icon] > *),
+#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not([data-keep-icon] > *),
+#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x),
+#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [role="tab"] svg.cfb-glyph,
+#main-content [role="tab"] svg.lucide {
+  display: none;
+}
+/* The well an icon sat in goes with it: a tinted box with nothing inside
+   reads as a missing image (181 of them on 37 routes). Same reach as the
+   rule above - a non-control element whose only children are icons that
+   rule hides. A well holding a state glyph (check, empty circle, lock,
+   spinner) or marked data-keep-icon (an achievement's badge) keeps both. */
+#main-content [data-surface="card"] :is(div, span):not([data-keep-icon]):not(:is(button, a, [role="button"], [role="checkbox"]) > *):has(> svg.lucide, > svg.cfb-glyph):not(:has(> :not(svg.lucide):not(svg.cfb-glyph))):not(:has(> svg:is(.lucide-check, .lucide-circle-check, .lucide-circle-check-big, .lucide-circle, .lucide-lock, .lucide-loader-2, .lucide-loader-circle))) {
+  display: none;
+}
+
+/* Labeled action buttons on every page (header Invite / New Document, asChild
+   links, dialogs). Icon-only controls have only an svg child and are skipped. */
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) .cfb-glyph,
+button:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
+button:has(> :not(svg):not(.sr-only):not(.hidden)) > .cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
+#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x) {
+  display: none;
+}
+
+/* Progress tracks: a thin grey rail, a quiet fill. */
+#main-content [role="progressbar"] {
+  background-color: hsl(var(--foreground) / 0.06);
+}
+#main-content [role="progressbar"] > * {
+  background-color: hsl(var(--foreground) / 0.22);
+}
+
+/* ── Fields: a whisper at rest, the accent while typing ──────────────────
+   --input sits at the card's own hairline (~1.18), so a field at rest is
+   found by its fill, label and placeholder, as on windsurf.com. While it has
+   focus the edge takes the theme's link tone (>=4.6:1 on the page), on top
+   of the 2px keyboard outline, so the field being typed into is never in
+   doubt. Pointer focus gets the edge alone: no frame inside a frame. */
+input[class~="border-input"]:focus,
+textarea[class~="border-input"]:focus,
+[role="combobox"][class~="border-input"]:focus,
+[role="combobox"][class~="border-input"][data-state="open"] {
+  border-color: hsl(var(--ring));
+}
+
+/* ── Explicit zeros win ─────────────────────────────────────────────────
+   `p-0`/`px-0`/`pt-0` on a card part used to lose twice: `.card-comfortable`
+   is emitted after Tailwind's utilities in the same layer, and the
+   [data-theme="minimal"] block above is unlayered, so ~30 call sites that
+   asked for a flush table or a full-bleed video got 24–28px of padding on
+   every side anyway. A zero is an explicit decision — "this content reaches
+   the edge" — not a density preference, so unlike the `pb-*` seam it must
+   beat the standard in every theme. Unlayered, at the end of the sheet, at
+   (0,2,0) so it also settles against the rail's tighter padding. */
+.card-comfortable.p-0, .card-compact.p-0 { padding: 0; }
+.card-comfortable.px-0, .card-compact.px-0 { padding-left: 0; padding-right: 0; }
+.card-comfortable.py-0, .card-compact.py-0 { padding-top: 0; padding-bottom: 0; }
+.card-comfortable.pt-0, .card-compact.pt-0 { padding-top: 0; }
+.card-comfortable.pb-0, .card-compact.pb-0 { padding-bottom: 0; }

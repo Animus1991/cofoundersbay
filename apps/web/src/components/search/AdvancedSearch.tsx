@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
 
 interface SearchResult {
   id: string;
@@ -82,7 +83,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   }, []);
 
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ['search', debouncedQuery, selectedTypes],
+    queryKey: qk('search', debouncedQuery, selectedTypes),
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
@@ -104,7 +105,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   });
 
   const { data: suggestions = [] } = useQuery({
-    queryKey: ['search-suggestions', debouncedQuery],
+    queryKey: qk('search-suggestions', debouncedQuery),
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
@@ -160,7 +161,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
   return (
     <div className={cn('relative', className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
         <Input
           ref={inputRef}
           type="text"
@@ -168,23 +169,23 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          className="pl-10 pr-20"
+          className="pl-9 pr-20"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (
-            <Button
+            <Button aria-label="Clear search"
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0"
               onClick={() => setQuery('')}
             >
-              <X className="h-3 w-3" />
+              <X className="icon-sm" />
             </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-6 px-2">
-                <Filter className="h-3 w-3 mr-1" />
+                <Filter className="icon-sm mr-1" />
                 {selectedTypes.includes('all') ? 'All' : selectedTypes.length}
               </Button>
             </DropdownMenuTrigger>
@@ -215,7 +216,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
               <div className="p-3 border-b">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="icon-sm" />
                     Recent Searches
                   </h4>
                   <Button
@@ -245,7 +246,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
             {debouncedQuery && suggestions.length > 0 && (
               <div className="p-3 border-b">
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
+                  <TrendingUp className="icon-sm" />
                   Suggestions
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -272,7 +273,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
 
             {!isLoading && debouncedQuery && results.length === 0 && (
               <div className="p-8 text-center text-muted-foreground">
-                <Search className="mx-auto h-12 w-12 mb-2 opacity-40" />
+                <Search className="mx-auto h-12 w-12 mb-2 opacity-40" aria-hidden="true" />
                 <p>No results found for "{debouncedQuery}"</p>
               </div>
             )}
@@ -294,7 +295,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                         />
                       ) : (
                         <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                          <User className="h-5 w-5 text-muted-foreground" />
+                          <User className="icon-md text-muted-foreground" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">

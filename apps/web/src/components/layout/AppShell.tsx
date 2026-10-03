@@ -1,126 +1,284 @@
 'use client';
 
-import { ReactNode, memo } from 'react';
-import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import { ReactNode, createContext, useContext, memo, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { resolvePageHeader } from '@/lib/page-registry';
+import { BilingualText } from '@/components/common/BilingualText';
+import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
+import { appShellMainClasses } from '@/lib/layout-config';
+import { AIComposer } from '@/components/ai/AIComposer';
+import { CommandPaletteHost } from './CommandPaletteHost';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
+import { PageRail, type PageRailSection } from './PageRail';
+import { usePageRail } from './PageRailContext';
+import { PageHeaderSlot } from './PageHeaderSlot';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
 const MemoMobileBottomNav = memo(MobileBottomNav);
 
+/**
+ * True inside an <AppShellFrame>. Lets a page keep writing `<AppShell title=…>`
+ * while the chrome actually lives in the segment layout above it — adopted
+ * from origin/claude/project-audit-upgrade-y2ebnr (029642e, 7c9c97d).
+ */
+const InAppShellFrame = createContext(false);
+
+
+export type AppShellFrameProps = {
+  children: ReactNode;
+  /** Full-height layout (messages) — no page scroll, fills the viewport. */
+  fullHeight?: boolean;
+  /** Extra class on the <main> element. */
+  contentClassName?: string;
+};
+
+/**
+ * The persistent application chrome: sidebar, top bar, mobile nav and the
+ * <main> landmark.
+ *
+ * Rendered by a segment `layout.tsx` rather than by each page, so navigating
+ * between two pages in the same section no longer unmounts and remounts the
+ * whole navigation — the sidebar keeps its scroll position, its queries are
+ * not refetched, and `loading.tsx` renders inside the shell instead of
+ * replacing it.
+ */
+export function AppShellFrame({
+  children,
+  fullHeight = false,
+  contentClassName,
+}: AppShellFrameProps) {
+  const { expanded, mounted } = useSidebar();
+  const { pinned: railPinned, hasRail } = usePageRail();
+
+  return (
+    <InAppShellFrame.Provider value={true}>
+      <CommandPaletteHost>
+      <div
+        className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}
+        style={{ paddingTop: TOP_BANNER_STACK }}
+      >
+        {/* Skip link lives once in app/layout.tsx so it is never duplicated in the tab order. */}
+
+        {/* Fixed left sidebar — rail from `sm`, drawer from `lg`; hidden below `sm` */}
+        <MemoSideNav />
+
+        {/* Main column — offset by sidebar width on lg+ */}
+        <div
+          // Named group, so anything inside can lay itself out for the width
+          // the rail actually leaves rather than for the viewport.
+          data-rail={hasRail ? (railPinned ? 'pinned' : 'strip') : 'none'}
+          className={cn(
+            'group/shell flex min-w-0 flex-col',
+            fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
+            'transition-[margin-left] duration-200 ease-out',
+            // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
+            // bottom bar and the column takes the full width.
+            'sm:ml-[4.25rem]',
+            (mounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
+            // The page rail, on the other side. The collapsed strip is always
+            // reserved on a page that has one, so pinning and unpinning slides
+            // the panel rather than reflowing the whole column twice.
+            'transition-[margin-right] duration-200 ease-out',
+            hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
+          )}
+        >
+          <MemoTopBar />
+
+          {fullHeight ? (
+            <main
+              id="main-content"
+              // tabIndex keeps this the skip-link target: focusable without
+              // painting an outline ring.
+              tabIndex={-1}
+              className={cn(
+                'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
+                // Phone clearance covers the bottom nav and the page-tools button
+                // above it. From `sm` there is no bottom nav.
+                'pb-[calc(8.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                contentClassName,
+              )}
+            >
+              {children}
+            </main>
+          ) : (
+            <main
+              id="main-content"
+              tabIndex={-1}
+              // No width cap. The column is already offset by the sidebar's own
+              // width, so "full width" here means exactly the space the sidebar
+              // leaves, never over it.
+              className={cn(appShellMainClasses, contentClassName)}
+            >
+              {children}
+            </main>
+          )}
+
+          <MemoMobileBottomNav />
+        </div>
+      </div>
+      </CommandPaletteHost>
+    </InAppShellFrame.Provider>
+  );
+}
+
 type AppShellProps = {
   title?: string;
   description?: string;
+  /**
+   * Greek heading, for the rare page whose header cannot be a constant — a
+   * count folded into the sentence, say. Everywhere else the pair lives in the
+   * page registry and neither of these is passed: `resolvePageHeader` already
+   * took overrides for them, but there was no prop to supply one, so a page
+   * with a dynamic English description had no way to make the Greek match.
+   */
+  titleEl?: string;
+  descriptionEl?: string;
   actions?: ReactNode;
   children: ReactNode;
+  /** Show contextual help from page registry when available */
+  showHelp?: boolean;
   /** Full-height layout (messages page) — no scroll, fills viewport */
   fullHeight?: boolean;
   /** Extra class on the content wrapper */
   contentClassName?: string;
+  /** Extra class on the page H1 — founder overview scales the title locally. */
+  titleClassName?: string;
+  /**
+   * Contextual Ask AI prompt. Defaults to the page title when omitted.
+   * Pass `false` to hide (AI workspace, pages that already own the CTA).
+   */
+  askAi?: string | false;
+  /**
+   * The page's supporting tools, in the right-hand rail.
+   *
+   * Filters, view switches, export, page settings, secondary figures - the
+   * controls that are *about* the page rather than the page itself. The main
+   * column then carries only what the page exists to do.
+   *
+   * Omit it and nothing changes: a page without a rail keeps the full width.
+   */
+  rail?: PageRailSection[];
 };
 
+/**
+ * Page-level shell.
+ *
+ * Inside an <AppShellFrame> (i.e. the segment layout already mounted the
+ * chrome) this renders only the page header and body, so every existing
+ * `<AppShell title=…>` call site keeps working unchanged and never produces a
+ * second sidebar. Outside a frame it renders the frame itself, which is how
+ * pages in sections that have no layout frame continue to work.
+ */
 export function AppShell({
   title,
   description,
+  titleEl,
+  descriptionEl,
   actions,
   children,
+  showHelp = false,
   fullHeight = false,
   contentClassName,
+  titleClassName,
+  askAi,
+  rail,
 }: AppShellProps) {
-  const { expanded, mounted } = useSidebar();
-  const user = useCurrentUser();
-  const isDemo = user?.email === 'demo@cofounderbay.com';
+  const insideFrame = useContext(InAppShellFrame);
+  const pathname = usePathname() ?? '/';
+  const resolved = resolvePageHeader(pathname, { title, description, titleEl, descriptionEl });
+  const pageTitle = resolved.title;
+  const pageTitleEl = resolved.titleEl;
+  const pageDescription = resolved.description;
+  const pageDescriptionEl = resolved.descriptionEl;
+  const showAskAi = Boolean(pageTitle) && askAi !== false;
+  const [metaSlot, setMetaSlot] = useState<HTMLDivElement | null>(null);
+  const askAiPrompt =
+    typeof askAi === 'string'
+      ? askAi
+      : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
+
+  const headerShown = Boolean(pageTitle || pageDescription || actions || showAskAi || showHelp);
+
+  const body = fullHeight ? (
+    children
+  ) : (
+    // Inside a frame the <main> belongs to the layout above, so a page-level
+    // contentClassName (e.g. overflow-x-clip on /analytics, /discover,
+    // /matches, pitch-deck) lands on this wrapper instead — same clipping.
+    <div className={cn('space-y-5', insideFrame && contentClassName)}>
+      {headerShown && (
+        <header className="space-y-3">
+          {/* Stacks under a pinned rail: at that width a side-by-side header
+              gives the title about 90px and the Ask AI bar the rest. */}
+          <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6 group-data-[rail=pinned]/shell:lg:flex-col group-data-[rail=pinned]/shell:lg:gap-3">
+            {/* A floor for the title. The Ask AI bar asked for 57.5rem and would
+                not shrink, so at 1440px the title kept ~370px and 10 of 138
+                bilingual titles broke mid-phrase ("Founder dashboard · Πίνακας
+                / ελέγχου ιδρυτή"). Now the bar gives way down to 20rem before
+                the title does; at 1920px nothing changes. */}
+            <div className="min-w-0 flex-1 lg:min-w-[min(100%,42rem)] group-data-[rail=pinned]/shell:lg:min-w-0" data-page-header="">
+              {pageTitle && (
+                <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                  <BilingualText en={pageTitle} el={pageTitleEl} />
+                </h1>
+              )}
+              {pageDescription && (
+                <p className="page-lead mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
+                  <BilingualText
+                    en={pageDescription}
+                    el={pageDescriptionEl}
+                    stacked
+                    wrap
+                    secondaryFrom="lg"
+                  />
+                </p>
+              )}
+            </div>
+            {(showHelp || showAskAi) && (
+              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:min-w-[20rem] lg:shrink lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">
+                {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                {showAskAi && (
+                  <AIComposer
+                    prompt={askAiPrompt}
+                    className="w-full min-w-0"
+                  />
+                )}
+              </div>
+            )}
+          </section>
+          {/* Always present, hidden while empty: the header's actions, and the
+              slot page-level notes portal into (PageHeaderSlot). */}
+          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden">
+            {actions}
+          </div>
+        </header>
+      )}
+      <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
+    </div>
+  );
+
+  // The rail travels with the body, inside or outside a frame, so a page keeps
+  // its tools whichever way its section mounts the chrome.
+  const withRail = rail && rail.length > 0 ? (
+    <>
+      {body}
+      <PageRail sections={rail} />
+    </>
+  ) : (
+    body
+  );
+
+  if (insideFrame) return withRail;
 
   return (
-    <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
-      {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
-      <MemoSideNav />
-
-      {/* Demo mode banner — full width, above content column */}
-      {isDemo && (
-        <div
-          className={cn(
-            'fixed top-0 right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
-            'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
-            'transition-[margin-left] duration-200 ease-out',
-            (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
-            'left-0 lg:left-auto',
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" />
-            <span>Demo mode — changes are not saved and data resets periodically.</span>
-          </div>
-          <Link
-            href="/register"
-            className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-[12px] font-semibold hover:bg-amber-900/25 transition-colors"
-          >
-            Create free account
-          </Link>
-        </div>
-      )}
-
-      {/* Main column — offset by sidebar width on lg+ */}
-      <div
-        className={cn(
-          'flex flex-col overflow-x-clip',
-          fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
-          'transition-[margin-left] duration-200 ease-out',
-          (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
-          isDemo && 'pt-9',
-        )}
-      >
-        {/* Sticky top bar — always rendered once */}
-        <MemoTopBar />
-
-        {/* Page body */}
-        {fullHeight ? (
-          <main
-            id="main-content"
-            className={cn('flex flex-col flex-1 overflow-hidden', contentClassName)}
-          >
-            {children}
-          </main>
-        ) : (
-          <main
-            id="main-content"
-            className={cn(
-              'flex-1 mx-auto w-full max-w-screen-2xl',
-              'px-4 sm:px-6 lg:px-8',
-              'pt-4 pb-24 lg:pb-10',
-              contentClassName,
-            )}
-          >
-            <div className="space-y-5">
-              {(title || description || actions) && (
-                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
-                  <div>
-                    {title && (
-                      <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                        {title}
-                      </h1>
-                    )}
-                    {description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-                    )}
-                  </div>
-                  {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-                </section>
-              )}
-              {children}
-            </div>
-          </main>
-        )}
-
-        {/* Mobile bottom nav — hides itself on lg+ via lg:hidden */}
-        <MemoMobileBottomNav />
-      </div>
-    </div>
+    <AppShellFrame fullHeight={fullHeight} contentClassName={contentClassName}>
+      {withRail}
+    </AppShellFrame>
   );
 }

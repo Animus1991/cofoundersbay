@@ -267,21 +267,67 @@ export class ProgramService {
     });
   }
 
+  /**
+   * A program's participants, applicants included — `status` is what separates
+   * them.
+   *
+   * Returned a bare array while its only client (`getProgramParticipants` in
+   * the web) declared `{ participants }`, so every caller read `undefined`.
+   * `apiRequest` casts without checking, which is exactly why that mismatch
+   * could sit there unnoticed. The envelope matches every neighbouring
+   * endpoint and leaves room for a total later.
+   *
+   * The whole `profile` relation was spread into the response; only four of
+   * its fields are ever read, and one of the rest is the person's email.
+   */
   async getParticipants(programId: string, filters?: {
     status?: string;
     role?: string;
   }) {
-    return this.prisma.programParticipant.findMany({
+    const participants = await this.prisma.programParticipant.findMany({
       where: {
         programId,
         ...(filters?.status && { status: filters.status as any }),
         ...(filters?.role && { role: filters.role as any }),
       },
       include: {
-        user: { select: { id: true, email: true, profile: true } },
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: { displayName: true, avatarUrl: true, headline: true, location: true },
+            },
+          },
+        },
       },
       orderBy: { joinedAt: 'asc' },
     });
+
+    return {
+      participants: participants.map((participant) => ({
+        id: participant.id,
+        userId: participant.userId,
+        status: participant.status,
+        role: participant.role,
+        appliedAt: participant.joinedAt.toISOString(),
+        acceptedAt: participant.acceptedAt?.toISOString() ?? null,
+        completedAt: participant.completedAt?.toISOString() ?? null,
+        score: participant.score ?? null,
+        // The relation is optional in the schema: a participant whose account
+        // has gone still belongs in the list, without a person attached.
+        user: {
+          id: participant.user?.id ?? participant.userId,
+          profile: participant.user?.profile
+            ? {
+                displayName: participant.user.profile.displayName,
+                avatarUrl: participant.user.profile.avatarUrl,
+                headline: participant.user.profile.headline,
+                location: participant.user.profile.location,
+              }
+            : null,
+        },
+      })),
+    };
   }
 
   async getUserPrograms(userId: string) {

@@ -24,13 +24,35 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { Button } from '@/components/ui/button';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailOptions } from '@/components/layout/RailParts';
+import { BilingualText } from '@/components/common/BilingualText';
+import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const ACHIEVEMENTS_TOUR: TourStep[] = [
+  {
+    target: 'achievements-stats',
+    titleEn: 'Level and XP from one source',
+    titleEl: 'Επίπεδο και XP από μία πηγή',
+    bodyEn: 'When the gamification API is up, XP and level come from there. If it is not, this card sums points on unlocked badges so you never see two different scores.',
+    bodyEl: 'Όταν το API gamification είναι διαθέσιμο, XP και επίπεδο έρχονται από εκεί. Αν όχι, αυτή η κάρτα αθροίζει πόντους ξεκλειδωμένων σημάτων ώστε να μην βλέπετε δύο βαθμολογίες.',
+  },
+  {
+    target: 'achievements-list',
+    titleEn: 'Badges are the same list, sliced',
+    titleEl: 'Τα σήματα είναι η ίδια λίστα, κομμένη',
+    bodyEn: 'All / Unlocked / Locked are filters of this list. The rail filters by category. Locked cards show progress toward that badge only.',
+    bodyEl: 'Όλα / Ξεκλειδωμένα / Κλειδωμένα είναι φίλτρα αυτής της λίστας. Η ράγα φιλτράρει ανά κατηγορία. Οι κλειδωμένες κάρτες δείχνουν πρόοδο μόνο προς εκείνο το σήμα.',
+  },
+];
 
 interface Achievement {
   id: string;
@@ -42,7 +64,7 @@ interface Achievement {
   points: number;
   progress: number;
   total: number;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: Date;
   rarity: number;
 }
@@ -59,17 +81,17 @@ interface UserStats {
 }
 
 const TIER_COLORS = {
-  bronze: 'text-orange-600',
-  silver: 'text-gray-400',
-  gold: 'text-yellow-500',
-  platinum: 'text-cyan-400',
+  bronze: 'text-status-warning',
+  silver: 'text-muted-foreground',
+  gold: 'text-status-warning',
+  platinum: 'text-primary-accessible',
 };
 
 const TIER_BG = {
-  bronze: 'bg-orange-500/10',
-  silver: 'bg-gray-400/10',
-  gold: 'bg-yellow-500/10',
-  platinum: 'bg-cyan-400/10',
+  bronze: 'bg-status-warning-bg',
+  silver: 'bg-muted',
+  gold: 'bg-status-warning-bg',
+  platinum: 'bg-status-info-bg',
 };
 
 const CATEGORY_ICONS = {
@@ -250,28 +272,30 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <Card
       className={cn(
-        'transition-all shadow-sm border-border/50',
-        achievement.unlocked ? 'hover:shadow-md' : 'opacity-75'
+        'transition-all shadow-sm border-border',
+        achievement.unlocked && 'hover:border-primary/30'
       )}
     >
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
+          {/* The badge is the achievement, not decoration beside it. */}
           <div
+            data-keep-icon
             className={cn(
               'relative p-3 rounded-xl shrink-0',
               TIER_BG[achievement.tier],
               achievement.unlocked ? 'ring-2 ring-primary/20' : ''
             )}
           >
-            <Icon className={cn('h-8 w-8', TIER_COLORS[achievement.tier])} />
+            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} aria-hidden="true" />
             {achievement.unlocked && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle2 className="icon-sm text-white" />
+              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success-mark flex items-center justify-center">
+                <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
               </div>
             )}
-            {!achievement.unlocked && achievement.progress === 0 && (
+            {achievement.unlocked === false && achievement.progress === 0 && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <Lock className="icon-sm text-muted-foreground" />
+                <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
               </div>
             )}
           </div>
@@ -289,10 +313,11 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </Badge>
             </div>
 
-            {!achievement.unlocked && (
+            {achievement.unlocked === null && <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Eligibility not yet verified" el="Η επιλεξιμότητα δεν έχει ακόμη επαληθευτεί" compact /></p>}
+            {achievement.unlocked === false && (
               <div className="space-y-1.5 mb-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Progress</span>
+                  <span><BilingualText en={achievementsEn('progress')} el={achievementsEl('progress')} compact /></span>
                   <span>
                     {achievement.progress} / {achievement.total}
                   </span>
@@ -301,7 +326,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 text-xs">
+            {/* flex-wrap: four items (two badges, the rarity note and the unlock
+                date) needed 375px on a 334px card and had nowhere to go, so this
+                row was what made /achievements the one page that scrolled
+                horizontally on a phone — the fixed bottom nav then stretched with
+                the grown layout viewport, which made it look like the nav's fault. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
               <Badge variant="outline" className="gap-1">
                 <CategoryIcon className="icon-sm" />
                 {achievement.category}
@@ -310,15 +340,15 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 variant="outline"
                 className={cn('gap-1', TIER_COLORS[achievement.tier])}
               >
-                <Medal className="icon-sm" />
+                <Medal className="icon-sm" aria-hidden="true" />
                 {achievement.tier}
               </Badge>
               <span className="text-muted-foreground">
-                {achievement.rarity}% have this
+                {achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact />
               </span>
               {achievement.unlocked && achievement.unlockedAt && (
                 <span className="text-muted-foreground ml-auto">
-                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                 </span>
               )}
             </div>
@@ -336,23 +366,29 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
     100;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border/50 animate-fade-in">
+    <Card className="bg-primary/[0.03] shadow-sm border-border animate-fade-in">
       <CardContent className="p-4 md:p-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary" />
+                <Trophy className="icon-lg text-primary-accessible" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Current Level</p>
-                <h2 className="text-xl font-bold">Level {stats.level}</h2>
+                <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
+                <h2 className="text-xl font-semibold">Level {stats.level}</h2>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progress to Level {stats.level + 1}</span>
+                <span className="text-muted-foreground">
+                  <BilingualText
+                    en={`${achievementsEn('progress_to_level')} ${stats.level + 1}`}
+                    el={`${achievementsEl('progress_to_level')} ${stats.level + 1}`}
+                    compact
+                  />
+                </span>
                 <span className="font-medium">
                   {stats.totalPoints} / {stats.nextLevelPoints} pts
                 </span>
@@ -362,7 +398,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
             <div className="flex items-center gap-2">
               <Badge variant="default" className="gap-1">
-                <Crown className="icon-sm" />
+                <Crown className="icon-sm" aria-hidden="true" />
                 {stats.rank}
               </Badge>
               <span className="text-sm text-muted-foreground">
@@ -373,24 +409,24 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Total Points</p>
-              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('total_points')} el={achievementsEl('total_points')} compact /></p>
+              <p className="page-stat text-xl font-bold">{stats.totalPoints.toLocaleString('en-GB')}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Achievements</p>
-              <p className="text-xl font-bold">
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('achievements')} el={achievementsEl('achievements')} compact /></p>
+              <p className="page-stat text-xl font-bold">
                 {stats.achievementsUnlocked}/{stats.totalAchievements}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Completion</p>
-              <p className="text-xl font-bold">
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('completion')} el={achievementsEl('completion')} compact /></p>
+              <p className="page-stat text-xl font-bold">
                 {Math.round((stats.achievementsUnlocked / stats.totalAchievements) * 100)}%
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Rank</p>
-              <p className="text-xl font-bold">#{stats.percentile}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('rank')} el={achievementsEl('rank')} compact /></p>
+              <p className="page-stat text-xl font-bold">#{stats.percentile}</p>
             </div>
           </div>
         </div>
@@ -403,7 +439,7 @@ function AchievementsSkeleton() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-40 w-full" />
-      <div className="grid gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">
@@ -448,20 +484,20 @@ export default function AchievementsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { data: rawAchievements, isLoading, isError, refetch } = useQuery({
-    queryKey: ['achievements'],
+    queryKey: qk('achievements'),
     queryFn: () => getAnalyticsAchievements(),
     staleTime: 120_000,
     retry: 1,
   });
 
   const { data: xpData } = useQuery<GamificationXPSummary>({
-    queryKey: ['gamification-xp-me'],
+    queryKey: qk('gamification', 'xp-me'),
     queryFn: getMyXP,
     staleTime: 60_000,
   });
 
   const { data: badgesData } = useQuery<GamificationBadge[]>({
-    queryKey: ['gamification-badges-me'],
+    queryKey: qk('gamification', 'badges-me'),
     queryFn: getMyBadges,
     staleTime: 60_000,
   });
@@ -507,12 +543,12 @@ export default function AchievementsPage() {
   });
 
   const categories = [
-    { value: 'all', label: 'All' },
-    { value: 'networking', label: 'Networking', icon: Users },
-    { value: 'engagement', label: 'Engagement', icon: Heart },
-    { value: 'profile', label: 'Profile', icon: Star },
-    { value: 'activity', label: 'Activity', icon: Zap },
-    { value: 'special', label: 'Special', icon: Crown },
+    { value: 'all', labelEn: 'All', labelEl: 'Όλες', icon: undefined as (typeof Users | undefined) },
+    { value: 'networking', labelEn: 'Networking', labelEl: 'Δικτύωση', icon: Users },
+    { value: 'engagement', labelEn: 'Engagement', labelEl: 'Αφοσίωση', icon: Heart },
+    { value: 'profile', labelEn: 'Profile', labelEl: 'Προφίλ', icon: Star },
+    { value: 'activity', labelEn: 'Activity', labelEl: 'Δραστηριότητα', icon: Zap },
+    { value: 'special', labelEn: 'Special', labelEl: 'Ειδικά', icon: Crown },
   ];
 
   const LEADERBOARD = [
@@ -523,66 +559,118 @@ export default function AchievementsPage() {
     { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
   ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
 
-  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600' };
+  const RANK_COLORS: Record<number, string> = { 1: 'text-status-warning', 2: 'text-muted-foreground', 3: 'text-status-warning' };
 
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 
+  const listViews = activeTab === 'all' || activeTab === 'unlocked' || activeTab === 'locked';
+
+  usePageList([
+    {
+      id: 'achievements',
+      labelEn: 'Achievements',
+      labelEl: 'Επιτεύγματα',
+      rows: isLoading ? undefined : (filteredAchievements ?? []).map((a) =>
+        `${a.title} · ${a.unlocked ? 'unlocked' : 'in progress'} · ${a.category} · ${a.points} pts`,
+      ),
+    },
+  ]);
+  usePageControls([
+    choiceControl(
+      'achievement_view',
+      'Achievements view',
+      'Προβολή επιτευγμάτων',
+      [
+        { value: 'all', en: achievementsEn('tab_all'), el: achievementsEl('tab_all') },
+        { value: 'unlocked', en: achievementsEn('tab_unlocked'), el: achievementsEl('tab_unlocked') },
+        { value: 'locked', en: achievementsEn('tab_in_progress'), el: achievementsEl('tab_in_progress') },
+        { value: 'leaderboard', en: achievementsEn('tab_leaderboard'), el: achievementsEl('tab_leaderboard') },
+        { value: 'reputation', en: achievementsEn('tab_reputation'), el: achievementsEl('tab_reputation') },
+        { value: 'badges', en: achievementsEn('tab_badges'), el: achievementsEl('tab_badges') },
+      ],
+      activeTab,
+      (v) => setActiveTab(v as typeof activeTab),
+    ),
+    choiceControl(
+      'achievement_category',
+      'Achievement category',
+      'Κατηγορία επιτεύγματος',
+      categories.map((c) => ({ value: c.value, en: c.labelEn, el: c.labelEl })),
+      categoryFilter,
+      setCategoryFilter,
+    ),
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'progress',
+      glyph: 'award',
+      labelEn: 'Your progress',
+      labelEl: 'Η πρόοδός σας',
+      content: stats ? <UserStatsCard stats={stats} /> : null,
+    },
+    {
+      id: 'browse',
+      glyph: 'sliders',
+      labelEn: 'Browse',
+      labelEl: 'Περιήγηση',
+      badge: (activeTab !== 'all' ? 1 : 0) + (categoryFilter !== 'all' ? 1 : 0) || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="View"
+            titleEl="Προβολή"
+            options={[
+              { value: 'all', en: achievementsEn('tab_all'), el: achievementsEl('tab_all'), icon: Award, count: achievements.length },
+              { value: 'unlocked', en: achievementsEn('tab_unlocked'), el: achievementsEl('tab_unlocked'), icon: CheckCircle2, count: achievements.filter((a) => a.unlocked).length },
+              { value: 'locked', en: achievementsEn('tab_in_progress'), el: achievementsEl('tab_in_progress'), icon: Lock, count: achievements.filter((a) => !a.unlocked).length },
+              { value: 'leaderboard', en: achievementsEn('tab_leaderboard'), el: achievementsEl('tab_leaderboard'), icon: Trophy },
+              { value: 'reputation', en: achievementsEn('tab_reputation'), el: achievementsEl('tab_reputation'), icon: TrendingUp },
+              { value: 'badges', en: achievementsEn('tab_badges'), el: achievementsEl('tab_badges'), icon: Award },
+            ]}
+            value={activeTab}
+            onChange={(v) => setActiveTab(v)}
+          />
+          {listViews && (
+            <RailOptions
+              title="Category"
+              titleEl="Κατηγορία"
+              options={categories.map((c) => ({
+                value: c.value,
+                en: c.labelEn,
+                el: c.labelEl,
+                icon: c.icon,
+              }))}
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
-      title="Achievements & Badges"
-      description="Track your progress, unlock badges, and climb the leaderboard"
+      title={achievementsEn('page_title')}
+      titleEl={achievementsEl('page_title')}
+      description={achievementsEn('page_description')}
+      descriptionEl={achievementsEl('page_description')}
+      rail={rail}
+      showHelp
+      askAi="What achievements should I work toward next, and which unlocked badges are most useful to show investors?"
     >
-      <div className="space-y-4 pb-10">
+      <FirstRunTour tourId="achievements" steps={ACHIEVEMENTS_TOUR} ready={!isLoading} />
+      <div className="space-y-6 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (
           <>
-            {stats && <UserStatsCard stats={stats} />}
-
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
-                  <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> All ({achievements?.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
-                  </TabsTrigger>
-                  <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Lock className="h-3.5 w-3.5" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
-                  </TabsTrigger>
-                  <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Trophy className="h-3.5 w-3.5" /> Leaderboard
-                  </TabsTrigger>
-                  <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <TrendingUp className="h-3.5 w-3.5" /> Reputation
-                  </TabsTrigger>
-                  <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> Badges
-                  </TabsTrigger>
-                </TabsList>
-
-                {activeTab !== 'leaderboard' && activeTab !== 'reputation' && activeTab !== 'badges' && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {categories.map((category) => {
-                      const Icon = category.icon;
-                      return (
-                        <Badge
-                          key={category.value}
-                          variant={categoryFilter === category.value ? 'default' : 'outline'}
-                          className="cursor-pointer gap-1 text-xs"
-                          onClick={() => setCategoryFilter(category.value)}
-                        >
-                          {Icon && <Icon className="icon-sm" />}
-                          {category.label}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                )}
+              <div data-tour="achievements-stats">
+                <UserStatsCard stats={stats} />
               </div>
-
-              <TabsContent value="all" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'all' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -591,14 +679,16 @@ export default function AchievementsPage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No achievements found</h3>
-                      <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} /></p>
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="unlocked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'unlocked' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -607,14 +697,16 @@ export default function AchievementsPage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No unlocked achievements</h3>
-                      <p className="text-sm text-muted-foreground">Start engaging to unlock your first badge!</p>
+                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} /></p>
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="locked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
+              {activeTab === 'locked' && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -623,20 +715,21 @@ export default function AchievementsPage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <p className="text-sm text-muted-foreground">All badges unlocked in this category!</p>
+                      <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('all_badges_unlocked')} el={achievementsEl('all_badges_unlocked')} /></p>
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
+              </div>
+              )}
 
-              <TabsContent value="leaderboard" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <div className="grid gap-4 sm:grid-cols-3">
+              {activeTab === 'leaderboard' && (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-2">
                   {/* Leaderboard table */}
                   <div className="sm:col-span-2">
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Trophy className="icon-sm text-yellow-500" /> Community Leaderboard
+                          <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-1 px-2">
@@ -651,17 +744,17 @@ export default function AchievementsPage() {
                             <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
                               {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
                             </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
                               {user.name[0]}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary')}>
+                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary-accessible')}>
                                 {user.name}{(user as any).isMe && ' (You)'}
                               </p>
                               <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString()}</p>
+                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString('en-GB')}</p>
                               <p className="text-xs text-muted-foreground">pts</p>
                             </div>
                           </div>
@@ -675,7 +768,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Zap className="icon-sm text-amber-500" /> Recently Unlocked
+                          <Zap className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('recently_unlocked')} el={achievementsEl('recently_unlocked')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
@@ -683,20 +776,20 @@ export default function AchievementsPage() {
                           const Icon = a.icon;
                           return (
                             <div key={a.id} className="flex items-center gap-2.5">
-                              <div className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
-                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} />
+                              <div data-keep-icon className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
+                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} aria-hidden="true" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{a.title}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {a.unlockedAt?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                  {a.unlockedAt?.toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
                                 </p>
                               </div>
                               <Badge variant="secondary" size="sm" className="px-1.5 shrink-0">{a.points}pts</Badge>
                             </div>
                           );
                         }) : (
-                          <p className="text-xs text-muted-foreground text-center py-4">No unlocks yet</p>
+                          <p className="text-xs text-muted-foreground text-center py-4"><BilingualText en={achievementsEn('no_unlocks_yet')} el={achievementsEl('no_unlocks_yet')} /></p>
                         )}
                       </CardContent>
                     </Card>
@@ -704,7 +797,7 @@ export default function AchievementsPage() {
                     {/* Tier breakdown */}
                     <Card className="mt-4">
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">Tier Breakdown</CardTitle>
+                        <CardTitle className="text-sm"><BilingualText en={achievementsEn('tier_breakdown')} el={achievementsEl('tier_breakdown')} compact /></CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         {(['platinum','gold','silver','bronze'] as const).map((tier) => {
@@ -712,7 +805,7 @@ export default function AchievementsPage() {
                           const total = achievements.filter((a) => a.tier === tier).length;
                           return (
                             <div key={tier} className="flex items-center gap-2">
-                              <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} />
+                              <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} aria-hidden="true" />
                               <span className="text-xs capitalize text-muted-foreground w-16">{tier}</span>
                               <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
                               <span className="text-xs text-muted-foreground w-8 text-right">{count}/{total}</span>
@@ -723,16 +816,19 @@ export default function AchievementsPage() {
                     </Card>
                   </div>
                 </div>
-              </TabsContent>
+              )}
 
-              <TabsContent value="reputation" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <ReputationSystem points={reputationPoints > 0 ? reputationPoints : undefined} />
-              </TabsContent>
+              {activeTab === 'reputation' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <ReputationSystem points={reputationPoints > 0 ? reputationPoints : undefined} />
+                </div>
+              )}
 
-              <TabsContent value="badges" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <UserBadges />
-              </TabsContent>
-            </Tabs>
+              {activeTab === 'badges' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <UserBadges />
+                </div>
+              )}
           </>
         )}
       </div>

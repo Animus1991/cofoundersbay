@@ -1,6 +1,8 @@
-﻿'use client';
+'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
@@ -29,6 +31,9 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,12 +48,18 @@ import {
   recordMatchFeedback,
   recordBehavioralSignal,
   getMatchingStats,
+  getShortlistIds,
+  saveToShortlist,
+  removeFromShortlist,
   type SearchHit,
   type MatchSuggestion,
   type MatchFeedbackType,
   type MatchExplanationItem,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -58,18 +69,20 @@ const ROLE_ICON: Record<string, typeof Users> = {
 };
 
 const ROLE_COLOR: Record<string, string> = {
-  founder: 'bg-blue-50 text-blue-700 border-blue-200',
-  mentor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-  investor: 'bg-amber-50 text-amber-700 border-amber-200',
-  org: 'bg-purple-50 text-purple-700 border-purple-200',
+  founder: 'bg-status-info-bg text-status-info border-status-info-border',
+  mentor: 'bg-status-info-bg text-status-info border-status-info-border',
+  investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  org: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
 function MatchScoreBadge({ score }: { score: number }) {
+  // Semantic chips, not white on a mid-tone fill: white on emerald-500 is
+  // 2.5:1, under the 4.5:1 small text needs (axe color-contrast on every card).
   const color =
-    score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
+    score >= 80 ? STATUS.success.chip : score >= 60 ? STATUS.info.chip : STATUS.neutral.chip;
   return (
-    <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
-      <Star className="h-3 w-3 fill-current" />
+    <div className={cn('flex items-center gap-1 border text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
+      <Star className="icon-sm fill-current" aria-hidden="true" />
       {score}%
     </div>
   );
@@ -87,7 +100,7 @@ function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]
             <div
               className={cn(
                 'h-full rounded-full transition-all',
-                item.score >= 0.8 ? 'bg-emerald-500' : item.score >= 0.6 ? 'bg-blue-500' : 'bg-amber-400'
+                item.score >= 0.8 ? 'bg-status-success-mark' : item.score >= 0.6 ? 'bg-status-info-mark' : 'bg-status-warning-mark'
               )}
               style={{ width: `${Math.round(item.score * 100)}%` }}
             />
@@ -110,20 +123,20 @@ function BreakdownModal({
   explanation: MatchExplanationItem[];
   reasons: string[];
 }) {
-  const color = score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : 'text-amber-600';
+  const color = score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-info' : 'text-status-warning';
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-primary" />
+            <Star className="icon-sm text-primary-accessible" />
             Match Score Breakdown
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
             <span className="text-sm text-muted-foreground">Overall Match Score</span>
-            <span className={cn('text-2xl font-bold', color)}>{score}%</span>
+            <span className={cn('page-stat text-2xl font-bold', color)}>{score}%</span>
           </div>
           {explanation.length > 0 ? (
             <div>
@@ -138,7 +151,7 @@ function BreakdownModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
                 {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
+                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">{r}</span>
                 ))}
               </div>
             </div>
@@ -154,29 +167,29 @@ function BreakdownModal({
 
 // Rich feedback dropdown
 const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
-  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600' },
+  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-status-success' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },
   { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
-  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-red-500' },
+  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-status-danger' },
 ];
 
 function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => void }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <Button
+      <Button aria-label="Feedback"
         size="icon"
         variant="ghost"
         className="h-7 w-7 text-muted-foreground"
         onClick={() => setOpen(p => !p)}
         title="Feedback"
       >
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDown className="icon-sm" />
       </Button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 bottom-8 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
             {FEEDBACK_OPTIONS.map(opt => (
               <button
@@ -198,24 +211,69 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
   );
 }
 
+/** Either payload the recommendations endpoint can return. */
+type RecommendationHit = (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
+
+/** The MatchSuggestion branch is the one that carries a nested `profile`. */
+function isMatchSuggestion(hit: RecommendationHit): hit is MatchSuggestion {
+  return 'profile' in hit;
+}
+
+/**
+ * Flattens the two shapes into one view model. Previously each field was read
+ * through a separate `as any`, so a rename on either side of the API would have
+ * silently produced `undefined` at runtime rather than failing the build.
+ */
+function normaliseHit(hit: RecommendationHit) {
+  if (isMatchSuggestion(hit)) {
+    return {
+      userId: hit.userId,
+      displayName: hit.profile?.displayName ?? 'Unknown',
+      headline: hit.profile?.headline ?? null,
+      avatarUrl: hit.profile?.avatarUrl ?? null,
+      location: hit.profile?.location ?? null,
+      role: null as string | null,
+      skills: (hit.profile?.skills ?? []).map((s) => s.skill?.name ?? s.skillId),
+      score: hit.score,
+      confidence: hit.confidence as number | null,
+      reasons: hit.reasons ?? [],
+      explanation: hit.explanation ?? [],
+    };
+  }
+  return {
+    userId: hit.userId,
+    displayName: hit.displayName ?? 'Unknown',
+    headline: hit.headline ?? null,
+    avatarUrl: hit.avatarUrl ?? null,
+    location: hit.location ?? null,
+    role: hit.role ?? null,
+    skills: hit.skills ?? hit.skillNames ?? [],
+    score: hit.matchScore ?? 0,
+    confidence: null as number | null,
+    reasons: hit.matchReasons ?? [],
+    explanation: [] as MatchExplanationItem[],
+  };
+}
+
 function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
-  hit: (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
+  hit: RecommendationHit;
   onConnect: (userId: string) => void;
   onFeedback: (userId: string, fb: MatchFeedbackType) => void;
   onSave?: (userId: string) => void;
 }) {
-  // Support both old SearchHit shape and new MatchSuggestion shape
-  const userId = (hit as any).userId;
-  const displayName = (hit as any).profile?.displayName ?? (hit as any).displayName ?? 'Unknown';
-  const headline = (hit as any).profile?.headline ?? (hit as any).headline ?? null;
-  const avatarUrl = (hit as any).profile?.avatarUrl ?? (hit as any).avatarUrl ?? null;
-  const location = (hit as any).profile?.location ?? (hit as any).location ?? null;
-  const role = (hit as any).role ?? null;
-  const skills = (hit as any).profile?.skills ?? (hit as any).skills ?? [];
-  const score = (hit as any).score ?? (hit as any).matchScore ?? 0;
-  const confidence = (hit as any).confidence ?? null;
-  const reasons: string[] = (hit as any).reasons ?? (hit as any).matchReasons ?? [];
-  const explanation: MatchExplanationItem[] = (hit as any).explanation ?? [];
+  const {
+    userId,
+    displayName,
+    headline,
+    avatarUrl,
+    location,
+    role,
+    skills,
+    score,
+    confidence,
+    reasons,
+    explanation,
+  } = normaliseHit(hit);
 
   const RoleIcon = ROLE_ICON[role ?? 'founder'] ?? Users;
   const [showExplanation, setShowExplanation] = useState(false);
@@ -231,13 +289,13 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
       explanation={explanation}
       reasons={reasons}
     />
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:border-primary/30 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
               <AvatarImage src={avatarUrl ?? undefined} />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
+              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
                 {displayName?.[0]?.toUpperCase() ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -246,7 +304,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {displayName}
                 </Link>
                 {headline && (
@@ -254,7 +312,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 )}
                 {location && (
                   <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="icon-sm" />
                     {location}
                   </p>
                 )}
@@ -263,13 +321,13 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 {score > 0 && <MatchScoreBadge score={score} />}
                 {confidence !== null && (
                   <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <ShieldCheck className="h-3 w-3" />
+                    <ShieldCheck className="icon-sm" />
                     {confidence}%
                   </span>
                 )}
                 {role && (
                   <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
-                    <RoleIcon className="h-3 w-3 mr-1" />
+                    <RoleIcon className="icon-sm mr-1" />
                     {role}
                   </Badge>
                 )}
@@ -288,7 +346,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   onClick={() => setShowExplanation(p => !p)}
                   className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
                 >
-                  <Info className="h-3 w-3" />
+                  <Info className="icon-sm" />
                   {showExplanation ? 'Hide' : 'Why this match?'}
                 </button>
               </div>
@@ -300,9 +358,9 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
             {/* Skills */}
             {skills.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
-                {(skills as any[]).slice(0, 4).map((s: any, i: number) => (
-                  <span key={i} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
-                    {s.skill?.name ?? s}
+                {skills.slice(0, 4).map((skill) => (
+                  <span key={skill} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
+                    {skill}
                   </span>
                 ))}
                 {skills.length > 4 && (
@@ -311,35 +369,35 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
               </div>
             )}
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-                <UserPlus className="h-3.5 w-3.5" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="icon-sm" />
                 Score Breakdown
               </Button>
               <div className="ml-auto flex items-center gap-1">
                 {onSave && (
-                  <Button
+                  <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-blue-600"
+                    className="h-7 w-7 text-muted-foreground hover:text-primary-accessible"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
-                    <BookmarkPlus className="h-3.5 w-3.5" />
+                    <BookmarkPlus className="icon-sm" />
                   </Button>
                 )}
-                <Button
+                <Button aria-label="Good match"
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600"
+                  className="h-7 w-7 text-muted-foreground hover:text-status-success"
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >
-                  <ThumbsUp className="h-3.5 w-3.5" />
+                  <ThumbsUp className="icon-sm" />
                 </Button>
                 <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
               </div>
@@ -384,24 +442,25 @@ export default function RecommendationsPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { success: toastSuccess, error: toastError } = useToast();
 
   const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
 
   const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
-    queryKey: ['recommendations', role, refreshKey],
+    queryKey: qk('recommendations', role, refreshKey),
     queryFn: () => getRecommendations({ role, limit: 20 }),
     staleTime: 5 * 60_000,
   });
 
   const { data: digestData, isLoading: digestLoading } = useQuery({
-    queryKey: ['weekly-digest'],
+    queryKey: qk('weekly-digest'),
     queryFn: getWeeklyDigest,
     staleTime: 10 * 60_000,
   });
 
   const { data: statsData } = useQuery({
-    queryKey: ['matching-stats'],
+    queryKey: qk('matching', 'stats'),
     queryFn: getMatchingStats,
     staleTime: 5 * 60_000,
   });
@@ -422,70 +481,144 @@ export default function RecommendationsPage() {
         fb === 'better_fit_wanted' ? 'Understood — refining suggestions.' :
         'Feedback recorded.';
       toastSuccess(msg);
-      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
+      queryClient.invalidateQueries({ queryKey: qk('recommendations') });
     },
   });
 
   const allRecommendations = recsData?.suggestions ?? [];
   const recommendations = activeTab === 'saved'
-    ? allRecommendations.filter((h) => savedIds.has((h as any).userId))
-    : allRecommendations.filter((h) => ((h as any).score ?? (h as any).matchScore ?? 0) >= minScore);
+    ? allRecommendations.filter((h) => savedIds.has(h.userId))
+    : allRecommendations.filter((h) => normaliseHit(h).score >= minScore);
   const weeklyRecs = digestData?.recommendations ?? [];
   const stats = digestData?.stats ?? statsData;
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
-    queryClient.invalidateQueries({ queryKey: ['weekly-digest'] });
+    queryClient.invalidateQueries({ queryKey: qk('weekly-digest') });
   };
 
+  /*
+   * Save was a set in component state: "Saved to your list" over a list that
+   * lived until the tab closed, beside a /shortlist that never heard of it.
+   * It is the shortlist now - the same ids /matches reads and the same write
+   * its bookmark makes - so the Saved tab and /shortlist agree.
+   */
+  const { data: shortlistIds } = useQuery({
+    queryKey: qk('shortlist', 'ids'),
+    queryFn: getShortlistIds,
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+  useEffect(() => {
+    if (shortlistIds?.ids) setSavedIds(new Set(shortlistIds.ids));
+  }, [shortlistIds]);
+
   const handleSave = (userId: string) => {
-    setSavedIds((prev) => { const s = new Set(prev); s.has(userId) ? s.delete(userId) : s.add(userId); return s; });
-    toastSuccess(savedIds.has(userId) ? 'Removed from saved' : 'Saved to your list');
+    const wasSaved = savedIds.has(userId);
+    setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.delete(userId); else next.add(userId); return next; });
+    void (wasSaved ? removeFromShortlist(userId) : saveToShortlist(userId))
+      .then(() => {
+        toastSuccess(wasSaved ? 'Removed from your shortlist' : 'Saved to your shortlist');
+        void queryClient.invalidateQueries({ queryKey: qk('shortlist') });
+      })
+      .catch(() => {
+        setSavedIds((prev) => { const next = new Set(prev); if (wasSaved) next.add(userId); else next.delete(userId); return next; });
+        toastError('Could not update your shortlist', 'Please try again');
+      });
   };
+
+  // Offered to the assistant: the tab, the minimum score, Refresh, and each
+  // card's Connect, Save and "not relevant" - the same handlers.
+  const people = recommendations.map(normaliseHit);
+  const byName = (list: typeof people) => rowOptions(list, (p) => p.userId, (p) => p.displayName);
+  usePageList([
+    {
+      id: 'recommendations',
+      labelEn: 'Recommended people',
+      labelEl: 'Προτεινόμενα άτομα',
+      rows: recsLoading ? undefined : people.map((p) => `${p.displayName}${p.role ? ` · ${p.role}` : ''}${p.headline ? ` · ${p.headline}` : ''} · match ${Math.round(p.score)}%${savedIds.has(p.userId) ? ' · saved' : ''}`),
+      total: allRecommendations.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('recommendation_tab', 'Recommendation filter', 'Φίλτρο προτάσεων', [
+      { value: 'all', en: 'All', el: 'Όλοι' },
+      { value: 'founders', en: 'Founders', el: 'Ιδρυτές' },
+      { value: 'mentors', en: 'Mentors', el: 'Μέντορες' },
+      { value: 'investors', en: 'Investors', el: 'Επενδυτές' },
+      { value: 'saved', en: 'Saved', el: 'Αποθηκευμένοι' },
+    ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
+    choiceControl('min_score', 'Minimum match score', 'Ελάχιστη βαθμολογία', [0, 50, 65, 80].map((n) => ({ value: String(n), en: n ? `${n}% or more` : 'Any score', el: n ? `${n}% και πάνω` : 'Οποιαδήποτε' })), String(minScore), (v) => setMinScore(Number(v))),
+    { id: 'refresh', labelEn: 'Refresh recommendations', labelEl: 'Ανανέωση προτάσεων', writes: false, run: handleRefresh },
+    { id: 'connect_with', labelEn: 'Send a connection request to', labelEl: 'Αίτημα σύνδεσης προς', writes: true, options: byName(people), run: (v) => { if (v) connectMutation.mutate(v); } },
+    // Saving creates a fresh shortlist row, so removing it is the undo; not
+    // the reverse, since removing drops the row's note.
+    { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(people.filter((p) => !savedIds.has(p.userId))), undo: (v) => ({ control: 'unsave_person', value: v }), run: (v) => { if (v) handleSave(v); } },
+    { id: 'unsave_person', labelEn: 'Remove from shortlist', labelEl: 'Αφαίρεση από τη λίστα', writes: true, options: byName(people.filter((p) => savedIds.has(p.userId))), run: (v) => { if (v) handleSave(v); } },
+    { id: 'not_relevant', labelEn: 'Mark recommendation not relevant', labelEl: 'Σήμανση πρότασης ως μη σχετικής', writes: true, options: byName(people), run: (v) => { if (v) feedbackMutation.mutate({ userId: v, fb: 'not_relevant' }); } },
+  ]);
+
+  /*
+   * The four counts describe the list rather than being the list, so they
+   * live in the rail. Linked pages sit beside this feed in Discover. Refresh
+   * stays in the header: it is this page's recalculation, not another surface.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'spark',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'new', label: 'New matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'week', label: 'This week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'connections', label: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'acceptance', label: 'Acceptance rate', labelEl: 'Ποσοστό αποδοχής', value: typeof stats?.acceptanceRate === 'number' ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={Search} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+          <RailAction icon={BookmarkPlus} en="Open shortlist" el="Άνοιγμα λίστας" onClick={() => router.push('/shortlist')} />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <AppShell
-      title="Recommendations"
-      description="AI-powered matches based on your profile, skills, and goals"
+      showHelp
+      title="For you"
+      description="Picks ranked from your profile, skills, and recent activity, recalculated at least hourly."
+      descriptionEl="Επιλογές ταξινομημένες βάσει του προφίλ, των δεξιοτήτων και της πρόσφατης δραστηριότητάς σας, με επανυπολογισμό τουλάχιστον κάθε ώρα."
+      rail={rail}
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+          <RefreshCw className="icon-sm mr-2" />
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       }
     >
-      <div className="space-y-5">
-        {/* Stats header */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:grid-rows-1">
-          {[
-            { label: 'New Matches', value: recommendations.length, icon: Target },
-            { label: 'This Week', value: weeklyRecs.length, icon: Sparkles },
-            { label: 'Connections', value: stats?.totalConnections ?? 0, icon: Users },
-            { label: 'Acceptance Rate', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
-          ].map(({ label, value, icon: Icon }) => (
-            <Card key={label}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Icon className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xl font-bold leading-none">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
+      <div className="space-y-6">
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+          <Card className="border-primary/15 bg-primary/[0.03]">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
+                <Sparkles className="icon-sm text-primary-accessible" />
+                <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
-                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
+                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : 'Today'}
                 </Badge>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1">
@@ -495,11 +628,11 @@ export default function RecommendationsPage() {
                       <div className="relative">
                         <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
                           <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                             {m.profile?.displayName?.[0] ?? '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] font-bold px-1 rounded-full">
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-2xs font-bold px-1 rounded-full">
                           {m.score}%
                         </div>
                       </div>
@@ -522,9 +655,9 @@ export default function RecommendationsPage() {
             className="gap-1.5"
             onClick={() => setShowFilter(p => !p)}
           >
-            <Filter className="h-3.5 w-3.5" />
+            <Filter className="icon-sm" />
             Filter
-            {minScore > 0 && <span className="ml-1 text-xs text-primary font-semibold">≥{minScore}%</span>}
+            {minScore > 0 && <span className="ml-1 text-xs text-primary-accessible font-semibold">≥{minScore}%</span>}
           </Button>
           {showFilter && (
             <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">
@@ -540,8 +673,8 @@ export default function RecommendationsPage() {
               />
               <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
               {minScore > 0 && (
-                <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
+                <button aria-label="Clear minimum score" onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
+                  <X className="icon-sm" />
                 </button>
               )}
             </div>
@@ -556,26 +689,26 @@ export default function RecommendationsPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
             <TabsTrigger value="all" className="gap-1.5">
-              <Target className="h-3.5 w-3.5" />
-              All
+              <Target className="icon-sm" />
+              <BilingualText en="All" el="Όλοι" compact />
             </TabsTrigger>
             <TabsTrigger value="founders" className="gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" />
-              Founders
+              <Briefcase className="icon-sm" />
+              <BilingualText en="Founders" el="Ιδρυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="mentors" className="gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" />
-              Mentors
+              <GraduationCap className="icon-sm" />
+              <BilingualText en="Mentors" el="Μέντορες" compact />
             </TabsTrigger>
             <TabsTrigger value="investors" className="gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" />
-              Investors
+              <DollarSign className="icon-sm" />
+              <BilingualText en="Investors" el="Επενδυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-1.5">
-              <BookmarkPlus className="h-3.5 w-3.5" />
-              Saved
+              <BookmarkPlus className="icon-sm" />
+              <BilingualText en="Saved" el="Αποθηκευμένα" compact />
               {savedIds.size > 0 && (
-                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                   {savedIds.size}
                 </span>
               )}
@@ -587,20 +720,20 @@ export default function RecommendationsPage() {
               <Skeleton3 />
             ) : recsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load recommendations.</p>
-                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}>Retry</Button>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Αποτυχία φόρτωσης συστάσεων." /></p>
+                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
               <Card><CardContent className="py-14 text-center">
                 <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="font-semibold mb-1">No saved matches yet</h3>
-                <p className="text-sm text-muted-foreground">Bookmark matches you want to revisit later.</p>
+                <h3 className="font-semibold mb-1"><BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." /></p>
               </CardContent></Card>
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard
-                  key={(hit as any).userId}
-                  hit={hit as any}
+                  key={hit.userId}
+                  hit={hit}
                   onConnect={(uid) => connectMutation.mutate(uid)}
                   onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
                   onSave={handleSave}
@@ -610,14 +743,16 @@ export default function RecommendationsPage() {
               <Card>
                 <CardContent className="py-14 text-center">
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <h3 className="font-semibold mb-1">No recommendations yet</h3>
+                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν συστάσεις ακόμα" /></h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
                   </p>
                   {minScore > 0 ? (
-                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}>Clear Filter</Button>
+                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
                   ) : (
-                    <Link href="/profile/edit"><Button size="sm">Complete Profile</Button></Link>
+                    <Button size="sm" asChild>
+                      <Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link>
+                    </Button>
                   )}
                 </CardContent>
               </Card>

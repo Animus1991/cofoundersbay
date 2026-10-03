@@ -120,14 +120,14 @@ export function ProfileCompleteness({
   );
 
   const getStatusColor = (pct: number) => {
-    if (pct >= 80) return 'text-emerald-500';
-    if (pct >= 50) return 'text-amber-500';
-    return 'text-destructive';
+    if (pct >= 80) return 'text-status-success';
+    if (pct >= 50) return 'text-status-warning';
+    return 'text-destructive-accessible';
   };
 
   const getProgressColor = (pct: number) => {
-    if (pct >= 80) return 'bg-emerald-500';
-    if (pct >= 50) return 'bg-amber-500';
+    if (pct >= 80) return 'bg-status-success-mark';
+    if (pct >= 50) return 'bg-status-warning-mark';
     return 'bg-destructive';
   };
 
@@ -149,22 +149,22 @@ export function ProfileCompleteness({
           </div>
         </div>
         {percentage < 100 && (
-          <Link href="/profile/edit">
-            <Button variant="ghost" size="icon" className="h-7 w-7">
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Complete your profile">
+            <Link href="/profile/edit" aria-label="Complete your profile">
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
         )}
       </div>
     );
   }
 
   return (
-    <Card className={cn('border-border/60', className)}>
+    <Card className={cn('border-border', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Profile Completeness</CardTitle>
-          <span className={cn('text-2xl font-bold', getStatusColor(percentage))}>
+          <span className={cn('page-stat text-2xl font-bold', getStatusColor(percentage))}>
             {percentage}%
           </span>
         </div>
@@ -173,10 +173,10 @@ export function ProfileCompleteness({
         <Progress value={percentage} className="h-2" />
 
         {percentage >= 100 ? (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+          <div className="flex items-center gap-2 rounded-lg border border-status-success-border bg-status-success-bg p-3">
+            <CheckCircle2 className="icon-md text-status-success shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="text-sm font-medium text-status-success ">
                 Profile Complete!
               </p>
               <p className="text-xs text-muted-foreground">
@@ -187,10 +187,10 @@ export function ProfileCompleteness({
         ) : (
           <>
             {percentage < 50 && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+                <AlertCircle className="icon-md text-status-warning shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                  <p className="text-sm font-medium text-status-warning ">
                     Complete your profile
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -211,38 +211,38 @@ export function ProfileCompleteness({
                     <Link
                       key={field.key}
                       href="/profile/edit"
-                      className="flex items-center gap-2 rounded-lg border border-border/60 p-2.5 hover:bg-muted/50 transition-colors group"
+                      className="flex items-center gap-2 rounded-lg border border-border p-2.5 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Icon className="icon-sm text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         <p className="text-xs text-muted-foreground truncate">{field.description}</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" />
                     </Link>
                   );
                 })}
               </div>
               {missingFields.length > 5 && (
-                <Link href="/profile/edit">
-                  <Button variant="outline" size="sm" className="w-full mt-2">
+                <Button variant="outline" size="sm" className="w-full mt-2" asChild>
+                  <Link href="/profile/edit">
                     +{missingFields.length - 5} more fields
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </div>
           </>
         )}
 
         {percentage < 100 && (
-          <Link href="/profile/edit" className="block">
-            <Button className="w-full gap-2">
+          <Button className="w-full gap-2" asChild>
+            <Link href="/profile/edit" className="block">
               Complete Your Profile
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
         )}
       </CardContent>
     </Card>
@@ -253,8 +253,8 @@ export function ProfileCompletenessIndicator({ profile }: { profile: ProfileData
   const { percentage } = useMemo(() => calculateProfileCompleteness(profile), [profile]);
 
   const getColor = (pct: number) => {
-    if (pct >= 80) return 'stroke-emerald-500';
-    if (pct >= 50) return 'stroke-amber-500';
+    if (pct >= 80) return 'stroke-status-success';
+    if (pct >= 50) return 'stroke-status-warning';
     return 'stroke-destructive';
   };
 

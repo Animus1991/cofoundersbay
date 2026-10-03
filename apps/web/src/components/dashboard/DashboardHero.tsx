@@ -43,7 +43,7 @@ export function DashboardHero({
       <Card className="bg-hero-radial">
         <CardHeader>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             Momentum
           </div>
           <CardTitle className="font-display text-2xl">{mom.title}</CardTitle>
@@ -60,12 +60,12 @@ export function DashboardHero({
             </div>
           )}
           <div className="flex flex-wrap gap-3">
-            <Link href="/discover">
-              <Button variant="outline">Explore Discover</Button>
-            </Link>
-            <Link href="/profile">
-              <Button variant="ghost">View profile</Button>
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/discover">Explore Discover</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/profile">View profile</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -79,7 +79,7 @@ export function DashboardHero({
             <Link
               key={b.id}
               href={b.href ?? '#'}
-              className="block rounded-lg border border-border/60 p-3 text-sm transition-colors hover:bg-secondary/60"
+              className="block rounded-lg border border-border p-3 text-sm transition-colors hover:bg-secondary/60"
             >
               <p className="font-medium text-foreground">{b.title}</p>
               {b.excerpt && <p className="text-xs text-muted-foreground mt-0.5">{b.excerpt}</p>}

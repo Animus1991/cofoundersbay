@@ -9,6 +9,11 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +23,10 @@ import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { usePageList } from '@/lib/page-controls';
 
 type Review = {
   id: string;
@@ -53,10 +62,9 @@ function ReviewCard({ review }: { review: Review }) {
                         className={cn(
                           'h-4 w-4',
                           i < review.rating
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
-                        )}
-                      />
+                        )} aria-hidden="true" />
                     ))}
                   </div>
                 </div>
@@ -64,7 +72,9 @@ function ReviewCard({ review }: { review: Review }) {
                   <p className="text-sm text-muted-foreground">{review.clientCompany}</p>
                 )}
               </div>
-              <span className="text-xs text-muted-foreground">{review.date}</span>
+              <span className="text-xs text-muted-foreground">
+                <RelativeTime date={review.date} format={formatRelativeTime} />
+              </span>
             </div>
 
             <Badge variant="secondary" className="mt-2 text-xs">
@@ -75,20 +85,22 @@ function ReviewCard({ review }: { review: Review }) {
 
             {review.response && (
               <div className="mt-3 p-3 rounded-lg bg-muted/50 border-l-2 border-primary">
-                <p className="text-xs font-medium text-muted-foreground mb-1">Your Response</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Your Response" el="Η απάντησή σας" compact /></p>
                 <p className="text-sm">{review.response}</p>
               </div>
             )}
 
             <div className="flex items-center gap-4 mt-3">
-              <Button variant="ghost" size="sm" className="h-8 text-xs">
-                <ThumbsUp className="mr-1 h-3 w-3" />
-                Helpful ({review.helpful})
+              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
+                <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
+                {/* Nobody can mark a review helpful — there is no field
+                    and no endpoint — so the count is not shown. */}
+                <BilingualText en="Helpful" el="Χρήσιμο" compact />
               </Button>
               {!review.response && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs">
-                  <MessageSquare className="mr-1 h-3 w-3" />
-                  Respond
+                <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Responses to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
+                  <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                  <BilingualText en="Respond" el="Απάντηση" compact />
                 </Button>
               )}
             </div>
@@ -99,6 +111,31 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
+/**
+ * A review is an inquiry the client rated.
+ *
+ * `ServiceInquiry` carries `rating` and `reviewComment`, so there is no
+ * separate review table and no second place for the average to disagree with
+ * the reviews behind it.
+ *
+ * `helpful` has no field — nobody can mark a review helpful — so it stays at
+ * zero and the count is not rendered.
+ */
+function toReview(row: ServiceInquiryItem): Review {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'A client',
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer.title,
+    rating: row.rating ?? 0,
+    comment: row.reviewComment ?? '',
+    date: row.resolvedAt ?? row.createdAt,
+    helpful: 0,
+    response: row.responseMessage ?? undefined,
+  };
+}
+
+/** Shown to a provider with no reviews yet. */
 const MOCK_REVIEWS: Review[] = [
     {
       id: '1',
@@ -107,7 +144,7 @@ const MOCK_REVIEWS: Review[] = [
       service: 'Startup Legal Package',
       rating: 5,
       comment: 'Excellent service! The legal documents were thorough and delivered ahead of schedule. Highly recommend for any startup.',
-      date: '1 week ago',
+      date: '2026-08-28T10:00:00.000Z',
       helpful: 12,
       response: 'Thank you so much for your kind words, Sarah! It was a pleasure working with TechStart.',
     },
@@ -118,7 +155,7 @@ const MOCK_REVIEWS: Review[] = [
       service: 'Financial Model Creation',
       rating: 5,
       comment: 'Quick turnaround and great quality. The financial model was exactly what we needed for our investor meetings.',
-      date: '2 weeks ago',
+      date: '2026-08-21T10:00:00.000Z',
       helpful: 8,
     },
     {
@@ -128,7 +165,7 @@ const MOCK_REVIEWS: Review[] = [
       service: 'Contract Review',
       rating: 4,
       comment: 'Good work overall. The contract review was detailed and caught several issues we had missed. Minor delay in delivery.',
-      date: '3 weeks ago',
+      date: '2026-08-14T10:00:00.000Z',
       helpful: 5,
       response: 'Thank you for your feedback, Lisa. We apologize for the delay and have improved our processes.',
     },
@@ -139,7 +176,7 @@ const MOCK_REVIEWS: Review[] = [
       service: 'Startup Legal Package',
       rating: 5,
       comment: 'Professional and knowledgeable. Made the incorporation process smooth and stress-free.',
-      date: '1 month ago',
+      date: '2026-08-04T10:00:00.000Z',
       helpful: 15,
     },
   ];
@@ -148,7 +185,15 @@ export default function ProviderReviewsPage() {
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
-  const reviews = showDemoData ? MOCK_REVIEWS : [];
+  const { data, isLoading } = useQuery({
+    queryKey: qk('provider', 'reviews'),
+    queryFn: () => listServiceInquiries({ side: 'provider', kind: 'reviews', limit: 100 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.inquiries ?? []).map(toReview), [data]);
+  const reviews = live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_REVIEWS : [];
   const filteredReviews = reviews.filter(
     (r) =>
       !search ||
@@ -163,24 +208,38 @@ export default function ProviderReviewsPage() {
     percentage: (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100,
   }));
 
-  if (!showDemoData && reviews.length === 0) {
+  // The reviews on screen, for the assistant. Replies and "helpful" have no
+  // endpoint (the buttons say so), so there is nothing to offer as a command.
+  usePageList([
+    {
+      id: 'reviews',
+      labelEn: 'Client reviews',
+      labelEl: 'Αξιολογήσεις πελατών',
+      rows: isLoading ? undefined : filteredReviews.map((r) => `${r.clientName} · ${r.service} · ${r.rating}/5${r.response ? ' · answered' : ''}`),
+      total: reviews.length,
+      sample: live.length === 0 && reviews.length > 0,
+    },
+  ]);
+
+  if (!isLoading && !showDemoData && reviews.length === 0) {
     return (
-      <AppShell title="Reviews" description="See what clients are saying about your services">
+      <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
         <EmptyState
           illustration="default"
           title="No client reviews yet"
           description="Reviews will appear here once clients rate your completed service engagements."
+          askAiPrompt="I have no client reviews yet. What should I do in inquiries and projects so reviews start appearing?"
         />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Reviews" description="See what clients are saying about your services">
+    <AppShell title="Reviews" titleEl="Αξιολογήσεις" description="See what clients are saying about your services" descriptionEl="Δείτε τι λένε οι πελάτες για τις υπηρεσίες σας">
       <div className="space-y-6">
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
@@ -193,21 +252,20 @@ export default function ProviderReviewsPage() {
                         className={cn(
                           'h-4 w-4',
                           i < Math.round(avgRating)
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
-                        )}
-                      />
+                        )} aria-hidden="true" />
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {reviews.length} reviews
+                    <BilingualText en={`${reviews.length} reviews`} el={`${reviews.length} αξιολογήσεις`} compact />
                   </p>
                 </div>
                 <div className="flex-1 space-y-1">
                   {ratingDistribution.map((dist) => (
                     <div key={dist.rating} className="flex items-center gap-2">
                       <span className="text-xs w-3">{dist.rating}</span>
-                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      <Star className="icon-sm fill-status-warning text-status-warning" />
                       <Progress value={dist.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">
                         {dist.count}
@@ -222,24 +280,24 @@ export default function ProviderReviewsPage() {
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Reviews</p>
-                  <p className="text-xl font-bold">{reviews.length}</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Total Reviews" el="Σύνολο αξιολογήσεων" compact /></p>
+                  <p className="page-stat text-xl font-bold">{reviews.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-                  <p className="text-xl font-bold text-amber-600">
+                  <p className="text-sm text-muted-foreground"><BilingualText en="5-star reviews" el="Αξιολογήσεις 5 αστέρων" compact wrap /></p>
+                  <p className="page-stat text-xl font-bold text-status-warning">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Response Rate</p>
-                  <p className="text-xl font-bold">
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Response Rate" el="Ποσοστό απαντήσεων" compact /></p>
+                  <p className="page-stat text-xl font-bold">
                     {Math.round((reviews.filter((r) => r.response).length / reviews.length) * 100)}%
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Helpful Votes</p>
-                  <p className="text-xl font-bold">
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Helpful Votes" el="Ψήφοι «χρήσιμο»" compact /></p>
+                  <p className="page-stat text-xl font-bold">
                     {reviews.reduce((acc, r) => acc + r.helpful, 0)}
                   </p>
                 </div>
@@ -250,9 +308,10 @@ export default function ProviderReviewsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search reviews..."
+            aria-label={bilingualInline("Search reviews", "Αναζήτηση αξιολογήσεων")}
+            placeholder={bilingualInline("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -267,10 +326,10 @@ export default function ProviderReviewsPage() {
           {filteredReviews.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium">No reviews found</h3>
+                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
+                <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your search
+                  <BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact />
                 </p>
               </CardContent>
             </Card>

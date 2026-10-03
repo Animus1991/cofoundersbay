@@ -286,6 +286,17 @@ Context: ${JSON.stringify(dto.context || {})}
 
 Return as a JSON object with slide content.`,
 
+      application: `Draft accelerator or grant answers for the programme in context.programId.
+Return JSON { "answers": { "<questionId>": "<text>" } }.
+Fill only questions whose current answer is empty in context.current.
+Do not invent users, press metrics, ARR, Sequoia, San Francisco HQ, or a second founder history.
+If traction is needed, use the $750K seed ($375K committed by Athens Tech Angels) and Builder artefacts already in context — not invented MRR or user counts.
+Respect each question's maxLength.
+
+Context: ${JSON.stringify(dto.context || {})}
+
+Return as a JSON object with an answers map.`,
+
       mvp_plan: `Generate an MVP (Minimum Viable Product) plan including:
 - Scope: What's in and out of scope
 - Features: Prioritized feature list with MoSCoW
@@ -322,19 +333,19 @@ Return as a JSON object.`,
   }
 
   private buildApplicationAnswerPrompt(question: string, context: Record<string, any>): string {
-    return `You are helping a startup founder answer an accelerator application question.
+    return `You are helping a startup founder answer an accelerator or grant question.
 
 Question: ${question}
 
 Startup Context:
 ${JSON.stringify(context, null, 2)}
 
-Write a compelling, authentic answer that:
+Write an authentic answer that:
 1. Directly addresses the question
-2. Is specific and uses concrete examples
-3. Shows passion and commitment
-4. Is concise but comprehensive
-5. Avoids generic startup jargon
+2. Uses only facts in the context (Idea Core, GTM, seed)
+3. Does not invent users, press metrics, ARR, Sequoia, or a second founder history
+4. Treats traction as the $750K seed ($375K committed by Athens Tech Angels) when the context has no other numbers
+5. Stays within the question's maxLength when provided
 
 Return as JSON with an "answer" field containing the response.`;
   }
@@ -481,6 +492,24 @@ Return as JSON with an "answer" field containing the response.`;
           positioning: 'The AI-powered startup operating system',
         },
         tokensUsed: 600,
+      };
+    }
+
+    if (prompt.includes('answers map') || prompt.includes('accelerator or grant answers')) {
+      return {
+        content: {
+          answers: {
+            yc1: 'Harbor OS for early-stage founders.',
+          },
+        },
+        tokensUsed: 80,
+      };
+    }
+
+    if (prompt.includes('accelerator or grant question')) {
+      return {
+        content: { answer: 'Harbor OS for early-stage founders.' },
+        tokensUsed: 40,
       };
     }
 

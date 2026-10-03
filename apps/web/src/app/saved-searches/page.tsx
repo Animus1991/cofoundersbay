@@ -14,6 +14,8 @@ import {
   type SavedSearch,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +40,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { SAVED_SEARCHES_STRINGS, savedSearchesEn, savedSearchesEl } from '@/lib/i18n/strings-saved-searches';
 import { useRouter } from 'next/navigation';
+import { qk } from '@/lib/query-keys';
+import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 function SearchCard({
   search,
@@ -55,12 +64,10 @@ function SearchCard({
 }) {
   const filterCount = Object.values(search.filters).filter((v) => v && v.length > 0).length;
   const lastRunDate = search.lastRun ? new Date(search.lastRun) : null;
-  const timeAgo = lastRunDate
-    ? formatTimeAgo(lastRunDate)
-    : 'Never';
+  const timeAgo = lastRunDate ? formatTimeAgo(lastRunDate) : fill('never_run');
 
   return (
-    <Card className="group hover:shadow-md transition-shadow">
+    <Card className="group hover:border-primary/30 transition-colors">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
@@ -68,13 +75,13 @@ function SearchCard({
               <h3 className="font-semibold text-foreground truncate">{search.name}</h3>
               {search.newResults && search.newResults > 0 && (
                 <Badge variant="default" className="bg-primary text-primary-foreground">
-                  {search.newResults} new
+                  <BilingualText {...fill('new_badge', { n: search.newResults })} compact />
                 </Badge>
               )}
             </div>
 
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-              <Search className="icon-sm" />
+              <Search className="icon-sm" aria-hidden="true" />
               <span className="truncate">{search.query}</span>
             </p>
 
@@ -82,38 +89,60 @@ function SearchCard({
             <div className="flex flex-wrap gap-1.5 mt-3">
               {search.filters.roles?.map((role) => (
                 <Badge key={role} variant="secondary" className="text-xs">
-                  <Users className="icon-sm mr-1" />
+                  <Users className="icon-sm mr-1" aria-hidden="true" />
                   {role}
                 </Badge>
               ))}
               {search.filters.industries?.slice(0, 2).map((ind) => (
                 <Badge key={ind} variant="outline" className="text-xs">
-                  <Briefcase className="icon-sm mr-1" />
+                  <Briefcase className="icon-sm mr-1" aria-hidden="true" />
                   {ind}
                 </Badge>
               ))}
               {search.filters.locations?.slice(0, 1).map((loc) => (
                 <Badge key={loc} variant="outline" className="text-xs">
-                  <MapPin className="icon-sm mr-1" />
+                  <MapPin className="icon-sm mr-1" aria-hidden="true" />
                   {loc}
                 </Badge>
               ))}
               {filterCount > 3 && (
                 <Badge variant="outline" className="text-xs">
-                  +{filterCount - 3} more
+                  <BilingualText {...fill('more_filters', { n: filterCount - 3 })} compact />
                 </Badge>
               )}
             </div>
 
             {/* Stats */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Target className="icon-sm" />
-                {search.resultCount} results
+              <span className="flex min-w-0 items-center gap-1">
+                <Target className="icon-sm shrink-0" aria-hidden="true" />
+                <BilingualText {...fill('results_count', { n: search.resultCount ?? 0 })} compact wrap />
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
-                Last run {timeAgo}
+              <span className="flex min-w-0 items-center gap-1">
+                <Clock className="icon-sm shrink-0" aria-hidden="true" />
+                {lastRunDate ? (
+                  <RelativeTime
+                    date={lastRunDate}
+                    format={(d) => {
+                      const ago = formatTimeAgo(d);
+                      return (
+                        <BilingualText
+                          en={fill('last_run', { when: ago.en }).en}
+                          el={fill('last_run', { when: ago.el }).el}
+                          compact
+                          wrap
+                        />
+                      );
+                    }}
+                  />
+                ) : (
+                  <BilingualText
+                    en={fill('last_run', { when: timeAgo.en }).en}
+                    el={fill('last_run', { when: timeAgo.el }).el}
+                    compact
+                    wrap
+                  />
+                )}
               </span>
             </div>
           </div>
@@ -124,35 +153,39 @@ function SearchCard({
               <Switch
                 checked={search.alertsEnabled}
                 onCheckedChange={() => onToggleAlerts(search.alertsEnabled)}
-                aria-label="Toggle alerts"
+                aria-label={bilingualAria(savedSearchesEn('toggle_alerts'), savedSearchesEl('toggle_alerts'))}
               />
               {search.alertsEnabled ? (
-                <Bell className="icon-sm text-primary" />
+                <Bell className="icon-sm text-primary-accessible" />
               ) : (
-                <BellOff className="icon-sm text-muted-foreground" />
+                <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
               )}
             </div>
 
             <Button variant="outline" size="sm" onClick={onRun}>
-              <Play className="icon-sm mr-1" />
-              Run
+              <Play className="icon-sm mr-1 shrink-0" aria-hidden="true" />
+              <BilingualText en={savedSearchesEn('run')} el={savedSearchesEl('run')} compact wrap />
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="icon-sm" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={bilingualAria(savedSearchesEn('more_actions'), savedSearchesEl('more_actions'))}
+                >
+                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onEdit}>
-                  <Edit2 className="icon-sm mr-2" />
-                  Edit
+                  <Edit2 className="icon-sm mr-2 shrink-0" aria-hidden="true" />
+                  <BilingualText en={savedSearchesEn('edit')} el={savedSearchesEl('edit')} compact />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <Trash2 className="icon-sm mr-2" />
-                  Delete
+                <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+                  <Trash2 className="icon-sm mr-2 shrink-0" aria-hidden="true" />
+                  <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -163,17 +196,34 @@ function SearchCard({
   );
 }
 
-function formatTimeAgo(date: Date): string {
+type SavedKey = keyof typeof SAVED_SEARCHES_STRINGS;
+
+/** One key, both languages, with its placeholders filled. */
+function fill(key: SavedKey, vars: Record<string, string | number> = {}): { en: string; el: string } {
+  let en = savedSearchesEn(key);
+  let el = savedSearchesEl(key);
+  for (const [k, v] of Object.entries(vars)) {
+    en = en.replace(`{${k}}`, String(v));
+    el = el.replace(`{${k}}`, String(v));
+  }
+  return { en, el };
+}
+
+function formatTimeAgo(date: Date): { en: string; el: string } {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
+  if (diffMins < 60) return fill('time_minutes', { n: diffMins });
+  if (diffHours < 24) return fill('time_hours', { n: diffHours });
+  if (diffDays < 7) return fill('time_days', { n: diffDays });
+  /* Past a week it is a date. UTC on both sides, as everywhere else here. */
+  return {
+    en: date.toLocaleDateString('en-GB', { timeZone: 'UTC' }),
+    el: date.toLocaleDateString('el-GR', { timeZone: 'UTC' }),
+  };
 }
 
 function EditSearchDialog({
@@ -189,6 +239,8 @@ function EditSearchDialog({
 }) {
   const [name, setName] = useState(search?.name || '');
   const [alertFrequency, setAlertFrequency] = useState(search?.alertFrequency || 'daily');
+  const { primary } = useLanguagePreference();
+  const t = (key: SavedKey) => (primary === 'el' ? savedSearchesEl(key) : savedSearchesEn(key));
 
   const handleSave = () => {
     onSave({ name, alertFrequency });
@@ -199,32 +251,40 @@ function EditSearchDialog({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Saved Search</DialogTitle>
+          <DialogTitle><BilingualText en={savedSearchesEn('edit_title')} el={savedSearchesEl('edit_title')} compact wrap /></DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Search Name</Label>
+            <Label htmlFor="name"><BilingualText en={savedSearchesEn('name_label')} el={savedSearchesEl('name_label')} compact /></Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My saved search"
+              /* A placeholder is read inside its own box, so it takes the
+                 reader's language rather than both at once. */
+              placeholder={t('name_placeholder')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Alert Frequency</Label>
+            <Label><BilingualText en={savedSearchesEn('frequency_label')} el={savedSearchesEl('frequency_label')} compact /></Label>
             <div className="flex gap-2">
-              {(['instant', 'daily', 'weekly'] as const).map((freq) => (
+              {/* `capitalize` on a raw value was doing the labelling; each
+                  cadence has its own pair now, and Greek answers "how often"
+                  with an adverb where English uses an adjective. */}
+              {([
+                { value: 'instant' as const, key: 'freq_instant' as const },
+                { value: 'daily' as const, key: 'freq_daily' as const },
+                { value: 'weekly' as const, key: 'freq_weekly' as const },
+              ]).map(({ value, key }) => (
                 <Button
-                  key={freq}
-                  variant={alertFrequency === freq ? 'default' : 'outline'}
+                  key={value}
+                  variant={alertFrequency === value ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setAlertFrequency(freq)}
-                  className="capitalize"
+                  onClick={() => setAlertFrequency(value)}
                 >
-                  {freq}
+                  <BilingualText en={savedSearchesEn(key)} el={savedSearchesEl(key)} compact wrap />
                 </Button>
               ))}
             </div>
@@ -233,9 +293,9 @@ function EditSearchDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            <BilingualText en={savedSearchesEn('cancel')} el={savedSearchesEl('cancel')} compact />
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}><BilingualText en={savedSearchesEn('save_changes')} el={savedSearchesEl('save_changes')} compact wrap /></Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -246,12 +306,17 @@ export default function SavedSearchesPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
+  const { primary } = useLanguagePreference();
+  /* Toasts and the empty state's title/description are single strings passed to
+     components that render text, not nodes, so they take the reader's language
+     rather than a bilingual join. */
+  const t = (key: SavedKey) => (primary === 'el' ? savedSearchesEl(key) : savedSearchesEn(key));
 
   const [editingSearch, setEditingSearch] = useState<SavedSearch | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['saved-searches'],
+    queryKey: qk('saved-searches'),
     queryFn: () => listSavedSearches(),
   });
 
@@ -261,30 +326,30 @@ export default function SavedSearchesPage() {
     mutationFn: ({ id, alertsEnabled }: { id: string; alertsEnabled: boolean }) =>
       updateSavedSearch(id, { alertsEnabled }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
-      success('Alert settings updated');
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
+      success(t('alerts_updated'));
     },
-    onError: () => showError('Failed to update alerts'),
+    onError: () => showError(t('alerts_failed')),
   });
 
   const editMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Pick<SavedSearch, 'name' | 'alertsEnabled' | 'alertFrequency'>> }) =>
       updateSavedSearch(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
-      success('Search updated');
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
+      success(t('search_updated'));
     },
-    onError: () => showError('Failed to update search'),
+    onError: () => showError(t('search_update_failed')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteSavedSearch(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
       setDeleteConfirm(null);
-      success('Search deleted');
+      success(t('search_deleted'));
     },
-    onError: () => showError('Failed to delete search'),
+    onError: () => showError(t('search_delete_failed')),
   });
 
   const handleRun = (search: SavedSearch) => {
@@ -317,81 +382,91 @@ export default function SavedSearchesPage() {
 
   const totalNewResults = searches.reduce((sum, s) => sum + (s.newResults || 0), 0);
 
+  // Offered to the assistant: New Search and each card's Run, alerts on /
+  // off, Edit and Delete (which opens the same confirmation).
+  const byName = (list: SavedSearch[]) => rowOptions(list, (x) => x.id, (x) => x.name);
+  const searchById = (id?: string) => searches.find((x) => x.id === id);
+  usePageList([
+    {
+      id: 'saved_searches',
+      labelEn: 'Saved searches',
+      labelEl: 'Αποθηκευμένες αναζητήσεις',
+      rows: isLoading ? undefined : searches.map((x) => `${x.name} · "${x.query}"${x.newResults ? ` · ${x.newResults} new results` : ''} · alerts ${x.alertsEnabled ? x.alertFrequency : 'off'}`),
+    },
+  ]);
+  usePageControls([
+    { id: 'new_search', labelEn: 'Start a new saved search', labelEl: 'Νέα αποθηκευμένη αναζήτηση', writes: false, run: handleCreateNew },
+    { id: 'run_search', labelEn: 'Run saved search', labelEl: 'Εκτέλεση αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) handleRun(x); } },
+    // updateSavedSearch sends `alertsEnabled` alone; on and off are opposites.
+    { id: 'alerts_on', labelEn: 'Turn search alerts on', labelEl: 'Ενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => !x.alertsEnabled)), undo: (v) => ({ control: 'alerts_off', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, false); } },
+    { id: 'alerts_off', labelEn: 'Turn search alerts off', labelEl: 'Απενεργοποίηση ειδοποιήσεων αναζήτησης', writes: true, options: byName(searches.filter((x) => x.alertsEnabled)), undo: (v) => ({ control: 'alerts_on', value: v }), run: (v) => { const x = searchById(v); if (x) handleToggleAlerts(x.id, true); } },
+    { id: 'edit_search', labelEn: 'Edit saved search', labelEl: 'Επεξεργασία αποθηκευμένης αναζήτησης', writes: false, options: byName(searches), run: (v) => { const x = searchById(v); if (x) setEditingSearch(x); } },
+    { id: 'delete_search', labelEn: 'Delete saved search', labelEl: 'Διαγραφή αποθηκευμένης αναζήτησης', writes: true, options: byName(searches), run: (v) => { if (v) setDeleteConfirm(v); } },
+  ]);
+
+  /*
+   * The three counts describe the list rather than being the list, so they
+   * live in the rail. New Search stays in the header: it is this page's create.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'discover',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'searches', label: savedSearchesEn('stat_searches'), labelEl: savedSearchesEl('stat_searches'), value: searches.length, icon: Search, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'alerts', label: savedSearchesEn('stat_alerts'), labelEl: savedSearchesEl('stat_alerts'), value: searches.filter((s) => s.alertsEnabled).length, icon: Bell, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'new', label: savedSearchesEn('stat_new'), labelEl: savedSearchesEl('stat_new'), value: totalNewResults, icon: Sparkles, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Search} en="Open search" el="Άνοιγμα αναζήτησης" onClick={() => router.push('/search')} />
+          <RailAction icon={Target} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={Users} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
-      title="Saved Searches"
-      description="Manage your saved search filters and get notified of new matches"
+      rail={rail}
+      actions={
+        <Button onClick={handleCreateNew}>
+          <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
+          <BilingualText en={savedSearchesEn('new_search')} el={savedSearchesEl('new_search')} compact wrap />
+        </Button>
+      }
     >
       <div className="space-y-6 pb-10">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Search className="h-6 w-6 text-primary" />
-              Saved Searches
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {searches.length} saved searches
-              {totalNewResults > 0 && (
-                <span className="text-primary ml-2">• {totalNewResults} new results</span>
-              )}
-            </p>
-          </div>
-          <Button onClick={handleCreateNew}>
-            <Plus className="icon-sm mr-2" />
-            New Search
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Search className="icon-md text-primary" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{searches.length}</p>
-                <p className="text-xs text-muted-foreground">Saved Searches</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-500/10 p-2">
-                <Bell className="icon-md text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">
-                  {searches.filter((s) => s.alertsEnabled).length}
-                </p>
-                <p className="text-xs text-muted-foreground">Active Alerts</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-amber-500/10 p-2">
-                <Sparkles className="icon-md text-amber-500" />
-              </div>
-              <div>
-                <p className="text-xl font-bold">{totalNewResults}</p>
-                <p className="text-xs text-muted-foreground">New Results</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
+        {/* The count line that stood here repeated the first card below
+            ("0 saved searches" twice), and its new-results suffix the third.
+            The page's action joins the others in the header. The three
+            figures now live in the rail. */}
         {/* Search List */}
         {searches.length === 0 ? (
           <EmptyState
             illustration="search"
-            title="No saved searches"
-            description="Save your search queries to quickly find matching profiles and get alerts for new results"
+            /* Both take a ReactNode, so the empty state reads bilingually
+               like the rest of the page rather than in one language. */
+            title={<BilingualText en={savedSearchesEn('empty_title')} el={savedSearchesEl('empty_title')} compact wrap />}
+            description={<BilingualText en={savedSearchesEn('empty_description')} el={savedSearchesEl('empty_description')} />}
+            askAiPrompt="I have no saved searches. Suggest a search I should save for a technical cofounder in my city."
             action={
               <Button onClick={handleCreateNew}>
-                <Plus className="icon-sm mr-2" />
-                Create Your First Search
+                <Plus className="icon-sm mr-2 shrink-0" aria-hidden="true" />
+                <BilingualText en={savedSearchesEn('empty_action')} el={savedSearchesEl('empty_action')} compact wrap />
               </Button>
             }
           />
@@ -422,20 +497,20 @@ export default function SavedSearchesPage() {
         <Dialog open={!!deleteConfirm} onOpenChange={(o) => !o && setDeleteConfirm(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Delete Saved Search?</DialogTitle>
+              <DialogTitle><BilingualText en={savedSearchesEn('delete_title')} el={savedSearchesEl('delete_title')} compact wrap /></DialogTitle>
             </DialogHeader>
             <p className="text-muted-foreground">
-              This will permanently delete this saved search and stop any associated alerts.
+              <BilingualText en={savedSearchesEn('delete_body')} el={savedSearchesEl('delete_body')} />
             </p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                Cancel
+                <BilingualText en={savedSearchesEn('cancel')} el={savedSearchesEl('cancel')} compact />
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
               >
-                Delete
+                <BilingualText en={savedSearchesEn('delete')} el={savedSearchesEl('delete')} compact />
               </Button>
             </DialogFooter>
           </DialogContent>

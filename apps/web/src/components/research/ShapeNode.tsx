@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Trash2, Palette } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { fillContrastText } from '@/lib/canvas/canvas-geometry';
 
 export type ShapeVariant =
   | 'shape_rect'
@@ -67,7 +68,7 @@ export function ShapeNode({
   const strokeWidth = meta.strokeWidth ?? 2;
   const opacity     = meta.opacity     ?? 1;
   const fontSize    = meta.fontSize    ?? 14;
-  const textColor   = meta.textColor   ?? (variant === 'shape_text' ? '#1E293B' : '#FFFFFF');
+  const textColor   = meta.textColor   ?? (variant === 'shape_text' ? '#1E293B' : fillContrastText(fill === 'none' ? undefined : fill));
   const cornerRadius = meta.cornerRadius ?? (variant === 'shape_rect' ? 8 : 0);
 
   const [editingLabel, setEditingLabel] = useState(false);
@@ -278,11 +279,11 @@ export function ShapeNode({
           {/* Color palette */}
           <div className="relative">
             <button
-              className="w-6 h-6 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground"
+              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground"
               title="Change color"
               onClick={() => setShowPalette((v) => !v)}
             >
-              <Palette className="w-3.5 h-3.5" />
+              <Palette className="icon-sm" />
             </button>
             {showPalette && (
               <div className="absolute top-8 left-0 bg-card border border-border rounded-lg p-2 shadow-xl z-30 flex flex-wrap gap-1 w-[120px]">
@@ -310,11 +311,11 @@ export function ShapeNode({
 
           {/* Delete */}
           <button
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
             title="Delete shape"
             onClick={onDelete}
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="icon-sm" />
           </button>
         </div>
       )}

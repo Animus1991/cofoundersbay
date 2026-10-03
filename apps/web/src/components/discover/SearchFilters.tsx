@@ -1,5 +1,6 @@
 'use client';
 
+import { BilingualText } from '@/components/common/BilingualText';
 import { useState } from 'react';
 import {
   Filter,
@@ -13,6 +14,7 @@ import {
   DollarSign,
   Users,
   Sparkles,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +34,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 export type SearchFiltersValues = {
   q: string;
@@ -56,10 +59,10 @@ type SearchFiltersProps = {
 };
 
 const roles = [
-  { value: 'founder', label: 'Founder' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'investor', label: 'Investor' },
-  { value: 'org', label: 'Organization' },
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός' },
 ];
 
 const stages = [
@@ -132,8 +135,8 @@ function MultiSelect({
           className={cn(
             'rounded-full border px-3 py-1 text-xs transition-colors',
             selected.includes(opt.value)
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+              ? 'border-primary bg-primary/10 text-primary-accessible'
+              : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
           )}
         >
           {opt.label}
@@ -217,43 +220,53 @@ export function SearchFilters({
   return (
     <div className="space-y-4">
       {/* Main search bar */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <Input
-            type="text"
-            placeholder="Search by name, skills, industry..."
-            value={filters.q}
-            onChange={(e) => updateFilter('q', e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            className="pr-10"
-          />
-          {filters.q && (
-            <button
-              onClick={() => updateFilter('q', '')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:gap-3">
+        <div className="flex min-w-0 flex-1 gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Input
+              type="text"
+              aria-label={bilingualAria("Search profiles", "Αναζήτηση προφίλ")}
+              placeholder={bilingualInline("Search by name, skills, industry…", "Αναζήτηση με όνομα, δεξιότητες, κλάδο…")}
+              value={filters.q}
+              onChange={(e) => updateFilter('q', e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              className="min-h-10 pr-10"
+            />
+            {filters.q && (
+              <button
+                onClick={() => updateFilter('q', '')}
+                className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                <X className="icon-sm" />
+              </button>
+            )}
+          </div>
 
-        {/* Filter button for mobile */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2 relative">
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Filters</span>
-              {activeFiltersCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              {/* Same shape as the feed's Preferences button: the word "Filters"
+                  is `hidden sm:inline`, so below 640px the only thing left in
+                  the button was the active-filter count — a number, which is
+                  not a name. */}
+              <Button
+                variant="outline"
+                aria-label="Filters"
+                className="relative min-h-10 shrink-0 gap-2 px-3"
+              >
+                <Filter className="icon-sm" aria-hidden="true" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
+                <Filter className="icon-md text-primary-accessible" />
                 Search Filters
               </SheetTitle>
             </SheetHeader>
@@ -263,7 +276,7 @@ export function SearchFilters({
               <AccordionItem value="role">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="icon-sm" />
                     Role
                     {filters.role.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.role.length}</Badge>
@@ -283,7 +296,7 @@ export function SearchFilters({
               <AccordionItem value="skills">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="icon-sm" />
                     Skills
                     {filters.skills.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.skills.length}</Badge>
@@ -303,7 +316,7 @@ export function SearchFilters({
               <AccordionItem value="industry">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4" />
+                    <Briefcase className="icon-sm" />
                     Industry
                     {filters.industries.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.industries.length}</Badge>
@@ -323,7 +336,7 @@ export function SearchFilters({
               <AccordionItem value="stage">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4" />
+                    <Target className="icon-sm" />
                     Startup Stage
                     {filters.stage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.stage.length}</Badge>
@@ -343,14 +356,14 @@ export function SearchFilters({
               <AccordionItem value="location">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                    <MapPin className="icon-sm" />
                     Location
                     {filters.location && <Badge variant="secondary" size="sm">1</Badge>}
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-3">
                   <Input
-                    placeholder="City or country..."
+                    placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
                     value={filters.location}
                     onChange={(e) => updateFilter('location', e.target.value)}
                   />
@@ -362,8 +375,8 @@ export function SearchFilters({
                         className={cn(
                           'rounded-full border px-3 py-1 text-xs transition-colors',
                           (i === 0 && filters.remote === true) || (i === 1 && filters.remote === false)
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-border/60 text-muted-foreground hover:border-primary/50'
+                            ? 'border-primary bg-primary/10 text-primary-accessible'
+                            : 'border-border text-muted-foreground hover:border-primary/50'
                         )}
                       >
                         {opt}
@@ -377,7 +390,7 @@ export function SearchFilters({
               <AccordionItem value="availability">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="icon-sm" />
                     Availability
                     {filters.availability.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.availability.length}</Badge>
@@ -397,7 +410,7 @@ export function SearchFilters({
               <AccordionItem value="funding">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <DollarSign className="icon-sm" />
                     Funding Stage
                     {filters.fundingStage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.fundingStage.length}</Badge>
@@ -417,7 +430,7 @@ export function SearchFilters({
               <AccordionItem value="languages">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Languages className="h-4 w-4" />
+                    <Languages className="icon-sm" />
                     Languages
                     {filters.languages.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.languages.length}</Badge>
@@ -434,30 +447,38 @@ export function SearchFilters({
               </AccordionItem>
             </Accordion>
 
-            <SheetFooter className="mt-6 flex gap-2">
-              <Button variant="ghost" onClick={clearFilters} className="flex-1">
+            <SheetFooter className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <Button variant="ghost" onClick={clearFilters} className="min-h-10 flex-1">
                 Clear all
               </Button>
-              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="flex-1">
+              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="min-h-10 flex-1">
                 Apply filters
               </Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
+        </div>
 
-        <Button onClick={onSearch} disabled={loading}>
+        <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
+          <Search className="h-4 w-4 sm:hidden" />
           {loading ? 'Searching...' : 'Search'}
         </Button>
       </div>
 
       {/* Quick role filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-muted-foreground">Quick filter:</span>
+        {/* "Search only", not "Quick filter": the role chips above this row
+            narrow the results on screen, while these change the query sent to
+            the search - two rows of the same roles need to say which is which. */}
+        <span className="text-sm text-muted-foreground">
+          <BilingualText en="Search only:" el="Αναζήτηση μόνο σε:" compact />
+        </span>
         {roles.map((r) => (
           <Button
             key={r.value}
             variant={filters.role.includes(r.value) ? 'default' : 'outline'}
             size="sm"
+            className="min-h-10"
             onClick={() => {
               if (filters.role.includes(r.value)) {
                 updateFilter('role', filters.role.filter((x) => x !== r.value));
@@ -466,7 +487,7 @@ export function SearchFilters({
               }
             }}
           >
-            {r.label}
+            <BilingualText en={r.label} el={r.labelEl} compact />
           </Button>
         ))}
       </div>
@@ -482,11 +503,11 @@ export function SearchFilters({
               className="gap-1 pr-1"
             >
               {pill.label}
-              <button
+              <button aria-label={`Remove filter ${pill.label}`} type="button"
                 onClick={pill.onRemove}
                 className="ml-1 rounded-full p-0.5 hover:bg-background/50"
               >
-                <X className="h-3 w-3" />
+                <X className="icon-sm" />
               </button>
             </Badge>
           ))}
@@ -505,12 +526,17 @@ export function SearchFilters({
       {resultCount !== undefined && (
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {resultCount} {resultCount === 1 ? 'result' : 'results'} found
+            <BilingualText
+              en={`${resultCount} ${resultCount === 1 ? 'result' : 'results'} found`}
+              el={`${resultCount} ${resultCount === 1 ? 'αποτέλεσμα' : 'αποτελέσματα'}`}
+              compact
+            />
           </span>
           <select
+            aria-label={bilingualAria('Sort results', 'Ταξινόμηση αποτελεσμάτων')}
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
-            className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground shadow-sm backdrop-blur"
+            className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
           >
             <option value="relevance">Most relevant</option>
             <option value="recent">Recently active</option>

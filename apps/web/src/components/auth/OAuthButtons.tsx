@@ -2,8 +2,8 @@
 
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getAbsoluteApiOrigin } from '@/lib/api-origin';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface OAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -25,13 +25,22 @@ export function OAuthButtons({ mode = 'login', disabled }: OAuthButtonsProps) {
 
   const handleOAuth = (provider: 'google' | 'linkedin') => {
     setLoadingProvider(provider);
-    window.location.href = `${API_URL}/api/auth/${provider}`;
+    window.location.href = `${getAbsoluteApiOrigin()}/api/auth/${provider}`;
   };
 
   const buttonText = {
-    login: { google: 'Continue with Google', linkedin: 'Continue with LinkedIn' },
-    register: { google: 'Sign up with Google', linkedin: 'Sign up with LinkedIn' },
-    link: { google: 'Link Google Account', linkedin: 'Link LinkedIn Account' },
+    login: {
+      google: { en: 'Continue with Google', el: 'Συνέχεια με Google' },
+      linkedin: { en: 'Continue with LinkedIn', el: 'Συνέχεια με LinkedIn' },
+    },
+    register: {
+      google: { en: 'Sign up with Google', el: 'Εγγραφή με Google' },
+      linkedin: { en: 'Sign up with LinkedIn', el: 'Εγγραφή με LinkedIn' },
+    },
+    link: {
+      google: { en: 'Link Google account', el: 'Σύνδεση λογαριασμού Google' },
+      linkedin: { en: 'Link LinkedIn account', el: 'Σύνδεση λογαριασμού LinkedIn' },
+    },
   };
 
   return (
@@ -64,7 +73,7 @@ export function OAuthButtons({ mode = 'login', disabled }: OAuthButtonsProps) {
             />
           </svg>
         )}
-        {buttonText[mode].google}
+        <BilingualText en={buttonText[mode].google.en} el={buttonText[mode].google.el} compact />
       </Button>
 
       <Button
@@ -80,7 +89,7 @@ export function OAuthButtons({ mode = 'login', disabled }: OAuthButtonsProps) {
             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
           </svg>
         )}
-        {buttonText[mode].linkedin}
+        <BilingualText en={buttonText[mode].linkedin.en} el={buttonText[mode].linkedin.el} compact />
       </Button>
     </div>
   );
@@ -93,7 +102,9 @@ export function OAuthDivider() {
         <span className="w-full border-t" />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+        <span className="bg-background px-2 text-muted-foreground">
+          <BilingualText en="Or continue with" el="Ή συνεχίστε με" compact />
+        </span>
       </div>
     </div>
   );

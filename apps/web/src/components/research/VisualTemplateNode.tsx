@@ -146,15 +146,15 @@ export function VisualTemplateNode({
         className="flex items-center justify-between px-3 shrink-0"
         style={{ height: headerH, background: `${config.headerColor}18`, borderBottom: `1px solid ${config.headerColor}30` }}
       >
-        <span className="text-[11px] font-bold tracking-wide" style={{ color: config.headerColor }}>
+        <span className="text-2xs font-bold tracking-wide" style={{ color: config.headerColor }}>
           {config.title.toUpperCase()}
         </span>
         {!readOnly && (
-          <button
+          <button aria-label="Delete"
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all"
+            className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="icon-sm" />
           </button>
         )}
       </div>
@@ -187,18 +187,18 @@ export function VisualTemplateNode({
                 className="flex items-center gap-1 px-2 pt-1.5 pb-0.5"
                 style={{ borderBottom: `1px solid ${cell.accentColor}20` }}
               >
-                <span className="text-[11px]">{cell.emoji}</span>
+                <span className="text-2xs">{cell.emoji}</span>
                 <span
-                  className="text-[9px] font-semibold uppercase tracking-wide truncate flex-1"
+                  className="text-2xs font-semibold uppercase tracking-wide truncate flex-1"
                   style={{ color: cell.accentColor }}
                 >
                   {cell.label}
                 </span>
-                <button
+                <button aria-label="Show hint"
                   onMouseDown={(e) => { e.stopPropagation(); setShowHint(showHint === cell.id ? null : cell.id); }}
                   className="opacity-0 hover:opacity-100 w-3.5 h-3.5 flex items-center justify-center text-muted-foreground/40"
                 >
-                  <Info className="w-3 h-3" />
+                  <Info className="icon-sm" />
                 </button>
               </div>
 
@@ -208,7 +208,7 @@ export function VisualTemplateNode({
                   className="absolute top-7 left-2 right-2 bg-card border border-border rounded-lg p-1.5 shadow-lg z-50 pointer-events-none"
                   style={{ zIndex: 60 }}
                 >
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">{cell.hint}</p>
+                  <p className="text-2xs text-muted-foreground leading-relaxed">{cell.hint}</p>
                 </div>
               )}
 
@@ -229,13 +229,13 @@ export function VisualTemplateNode({
                       e.stopPropagation();
                     }}
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="w-full h-full resize-none bg-transparent outline-none text-[10px] leading-relaxed text-foreground"
+                    className="w-full h-full resize-none bg-transparent outline-none text-2xs leading-relaxed text-foreground"
                     placeholder={cell.hint}
                   />
                 ) : (
                   <p
                     className={cn(
-                      'text-[10px] leading-relaxed text-foreground/80 whitespace-pre-wrap overflow-hidden',
+                      'text-2xs leading-relaxed text-foreground/80 whitespace-pre-wrap overflow-hidden',
                       !value && 'text-muted-foreground/40 italic',
                     )}
                     style={{ maxHeight: ch - 30 }}

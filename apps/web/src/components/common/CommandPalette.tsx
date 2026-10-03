@@ -20,9 +20,12 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type CommandItem = {
   id: string;
@@ -74,6 +77,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       category: 'navigation',
     },
     {
+      id: 'ai-assistant',
+      label: 'Go to AI Assistant',
+      description: 'Full-page copilot workspace',
+      icon: Sparkles,
+      shortcut: ['G', 'A'],
+      action: () => router.push('/ai'),
+      category: 'navigation',
+    },
+    {
       id: 'messages',
       label: 'Go to Messages',
       description: 'View your conversations',
@@ -93,6 +105,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
 
     // Actions
+    {
+      id: 'ask-ai',
+      label: 'Ask AI…',
+      description: 'Start a new assistant conversation',
+      icon: Sparkles,
+      action: () => router.push('/ai'),
+      category: 'actions',
+    },
     {
       id: 'search',
       label: 'Search profiles',
@@ -115,7 +135,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       label: 'Get recommendations',
       description: 'AI-powered suggestions',
       icon: Sparkles,
-      action: () => router.push('/discover'),
+      action: () => router.push('/matches'),
+      category: 'actions',
+    },
+    {
+      id: 'shortlist',
+      label: 'Open saved profiles',
+      description: 'People you shortlisted',
+      icon: Users,
+      action: () => router.push('/shortlist'),
       category: 'actions',
     },
 
@@ -148,9 +176,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       description: 'Log out of your account',
       icon: LogOut,
       action: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        clearPreviewDemoSession();
         router.push('/login');
       },
       category: 'settings',
@@ -252,27 +278,28 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden">
+      <DialogContent className="flex max-h-[min(70dvh,calc(100svh_-_5.5rem))] flex-col gap-0 overflow-hidden p-0 max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0 md:max-h-[min(92dvh,720px)] md:max-w-lg">
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
         {/* Search input */}
-        <div className="border-b border-border/60 p-4">
+        <div className="shrink-0 border-b border-border p-4 pr-12">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder="Type a command or search..."
+              placeholder={bilingualInline("Type a command or search…", "Πληκτρολογήστε εντολή ή αναζήτηση…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="pl-9 border-0 bg-transparent focus-visible:ring-0"
+              className="border-0 bg-transparent pl-9 focus-visible:ring-0"
               autoFocus
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground">
               ESC
             </kbd>
           </div>
         </div>
 
         {/* Command list */}
-        <div className="max-h-[400px] overflow-y-auto p-2">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {filteredCommands.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               No commands found
@@ -297,25 +324,25 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                         }}
                         onMouseEnter={() => setSelectedIndex(currentFlatIndex)}
                         className={cn(
-                          'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                          'flex min-h-11 w-full touch-manipulation items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors md:min-h-0 md:py-2',
                           isSelected
                             ? 'bg-primary/10 text-foreground'
                             : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
                         )}
                       >
-                        <cmd.icon className="h-4 w-4 flex-shrink-0" />
-                        <div className="flex-1 text-left">
+                        <cmd.icon className="icon-sm flex-shrink-0" />
+                        <div className="min-w-0 flex-1 text-left">
                           <p className="font-medium">{cmd.label}</p>
                           {cmd.description && (
                             <p className="text-xs text-muted-foreground">{cmd.description}</p>
                           )}
                         </div>
                         {cmd.shortcut && (
-                          <div className="flex items-center gap-1">
+                          <div className="hidden items-center gap-1 md:flex">
                             {cmd.shortcut.map((key, i) => (
                               <kbd
                                 key={i}
-                                className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border bg-muted px-1 font-mono text-[10px] text-muted-foreground"
+                                className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border bg-muted px-1 font-mono text-2xs text-muted-foreground"
                               >
                                 {key}
                               </kbd>
@@ -332,9 +359,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         </div>
 
         {/* Footer hint */}
-        <div className="border-t border-border/60 px-4 py-2 text-xs text-muted-foreground flex items-center justify-between">
+        <div className="hidden shrink-0 items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground md:flex">
           <span>Navigate with ↑↓ keys</span>
           <span>Press Enter to select</span>
+        </div>
+        <div className="shrink-0 border-t border-border px-4 py-2 text-center text-xs text-muted-foreground md:hidden">
+          Tap a result to go
         </div>
       </DialogContent>
     </Dialog>

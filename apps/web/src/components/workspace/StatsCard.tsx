@@ -15,7 +15,7 @@ export function StatsCard({ value, label, color, className }: StatsCardProps) {
     <Card className={cn('transition-all hover:shadow-sm', className)}>
       <CardContent className="p-4 text-center">
         <p 
-          className="text-2xl font-bold tabular-nums"
+          className="page-stat text-2xl font-bold tabular-nums"
           style={color ? { color } : undefined}
         >
           {value}

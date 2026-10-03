@@ -4,8 +4,11 @@ import Link from 'next/link';
 import { FileText, ArrowLeft, Shield, Users, MessageCircle, Scale, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { LegalText } from '@/components/common/LegalText';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const LAST_UPDATED = 'March 20, 2026';
+const LAST_UPDATED_EL = '20 Μαρτίου 2026';
 
 const sections = [
   {
@@ -136,39 +139,46 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back to CoFounderBay</span>
+            <ArrowLeft className="icon-sm" />
+            {/* "CoFounderBay" alone on a phone, so the bar keeps one line. */}
+            <span className="text-sm font-medium"><span className="hidden sm:inline">Back to </span>CoFounderBay</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-xs">Privacy Policy</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+          <div className="flex items-center gap-1 sm:gap-3">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+              <Link href="/privacy"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+              <Link href="/help"><BilingualText en="Help Center" el="Κέντρο βοήθειας" compact /></Link>
+            </Button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
+      <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <FileText className="h-7 w-7 text-primary" />
+            <FileText className="h-7 w-7 text-primary-accessible" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Terms of Service</h1>
-          <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
+          <p className="text-muted-foreground">
+            <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
+          </p>
+          {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
+            <BilingualText en="These terms are written in English; the English text is the version that applies." el="Οι παρακάτω όροι είναι γραμμένοι στα Αγγλικά· ισχύει το αγγλικό κείμενο." keepSecondaryOnMobile wrap />
+          </p>
         </div>
       </section>
 
       {/* Table of Contents */}
-      <section className="border-b border-border/60">
+      <section className="border-b border-border">
         <div className="mx-auto max-w-4xl px-4 py-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4"><BilingualText en="Table of Contents" el="Περιεχόμενα" compact /></h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
                 key={section.id}
@@ -187,42 +197,38 @@ export default function TermsPage() {
       <main className="mx-auto max-w-4xl px-4 py-12">
         <div className="space-y-12">
           {sections.map((section) => (
-            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border/60">
+            <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <section.icon className="h-4 w-4 text-primary" />
+                    <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
                 </div>
-                <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line text-sm text-muted-foreground leading-relaxed">
-                    {section.content}
-                  </p>
-                </div>
+                <LegalText content={section.content} />
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* Footer CTA */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-6 text-center">
+        <div className="mt-12 rounded-xl border border-border bg-muted/30 p-6 text-center">
           <p className="text-sm text-muted-foreground mb-4">
-            By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service.
+            <BilingualText en="By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service." el="Χρησιμοποιώντας το CoFounderBay, δηλώνετε ότι διαβάσατε και αποδέχεστε αυτούς τους όρους χρήσης." wrap />
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/privacy">
-              <Button variant="outline" size="sm">Read Privacy Policy</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Create Account</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/privacy"><BilingualText en="Read Privacy Policy" el="Διαβάστε την πολιτική απορρήτου" compact /></Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/register"><BilingualText en="Create Account" el="Δημιουργία λογαριασμού" compact /></Link>
+            </Button>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
+      <footer className="border-t border-border bg-card">
         <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>

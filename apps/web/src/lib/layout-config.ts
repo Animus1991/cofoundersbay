@@ -95,3 +95,23 @@ export const layoutConfig = {
 } as const;
 
 export type LayoutConfig = typeof layoutConfig;
+
+/** Full-width main column inside AppShell (sidebar offset is on the parent wrapper).
+ *  Bottom padding accounts for the safe-area inset above the mobile bottom nav / home indicator.
+ *  On lg+ it reserves room for the floating chat bubble (ChatBubble: 52px button + unread pill,
+ *  anchored bottom-6 right-6) so the last row of content is never hidden behind it. */
+/**
+ * The desktop gutter is 1.2rem (15.7px at the 82% root), down from 2rem/2.5rem.
+ *
+ * The column already used 100% of the width the sidebar leaves — measured 0px
+ * unused at every desktop width — so a further 2% could only come out of the
+ * gutter itself. 1.2rem is the value that lands nearest +2% across the range:
+ * +2.0% at 1280 and 1920, +2.3% at 1725, +1.7% at 1440, +1.5% at 2560. Below
+ * `lg` the phone and tablet gutters are untouched.
+ */
+export const appShellMainClasses =
+  'focus:outline-none flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[calc(8.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
+
+/** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
+export const appShellLoadingClasses =
+  'mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-5';

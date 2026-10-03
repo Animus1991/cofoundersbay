@@ -2,9 +2,7 @@
 
 import Link from 'next/link';
 import {
-  ArrowRight,
   Calendar,
-  ChevronRight,
   Clock,
   DollarSign,
   GraduationCap,
@@ -20,133 +18,101 @@ import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { cn } from '@/lib/utils';
-import { getMeProfile } from '@/lib/api';
+import { cn, initialsOf } from '@/lib/utils';
+import {
+  getMeProfile,
+  getMentorDashboardStats,
+  getMyMentorships,
+  getMyReceivedMentorRequests,
+  getUpcomingMentorshipSessions,
+} from '@/lib/api';
+import { mentorDemoMonthEarnings, mentorDemoRating } from '@/lib/demo/mentor-world';
+import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
+import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
+import { qk, queryKeys } from '@/lib/query-keys';
 
-function getTimeBasedGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
+type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
+type RequestRow = { id: string; name: string; message?: string | null; avatarUrl: string | null };
+
+/** "Sat 26 Sep · 10:00" (or "Σάβ 26 Σεπ · 10:00") in the reader's own calendar. */
+function sessionWhen(iso: string, locale: 'en-GB' | 'el-GR' = 'en-GB'): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
+  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  return `${day} · ${time}`;
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: number | string;
-  subtext?: string;
-  href?: string;
-}) {
-  const content = (
-    <Card className="relative overflow-hidden transition-all hover:shadow-md">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold tabular-nums">{value}</p>
-            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
-          </div>
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  return href ? <Link href={href}>{content}</Link> : content;
-}
-
-function MenteeCard({ mentee }: { mentee: any }) {
+function MenteeRowItem({ mentee }: { mentee: MenteeRow }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={mentee.avatarUrl} />
-        <AvatarFallback className="bg-primary/10 text-primary">
-          {mentee.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
+    <div className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30">
+      <Avatar className="h-10 w-10 shrink-0">
+        <AvatarImage src={mentee.avatarUrl ?? undefined} />
+        <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(mentee.name)}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{mentee.name}</p>
-        <p className="text-xs text-muted-foreground truncate">{mentee.startup || 'No startup yet'}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{mentee.name}</p>
+        <p className="truncate text-xs text-muted-foreground">{mentee.startup || 'No startup yet'}</p>
       </div>
-      <div className="flex items-center gap-2">
-        <Badge variant="outline" className="text-xs">
-          {mentee.sessionsCompleted} sessions
-        </Badge>
-        <Button variant="ghost" size="icon">
-          <MessageCircle className="icon-sm" />
-        </Button>
-      </div>
+      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+        {mentee.sessionsCompleted} {mentee.sessionsCompleted === 1 ? 'session' : 'sessions'}
+      </span>
+      {/* Named per mentee: three unnamed icon buttons read as "button" three
+          times, and axe reported button-name (critical). */}
+      <Button variant="ghost" size="icon" aria-label={`Message ${mentee.name}`} asChild>
+        <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
+          <MessageCircle className="icon-sm" aria-hidden="true" />
+        </Link>
+      </Button>
     </div>
   );
 }
 
-function SessionCard({ session }: { session: any }) {
-  const isUpcoming = new Date(session.scheduledAt) > new Date();
-  
+/** The next session is the one that stands out; the rest are a quiet list. */
+function SessionRowItem({ session, next }: { session: SessionRow; next: boolean }) {
   return (
-    <div className={cn(
-      'flex items-center gap-3 rounded-lg border p-3',
-      isUpcoming && 'border-primary/30 bg-primary/5'
-    )}>
-      <div className={cn(
-        'rounded-full p-2',
-        isUpcoming ? 'bg-primary/10' : 'bg-muted'
-      )}>
-        <Video className={cn('icon-sm', isUpcoming ? 'text-primary' : 'text-muted-foreground')} />
+    <div className={cn('flex items-center gap-3 rounded-lg border p-3', next ? 'border-primary/30 bg-primary/5' : 'border-border')}>
+      <div className={cn('shrink-0 rounded-full p-2', next ? 'bg-primary/10' : 'bg-muted')}>
+        <Video className={cn('icon-sm', next ? 'text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{session.menteeName}</p>
-        <p className="text-xs text-muted-foreground">
-          {new Date(session.scheduledAt).toLocaleDateString()} at{' '}
-          {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{session.menteeName}</p>
+        <p className="text-xs tabular-nums text-muted-foreground">
+          {sessionWhen(session.scheduledAt)} · {session.duration} min
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        <Badge variant={isUpcoming ? 'default' : 'secondary'} className="text-xs">
-          {session.duration} min
-        </Badge>
-        {isUpcoming && (
-          <Button size="sm" variant="outline">
-            Join
-          </Button>
+      <Button size="sm" variant={next ? 'default' : 'outline'} className="shrink-0" asChild>
+        {session.meetingUrl ? (
+          <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">Join</a>
+        ) : (
+          <Link href="/mentor/sessions">Join</Link>
         )}
-      </div>
+      </Button>
     </div>
   );
 }
 
-function RequestCard({ request }: { request: any }) {
+function RequestRowItem({ request }: { request: RequestRow }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={request.avatarUrl} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600">
-          {request.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
+    <div className="flex items-start gap-3 rounded-lg border border-border p-3">
+      <Avatar className="h-10 w-10 shrink-0">
+        <AvatarImage src={request.avatarUrl ?? undefined} />
+        <AvatarFallback className="bg-muted text-foreground">{initialsOf(request.name)}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{request.name}</p>
-        <p className="text-sm text-muted-foreground line-clamp-2">{request.message}</p>
-        <div className="flex gap-2 mt-2">
-          <Link href="/mentor/requests">
-            <Button size="sm" variant="outline">Review Request</Button>
-          </Link>
-        </div>
+        {request.message ? <p className="line-clamp-2 text-sm text-muted-foreground">{request.message}</p> : null}
       </div>
+      <Button size="sm" variant="outline" className="shrink-0" asChild>
+        <Link href="/mentor/requests">Review</Link>
+      </Button>
     </div>
   );
 }
@@ -156,46 +122,85 @@ export default function MentorDashboard() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
 
   const displayName = profile?.profile?.displayName || 'Mentor';
 
-  const mentorStats = showDemoData ? {
-    activeMentees: 8,
-    totalSessions: 47,
-    avgRating: 4.8,
-    pendingRequests: 3,
-    upcomingSessions: 4,
-    hoursThisMonth: 12,
-    earningsThisMonth: '$1,280',
-  } : {
-    activeMentees: 0,
-    totalSessions: 0,
-    avgRating: 0,
-    pendingRequests: 0,
-    upcomingSessions: 0,
-    hoursThisMonth: 0,
-    earningsThisMonth: '$0',
+  /*
+   * Read from the mentorship endpoints the mentor pages use. The figures
+   * were constants - 8 mentees, 47 sessions, a 4.8 "based on 32 reviews",
+   * "2 new this month", "24 mentees helped", "Top 10% mentor" - with mentees
+   * and requests nobody on /mentor/mentees or /mentor/requests had heard of.
+   * Earnings and reviews have no endpoint yet; in the showcase they come from
+   * the same rows /mentor/earnings and /mentor/reviews list, and outside it
+   * the cards say there is nothing recorded rather than showing a number.
+   */
+  const enabled = hasSession && mounted;
+  const { data: stats } = useQuery({
+    queryKey: qk('mentorships', 'dashboard', 'mentor'),
+    queryFn: getMentorDashboardStats,
+    enabled,
+    retry: 0,
+  });
+  const { data: relData } = useQuery({
+    queryKey: qk('mentorships', 'mentor'),
+    queryFn: () => getMyMentorships('mentor'),
+    enabled,
+    retry: 0,
+  });
+  const { data: sessionData } = useQuery({
+    queryKey: qk('mentorships', 'sessions-upcoming'),
+    queryFn: getUpcomingMentorshipSessions,
+    enabled,
+    retry: 0,
+  });
+  const { data: requestData } = useQuery({
+    queryKey: qk('mentorships', 'requests-received'),
+    queryFn: getMyReceivedMentorRequests,
+    enabled,
+    retry: 0,
+  });
+
+  const relationships = relData?.relationships ?? [];
+  const activeRelationships = relationships.filter((r) => r.status === 'active');
+  const relById = new Map(relationships.map((r) => [r.id, r]));
+  // The endpoint returns both sides of the reader's calendar; this page is
+  // the sessions they give.
+  const upcomingSessions = (sessionData?.sessions ?? [])
+    .filter((x) => relById.has(x.relationshipId))
+    .map((x) => ({
+      id: x.id,
+      menteeName: relById.get(x.relationshipId)?.mentee?.displayName ?? 'Mentee',
+      scheduledAt: x.scheduledAt,
+      duration: x.duration,
+      meetingUrl: x.meetingUrl,
+    }));
+  const mentees = activeRelationships.map((r) => ({
+    id: r.menteeId,
+    name: r.mentee?.displayName ?? 'Mentee',
+    startup: r.mentee?.headline?.replace(/^Founder at /, '') ?? null,
+    sessionsCompleted: r.totalSessions,
+    avatarUrl: r.mentee?.avatarUrl ?? null,
+  }));
+  const pendingRequests = (requestData?.requests ?? [])
+    .filter((r) => r.status === 'pending')
+    .map((r) => ({ id: r.id, name: r.requester?.displayName ?? 'Founder', message: r.message, avatarUrl: r.requester?.avatarUrl ?? null }));
+
+  const month = showDemoData ? mentorDemoMonthEarnings() : null;
+  const rating = showDemoData ? mentorDemoRating() : null;
+  const averageRating = stats?.averageRating ?? rating?.average ?? null;
+  const mentorStats = {
+    activeMentees: stats?.activeMentees ?? activeRelationships.length,
+    totalSessions: stats?.totalSessions ?? relationships.reduce((sum, r) => sum + r.totalSessions, 0),
+    completedMentorships: stats?.completedMentorships ?? relationships.filter((r) => r.status === 'completed').length,
+    upcomingSessions: upcomingSessions.length,
+    avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
+    hoursThisMonth: month ? Math.round((month.minutes / 60) * 10) / 10 : null,
+    earningsThisMonth: month ? `$${month.amount.toLocaleString('en-US')}` : null,
   };
-
-  const mentees = showDemoData ? [
-    { id: '1', name: 'Alex Chen', startup: 'TechFlow AI', sessionsCompleted: 6, avatarUrl: null },
-    { id: '2', name: 'Sarah Johnson', startup: 'GreenCommute', sessionsCompleted: 4, avatarUrl: null },
-    { id: '3', name: 'Mike Rodriguez', startup: 'HealthTrack', sessionsCompleted: 3, avatarUrl: null },
-  ] : [];
-
-  const upcomingSessions = showDemoData ? [
-    { id: '1', menteeName: 'Alex Chen', scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), duration: 30 },
-    { id: '2', menteeName: 'Sarah Johnson', scheduledAt: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(), duration: 45 },
-  ] : [];
-
-  const pendingRequests = showDemoData ? [
-    { id: '1', name: 'Jordan Lee', message: 'Hi! I\'m building a fintech startup and would love your guidance on product-market fit.', avatarUrl: null },
-    { id: '2', name: 'Emma Wilson', message: 'Looking for mentorship on scaling my SaaS business. Your experience would be invaluable.', avatarUrl: null },
-  ] : [];
 
   const nextSession = upcomingSessions[0];
   const nextSessionMinsAway = nextSession
@@ -204,12 +209,12 @@ export default function MentorDashboard() {
 
   if (!mounted) {
     return (
-      <AppShell>
-        <div className="py-6 space-y-6">
+      <AppShell showHelp>
+        <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-24" />
+              <Skeleton key={i} className="h-28" />
             ))}
           </div>
         </div>
@@ -218,267 +223,150 @@ export default function MentorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h1>
-            <p className="text-muted-foreground">
-              Your mentoring impact at a glance
+    <AppShell showHelp
+      description="Sessions, mentee requests, reviews, and earnings at a glance."
+      descriptionEl="Συνεδρίες, αιτήματα καθοδηγούμενων, αξιολογήσεις και έσοδα με μια ματιά."
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <GraduationCap className="icon-sm" aria-hidden="true" />
+          Mentor
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
+        <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+
+        {/* Within the hour, the next session is the one thing on this page. */}
+        {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && nextSession && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <Video className="icon-sm text-status-info" aria-hidden="true" />
+              Session with {nextSession.menteeName} in {nextSessionMinsAway} min
             </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <GraduationCap className="icon-sm" />
-            Mentor
-          </Badge>
-        </div>
-
-        {/* Next Session Banner */}
-        {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
-          <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Video className="icon-sm text-blue-500" />
-              <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
-            </div>
-            <Link href="/mentor/sessions">
-              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-500/10 transition-colors">
-                Join Now
-              </button>
-            </Link>
+            <Button size="sm" variant="outline" asChild>
+              {nextSession.meetingUrl ? (
+                <a href={nextSession.meetingUrl} target="_blank" rel="noopener noreferrer">Join now</a>
+              ) : (
+                <Link href="/mentor/sessions">Join now</Link>
+              )}
+            </Button>
           </div>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <StatCard
+        {/* Four figures, each a different fact and each linking to its rows.
+            Rating and hours were drawn twice (a tile and a tinted banner). */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
             icon={Users}
-            label="Active Mentees"
+            label="Active mentees"
+            labelEl="Ενεργοί mentees"
             value={mentorStats.activeMentees}
-            subtext="2 new this month"
+            caption={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
+            captionEl={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
+            href="/mentor/mentees"
           />
-          <StatCard
-            icon={Video}
-            label="Total Sessions"
-            value={mentorStats.totalSessions}
-            subtext={`${mentorStats.hoursThisMonth}h this month`}
-          />
-          <StatCard
-            icon={Star}
-            label="Average Rating"
-            value={mentorStats.avgRating}
-            subtext="Based on 32 reviews"
-          />
-          <StatCard
-            icon={Clock}
-            label="Upcoming"
+          <MetricTile
+            icon={Calendar}
+            label="Upcoming sessions"
+            labelEl="Επόμενες συνεδρίες"
             value={mentorStats.upcomingSessions}
-            subtext="Sessions scheduled"
+            caption={nextSession ? `Next ${sessionWhen(nextSession.scheduledAt)}` : 'Nothing scheduled'}
+            captionEl={nextSession ? `Επόμενη ${sessionWhen(nextSession.scheduledAt, 'el-GR')}` : 'Τίποτα προγραμματισμένο'}
+            href="/mentor/sessions"
+          />
+          <MetricTile
+            icon={DollarSign}
+            label="Earnings this month"
+            labelEl="Έσοδα μήνα"
+            value={mentorStats.earningsThisMonth ?? '\u2014'}
+            caption={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth}h of sessions` : 'Paid sessions appear on Earnings'}
+            captionEl={mentorStats.hoursThisMonth != null ? `${mentorStats.hoursThisMonth} ώρες συνεδριών` : 'Οι πληρωμένες συνεδρίες εμφανίζονται στα Έσοδα'}
+            href="/mentor/earnings"
+          />
+          <MetricTile
+            icon={Star}
+            label="Average rating"
+            labelEl="Μέση βαθμολογία"
+            value={mentorStats.avgRating}
+            caption={rating ? `From ${rating.count} reviews` : averageRating != null ? 'Across your reviews' : 'No reviews recorded yet'}
+            captionEl={rating ? `Από ${rating.count} αξιολογήσεις` : averageRating != null ? 'Από τις αξιολογήσεις σας' : 'Καμία αξιολόγηση ακόμα'}
+            href="/mentor/reviews"
           />
         </div>
 
-        {/* Earnings Banner */}
-        {showDemoData && (
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Link href="/mentor/earnings">
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
-                <DollarSign className="icon-md text-emerald-500 shrink-0" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Earnings this month</p>
-                  <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
-                </div>
-              </div>
-            </Link>
-            <Link href="/mentor/reviews">
-              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
-                <Star className="icon-md text-amber-500 shrink-0" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Average rating</p>
-                  <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
-                </div>
-              </div>
-            </Link>
-            <Link href="/mentor/sessions">
-              <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
-                <Video className="icon-md text-primary shrink-0" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Hours this month</p>
-                  <p className="text-lg font-bold text-primary">{mentorStats.hoursThisMonth}h</p>
-                </div>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Pending Requests */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            {/* Requests lead when there are any: they wait on this mentor. */}
             {pendingRequests.length > 0 && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" />
-                      Mentorship Requests ({pendingRequests.length})
-                    </CardTitle>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/mentor/requests">
-                        View all <ArrowRight className="ml-1 icon-sm" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {pendingRequests.map((request) => (
-                    <RequestCard key={request.id} request={request} />
-                  ))}
-                </CardContent>
-              </Card>
+              <SectionCard
+                title={`Mentorship requests (${pendingRequests.length})`}
+                titleEl={`Αιτήματα mentoring (${pendingRequests.length})`}
+                icon={Zap}
+                action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
+              >
+                {pendingRequests.map((request) => (
+                  <RequestRowItem key={request.id} request={request} />
+                ))}
+              </SectionCard>
             )}
 
-            {/* Upcoming Sessions */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="icon-sm text-primary" />
-                    Upcoming Sessions
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/mentor/sessions">
-                      View all <ArrowRight className="ml-1 icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {upcomingSessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
-                ))}
-                {upcomingSessions.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    No upcoming sessions scheduled
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }}>
+              {upcomingSessions.map((session, i) => (
+                <SessionRowItem key={session.id} session={session} next={i === 0} />
+              ))}
+              {upcomingSessions.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
+            </SectionCard>
 
-            {/* Active Mentees */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <UserCheck className="icon-sm text-primary" />
-                    Your Mentees
-                  </CardTitle>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/mentor/mentees">
-                      View all <ArrowRight className="ml-1 icon-sm" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {mentees.map((mentee) => (
-                  <MenteeCard key={mentee.id} mentee={mentee} />
-                ))}
-              </CardContent>
-            </Card>
+            <SectionCard title="Your mentees" titleEl="Οι mentees σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>
+              {mentees.map((mentee) => (
+                <MenteeRowItem key={mentee.id} mentee={mentee} />
+              ))}
+              {mentees.length === 0 && <EmptyLine en="Accepted requests become mentees here." el="Τα αποδεκτά αιτήματα γίνονται mentees εδώ." />}
+            </SectionCard>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-2">
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/availability">
-                    <Clock className="mr-2 icon-sm" />
-                    Set Availability
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/requests">
-                    <UserCheck className="mr-2 icon-sm" />
-                    Mentorship Requests
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/reviews">
-                    <Star className="mr-2 icon-sm" />
-                    My Reviews
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/earnings">
-                    <DollarSign className="mr-2 icon-sm" />
-                    Earnings
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/profile">
-                    <TrendingUp className="mr-2 icon-sm" />
-                    Mentor Profile
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <QuickLinks
+              label="Mentor pages"
+              links={[
+                { href: '/mentor/availability', icon: Clock, label: 'Set availability', labelEl: 'Διαθεσιμότητα' },
+                { href: '/mentor/requests', icon: UserCheck, label: 'Mentorship requests', labelEl: 'Αιτήματα' },
+                { href: '/mentor/sessions', icon: Video, label: 'Sessions', labelEl: 'Συνεδρίες' },
+                { href: '/mentor/reviews', icon: Star, label: 'My reviews', labelEl: 'Αξιολογήσεις' },
+                { href: '/mentor/earnings', icon: DollarSign, label: 'Earnings', labelEl: 'Έσοδα' },
+                { href: '/mentor/profile', icon: TrendingUp, label: 'Mentor profile', labelEl: 'Προφίλ μέντορα' },
+              ]}
+            />
 
-            {/* Impact Summary */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Your Impact</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Mentees helped</span>
-                    <span className="font-medium">24</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Hours mentored</span>
-                    <span className="font-medium">156</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Success stories</span>
-                    <span className="font-medium">8</span>
-                  </div>
+            <SectionCard title="Your impact" titleEl="Ο αντίκτυπός σας" contentClassName="space-y-2">
+              {[
+                { en: 'Founders mentored', el: 'Ιδρυτές που καθοδηγήσατε', value: relationships.length },
+                { en: 'Sessions given', el: 'Συνεδρίες', value: mentorStats.totalSessions },
+                { en: 'Mentorships completed', el: 'Ολοκληρωμένες καθοδηγήσεις', value: mentorStats.completedMentorships },
+              ].map((row) => (
+                <div key={row.en} className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">
+                    <BilingualText en={row.en} el={row.el} />
+                  </span>
+                  <span className="font-semibold tabular-nums">{row.value}</span>
                 </div>
-                <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2">
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-medium">Top 10% Mentor</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              ))}
+            </SectionCard>
 
-            {/* Availability Status */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Availability</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Accepting requests</span>
-                  <Badge variant="default" className="bg-green-500">Active</Badge>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  You have 4 slots available this week
-                </div>
-                <Button variant="secondary" size="sm" className="w-full" asChild>
-                  <Link href="/mentor/availability">
-                    Manage Settings
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <SectionCard title="Availability" titleEl="Διαθεσιμότητα" contentClassName="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm">
+                  <BilingualText en="Accepting requests" el="Δέχεστε αιτήματα" />
+                </span>
+                <Badge variant="success">Active</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Founders can request you while this is on. Set the hours you offer on the availability page.
+              </p>
+              <Button variant="secondary" size="sm" className="w-full" asChild>
+                <Link href="/mentor/availability">Manage availability</Link>
+              </Button>
+            </SectionCard>
           </div>
         </div>
       </div>

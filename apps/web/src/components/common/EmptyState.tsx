@@ -1,176 +1,118 @@
+'use client';
+
 import { ReactNode } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
 
 type EmptyStateProps = {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   action?: ReactNode;
   className?: string;
   illustration?: IllustrationType;
   size?: 'sm' | 'md' | 'lg';
+  /** Secondary Ask AI action — never replaces the primary `action`. */
+  askAiPrompt?: string;
 };
 
 // SVG Illustrations for different empty states
 function EmptyIllustration({ type, className }: { type: IllustrationType; className?: string }) {
-  const baseClass = cn('mx-auto text-primary/60', className);
-
-  switch (type) {
-    case 'search':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <circle cx="50" cy="50" r="30" stroke="currentColor" strokeWidth="4" className="opacity-40" />
-          <circle cx="50" cy="50" r="20" stroke="currentColor" strokeWidth="2" strokeDasharray="4 4" className="animate-spin-slow opacity-30" />
-          <line x1="72" y1="72" x2="95" y2="95" stroke="currentColor" strokeWidth="4" strokeLinecap="round" className="opacity-60" />
-          <circle cx="50" cy="50" r="6" fill="currentColor" className="animate-pulse-glow opacity-50" />
-          <circle cx="85" cy="25" r="4" fill="currentColor" className="animate-float opacity-30" />
-          <circle cx="25" cy="80" r="3" fill="currentColor" className="animate-float opacity-20" style={{ animationDelay: '1s' }} />
-        </svg>
-      );
-
-    case 'connection':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <circle cx="30" cy="60" r="18" stroke="currentColor" strokeWidth="3" className="opacity-50" />
-          <circle cx="90" cy="60" r="18" stroke="currentColor" strokeWidth="3" className="opacity-50" />
-          <path d="M48 60 L72 60" stroke="currentColor" strokeWidth="3" strokeDasharray="6 4" className="animate-pulse opacity-40" />
-          <circle cx="30" cy="60" r="8" fill="currentColor" className="opacity-30" />
-          <circle cx="90" cy="60" r="8" fill="currentColor" className="opacity-30" />
-          <circle cx="60" cy="30" r="12" stroke="currentColor" strokeWidth="2" className="opacity-30 animate-float" />
-          <circle cx="60" cy="90" r="10" stroke="currentColor" strokeWidth="2" className="opacity-20 animate-float" style={{ animationDelay: '0.5s' }} />
-          <path d="M36 48 L54 36" stroke="currentColor" strokeWidth="2" strokeDasharray="4 2" className="opacity-20" />
-          <path d="M84 48 L66 36" stroke="currentColor" strokeWidth="2" strokeDasharray="4 2" className="opacity-20" />
-        </svg>
-      );
-
-    case 'message':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <rect x="20" y="30" width="80" height="50" rx="8" stroke="currentColor" strokeWidth="3" className="opacity-50" />
-          <path d="M20 42 L60 65 L100 42" stroke="currentColor" strokeWidth="3" className="opacity-30" />
-          <circle cx="45" cy="55" r="4" fill="currentColor" className="animate-bounce-subtle opacity-40" />
-          <circle cx="60" cy="55" r="4" fill="currentColor" className="animate-bounce-subtle opacity-40" style={{ animationDelay: '0.2s' }} />
-          <circle cx="75" cy="55" r="4" fill="currentColor" className="animate-bounce-subtle opacity-40" style={{ animationDelay: '0.4s' }} />
-          <path d="M50 80 L60 95 L70 80" stroke="currentColor" strokeWidth="2" className="opacity-30" />
-        </svg>
-      );
-
-    case 'rocket':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <g className="animate-float">
-            <path d="M60 20 L75 50 L60 45 L45 50 Z" fill="currentColor" className="opacity-40" />
-            <rect x="52" y="45" width="16" height="30" rx="4" fill="currentColor" className="opacity-50" />
-            <path d="M48 75 L52 75 L52 90 L48 85 Z" fill="currentColor" className="opacity-30" />
-            <path d="M72 75 L68 75 L68 90 L72 85 Z" fill="currentColor" className="opacity-30" />
-            <ellipse cx="60" cy="55" rx="4" ry="5" fill="currentColor" className="opacity-70" />
-          </g>
-          <circle cx="30" cy="80" r="6" fill="currentColor" className="opacity-20 animate-pulse-glow" />
-          <circle cx="90" cy="70" r="4" fill="currentColor" className="opacity-15 animate-pulse-glow" style={{ animationDelay: '0.5s' }} />
-          <circle cx="85" cy="40" r="3" fill="currentColor" className="opacity-10 animate-pulse-glow" style={{ animationDelay: '1s' }} />
-          <path d="M55 95 L60 105 L65 95" stroke="currentColor" strokeWidth="2" className="opacity-20 animate-pulse" />
-        </svg>
-      );
-
-    case 'profile':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <circle cx="60" cy="45" r="20" stroke="currentColor" strokeWidth="3" className="opacity-50" />
-          <circle cx="60" cy="45" r="12" fill="currentColor" className="opacity-20" />
-          <path d="M30 95 C30 75 45 65 60 65 C75 65 90 75 90 95" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-40" />
-          <circle cx="85" cy="35" r="8" stroke="currentColor" strokeWidth="2" className="opacity-30 animate-pulse-glow" />
-          <circle cx="35" cy="75" r="6" stroke="currentColor" strokeWidth="2" className="opacity-20 animate-float" />
-          <path d="M78 35 L92 35" stroke="currentColor" strokeWidth="2" className="opacity-30" />
-          <path d="M85 28 L85 42" stroke="currentColor" strokeWidth="2" className="opacity-30" />
-        </svg>
-      );
-
-    case 'calendar':
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <rect x="20" y="30" width="80" height="70" rx="8" stroke="currentColor" strokeWidth="3" className="opacity-50" />
-          <line x1="20" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="3" className="opacity-40" />
-          <line x1="40" y1="30" x2="40" y2="20" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-40" />
-          <line x1="80" y1="30" x2="80" y2="20" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-40" />
-          <circle cx="45" cy="68" r="6" fill="currentColor" className="opacity-30" />
-          <circle cx="60" cy="68" r="6" fill="currentColor" className="opacity-30" />
-          <circle cx="75" cy="68" r="6" fill="currentColor" className="opacity-30" />
-          <circle cx="45" cy="85" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="2 2" className="opacity-20 animate-pulse" />
-          <circle cx="60" cy="85" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="2 2" className="opacity-20 animate-pulse" style={{ animationDelay: '0.3s' }} />
-        </svg>
-      );
-
-    default:
-      return (
-        <svg className={baseClass} width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <circle cx="60" cy="60" r="35" stroke="currentColor" strokeWidth="3" strokeDasharray="8 4" className="opacity-40 animate-spin-slow" />
-          <circle cx="60" cy="60" r="20" stroke="currentColor" strokeWidth="2" className="opacity-30" />
-          <circle cx="60" cy="60" r="8" fill="currentColor" className="opacity-40 animate-pulse-glow" />
-          <circle cx="30" cy="30" r="5" fill="currentColor" className="opacity-20 animate-float" />
-          <circle cx="90" cy="40" r="4" fill="currentColor" className="opacity-15 animate-float" style={{ animationDelay: '0.5s' }} />
-          <circle cx="85" cy="85" r="6" fill="currentColor" className="opacity-20 animate-float" style={{ animationDelay: '1s' }} />
-        </svg>
-      );
-  }
+  const drawings: Record<IllustrationType, ReactNode> = {
+    search: <>
+      <circle cx="51" cy="51" r="25" /><path d="m70 70 22 22M38 56c6 9 20 10 27-1" />
+      <circle cx="41" cy="45" r="3" fill="currentColor" stroke="none" /><circle cx="61" cy="45" r="3" fill="currentColor" stroke="none" />
+    </>,
+    connection: <>
+      <circle cx="29" cy="43" r="10" /><circle cx="91" cy="43" r="10" />
+      <path d="M29 57c0 22 19 32 31 35 12-3 31-13 31-35M39 43h42" />
+      <circle cx="60" cy="92" r="4" fill="currentColor" stroke="none" />
+    </>,
+    message: <>
+      <path d="M31 28h58a10 10 0 0 1 10 10v36a10 10 0 0 1-10 10H54L34 97V84h-3a10 10 0 0 1-10-10V38a10 10 0 0 1 10-10Z" />
+      <path d="M39 49h42M39 63h25" /><circle cx="81" cy="63" r="3" fill="currentColor" stroke="none" />
+    </>,
+    rocket: <>
+      <path d="M47 73c-2-25 3-42 13-53 10 11 15 28 13 53ZM47 55 34 70v15l13-9M73 55l13 15v15l-13-9M51 91l9 11 9-11" />
+      <circle cx="60" cy="49" r="7" /><path d="M53 81h14" />
+    </>,
+    profile: <>
+      <circle cx="60" cy="43" r="17" /><path d="M28 96c0-18 14-29 32-29s32 11 32 29M24 26l8-8M96 26l-8-8" />
+      <path d="M45 77c6 11 24 11 30 0" />
+    </>,
+    calendar: <>
+      <rect x="24" y="30" width="72" height="65" rx="12" /><path d="M24 49h72M43 22v16M77 22v16M42 66h5M58 66h5M74 66h5M42 81h5M58 81h5" />
+      <circle cx="77" cy="81" r="5" fill="currentColor" stroke="none" />
+    </>,
+    default: <>
+      <path d="M32 42c0 29 18 43 28 47 10-4 28-18 28-47" />
+      <circle cx="32" cy="37" r="9" fill="currentColor" stroke="none" />
+      <circle cx="88" cy="37" r="9" fill="currentColor" stroke="none" />
+      <circle cx="60" cy="89" r="5" fill="currentColor" stroke="none" />
+    </>,
+  };
+  return (
+    <svg className={cn('mx-auto text-primary-accessible', className)} width="120" height="120" viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <rect x="8" y="8" width="104" height="104" rx="30" fill="currentColor" fillOpacity="0.04" stroke="none" />
+      {drawings[type] ?? drawings.default}
+    </svg>
+  );
 }
 
-export function EmptyState({ 
-  title, 
-  description, 
-  action, 
+export function EmptyState({
+  title,
+  description,
+  action,
   className,
   illustration = 'default',
-  size = 'md'
+  size = 'md',
+  askAiPrompt,
 }: EmptyStateProps) {
-  const sizeClasses = {
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8',
-  };
-
-  const illustrationSizes = {
-    sm: 'w-16 h-16',
-    md: 'w-24 h-24',
-    lg: 'w-32 h-32',
-  };
+  const popup = usePopupChatOptional();
+  const sizeClasses = { sm: 'p-4', md: 'p-6', lg: 'p-8' };
+  const illustrationSizes = { sm: 'w-16 h-16', md: 'w-24 h-24', lg: 'w-32 h-32' };
 
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border/60 bg-card/70 text-center shadow-glow-sm animate-fade-in',
+        'relative overflow-hidden rounded-2xl border border-border bg-card/80 text-center shadow-sm',
         sizeClasses[size],
         className,
       )}
     >
-      {/* Decorative background blobs */}
-      <div className="pointer-events-none absolute inset-0 opacity-40">
-        <div className="absolute -top-12 left-8 h-32 w-32 rounded-full bg-primary/20 blur-2xl animate-pulse-glow" />
-        <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full bg-accent/30 blur-2xl animate-pulse-glow" style={{ animationDelay: '1s' }} />
+      {/* Quiet identity wash */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -top-12 left-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+        <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
       </div>
-
       <div className="relative space-y-4">
         {/* SVG Illustration */}
-        <div className={cn('animate-fade-in-up', illustrationSizes[size])}>
+        <div className={cn('mx-auto', illustrationSizes[size])}>
           <EmptyIllustration type={illustration} className={illustrationSizes[size]} />
         </div>
-
         {/* Text content */}
         <div className="space-y-2">
-          <p className="text-base font-semibold animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            {title}
-          </p>
-          {description && (
-            <p className="text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-              {description}
-            </p>
-          )}
+          <p className="mx-auto max-w-prose text-balance break-words text-base font-semibold leading-snug">{title}</p>
+          {description && <p className="mx-auto max-w-prose break-words text-sm leading-relaxed text-muted-foreground">{description}</p>}
         </div>
-
-        {/* Action button */}
-        {action && (
-          <div className="pt-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        {(action || askAiPrompt) && (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
             {action}
+            {askAiPrompt && (popup ? (
+              <Button variant="outline" size="sm" onClick={() => popup.ask(askAiPrompt)}>
+                <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
+              </Button>
+            ) : (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}>
+                  <BilingualText en="Ask AI" el="Ρωτήστε το AI" compact />
+                </Link>
+              </Button>
+            ))}
           </div>
         )}
       </div>

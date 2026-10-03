@@ -2,38 +2,46 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, X, GripVertical } from 'lucide-react';
 import { useMessagingUnreadCount } from '@/contexts/MessagingContext';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
 import { useDraggable } from '@/hooks/useDraggable';
+import { bilingualAria } from '@/lib/i18n/format';
+import { LogoIcon } from '@/components/brand/Logo';
+import { usePageRail } from '@/components/layout/PageRailContext';
 
 /**
  * Floating chat bubble shown on all pages except /messages.
- * Clicking it navigates to the messages page.
+ * Click opens the popup. Drag the bubble itself to move it — no extra chrome.
+ * Hidden while the panel (or its minimised pill) is on screen, so the two
+ * never stack in the same corner.
  */
 export function ChatBubble() {
+  // Read with the other contexts, above the early return below: a hook
+  // called after `if (hidden) return null` runs on some renders and not
+  // others, which is exactly the order change React refuses.
+  const { pinned: railPinned, hasRail } = usePageRail();
   const pathname = usePathname();
   const unreadMessages = useMessagingUnreadCount();
-  const { toggle } = usePopupChat();
+  const { isOpen, isMinimized, open, restore } = usePopupChat();
   const [mounted, setMounted] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
 
-  // Draggable functionality
-  const { position, isDragging, dragHandleProps } = useDraggable({
+  const { position, isDragging, dragHandleProps, consumeSuppressClick } = useDraggable({
     storageKey: 'cfb-chat-bubble-position',
     initialPosition: { x: 0, y: 0 },
     boundaryPadding: 20,
+    activationDelayMs: 180,
+    moveThresholdPx: 6,
+    preventDefaultOnDown: false,
   });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Don't show on messages page or auth pages
   const hidden =
     !mounted ||
-    dismissed ||
+    isOpen ||
     pathname?.startsWith('/messages') ||
     pathname?.startsWith('/login') ||
     pathname?.startsWith('/register') ||
@@ -44,65 +52,67 @@ export function ChatBubble() {
 
   if (hidden) return null;
 
+  const unreadEn = `${unreadMessages} unread message${unreadMessages === 1 ? '' : 's'}`;
+  const unreadEl = `${unreadMessages} ${unreadMessages === 1 ? 'αδιάβαστο μήνυμα' : 'αδιάβαστα μηνύματα'}`;
+  const openLabel = unreadMessages > 0
+    ? bilingualAria(`Open chat (${unreadEn})`, `Άνοιγμα συνομιλίας (${unreadEl})`)
+    : bilingualAria('Open chat', 'Άνοιγμα συνομιλίας');
+  const moveHint = bilingualAria(
+    'Drag to move',
+    'Σύρετε για μετακίνηση',
+  );
+
   return (
-    <div 
-      className="fixed bottom-11 right-6 z-50 flex flex-col items-end gap-2"
+    <div
+      className={cn(
+        'pointer-events-none fixed bottom-6 z-50 hidden transition-[right] duration-200 ease-out lg:block',
+        // Clear of the page rail: the strip on a page that has one, the whole
+        // panel while it is pinned. Without this the bubble sat behind it.
+        !hasRail ? 'right-6' : railPinned ? 'right-[23.252rem]' : 'right-[4.75rem]',
+      )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >
-      {/* Unread badge tooltip */}
-      {unreadMessages > 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 rounded-full bg-card border border-border/60 px-3 py-1 shadow-md">
-          <span className="text-xs font-medium text-foreground">
-            {unreadMessages} unread message{unreadMessages > 1 ? 's' : ''}
+      <button
+        type="button"
+        {...dragHandleProps}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (consumeSuppressClick()) return;
+          if (isMinimized) {
+            restore();
+            return;
+          }
+          open(undefined, unreadMessages > 0 ? 'messages' : undefined);
+        }}
+        aria-label={`${openLabel}. ${moveHint}`}
+        title={`${openLabel}. ${moveHint}`}
+        aria-haspopup="dialog"
+        aria-expanded={false}
+        className={cn(
+          'pointer-events-auto relative flex items-center justify-center rounded-full shadow-none transition-colors duration-200',
+          'bg-primary text-primary-foreground hover:bg-primary/90',
+          'outline-none focus-visible:ring-2 focus-visible:ring-primary-accessible focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          isDragging && 'scale-95 cursor-grabbing',
+        )}
+        style={{
+          width: '52px',
+          height: '52px',
+          ...dragHandleProps.style,
+          cursor: isDragging ? 'grabbing' : undefined,
+        }}
+      >
+        <LogoIcon size={49} mono className="pointer-events-none text-primary-foreground -translate-y-[2px]" />
+        {unreadMessages > 0 && (
+          <span
+            aria-hidden="true"
+            className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-status-danger-mark px-1 text-xs font-bold leading-none text-ink shadow-sm"
+          >
+            {unreadMessages > 99 ? '99+' : unreadMessages}
           </span>
-        </div>
-      )}
-
-      <div className="flex items-center gap-2">
-        {/* Dismiss button */}
-        <button
-          onClick={() => setDismissed(true)}
-          className="flex h-7 w-7 items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground shadow-sm hover:text-foreground transition-colors"
-          aria-label="Dismiss chat bubble"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-
-        {/* Drag handle */}
-        <div
-          {...dragHandleProps}
-          className={cn(
-            'flex items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground shadow-sm',
-            'hover:text-foreground hover:bg-muted transition-colors',
-            isDragging && 'scale-95 opacity-80 bg-muted',
-          )}
-          style={{ width: '28px', height: '28px', ...dragHandleProps.style }}
-          title="Drag to move"
-        >
-          <GripVertical className="h-3.5 w-3.5" />
-        </div>
-
-        {/* Main bubble */}
-        <button
-          onClick={toggle}
-          aria-label={unreadMessages > 0 ? `Open messages (${unreadMessages} unread)` : 'Open messages'}
-          className={cn(
-            'relative flex items-center justify-center rounded-full shadow-lg transition-all duration-200',
-            'bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 active:scale-95',
-            'outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-          )}
-          style={{ width: '52px', height: '52px' }}
-        >
-          <MessageCircle className="h-6 w-6" fill="currentColor" fillOpacity={0.2} />
-          {unreadMessages > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white shadow-sm">
-              {unreadMessages > 99 ? '99+' : unreadMessages}
-            </span>
-          )}
-        </button>
-      </div>
+        )}
+      </button>
     </div>
   );
 }

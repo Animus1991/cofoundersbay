@@ -192,6 +192,35 @@ export class ConnectionsService {
     return { connection: mapConnection(updated) };
   }
 
+  /**
+   * Takes back a request the sender has not had answered yet.
+   *
+   * The product had no route for this at all: `respondToRequest` belongs to
+   * the receiver and throws for anyone else, so a request sent by mistake was
+   * permanent. Deleting rather than marking withdrawn follows the precedent
+   * `sendRequest` already sets for a declined request — the row goes, and the
+   * two can connect later without tripping the duplicate check.
+   *
+   * The receiver's notification stays. It records that the request happened,
+   * which is true, and the request itself no longer appears in their list.
+   */
+  async withdrawRequest(connectionId: string, requesterId: string) {
+    const connection = await this.prisma.connectionRequest.findUnique({
+      where: { id: connectionId },
+    });
+
+    if (!connection) throw new NotFoundException('Connection request not found');
+    if (connection.requesterId !== requesterId) {
+      throw new ForbiddenException('Only the sender can withdraw a request');
+    }
+    if (connection.status !== 'pending') {
+      throw new ConflictException('Request has already been answered');
+    }
+
+    await this.prisma.connectionRequest.delete({ where: { id: connectionId } });
+    return { ok: true, connectionId };
+  }
+
   async blockUser(blockerId: string, targetUserId: string) {
     if (blockerId === targetUserId) {
       throw new BadRequestException('Cannot block yourself');

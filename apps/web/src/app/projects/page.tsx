@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  Plus, Search, Filter, LayoutGrid, List, Users, Calendar,
-  Target, Rocket, Clock, MoreVertical, Star, MessageSquare,
-  ExternalLink, ChevronRight, Briefcase, Zap, TrendingUp,
-  Sparkles, Globe, UserPlus, BarChart3, Layers,
+  Plus, Search, LayoutGrid, List, MoreVertical, Star, MessageSquare,
+  ExternalLink, ChevronRight, X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -29,165 +27,133 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useToast } from '@/components/ui/toast';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  projectEn,
+  projectEl,
+  useProjectPrimaryText,
+  PROJECT_STAGE_KEYS,
+  PROJECT_STAGE_FULL_KEYS,
+  PROJECT_ROLE_TITLE_EL,
+} from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
+import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
+import {
+  listDemoProjects,
+  toggleDemoStar,
+  isOwnedProject,
+  isJoinedProject,
+  demoProjectStats,
+  PROJECT_STATUS_GLYPH,
+  type DemoProject,
+  type DemoRole,
+  type ProjectStatus,
+} from '@/lib/projects-demo';
 
-type ProjectStatus = 'idea' | 'validating' | 'building' | 'launched' | 'scaling';
-
-type Project = {
-  id: string;
-  name: string;
-  description: string;
-  status: ProjectStatus;
-  stage: string;
-  industry: string;
-  teamSize: number;
-  maxTeamSize: number;
-  createdAt: Date;
-  updatedAt: Date;
-  founder: {
-    id: string;
-    name: string;
-    avatar?: string;
-  };
-  members: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role: string;
-  }[];
-  rolesNeeded: string[];
-  tags: string[];
-  isStarred?: boolean;
-  messageCount?: number;
-  progress?: number;
+const STATUS_COLOR: Record<ProjectStatus, string> = {
+  idea: 'bg-status-accent-bg text-status-accent border-status-accent-border',
+  validating: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  building: 'bg-status-info-bg text-status-info border-status-info-border',
+  launched: 'bg-status-success-bg text-status-success border-status-success-border',
+  scaling: 'bg-status-info-bg text-status-info border-status-info-border',
 };
 
-const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
-  idea: { label: 'Idea Stage', color: 'bg-violet-500/10 text-violet-600 border-violet-500/30', icon: Zap },
-  validating: { label: 'Validating', color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Target },
-  building: { label: 'Building', color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Rocket },
-  launched: { label: 'Launched', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', icon: TrendingUp },
-  scaling: { label: 'Scaling', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/30', icon: Briefcase },
-};
-
-const MOCK_PROJECTS: Project[] = [
-  {
-    id: '1',
-    name: 'EcoTrack',
-    description: 'AI-powered carbon footprint tracking for businesses. Helping companies measure, reduce, and offset their environmental impact.',
-    status: 'building',
-    stage: 'Pre-seed',
-    industry: 'CleanTech',
-    teamSize: 3,
-    maxTeamSize: 5,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-03-10'),
-    founder: { id: 'u1', name: 'Sarah Chen', avatar: undefined },
-    members: [
-      { id: 'u1', name: 'Sarah Chen', avatar: undefined, role: 'CEO' },
-      { id: 'u2', name: 'Mike Ross', avatar: undefined, role: 'CTO' },
-      { id: 'u3', name: 'Lisa Park', avatar: undefined, role: 'Designer' },
-    ],
-    rolesNeeded: ['Backend Engineer', 'Growth Lead'],
-    tags: ['AI', 'Sustainability', 'B2B', 'SaaS'],
-    isStarred: true,
-    messageCount: 12,
-    progress: 65,
-  },
-  {
-    id: '2',
-    name: 'MentorMatch',
-    description: 'Platform connecting early-stage founders with experienced mentors for personalized guidance and accountability.',
-    status: 'validating',
-    stage: 'Idea',
-    industry: 'EdTech',
-    teamSize: 2,
-    maxTeamSize: 4,
-    createdAt: new Date('2024-02-20'),
-    updatedAt: new Date('2024-03-08'),
-    founder: { id: 'u4', name: 'James Wilson', avatar: undefined },
-    members: [
-      { id: 'u4', name: 'James Wilson', avatar: undefined, role: 'Founder' },
-      { id: 'u5', name: 'Emma Davis', avatar: undefined, role: 'Product' },
-    ],
-    rolesNeeded: ['Full-stack Developer', 'Marketing'],
-    tags: ['Marketplace', 'Mentorship', 'Community'],
-    messageCount: 5,
-    progress: 30,
-  },
-  {
-    id: '3',
-    name: 'HealthSync',
-    description: 'Unified health data platform that aggregates wearable data for personalized wellness insights.',
-    status: 'idea',
-    stage: 'Concept',
-    industry: 'HealthTech',
-    teamSize: 1,
-    maxTeamSize: 4,
-    createdAt: new Date('2024-03-01'),
-    updatedAt: new Date('2024-03-05'),
-    founder: { id: 'u6', name: 'Dr. Amy Liu', avatar: undefined },
-    members: [
-      { id: 'u6', name: 'Dr. Amy Liu', avatar: undefined, role: 'Founder' },
-    ],
-    rolesNeeded: ['Technical Co-founder', 'Mobile Developer', 'Data Scientist'],
-    tags: ['Health', 'Wearables', 'Data', 'Consumer'],
-    progress: 10,
-  },
+const STAGE_PILLS: { value: string; glyph: CfbGlyphName; labelKey: keyof typeof PROJECT_STAGE_KEYS }[] = [
+  { value: 'all', glyph: 'briefcase', labelKey: 'all' },
+  { value: 'idea', glyph: 'spark', labelKey: 'idea' },
+  { value: 'validating', glyph: 'target', labelKey: 'validating' },
+  { value: 'building', glyph: 'builder', labelKey: 'building' },
+  { value: 'launched', glyph: 'award', labelKey: 'launched' },
+  { value: 'scaling', glyph: 'chart', labelKey: 'scaling' },
 ];
 
-function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid' | 'list' }) {
-  const statusConfig = STATUS_CONFIG[project.status];
-  const StatusIcon = statusConfig.icon;
+type TabId = 'discover' | 'mine' | 'joined' | 'starred';
 
+function roleLabel(role: DemoRole | string) {
+  const title = typeof role === 'string' ? role : role.title;
+  const el = typeof role === 'string' ? PROJECT_ROLE_TITLE_EL[title] : (role.titleEl ?? PROJECT_ROLE_TITLE_EL[title]);
+  return el ? <BilingualText en={title} el={el} compact /> : title;
+}
+
+function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-clamp-1' | 'line-clamp-2' }) {
+  const en = project.tagline || project.description;
+  const el = project.taglineEl || project.descriptionEl;
+  return (
+    <p className={cn('text-sm text-muted-foreground', clamp)}>
+      {el ? <BilingualText en={en} el={el} compact={clamp === 'line-clamp-1'} wrap={clamp === 'line-clamp-2'} /> : en}
+    </p>
+  );
+}
+
+function StageBadge({ status }: { status: ProjectStatus }) {
+  const key = PROJECT_STAGE_FULL_KEYS[status];
+  return (
+    <Badge variant="outline" className={cn('gap-1 rounded-full text-2xs', STATUS_COLOR[status])}>
+      <CfbGlyph name={PROJECT_STATUS_GLYPH[status]} className="icon-sm" />
+      {key ? <BilingualText en={projectEn(key)} el={projectEl(key)} compact /> : status}
+    </Badge>
+  );
+}
+
+function ProjectCard({
+  project,
+  viewMode,
+  onStar,
+  onMessage,
+  onShare,
+}: {
+  project: DemoProject;
+  viewMode: 'grid' | 'list';
+  onStar: (id: string) => void;
+  onMessage: (project: DemoProject) => void;
+  onShare: (project: DemoProject) => void;
+}) {
   if (viewMode === 'list') {
     return (
-      <Card className="border-border/60 hover:border-primary/30 transition-colors">
+      <Card className="rounded-xl border-border transition-colors hover:border-primary/30">
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
                   {project.name}
                 </Link>
-                <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
-                  {statusConfig.label}
-                </Badge>
-                {project.isStarred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
+                <StageBadge status={project.status} />
+                {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
+              <ProjectBlurb project={project} clamp="line-clamp-1" />
             </div>
-            <div className="flex items-center gap-6 shrink-0">
+            <div className="flex shrink-0 items-center gap-6">
               <div className="flex -space-x-2">
                 {project.members.slice(0, 3).map((m) => (
                   <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
                     <AvatarImage src={m.avatar} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
                       {m.name[0]}
                     </AvatarFallback>
                   </Avatar>
                 ))}
-                {project.members.length > 3 && (
-                  <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs text-muted-foreground">
-                    +{project.members.length - 3}
-                  </div>
-                )}
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize}
               </div>
-              <div className="flex flex-wrap gap-1 max-w-[200px]">
+              <div className="flex max-w-[200px] flex-wrap gap-1">
                 {project.rolesNeeded.slice(0, 2).map((role) => (
-                  <Badge key={role} variant="secondary" className="text-xs">
-                    {role}
+                  <Badge key={role.title} variant="secondary" className="rounded-full text-2xs">
+                    {roleLabel(role)}
                   </Badge>
                 ))}
               </div>
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} asChild>
                 <Link href={`/projects/${project.id}`}>
-                  View
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <BilingualText en={projectEn('view')} el={projectEl('view')} compact />
+                  <ChevronRight className="icon-sm ml-1" />
                 </Link>
               </Button>
             </div>
@@ -198,51 +164,57 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
   }
 
   return (
-    <Card className="border-border/60 hover:border-primary/30 transition-colors group">
+    <Card className="group rounded-xl border-border transition-colors hover:border-primary/30">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
-                {project.name}
-              </Link>
-              {project.isStarred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
+                  {project.name}
+                </Link>
+              {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
             </div>
-            <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
-              <StatusIcon className="h-3 w-3 mr-1" />
-              {statusConfig.label}
-            </Badge>
+            <StageBadge status={project.status} />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreVertical className="h-4 w-4" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-xl opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+                aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
+              >
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Star className="h-4 w-4 mr-2" />
-                {project.isStarred ? 'Unstar' : 'Star'}
+            <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuItem onClick={() => onStar(project.id)}>
+                <Star className="icon-sm mr-2" />
+                <BilingualText
+                  en={project.isStarred ? projectEn('unstar') : projectEn('star')}
+                  el={project.isStarred ? projectEl('unstar') : projectEl('star')}
+                  compact
+                />
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Message Team
+              <DropdownMenuItem onClick={() => onMessage(project)}>
+                <MessageSquare className="icon-sm mr-2" />
+                <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Share Project
+              <DropdownMenuItem onClick={() => onShare(project)}>
+                <ExternalLink className="icon-sm mr-2" />
+                <BilingualText en={projectEn('share')} el={projectEl('share')} compact />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+        <ProjectBlurb project={project} clamp="line-clamp-2" />
 
         <div className="flex flex-wrap gap-1.5">
           {project.tags.slice(0, 4).map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
+            <Badge key={tag} variant="secondary" className="rounded-full text-2xs">
               {tag}
             </Badge>
           ))}
@@ -250,40 +222,40 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
 
         {project.progress !== undefined && (
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Progress</span>
-              <span className="font-medium">{project.progress}%</span>
+            <div className="flex items-center justify-between text-2xs">
+              <span className="text-muted-foreground">
+                <BilingualText en={projectEn('progress')} el={projectEl('progress')} compact />
+              </span>
+              <span className="font-medium tabular-nums">{project.progress}%</span>
             </div>
-            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${project.progress}%` }}
-              />
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-primary transition-all" style={{ width: `${project.progress}%` }} />
             </div>
           </div>
         )}
 
-        <div className="pt-2 border-t border-border/60">
-          <div className="flex items-center justify-between mb-3">
+        <div className="border-t border-border pt-2">
+          <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <CfbGlyph name="people" className="icon-sm" />
               <span>
-                <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize} members
+                <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize}{' '}
+                <BilingualText en={projectEn('members')} el={projectEl('members')} compact />
               </span>
             </div>
             {project.messageCount && project.messageCount > 0 && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MessageSquare className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                <CfbGlyph name="messages" className="icon-sm" />
                 {project.messageCount}
               </div>
             )}
           </div>
 
-          <div className="flex -space-x-2 mb-3">
+          <div className="mb-3 flex -space-x-2">
             {project.members.slice(0, 4).map((m) => (
               <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
                 <AvatarImage src={m.avatar} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
                   {m.name[0]}
                 </AvatarFallback>
               </Avatar>
@@ -292,11 +264,13 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
 
           {project.rolesNeeded.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">Looking for:</p>
+              <p className="text-2xs font-medium text-muted-foreground">
+                <BilingualText en={projectEn('looking_for')} el={projectEl('looking_for')} compact />
+              </p>
               <div className="flex flex-wrap gap-1">
                 {project.rolesNeeded.map((role) => (
-                  <Badge key={role} variant="outline" className="text-xs bg-primary/5 border-primary/20 text-primary">
-                    {role}
+                  <Badge key={role.title} variant="outline" className="rounded-full bg-primary/5 text-2xs text-primary-accessible border-primary/20">
+                    {roleLabel(role)}
                   </Badge>
                 ))}
               </div>
@@ -304,10 +278,10 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
           )}
         </div>
 
-        <Button className="w-full" asChild>
+        <Button className={`w-full ${BUILDER_BTN}`} asChild>
           <Link href={`/projects/${project.id}`}>
-            View Project
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
+            <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
           </Link>
         </Button>
       </CardContent>
@@ -315,236 +289,440 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
   );
 }
 
-const STAGE_PILLS = [
-  { value: 'all',        label: 'All Stages',  icon: Layers    },
-  { value: 'idea',       label: 'Idea',        icon: Zap       },
-  { value: 'validating', label: 'Validating',  icon: Target    },
-  { value: 'building',   label: 'Building',    icon: Rocket    },
-  { value: 'launched',   label: 'Launched',    icon: Globe     },
-  { value: 'scaling',    label: 'Scaling',     icon: TrendingUp},
-];
+function EmptyState({
+  glyph,
+  titleEn,
+  titleEl,
+  hintEn,
+  hintEl,
+  action,
+}: {
+  glyph: CfbGlyphName;
+  titleEn: string;
+  titleEl: string;
+  hintEn: string;
+  hintEl: string;
+  action: React.ReactNode;
+}) {
+  return (
+    <Card className="rounded-xl border-dashed">
+      <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+        <CfbGlyph name={glyph} className="mb-4 icon-lg text-muted-foreground/50" />
+        <h3 className="page-section mb-1 font-semibold text-foreground">
+          <BilingualText en={titleEn} el={titleEl} />
+        </h3>
+        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
+          <BilingualText en={hintEn} el={hintEl} />
+        </p>
+        {action}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ProjectsPage() {
+  const t = useProjectPrimaryText();
+  const { open: openAskAi } = usePopupChat();
+  const { success } = useToast();
+  const [projects, setProjects] = useState(listDemoProjects);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [industryFilter, setIndustryFilter] = useState<string>('all');
+  const [tab, setTab] = useState<TabId>('discover');
 
-  const totalProjects = MOCK_PROJECTS.length;
-  const buildingCount = MOCK_PROJECTS.filter((p) => p.status === 'building' || p.status === 'launched' || p.status === 'scaling').length;
-  const openRolesCount = MOCK_PROJECTS.reduce((acc, p) => acc + p.rolesNeeded.length, 0);
-  const industries = [...new Set(MOCK_PROJECTS.map((p) => p.industry))];
+  const stats = demoProjectStats(projects);
+  const industries = [...new Set(projects.map((p) => p.industry))];
+  const hasActiveFilters = searchQuery.trim().length > 0 || statusFilter !== 'all' || industryFilter !== 'all';
 
-  const filteredProjects = MOCK_PROJECTS.filter((p) => {
-    if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !p.description.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+  const filtered = useMemo(() => {
+    return projects.filter((p) => {
+      const q = searchQuery.trim().toLowerCase();
+      if (q) {
+        const hay = [
+          p.name,
+          p.tagline,
+          p.taglineEl ?? '',
+          p.description,
+          p.descriptionEl ?? '',
+          p.industry,
+          p.location,
+          p.status,
+          p.stage,
+          p.founder.name,
+          p.members.map((m) => `${m.name} ${m.role} ${m.roleEl ?? ''}`).join(' '),
+          p.tags.join(' '),
+          p.rolesNeeded.map((r) => `${r.title} ${r.titleEl ?? ''} ${r.description} ${r.descriptionEl ?? ''}`).join(' '),
+          p.milestones.map((m) => `${m.title} ${m.titleEl ?? ''}`).join(' '),
+        ].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+      if (industryFilter !== 'all' && p.industry !== industryFilter) return false;
+      return true;
+    });
+  }, [projects, searchQuery, statusFilter, industryFilter]);
+
+  const byTab: Record<TabId, DemoProject[]> = {
+    discover: filtered,
+    mine: filtered.filter((p) => isOwnedProject(p)),
+    joined: filtered.filter((p) => isJoinedProject(p)),
+    starred: filtered.filter((p) => p.isStarred),
+  };
+
+  const counts = {
+    discover: projects.length,
+    mine: projects.filter((p) => isOwnedProject(p)).length,
+    joined: projects.filter((p) => isJoinedProject(p)).length,
+    starred: projects.filter((p) => p.isStarred).length,
+  };
+
+  function refresh() {
+    setProjects(listDemoProjects());
+  }
+
+  function handleStar(id: string) {
+    toggleDemoStar(id);
+    refresh();
+  }
+
+  function handleShare(project: DemoProject) {
+    const url = `${window.location.origin}/projects/${project.id}`;
+    void navigator.clipboard?.writeText(url).catch(() => undefined);
+    success('Link copied', 'Anyone with the link can open this project.');
+  }
+
+  function clearFilters() {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setIndustryFilter('all');
+  }
+
+  function renderList(items: DemoProject[], empty: { glyph: CfbGlyphName; title: 'empty_discover_title' | 'empty_mine_title' | 'empty_joined_title' | 'empty_starred_title'; hint: 'empty_discover_hint' | 'empty_mine_hint' | 'empty_joined_hint' | 'empty_starred_hint'; action: React.ReactNode }) {
+    if (items.length === 0) {
+      const filteredEmpty = hasActiveFilters;
+      return (
+        <EmptyState
+          glyph={empty.glyph}
+          titleEn={projectEn(filteredEmpty ? 'empty_filter_title' : empty.title)}
+          titleEl={projectEl(filteredEmpty ? 'empty_filter_title' : empty.title)}
+          hintEn={projectEn(filteredEmpty ? 'empty_filter_hint' : empty.hint)}
+          hintEl={projectEl(filteredEmpty ? 'empty_filter_hint' : empty.hint)}
+          action={
+            filteredEmpty ? (
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={clearFilters}>
+                <BilingualText en={projectEn('clear_filters')} el={projectEl('clear_filters')} compact />
+              </Button>
+            ) : (
+              empty.action
+            )
+          }
+        />
+      );
     }
-    if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-    if (industryFilter !== 'all' && p.industry !== industryFilter) return false;
-    return true;
-  });
+    return (
+      <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-3')}>
+        {items.map((project) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            viewMode={viewMode}
+            onStar={handleStar}
+            onMessage={(p) => openAskAi(p.founder.id, 'messages')}
+            onShare={handleShare}
+          />
+        ))}
+      </div>
+    );
+  }
 
-  const featuredProjects = filteredProjects.filter((p) => p.isStarred);
-  const regularProjects  = filteredProjects.filter((p) => !p.isStarred);
+  const createCta = (
+    <Button size="sm" className={BUILDER_BTN} asChild>
+      <Link href="/projects/create">
+        <Plus className="icon-sm mr-1.5" />
+        <BilingualText en={projectEn('create')} el={projectEl('create')} compact />
+      </Link>
+    </Button>
+  );
 
-  return (
-    <AppShell>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  // Offered to the assistant: stage, industry and layout, through the same
+  // setters as the pills, the rail and the view switch.
+  usePageControls([
+    choiceControl('stage_filter', 'Project stage filter', 'Φίλτρο σταδίου έργου', STAGE_PILLS.map((p) => ({ value: p.value, en: projectEn(PROJECT_STAGE_KEYS[p.labelKey]), el: projectEl(PROJECT_STAGE_KEYS[p.labelKey]) })), statusFilter, setStatusFilter),
+    choiceControl('industry_filter', 'Industry filter', 'Φίλτρο κλάδου', [{ value: 'all', en: 'All industries', el: 'Όλοι οι κλάδοι' }, ...industries.map((i) => ({ value: i, en: i, el: i }))], industryFilter, setIndustryFilter),
+    choiceControl('view', 'Project layout', 'Διάταξη έργων', [
+      { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
+      { value: 'list', en: 'List', el: 'Λίστα' },
+    ], viewMode, (v) => setViewMode(v as 'grid' | 'list')),
+    choiceControl('tab', 'Projects tab', 'Καρτέλα έργων', (['discover', 'mine', 'joined', 'starred'] as const).map((id) => ({ value: id, en: projectEn(`tab_${id}`), el: projectEl(`tab_${id}`) })), tab, (v) => setTab(v as TabId)),
+    // The card menu's own actions over the projects on this tab.
+    // toggleDemoStar flips one flag on the project kept in this browser.
+    { id: 'star_project', labelEn: 'Star project', labelEl: 'Αστέρι σε έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => !p.isStarred), (p) => p.id, (p) => p.name), undo: (v) => ({ control: 'unstar_project', value: v }), run: (v) => { if (v) handleStar(v); } },
+    { id: 'unstar_project', labelEn: 'Unstar project', labelEl: 'Αφαίρεση αστεριού από έργο', writes: true, options: rowOptions(byTab[tab].filter((p) => p.isStarred), (p) => p.id, (p) => p.name), undo: (v) => ({ control: 'star_project', value: v }), run: (v) => { if (v) handleStar(v); } },
+    { id: 'share_project', labelEn: 'Copy a link to project', labelEl: 'Αντιγραφή συνδέσμου έργου', writes: false, options: rowOptions(byTab[tab], (p) => p.id, (p) => p.name), run: (v) => { const p = projects.find((row) => row.id === v); if (p) handleShare(p); } },
+  ]);
+  usePageList([
+    {
+      id: 'projects',
+      labelEn: 'Projects',
+      labelEl: 'Έργα',
+      rows: byTab[tab].map((p) =>
+        `${p.name} · ${p.industry}, ${p.stage} · ${p.status} · team ${p.teamSize}/${p.maxTeamSize}${p.rolesNeeded.length ? ` · needs ${p.rolesNeeded.map((r) => r.title).join(', ')}` : ''}${p.isStarred ? ' · starred' : ''}`,
+      ),
+      total: counts[tab],
+      sample: true,
+    },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'overview',
+      glyph: 'chart',
+      labelEn: 'Project stats',
+      labelEl: 'Στατιστικά έργων',
+      content: (
+        <div className="space-y-2">
+          {[
+            { labelKey: 'stat_total' as const, value: stats.total, glyph: 'briefcase' as const, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+            { labelKey: 'stat_active' as const, value: stats.active, glyph: 'builder' as const, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { labelKey: 'stat_roles' as const, value: stats.openRoles, glyph: 'people' as const, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { labelKey: 'stat_industries' as const, value: stats.industries, glyph: 'chart' as const, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+          ].map((s) => (
+            <div key={s.labelKey} className="flex items-center gap-3 rounded-lg border border-border p-3">
+              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', s.bg, s.color)}>
+                <CfbGlyph name={s.glyph} className="icon-sm" />
+              </div>
+              <div className="min-w-0">
+                <p className="page-stat text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
+                <p className="page-stat-label mt-0.5 text-2xs leading-snug text-muted-foreground">
+                  <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: industryFilter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-3">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Projects & Collaborations</h1>
-            <p className="text-muted-foreground">
-              Discover startup projects or create your own to find co-founders
+            <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={projectEn('industry')} el={projectEl('industry')} compact />
             </p>
+            <Select value={industryFilter} onValueChange={setIndustryFilter}>
+              <SelectTrigger aria-label={t(projectEn('industry'), projectEl('industry'))} className="w-full rounded-xl">
+                <SelectValue placeholder={t(projectEn('industry'), projectEl('industry'))} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">{t(projectEn('all_industries'), projectEl('all_industries'))}</SelectItem>
+                {industries.map((ind) => (
+                  <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Button asChild>
-            <Link href="/projects/create">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Project
-            </Link>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+            >
+              <X className="icon-sm shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1"><BilingualText en={projectEn('clear_filters')} el={projectEl('clear_filters')} compact wrap /></span>
+            </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'view',
+      glyph: 'compare',
+      labelEn: 'Layout',
+      labelEl: 'Διάταξη',
+      content: (
+        <div className="flex rounded-xl border border-border p-0.5">
+          <Button
+            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="flex-1 rounded-xl"
+            type="button"
+            onClick={() => setViewMode('grid')}
+            aria-label={bilingualAria(projectEn('view_grid'), projectEl('view_grid'))}
+            aria-pressed={viewMode === 'grid'}
+          >
+            <LayoutGrid className="icon-sm" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            size="icon"
+            className="flex-1 rounded-xl"
+            type="button"
+            onClick={() => setViewMode('list')}
+            aria-label={bilingualAria(projectEn('view_list'), projectEl('view_list'))}
+            aria-pressed={viewMode === 'list'}
+          >
+            <List className="icon-sm" />
           </Button>
         </div>
-
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Projects',  value: totalProjects,             icon: Layers,     color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Active / Building', value: buildingCount,           icon: Rocket,     color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
-            { label: 'Open Roles',      value: openRolesCount,            icon: UserPlus,   color: 'text-emerald-500',bg: 'bg-emerald-500/10'},
-            { label: 'Industries',      value: industries.length,         icon: BarChart3,  color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
-          ].map((s) => {
-            const SIcon = s.icon;
-            return (
-              <Card key={s.label} className="border-border/40">
-                <CardContent className="flex items-center gap-3 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg)}>
-                    <SIcon className={cn('h-4 w-4', s.color)} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="grid grid-cols-1 min-w-0 gap-2">
+          {([
+            { href: '/builder?tab=idea-core', title: 'link_idea' },
+            { href: '/milestones', title: 'link_milestones' },
+            { href: '/research', title: 'link_research' },
+            { href: '/fundraising', title: 'link_fundraising' },
+            { href: '/matches', title: 'link_matches' },
+          ] as const).map((step) => (
+            <Button key={step.href} asChild variant="outline" className="h-auto min-h-11 justify-start gap-3 whitespace-normal px-3 py-2.5 text-left">
+              <Link href={step.href}>
+                <span className="min-w-0 flex-1 text-sm font-medium leading-snug">
+                  <BilingualText en={projectEn(step.title)} el={projectEl(step.title)} wrap />
+                </span>
+                <ChevronRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </Button>
+          ))}
         </div>
+      ),
+    },
+  ];
 
-        {/* Tabs */}
-        <Tabs defaultValue="discover" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="discover">Discover</TabsTrigger>
-            <TabsTrigger value="my-projects">My Projects</TabsTrigger>
-            <TabsTrigger value="joined">Joined</TabsTrigger>
-            <TabsTrigger value="starred">Starred</TabsTrigger>
+  const harborLive = projects.some((p) => p.name === 'Harbor' || p.id === '1');
+  const askAi = harborLive
+    ? 'Propose which Harbor project to join or start from Idea Core, the GTM board, the complementary-cofounder role, and the $750K seed (Athens Tech Angels, $375K committed).'
+    : 'Help me pick a project from Builder artefacts and matches.';
+
+  return (
+    <AppShell
+      showHelp
+      rail={rail}
+      askAi={askAi}
+      contentClassName="builder-copy overflow-x-clip"
+      actions={createCta}
+    >
+      <div className="space-y-4">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
+          <TabsList className="rounded-xl">
+            {([
+              { id: 'discover', key: 'tab_discover', count: counts.discover },
+              { id: 'mine', key: 'tab_mine', count: counts.mine },
+              { id: 'joined', key: 'tab_joined', count: counts.joined },
+              { id: 'starred', key: 'tab_starred', count: counts.starred },
+            ] as const).map((item) => (
+              <TabsTrigger key={item.id} value={item.id} className="rounded-xl gap-1.5">
+                <BilingualText en={projectEn(item.key)} el={projectEl(item.key)} compact />
+                <span className="tabular-nums text-2xs text-muted-foreground">{item.count}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="icon-sm absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t(projectEn('search_ph'), projectEl('search_ph'))}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="rounded-xl pl-9"
+                aria-label={bilingualAria(projectEn('search_ph'), projectEl('search_ph'))}
+              />
+              {searchQuery && (
+                <button aria-label="Clear search" type="button" onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="icon-sm" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {STAGE_PILLS.map((pill) => {
+              const isActive = statusFilter === pill.value;
+              const labelKey = PROJECT_STAGE_KEYS[pill.labelKey];
+              return (
+                <button
+                  key={pill.value}
+                  type="button"
+                  onClick={() => setStatusFilter(pill.value)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    isActive
+                      ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                  )}
+                >
+                  <CfbGlyph name={pill.glyph} className="icon-sm" />
+                  {labelKey ? <BilingualText en={projectEn(labelKey)} el={projectEl(labelKey)} compact /> : pill.value}
+                </button>
+              );
+            })}
+          </div>
+
+          {byTab[tab].length > 0 && (
+            <p className="text-2xs text-muted-foreground">
+              {byTab[tab].length === 1
+                ? <BilingualText en={`1 ${projectEn('found_one')}`} el={`1 ${projectEl('found_one')}`} compact />
+                : (
+                  <BilingualText
+                    en={`${byTab[tab].length} ${projectEn('found')}`}
+                    el={`${byTab[tab].length} ${projectEl('found')}`}
+                    compact
+                  />
+                )}
+            </p>
+          )}
+
           <TabsContent value="discover" className="space-y-4">
-            {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, description, industry..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={industryFilter} onValueChange={setIndustryFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Industries</SelectItem>
-                  {industries.map((ind) => (
-                    <SelectItem key={ind} value={ind}>{ind}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex border border-border rounded-lg">
-                <Button
-                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-r-none"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-l-none"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Stage filter pills */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {STAGE_PILLS.map((pill) => {
-                const PIcon = pill.icon;
-                const isActive = statusFilter === pill.value;
-                return (
-                  <button
-                    key={pill.value}
-                    onClick={() => setStatusFilter(pill.value)}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap',
-                      isActive
-                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                        : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
-                    )}
-                  >
-                    <PIcon className="h-3 w-3" />
-                    {pill.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Results count */}
-            {filteredProjects.length > 0 && (
-              <p className="text-xs text-muted-foreground">{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found</p>
-            )}
-
-            {/* Projects Grid/List */}
-            {filteredProjects.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Rocket className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-1">No projects found</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Try adjusting your filters or create a new project
-                  </p>
-                  <Button asChild>
-                    <Link href="/projects/create">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Project
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className={cn(
-                viewMode === 'grid'
-                  ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-                  : 'space-y-3'
-              )}>
-                {filteredProjects.map((project) => (
-                  <ProjectCard key={project.id} project={project} viewMode={viewMode} />
-                ))}
-              </div>
-            )}
+            {renderList(byTab.discover, {
+              glyph: 'briefcase',
+              title: 'empty_discover_title',
+              hint: 'empty_discover_hint',
+              action: createCta,
+            })}
           </TabsContent>
-
-          <TabsContent value="my-projects">
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Briefcase className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-1">No projects yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create your first project to start finding co-founders
-                </p>
-                <Button asChild>
-                  <Link href="/projects/create">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Project
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          <TabsContent value="mine" className="space-y-4">
+            {renderList(byTab.mine, {
+              glyph: 'briefcase',
+              title: 'empty_mine_title',
+              hint: 'empty_mine_hint',
+              action: createCta,
+            })}
           </TabsContent>
-
-          <TabsContent value="joined">
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-1">No joined projects</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Discover projects and join teams that match your skills
-                </p>
-                <Button variant="outline" onClick={() => {}}>
-                  Browse Projects
+          <TabsContent value="joined" className="space-y-4">
+            {renderList(byTab.joined, {
+              glyph: 'people',
+              title: 'empty_joined_title',
+              hint: 'empty_joined_hint',
+              action: (
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => setTab('discover')}>
+                  <BilingualText en={projectEn('browse')} el={projectEl('browse')} compact />
                 </Button>
-              </CardContent>
-            </Card>
+              ),
+            })}
           </TabsContent>
-
-          <TabsContent value="starred">
-            <div className={cn(
-              viewMode === 'grid'
-                ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
-                : 'space-y-3'
-            )}>
-              {MOCK_PROJECTS.filter((p) => p.isStarred).map((project) => (
-                <ProjectCard key={project.id} project={project} viewMode={viewMode} />
-              ))}
-            </div>
+          <TabsContent value="starred" className="space-y-4">
+            {renderList(byTab.starred, {
+              glyph: 'bookmark',
+              title: 'empty_starred_title',
+              hint: 'empty_starred_hint',
+              action: (
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => setTab('discover')}>
+                  <BilingualText en={projectEn('browse')} el={projectEl('browse')} compact />
+                </Button>
+              ),
+            })}
           </TabsContent>
         </Tabs>
       </div>

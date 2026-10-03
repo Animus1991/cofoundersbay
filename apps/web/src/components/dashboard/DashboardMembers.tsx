@@ -34,10 +34,10 @@ export function DashboardMembers({ members = defaultMembers, className }: Dashbo
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="icon-sm text-primary-accessible" />
           Who&apos;s online
         </CardTitle>
-        <Link href="/discover" className="text-xs text-muted-foreground hover:text-primary">View all</Link>
+        <Link href="/discover" className="text-xs text-muted-foreground hover:text-primary-accessible">View all</Link>
       </CardHeader>
       <CardContent>
         <ul className="space-y-2">
@@ -54,7 +54,7 @@ export function DashboardMembers({ members = defaultMembers, className }: Dashbo
                   </Avatar>
                   {m.isOnline !== false && (
                     <span
-                      className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-card"
+                      className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-status-success-mark ring-2 ring-card"
                       aria-label="Online"
                     />
                   )}

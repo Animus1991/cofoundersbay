@@ -25,6 +25,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 type ScheduleCallModalProps = {
   open: boolean;
@@ -95,7 +97,7 @@ export function ScheduleCallModal({
   const [viewYear, setViewYear] = useState(today.getFullYear());
 
   const calendarDays = generateCalendarDays(viewYear, viewMonth);
-  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' });
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -161,7 +163,7 @@ export function ScheduleCallModal({
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={recipientAvatar} />
-              <AvatarFallback className="bg-primary/10 text-primary">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible">
                 {recipientName[0]}
               </AvatarFallback>
             </Avatar>
@@ -181,12 +183,12 @@ export function ScheduleCallModal({
           <div className="space-y-4">
             {/* Calendar Header */}
             <div className="flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={prevMonth}>
-                <ChevronLeft className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={prevMonth} aria-label="Previous month">
+                <ChevronLeft className="icon-sm" />
               </Button>
-              <span className="font-medium">{monthName}</span>
-              <Button variant="ghost" size="icon" onClick={nextMonth}>
-                <ChevronRight className="h-4 w-4" />
+              <span className="font-medium" aria-live="polite">{monthName}</span>
+              <Button variant="ghost" size="icon" onClick={nextMonth} aria-label="Next month">
+                <ChevronRight className="icon-sm" />
               </Button>
             </div>
 
@@ -225,16 +227,16 @@ export function ScheduleCallModal({
             {/* Calendar Integration Notice */}
             <Card className="bg-muted/50">
               <CardContent className="p-3 flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
+                <Calendar className="icon-md text-muted-foreground shrink-0" />
                 <div className="text-sm">
-                  <p className="font-medium text-foreground">Connect your calendar</p>
+                  <p className="font-medium text-foreground"><BilingualText en="Connect your calendar" el="Συνδέστε το ημερολόγιό σας" compact /></p>
                   <p className="text-muted-foreground text-xs">
-                    Sync with Google Calendar or Outlook for automatic availability
+                    <BilingualText en="Sync with Google Calendar or Outlook for automatic availability" el="Συγχρονισμός με Google Calendar ή Outlook για αυτόματη διαθεσιμότητα" wrap />
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                  Connect
+                <Button variant="outline" size="sm" className="shrink-0" disabled title="Calendar sync is not available yet">
+                  <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
+                  <BilingualText en="Connect" el="Σύνδεση" compact />
                 </Button>
               </CardContent>
             </Card>
@@ -244,8 +246,8 @@ export function ScheduleCallModal({
         {step === 'time' && selectedDate && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('date')} className="gap-1 -ml-2">
-              <ChevronLeft className="h-4 w-4" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              <ChevronLeft className="icon-sm" />
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
             </Button>
 
             <div className="grid grid-cols-3 gap-2">
@@ -276,13 +278,13 @@ export function ScheduleCallModal({
         {step === 'details' && selectedDate && selectedTime && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('time')} className="gap-1 -ml-2">
-              <ChevronLeft className="h-4 w-4" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
+              <ChevronLeft className="icon-sm" />
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
             </Button>
 
             {/* Call Type */}
             <div className="space-y-2">
-              <Label>Call Type</Label>
+              <Label><BilingualText en="Call Type" el="Τύπος κλήσης" compact /></Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -292,10 +294,10 @@ export function ScheduleCallModal({
                     callType === 'video' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary' : 'text-muted-foreground')} />
+                  <Video className={cn('icon-md', callType === 'video' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
-                    <p className="font-medium text-sm">Video Call</p>
-                    <p className="text-xs text-muted-foreground">Face-to-face meeting</p>
+                    <p className="font-medium text-sm"><BilingualText en="Video Call" el="Βιντεοκλήση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Face-to-face meeting" el="Συνάντηση πρόσωπο με πρόσωπο" compact /></p>
                   </div>
                 </button>
                 <button
@@ -306,10 +308,10 @@ export function ScheduleCallModal({
                     callType === 'phone' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary' : 'text-muted-foreground')} />
+                  <Phone className={cn('icon-md', callType === 'phone' ? 'text-primary-accessible' : 'text-muted-foreground')} />
                   <div className="text-left">
-                    <p className="font-medium text-sm">Phone Call</p>
-                    <p className="text-xs text-muted-foreground">Audio only</p>
+                    <p className="font-medium text-sm"><BilingualText en="Phone Call" el="Τηλεφωνική κλήση" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Audio only" el="Μόνο ήχος" compact /></p>
                   </div>
                 </button>
               </div>
@@ -317,9 +319,9 @@ export function ScheduleCallModal({
 
             {/* Duration */}
             <div className="space-y-2">
-              <Label>Duration</Label>
+              <Label><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
               <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger>
+                <SelectTrigger aria-label="Duration">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -332,9 +334,9 @@ export function ScheduleCallModal({
 
             {/* Message */}
             <div className="space-y-2">
-              <Label>Message (optional)</Label>
+              <Label><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea
-                placeholder="Add a note about what you'd like to discuss..."
+                placeholder={bilingualInline("Add a note about what you'd like to discuss…", "Προσθέστε σημείωση για το τι θέλετε να συζητήσετε…")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
@@ -344,13 +346,13 @@ export function ScheduleCallModal({
             <Button className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Scheduling...
+                  <Loader2 className="icon-sm mr-2 animate-spin" />
+                  <BilingualText en="Scheduling..." el="Προγραμματισμός…" compact />
                 </>
               ) : (
                 <>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Schedule Call
+                  <Calendar className="icon-sm mr-2" />
+                  <BilingualText en="Schedule Call" el="Προγραμματισμός κλήσης" compact />
                 </>
               )}
             </Button>
@@ -359,23 +361,23 @@ export function ScheduleCallModal({
 
         {step === 'confirm' && selectedDate && selectedTime && (
           <div className="text-center py-6 space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 mx-auto">
-              <Check className="h-8 w-8 text-emerald-500" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-status-success-bg mx-auto">
+              <Check className="icon-xl text-status-success" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>
+              <h3 className="text-lg font-semibold text-foreground"><BilingualText en="Call Scheduled!" el="Η κλήση προγραμματίστηκε!" compact /></h3>
               <p className="text-muted-foreground mt-1">
-                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
+                {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
               </p>
             </div>
             <Card className="bg-muted/50">
               <CardContent className="p-4 text-left space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  {callType === 'video' ? <Video className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
+                  {callType === 'video' ? <Video className="icon-sm" /> : <Phone className="icon-sm" />}
                   <span>{callType === 'video' ? 'Video Call' : 'Phone Call'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="icon-sm" />
                   <span>{DURATIONS.find((d) => d.value === duration)?.label}</span>
                 </div>
               </CardContent>
@@ -385,10 +387,37 @@ export function ScheduleCallModal({
             </p>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={resetAndClose}>
-                Done
+                <BilingualText en="Done" el="Τέλος" compact />
               </Button>
-              <Button className="flex-1">
-                Add to Calendar
+              {/* Had no handler: a .ics of the call just scheduled. */}
+              <Button
+                className="flex-1"
+                disabled={!selectedDate || !selectedTime}
+                onClick={() => {
+                  if (!selectedDate || !selectedTime) return;
+                  const [h, m] = selectedTime.replace(/\s?(AM|PM)$/i, '').split(':').map(Number);
+                  const pm = /PM$/i.test(selectedTime) && h < 12;
+                  const am12 = /AM$/i.test(selectedTime) && h === 12;
+                  const start = new Date(selectedDate);
+                  start.setHours((pm ? h + 12 : am12 ? 0 : h) || 0, m || 0, 0, 0);
+                  const end = new Date(start.getTime() + Number(duration) * 60_000);
+                  const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+                  const ics = [
+                    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//CoFounderBay//Calls//EN', 'BEGIN:VEVENT',
+                    `UID:${stamp(start)}-${recipientId}@cofounderbay`, `DTSTAMP:${stamp(new Date())}`,
+                    `DTSTART:${stamp(start)}`, `DTEND:${stamp(end)}`,
+                    `SUMMARY:Call with ${recipientName.replace(/[,;\\]/g, ' ')}`,
+                    'END:VEVENT', 'END:VCALENDAR',
+                  ].join('\r\n');
+                  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'call.ics';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <BilingualText en="Add to Calendar" el="Προσθήκη στο ημερολόγιο" compact />
               </Button>
             </div>
           </div>

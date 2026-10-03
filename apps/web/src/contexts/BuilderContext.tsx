@@ -370,7 +370,11 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
   const selectDocument = useCallback(async (documentId: string) => {
     try {
       const document = await builderApi.getDocument(documentId);
-      setState((prev) => ({ ...prev, activeDocument: document }));
+      setState((prev) => ({
+        ...prev,
+        activeDocument: document,
+        documents: prev.documents.map((d) => (d.id === documentId ? { ...d, ...document } : d)),
+      }));
     } catch (err) {
       setState((prev) => ({
         ...prev,
@@ -399,11 +403,31 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
     try {
       await builderApi.updateDocumentSection(documentId, sectionKey, { content });
       setState((prev) => {
-        if (prev.activeDocument?.id !== documentId) return prev;
-        const updatedContent = { ...prev.activeDocument.content, [sectionKey]: content };
+        const mergeContent = (existing?: Record<string, any>) => ({
+          ...(existing ?? {}),
+          [sectionKey]: content,
+        });
         return {
           ...prev,
-          activeDocument: { ...prev.activeDocument, content: updatedContent },
+          documents: prev.documents.map((d) =>
+            d.id === documentId
+              ? {
+                  ...d,
+                  content: mergeContent(d.content),
+                  version: (typeof d.version === 'number' ? d.version : 0) + 1,
+                  updatedAt: new Date().toISOString(),
+                }
+              : d,
+          ),
+          activeDocument:
+            prev.activeDocument?.id === documentId
+              ? {
+                  ...prev.activeDocument,
+                  content: mergeContent(prev.activeDocument.content),
+                  version: (typeof prev.activeDocument.version === 'number' ? prev.activeDocument.version : 0) + 1,
+                  updatedAt: new Date().toISOString(),
+                }
+              : prev.activeDocument,
         };
       });
       // Broadcast to collaborators
@@ -413,6 +437,7 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
         ...prev,
         error: err instanceof Error ? err.message : 'Failed to update section',
       }));
+      throw err;
     }
   }, [socket]);
 

@@ -3,7 +3,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/toast';
 import { analytics } from '@/lib/analytics';
-import Daily from '@daily-co/daily-js';
+import Daily, {
+  type DailyEventObjectFatalError,
+  type DailyEventObjectParticipant,
+  type DailyEventObjectParticipantLeft,
+  type DailyParticipant,
+} from '@daily-co/daily-js';
 
 type CallState = 'idle' | 'joining' | 'joined' | 'leaving' | 'error';
 
@@ -84,7 +89,7 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
       setCallStartTime(null);
     };
 
-    const handleError = (error: any) => {
+    const handleError = (error?: DailyEventObjectFatalError) => {
       const message = error?.errorMsg || 'Failed to join call';
       setError(message);
       setState('error');
@@ -93,41 +98,36 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
       void analytics.track('video_call_error', { room_id: roomUrl || 'unknown', error: message });
     };
 
-    const handleParticipantJoined = (event: any) => {
-      if (event?.participants) {
-        const newParticipants = Object.values(event.participants).map((p: any) => ({
-          id: p.user_id || p.session_id || 'unknown',
-          userName: p.user_name || p.owner_name || 'Unknown',
-          audio: p.audio || false,
-          video: p.video || false,
-        }));
-        setParticipants(prev => [...prev, ...newParticipants]);
-      }
+    const toParticipant = (p: DailyParticipant) => ({
+      id: p.user_id || p.session_id || 'unknown',
+      userName: p.user_name || 'Unknown',
+      audio: p.audio || false,
+      video: p.video || false,
+    });
+
+    const handleParticipantJoined = (event?: DailyEventObjectParticipant) => {
+      if (!event?.participant) return;
+      setParticipants((prev) => [...prev, toParticipant(event.participant)]);
     };
 
-    const handleParticipantLeft = (event: any) => {
-      if (event?.participants) {
-        const leftIds = Object.keys(event.participants);
-        setParticipants(prev => prev.filter(p => !leftIds.includes(p.id)));
-      }
+    const handleParticipantLeft = (event?: DailyEventObjectParticipantLeft) => {
+      const left = event?.participant;
+      if (!left) return;
+      const leftId = left.user_id || left.session_id;
+      setParticipants((prev) => prev.filter((p) => p.id !== leftId));
     };
 
-    const handleParticipantUpdated = (event: any) => {
-      if (event?.participants) {
-        setParticipants(prev => 
-          prev.map(p => {
-            const updated = event.participants[p.id];
-            if (updated) {
-              return {
-                ...p,
-                audio: updated.audio || false,
-                video: updated.video || false,
-              };
-            }
-            return p;
-          })
-        );
-      }
+    const handleParticipantUpdated = (event?: DailyEventObjectParticipant) => {
+      const updated = event?.participant;
+      if (!updated) return;
+      const updatedId = updated.user_id || updated.session_id;
+      setParticipants((prev) =>
+        prev.map((p) =>
+          p.id === updatedId
+            ? { ...p, audio: updated.audio || false, video: updated.video || false }
+            : p,
+        ),
+      );
     };
 
     // Register event listeners

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +38,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   listBranches,
   createBranch,
@@ -44,15 +46,17 @@ import {
   createProposal,
   type ArtifactBranch,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Branch Status helpers ──────────────────────────────────────────────────
 
 function branchStatusMeta(status: string) {
   switch (status) {
-    case 'open':        return { label: 'Open',      color: 'bg-blue-100 text-blue-700 border-blue-200',    icon: GitBranch };
-    case 'review':      return { label: 'In Review', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock };
-    case 'merged':      return { label: 'Merged',    color: 'bg-green-100 text-green-700 border-green-200',  icon: CheckCircle2 };
-    case 'closed':      return { label: 'Closed',    color: 'bg-gray-100 text-gray-600 border-gray-200',     icon: XCircle };
+    case 'open':        return { label: 'Open',      color: 'bg-status-info-bg text-status-info border-status-info-border',    icon: GitBranch };
+    case 'review':      return { label: 'In Review', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock };
+    case 'merged':      return { label: 'Merged',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 };
+    case 'closed':      return { label: 'Closed',    color: 'bg-muted text-muted-foreground border-border',     icon: XCircle };
     default:            return { label: status,      color: 'bg-muted text-muted-foreground border-border',   icon: GitBranch };
   }
 }
@@ -109,14 +113,14 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Draft Variant</DialogTitle>
+          <DialogTitle><BilingualText en="New Draft Variant" el="Νέα πρόχειρη εκδοχή" compact /></DialogTitle>
           <DialogDescription>
-            Create an isolated copy of this document to experiment with changes before proposing them.
+            <BilingualText en="Create an isolated copy of this document to experiment with changes before proposing them." el="Δημιουργήστε ανεξάρτητο αντίγραφο του εγγράφου για να δοκιμάσετε αλλαγές πριν τις προτείνετε." wrap />
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Name</Label>
+            <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
             <Input
               placeholder="e.g. revised-financials, investor-v2..."
               value={name}
@@ -125,22 +129,22 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Description (optional)</Label>
+            <Label><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
             <Textarea
-              placeholder="What changes are you exploring in this variant?"
+              placeholder={bilingualInline("What changes are you exploring in this variant?", "Ποιες αλλαγές δοκιμάζετε σε αυτή την εκδοχή;")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Branching from <strong>v{currentVersion}</strong> of the main document.
+            <BilingualText en={`Branching from v${currentVersion} of the main document.`} el={`Διακλάδωση από την έκδοση v${currentVersion} του κύριου εγγράφου.`} wrap />
           </p>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleCreate} disabled={loading || !name.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Create Variant
           </Button>
         </DialogFooter>
@@ -187,20 +191,20 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Submit Change Proposal</DialogTitle>
+          <DialogTitle><BilingualText en="Submit Change Proposal" el="Υποβολή πρότασης αλλαγής" compact /></DialogTitle>
           <DialogDescription>
             Propose the changes from &ldquo;{branch.name}&rdquo; to be merged into the main document.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Proposal title</Label>
+            <Label><BilingualText en="Proposal title" el="Τίτλος πρότασης" compact /></Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label>Description</Label>
+            <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
             <Textarea
-              placeholder="Summarise the changes you've made and why..."
+              placeholder={bilingualInline("Summarise the changes you've made and why…", "Συνοψίστε τις αλλαγές σας και τον λόγο…")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -208,9 +212,9 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Submit Proposal
           </Button>
         </DialogFooter>
@@ -245,7 +249,7 @@ export function BranchPanel({
   const [proposalBranch, setProposalBranch] = useState<ArtifactBranch | null>(null);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['branches', documentId],
+    queryKey: qk('builder', 'branches', documentId),
     queryFn: () => listBranches(documentId),
     enabled: open && !!documentId,
   });
@@ -257,7 +261,7 @@ export function BranchPanel({
     try {
       await closeBranch(branchId);
       success('Draft variant closed');
-      queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
+      queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) });
     } catch {
       toastError('Failed to close variant');
     }
@@ -272,8 +276,8 @@ export function BranchPanel({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-primary" />
-              Draft Variants
+              <GitBranch className="icon-sm text-primary-accessible" />
+              <BilingualText en="Draft Variants" el="Πρόχειρες εκδοχές" compact />
             </SheetTitle>
             <SheetDescription>
               Isolated copies of &ldquo;{documentTitle ?? 'this document'}&rdquo; for safe experimentation.
@@ -283,7 +287,7 @@ export function BranchPanel({
           <div className="flex-1 overflow-y-auto mt-4 space-y-4">
             {/* Main branch indicator */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
-              <GitBranch className="h-3.5 w-3.5 text-primary" />
+              <GitBranch className="icon-sm text-primary-accessible" />
               <span className="text-sm font-medium">main</span>
               <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>
             </div>
@@ -304,16 +308,16 @@ export function BranchPanel({
                   return (
                     <div
                       key={branch.id}
-                      className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors"
+                      className="p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <GitBranch className="icon-sm text-muted-foreground shrink-0" />
                             <span className="text-sm font-medium truncate">{branch.name}</span>
                           </div>
                           {branch.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
+                            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
                           )}
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline" className={cn('text-xs', meta.color)}>
@@ -324,7 +328,7 @@ export function BranchPanel({
                               base v{branch.baseVersionNum}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {timeAgo(branch.createdAt)}
+                              <RelativeTime date={branch.createdAt} format={timeAgo} />
                             </span>
                           </div>
                         </div>
@@ -332,24 +336,24 @@ export function BranchPanel({
                         {!readonly && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
-                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              <Button aria-label="Branch actions" variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
+                                <MoreHorizontal className="icon-sm" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               {branch.status === 'open' && (
                                 <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
-                                  <GitPullRequest className="h-3.5 w-3.5 mr-2" />
-                                  Submit Proposal
+                                  <GitPullRequest className="icon-sm mr-2" />
+                                  <BilingualText en="Submit Proposal" el="Υποβολή πρότασης" compact />
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive"
+                                className="text-destructive-accessible"
                                 onClick={() => handleClose(branch.id)}
                               >
-                                <XCircle className="h-3.5 w-3.5 mr-2" />
-                                Close Variant
+                                <XCircle className="icon-sm mr-2" />
+                                <BilingualText en="Close Variant" el="Κλείσιμο εκδοχής" compact />
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -363,8 +367,8 @@ export function BranchPanel({
                           className="mt-3 w-full text-xs h-7"
                           onClick={() => setProposalBranch(branch)}
                         >
-                          <GitPullRequest className="h-3 w-3 mr-1.5" />
-                          Submit as Change Proposal
+                          <GitPullRequest className="icon-sm mr-1.5" />
+                          <BilingualText en="Submit as Change Proposal" el="Υποβολή ως πρόταση αλλαγής" compact />
                         </Button>
                       )}
                     </div>
@@ -373,9 +377,9 @@ export function BranchPanel({
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No active variants</p>
-                <p className="text-xs mt-1">Create a variant to experiment without affecting the main document.</p>
+                <GitBranch className="icon-xl mx-auto mb-2 opacity-30" />
+                <p className="text-sm"><BilingualText en="No active variants" el="Δεν υπάρχουν ενεργές εκδοχές" compact /></p>
+                <p className="text-xs mt-1"><BilingualText en="Create a variant to experiment without affecting the main document." el="Δημιουργήστε εκδοχή για πειραματισμό χωρίς να αλλάξει το κύριο έγγραφο." wrap /></p>
               </div>
             )}
 
@@ -389,9 +393,9 @@ export function BranchPanel({
                   const meta = branchStatusMeta(branch.status);
                   const StatusIcon = meta.icon;
                   return (
-                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border/40 bg-muted/20">
+                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border bg-muted/20">
                       <div className="flex items-center gap-2">
-                        <GitBranch className="h-3 w-3 text-muted-foreground/50" />
+                        <GitBranch className="icon-sm text-muted-foreground/50" />
                         <span className="text-xs text-muted-foreground truncate flex-1">{branch.name}</span>
                         <Badge variant="outline" className={cn('text-xs', meta.color)}>
                           <StatusIcon className="h-2.5 w-2.5 mr-1" />
@@ -412,8 +416,8 @@ export function BranchPanel({
                 className="w-full"
                 onClick={() => setShowCreateDialog(true)}
               >
-                <Plus className="h-3.5 w-3.5 mr-2" />
-                New Draft Variant
+                <Plus className="icon-sm mr-2" />
+                <BilingualText en="New Draft Variant" el="Νέα πρόχειρη εκδοχή" compact />
               </Button>
             </div>
           )}
@@ -425,7 +429,7 @@ export function BranchPanel({
         onClose={() => setShowCreateDialog(false)}
         documentId={documentId}
         currentVersion={currentDocVersion}
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['branches', documentId] })}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) })}
       />
 
       {proposalBranch && (
@@ -434,8 +438,8 @@ export function BranchPanel({
           onClose={() => setProposalBranch(null)}
           branch={proposalBranch}
           onSubmitted={() => {
-            queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
-            queryClient.invalidateQueries({ queryKey: ['proposals', documentId] });
+            queryClient.invalidateQueries({ queryKey: qk('builder', 'branches', documentId) });
+            queryClient.invalidateQueries({ queryKey: qk('builder', 'proposals', documentId) });
           }}
         />
       )}

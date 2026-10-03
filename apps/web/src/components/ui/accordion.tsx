@@ -67,6 +67,8 @@ export function Accordion({
 type AccordionItemContextValue = {
   value: string;
   isOpen: boolean;
+  triggerId: string;
+  panelId: string;
 };
 
 const AccordionItemContext = React.createContext<AccordionItemContextValue | undefined>(undefined);
@@ -88,9 +90,10 @@ type AccordionItemProps = {
 export function AccordionItem({ value, children, className }: AccordionItemProps) {
   const { value: openValues } = useAccordion();
   const isOpen = openValues.includes(value);
+  const id = React.useId();
 
   return (
-    <AccordionItemContext.Provider value={{ value, isOpen }}>
+    <AccordionItemContext.Provider value={{ value, isOpen, triggerId: `${id}-trigger`, panelId: `${id}-panel` }}>
       <div className={cn('py-2', className)}>{children}</div>
     </AccordionItemContext.Provider>
   );
@@ -103,7 +106,7 @@ type AccordionTriggerProps = {
 
 export function AccordionTrigger({ children, className }: AccordionTriggerProps) {
   const { value: openValues, onValueChange, type } = useAccordion();
-  const { value, isOpen } = useAccordionItem();
+  const { value, isOpen, triggerId, panelId } = useAccordionItem();
 
   const handleClick = () => {
     if (type === 'single') {
@@ -120,15 +123,18 @@ export function AccordionTrigger({ children, className }: AccordionTriggerProps)
   return (
     <button
       type="button"
+      id={triggerId}
+      aria-expanded={isOpen}
+      aria-controls={panelId}
       onClick={handleClick}
       className={cn(
-        'flex w-full items-center justify-between py-2 font-medium text-foreground transition-all hover:text-primary [&[data-state=open]>svg]:rotate-180',
+        'flex min-h-11 w-full items-center justify-between gap-2 rounded-md py-2 text-left font-medium text-foreground transition-colors hover:text-primary-accessible focus-ring [&[data-state=open]>svg]:rotate-180',
         className
       )}
       data-state={isOpen ? 'open' : 'closed'}
     >
       {children}
-      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200" />
+      <ChevronDown className="icon-sm shrink-0 text-muted-foreground transition-transform duration-200" />
     </button>
   );
 }
@@ -139,13 +145,17 @@ type AccordionContentProps = {
 };
 
 export function AccordionContent({ children, className }: AccordionContentProps) {
-  const { isOpen } = useAccordionItem();
+  const { isOpen, triggerId, panelId } = useAccordionItem();
 
   return (
     <div
+      id={panelId}
+      role="region"
+      aria-labelledby={triggerId}
+      hidden={!isOpen}
       className={cn(
-        'overflow-hidden transition-all duration-200',
-        isOpen ? 'animate-accordion-down' : 'animate-accordion-up hidden'
+        'overflow-hidden',
+        isOpen ? 'animate-accordion-down motion-reduce:animate-none' : 'hidden'
       )}
     >
       <div className={cn('pb-4 pt-2', className)}>{children}</div>

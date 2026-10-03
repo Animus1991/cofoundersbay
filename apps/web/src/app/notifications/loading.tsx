@@ -9,7 +9,7 @@ export default function NotificationsLoading() {
           <Skeleton className="h-8 w-24 rounded-lg" />
         </div>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-4">
+          <div key={i} className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
             <Skeleton className="h-9 w-9 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-3/4" />

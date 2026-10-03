@@ -9,48 +9,76 @@ import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualInline } from '@/lib/i18n/format';
+
+/**
+ * Password strength presentation. Colour comes from the semantic status tokens,
+ * which already carry theme-tuned light/dark values — the previous hardcoded
+ * `text-status-danger dark:text-status-danger` pairs had to restate every theme by hand and
+ * ignored tenant branding entirely.
+ */
+const PASSWORD_STRENGTH = {
+  weak: { filled: 1, bar: 'bg-status-danger-mark', text: 'text-status-danger', en: 'Weak', el: 'Αδύναμος' },
+  medium: { filled: 2, bar: 'bg-status-warning-mark', text: 'text-status-warning', en: 'Medium', el: 'Μέτριος' },
+  strong: { filled: 3, bar: 'bg-status-success-mark', text: 'text-status-success', en: 'Strong', el: 'Ισχυρός' },
+} as const;
 
 const ROLES = [
   {
     value: 'founder',
     label: 'Founder',
+    labelEl: 'Ιδρυτής',
     description: 'Build and lead startups',
+    descriptionEl: 'Χτίστε και οδηγήστε startups',
     badge: 'F',
   },
   {
     value: 'mentor',
     label: 'Mentor',
+    labelEl: 'Μέντορας',
     description: 'Coach and guide teams',
+    descriptionEl: 'Καθοδηγήστε ομάδες',
     badge: 'M',
   },
   {
     value: 'investor',
     label: 'Investor',
+    labelEl: 'Επενδυτής',
     description: 'Back early-stage teams',
+    descriptionEl: 'Στηρίξτε ομάδες πρώιμου σταδίου',
     badge: 'I',
   },
   {
     value: 'org',
     label: 'Organization',
+    labelEl: 'Οργανισμός',
     description: 'Represent a company',
+    descriptionEl: 'Εκπροσωπήστε έναν οργανισμό',
     badge: 'O',
   },
 ] as const;
 
+// What joining gives you, not member counts: the platform publishes none, so
+// "10K+ members" and "80+ countries" were invented figures.
 const HERO_STATS = [
-  { value: '10K+',  label: 'Active members', accent: 'from-amber-200/50 to-white/0' },
-  { value: '3.2K+', label: 'Startups formed', accent: 'from-emerald-200/50 to-white/0' },
-  { value: '80+',   label: 'Countries', accent: 'from-sky-200/50 to-white/0' },
+  { value: '4', label: 'Ways to join', labelEl: 'Τρόποι συμμετοχής', accent: 'from-status-warning-bg to-white/0' },
+  { value: '2', label: 'Languages, EN and EL', labelEl: 'Γλώσσες, EN και EL', accent: 'from-status-success-bg to-white/0' },
+  { value: '1', label: 'Profile for every match', labelEl: 'Προφίλ για κάθε αντιστοίχιση', accent: 'from-status-info-bg to-white/0' },
 ];
+
+type Message = { en: string; el?: string };
 
 export default function RegisterPage() {
   const router = useRouter();
   const { activeTenant, branding } = useTenant();
+  const { primary } = useLanguagePreference();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>('founder');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<Message | null>(null);
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
 
@@ -62,9 +90,9 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submittingRef.current) return;
-    setError('');
-    if (!email.trim()) { setError('Please enter your email.'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    setError(null);
+    if (!email.trim()) { setError({ en: 'Please enter your email.', el: 'Συμπληρώστε το email σας.' }); return; }
+    if (password.length < 8) { setError({ en: 'Password must be at least 8 characters.', el: 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.' }); return; }
     submittingRef.current = true;
     setLoading(true);
     try {
@@ -82,11 +110,11 @@ export default function RegisterPage() {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Registration failed';
       if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
-        setError('Cannot reach server — check your connection or try again.');
+        setError({ en: 'Cannot reach server — check your connection or try again.', el: 'Δεν υπάρχει σύνδεση με τον διακομιστή — ελέγξτε τη σύνδεσή σας ή δοκιμάστε ξανά.' });
       } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exists') || msg.toLowerCase().includes('conflict')) {
-        setError('An account with this email already exists. Try signing in.');
+        setError({ en: 'An account with this email already exists. Try signing in.', el: 'Υπάρχει ήδη λογαριασμός με αυτό το email. Δοκιμάστε να συνδεθείτε.' });
       } else {
-        setError(msg);
+        setError({ en: msg });
       }
     } finally {
       setLoading(false);
@@ -101,21 +129,39 @@ export default function RegisterPage() {
         <div className="relative z-10 max-w-md text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
             {activeTenant?.logoUrl
-              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" />
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <LogoIcon size={72} />}
           </div>
-          <h2 className="font-display text-3xl font-bold text-white">
-            {branding?.heroTitle || (activeTenant ? `Join ${activeTenant.displayName ?? activeTenant.name}` : 'Start your journey')}
+          <h2 className="font-display text-3xl font-semibold text-white">
+            {branding?.heroTitle || (activeTenant ? (
+              <BilingualText
+                en={`Join ${activeTenant.displayName ?? activeTenant.name}`}
+                el={`Γίνετε μέλος του ${activeTenant.displayName ?? activeTenant.name}`}
+                wrap
+                stacked
+                secondaryClassName="text-white/70"
+              />
+            ) : (
+              <BilingualText en="Start your journey" el="Ξεκινήστε το ταξίδι σας" wrap stacked secondaryClassName="text-white/70" />
+            ))}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">
-            {branding?.heroSubtitle || (activeTenant?.shortDescription ?? 'Create your signal-rich profile and get matched with the right founders, mentors, and investors.')}
+            {branding?.heroSubtitle || (activeTenant?.shortDescription ?? (
+              <BilingualText
+                en="Create a detailed profile and get matched with the right founders, mentors, and investors."
+                el="Φτιάξτε ένα αναλυτικό προφίλ και βρείτε τους κατάλληλους ιδρυτές, μέντορες και επενδυτές."
+                wrap
+                stacked
+                secondaryClassName="text-white/60"
+              />
+            ))}
           </p>
           <div className="mt-10 grid grid-cols-3 gap-3">
-            {HERO_STATS.map(({ value, label, accent }) => (
+            {HERO_STATS.map(({ value, label, labelEl, accent }) => (
               <div key={label} className="rounded-xl border border-white/10 bg-white/8 px-3 py-4 text-center backdrop-blur-sm">
                 <div className={`mx-auto mb-2 h-2.5 w-10 rounded-full bg-gradient-to-r ${accent}`} />
                 <p className="font-display text-xl font-bold text-white">{value}</p>
-                <p className="text-xs text-white/55">{label}</p>
+                <p className="text-xs text-white/65"><BilingualText en={label} el={labelEl} wrap stacked secondaryClassName="text-white/55" /></p>
               </div>
             ))}
           </div>
@@ -127,22 +173,30 @@ export default function RegisterPage() {
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             {activeTenant?.logoUrl
-              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" />
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <Logo size="sm" />}
           </Link>
 
-          <h1 className="font-display text-3xl font-bold text-foreground">Create your account</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+            <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
+          </h1>
           <p className="mt-2 text-muted-foreground">
-            {activeTenant
-              ? `Join ${activeTenant.displayName ?? activeTenant.name} in under 2 minutes.`
-              : 'Join the startup ecosystem in under 2 minutes.'}
+            {activeTenant ? (
+              <BilingualText
+                en={`Join ${activeTenant.displayName ?? activeTenant.name} in under 2 minutes.`}
+                el={`Γίνετε μέλος του ${activeTenant.displayName ?? activeTenant.name} σε λιγότερο από 2 λεπτά.`}
+                wrap
+              />
+            ) : (
+              <BilingualText en="Join the startup ecosystem in under 2 minutes." el="Μπείτε στο οικοσύστημα των startups σε λιγότερο από 2 λεπτά." wrap />
+            )}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
-                <span>{error}</span>
+                <span>{error.el ? <BilingualText en={error.en} el={error.el} wrap /> : error.en}</span>
               </div>
             )}
 
@@ -160,7 +214,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="reg-password" className="text-sm font-medium">Password</label>
+              <label htmlFor="reg-password" className="text-sm font-medium"><BilingualText en="Password" el="Κωδικός" compact /></label>
               <div className="relative">
                 <Input
                   id="reg-password"
@@ -170,42 +224,53 @@ export default function RegisterPage() {
                   required
                   minLength={8}
                   autoComplete="new-password"
-                  placeholder="Min 8 characters"
-                  className="pr-16"
+                  placeholder={bilingualInline('Min 8 characters', 'Τουλάχιστον 8 χαρακτήρες')}
+                  className="pr-24"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
+                  className="absolute right-0 top-1/2 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center px-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Hide password. Απόκρυψη κωδικού' : 'Show password. Εμφάνιση κωδικού'}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {/* One language only: the slot sits inside the input. */}
+                  {showPassword ? (primary === 'el' ? 'Απόκρυψη' : 'Hide') : (primary === 'el' ? 'Εμφάνιση' : 'Show')}
                 </button>
               </div>
-              {passwordStrength && (
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1 flex-1">
-                    {(['weak', 'medium', 'strong'] as const).map((level, i) => (
-                      <div key={level} className={`h-1 flex-1 rounded-full transition-colors ${
-                        passwordStrength === 'weak' && i === 0 ? 'bg-red-500'
-                        : passwordStrength === 'medium' && i <= 1 ? 'bg-amber-500'
-                        : passwordStrength === 'strong' ? 'bg-emerald-500'
-                        : 'bg-border'
-                      }`} />
-                    ))}
+              {/* The live region is always mounted so the strength change is announced;
+                  a region that appears at the same moment its text does is missed by
+                  most screen readers. The bars repeat the label, so they stay hidden. */}
+              <div className="min-h-5" role="status" aria-live="polite">
+                {passwordStrength && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-1 gap-1" aria-hidden="true">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className={`h-1 flex-1 rounded-full transition-colors ${
+                            i < PASSWORD_STRENGTH[passwordStrength].filled
+                              ? PASSWORD_STRENGTH[passwordStrength].bar
+                              : 'bg-border'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-xs font-medium ${PASSWORD_STRENGTH[passwordStrength].text}`}>
+                      <span className="sr-only">Password strength: / Ισχύς κωδικού: </span>
+                      <BilingualText
+                        en={PASSWORD_STRENGTH[passwordStrength].en}
+                        el={PASSWORD_STRENGTH[passwordStrength].el}
+                        compact
+                      />
+                    </span>
                   </div>
-                  <span className={`text-xs font-medium ${
-                    passwordStrength === 'weak' ? 'text-red-600 dark:text-red-400'
-                    : passwordStrength === 'medium' ? 'text-amber-700 dark:text-amber-400'
-                    : 'text-emerald-600 dark:text-emerald-400'
-                  }`}>{passwordStrength}</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">I am a&hellip;</label>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-sm font-medium" id="role-label"><BilingualText en="I am a…" el="Είμαι…" compact /></p>
+              <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="role-label">
                 {ROLES.map((r) => {
                   const active = role === r.value;
                   return (
@@ -213,22 +278,25 @@ export default function RegisterPage() {
                       key={r.value}
                       type="button"
                       onClick={() => setRole(r.value)}
-                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all ${
+                      aria-pressed={active}
+                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
-                          ? 'border-primary/60 bg-primary/10 text-primary'
-                          : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+                          ? 'border-primary/60 bg-primary/10 text-primary-accessible'
+                          : 'border-border bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
                       <span
-                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                          active ? 'bg-primary/15 text-primary' : 'bg-background text-muted-foreground'
+                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold ${
+                          active ? 'bg-primary/15 text-primary-accessible' : 'bg-background text-muted-foreground'
                         }`}
                       >
                         {r.badge}
                       </span>
-                      <div>
-                        <p className="font-medium leading-tight">{r.label}</p>
-                        <p className="text-xs text-muted-foreground leading-tight mt-0.5">{r.description}</p>
+                      {/* Stacked: a 2-column grid of cards is too narrow for
+                          "Organization · Οργανισμός" on one line. */}
+                      <div className="min-w-0">
+                        <p className="font-medium"><BilingualText en={r.label} el={r.labelEl} stacked wrap keepSecondaryOnMobile /></p>
+                        <p className="text-xs text-muted-foreground mt-1"><BilingualText en={r.description} el={r.descriptionEl} stacked wrap /></p>
                       </div>
                     </button>
                   );
@@ -236,8 +304,8 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
-              {loading ? 'Creating account…' : 'Create account'}
+            <Button type="submit" loading={loading} className="w-full" size="lg">
+              {loading ? <BilingualText en="Creating account…" el="Δημιουργία λογαριασμού…" compact /> : <BilingualText en="Create account" el="Δημιουργία λογαριασμού" compact />}
             </Button>
 
             <OAuthDivider />
@@ -245,9 +313,9 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:underline">
-              Sign in
+            <BilingualText en="Already have an account?" el="Έχετε ήδη λογαριασμό;" compact />{' '}
+            <Link href="/login" className="font-medium text-primary-accessible hover:underline">
+              <BilingualText en="Sign in" el="Σύνδεση" compact />
             </Link>
           </p>
         </div>

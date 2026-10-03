@@ -27,18 +27,22 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   listDocumentVersions,
   restoreDocumentVersion,
   type BuilderDocumentVersion,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function fmtDate(iso: string): string {
+function fmtDate(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) +
-    ' · ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString(locale, { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString(locale, { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' });
 }
 
 function VersionCard({
@@ -58,15 +62,15 @@ function VersionCard({
         'flex items-start gap-3 p-3 rounded-lg border transition-colors group',
         current
           ? 'border-primary/30 bg-primary/5'
-          : 'border-border/60 hover:border-border hover:bg-muted/40',
+          : 'border-border hover:border-border hover:bg-muted/40',
       )}
     >
       {/* Version icon */}
       <div className={cn(
         'mt-0.5 p-1.5 rounded-md shrink-0',
-        current ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+        current ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
       )}>
-        <GitCommitHorizontal className="h-3.5 w-3.5" />
+        <GitCommitHorizontal className="icon-sm" />
       </div>
 
       {/* Content */}
@@ -76,35 +80,35 @@ function VersionCard({
             {v.versionLabel ?? `v${v.version}`}
           </span>
           {current && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary">
-              Current
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-accessible">
+              <BilingualText en="Current" el="Τρέχουσα" compact />
             </Badge>
           )}
         </div>
 
         {v.changesSummary && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{v.changesSummary}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{v.changesSummary}</p>
         )}
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {fmtDate(v.createdAt)}
+            <Clock className="icon-sm" />
+            <BilingualText en={fmtDate(v.createdAt, 'en-GB')} el={fmtDate(v.createdAt, 'el-GR')} compact />
           </span>
           {v.changedBy ? (
             <span className="flex items-center gap-1">
               <Avatar className="h-3.5 w-3.5">
-                <AvatarImage src={v.changedBy.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-[8px]">
-                  {(v.changedBy.displayName ?? 'U').charAt(0)}
+                <AvatarImage src={v.changedBy?.avatarUrl ?? undefined} />
+                <AvatarFallback className="text-2xs">
+                  {(v.changedBy?.displayName ?? 'U').charAt(0)}
                 </AvatarFallback>
               </Avatar>
               {v.changedBy.displayName}
             </span>
           ) : (
             <span className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              System
+              <User className="icon-sm" />
+              <BilingualText en="System" el="Σύστημα" compact />
             </span>
           )}
         </div>
@@ -115,12 +119,13 @@ function VersionCard({
         <Button
           size="sm"
           variant="ghost"
-          className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2 shrink-0 text-xs"
+          className="h-7 px-2 shrink-0 text-xs"
           onClick={() => onRestore(v)}
           disabled={restoring}
+          aria-label={bilingualAria(builderEn('hist_restore'), builderEl('hist_restore'))}
         >
-          {restoring ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3 mr-1" />}
-          Restore
+          {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
+          <BilingualText en={builderEn('hist_restore')} el={builderEl('hist_restore')} compact />
         </Button>
       )}
     </div>
@@ -151,7 +156,7 @@ export function VersionHistoryDrawer({
   const [confirmVersion, setConfirmVersion] = useState<BuilderDocumentVersion | null>(null);
 
   const { data: versions = [], isLoading, error } = useQuery({
-    queryKey: ['documentVersions', documentId],
+    queryKey: qk('builder', 'document-versions', documentId),
     queryFn: () => listDocumentVersions(documentId),
     enabled: open && !!documentId,
     staleTime: 10_000,
@@ -160,10 +165,10 @@ export function VersionHistoryDrawer({
   const restoreMutation = useMutation({
     mutationFn: (v: BuilderDocumentVersion) =>
       restoreDocumentVersion({ documentId, targetVersion: v.version }),
-    onSuccess: (result) => {
-      success(`Restored to v${result.restoredFromVersion} — now at v${result.newVersion}`);
-      queryClient.invalidateQueries({ queryKey: ['documentVersions', documentId] });
-      queryClient.invalidateQueries({ queryKey: ['builder'] });
+    onSuccess: () => {
+      success('Version restored');
+      queryClient.invalidateQueries({ queryKey: qk('builder', 'document-versions', documentId) });
+      queryClient.invalidateQueries({ queryKey: qk('builder') });
       setConfirmVersion(null);
       onRestored?.();
     },
@@ -184,8 +189,8 @@ export function VersionHistoryDrawer({
         <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle className="flex items-center gap-2">
-              <History className="h-4 w-4" />
-              Version History
+              <History className="icon-sm" />
+              <BilingualText en="Version History" el="Ιστορικό εκδόσεων" compact />
             </SheetTitle>
             {documentTitle && (
               <SheetDescription className="truncate">
@@ -207,16 +212,16 @@ export function VersionHistoryDrawer({
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                <AlertCircle className="h-8 w-8 text-destructive/50" />
-                <p className="text-sm text-muted-foreground">Failed to load version history</p>
+                <AlertCircle className="icon-xl text-destructive/50" />
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load version history" el="Δεν ήταν δυνατή η φόρτωση του ιστορικού" compact /></p>
               </div>
             ) : versions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-                <GitCommitHorizontal className="h-10 w-10 text-muted-foreground/30" />
+                <GitCommitHorizontal className="h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">No saved versions yet</p>
+                  <p className="text-sm font-medium text-muted-foreground"><BilingualText en="No saved versions yet" el="Δεν υπάρχουν αποθηκευμένες εκδόσεις ακόμα" compact /></p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Versions are saved automatically when you create draft variants or request reviews.
+                    <BilingualText en="Versions are saved automatically when you create draft variants or request reviews." el="Οι εκδόσεις αποθηκεύονται αυτόματα όταν δημιουργείτε εκδοχές ή ζητάτε αξιολόγηση." wrap />
                   </p>
                 </div>
               </div>
@@ -236,7 +241,7 @@ export function VersionHistoryDrawer({
           {versions.length > 0 && (
             <div className="shrink-0 pt-3 border-t mt-3">
               <p className="text-xs text-muted-foreground text-center">
-                {versions.length} version{versions.length !== 1 ? 's' : ''} · Hover a version to restore it
+                {versions.length} · <BilingualText en={builderEn('hist_footer')} el={builderEl('hist_footer')} wrap />
               </p>
             </div>
           )}
@@ -247,24 +252,29 @@ export function VersionHistoryDrawer({
       <Dialog open={!!confirmVersion} onOpenChange={() => setConfirmVersion(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Restore this version?</DialogTitle>
+            <DialogTitle>
+              <BilingualText en={builderEn('hist_restore_title')} el={builderEl('hist_restore_title')} compact />
+            </DialogTitle>
             <DialogDescription>
-              Restoring to <strong>{confirmVersion?.versionLabel ?? `v${confirmVersion?.version}`}</strong> will
-              create a backup of the current version first, then apply the selected content. This action is reversible.
+              <BilingualText
+                en={`${builderEn('hist_restore_body')} (${confirmVersion?.versionLabel ?? `v${confirmVersion?.version ?? ''}`}).`}
+                el={`${builderEl('hist_restore_body')} (${confirmVersion?.versionLabel ?? `v${confirmVersion?.version ?? ''}`}).`}
+                wrap
+              />
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmVersion(null)}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button
               onClick={handleConfirmRestore}
               disabled={restoreMutation.isPending}
               className="gap-2"
             >
-              {restoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              <RotateCcw className="h-3.5 w-3.5" />
-              Restore Version
+              {restoreMutation.isPending && <Loader2 className="icon-sm animate-spin" />}
+              <RotateCcw className="icon-sm" />
+              <BilingualText en={builderEn('hist_restore_cta')} el={builderEl('hist_restore_cta')} compact />
             </Button>
           </DialogFooter>
         </DialogContent>

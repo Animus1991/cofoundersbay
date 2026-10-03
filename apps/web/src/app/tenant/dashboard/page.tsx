@@ -1,299 +1,251 @@
 'use client';
 
-import { useState } from 'react';
+
 import Link from 'next/link';
 import {
   Building2,
   Users,
   Award,
-  TrendingUp,
   Calendar,
-  MoreVertical,
-  ChevronRight,
   Rocket,
   GraduationCap,
-  Target,
   Activity,
   Settings,
   UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTenant } from '@/components/providers/TenantContext';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
+import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import {
-  AreaChart, Area, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+import { qk } from '@/lib/query-keys';
 
-const MEMBER_GROWTH = [
-  { month: 'Oct', members: 98 },
-  { month: 'Nov', members: 112 },
-  { month: 'Dec', members: 125 },
-  { month: 'Jan', members: 134 },
-  { month: 'Feb', members: 145 },
-  { month: 'Mar', members: 156 },
-];
-
-const PROGRAM_ENGAGEMENT = [
-  { name: 'Spring Accel', sessions: 24, milestones: 18 },
-  { name: 'AI Lab', sessions: 12, milestones: 8 },
-  { name: 'Bootcamp', sessions: 32, milestones: 28 },
-];
-
-function StatCard({
-  title,
-  value,
-  change,
-  icon: Icon,
-  iconColor,
-}: {
-  title: string;
-  value: string | number;
-  change?: string;
-  icon: React.ElementType;
-  iconColor?: string;
-}) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
-            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary')} />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-xl font-bold">{value}</p>
-            {change && (
-              <p className="text-xs text-muted-foreground">{change}</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+const ChartFallback = () => <Skeleton className="h-[160px] w-full rounded-lg" />;
+const MemberGrowthChart = dynamic(
+  () => import('./TenantDashboardCharts').then((m) => ({ default: m.MemberGrowthChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const ProgramEngagementChart = dynamic(
+  () => import('./TenantDashboardCharts').then((m) => ({ default: m.ProgramEngagementChart })),
+  { ssr: false, loading: ChartFallback },
+);
 
 export default function TenantDashboardPage() {
-  // Mock data
+  /*
+   * The workspace's home, from its own reads.
+   *
+   * Members and events were read already; the programme list, both charts
+   * and three of the four figures were constants ("Spring Accelerator 2025",
+   * a workspace growing to 156 members). Programmes come from the
+   * organisation that owns the workspace - the same list /tenant/programs and
+   * /org/programs show - and a tenant membership's role says who is a founder
+   * and who is a mentor, so all four figures are counted.
+   */
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+
+  const { data: membersData } = useQuery({
+    queryKey: qk('tenant', 'members', tenantId),
+    queryFn: () => getTenantMembers(tenantId!, { limit: 100 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: eventsData } = useQuery({
+    queryKey: qk('events', 'tenant'),
+    queryFn: () => listEvents({ scope: 'upcoming', limit: 5 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const members = useMemo(() => (Array.isArray(membersData) ? membersData : []), [membersData]);
+  const { membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+  const { data: programData, isLoading: programsLoading } = useQuery({
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const programs = useMemo(() => programData ?? [], [programData]);
+  const runningOrNext = programs.filter((p) => p.status === 'active' || p.status === 'upcoming');
+
   const stats = {
-    totalMembers: 156,
-    activePrograms: 4,
-    startups: 28,
-    mentors: 12,
+    totalMembers: members.length,
+    activePrograms: programData ? programs.filter((p) => p.status === 'active').length : null,
+    startups: membersData ? members.filter((m) => m.role === 'founder').length : null,
+    mentors: members.filter((m) => m.role === 'mentor').length,
   };
 
-  const recentMembers = [
-    { id: '1', name: 'John Doe', role: 'Founder', joinedAt: '2 days ago', avatarUrl: '' },
-    { id: '2', name: 'Jane Smith', role: 'Mentor', joinedAt: '3 days ago', avatarUrl: '' },
-    { id: '3', name: 'Mike Johnson', role: 'Founder', joinedAt: '1 week ago', avatarUrl: '' },
-  ];
+  // Members at the end of each of the last six months, from join dates.
+  const now = Date.now();
+  const memberGrowth = Array.from({ length: 6 }, (_, i) => {
+    const end = new Date(now);
+    end.setDate(1);
+    end.setMonth(end.getMonth() - (5 - i) + 1);
+    end.setHours(0, 0, 0, 0);
+    const label = new Date(end.getTime() - 1).toLocaleDateString('en-GB', { month: 'short' });
+    return { month: label, members: members.filter((m) => Date.parse(m.joinedAt) < Math.min(end.getTime(), now + 1)).length };
+  });
+  const engagement = runningOrNext.map((p) => ({
+    name: p.title.split(' · ')[0].replace(/ (Accelerator|Bootcamp|Track)$/, '').slice(0, 14),
+    applications: p.applicationCount,
+    enrolled: p.participantCount,
+  }));
 
-  const activePrograms = [
-    { id: '1', name: 'Spring Accelerator 2025', startups: 12, progress: 65, status: 'active' },
-    { id: '2', name: 'AI Innovation Lab', startups: 8, progress: 30, status: 'active' },
-    { id: '3', name: 'Pre-seed Bootcamp', startups: 8, progress: 90, status: 'ending_soon' },
-  ];
+  const recentMembers = members
+    .slice()
+    .sort((a, b) => b.joinedAt.localeCompare(a.joinedAt))
+    .slice(0, 3)
+    .map((m) => ({
+      id: m.id,
+      name: m.user.profile?.displayName ?? m.user.email,
+      role: m.role,
+      joinedAt: m.joinedAt,
+      avatarUrl: m.user.profile?.avatarUrl ?? '',
+    }));
 
-  const upcomingEvents = [
-    { id: '1', name: 'Demo Day', date: 'Mar 28, 2025', type: 'Event' },
-    { id: '2', name: 'Mentor Office Hours', date: 'Mar 25, 2025', type: 'Session' },
-    { id: '3', name: 'Investor Pitch Night', date: 'Apr 5, 2025', type: 'Event' },
-  ];
+  const upcomingEvents = (eventsData?.events ?? []).slice(0, 3).map((event) => ({
+    id: event.id,
+    name: event.title,
+    // UTC on both sides of hydration, as every other date here is.
+    date: new Date(event.startAt).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }),
+    type: event.eventType === 'workshop' ? 'Session' : 'Event',
+  }));
 
   return (
     <AppShell
       title="Tenant Dashboard"
+      titleEl="Πίνακας οργανισμού"
       description="Manage your organization on CoFounderBay"
+      descriptionEl="Διαχειριστείτε τον οργανισμό σας στο CoFounderBay"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/tenant/branding"><Building2 className="mr-1.5 h-4 w-4" /> Branding</Link>
+            <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" /> Branding</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/tenant/settings"><Settings className="mr-1.5 h-4 w-4" /> Settings</Link>
+            <Link href="/tenant/settings"><Settings className="mr-1.5 icon-sm" /> Settings</Link>
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <StatCard
-            title="Total Members"
-            value={stats.totalMembers}
-            change="+12 this month"
-            icon={Users}
-          />
-          <StatCard
-            title="Active Programs"
-            value={stats.activePrograms}
-            icon={Award}
-            iconColor="bg-purple-500"
-          />
-          <StatCard
-            title="Startups"
-            value={stats.startups}
-            change="+5 this month"
-            icon={Rocket}
-            iconColor="bg-blue-500"
-          />
-          <StatCard
-            title="Mentors"
-            value={stats.mentors}
-            icon={GraduationCap}
-            iconColor="bg-green-500"
-          />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile icon={Users} label="Members" labelEl="Μέλη" value={membersData ? stats.totalMembers : '\u2014'} caption="Everyone with a seat" captionEl="Όσοι έχουν θέση" href="/tenant/members" />
+          <MetricTile icon={Award} label="Running programs" labelEl="Ενεργά προγράμματα" value={stats.activePrograms ?? '\u2014'} caption={`${programs.filter((p) => p.status === 'upcoming').length} upcoming`} captionEl={`${programs.filter((p) => p.status === 'upcoming').length} προσεχώς`} href="/tenant/programs" />
+          <MetricTile icon={Rocket} label="Founders" labelEl="Ιδρυτές" value={stats.startups ?? '\u2014'} caption="Members with the founder role" captionEl="Μέλη με ρόλο ιδρυτή" href="/tenant/members" />
+          <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={membersData ? stats.mentors : '\u2014'} caption="Members with the mentor role" captionEl="Μέλη με ρόλο μέντορα" href="/tenant/members" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Active Programs */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg">Active Programs</CardTitle>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/tenant/programs">
-                  View All
-                  <ChevronRight className="ml-1 h-4 w-4" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Running and upcoming programs, with how full each is. */}
+          <SectionCard className="lg:col-span-2" title="Programs" titleEl="Προγράμματα" action={{ href: '/tenant/programs', label: 'Manage', labelEl: 'Διαχείριση' }} contentClassName="space-y-3">
+            {programsLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
+            {runningOrNext.map((program) => {
+              const fill = program.capacity ? Math.min(100, Math.round((program.participantCount / program.capacity) * 100)) : 0;
+              return (
+                <Link key={program.id} href={`/programs/${program.id}`} className="block rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-2">
+                      <span className="font-medium">{program.title}</span>
+                      <Badge size="sm" variant={program.status === 'active' ? 'success' : 'info'}>{program.status === 'active' ? 'Running' : 'Upcoming'}</Badge>
+                    </span>
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {program.participantCount}/{program.capacity ?? '—'} places · {program.applicationCount} applications
+                    </span>
+                  </div>
+                  <Progress value={fill} className="h-1.5" aria-label={`${program.title}: ${fill}% of places filled`} />
                 </Link>
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {activePrograms.map((program) => (
-                <div key={program.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{program.name}</span>
-                      <Badge variant={program.status === 'ending_soon' ? 'destructive' : 'secondary'} className="text-xs">
-                        {program.status === 'ending_soon' ? 'Ending Soon' : 'Active'}
-                      </Badge>
-                    </div>
-                    <span className="text-sm text-muted-foreground">{program.startups} startups</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Progress value={program.progress} className="h-2 flex-1" />
-                    <span className="text-xs text-muted-foreground w-10">{program.progress}%</span>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+              );
+            })}
+            {!programsLoading && runningOrNext.length === 0 && (
+              <EmptyLine en="No program is running or taking applications." el="Κανένα πρόγραμμα σε εξέλιξη ή με ανοιχτές αιτήσεις." />
+            )}
+          </SectionCard>
 
-          {/* Recent Members */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Recent Members</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {recentMembers.map((member) => (
-                <div key={member.id} className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={member.avatarUrl} />
-                    <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{member.name}</p>
-                    <p className="text-xs text-muted-foreground">{member.role}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{member.joinedAt}</span>
+          <SectionCard title="Recent members" titleEl="Πρόσφατα μέλη" action={{ href: '/tenant/members', label: 'All members', labelEl: 'Όλα τα μέλη' }} contentClassName="space-y-3">
+            {recentMembers.map((member) => (
+              <div key={member.id} className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={member.avatarUrl} />
+                  <AvatarFallback>{initialsOf(member.name)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{member.name}</p>
+                  <p className="text-xs capitalize text-muted-foreground">{member.role}</p>
                 </div>
-              ))}
-              <Button variant="outline" className="w-full mt-2" size="sm" asChild>
-                <Link href="/tenant/members">View All Members</Link>
-              </Button>
-            </CardContent>
-          </Card>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  <RelativeTime date={member.joinedAt} format={formatRelativeTime} />
+                </span>
+              </div>
+            ))}
+            {membersData && recentMembers.length === 0 && (
+              <EmptyLine en="Invite someone to see them here." el="Προσκαλέστε κάποιον για να εμφανιστεί εδώ." />
+            )}
+          </SectionCard>
         </div>
 
-        {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Member Growth</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={160}>
-                <AreaChart data={MEMBER_GROWTH} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <defs>
-                    <linearGradient id="memberFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="members" stroke="hsl(var(--primary))" fill="url(#memberFill)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Program Engagement</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">Active programs</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={PROGRAM_ENGAGEMENT} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
-                  <Bar dataKey="milestones" fill="#4ade80" radius={[4, 4, 0, 0]} name="Milestones" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <SectionCard title="Member growth" titleEl="Αύξηση μελών" contentClassName="space-y-2">
+            <MemberGrowthChart data={memberGrowth} />
+            <p className="text-xs text-muted-foreground">Members at the end of each of the last six months, from join dates.</p>
+          </SectionCard>
+          <SectionCard title="Applications and places" titleEl="Αιτήσεις και θέσεις" contentClassName="space-y-2">
+            <ProgramEngagementChart data={engagement} />
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">Applications</span> and <span className="font-medium text-status-success">places filled</span> in each running or upcoming program.
+            </p>
+          </SectionCard>
         </div>
 
-        {/* Upcoming Events */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm">Upcoming Events</CardTitle>
-            <Button variant="ghost" size="sm" className="gap-1.5">
-              <Calendar className="h-3.5 w-3.5" /> Add Event
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-3">
-              {upcomingEvents.map((event) => (
-                <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{event.date}</span>
-                  </div>
-                  <p className="font-medium text-sm">{event.name}</p>
-                  <Badge variant="outline" className="mt-2 text-xs">{event.type}</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard title="Upcoming events" titleEl="Επόμενες εκδηλώσεις" action={{ href: '/events/create', label: 'Add event', labelEl: 'Νέα εκδήλωση' }}>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="rounded-lg border border-border p-3">
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="icon-sm" aria-hidden="true" />
+                  {event.date} · {event.type}
+                </p>
+                <p className="mt-1 text-sm font-medium">{event.name}</p>
+              </div>
+            ))}
+          </div>
+          {eventsData && upcomingEvents.length === 0 && (
+            <EmptyLine en="No event is on the calendar." el="Καμία εκδήλωση στο ημερολόγιο." />
+          )}
+        </SectionCard>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-blue-600' },
-            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-purple-600' },
-            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-emerald-600' },
-            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-amber-600' },
+            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-status-info' },
+            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-status-accent' },
+            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-status-success' },
+            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-status-warning' },
           ].map(({ label, icon: Icon, href, color }) => (
             <Button key={label} variant="outline" className="h-auto py-3 flex-col gap-1.5" asChild>
               <Link href={href}>
-                <Icon className={cn('h-5 w-5', color)} />
+                <Icon className={cn('icon-md', color)} />
                 <span className="text-xs">{label}</span>
               </Link>
             </Button>

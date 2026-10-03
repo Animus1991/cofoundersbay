@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   adminListSkills,
   adminCreateSkill,
@@ -44,6 +46,8 @@ import {
   adminDeleteSkill,
   type AdminSkillItem,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 const SKILL_CATEGORIES = ['Technical', 'Business', 'Design', 'Marketing', 'Sales', 'Finance', 'Operations', 'Legal', 'Product', 'Data', 'Other'];
 
@@ -59,7 +63,7 @@ function SkillRowSkeleton() {
       <Skeleton className="h-4 flex-1 max-w-[160px]" />
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-5 w-10 rounded-full" />
-      <Skeleton className="h-8 w-8 rounded" />
+      <Skeleton className="h-8 w-8 rounded-md" />
     </div>
   );
 }
@@ -76,7 +80,7 @@ function SkillRow({
   return (
     <div className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
       <div className="w-6" />
-      <Hash className="icon-sm text-muted-foreground shrink-0" />
+      <Hash className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
       <span className="flex-1 font-medium truncate">{skill.name}</span>
       <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
       {skill.category && (
@@ -85,18 +89,18 @@ function SkillRow({
       <Badge variant="secondary" className="text-xs">{skill.count}</Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <MoreVertical className="icon-sm" />
+          <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+            <MoreVertical className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(skill)}>
-            <Edit className="mr-2 icon-sm" />
-            Edit
+            <Edit className="mr-2 icon-sm" aria-hidden="true" />
+            <BilingualText en="Edit" el="Επεξεργασία" compact />
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive" onClick={() => onDelete(skill)}>
+          <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
             <Trash2 className="mr-2 icon-sm" />
-            Delete
+            <BilingualText en="Delete" el="Διαγραφή" compact />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -153,13 +157,13 @@ function SkillDialog({
               onChange={(e) => { setSlug(e.target.value); setAutoSlug(false); }}
               placeholder="e.g. machine-learning"
             />
-            <p className="text-xs text-muted-foreground mt-1">URL-friendly identifier, must be unique</p>
+            <p className="text-xs text-muted-foreground mt-1"><BilingualText en="URL-friendly identifier, must be unique" el="Αναγνωριστικό για URL, μοναδικό" wrap /></p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
+            <label className="block text-sm font-medium mb-1"><BilingualText en="Category" el="Κατηγορία" compact /></label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
+              <SelectTrigger aria-label="Category">
+                <SelectValue placeholder={bilingualInline("Select category", "Επιλογή κατηγορίας")} />
               </SelectTrigger>
               <SelectContent>
                 {SKILL_CATEGORIES.map((c) => (
@@ -170,12 +174,12 @@ function SkillDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isSaving}>Cancel</Button>
+          <Button variant="outline" onClick={onClose} disabled={isSaving}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
           <Button
             onClick={() => onSave({ name: name.trim(), slug: slug.trim(), category })}
             disabled={isSaving || !name.trim() || !slug.trim()}
           >
-            {isSaving && <Loader2 className="mr-2 icon-sm animate-spin" />}
+            {isSaving && <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />}
             {skill ? 'Save Changes' : 'Add Skill'}
           </Button>
         </DialogFooter>
@@ -193,7 +197,7 @@ export default function AdminTaxonomyPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminSkillItem | null>(null);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin-skills', search, categoryFilter],
+    queryKey: qk('admin', 'skills', search, categoryFilter),
     queryFn: () => adminListSkills({ q: search || undefined, category: categoryFilter || undefined, limit: 200 }),
     staleTime: 30_000,
   });
@@ -214,10 +218,10 @@ export default function AdminTaxonomyPage() {
     mutationFn: adminCreateSkill,
     onSuccess: () => {
       success('Skill created');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setEditTarget(null);
     },
-    onError: (e: any) => showError('Failed to create skill', e.message),
+    onError: (e: Error) => showError('Failed to create skill', e.message),
   });
 
   const updateMutation = useMutation({
@@ -225,20 +229,20 @@ export default function AdminTaxonomyPage() {
       adminUpdateSkill(id, body),
     onSuccess: () => {
       success('Skill updated');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setEditTarget(null);
     },
-    onError: (e: any) => showError('Failed to update skill', e.message),
+    onError: (e: Error) => showError('Failed to update skill', e.message),
   });
 
   const deleteMutation = useMutation({
     mutationFn: adminDeleteSkill,
     onSuccess: () => {
       success('Skill deleted');
-      qc.invalidateQueries({ queryKey: ['admin-skills'] });
+      qc.invalidateQueries({ queryKey: qk('admin', 'skills') });
       setDeleteTarget(null);
     },
-    onError: (e: any) => showError('Failed to delete skill', e.message),
+    onError: (e: Error) => showError('Failed to delete skill', e.message),
   });
 
   const handleSave = (formData: { name: string; slug: string; category: string }) => {
@@ -251,53 +255,71 @@ export default function AdminTaxonomyPage() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  // Offered to the assistant: the category filter, New Skill, and the row
+  // menu's Edit and Delete (which opens the same confirmation).
+  usePageList([
+    {
+      id: 'skills',
+      labelEn: 'Skills',
+      labelEl: 'Δεξιότητες',
+      rows: isLoading ? undefined : skills.map((sk) => `${sk.name} (${sk.slug}) · ${sk.category ?? 'uncategorised'} · used by ${sk.count}`),
+      total,
+    },
+  ]);
+  usePageControls([
+    choiceControl('category_filter', 'Category filter', 'Φίλτρο κατηγορίας', [
+      { value: 'all', en: 'All categories', el: 'Όλες οι κατηγορίες' },
+      ...SKILL_CATEGORIES.map((c) => ({ value: c, en: c, el: c })),
+    ], categoryFilter || 'all', (v) => setCategoryFilter(v === 'all' ? '' : v)),
+    { id: 'new_skill', labelEn: 'Open the new skill form', labelEl: 'Άνοιγμα φόρμας νέας δεξιότητας', writes: false, run: () => setEditTarget('new') },
+    { id: 'edit_skill', labelEn: 'Edit skill', labelEl: 'Επεξεργασία δεξιότητας', writes: false, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setEditTarget(sk); } },
+    { id: 'delete_skill', labelEn: 'Delete skill', labelEl: 'Διαγραφή δεξιότητας', writes: true, options: rowOptions(skills, (sk) => sk.id, (sk) => sk.name), run: (v) => { const sk = skills.find((x) => x.id === v); if (sk) setDeleteTarget(sk); } },
+  ]);
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Taxonomy Management</h1>
-            <p className="text-muted-foreground">Manage skills, categories, and classification systems</p>
-          </div>
+    <AppShell
+      actions={
+        <>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
-              <RefreshCw className="icon-sm" />
+            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
+              <RefreshCw className="icon-sm" aria-hidden="true" />
             </Button>
             <Button onClick={() => setEditTarget('new')}>
-              <Plus className="mr-2 icon-sm" />
-              Add Skill
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
+              <BilingualText en="Add Skill" el="Προσθήκη δεξιότητας" compact />
             </Button>
           </div>
-        </div>
-
+        </>
+      }
+    >
+      <div className="space-y-6">
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Skills</p>
-              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="text-xl font-bold">{total}</p>}
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Skills" el="Σύνολο δεξιοτήτων" compact /></p>
+              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="page-stat text-xl font-bold">{total}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Categories</p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="text-xl font-bold">{categories.length}</p>}
+              <p className="text-sm text-muted-foreground"><BilingualText en="Categories" el="Κατηγορίες" compact /></p>
+              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="page-stat text-xl font-bold">{categories.length}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Technical Skills</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Technical Skills" el="Τεχνικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
+                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
               )}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Business Skills</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Business Skills" el="Επιχειρηματικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
+                <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
               )}
             </CardContent>
           </Card>
@@ -308,50 +330,52 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary" />
-                <CardTitle className="text-lg">Skills</CardTitle>
+                <Folder className="icon-md text-primary-accessible" />
+                <CardTitle className="text-lg"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
               <Button size="sm" onClick={() => setEditTarget('new')}>
-                <Plus className="mr-2 icon-sm" />
-                Add Skill
+                <Plus className="mr-2 icon-sm" aria-hidden="true" />
+                <BilingualText en="Add Skill" el="Προσθήκη δεξιότητας" compact />
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">Skills and expertise tags used across profiles</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="Skills and expertise tags used across profiles" el="Ετικέτες δεξιοτήτων και εξειδίκευσης σε όλα τα προφίλ" wrap /></p>
           </CardHeader>
           <CardContent className="p-0">
             {/* Filters */}
             <div className="px-4 pb-3 flex gap-3 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
-                  placeholder="Search skills..."
+                  aria-label={bilingualAria("Search skills", "Αναζήτηση δεξιοτήτων")}
+                  placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 h-9"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <X className="icon-sm text-muted-foreground" />
+                  <button aria-label="Clear search" onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <X className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </button>
                 )}
               </div>
               <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                aria-label={bilingualAria("Filter skills by category", "Φιλτράρισμα δεξιοτήτων ανά κατηγορία")}
+                className="h-9 rounded-xl border border-input bg-background px-3 text-sm"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option value="">All categories</option>
+                <option value="">{bilingualInline("All categories", "Όλες οι κατηγορίες")}</option>
                 {SKILL_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
             <div className="border-t">
               {isError && (
-                <div className="flex items-center gap-2 p-6 text-destructive justify-center">
+                <div className="flex items-center gap-2 p-6 text-destructive-accessible justify-center">
                   <AlertCircle className="icon-md" />
-                  <span className="text-sm">Failed to load skills.</span>
-                  <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
+                  <span className="text-sm"><BilingualText en="Failed to load skills." el="Δεν ήταν δυνατή η φόρτωση των δεξιοτήτων." compact /></span>
+                  <Button variant="outline" size="sm" onClick={() => refetch()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></Button>
                 </div>
               )}
 
@@ -365,7 +389,7 @@ export default function AdminTaxonomyPage() {
                 <div className="max-h-[480px] overflow-y-auto">
                   {skills.length === 0 && (
                     <div className="py-12 text-center">
-                      <Tags className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <Tags className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" aria-hidden="true" />
                       <p className="text-muted-foreground text-sm">
                         {search || categoryFilter ? 'No skills match your filter' : 'No skills yet — add your first skill'}
                       </p>
@@ -417,21 +441,25 @@ export default function AdminTaxonomyPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Skill</DialogTitle>
+            <DialogTitle><BilingualText en="Delete Skill" el="Διαγραφή δεξιότητας" compact /></DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-2">
-            Are you sure you want to delete <strong>{deleteTarget?.name}</strong>? This will remove it from all profiles.
+            <BilingualText
+              en={`Delete "${deleteTarget?.name ?? ''}"? It is removed from every profile that lists it.`}
+              el={`Διαγραφή «${deleteTarget?.name ?? ''}»; Αφαιρείται από κάθε προφίλ που την αναφέρει.`}
+              wrap
+            />
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleteMutation.isPending}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" />}
+              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />}
               Delete
             </Button>
           </DialogFooter>

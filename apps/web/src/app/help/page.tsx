@@ -14,6 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { HELP_FAQ_EL, HELP_TOPIC_EL } from '@/lib/i18n/strings-help';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 type FAQItem = {
   question: string;
@@ -249,25 +253,28 @@ const faqCategories: FAQCategory[] = [
 
 function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean; onToggle: () => void }) {
   return (
-    <div className="border-b border-border/50 last:border-0">
+    <div className="border-b border-border last:border-0">
       <button
+        type="button"
+        aria-expanded={isOpen}
         onClick={onToggle}
         className={cn(
-          'flex w-full items-center justify-between py-4 text-left transition-colors',
-          isOpen ? 'text-primary' : 'hover:text-primary text-foreground',
+          'flex w-full items-center justify-between py-4 text-left transition-colors focus-ring rounded-md',
+          isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
-        <span className="text-sm font-medium pr-4">{faq.question}</span>
+        <span className="text-sm font-medium pr-4"><BilingualText en={faq.question} el={HELP_FAQ_EL[faq.question]?.q} compact wrap /></span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
-            isOpen && 'rotate-180 text-primary',
+            'icon-sm shrink-0 text-muted-foreground transition-transform duration-200',
+            isOpen && 'rotate-180 text-primary-accessible',
           )}
+          aria-hidden="true"
         />
       </button>
       {isOpen && (
         <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
-          <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed"><BilingualText en={faq.answer} el={HELP_FAQ_EL[faq.question]?.a} wrap /></p>
         </div>
       )}
     </div>
@@ -297,8 +304,8 @@ export default function HelpPage() {
     faqs: category.faqs.filter(
       (faq) =>
         !searchQuery ||
-        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+        [faq.question, faq.answer, HELP_FAQ_EL[faq.question]?.q ?? '', HELP_FAQ_EL[faq.question]?.a ?? '']
+          .some((text) => text.toLowerCase().includes(searchQuery.toLowerCase()))
     ),
   })).filter((category) => category.faqs.length > 0);
 
@@ -306,49 +313,97 @@ export default function HelpPage() {
     ? filteredCategories.filter((c) => c.id === selectedCategory)
     : filteredCategories;
 
+  // Topic, opening a question and clearing, offered to the assistant; the
+  // questions on screen are published so it can answer from them.
+  const shown = displayCategories.flatMap((c) => c.faqs.map((faq) => ({ c, faq, key: `${c.id}-${c.faqs.indexOf(faq)}` })));
+  usePageControls([
+    choiceControl('help_topic', 'Help topic', 'Θέμα βοήθειας', [
+      { value: 'all', en: 'All topics', el: 'Όλα τα θέματα' },
+      ...faqCategories.map((c) => ({ value: c.id, en: c.title, el: HELP_TOPIC_EL[c.id]?.title ?? c.title })),
+    ], selectedCategory ?? 'all', (v) => setSelectedCategory(v === 'all' ? null : v)),
+    {
+      id: 'open_question',
+      labelEn: 'Open a question',
+      labelEl: 'Άνοιγμα ερώτησης',
+      writes: false,
+      options: shown.map(({ faq, key }) => ({ value: key, labelEn: faq.question, labelEl: HELP_FAQ_EL[faq.question]?.q ?? faq.question })),
+      unavailableEn: shown.length === 0 ? 'No question matches the search.' : undefined,
+      unavailableEl: shown.length === 0 ? 'Καμία ερώτηση δεν ταιριάζει με την αναζήτηση.' : undefined,
+      run: (value) => { if (value) setOpenFAQs((prev) => new Set(prev).add(value)); },
+    },
+    {
+      id: 'clear_filters',
+      labelEn: 'Clear the search and topic',
+      labelEl: 'Καθαρισμός αναζήτησης και θέματος',
+      writes: false,
+      unavailableEn: !searchQuery && !selectedCategory ? 'No filter is set.' : undefined,
+      unavailableEl: !searchQuery && !selectedCategory ? 'Δεν υπάρχει φίλτρο.' : undefined,
+      run: () => { setSearchQuery(''); setSelectedCategory(null); },
+    },
+  ]);
+  usePageList([
+    {
+      id: 'help_questions',
+      labelEn: 'Help questions',
+      labelEl: 'Ερωτήσεις βοήθειας',
+      rows: shown.map(({ c, faq }) => `${c.title}: ${faq.question} — ${faq.answer}`),
+      total: faqCategories.reduce((sum, c) => sum + c.faqs.length, 0),
+      sample: false,
+    },
+  ]);
+
   return (
     <AppShell
       title="Help & Support"
+      titleEl="Βοήθεια & υποστήριξη"
       description="Find answers, guides, and get in touch with the CoFounderBay team"
+      descriptionEl="Βρείτε απαντήσεις και οδηγούς ή επικοινωνήστε με την ομάδα του CoFounderBay"
       actions={
-        <a href="mailto:support@cofounderbay.com">
-          <Button size="sm" className="gap-2">
-            <Mail className="h-4 w-4" />
-            Contact Support
-          </Button>
-        </a>
+        // A <button> nested in an <a> is two controls in one place
+        // (axe nested-interactive); the link is the control.
+        <Button asChild size="sm" className="gap-2">
+          <a href="mailto:support@cofounderbay.com">
+            <Mail className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Contact Support" el="Επικοινωνία με υποστήριξη" compact />
+          </a>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
 
         {/* Search Hero */}
-        <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
+        <div className="rounded-xl border border-border bg-primary/[0.03] p-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <HelpCircle className="h-6 w-6 text-primary" />
+            <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
-          <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
-          <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
+          <h2 className="text-xl font-semibold text-foreground mb-1"><BilingualText en="How can we help you?" el="Πώς μπορούμε να βοηθήσουμε;" compact /></h2>
+          <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Search our knowledge base or browse topics below" el="Αναζητήστε στη βάση γνώσεων ή δείτε τα θέματα παρακάτω" wrap /></p>
           <div className="mx-auto max-w-lg relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search for help (e.g. matching, billing, profile...)"
+              aria-label={bilingualAria("Search help", "Αναζήτηση βοήθειας")}
+              placeholder={bilingualInline("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 bg-background border-border/60"
+              className="pl-9 h-11 bg-background border-border"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                Clear
+                <BilingualText en="Clear" el="Καθαρισμός" compact />
               </button>
             )}
           </div>
           {searchQuery && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {displayCategories.reduce((sum, c) => sum + c.faqs.length, 0)} result{displayCategories.reduce((sum, c) => sum + c.faqs.length, 0) !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
+              <BilingualText
+                en={`${shown.length} result${shown.length !== 1 ? 's' : ''} for “${searchQuery}”`}
+                el={`${shown.length} ${shown.length !== 1 ? 'αποτελέσματα' : 'αποτέλεσμα'} για «${searchQuery}»`}
+                compact
+              />
             </p>
           )}
         </div>
@@ -356,32 +411,36 @@ export default function HelpPage() {
         {/* Category Filter Pills */}
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
+            aria-pressed={selectedCategory === null}
             onClick={() => setSelectedCategory(null)}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
               selectedCategory === null
                 ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
             )}
           >
-            All Topics
-            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-[10px]', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
+            <BilingualText en="All Topics" el="Όλα τα θέματα" compact />
+            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-2xs', selectedCategory === null && 'bg-primary-foreground text-primary-accessible')}>
               {faqCategories.reduce((sum, c) => sum + c.faqs.length, 0)}
             </Badge>
           </button>
           {faqCategories.map((category) => (
             <button
               key={category.id}
+              type="button"
+              aria-pressed={selectedCategory === category.id}
               onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
                 selectedCategory === category.id
                   ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                  : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                  : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
               )}
             >
-              <category.icon className="h-3 w-3" />
-              {category.title}
+              <category.icon className="h-3 w-3" aria-hidden="true" />
+              <BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact />
             </button>
           ))}
         </div>
@@ -390,45 +449,49 @@ export default function HelpPage() {
         {(selectedCategory || searchQuery) && (
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              Showing {displayCategories.length} topic{displayCategories.length !== 1 ? 's' : ''}
-              {selectedCategory && ` in "${faqCategories.find(c => c.id === selectedCategory)?.title}"`}
+              <BilingualText
+                en={`Showing ${displayCategories.length} topic${displayCategories.length !== 1 ? 's' : ''}${selectedCategory ? ` in "${faqCategories.find((c) => c.id === selectedCategory)?.title}"` : ''}`}
+                el={`${displayCategories.length} ${displayCategories.length !== 1 ? 'θέματα' : 'θέμα'}${selectedCategory ? ` στο «${HELP_TOPIC_EL[selectedCategory]?.title ?? ''}»` : ''}`}
+                compact
+                wrap
+              />
             </p>
             <button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary-accessible hover:underline"
             >
-              Clear all filters
+              <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
             </button>
           </div>
         )}
 
         {/* FAQ Content */}
         {displayCategories.length === 0 ? (
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
             <CardContent className="py-16 text-center">
-              <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-              <h2 className="text-lg font-semibold text-foreground mb-2">No results found</h2>
-              <p className="text-sm text-muted-foreground mb-4">Try a different search term or browse all topics</p>
+              <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
+              <h2 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
+              <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try a different search term or browse all topics" el="Δοκιμάστε άλλον όρο ή δείτε όλα τα θέματα" wrap /></p>
               <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
-                Clear search
+                <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {displayCategories.map((category) => (
-              <Card key={category.id} className="shadow-sm border-border/50">
-                <CardHeader className="border-b border-border/50 py-4">
+              <Card key={category.id} className="shadow-sm border-border">
+                <CardHeader className="border-b border-border py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <category.icon className="h-4 w-4 text-primary" />
+                      <category.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
-                      <p className="text-xs text-muted-foreground">{category.description}</p>
+                      <CardTitle className="text-sm font-semibold"><BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact /></CardTitle>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={category.description} el={HELP_TOPIC_EL[category.id]?.description} compact wrap /></p>
                     </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
-                      {category.faqs.length} FAQ{category.faqs.length !== 1 ? 's' : ''}
+                    <Badge variant="outline" className="text-2xs shrink-0">
+                      <BilingualText en={`${category.faqs.length} FAQ${category.faqs.length !== 1 ? 's' : ''}`} el={`${category.faqs.length} ${category.faqs.length !== 1 ? 'ερωτήσεις' : 'ερώτηση'}`} compact />
                     </Badge>
                   </div>
                 </CardHeader>
@@ -448,58 +511,60 @@ export default function HelpPage() {
         )}
 
         {/* Contact Support */}
-        <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
+        <Card className="shadow-sm border-primary/15 bg-primary/[0.03]">
           <CardContent className="p-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="h-6 w-6 text-primary" />
+              <Mail className="icon-lg text-primary-accessible" />
             </div>
-            <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-1"><BilingualText en="Still need help?" el="Χρειάζεστε ακόμα βοήθεια;" compact /></h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-              Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours.
+              <BilingualText en="Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours." el="Δεν βρίσκετε αυτό που ψάχνετε; Η ομάδα υποστήριξης απαντά συνήθως μέσα σε 24 ώρες." wrap />
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <a href="mailto:support@cofounderbay.com">
-                <Button className="gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Support
-                </Button>
-              </a>
-              <Link href="/messages">
-                <Button variant="outline" className="gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  Live Chat
-                </Button>
-              </Link>
+              <Button asChild className="gap-2">
+                <a href="mailto:support@cofounderbay.com">
+                  <Mail className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Email Support" el="Υποστήριξη μέσω email" compact />
+                </a>
+              </Button>
+              <Button variant="outline" className="gap-2" asChild>
+                {/* It opens the reader's own inbox; there is no live support
+                    chat behind it, so it no longer says "Live chat". */}
+                <Link href="/messages">
+                  <MessageCircle className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Your messages" el="Τα μηνύματά σας" compact />
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Links */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Terms of Service</h3>
-                <p className="text-xs text-muted-foreground">Read our terms and conditions</p>
+                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Read our terms and conditions" el="Διαβάστε τους όρους χρήσης" compact /></p>
               </CardContent>
             </Card>
           </Link>
           <Link href="/privacy" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Privacy Policy</h3>
-                <p className="text-xs text-muted-foreground">Learn how we protect your data</p>
+                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Learn how we protect your data" el="Μάθετε πώς προστατεύουμε τα δεδομένα σας" compact /></p>
               </CardContent>
             </Card>
           </Link>
           <Link href="/settings" className="group">
-            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+            <Card className="h-full shadow-sm border-border hover:border-primary/40 transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5">Account Settings</h3>
-                <p className="text-xs text-muted-foreground">Manage your preferences</p>
+                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact /></h3>
+                <p className="text-xs text-muted-foreground"><BilingualText en="Manage your preferences" el="Διαχειριστείτε τις προτιμήσεις σας" compact /></p>
               </CardContent>
             </Card>
           </Link>

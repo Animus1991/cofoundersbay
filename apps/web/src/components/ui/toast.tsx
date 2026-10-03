@@ -5,6 +5,10 @@ import { createContext, useContext, useCallback, useState, useEffect } from 'rea
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { toastEl } from '@/lib/i18n/strings-toasts';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -48,7 +52,10 @@ export function useToast() {
   return context;
 }
 
-const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>> = {
+/** More than this on screen at once is noise; the oldest are dropped. */
+const MAX_VISIBLE_TOASTS = 4;
+
+const toastIcons: Record<ToastType, typeof CheckCircle> = {
   success: CheckCircle,
   error: AlertCircle,
   warning: AlertTriangle,
@@ -56,50 +63,97 @@ const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>>
 };
 
 const toastStyles: Record<ToastType, string> = {
-  success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  error: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
-  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-  info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  success: 'border-status-success-border/40 bg-status-success-bg text-status-success',
+  error: 'border-status-danger-border/40 bg-status-danger-bg text-status-danger',
+  warning: 'border-status-warning-border/40 bg-status-warning-bg text-status-warning',
+  info: 'border-status-info-border/40 bg-status-info-bg text-status-info',
 };
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
   const Icon = toastIcons[toast.type];
+  const { primary } = useLanguagePreference();
+  const urgent = toast.type === 'error' || toast.type === 'warning';
+  const dismissLabel = primary === 'el'
+    ? bilingualAria('Κλείσιμο ειδοποίησης', 'Dismiss notification')
+    : bilingualAria('Dismiss notification', 'Κλείσιμο ειδοποίησης');
+  const remove = React.useRef(onRemove);
+  remove.current = onRemove;
+  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const started = React.useRef(0);
+  const remaining = React.useRef(0);
+  const timed = React.useRef(false);
+  const paused = React.useRef({ hover: false, focus: false });
+
+  const stopTimer = useCallback(() => {
+    if (timer.current === null) return;
+    clearTimeout(timer.current);
+    timer.current = null;
+    remaining.current = Math.max(0, remaining.current - (Date.now() - started.current));
+  }, []);
+
+  const startTimer = useCallback(() => {
+    const { hover, focus } = paused.current;
+    if (!timed.current || timer.current !== null || hover || focus) return;
+    started.current = Date.now();
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      remove.current();
+    }, remaining.current);
+  }, []);
 
   useEffect(() => {
-    const duration = toast.duration ?? 5000;
-    if (duration > 0) {
-      const timer = setTimeout(onRemove, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [toast.duration, onRemove]);
+    remaining.current = toast.duration ?? 5000;
+    timed.current = remaining.current > 0;
+    startTimer();
+    return stopTimer;
+  }, [toast.duration, startTimer, stopTimer]);
 
   return (
     <div
+      onMouseEnter={() => { paused.current.hover = true; stopTimer(); }}
+      onMouseLeave={() => { paused.current.hover = false; startTimer(); }}
+      onFocusCapture={() => { paused.current.focus = true; stopTimer(); }}
+      onBlurCapture={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        paused.current.focus = false;
+        startTimer();
+      }}
       className={cn(
-        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right',
+        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right motion-reduce:animate-none',
         toastStyles[toast.type]
       )}
     >
-      <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
-      <div className="flex-1 space-y-1">
-        <p className="text-sm font-semibold text-foreground">{toast.title}</p>
-        {toast.description && (
-          <p className="text-sm text-muted-foreground">{toast.description}</p>
-        )}
+      <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="min-w-0 flex-1 space-y-1">
+        <div role={urgent ? 'alert' : 'status'} aria-live={urgent ? 'assertive' : 'polite'} aria-atomic="true" className="space-y-1 break-words">
+          {/* Call sites pass English; the catalog supplies the Greek, so a
+              toast reads in both languages without touching ~360 callers. */}
+          <p className="text-sm font-semibold text-foreground">
+            <BilingualText en={toast.title} el={toastEl(toast.title)} stacked wrap />
+          </p>
+          {toast.description && (
+            <p className="text-sm text-muted-foreground">
+              <BilingualText en={toast.description} el={toastEl(toast.description)} />
+            </p>
+          )}
+        </div>
         {toast.action && (
           <button
+            type="button"
             onClick={toast.action.onClick}
-            className="mt-2 text-sm font-medium underline-offset-2 hover:underline"
+            className="mt-2 min-h-11 rounded-xl text-sm font-medium underline underline-offset-2 focus-ring"
           >
             {toast.action.label}
           </button>
         )}
       </div>
       <button
+        type="button"
+        aria-label={dismissLabel}
         onClick={onRemove}
-        className="rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl hover:bg-secondary transition-colors focus-ring"
       >
-        <X className="h-4 w-4" />
+        <X className="icon-sm" aria-hidden="true" />
       </button>
     </div>
   );
@@ -115,8 +169,21 @@ function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (i
   if (!container) return null;
 
   return createPortal(
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
-      {toasts.map((toast) => (
+    /* The region is named and live *before* any toast exists. A live region
+       inserted into the DOM at the same moment as its content is generally
+       not announced — screen readers watch regions they already know about —
+       so a viewport that only mounts alongside the first toast silently drops
+       that first announcement. The per-toast `role="status"`/`alert` below
+       stays: it is what escalates an error from polite to assertive. */
+    <div
+      role="region"
+      aria-label={bilingualAria('Notifications', 'Ειδοποιήσεις')}
+      aria-live="polite"
+      className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col gap-2 max-w-sm pointer-events-none sm:left-auto sm:right-4 sm:bottom-4"
+    >
+      {/* More than a handful on screen at once is noise rather than feedback,
+          and the stack grows off the top of the viewport. The oldest go. */}
+      {toasts.slice(-MAX_VISIBLE_TOASTS).map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
       ))}
     </div>,

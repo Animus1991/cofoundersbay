@@ -2,25 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import {
-  X, ArrowRight, User, Layout, FileText, Users, MessageSquare,
-  Zap, BookOpen, RefreshCw, UserPlus, Award,
-} from 'lucide-react';
+import { X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNextAction } from '@/hooks/useNextAction';
 import type { NextAction } from '@/lib/api';
+import { STATUS } from '@/lib/semantic-colors';
+import { bilingualAria } from '@/lib/i18n/format';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  User, Layout, FileText, Users, MessageSquare,
-  Zap, BookOpen, RefreshCw, UserPlus, Award,
+const ICON_MAP: Record<string, CfbGlyphName> = {
+  User: 'profile',
+  Layout: 'builder',
+  FileText: 'research',
+  Users: 'people',
+  MessageSquare: 'messages',
+  Zap: 'spark',
+  BookOpen: 'book',
+  RefreshCw: 'spark',
+  UserPlus: 'people',
+  Award: 'award',
 };
 
 const PRIORITY_STYLES: Record<NonNullable<NextAction['priority']>, string> = {
-  critical: 'border-l-4 border-l-rose-500 bg-rose-50 dark:bg-rose-950/30',
-  high:     'border-l-4 border-l-amber-500 bg-amber-50 dark:bg-amber-950/30',
-  medium:   'border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-950/30',
-  low:      'border-l-4 border-l-muted bg-muted/30',
+  critical: cn('border-l-4', STATUS.danger.border, STATUS.danger.bg),
+  high:     cn('border-l-4', STATUS.warning.border, STATUS.warning.bg),
+  medium:   cn('border-l-4', STATUS.info.border, STATUS.info.bg),
+  low:      'border-l-4 border-muted bg-muted/30',
 };
 
 interface BehavioralNudgeProps {
@@ -34,7 +42,6 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
   const [dismissed, setDismissed] = useState(false);
   const [mountKey, setMountKey] = useState(0);
 
-  // Reset dismissed state when a new action comes in
   useEffect(() => {
     if (action?.key) {
       setDismissed(false);
@@ -42,13 +49,16 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
     }
   }, [action?.key]);
 
-  if (isLoading || dismissed || !action) return null;
+  // `ctaHref` feeds <Link href>, which throws on undefined rather than warning,
+  // so an action without one is dropped instead of blanking the host page.
+  if (isLoading || dismissed || !action?.ctaHref) return null;
 
-  const Icon = ICON_MAP[action.icon] ?? Zap;
+  const glyph = ICON_MAP[action.icon] ?? 'spark';
+  const dismissLabel = bilingualAria('Dismiss suggestion', 'Απόρριψη πρότασης');
 
   const handleDismiss = () => {
     setDismissed(true);
-    dismiss('unknown'); // logId not returned by getNextAction — fire-and-forget
+    dismiss('unknown');
   };
 
   if (compact) {
@@ -56,20 +66,20 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
       <div
         key={mountKey}
         className={cn(
-          'flex items-center gap-3 rounded-lg border px-3 py-2 text-sm',
+          'flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm',
           PRIORITY_STYLES[action.priority],
           className,
         )}
       >
-        <Icon className="h-4 w-4 shrink-0 text-foreground/70" />
-        <span className="flex-1 text-foreground/90 text-xs">{action.title}</span>
-        <Link href={action.ctaHref}>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-            {action.ctaLabel} <ArrowRight className="ml-1 h-3 w-3" />
-          </Button>
-        </Link>
-        <button onClick={handleDismiss} className="text-muted-foreground hover:text-foreground ml-1">
-          <X className="h-3 w-3" />
+        <CfbGlyph name={glyph} className="icon-sm shrink-0 text-foreground/70" />
+        <span className="flex-1 text-xs text-foreground/90">{action.title}</span>
+        <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs" asChild>
+          <Link href={action.ctaHref}>
+            {action.ctaLabel} <ArrowRight className="ml-1 icon-sm" />
+          </Link>
+        </Button>
+        <button type="button" onClick={handleDismiss} className="ml-1 text-muted-foreground hover:text-foreground" aria-label={dismissLabel}>
+          <X className="icon-sm" />
         </button>
       </div>
     );
@@ -85,27 +95,28 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
       )}
     >
       <button
+        type="button"
         onClick={handleDismiss}
         className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-        aria-label="Dismiss suggestion"
+        aria-label={dismissLabel}
       >
-        <X className="h-4 w-4" />
+        <X className="icon-sm" />
       </button>
 
       <div className="flex items-start gap-3 pr-6">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background shadow-sm">
-          <Icon className="h-4 w-4 text-primary" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background">
+          <CfbGlyph name={glyph} className="icon-sm text-primary-accessible" />
         </div>
-        <div className="flex-1 space-y-1">
-          <p className="text-sm font-semibold text-foreground leading-snug">{action.title}</p>
-          <p className="text-xs text-muted-foreground leading-relaxed">{action.description}</p>
-          <div className="pt-1">
-            <Link href={action.ctaHref}>
-              <Button size="sm" className="h-7 gap-1.5 text-xs">
+        <div className="flex-1 space-y-1.5">
+          <p className="text-sm font-semibold leading-snug text-foreground">{action.title}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{action.description}</p>
+          <div className="pt-1.5">
+            <Button size="sm" className="h-9 gap-1.5 px-3 text-xs" asChild>
+              <Link href={action.ctaHref}>
                 {action.ctaLabel}
-                <ArrowRight className="h-3 w-3" />
-              </Button>
-            </Link>
+                <ArrowRight className="icon-sm" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

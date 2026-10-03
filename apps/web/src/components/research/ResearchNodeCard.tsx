@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, type CSSProperties } from 'react';
 import {
   FileText, Image as ImageIcon, Link as LinkIcon, StickyNote,
   MoreHorizontal, Lock, Unlock, Trash2, X,
@@ -39,6 +39,10 @@ import { VisualTemplateNode, type TemplateVariant } from './VisualTemplateNode';
 import { FlowDiagramNode, DEFAULT_FLOW_DIAGRAM } from './FlowDiagramNode';
 import { WhiteboardNode } from './WhiteboardNode';
 import { useRouter } from 'next/navigation';
+import { BilingualText } from '@/components/common/BilingualText';
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { researchEn, researchEl, RESEARCH_NODE_LABEL_EL } from '@/lib/i18n/strings-research';
+import { nodeVoteCount, CANVAS_NOTE_FILLS, resolveNoteFill, nodeChromeCss, nodePaintColor, readCfbHref, matchProductLink } from '@/lib/canvas/canvas-geometry';
 
 type NodeUpdateData = {
   title?: string;
@@ -71,6 +75,20 @@ interface ResearchNodeCardProps {
   zoom?: number;
   placingPin?: boolean;
   onPinPlaced?: () => void;
+  dimmed?: boolean;
+}
+
+function touchAsMouse(e: React.TouchEvent): React.MouseEvent {
+  const t = e.touches[0] ?? e.changedTouches[0];
+  return {
+    clientX: t.clientX,
+    clientY: t.clientY,
+    shiftKey: false,
+    stopPropagation: () => e.stopPropagation(),
+    preventDefault: () => e.preventDefault(),
+    target: e.target,
+    currentTarget: e.currentTarget,
+  } as unknown as React.MouseEvent;
 }
 
 /* ─── Color helpers ──────────────────────────────────────────── */
@@ -288,12 +306,51 @@ function getTypeIcon(type: string) {
   }
 }
 
-function getTypeLabel(type: string) {
-  return TYPE_DEFAULTS[type]?.label || 'DOC';
+function typeLabelEn(type: string) {
+  const raw = TYPE_DEFAULTS[type]?.label || 'Doc';
+  return raw.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function stripHtml(html: string) {
-  return html.replace(/<[^>]+>/g, '').trim();
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|blockquote|tr)>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
+}
+
+function contentBodyPreview(content: string | null | undefined, title: string | null | undefined, max = 180) {
+  if (!content) return null;
+  let text = stripHtml(content);
+  const t = title?.trim();
+  if (t && text.toLowerCase().startsWith(t.toLowerCase())) {
+    text = text.slice(t.length).replace(/^[\s:·\-–—]+/, '').trim();
+  }
+  if (!text) return null;
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+function NodeProductLink({ metadata, onOpen }: { metadata: unknown; onOpen: (href: string) => void }) {
+  const href = readCfbHref(metadata);
+  const match = matchProductLink(href);
+  if (!href || !match) return null;
+  return (
+    <button
+      type="button"
+      className="mt-1.5 flex w-fit items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-1.5 py-0.5"
+      onClick={(e) => { e.stopPropagation(); onOpen(href); }}
+    >
+      <LinkIcon className="h-2.5 w-2.5 text-primary-accessible" />
+      <span className="text-2xs font-medium text-primary-accessible">
+        <BilingualText en={researchEn(match.label)} el={researchEl(match.label)} compact />
+      </span>
+    </button>
+  );
 }
 
 function fmtSize(bytes: number) {
@@ -303,14 +360,12 @@ function fmtSize(bytes: number) {
 }
 
 /* ─── Node colors for color picker ───────────────────────────── */
-const COLOR_PALETTE = [
-  { label: 'Blue',   hex: '#3B82F6' },
-  { label: 'Purple', hex: '#A855F7' },
-  { label: 'Green',  hex: '#22C55E' },
-  { label: 'Amber',  hex: '#F59E0B' },
-  { label: 'Rose',   hex: '#F43F5E' },
-  { label: 'Slate',  hex: '#64748B' },
-];
+
+/** Light-theme ink for a card painted with a pastel wash (see its use below). */
+const WASHED_INK = {
+  '--foreground': '220 26% 9%',
+  '--muted-foreground': '220 10% 36%',
+} as CSSProperties;
 
 export function ResearchNodeCard({
   node,
@@ -327,6 +382,7 @@ export function ResearchNodeCard({
   zoom,
   placingPin,
   onPinPlaced,
+  dimmed = false,
 }: ResearchNodeCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -336,11 +392,19 @@ export function ResearchNodeCard({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const effectiveType = getEffectiveType(node);
-  const nodeColor = getNodeColor(node);
+  const wash = nodePaintColor(node.color, node.metadata);
+  const typeAccent = TYPE_DEFAULTS[effectiveType]?.color || TYPE_DEFAULTS[node.type]?.color || '#3B82F6';
+  const nodeColor = wash ? typeAccent : getNodeColor(node);
   const Icon = getTypeIcon(effectiveType);
-  const typeLabel = getTypeLabel(effectiveType);
+  const typeEn = typeLabelEn(effectiveType);
+  const typeEl = RESEARCH_NODE_LABEL_EL[effectiveType] ?? typeEn;
 
   const router = useRouter();
+
+  const handleTouchDragStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    onDragStart(touchAsMouse(e));
+  };
 
   // Close menus on outside click
   useEffect(() => {
@@ -364,9 +428,8 @@ export function ResearchNodeCard({
   // Get content preview (strip HTML) — available for all non-media/link types
   const getContentPreview = () => {
     const NON_TEXT = ['image', 'pdf', 'link', 'reference'];
-    if (!NON_TEXT.includes(effectiveType) && !NON_TEXT.includes(node.type) && node.content) {
-      const text = stripHtml(node.content);
-      return text.length > 120 ? text.slice(0, 120) + '…' : text;
+    if (!NON_TEXT.includes(effectiveType) && !NON_TEXT.includes(node.type)) {
+      return contentBodyPreview(node.content, node.title);
     }
     return null;
   };
@@ -404,8 +467,9 @@ export function ResearchNodeCard({
           width: `${node.width}px`,
           height: `${node.height || 120}px`,
           zIndex: isSelected ? 10 : (node.zIndex || 1),
+          ...nodeChromeCss(node.metadata),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -417,7 +481,12 @@ export function ResearchNodeCard({
           meta={shapeMeta}
           isSelected={isSelected}
           onLabelChange={(label) => onUpdate({ title: label })}
-          onMetaChange={(meta) => onUpdate({ metadata: meta as Record<string, unknown> })}
+          onMetaChange={(meta) => onUpdate({
+            metadata: meta as Record<string, unknown>,
+            // `node.color` is nullable; the shape prop is optional. Without the
+            // second fallback a cleared colour arrives as `null` and fails to type.
+            color: meta.fillColor ?? node.color ?? undefined,
+          })}
           onDelete={onDelete}
         />
         {isSelected && !node.locked && onResizeStart && (
@@ -443,7 +512,7 @@ export function ResearchNodeCard({
           height: `${node.height || 400}px`,
           zIndex: isSelected ? 10 : (node.zIndex || 2),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -475,7 +544,7 @@ export function ResearchNodeCard({
       <div
         className={cn('absolute group select-none', isDragging && 'opacity-75 scale-[1.02]')}
         style={{ left: `${node.posX}px`, top: `${node.posY}px`, width: `${node.width}px`, height: `${node.height || 360}px`, zIndex: isSelected ? 10 : (node.zIndex || 2) }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -505,7 +574,7 @@ export function ResearchNodeCard({
       <div
         className={cn('absolute group select-none', isDragging && 'opacity-75 scale-[1.02]')}
         style={{ left: `${node.posX}px`, top: `${node.posY}px`, width: `${node.width}px`, height: `${node.height || 400}px`, zIndex: isSelected ? 10 : (node.zIndex || 2) }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
@@ -548,18 +617,18 @@ export function ResearchNodeCard({
           borderColor: '#EC4899B3',
           zIndex: isSelected ? 10 : (node.zIndex || 2),
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onContextMenu={onContextMenu}
       >
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/50 shrink-0">
+        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border shrink-0">
           <div className="flex items-center gap-1.5">
-            <Spline className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
-            <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
+            <Spline className="icon-sm" style={{ color: '#EC4899' }} />
+            <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive">
-              <Trash2 className="w-3 h-3" />
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button aria-label="Delete" onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-destructive/10 text-destructive-accessible">
+              <Trash2 className="icon-sm" />
             </button>
           </div>
         </div>
@@ -572,9 +641,9 @@ export function ResearchNodeCard({
         </div>
         {isSelected && !node.locked && onResizeStart && (
           <>
-            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
-            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
-            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }} />
+            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
+            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
+            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }} />
           </>
         )}
       </div>
@@ -583,22 +652,15 @@ export function ResearchNodeCard({
 
   // ── Sticky note special rendering ──────────────────────────────────────
   if (isSticky) {
-    const STICKY_COLORS = [
-      { name: 'Yellow', bg: '#FEF3C7', border: '#F59E0B', text: '#92400E' },
-      { name: 'Green', bg: '#D1FAE5', border: '#10B981', text: '#065F46' },
-      { name: 'Blue', bg: '#DBEAFE', border: '#3B82F6', text: '#1E40AF' },
-      { name: 'Pink', bg: '#FCE7F3', border: '#EC4899', text: '#9D174D' },
-      { name: 'Purple', bg: '#EDE9FE', border: '#8B5CF6', text: '#5B21B6' },
-      { name: 'Orange', bg: '#FFEDD5', border: '#F97316', text: '#9A3412' },
-    ];
-    const stickyColor = STICKY_COLORS.find((c) => c.border === node.color) || STICKY_COLORS[0];
+    const stickyColor = resolveNoteFill(node.color);
+    const chrome = nodeChromeCss(node.metadata);
 
     return (
       <div
         className={cn(
-          'absolute group select-none rounded-lg shadow-md transition-all duration-150',
-          isSelected && 'ring-2 ring-primary ring-offset-1 shadow-lg',
-          isDragging && 'opacity-75 shadow-xl scale-[1.02]',
+          'absolute group select-none rounded-2xl border border-border shadow-sm transition-colors',
+          isSelected && 'border-foreground/20 shadow-md',
+          isDragging && 'opacity-75',
           'cursor-grab active:cursor-grabbing',
         )}
         style={{
@@ -606,11 +668,12 @@ export function ResearchNodeCard({
           top: `${node.posY}px`,
           width: `${node.width}px`,
           minHeight: '100px',
-          backgroundColor: stickyColor.bg,
-          borderLeft: `4px solid ${stickyColor.border}`,
+          backgroundColor: stickyColor.fill,
+          borderLeft: `4px solid ${stickyColor.accent}`,
           zIndex: isSelected ? 10 : (node.zIndex || 2),
+          ...chrome,
         }}
-        onMouseDown={onDragStart}
+        onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
         onClick={(e) => onSelect(e)}
         onDoubleClick={(e) => {
           if (!node.locked) {
@@ -624,34 +687,47 @@ export function ResearchNodeCard({
         {/* Sticky header with color dots + delete */}
         <div className="flex items-center justify-between px-2.5 pt-2 pb-1">
           <div className="flex items-center gap-1">
-            {STICKY_COLORS.map((c) => (
+            {CANVAS_NOTE_FILLS.map((c) => (
               <button
-                key={c.name}
-                onClick={(e) => { e.stopPropagation(); onUpdate({ color: c.border }); }}
-                className={cn('w-3 h-3 rounded-full border transition-transform hover:scale-125', node.color === c.border ? 'border-foreground/60 scale-125' : 'border-transparent')}
-                style={{ backgroundColor: c.border }}
-                title={c.name}
+                key={c.fill}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const meta = node.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
+                  onUpdate({ color: c.fill, metadata: { ...meta, fillColor: c.fill } });
+                }}
+                className={cn(
+                  'w-3 h-3 rounded-full border transition-transform hover:scale-125',
+                  resolveNoteFill(node.color).fill === c.fill ? 'border-foreground/60 scale-125' : 'border-transparent',
+                )}
+                style={{ backgroundColor: c.accent }}
+                aria-label={c.fill}
               />
             ))}
           </div>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button
               onClick={(e) => { e.stopPropagation(); onUpdate({ locked: !node.locked }); }}
-              className="w-4 h-4 flex items-center justify-center rounded hover:bg-black/10"
+              className="w-4 h-4 flex items-center justify-center rounded-md hover:bg-black/10"
             >
-              {node.locked ? <Lock className="w-2.5 h-2.5" style={{ color: stickyColor.text }} /> : <Unlock className="w-2.5 h-2.5 opacity-40" />}
+              {node.locked ? <Lock className="w-2.5 h-2.5" style={{ color: stickyColor.accent }} aria-hidden="true" /> : <Unlock className="w-2.5 h-2.5 opacity-40" aria-hidden="true" />}
             </button>
-            <button
+            <button aria-label="Delete"
               onClick={handleDelete}
-              className="w-4 h-4 flex items-center justify-center rounded hover:bg-red-200/50"
+              className="w-4 h-4 flex items-center justify-center rounded-md hover:bg-status-danger/20"
             >
-              <X className="w-2.5 h-2.5 text-destructive" />
+              <X className="w-2.5 h-2.5 text-destructive-accessible" />
             </button>
           </div>
         </div>
 
-        {/* Sticky content — inline editable */}
+        {/* Sticky content — title first, then body */}
         <div className="px-3 pb-3">
+          {node.title && (
+            <p className="mb-1 text-sm font-semibold leading-snug" style={{ color: stickyColor.accent }}>
+              {node.title}
+            </p>
+          )}
           {editingStickyContent ? (
             <textarea
               ref={stickyTextareaRef}
@@ -667,33 +743,41 @@ export function ResearchNodeCard({
               }}
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              className="w-full bg-transparent outline-none resize-none text-[12px] leading-relaxed"
-              style={{ color: stickyColor.text, minHeight: '60px' }}
+              className="w-full bg-transparent outline-none resize-none text-xs leading-relaxed"
+              style={{ color: stickyColor.accent, minHeight: '60px' }}
               autoFocus
-              placeholder="Write something…"
+              placeholder={researchEn('sticky_edit')}
+            />
+          ) : node.content?.includes('<') ? (
+            <SanitizedHtml
+              html={node.content}
+              className="min-h-[40px] cursor-text text-xs leading-relaxed [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_s]:line-through [&_mark]:bg-status-warning-bg [&_mark]:text-status-warning [&_ul]:list-disc [&_ul]:pl-3.5 [&_ol]:list-decimal [&_ol]:pl-3.5 [&_blockquote]:border-l-2 [&_blockquote]:pl-2 [&_pre]:font-mono [&_pre]:text-2xs"
+              style={{ color: stickyColor.accent }}
             />
           ) : (
             <p
-              className="text-[12px] leading-relaxed whitespace-pre-wrap cursor-text min-h-[40px]"
-              style={{ color: stickyColor.text }}
+              className="text-xs leading-relaxed whitespace-pre-wrap cursor-text min-h-[40px]"
+              style={{ color: stickyColor.accent }}
             >
-              {node.content ? stripHtml(node.content) : <span className="opacity-40 italic">Double-click to edit…</span>}
-            </p>
-          )}
-          {node.title && (
-            <p className="text-[10px] font-semibold mt-2 uppercase tracking-wide opacity-60" style={{ color: stickyColor.text }}>
-              {node.title}
+              {node.content
+                ? (contentBodyPreview(node.content, node.title, 400) ?? stripHtml(node.content))
+                : <span className="opacity-40 italic"><BilingualText en={researchEn('sticky_edit')} el={researchEl('sticky_edit')} /></span>}
             </p>
           )}
         </div>
+        {readCfbHref(node.metadata) && (
+          <div className="px-3 pb-2">
+            <NodeProductLink metadata={node.metadata} onOpen={(href) => router.push(href)} />
+          </div>
+        )}
 
         {/* Resize handles */}
         {isSelected && !node.locked && onResizeStart && (
           <>
-            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
-            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
-            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}>
-              <svg viewBox="0 0 14 14" className="w-full h-full"><path d="M12 2L2 12M12 6L6 12M12 10L10 12" stroke={stickyColor.border} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" /></svg>
+            <div className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }} />
+            <div className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }} />
+            <div className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10" onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}>
+              <svg viewBox="0 0 14 14" className="w-full h-full"><path d="M12 2L2 12M12 6L6 12M12 10L10 12" stroke={stickyColor.accent} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" /></svg>
             </div>
           </>
         )}
@@ -705,46 +789,60 @@ export function ResearchNodeCard({
   return (
     <div
       className={cn(
-        'absolute group select-none',
-        'rounded-xl border-2 bg-card transition-all duration-150',
+        'absolute group select-none overflow-hidden',
+        'rounded-2xl border border-border bg-card/95 transition-colors',
         'shadow-sm',
-        isSelected && 'ring-2 ring-primary ring-offset-1 shadow-md',
-        !isSelected && 'hover:shadow-md',
-        isDragging && 'opacity-75 shadow-xl scale-[1.02]',
+        isSelected && 'border-foreground/20 shadow-md',
+        !isSelected && 'hover:border-border hover:bg-muted/15',
+        isDragging && 'opacity-75',
         node.locked && 'border-dashed',
         'cursor-grab active:cursor-grabbing',
+        dimmed && 'pointer-events-none opacity-20',
       )}
       style={{
         left: `${node.posX}px`,
         top: `${node.posY}px`,
         width: `${node.width}px`,
         height: node.collapsed ? 'auto' : undefined,
-        borderColor: `${nodeColor}B3`,
+        backgroundColor: wash,
+        // A wash is a light pastel in every theme, but the text on the card
+        // reads theme tokens - so in the dark theme the title was
+        // `--foreground` at 96% lightness on a yellow note, about 1.1:1, and
+        // the type label and body sat not far above it. Scoping the light
+        // theme's ink to a washed card keeps every token-driven line on it
+        // legible without touching the unwashed cards, which sit on the
+        // canvas background and must keep following the theme.
+        ...(wash ? WASHED_INK : null),
         zIndex: isSelected ? 10 : (node.zIndex || 2),
+        ...nodeChromeCss(node.metadata),
       }}
-      onMouseDown={onDragStart}
+      onMouseDown={onDragStart} onTouchStart={handleTouchDragStart}
       onClick={(e) => onSelect(e)}
       onDoubleClick={onDoubleClick}
       onContextMenu={onContextMenu}
     >
       {/* Type strip + actions */}
-      <div className="flex items-center justify-between px-2.5 pt-2.5 pb-1.5">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Icon className="w-4 h-4 shrink-0" style={{ color: nodeColor }} />
-          <span
-            className="text-[10px] font-semibold uppercase tracking-wide"
-            style={{ color: nodeColor }}
-          >
-            {typeLabel}
+      <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-1.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="rounded-xl bg-primary/10 p-1.5 text-primary-accessible">
+            <Icon className="icon-sm shrink-0" style={{ color: nodeColor }} />
+          </div>
+          <span className="truncate text-2xs text-muted-foreground">
+            <BilingualText en={typeEn} el={typeEl} compact />
           </span>
+          {nodeVoteCount(node.metadata) > 0 && (
+            <span className="rounded-full bg-primary/10 px-1.5 text-2xs font-medium text-primary-accessible">
+              {nodeVoteCount(node.metadata)}
+            </span>
+          )}
         </div>
-        <div ref={menuRef} className="relative flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
-          <button
+        <div ref={menuRef} className={cn('relative flex items-center gap-0.5 transition-opacity', isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100')}>
+          {node.locked && <Lock className="icon-sm text-muted-foreground" />}
+          <button aria-label="More actions"
             onClick={(e) => { e.stopPropagation(); setShowMenu((p) => !p); setShowColorPicker(false); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
-            <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+            <MoreHorizontal className="icon-sm text-muted-foreground" />
           </button>
 
           {/* Context menu */}
@@ -755,57 +853,95 @@ export function ResearchNodeCard({
             >
               <button
                 onClick={() => { onDoubleClick(); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Open
+                <BookOpen className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_open')} el={researchEl('node_open')} compact />
               </button>
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-primary hover:bg-primary/10 w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
                 >
-                  <Rocket className="w-3.5 h-3.5" /> Open in Builder
+                  <Rocket className="icon-sm" /> <BilingualText en={researchEn('linked_builder')} el={researchEl('linked_builder')} compact />
                 </button>
               )}
               <button
                 onClick={() => { onUpdate({ locked: !node.locked }); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.locked
-                  ? <><Unlock className="w-3.5 h-3.5 text-muted-foreground" /> Unlock</>
-                  : <><Lock className="w-3.5 h-3.5 text-muted-foreground" /> Lock</>
+                  ? <><Unlock className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_unlock')} el={researchEl('node_unlock')} compact /></>
+                  : <><Lock className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_lock')} el={researchEl('node_lock')} compact /></>
                 }
               </button>
               <button
                 onClick={() => { onUpdate({ collapsed: !node.collapsed }); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.collapsed
-                  ? <><Eye className="w-3.5 h-3.5 text-muted-foreground" /> Expand</>
-                  : <><EyeOff className="w-3.5 h-3.5 text-muted-foreground" /> Collapse</>
+                  ? <><Eye className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_expand')} el={researchEl('node_expand')} compact /></>
+                  : <><EyeOff className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_collapse')} el={researchEl('node_collapse')} compact /></>
                 }
               </button>
               <button
                 onClick={() => { setShowColorPicker(true); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" /> Color
+                <Palette className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_color')} el={researchEl('node_color')} compact />
               </button>
               {onCommentClick && (
                 <button
                   onClick={() => { onCommentClick(); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" /> Comments
+                  <MessageCircle className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('node_comments')} el={researchEl('node_comments')} compact />
                 </button>
               )}
-              <div className="my-1 border-t border-border/60" />
+              <div className="px-3 py-1 text-2xs text-muted-foreground">
+                <BilingualText en={researchEn('convert')} el={researchEl('convert')} compact />
+              </div>
+              {(['question', 'hypothesis', 'evidence', 'insight'] as const).map((kind) => (
+                <button
+                  key={kind}
+                  onClick={() => {
+                    const meta = { ...((node.metadata as Record<string, unknown>) ?? {}), displayType: kind };
+                    onUpdate({ metadata: meta });
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
+                >
+                  <BilingualText
+                    en={researchEn(`capture_${kind}` as 'capture_question' | 'capture_hypothesis' | 'capture_evidence' | 'capture_insight')}
+                    el={researchEl(`capture_${kind}` as 'capture_question' | 'capture_hypothesis' | 'capture_evidence' | 'capture_insight')}
+                    compact
+                  />
+                </button>
+              ))}
+              <button
+                onClick={() => {
+                  onUpdate({ zIndex: (node.zIndex || 1) + 20 });
+                  setShowMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
+              >
+                <BilingualText en={researchEn('bring_front')} el={researchEl('bring_front')} compact />
+              </button>
+              <button
+                onClick={() => {
+                  onUpdate({ zIndex: Math.max(1, (node.zIndex || 1) - 20) });
+                  setShowMenu(false);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-foreground hover:bg-secondary"
+              >
+                <BilingualText en={researchEn('send_back')} el={researchEl('send_back')} compact />
+              </button>
+              <div className="my-1 border-t border-border" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-destructive hover:bg-destructive/10 w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete
+                <Trash2 className="icon-sm" /> <BilingualText en={researchEn('node_delete')} el={researchEl('node_delete')} compact />
               </button>
             </div>
           )}
@@ -816,16 +952,21 @@ export function ResearchNodeCard({
               className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg p-2 z-50 flex flex-wrap gap-1.5 w-[116px]"
               onClick={(e) => e.stopPropagation()}
             >
-              {COLOR_PALETTE.map((c) => (
+              {CANVAS_NOTE_FILLS.map((c) => (
                 <button
-                  key={c.hex}
-                  title={c.label}
-                  onClick={() => { onUpdate({ color: c.hex }); setShowColorPicker(false); }}
+                  key={c.fill}
+                  type="button"
+                  title={c.fill}
+                  onClick={() => {
+                    const meta = node.metadata && typeof node.metadata === 'object' ? { ...(node.metadata as Record<string, unknown>) } : {};
+                    onUpdate({ color: c.fill, metadata: { ...meta, fillColor: c.fill } });
+                    setShowColorPicker(false);
+                  }}
                   className={cn(
-                    'w-7 h-7 rounded-full border-2 transition-transform hover:scale-110',
-                    node.color === c.hex ? 'border-foreground' : 'border-transparent',
+                    'h-7 w-7 rounded-md border-2 transition-transform hover:scale-110',
+                    resolveNoteFill(node.color).fill === c.fill ? 'border-foreground' : 'border-transparent',
                   )}
-                  style={{ background: c.hex }}
+                  style={{ background: c.fill }}
                 />
               ))}
             </div>
@@ -835,7 +976,40 @@ export function ResearchNodeCard({
 
       {/* Content preview */}
       {!node.collapsed && (
-        <div className="px-2.5 pb-2.5">
+        <div className="px-3 pb-3">
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onBlur={() => {
+                setEditingTitle(false);
+                if (titleDraft.trim() && titleDraft !== node.title) onUpdate({ title: titleDraft.trim() });
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); }
+                if (e.key === 'Escape') { setTitleDraft(node.title || ''); setEditingTitle(false); }
+                e.stopPropagation();
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              className="mb-1 w-full bg-transparent px-0 py-0.5 text-sm font-semibold leading-snug text-foreground outline-none"
+              autoFocus
+            />
+          ) : (
+            <p
+              className="mb-1 cursor-text text-sm font-semibold leading-snug text-foreground line-clamp-2"
+              onDoubleClick={(e) => {
+                if (node.locked) return;
+                e.stopPropagation();
+                setTitleDraft(node.title || '');
+                setEditingTitle(true);
+              }}
+            >
+              {node.title || node.upload?.originalName || <BilingualText en={researchEn('node_untitled')} el={researchEl('node_untitled')} compact />}
+            </p>
+          )}
+
           {/* Image thumbnail */}
           {isImage && node.url && (
             <div className="rounded-lg overflow-hidden mb-2 h-24 bg-secondary">
@@ -858,16 +1032,16 @@ export function ResearchNodeCard({
                 {items.slice(0, 4).map((item) => (
                   <div key={item.id} className="flex items-center gap-1.5">
                     <div className={cn('w-3 h-3 rounded border shrink-0', item.checked ? 'bg-primary border-primary' : 'border-muted-foreground/40')} />
-                    <span className={cn('text-[11px] truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
+                    <span className={cn('text-2xs truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
                       {item.text || 'Untitled item'}
                     </span>
                   </div>
                 ))}
-                {items.length > 4 && <p className="text-[10px] text-muted-foreground/50">+{items.length - 4} more</p>}
+                {items.length > 4 && <p className="text-2xs text-muted-foreground/50">+{items.length - 4} more</p>}
                 {items.length > 0 && (
-                  <p className="text-[10px] text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
+                  <p className="text-2xs text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
                 )}
-                {items.length === 0 && <p className="text-[11px] text-muted-foreground/50 italic">Empty checklist</p>}
+                {items.length === 0 && <p className="text-2xs text-muted-foreground/50 italic">Empty checklist</p>}
               </div>
             );
           })()}
@@ -878,38 +1052,48 @@ export function ResearchNodeCard({
             const status = (meta?.status as string) || 'todo';
             const priority = (meta?.priority as string) || 'medium';
             const dueDate = meta?.dueDate as string | undefined;
-            const STATUS_COLORS: Record<string, string> = { todo: 'bg-slate-100 text-slate-600', in_progress: 'bg-blue-100 text-blue-700', done: 'bg-green-100 text-green-700', blocked: 'bg-red-100 text-red-700' };
-            const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600' };
+            const STATUS_COLORS: Record<string, string> = { todo: 'bg-status-neutral-bg text-status-neutral', in_progress: 'bg-status-info-bg text-status-info', done: 'bg-status-success-bg text-status-success', blocked: 'bg-status-danger-bg text-status-danger' };
+            // Four steps must stay visually distinct: amber and orange would both map to
+            // `warning`, collapsing medium into high. Opacity separates them without
+            // leaving the warm ramp the original intended.
+            const PRIORITY_COLORS: Record<string, string> = { low: 'text-status-neutral', medium: 'text-status-warning/70', high: 'text-status-warning', urgent: 'text-status-danger' };
             return (
               <div className="flex flex-wrap gap-1 items-center">
-                <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
+                <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
                   {status.replace('_', ' ')}
                 </span>
-                <span className={cn('text-[10px] font-semibold', PRIORITY_COLORS[priority] || PRIORITY_COLORS['medium'])}>
+                <span className={cn('text-2xs font-semibold', PRIORITY_COLORS[priority] || PRIORITY_COLORS['medium'])}>
                   ● {priority}
                 </span>
-                {dueDate && <span className="text-[10px] text-muted-foreground">Due {dueDate}</span>}
+                {dueDate && <span className="text-2xs text-muted-foreground">Due {dueDate}</span>}
               </div>
             );
           })()}
 
           {/* Note/document content preview */}
           {contentPreview && !isImage && !isDoc && !isChecklist && !isTask && effectiveType !== 'link' && effectiveType !== 'reference' && node.type !== 'link' && node.type !== 'reference' && (
-            <p className="text-[11px] text-foreground/70 leading-relaxed line-clamp-4 whitespace-pre-wrap">
-              {contentPreview}
-            </p>
+            node.content?.includes('<') ? (
+              <SanitizedHtml
+                html={node.content}
+                className="text-xs leading-relaxed text-muted-foreground line-clamp-5 [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_s]:line-through [&_mark]:bg-status-warning-bg [&_mark]:text-status-warning [&_ul]:list-disc [&_ul]:pl-3.5 [&_ol]:list-decimal [&_ol]:pl-3.5 [&_blockquote]:border-l-2 [&_blockquote]:pl-2 [&_pre]:font-mono [&_pre]:text-2xs"
+              />
+            ) : (
+              <p className="text-xs leading-relaxed text-muted-foreground line-clamp-5 whitespace-pre-wrap">
+                {contentPreview}
+              </p>
+            )
           )}
 
           {/* Document/PDF file info — always show icon box for doc types */}
           {isDoc && (
             <div className="flex items-center gap-2 py-2 px-2 rounded-lg bg-secondary mb-1.5">
-              <Icon className="w-6 h-6 opacity-70 shrink-0" style={{ color: nodeColor }} />
+              <Icon className="icon-lg opacity-70 shrink-0" style={{ color: nodeColor }} />
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-2xs text-muted-foreground truncate">
                   {node.upload?.mimeType ?? 'Document'}
                 </p>
                 {node.upload?.sizeBytes && (
-                  <p className="text-[10px] text-muted-foreground/60">{fmtSize(node.upload.sizeBytes)}</p>
+                  <p className="text-2xs text-muted-foreground">{fmtSize(node.upload.sizeBytes)}</p>
                 )}
               </div>
             </div>
@@ -917,14 +1101,14 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-[11px] text-primary truncate underline">{node.url}</p>
+            <p className="text-2xs text-primary-accessible truncate underline">{node.url}</p>
           )}
 
           {/* Reference preview */}
           {(effectiveType === 'reference' || node.type === 'reference') && (
             <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-secondary">
-              <Users className="w-5 h-5 text-muted-foreground shrink-0" />
-              <span className="text-[11px] text-muted-foreground truncate">Entity reference</span>
+              <Users className="icon-md text-muted-foreground shrink-0" />
+              <span className="text-2xs text-muted-foreground truncate">Entity reference</span>
             </div>
           )}
 
@@ -934,13 +1118,13 @@ export function ResearchNodeCard({
               {node.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground"
+                  className="text-2xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground"
                 >
                   {tag}
                 </span>
               ))}
               {node.tags.length > 3 && (
-                <span className="text-[9px] text-muted-foreground">+{node.tags.length - 3}</span>
+                <span className="text-2xs text-muted-foreground">+{node.tags.length - 3}</span>
               )}
             </div>
           )}
@@ -952,52 +1136,21 @@ export function ResearchNodeCard({
               onClick={(e) => { e.stopPropagation(); router.push('/builder'); }}
               title="Linked to a Builder document — click to open Builder"
             >
-              <Rocket className="w-2.5 h-2.5 text-primary" />
-              <span className="text-[9px] font-medium text-primary">Linked to Builder</span>
+              <Rocket className="w-2.5 h-2.5 text-primary-accessible" />
+              <span className="text-2xs font-medium text-primary-accessible">
+                <BilingualText en={researchEn('linked_builder')} el={researchEl('linked_builder')} compact />
+              </span>
             </div>
           )}
-
-          {/* Title at the bottom — inline editable on double-click */}
-          {editingTitle ? (
-            <input
-              ref={titleInputRef}
-              value={titleDraft}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              onBlur={() => {
-                setEditingTitle(false);
-                if (titleDraft.trim() && titleDraft !== node.title) onUpdate({ title: titleDraft.trim() });
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') { (e.target as HTMLInputElement).blur(); }
-                if (e.key === 'Escape') { setTitleDraft(node.title || ''); setEditingTitle(false); }
-                e.stopPropagation();
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="mt-2 w-full text-[12px] font-medium text-foreground leading-snug bg-transparent border-b border-primary outline-none px-0 py-0.5"
-              autoFocus
-            />
-          ) : (
-            <p
-              className="mt-2 text-[12px] font-medium text-foreground leading-snug line-clamp-2 cursor-text"
-              onDoubleClick={(e) => {
-                if (node.locked) return;
-                e.stopPropagation();
-                setTitleDraft(node.title || '');
-                setEditingTitle(true);
-              }}
-            >
-              {node.title || node.upload?.originalName || 'Untitled'}
-            </p>
-          )}
+          <NodeProductLink metadata={node.metadata} onOpen={(href) => router.push(href)} />
         </div>
       )}
 
       {/* Collapsed indicator */}
       {node.collapsed && (
         <div className="px-2.5 pb-2 flex items-center gap-1.5">
-          <Minimize2 className="w-3 h-3 text-muted-foreground" />
-          <span className="text-[11px] text-muted-foreground truncate">
+          <Minimize2 className="icon-sm text-muted-foreground" />
+          <span className="text-2xs text-muted-foreground truncate">
             {node.title || 'Untitled'}
           </span>
         </div>
@@ -1019,17 +1172,17 @@ export function ResearchNodeCard({
         <>
           {/* Right edge */}
           <div
-            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 rounded-r"
+            className="absolute top-2 -right-1 w-2 h-[calc(100%-16px)] cursor-ew-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity hover:bg-primary/20 rounded-r"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'right'); }}
           />
           {/* Bottom edge */}
           <div
-            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/20 rounded-b"
+            className="absolute -bottom-1 left-2 w-[calc(100%-16px)] h-2 cursor-ns-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity hover:bg-primary/20 rounded-b"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'bottom'); }}
           />
           {/* Corner handle */}
           <div
-            className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 cursor-nwse-resize opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity z-10"
             onMouseDown={(e) => { e.stopPropagation(); onResizeStart(e, 'corner'); }}
           >
             <svg viewBox="0 0 14 14" className="w-full h-full">

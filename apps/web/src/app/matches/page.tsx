@@ -11,8 +11,10 @@ import {
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
-import { getRecommendations, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
+import { getRecommendations, getMatchBreakdown, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +29,47 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
+import { BilingualText } from '@/components/common/BilingualText';
+import { matchesEn, matchesEl } from '@/lib/i18n/strings-matches';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
+import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+
+const MATCHES_TOUR: TourStep[] = [
+  {
+    target: 'matches-stats',
+    titleEn: 'Your match summary',
+    titleEl: 'Η σύνοψη των αντιστοιχίσεών σας',
+    bodyEn: 'Total matches, how many score 80%+ ("excellent"), and your average and top score. These count every match, not just the ones shown after filtering.',
+    bodyEl: 'Σύνολο αντιστοιχίσεων, πόσες έχουν 80%+ («εξαιρετικές») και η μέση και κορυφαία βαθμολογία σας. Μετρούν όλες τις αντιστοιχίσεις, όχι μόνο όσες φαίνονται μετά το φιλτράρισμα.',
+  },
+  {
+    target: 'matches-tiers',
+    titleEn: 'Filter by match tier',
+    titleEl: 'Φίλτρο ανά επίπεδο ταιριάσματος',
+    bodyEn: 'Tap a tier to see only excellent, strong, or good matches. Tap it again to clear. Role, location and availability filters live in the page tools on the right.',
+    bodyEl: 'Πατήστε ένα επίπεδο για να δείτε μόνο εξαιρετικές, ισχυρές ή καλές αντιστοιχίσεις. Πατήστε ξανά για καθαρισμό. Τα φίλτρα ρόλου, τοποθεσίας και διαθεσιμότητας είναι στα εργαλεία σελίδας δεξιά.',
+  },
+  {
+    target: 'matches-toolbar',
+    titleEn: 'Select, search, and change the view',
+    titleEl: 'Επιλογή, αναζήτηση και αλλαγή προβολής',
+    bodyEn: 'Select mode lets you pick two profiles and compare them side by side. Search finds a name, headline or skill. The view switch toggles grid or list.',
+    bodyEl: 'Η λειτουργία επιλογής σάς αφήνει να διαλέξετε δύο προφίλ και να τα συγκρίνετε δίπλα-δίπλα. Η αναζήτηση βρίσκει όνομα, τίτλο ή δεξιότητα. Ο διακόπτης προβολής αλλάζει πλέγμα ή λίστα.',
+  },
+  {
+    target: 'matches-grid',
+    titleEn: 'Read "Why you match" before reaching out',
+    titleEl: 'Διαβάστε το «Γιατί ταιριάζετε» πριν επικοινωνήσετε',
+    bodyEn: 'Each card shows the score and the reasons behind it. Use Connect to send a request, Save to keep the profile for later, or Pass to hide it — Pass can be undone.',
+    bodyEl: 'Κάθε κάρτα δείχνει τη βαθμολογία και τους λόγους πίσω από αυτή. Με Σύνδεση στέλνετε αίτημα, με Αποθήκευση κρατάτε το προφίλ για αργότερα, με Παράλειψη το κρύβετε — η Παράλειψη αναιρείται.',
+  },
+];
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 const MatchCompatibilityChart = dynamic(
@@ -38,50 +79,105 @@ const MatchCompatibilityChart = dynamic(
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
 
-function buildDimensions(score: number) {
-  const clamp = (v: number) => Math.max(0, Math.min(100, v));
-  return [
-    { subject: 'Skills',   value: clamp(score + Math.round(score * 0.08)),  fullMark: 100 },
-    { subject: 'Stage',    value: clamp(score - Math.round(score * 0.05)),  fullMark: 100 },
-    { subject: 'Industry', value: clamp(score + Math.round(score * 0.12)),  fullMark: 100 },
-    { subject: 'Location', value: clamp(score - Math.round(score * 0.15)),  fullMark: 100 },
-    { subject: 'Values',   value: clamp(score + Math.round(score * 0.04)),  fullMark: 100 },
-  ];
-}
+/*
+ * The five axes on this radar used to be one score nudged by fixed percentages
+ * — +8% became "Skills", -15% became "Location" — which drew a shape that
+ * looked measured and was arithmetic on a single number. The matching engine
+ * already scores six real dimensions (`GET /api/recommendations/vs/:id`, the
+ * same computation that ranks these very cards), so the chart reads those. If
+ * the breakdown cannot be fetched the chart is absent, not invented.
+ */
 
 function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
+  const { data: detail, isLoading: detailLoading } = useQuery({
+    queryKey: qk('matching', 'breakdown', hit?.userId),
+    queryFn: () => getMatchBreakdown(hit!.userId),
+    enabled: open && Boolean(hit?.userId),
+    staleTime: 5 * 60_000,
+    retry: 0,
+  });
+
   if (!hit) return null;
-  const score = hit.matchScore ?? 50;
-  const dims = buildDimensions(score);
-  const reasons: MatchReason[] = hit.matchReasons?.length
-    ? hit.matchReasons.map((t) => ({ type: 'skills' as const, text: t, score: 0 }))
-    : buildMatchReasonsFromScore(score);
+
+  // The engine's own overall score when it answered; the list score otherwise.
+  const score = detail?.overall.score ?? hit.matchScore ?? 50;
+  const confidence = detail?.overall.confidence ?? null;
+  const dims = detail?.breakdown.map((axis) => ({
+    subject: axis.label,
+    value: axis.score,
+    fullMark: 100,
+  })) ?? null;
+  const reasonTexts = detail?.reasons?.length ? detail.reasons : (hit.matchReasons ?? []);
+  const reasons: MatchReason[] = reasonTexts.map((t) => ({ type: 'skills' as const, text: t, score: 0 }));
+  const strengths = detail?.sharedStrengths ?? [];
+  const frictions = detail?.frictionPoints ?? [];
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Compatibility with {hit.displayName}
+            <BarChart3 className="icon-md text-primary-accessible" />
+            <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-4xl font-extrabold tabular-nums text-primary">{score}%</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Overall Match</p>
+            <p className="text-4xl font-bold tabular-nums text-primary-accessible">{score}%</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
+            </p>
+            {confidence != null && (
+              <p className="mt-1 text-2xs tabular-nums text-muted-foreground/80">
+                {confidence}%{' '}
+                <BilingualText en={matchesEn('match_confidence')} el={matchesEl('match_confidence')} compact />
+              </p>
+            )}
           </div>
         </div>
 
-        <MatchCompatibilityChart dims={dims} />
+        {dims ? (
+          <MatchCompatibilityChart dims={dims} />
+        ) : (
+          <p className="rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+            <BilingualText
+              en={detailLoading ? matchesEn('breakdown_loading') : matchesEn('breakdown_unavailable')}
+              el={detailLoading ? matchesEl('breakdown_loading') : matchesEl('breakdown_unavailable')}
+            />
+          </p>
+        )}
+
+        {strengths.length > 0 && (
+          <div className="rounded-lg border border-border bg-status-success-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('shared_strengths')} el={matchesEl('shared_strengths')} />
+            </p>
+            {strengths.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
+
+        {frictions.length > 0 && (
+          <div className="rounded-lg border border-border bg-status-warning-bg/40 p-3 space-y-1.5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <BilingualText en={matchesEn('watch_outs')} el={matchesEl('watch_outs')} />
+            </p>
+            {frictions.map((t) => (
+              <p key={t} className="text-sm text-foreground">{t}</p>
+            ))}
+          </div>
+        )}
 
         {reasons.length > 0 && (
-          <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you match</p>
+          <div className="rounded-lg border border-border bg-secondary/30 p-3 space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
+            </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <Zap className="icon-sm text-primary-accessible mt-0.5 flex-shrink-0" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -90,16 +186,6 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       </DialogContent>
     </Dialog>
   );
-}
-
-function buildMatchReasonsFromScore(score: number): MatchReason[] {
-  const reasons: MatchReason[] = [];
-  if (score >= 30) reasons.push({ type: 'skills', text: 'Complementary role & skills', score: 30 });
-  if (score >= 45) reasons.push({ type: 'stage', text: 'Matching startup stage', score: Math.min(20, score - 30) });
-  if (score >= 65) reasons.push({ type: 'industry', text: 'Similar industry focus', score: 15 });
-  if (score >= 80) reasons.push({ type: 'location', text: 'Same location', score: 10 });
-  if (reasons.length === 0) reasons.push({ type: 'skills', text: 'Potential match', score });
-  return reasons;
 }
 
 function hitToProfile(hit: SearchHit): ProfileCardData {
@@ -125,21 +211,34 @@ type SortKey = 'score' | 'name' | 'recent';
 type AvailFilter = 'full_time' | 'part_time' | 'advisory' | 'contract';
 type ViewMode = 'grid2' | 'grid3' | 'list';
 
-const TIER_COLORS = {
-  excellent: '#4ADE80',
-  strong:    '#22D3EE',
-  good:      '#FB923C',
-  potential: '#F87171',
+type MatchTier = 'excellent' | 'strong' | 'good' | 'potential';
+
+const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
+  excellent: 'success',
+  strong: 'info',
+  good: 'warning',
+  potential: 'danger',
 };
 
-const TIER_CLASSES: Record<string, string> = {
-  excellent: 'bg-green-500/10 text-green-600 border-green-500/20',
-  strong:    'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
-  good:      'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  potential: 'bg-red-500/10 text-red-500 border-red-500/20',
+const TIER_STROKE: Record<MatchTier, string> = {
+  excellent: 'hsl(var(--status-success-mark))',
+  strong: 'hsl(var(--status-info-mark))',
+  good: 'hsl(var(--status-warning-mark))',
+  potential: 'hsl(var(--status-danger-mark))',
 };
 
-function getTier(score: number): keyof typeof TIER_COLORS {
+const TIER_DOT: Record<MatchTier, string> = {
+  excellent: 'bg-status-success-mark',
+  strong: 'bg-status-info-mark',
+  good: 'bg-status-warning-mark',
+  potential: 'bg-status-danger-mark',
+};
+
+function tierStyle(tier: MatchTier) {
+  return STATUS[MATCH_TIER_TONE[tier]];
+}
+
+function getTier(score: number): MatchTier {
   if (score >= 80) return 'excellent';
   if (score >= 65) return 'strong';
   if (score >= 45) return 'good';
@@ -178,18 +277,19 @@ function MatchListRow({
 }) {
   const score = hit.matchScore ?? 50;
   const tier = getTier(score);
-  const color = TIER_COLORS[tier];
+  const colors = tierStyle(tier);
+  const stroke = TIER_STROKE[tier];
   const initials = hit.displayName.slice(0, 2).toUpperCase();
 
   return (
-    <Card className="shadow-sm border-border/50 hover:shadow-md transition-all group">
+    <Card className="shadow-sm border-border hover:border-primary/30 transition-all group">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Score ring + avatar */}
           <div className="relative shrink-0">
             <svg width={52} height={52} viewBox="0 0 52 52" className="absolute inset-0">
               <circle cx={26} cy={26} r={23} fill="none" stroke="hsl(var(--border))" strokeWidth={3} />
-              <circle cx={26} cy={26} r={23} fill="none" stroke={color} strokeWidth={3}
+              <circle cx={26} cy={26} r={23} fill="none" stroke={stroke} strokeWidth={3}
                 strokeDasharray={`${(score / 100) * 2 * Math.PI * 23} ${2 * Math.PI * 23}`}
                 strokeDashoffset={2 * Math.PI * 23 * 0.25}
                 strokeLinecap="round" />
@@ -206,16 +306,16 @@ function MatchListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${hit.userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <Badge variant="outline" className={cn('text-[10px] h-5', TIER_CLASSES[tier])}>
+                  <Badge variant="outline" className={cn('text-2xs h-5 border', colors.chip)}>
                     {tier.charAt(0).toUpperCase() + tier.slice(1)} · {score}%
                   </Badge>
                   {hit.location && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />{hit.location}
+                      <MapPin className="icon-sm" />{hit.location}
                     </span>
                   )}
                 </div>
@@ -223,15 +323,15 @@ function MatchListRow({
               </div>
               {/* Score text */}
               <div className="text-right shrink-0">
-                <p className="text-lg font-black tabular-nums leading-none" style={{ color }}>{score}%</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">match</p>
+                <p className={cn('text-lg font-black tabular-nums leading-none', colors.icon)}>{score}%</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">match</p>
               </div>
             </div>
 
             {/* Skills + reasons */}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                <span key={s} className="rounded-md bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -244,8 +344,8 @@ function MatchListRow({
             {matchReasons.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {matchReasons.slice(0, 3).map((r, i) => (
-                  <span key={i} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Zap className="h-2.5 w-2.5 shrink-0" style={{ color }} />
+                  <span key={i} className="flex items-center gap-1 text-2xs text-muted-foreground">
+                    <Zap className={cn('h-2.5 w-2.5 shrink-0', colors.icon)} />
                     {r.text}
                   </span>
                 ))}
@@ -255,29 +355,30 @@ function MatchListRow({
         </div>
 
         {/* Actions */}
-        <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
-              title="Pass">
-              <X className="h-3.5 w-3.5" />
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              aria-label={`Pass on ${hit.displayName}`}>
+              <X className="icon-sm" />
             </button>
             <button onClick={onSave}
-              className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? 'text-amber-400' : 'border border-border/60 text-muted-foreground hover:text-amber-400')}
-              title={isSaved ? 'Saved' : 'Save to shortlist'}>
-              {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
+              aria-pressed={isSaved}
+              aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
+              {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
             </button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
-              <BarChart3 className="h-3.5 w-3.5" /> Breakdown
+              className="flex min-h-10 items-center gap-1.5 rounded-xl px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
+              <BarChart3 className="icon-sm" /> <BilingualText en="Breakdown" el="Ανάλυση" compact />
             </button>
-            <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
-              <MessageCircle className="h-3.5 w-3.5" /> Message
+            <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
+              <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
-            <Button size="sm" onClick={onConnect} className="h-8 gap-1.5 text-xs px-3">
-              <Heart className="h-3.5 w-3.5" /> Connect
+            <Button size="sm" onClick={onConnect} className="h-10 gap-1.5 px-3 text-xs">
+              <Heart className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
             </Button>
           </div>
         </div>
@@ -302,34 +403,34 @@ function MatchPreviewPanel({
 }) {
   const score = hit.matchScore ?? 50;
   const tier = getTier(score);
-  const color = TIER_COLORS[tier];
+  const colors = tierStyle(tier);
   const isSaved = savedIds.has(hit.userId);
 
   return (
     <>
       {/* Backdrop (mobile) */}
-      <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
+      <div aria-hidden="true" className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-[360px] z-50 border-l border-border/60 bg-card shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
-          <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
-            <X className="h-4 w-4" />
+        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm">
+          <p className="text-sm font-semibold"><BilingualText en="Profile Preview" el="Προεπισκόπηση προφίλ" compact /></p>
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
+            <X className="icon-sm" />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
-            <Avatar className="h-16 w-16 rounded-2xl border-2 border-border/60">
+            <Avatar className="h-16 w-16 rounded-xl border-2 border-border">
               <AvatarImage src={hit.avatarUrl ?? undefined} />
-              <AvatarFallback className="rounded-2xl text-base font-bold bg-muted">
+              <AvatarFallback className="rounded-xl text-base font-bold bg-muted">
                 {hit.displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <h3 className="mt-3 text-lg font-bold text-foreground">{hit.displayName}</h3>
+            <h3 className="mt-3 text-lg font-semibold text-foreground">{hit.displayName}</h3>
             <RoleBadge role={hit.role} size="sm" showIcon className="mt-1" />
             {hit.headline && (
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">{hit.headline}</p>
@@ -339,9 +440,9 @@ function MatchPreviewPanel({
           {/* Score */}
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
-              <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
-              <p className="text-[10px] font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
-                {TIER_CLASSES[tier] ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Match'}
+              <p className={cn('text-2xl font-bold tabular-nums', colors.icon)}>{score}%</p>
+              <p className={cn('text-2xs font-bold tracking-wider uppercase mt-0.5', colors.icon)}>
+                {tier.charAt(0).toUpperCase() + tier.slice(1)}
               </p>
             </div>
           </div>
@@ -350,12 +451,12 @@ function MatchPreviewPanel({
           <div className="flex flex-wrap gap-2">
             {hit.location && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" /> {hit.location}
+                <MapPin className="icon-sm" /> {hit.location}
               </span>
             )}
             {hit.availability && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" /> {hit.availability}
+                <Clock className="icon-sm" /> {hit.availability}
               </span>
             )}
           </div>
@@ -363,7 +464,7 @@ function MatchPreviewPanel({
           {/* Skills */}
           {(hit.skillNames ?? []).length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Skills" el="Δεξιότητες" compact /></p>
               <div className="flex flex-wrap gap-1.5">
                 {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
               </div>
@@ -373,11 +474,11 @@ function MatchPreviewPanel({
           {/* Match reasons */}
           {matchReasons.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Why you match" el="Γιατί ταιριάζετε" compact /></p>
               <div className="space-y-1.5">
                 {matchReasons.map((r, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
+                    <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tier])} />
                     <span className="text-foreground">{r.text}</span>
                   </div>
                 ))}
@@ -386,32 +487,32 @@ function MatchPreviewPanel({
           )}
 
           {/* Actions */}
-          <div className="space-y-2 pt-2 border-t border-border/40">
+          <div className="space-y-2 pt-2 border-t border-border">
             <div className="flex gap-2">
               <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
-                <UserPlus className="h-3.5 w-3.5" /> Connect
+                <UserPlus className="icon-sm" /> <BilingualText en="Connect" el="Σύνδεση" compact />
               </Button>
               <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
-                <MessageCircle className="h-3.5 w-3.5" /> Message
+                <MessageCircle className="icon-sm" /> <BilingualText en="Message" el="Μήνυμα" compact />
               </Button>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
-                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" /> : <Bookmark className="h-3.5 w-3.5" />}
+                {isSaved ? <BookmarkCheck className={cn('icon-sm', STATUS.warning.icon)} /> : <Bookmark className="icon-sm" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
-                <X className="h-3.5 w-3.5" /> Pass
+              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive-accessible" onClick={onPass}>
+                <X className="icon-sm" /> <BilingualText en="Pass" el="Παράλειψη" compact />
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
-              <BarChart3 className="h-3.5 w-3.5" /> View breakdown
+              <BarChart3 className="icon-sm" /> <BilingualText en="View breakdown" el="Προβολή ανάλυσης" compact />
             </Button>
-            <Link href={`/profiles/${hit.userId}`}>
-              <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
-                <ArrowRight className="h-3.5 w-3.5" /> Full profile
-              </Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" asChild>
+              <Link href={`/profiles/${hit.userId}`}>
+                <ArrowRight className="icon-sm" /> <BilingualText en="Full profile" el="Πλήρες προφίλ" compact />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -437,7 +538,6 @@ export default function MatchesPage() {
   const [lastPassed, setLastPassed] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
   const [availFilter, setAvailFilter] = useState<Set<AvailFilter>>(new Set());
   const [previewTarget, setPreviewTarget] = useState<SearchHit | null>(null);
@@ -447,7 +547,7 @@ export default function MatchesPage() {
   const hasToken = useIsAuthenticated();
 
   const { data: shortlistIdsData } = useQuery({
-    queryKey: ['shortlist', 'ids'],
+    queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
     staleTime: 5 * 60_000,
     enabled: hasToken,
@@ -460,7 +560,7 @@ export default function MatchesPage() {
   }, [shortlistIdsData]);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['recommendations', 'matches', { limit: 50 }],
+    queryKey: qk('recommendations', 'matches', { limit: 50 }),
     queryFn: () => getRecommendations({ limit: 50 }),
     staleTime: 3 * 60_000,
     enabled: hasToken,
@@ -529,8 +629,8 @@ export default function MatchesPage() {
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
       setShowConnectionDialog(false);
       setConnectionTarget(null);
-      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: qk('recommendations') });
+      queryClient.invalidateQueries({ queryKey: qk('connections') });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }
@@ -573,139 +673,412 @@ export default function MatchesPage() {
     });
   }, [success]);
 
-  const TIER_TABS: { key: FilterKey; label: string; color?: string }[] = [
-    { key: 'all',       label: 'All' },
-    { key: 'excellent', label: 'Excellent',  color: TIER_COLORS.excellent },
-    { key: 'strong',    label: 'Strong',     color: TIER_COLORS.strong },
-    { key: 'good',      label: 'Good',       color: TIER_COLORS.good },
-    { key: 'potential', label: 'Potential',  color: TIER_COLORS.potential },
+  const TIER_TABS: { key: FilterKey; labelEn: string; labelEl: string; tier?: MatchTier }[] = [
+    { key: 'all',       labelEn: matchesEn('tier_all'),       labelEl: matchesEl('tier_all') },
+    { key: 'excellent', labelEn: matchesEn('tier_excellent'), labelEl: matchesEl('tier_excellent'), tier: 'excellent' },
+    { key: 'strong',    labelEn: matchesEn('tier_strong'),    labelEl: matchesEl('tier_strong'),    tier: 'strong' },
+    { key: 'good',      labelEn: matchesEn('tier_good'),      labelEl: matchesEl('tier_good'),      tier: 'good' },
+    { key: 'potential', labelEn: matchesEn('tier_potential'), labelEl: matchesEl('tier_potential'), tier: 'potential' },
   ];
 
-  const ROLE_TABS: { key: RoleFilter; label: string; icon: typeof Users }[] = [
-    { key: 'all',      label: 'All roles',  icon: Users },
-    { key: 'founder',  label: 'Founders',   icon: Briefcase },
-    { key: 'mentor',   label: 'Mentors',    icon: GraduationCap },
-    { key: 'investor', label: 'Investors',  icon: DollarSign },
-    { key: 'org',      label: 'Orgs',       icon: Users },
+  const ROLE_TABS: { key: RoleFilter; labelEn: string; labelEl: string; icon: typeof Users }[] = [
+    { key: 'all',      labelEn: matchesEn('all_roles'),  labelEl: matchesEl('all_roles'),  icon: Users },
+    { key: 'founder',  labelEn: matchesEn('founders'),   labelEl: matchesEl('founders'),   icon: Briefcase },
+    { key: 'mentor',   labelEn: matchesEn('mentors'),    labelEl: matchesEl('mentors'),    icon: GraduationCap },
+    { key: 'investor', labelEn: matchesEn('investors'),  labelEl: matchesEl('investors'),  icon: DollarSign },
+    { key: 'org',      labelEn: matchesEn('orgs'),       labelEl: matchesEl('orgs'),       icon: Users },
   ];
 
-  const AVAIL_OPTIONS: { key: AvailFilter; label: string }[] = [
-    { key: 'full_time', label: 'Full-time' },
-    { key: 'part_time', label: 'Part-time' },
-    { key: 'advisory',  label: 'Advisory' },
-    { key: 'contract',  label: 'Contract' },
+  const AVAIL_OPTIONS: { key: AvailFilter; labelEn: string; labelEl: string }[] = [
+    { key: 'full_time', labelEn: matchesEn('full_time'), labelEl: matchesEl('full_time') },
+    { key: 'part_time', labelEn: matchesEn('part_time'), labelEl: matchesEl('part_time') },
+    { key: 'advisory',  labelEn: matchesEn('advisory'),  labelEl: matchesEl('advisory') },
+    { key: 'contract',  labelEn: matchesEn('contract'),  labelEl: matchesEl('contract') },
   ];
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
+  /* How many, for the rail's badge - availability is one filter however many
+     values it holds, because that is how the reader thinks of it. */
+  const activeFilterCount =
+    (activeFilter !== 'all' ? 1 : 0) +
+    (roleFilter !== 'all' ? 1 : 0) +
+    (nameSearch ? 1 : 0) +
+    (locationFilter ? 1 : 0) +
+    (availFilter.size > 0 ? 1 : 0);
 
+  const askAi = hasToken && visible.length > 0
+    ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
+    : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
+
+  /*
+   * The filter column, as a rail.
+   *
+   * These are the same four filters and the same sort the page has always
+   * had, in the same order, with the same behaviour. What changes is that
+   * they stop costing 220px of the results on every visit that is not a
+   * filtering visit.
+   */
+  // Offered to the assistant: the rail's filters and sort and the column's
+  // view switch, through the same setters. Availability is a set, so its
+  // control toggles one value the way its chips do.
+  const VIEWS = [
+    { value: 'grid2', en: 'Two-column grid', el: 'Πλέγμα δύο στηλών' },
+    { value: 'grid3', en: 'Three-column grid', el: 'Πλέγμα τριών στηλών' },
+    { value: 'list', en: 'List', el: 'Λίστα' },
+  ];
+  usePageList([
+    {
+      id: 'matches',
+      labelEn: 'Matches',
+      labelEl: 'Αντιστοιχίσεις',
+      rows: !hasToken || isLoading ? undefined : filtered.map((s) =>
+        `${s.displayName} · ${s.role ?? 'member'} · match ${s.matchScore ?? '—'}%${s.headline ? ` · ${s.headline}` : ''}${s.location ? ` · ${s.location}` : ''}${savedIds.has(s.userId) ? ' · shortlisted' : ''}`,
+      ),
+      total: visible.length,
+    },
+  ]);
+  // The row's own buttons as commands, over the rows on screen: the same
+  // handlers the card and the list row call.
+  const hitRows = (list: SearchHit[]) => rowOptions(list, (h) => h.id, (h) => h.displayName);
+  const hitById = (id?: string) => filtered.find((h) => h.id === id);
+  usePageControls([
+    choiceControl('match_tier', 'Match strength filter', 'Φίλτρο ισχύος αντιστοίχισης', TIER_TABS, activeFilter, (v) => setActiveFilter(v as FilterKey)),
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_TABS, roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('sort', 'Sort matches', 'Ταξινόμηση αντιστοιχίσεων', [
+      { key: 'score', labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match') },
+      { key: 'name', labelEn: matchesEn('sort_name_az'), labelEl: matchesEl('sort_name_az') },
+      { key: 'recent', labelEn: matchesEn('sort_newest'), labelEl: matchesEl('sort_newest') },
+    ], sortBy, (v) => setSortBy(v as SortKey)),
+    choiceControl('view', 'Match layout', 'Διάταξη αντιστοιχίσεων', VIEWS, viewMode, (v) => setViewMode(v as ViewMode)),
+    {
+      id: 'availability',
+      labelEn: 'Toggle availability filter',
+      labelEl: 'Εναλλαγή φίλτρου διαθεσιμότητας',
+      writes: false,
+      options: AVAIL_OPTIONS.map((o) => ({ value: o.key, labelEn: o.labelEn, labelEl: o.labelEl })),
+      run: (value) => {
+        if (!value) return;
+        setAvailFilter((prev) => {
+          const next = new Set(prev);
+          if (next.has(value as AvailFilter)) next.delete(value as AvailFilter);
+          else next.add(value as AvailFilter);
+          return next;
+        });
+      },
+    },
+    {
+      id: 'connect_with',
+      labelEn: 'Open a connection request to',
+      labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς',
+      writes: false,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handleConnect(hitToProfile(hit)); },
+    },
+    {
+      id: 'message_match',
+      labelEn: 'Message match',
+      labelEl: 'Μήνυμα σε αντιστοίχιση',
+      writes: false,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handleMessage(hitToProfile(hit)); },
+    },
+    {
+      id: 'shortlist_match',
+      labelEn: 'Save match to shortlist',
+      labelEl: 'Αποθήκευση αντιστοίχισης στη λίστα',
+      writes: true,
+      options: hitRows(filtered.filter((h) => !savedIds.has(h.userId))),
+      // A save creates a fresh shortlist row, so removing it takes the save
+      // back. Not the reverse: removing drops the row's note, which saving
+      // again does not restore.
+      undo: (v) => ({ control: 'unshortlist_match', value: v }),
+      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+    },
+    {
+      id: 'unshortlist_match',
+      labelEn: 'Remove match from shortlist',
+      labelEl: 'Αφαίρεση αντιστοίχισης από τη λίστα',
+      writes: true,
+      options: hitRows(filtered.filter((h) => savedIds.has(h.userId))),
+      run: (v) => { const hit = hitById(v); if (hit) handleSave(hit.userId, hit.displayName); },
+    },
+    {
+      id: 'pass_match',
+      labelEn: 'Pass on match',
+      labelEl: 'Παράλειψη αντιστοίχισης',
+      writes: true,
+      options: hitRows(filtered),
+      run: (v) => { const hit = hitById(v); if (hit) handlePass(hit.id, hit.displayName, hit.userId); },
+    },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      // The count is what keeps a collapsed rail honest: a narrowed list
+      // with no visible reason reads as a broken list.
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-2.5">
+
+          {/* Role filter */}
+          <Card className="shadow-sm border-border">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+          <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
+          </p>
+          {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
+          const isActive = roleFilter === key;
+          return (
+          <button key={key} onClick={() => setRoleFilter(key)}
+          className={cn(
+          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+          )}>
+          <Icon className="icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Location */}
+          <Card className="shadow-sm border-border">
+          <CardContent className="p-3 space-y-1.5">
+          <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
+          <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
+          </p>
+          <div className="relative">
+          <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
+          <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+          placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
+          className="w-full h-8 rounded-lg border border-border bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
+          {locationFilter && (
+          <button aria-label="Clear location filter" onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <X className="icon-sm" />
+          </button>
+          )}
+          </div>
+          </CardContent>
+          </Card>
+
+          {/* Availability */}
+          <Card className="shadow-sm border-border">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
+          </p>
+          {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
+          const isOn = availFilter.has(key);
+          return (
+          <button key={key} onClick={() => setAvailFilter(prev => {
+          const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
+          })}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <span className={cn('mt-0.5 flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border-2 transition-colors',
+          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
+          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
+          </span>
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          );
+          })}
+          </CardContent>
+          </Card>
+
+          {/* Clear all */}
+          {hasActiveFilters && (
+          <button
+          onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
+          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border hover:bg-secondary hover:text-foreground transition-colors">
+          <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
+          </button>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'sort',
+      glyph: 'compare',
+      labelEn: 'Sort',
+      labelEl: 'Ταξινόμηση',
+      content: (
+        <div className="space-y-2.5">
+          {/* Sort */}
+          <Card className="shadow-sm border-border">
+          <CardContent className="p-3 space-y-0.5">
+          <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
+          <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
+          </p>
+          {([
+          { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
+          { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
+          { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
+          ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
+          <button key={key} onClick={() => setSortBy(key)}
+          className={cn('flex w-full items-start gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-medium leading-snug transition-all',
+          sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+          <Icon className="mt-0.5 icon-sm shrink-0" />
+          <BilingualText en={labelEn} el={labelEl} compact wrap />
+          </button>
+          ))}
+          </CardContent>
+          </Card>
+
+        </div>
+      ),
+    },
+    {
+      id: 'next',
+      glyph: 'discover',
+      labelEn: 'Find more people',
+      labelEl: 'Βρείτε περισσότερα άτομα',
+      content: (
+        <div className="space-y-2">
+          <Button asChild variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 whitespace-normal px-3 py-3 text-left">
+            <Link href="/discover">
+              <CfbGlyph name="discover" className="icon-sm shrink-0 text-primary-accessible" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium leading-snug">
+                  <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} wrap />
+                </span>
+                <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
+                  <BilingualText en="Search beyond this ranked list." el="Αναζήτηση πέρα από αυτή την κατάταξη." wrap />
+                </span>
+              </span>
+              <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            </Link>
+          </Button>
+        </div>
+      ),
+    },
+  ];
   return (
     <AppShell
-      title="Matches"
-      description="AI-ranked co-founder and team matches based on your profile compatibility"
+      rail={rail}
+      title={matchesEn('page_title')}
+      titleEl={matchesEl('page_title')}
+      description={matchesEn('page_description')}
+      descriptionEl={matchesEl('page_description')}
+      showHelp
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-          <Link href="/discover">
-            <Button variant="outline" size="sm" className="gap-2">
-              Explore
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
+        <Button variant="ghost" size="sm" className="min-h-10 gap-1.5" onClick={() => void refetch()}>
+          <RefreshCw className="icon-sm" />
+          <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} compact />
+        </Button>
       }
     >
-      <div className="space-y-4 pb-10">
+      <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
+        <FirstRunTour tourId="matches" steps={MATCHES_TOUR} ready={hasToken && !isLoading && visible.length > 0} />
 
         {/* ── Not authenticated ── */}
         {!hasToken && (
           <EmptyState
-            title="Sign in to see matches"
-            description="Your matches are personalized based on your profile and preferences."
+            title={<BilingualText en={matchesEn('sign_in_to_see')} el={matchesEl('sign_in_to_see')} />}
+            description={<BilingualText en={matchesEn('sign_in_desc')} el={matchesEl('sign_in_desc')} />}
             illustration="connection"
+            askAiPrompt="I am not signed in. Explain how matching works on CoFounderBay and what I should complete after login."
             action={
-              <Link href="/login">
-                <Button className="gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Sign in
-                </Button>
-              </Link>
+              <Button className="gap-2" asChild>
+                <Link href="/login">
+                  <UserPlus className="icon-sm" />
+                  <BilingualText en={matchesEn('sign_in')} el={matchesEl('sign_in')} />
+                </Link>
+              </Button>
             }
           />
         )}
 
         {/* ── Error state ── */}
         {hasToken && isError && (
-          <Card className="shadow-sm border-border/50">
+          <Card className="shadow-sm border-border">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load matches.</p>
-              <Button variant="secondary" size="sm" onClick={() => void refetch()}>Retry</Button>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText en={matchesEn('failed_to_load')} el={matchesEl('failed_to_load')} />
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+                <BilingualText en={matchesEn('retry')} el={matchesEl('retry')} />
+              </Button>
             </CardContent>
           </Card>
         )}
 
         {/* ── Loading skeletons ── */}
         {hasToken && isLoading && (
-          <div className="flex gap-4 items-start">
-            <div className="hidden md:block w-[220px] shrink-0 space-y-3">
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
-            </div>
-            <div className="flex-1 min-w-0 grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-              {[...Array(6)].map((_, i) => <ProfileCardSkeleton key={i} variant="featured" />)}
-            </div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => <ProfileCardSkeleton key={i} variant="featured" />)}
           </div>
         )}
 
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-tour="matches-stats">
             {[
-              { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
-              { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',   icon: Star },
-              { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
-              { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600',  bg: 'bg-violet-500/10',  icon: Award },
-            ].map(({ label, value, color, bg, icon: Icon }) => (
-              <Card key={label} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', bg)}>
-                    <Icon className={cn('h-4 w-4', color)} />
+              { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all, tone: 'neutral' as const, icon: Users },
+              { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent, tone: 'success' as const, icon: Star },
+              { labelEn: matchesEn('avg_score'), labelEl: matchesEl('avg_score'), value: `${avgScore}%`, tone: 'info' as const, icon: TrendingUp },
+              { labelEn: matchesEn('top_score'), labelEl: matchesEl('top_score'), value: `${topScore}%`, tone: 'accent' as const, icon: Award },
+            ].map(({ labelEn, labelEl, value, tone, icon: Icon }) => {
+              const statColors = tone === 'neutral'
+                ? { bg: 'bg-muted/40', icon: 'text-foreground' }
+                : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
+              return (
+              <Card key={labelEn} className="min-w-0 shadow-sm border-border">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
+                    <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>
-                  <div>
-                    <p className={cn('text-xl font-black tabular-nums leading-none', color)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <div className="min-w-0">
+                    <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
+                    <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
+                      <BilingualText en={labelEn} el={labelEl} compact wrap />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );})}
           </div>
         )}
 
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
-          <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2 shrink-0">
-                <Award className="h-5 w-5 text-green-600" />
+          <div className={cn('flex flex-col gap-3 rounded-xl border bg-status-success-bg/40 p-4 animate-in fade-in slide-in-from-top-1 duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4', STATUS.success.border)}>
+            <div className="flex min-w-0 items-start gap-3 sm:items-center">
+              <div className={cn('shrink-0 rounded-lg p-2', STATUS.success.bg)}>
+                <Award className={cn('icon-md', STATUS.success.icon)} />
               </div>
-              <div>
-                <p className="font-semibold text-sm text-foreground">
-                  🎯 {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  <BilingualText
+                    en={`${counts.excellent} excellent ${counts.excellent === 1 ? 'match' : 'matches'} ready to connect`}
+                    el={`${counts.excellent} ${counts.excellent === 1 ? 'εξαιρετική αντιστοίχιση έτοιμη' : 'εξαιρετικές αντιστοιχίσεις έτοιμες'} για σύνδεση`}
+                    wrap
+                  />
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Top score: {topScore}% · These profiles are highly compatible — reach out now
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  <BilingualText
+                    en={`Top score ${topScore}% · These profiles are highly compatible, so reach out now`}
+                    el={`Κορυφαία βαθμολογία ${topScore}% · Αυτά τα προφίλ σάς ταιριάζουν πολύ, στείλτε μήνυμα τώρα`}
+                    wrap
+                  />
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
-                  <RotateCcw className="h-3.5 w-3.5" /> Undo
+                  <RotateCcw className="icon-sm" /> <BilingualText en="Undo" el="Αναίρεση" compact />
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="gap-1.5 h-8 text-xs">
-                View <ChevronRight className="h-3.5 w-3.5" />
+                <BilingualText en="View" el="Προβολή" compact /> <ChevronRight className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -714,16 +1087,17 @@ export default function MatchesPage() {
         {/* ── No data at all ── */}
         {hasToken && !isLoading && visible.length === 0 && (
           <EmptyState
-            title="No matches yet"
-            description="Complete your profile (stage, commitment, roles sought) to get better cofounder and team suggestions."
+            title={<BilingualText en={matchesEn('no_matches_yet')} el={matchesEl('no_matches_yet')} />}
+            description={<BilingualText en={matchesEn('no_matches_desc')} el={matchesEl('no_matches_desc')} />}
             illustration="rocket"
+            askAiPrompt="I have no matches yet. Tell me which profile fields to complete so I get better cofounder suggestions."
             action={
-              <Link href="/profile/edit">
-                <Button className="gap-2">
-                  Complete profile
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              <Button className="gap-2" asChild>
+                <Link href="/profile/edit">
+                  <BilingualText en={matchesEn('complete_profile')} el={matchesEl('complete_profile')} />
+                  <ArrowRight className="icon-sm" />
+                </Link>
+              </Button>
             }
           />
         )}
@@ -733,226 +1107,84 @@ export default function MatchesPage() {
           <div className="flex gap-4 items-start">
 
             {/* ── Sticky filter sidebar (desktop md+) ── */}
-            <aside className="hidden md:flex flex-col w-[220px] shrink-0 sticky top-[calc(3.5rem+1.25rem)] space-y-2.5 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-hide pb-4">
-
-              {/* Tier filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Match Tier</p>
-                  {TIER_TABS.map(tab => {
-                    const isActive = activeFilter === tab.key;
-                    return (
-                      <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
-                        className={cn(
-                          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <span className="flex items-center gap-1.5">
-                          {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
-                          {tab.label}
-                        </span>
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
-                          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                          {counts[tab.key]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Role filter */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Role</p>
-                  {ROLE_TABS.map(({ key, label, icon: Icon }) => {
-                    const isActive = roleFilter === key;
-                    return (
-                      <button key={key} onClick={() => setRoleFilter(key)}
-                        className={cn(
-                          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        <Icon className="h-3 w-3 shrink-0" />
-                        {label}
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Location */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">Location</p>
-                  <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
-                    <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                      placeholder="City or country..."
-                      className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
-                    {locationFilter && (
-                      <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Availability */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Availability</p>
-                  {AVAIL_OPTIONS.map(({ key, label }) => {
-                    const isOn = availFilter.has(key);
-                    return (
-                      <button key={key} onClick={() => setAvailFilter(prev => {
-                        const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
-                      })}
-                        className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isOn ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                        <span className={cn('h-3.5 w-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
-                          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
-                          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
-                        </span>
-                        {label}
-                      </button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-
-              {/* Sort */}
-              <Card className="shadow-sm border-border/50">
-                <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Sort by</p>
-                  {([
-                    { key: 'score'  as SortKey, label: 'Best Match',   icon: Zap },
-                    { key: 'name'   as SortKey, label: 'Name A–Z',     icon: ArrowUpDown },
-                    { key: 'recent' as SortKey, label: 'Newest First',  icon: Clock },
-                  ]).map(({ key, label, icon: Icon }) => (
-                    <button key={key} onClick={() => setSortBy(key)}
-                      className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                        sortBy === key ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                      <Icon className="h-3 w-3 shrink-0" />
-                      {label}
-                    </button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Clear all */}
-              {hasActiveFilters && (
-                <button
-                  onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
-                  className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="h-3 w-3" /> Clear all filters
-                </button>
-              )}
-            </aside>
 
             {/* ── Results column ── */}
             <div className="flex-1 min-w-0 space-y-4">
 
-              {/* Mobile: scrollable tier chips + filters toggle */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
-                <button onClick={() => setShowAdvancedFilters(s => !s)}
-                  className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
-                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
-                  <SlidersHorizontal className="h-3 w-3" /> Filters
-                  {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
-                </button>
-                {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
+              {/* Tier chips: the page's primary filter, at every width.
+                  Secondary filters (role, location, availability) and sort
+                  live in the page rail - the expanded panel that used to sit
+                  here duplicated them, so it is gone rather than doubled. */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-0.5" data-tour="matches-tiers">
+                {TIER_TABS.map(tab => {
                   const isActive = activeFilter === tab.key;
                   return (
-                    <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
-                      className={cn('flex items-center gap-1 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
-                        isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
-                      {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
-                      {tab.label}
+                    <button key={tab.key} onClick={() => setActiveFilter(isActive && tab.key !== 'all' ? 'all' : tab.key)}
+                      className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
+                        isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground')}>
+                      {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
+                      <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+                      <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
+                        isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                        {counts[tab.key]}
+                      </span>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Mobile: expanded filter panel */}
-              {showAdvancedFilters && (
-                <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
-                  <div className="grid gap-3 grid-cols-2">
-                    <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
-                      <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {TIER_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
-                      <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {ROLE_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
-                      </select>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
-                      <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                        placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
-                    </div>
-                  </div>
-                  {hasActiveFilters && (
-                    <button onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setLocationFilter(''); setAvailFilter(new Set()); }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      Clear all
-                    </button>
-                  )}
-                </div>
-              )}
-
               {/* Results toolbar */}
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground min-w-0">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2" data-tour="matches-toolbar">
+                <p className="min-w-0 text-xs text-muted-foreground">
                   {filtered.length > 0 && (
-                    <span>
-                      <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
-                      {passedIds.size > 0 && <span className="text-muted-foreground/60"> · {passedIds.size} passed</span>}
-                    </span>
+                    <BilingualText
+                      en={`${filtered.length} ${filtered.length === 1 ? 'match' : 'matches'}${passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}`}
+                      el={`${filtered.length} ${filtered.length === 1 ? 'αντιστοίχιση' : 'αντιστοιχίσεις'}${passedIds.size > 0 ? ` · ${passedIds.size} απορρίφθηκαν` : ''}`}
+                      compact
+                      wrap
+                    />
                   )}
                 </p>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <button
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
-                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
-                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
-                    title="Select mode">
-                    <CheckSquare className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Select</span>
-                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>}
+                    className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',
+                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:bg-secondary hover:text-foreground')}
+                    aria-pressed={selectMode}
+                    title={bilingualAria('Select profiles to compare', 'Επιλογή προφίλ για σύγκριση')}>
+                    <CheckSquare className="icon-sm" />
+                    <span className="hidden sm:inline"><BilingualText en="Select" el="Επιλογή" compact /></span>
+                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
-                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
-                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
-                    <Search className="h-3.5 w-3.5" />
+                    className={cn('flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-secondary')}
+                    aria-pressed={showSearch}
+                    aria-label={bilingualAria('Search matches', 'Αναζήτηση αντιστοιχίσεων')}>
+                    <Search className="icon-sm" />
                   </button>
 
-                  <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
+                  <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
                     {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true },
-                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false },
-                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean }[]).map(({ mode, icon: Icon, title, small }) => (
+                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false, mobile: true },
+                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
+                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
+                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
+                        className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
+                          mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-                        <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
+                        <Icon className={cn('icon-sm', small && 'scale-90')} />
+                        {mode === 'grid3' && <span className="ml-0.5 text-2xs font-bold">3</span>}
                       </button>
                     ))}
                   </div>
 
                   {lastPassed && (
-                    <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground hidden sm:flex">
-                      <RotateCcw className="h-3.5 w-3.5" /> Undo
+                    <Button size="sm" variant="ghost" onClick={handleUndoPass} aria-label="Undo the last pass" className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
+                      <RotateCcw className="icon-sm" aria-hidden="true" />
+                      <span className="hidden sm:inline"><BilingualText en="Undo" el="Αναίρεση" compact /></span>
                     </Button>
                   )}
                 </div>
@@ -961,13 +1193,13 @@ export default function MatchesPage() {
               {/* Search input (conditional) */}
               {showSearch && (
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
-                    placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
+                    placeholder={bilingualInline("Search by name, headline, or skill…", "Αναζήτηση με όνομα, τίτλο ή δεξιότητα…")} className="min-h-10 pl-9 text-sm" autoFocus />
                   {nameSearch && (
                     <button onClick={() => setNameSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
-                      Clear
+                      <BilingualText en="Clear" el="Καθαρισμός" compact />
                     </button>
                   )}
                 </div>
@@ -976,20 +1208,24 @@ export default function MatchesPage() {
               {/* Active filter summary */}
               {hasActiveFilters && filtered.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {visible.length} matches
+                  <BilingualText
+                    en={`Showing ${filtered.length} of ${visible.length} matches`}
+                    el={`Εμφανίζονται ${filtered.length} από ${visible.length} αντιστοιχίσεις`}
+                    compact
+                  />
                   {nameSearch && ` · "${nameSearch}"`}
                 </p>
               )}
 
               {/* No results for filters */}
               {filtered.length === 0 && (
-                <Card className="shadow-sm border-border/50">
+                <Card className="shadow-sm border-border">
                   <CardContent className="py-12 text-center">
-                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
-                    <p className="font-medium text-foreground mb-1">No matches for these filters</p>
-                    <p className="text-sm text-muted-foreground mb-4">Try adjusting your tier, role, or location filter</p>
+                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" aria-hidden="true" />
+                    <p className="font-medium text-foreground mb-1"><BilingualText en="No matches for these filters" el="Καμία αντιστοίχιση για αυτά τα φίλτρα" compact /></p>
+                    <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try adjusting your tier, role, or location filter" el="Αλλάξτε το φίλτρο βαθμίδας, ρόλου ή τοποθεσίας" wrap /></p>
                     <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
-                      Clear all filters
+                      <BilingualText en="Clear all filters" el="Καθαρισμός όλων των φίλτρων" compact />
                     </Button>
                   </CardContent>
                 </Card>
@@ -997,14 +1233,15 @@ export default function MatchesPage() {
 
               {/* Matches grid */}
               {filtered.length > 0 && viewMode !== 'list' && (
-                <div className={cn('grid gap-4',
-                  viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}>
+                <div className={cn('grid grid-cols-1 gap-4',
+                  viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}
+                  data-tour="matches-grid">
                   {filtered.map((hit) => {
                     const profile = hitToProfile(hit);
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchCard
                         key={hit.id}
@@ -1045,7 +1282,7 @@ export default function MatchesPage() {
                     const score = hit.matchScore ?? 50;
                     const matchReasons: MatchReason[] = hit.matchReasons?.length
                       ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                      : buildMatchReasonsFromScore(score);
+                      : [];
                     return (
                       <MatchListRow
                         key={hit.id}
@@ -1065,11 +1302,8 @@ export default function MatchesPage() {
 
               {/* Results footer */}
               {filtered.length > 0 && (
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
-                  <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Explore more <ArrowRight className="h-3 w-3" />
-                  </Link>
                 </div>
               )}
             </div>
@@ -1082,7 +1316,7 @@ export default function MatchesPage() {
         const score = previewTarget.matchScore ?? 50;
         const previewReasons: MatchReason[] = previewTarget.matchReasons?.length
           ? previewTarget.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-          : buildMatchReasonsFromScore(score);
+          : [];
         const previewProfile = hitToProfile(previewTarget);
         return (
           <MatchPreviewPanel
@@ -1101,7 +1335,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"
@@ -1109,9 +1343,9 @@ export default function MatchesPage() {
               const ids = [...selectedIds].slice(0, 4).join(',');
               router.push(`/compare?ids=${ids}`);
             }}>
-            <BarChart3 className="h-3.5 w-3.5" /> Compare
+            <BarChart3 className="icon-sm" /> <BilingualText en="Compare" el="Σύγκριση" compact />
           </Button>
-          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive"
+          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive-accessible"
             onClick={() => {
               filtered.forEach(h => {
                 if (selectedIds.has(h.id)) handlePass(h.id, h.displayName, h.userId);
@@ -1119,11 +1353,11 @@ export default function MatchesPage() {
               setSelectedIds(new Set());
               setSelectMode(false);
             }}>
-            <X className="h-3.5 w-3.5" /> Pass All
+            <X className="icon-sm" /> <BilingualText en="Pass All" el="Παράλειψη όλων" compact />
           </Button>
-          <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
+          <button aria-label="Exit selection" onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
             className="text-muted-foreground hover:text-foreground transition-colors ml-1">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         </div>
       )}

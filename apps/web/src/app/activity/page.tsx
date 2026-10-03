@@ -4,76 +4,130 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingUp, Users, Sparkles, Bell, Calendar, MessageCircle,
-  UserPlus, Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
-  Flag, Star, Gift, Activity, Filter, Zap, Clock, ArrowRight,
+  Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
+  Flag, Star, Gift, Activity, Zap, Clock, ArrowRight,
   UserCheck, Target, BarChart3, CheckCircle2, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardActivity, listNotifications, markAllNotificationsRead, type DashboardActivityItem, type NotificationItem, type DashboardActivityPage } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { bilingualAria } from '@/lib/i18n/format';
+import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+
+const ACTIVITY_TOUR: TourStep[] = [
+  {
+    target: 'activity-tabs',
+    titleEn: 'Three streams, one page',
+    titleEl: 'Τρεις ροές, μία σελίδα',
+    bodyEn: 'Network is what people you are connected to did. Notifications are addressed to you — the badge is unread, and Mark all read clears it. Events are sessions and community dates you are on.',
+    bodyEl: 'Το Δίκτυο είναι ό,τι έκαναν όσοι είστε συνδεδεμένοι. Οι Ειδοποιήσεις απευθύνονται σε εσάς — το σήμα είναι τα αδιάβαστα και το «Σήμανση όλων» τα καθαρίζει. Οι Εκδηλώσεις είναι συνεδρίες και ημερομηνίες στις οποίες είστε.',
+  },
+  {
+    target: 'activity-stream',
+    titleEn: 'The open tab is the only list that filters',
+    titleEl: 'Η ανοιχτή καρτέλα είναι η μόνη λίστα που φιλτράρεται',
+    bodyEn: 'Type chips in the right rail narrow this stream only. Refresh re-fetches all three. Nothing here is sample data unless it is labelled as sample.',
+    bodyEl: 'Τα φίλτρα τύπου στη δεξιά ράγα περιορίζουν μόνο αυτή τη ροή. Η ανανέωση ξαναφορτώνει και τις τρεις. Τίποτα εδώ δεν είναι δείγμα αν δεν φέρει ετικέτα δείγματος.',
+  },
+];
 
 // ── Type config ─────────────────────────────────────────────────────────────
 
 type ActivityType = 'all' | 'connection' | 'message' | 'match' | 'milestone' | 'achievement' | 'system' | 'event' | 'endorsement';
 
-const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; label: string }> = {
-  connection:  { icon: UserCheck,     color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Connections' },
-  message:     { icon: MessageCircle, color: 'text-blue-500',    bg: 'bg-blue-500/10',    label: 'Messages'    },
-  match:       { icon: TrendingUp,    color: 'text-violet-500',  bg: 'bg-violet-500/10',  label: 'Matches'     },
-  milestone:   { icon: Flag,          color: 'text-amber-500',   bg: 'bg-amber-500/10',   label: 'Milestones'  },
-  achievement: { icon: Award,         color: 'text-yellow-500',  bg: 'bg-yellow-500/10',  label: 'Achievements'},
-  event:       { icon: Calendar,      color: 'text-pink-500',    bg: 'bg-pink-500/10',    label: 'Events'      },
-  endorsement: { icon: Star,          color: 'text-orange-500',  bg: 'bg-orange-500/10',  label: 'Endorsements'},
-  job:         { icon: Briefcase,     color: 'text-teal-500',    bg: 'bg-teal-500/10',    label: 'Jobs'        },
-  system:      { icon: Bell,          color: 'text-muted-foreground', bg: 'bg-muted',     label: 'System'      },
-  invite:      { icon: Gift,          color: 'text-purple-500',  bg: 'bg-purple-500/10',  label: 'Invites'     },
+/* `key` rather than `label`: a literal in a config table is the one place a
+   string cannot be rendered bilingually, because it is read as text in four
+   different places. The key resolves at the point of render instead. */
+type ActivityKey = keyof typeof ACTIVITY_STRINGS;
+
+const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; key: ActivityKey }> = {
+  connection:  { icon: UserCheck,     color: 'text-status-success', bg: 'bg-status-success-bg', key: 'type_connection' },
+  message:     { icon: MessageCircle, color: 'text-status-info',    bg: 'bg-status-info-bg',    key: 'type_message'    },
+  match:       { icon: TrendingUp,    color: 'text-status-accent',  bg: 'bg-status-accent-bg',  key: 'type_match'      },
+  milestone:   { icon: Flag,          color: 'text-status-warning', bg: 'bg-status-warning-bg', key: 'type_milestone'  },
+  achievement: { icon: Award,         color: 'text-status-warning', bg: 'bg-status-warning-bg', key: 'type_achievement'},
+  event:       { icon: Calendar,      color: 'text-status-accent',  bg: 'bg-status-accent-bg',  key: 'type_event'      },
+  endorsement: { icon: Star,          color: 'text-status-warning', bg: 'bg-status-warning-bg', key: 'type_endorsement'},
+  job:         { icon: Briefcase,     color: 'text-status-success', bg: 'bg-status-success-bg', key: 'type_job'        },
+  system:      { icon: Bell,          color: 'text-muted-foreground', bg: 'bg-muted',           key: 'type_system'     },
+  invite:      { icon: Gift,          color: 'text-status-accent',  bg: 'bg-status-accent-bg',  key: 'type_invite'     },
 };
 
 const NOTIF_ICONS: Record<string, React.ElementType> = Object.fromEntries(
   Object.entries(TYPE_CONFIG).map(([k, v]) => [k, v.icon])
 );
 
-const FEED_TYPE_FILTERS: { value: ActivityType; label: string; icon: React.ElementType }[] = [
-  { value: 'all',         label: 'All',          icon: Sparkles  },
-  { value: 'connection',  label: 'Connections',  icon: UserCheck },
-  { value: 'match',       label: 'Matches',      icon: TrendingUp},
-  { value: 'message',     label: 'Messages',     icon: MessageCircle },
-  { value: 'milestone',   label: 'Milestones',   icon: Flag      },
-  { value: 'achievement', label: 'Achievements', icon: Award     },
+const FEED_TYPE_FILTERS: { value: ActivityType; key: ActivityKey; icon: React.ElementType }[] = [
+  { value: 'all',         key: 'type_all',         icon: Sparkles  },
+  { value: 'connection',  key: 'type_connection',  icon: UserCheck },
+  { value: 'match',       key: 'type_match',       icon: TrendingUp},
+  { value: 'message',     key: 'type_message',     icon: MessageCircle },
+  { value: 'milestone',   key: 'type_milestone',   icon: Flag      },
+  { value: 'achievement', key: 'type_achievement', icon: Award     },
+];
+
+/* The same four actions render twice — as a strip on phones and in the rail
+   from `lg`. They were two copies of the same list, which is how the rail ended
+   up with a `color` the strip never had. */
+const QUICK_ACTIONS: { href: string; key: ActivityKey; icon: React.ElementType; color: string }[] = [
+  { href: '/discover', key: 'explore_people', icon: Users, color: 'text-status-accent' },
+  { href: '/matches', key: 'view_matches', icon: TrendingUp, color: 'text-status-success' },
+  { href: '/events', key: 'browse_events', icon: Calendar, color: 'text-status-accent' },
+  { href: '/achievements', key: 'achievements', icon: Award, color: 'text-status-warning' },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function formatTimeAgo(dateStr: string): string {
-  const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+/** Both halves at once — the caller renders them as one bilingual run. */
+function fill(key: ActivityKey, n: number): { en: string; el: string } {
+  return {
+    en: activityEn(key).replace('{n}', String(n)),
+    el: activityEl(key).replace('{n}', String(n)),
+  };
 }
 
-function getDateGroup(dateStr: string): string {
+function formatTimeAgo(dateStr: string): { en: string; el: string } {
+  const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (s < 60) return { en: activityEn('time_now'), el: activityEl('time_now') };
+  if (s < 3600) return fill('time_minutes', Math.floor(s / 60));
+  if (s < 86400) return fill('time_hours', Math.floor(s / 3600));
+  if (s < 604800) return fill('time_days', Math.floor(s / 86400));
+  /* Past a week it is a date, not an interval. Both locales are pinned to UTC
+     for the same reason every other date on the platform is: a rendered day
+     must not change under the reader's clock. */
+  const opts = { timeZone: 'UTC', month: 'short', day: 'numeric' } as const;
+  const d = new Date(dateStr);
+  return { en: d.toLocaleDateString('en-GB', opts), el: d.toLocaleDateString('el-GR', opts) };
+}
+
+function getDateGroup(dateStr: string): ActivityKey {
   const d = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return 'This Week';
-  return 'Earlier';
+  if (diffDays === 0) return 'group_today';
+  if (diffDays === 1) return 'group_yesterday';
+  if (diffDays < 7) return 'group_week';
+  return 'group_earlier';
 }
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 
 function ItemSkeleton() {
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 px-4 py-4 last:border-0">
+    <div className="flex items-start gap-3 border-b border-border px-4 py-4 last:border-0">
       <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3.5 w-40" />
@@ -90,25 +144,41 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG['system'];
   const Icon = cfg.icon;
   return (
-    <div className="flex items-start gap-3 border-b border-border/40 px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
+    <div className="flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
       <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground leading-snug">{item.title}</p>
-        {item.author && <p className="text-xs text-muted-foreground mt-0.5">by {item.author}</p>}
+        {item.author && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            <BilingualText
+              en={activityEn('by_author').replace('{name}', item.author)}
+              el={activityEl('by_author').replace('{name}', item.author)}
+              compact
+            />
+          </p>
+        )}
         <div className="mt-1 flex items-center gap-2">
-          <Clock className="h-3 w-3 text-muted-foreground/60" />
-          <span className="text-[11px] text-muted-foreground">{item.timeAgo}</span>
-          <Badge variant="outline" className="h-4 px-1.5 text-[10px] capitalize">{item.type}</Badge>
+          <Clock className="icon-sm text-muted-foreground/60" />
+          <span className="text-2xs text-muted-foreground">{item.timeAgo}</span>
+          {/* The type was printed raw and `capitalize`d, which is why it read
+              "Connection" in English on a Greek page. */}
+          <Badge variant="outline" className="h-4 px-1.5 text-2xs">
+            <BilingualText en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact />
+          </Badge>
         </div>
       </div>
       {item.href && (
-        <Link href={item.href} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}>
+          <Link
+            href={item.href}
+            aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}
+            className="shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+          >
+            <ArrowRight className="icon-sm" aria-hidden="true" />
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -122,12 +192,12 @@ function NotificationRow({ item }: { item: NotificationItem }) {
   const isUnread = !item.readAt;
   return (
     <div className={cn(
-      'flex items-start gap-3 border-b border-border/40 px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group',
+      'flex items-start gap-3 border-b border-border px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group',
       isUnread && 'bg-primary/[0.03]',
     )}>
       <div className="relative shrink-0">
         <div className={cn('flex h-9 w-9 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-          <Icon className="h-4 w-4" />
+          <Icon className="icon-sm" />
         </div>
         {isUnread && (
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
@@ -137,19 +207,32 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         <p className={cn('text-sm leading-snug', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
           {item.title}
         </p>
-        {item.body && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>}
+        {item.body && <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>}
         <div className="mt-1 flex items-center gap-2">
-          <Clock className="h-3 w-3 text-muted-foreground/60" />
-          <span className="text-[11px] text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
-          {isUnread && <Badge className="h-4 px-1.5 text-[10px]">New</Badge>}
+          <Clock className="icon-sm text-muted-foreground/60" />
+          <span className="text-2xs text-muted-foreground">
+            <RelativeTime
+              date={item.createdAt}
+              format={(iso) => <BilingualText {...formatTimeAgo(iso)} compact />}
+            />
+          </span>
+          {isUnread && (
+            <Badge className="h-4 px-1.5 text-2xs">
+              <BilingualText en={activityEn('badge_new')} el={activityEl('badge_new')} compact />
+            </Badge>
+          )}
         </div>
       </div>
       {item.link && (
-        <Link href={item.link} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <ExternalLink className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}>
+          <Link
+            href={item.link}
+            aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}
+            className="shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity"
+          >
+            <ExternalLink className="icon-sm" aria-hidden="true" />
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -157,10 +240,12 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 
 // ── Date group header ─────────────────────────────────────────────────────────
 
-function DateGroupHeader({ label }: { label: string }) {
+function DateGroupHeader({ groupKey }: { groupKey: keyof typeof ACTIVITY_STRINGS }) {
   return (
-    <div className="flex items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-2">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+    <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-2">
+      <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <BilingualText en={activityEn(groupKey)} el={activityEl(groupKey)} compact />
+      </span>
     </div>
   );
 }
@@ -179,7 +264,7 @@ export default function ActivityPage() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const { data: activityData, isLoading: activityLoading, isError: activityError, refetch: refetchActivity } = useQuery<DashboardActivityPage>({
-    queryKey: ['dashboard-activity', PAGE_SIZE],
+    queryKey: qk('dashboard', 'activity', PAGE_SIZE),
     queryFn: () => getDashboardActivity({ limit: PAGE_SIZE, offset: 0 }),
     staleTime: 30_000,
   });
@@ -208,7 +293,7 @@ export default function ActivityPage() {
   };
 
   const { data: notifData, isLoading: notifLoading, isError: notifError, refetch: refetchNotif } = useQuery({
-    queryKey: ['notifications-activity'],
+    queryKey: qk('notifications', 'activity'),
     queryFn: () => listNotifications({ limit: 50 }),
     staleTime: 30_000,
     enabled: activeTab === 'notifications',
@@ -216,7 +301,10 @@ export default function ActivityPage() {
 
   const markAll = useMutation({
     mutationFn: markAllNotificationsRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications-activity'] }),
+    // The whole root, not this page's list: the bell and the sidebar read
+    // `notifications/unread-count`, and refreshing only this list left them
+    // counting notifications that had just been read.
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('notifications') }),
   });
 
   const activityItems = allItems;
@@ -228,6 +316,24 @@ export default function ActivityPage() {
     if (typeFilter === 'all') return activityItems;
     return activityItems.filter((i) => i.type === typeFilter);
   }, [activityItems, typeFilter]);
+
+  // Offered to the assistant: the tab, the type chips, Load more and Mark
+  // all read - the same setters and mutation; the tab's rows go out as a list.
+  usePageList([
+    activeTab === 'notifications'
+      ? { id: 'notifications', labelEn: 'Notifications', labelEl: 'Ειδοποιήσεις', rows: notifLoading ? undefined : notifications.map((n) => `${n.readAt ? '' : '(unread) '}${n.title} · ${n.createdAt.slice(0, 10)}`) }
+      : { id: 'activity', labelEn: 'Network activity', labelEl: 'Δραστηριότητα δικτύου', rows: activityLoading ? undefined : (activeTab === 'events' ? eventItems : filteredActivity).map((i) => `${i.title}${i.author ? ` · ${i.author}` : ''} · ${i.type} · ${i.createdAt.slice(0, 10)}`) },
+  ]);
+  usePageControls([
+    choiceControl('activity_tab', 'Activity section', 'Ενότητα δραστηριότητας', [
+      { value: 'network', en: 'Network', el: 'Δίκτυο' },
+      { value: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
+      { value: 'events', en: 'Events', el: 'Εκδηλώσεις' },
+    ], activeTab, (v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }),
+    choiceControl('activity_type', 'Activity type', 'Τύπος δραστηριότητας', FEED_TYPE_FILTERS.map((f) => ({ value: f.value, en: activityEn(f.key), el: activityEl(f.key) })), typeFilter, (v) => setTypeFilter(v as ActivityType)),
+    { id: 'load_more', labelEn: 'Load more activity', labelEl: 'Φόρτωση περισσότερης δραστηριότητας', writes: false, unavailableEn: hasMore ? undefined : 'There is no more activity to load.', unavailableEl: hasMore ? undefined : 'Δεν υπάρχει άλλη δραστηριότητα.', run: () => void handleLoadMore() },
+    { id: 'mark_all_read', labelEn: 'Mark all notifications read', labelEl: 'Σήμανση όλων ως αναγνωσμένων', writes: true, unavailableEn: activeTab === 'notifications' && unreadCount === 0 ? 'Nothing is unread.' : undefined, unavailableEl: activeTab === 'notifications' && unreadCount === 0 ? 'Δεν υπάρχει τίποτα αδιάβαστο.' : undefined, run: () => markAll.mutate() },
+  ]);
 
   // Group items by date
   const groupedActivity = useMemo(() => {
@@ -248,57 +354,148 @@ export default function ActivityPage() {
   const isLoading = activeTab === 'notifications' ? notifLoading : activityLoading;
   const refetch = activeTab === 'notifications' ? refetchNotif : refetchActivity;
 
-  return (
-    <AppShell title="Activity Feed" description="Track your network activity, notifications, and events">
-      <div className="space-y-5">
-
-        {/* Stats bar */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "Today's Activity", value: todayCount, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Unread Notifications', value: unreadCount, icon: Bell, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'New Connections', value: connectionCount, icon: UserCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'New Matches', value: matchCount, icon: TrendingUp, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          ].map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.label} className="border-border/50">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', stat.bg, stat.color)}>
-                    <Icon className="h-4 w-4" />
+  const rail: PageRailSection[] = [
+    {
+      id: 'overview',
+      glyph: 'spark',
+      labelEn: 'Overview',
+      labelEl: 'Επισκόπηση',
+      badge: unreadCount || null,
+      content: (
+        <div className="space-y-4">
+          <RailStats
+            items={[
+              { key: 'today', label: activityEn('stat_today'), labelEl: activityEl('stat_today'), value: todayCount, icon: Zap },
+              { key: 'unread', label: activityEn('stat_unread'), labelEl: activityEl('stat_unread'), value: unreadCount, icon: Bell },
+              { key: 'connections', label: activityEn('stat_connections'), labelEl: activityEl('stat_connections'), value: connectionCount, icon: UserCheck },
+              { key: 'matches', label: activityEn('stat_matches'), labelEl: activityEl('stat_matches'), value: matchCount, icon: TrendingUp },
+            ]}
+          />
+          <div className="space-y-2.5">
+            <p className="px-2.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={activityEn('activity_breakdown')} el={activityEl('activity_breakdown')} compact wrap />
+            </p>
+            {Object.entries(TYPE_CONFIG).slice(0, 6).map(([type, cfg]) => {
+              const count = activityItems.filter((i) => i.type === type).length;
+              const Icon = cfg.icon;
+              return (
+                <div key={type} className="flex items-center gap-2.5 px-2.5">
+                  <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
+                    <Icon className="icon-sm" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                    <BilingualText en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact wrap />
+                  </span>
+                  <span className="text-xs font-semibold text-foreground">{count}</span>
+                </div>
+              );
+            })}
+          </div>
+          <Card className="border-border bg-primary/[0.03]">
+            <CardContent className="p-4 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <BarChart3 className="icon-md text-primary-accessible" />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                <BilingualText en={activityEn('stay_active')} el={activityEl('stay_active')} compact />
+              </p>
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                <BilingualText en={activityEn('stay_active_hint')} el={activityEl('stay_active_hint')} compact wrap />
+              </p>
+              <Button variant="outline" size="sm" className="mt-3 h-8 w-full gap-1.5 text-xs" asChild>
+                <Link href="/analytics">
+                  <Target className="icon-sm" />
+                  <BilingualText en={activityEn('view_analytics')} el={activityEl('view_analytics')} compact wrap />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters and shortcuts',
+      labelEl: 'Φίλτρα και συντομεύσεις',
+      badge: typeFilter !== 'all' ? 1 : null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Type"
+            titleEl="Τύπος"
+            options={FEED_TYPE_FILTERS.map((f) => ({
+              value: f.value,
+              en: activityEn(f.key),
+              el: activityEl(f.key),
+              icon: f.icon,
+              count: f.value === 'all' ? undefined : activityItems.filter((i) => i.type === f.value).length,
+            }))}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
+          {typeFilter !== 'all' && (
+            <RailAction
+              icon={X}
+              en={activityEn('clear_filter')}
+              el={activityEl('clear_filter')}
+              onClick={() => setTypeFilter('all')}
+            />
+          )}
+          <div className="space-y-1">
+            <p className="px-2.5 pb-0.5 text-xs font-medium text-muted-foreground">
+              <BilingualText en={activityEn('quick_actions')} el={activityEl('quick_actions')} compact wrap />
+            </p>
+            {QUICK_ACTIONS.map((a) => {
+              const AIcon = a.icon;
+              return (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm text-foreground hover:bg-muted/70"
+                >
+                  <AIcon className={cn('icon-sm shrink-0', a.color)} />
+                  <span className="min-w-0 flex-1">
+                    <BilingualText en={activityEn(a.key)} el={activityEl(a.key)} compact wrap />
+                  </span>
+                  <ArrowRight className="icon-sm text-muted-foreground/50" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ),
+    },
+  ];
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
-          {/* Main feed */}
+  return (
+    <AppShell
+      rail={rail}
+      showHelp
+      askAi="Summarise my recent network activity and tell me what to act on first: intros, unread notifications, or upcoming events."
+    >
+      <FirstRunTour tourId="activity" steps={ACTIVITY_TOUR} ready={!activityLoading} />
+      <div className="space-y-6">
           <div>
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setTypeFilter('all'); }}>
-              <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3" data-tour="activity-tabs">
                 <TabsList className="h-9">
                   <TabsTrigger value="network" className="gap-1.5 text-xs">
-                    <Sparkles className="h-3.5 w-3.5" /> Network
+                    <Sparkles className="icon-sm" /> <BilingualText en={activityEn('tab_network')} el={activityEl('tab_network')} compact />
                     {activityItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{activityItems.length}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{activityItems.length}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="notifications" className="gap-1.5 text-xs">
-                    <Bell className="h-3.5 w-3.5" /> Notifications
+                    <Bell className="icon-sm" /> <BilingualText en={activityEn('tab_notifications')} el={activityEl('tab_notifications')} compact />
                     {unreadCount > 0 && (
-                      <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{unreadCount}</Badge>
+                      <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{unreadCount}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="events" className="gap-1.5 text-xs">
-                    <Calendar className="h-3.5 w-3.5" /> Events
+                    <Calendar className="icon-sm" /> <BilingualText en={activityEn('tab_events')} el={activityEl('tab_events')} compact />
                     {eventItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{eventItems.length}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{eventItems.length}</Badge>
                     )}
                   </TabsTrigger>
                 </TabsList>
@@ -306,81 +503,61 @@ export default function ActivityPage() {
                   {activeTab === 'notifications' && unreadCount > 0 && (
                     <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs"
                       onClick={() => markAll.mutate()} disabled={markAll.isPending}>
-                      <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                      <CheckCheck className="icon-sm" /> <BilingualText en={activityEn('mark_all_read')} el={activityEl('mark_all_read')} compact />
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
-                    <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    aria-label={bilingualAria(activityEn('refresh'), activityEl('refresh'))}
+                    onClick={() => refetch()}
+                  >
+                    <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} aria-hidden="true" />
                   </Button>
                 </div>
               </div>
 
               {/* Network tab with type filters */}
-              <TabsContent value="network" className="mt-0 space-y-3">
-                {/* Type filter chips */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  {FEED_TYPE_FILTERS.map((f) => {
-                    const FIcon = f.icon;
-                    const isActive = typeFilter === f.value;
-                    return (
-                      <button
-                        key={f.value}
-                        onClick={() => setTypeFilter(f.value)}
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
-                          isActive
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border/60 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                        )}
-                      >
-                        <FIcon className="h-3 w-3" />
-                        {f.label}
-                        {f.value !== 'all' && (
-                          <span className={cn('ml-0.5 rounded-full px-1 text-[10px]', isActive ? 'bg-white/20' : 'bg-muted')}>
-                            {activityItems.filter((i) => i.type === f.value).length}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                  {typeFilter !== 'all' && (
-                    <button onClick={() => setTypeFilter('all')} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                      <X className="h-3 w-3" /> Clear
-                    </button>
-                  )}
-                </div>
-
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+              <TabsContent value="network" className="mt-0 space-y-3" data-tour="activity-stream">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p className="text-sm text-muted-foreground">Failed to load activity.</p>
-                      <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>Retry</Button>
+                      <p className="text-sm text-muted-foreground">
+                        <BilingualText en={activityEn('activity_failed')} el={activityEl('activity_failed')} compact />
+                      </p>
+                      <Button variant="secondary" size="sm" onClick={() => refetchActivity()}>
+                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                      </Button>
                     </div>
                   ) : activityLoading ? (
                     Array.from({ length: 5 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : filteredActivity.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Activity className="h-5 w-5 text-muted-foreground" />
+                        <Activity className="icon-md text-muted-foreground" />
                       </div>
+                      {/* The filtered case used to interpolate the raw type
+                          into the sentence — `No milestone activity` — which
+                          cannot be said in Greek without declining the noun.
+                          One neutral sentence says the same thing in both. */}
                       <p className="text-sm font-medium text-foreground">
-                        {typeFilter === 'all' ? 'No network activity yet' : `No ${typeFilter} activity`}
+                        {typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity')} el={activityEl('empty_activity')} compact /> : <BilingualText en={activityEn('empty_activity_filtered')} el={activityEl('empty_activity_filtered')} compact />}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {typeFilter === 'all' ? 'Connect with people to see updates here.' : 'Try a different filter.'}
+                        {typeFilter === 'all' ? <BilingualText en={activityEn('empty_activity_hint')} el={activityEl('empty_activity_hint')} compact /> : <BilingualText en={activityEn('empty_filter_hint')} el={activityEl('empty_filter_hint')} compact />}
                       </p>
                       {typeFilter === 'all' && (
-                        <Link href="/discover">
-                          <Button variant="outline" size="sm">Discover people</Button>
-                        </Link>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/discover"><BilingualText en={activityEn('discover_people')} el={activityEl('discover_people')} compact /></Link>
+                        </Button>
                       )}
                     </div>
                   ) : (
                     <>
                       {Object.entries(groupedActivity).map(([group, items]) => (
                         <div key={group}>
-                          <DateGroupHeader label={group} />
+                          <DateGroupHeader groupKey={group as keyof typeof ACTIVITY_STRINGS} />
                           {items.map((item) => <NetworkActivityRow key={item.id} item={item} />)}
                         </div>
                       ))}
@@ -397,11 +574,11 @@ export default function ActivityPage() {
                       disabled={loadingMore}
                     >
                       {loadingMore ? (
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <RefreshCw className="icon-sm animate-spin" />
                       ) : (
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="icon-sm" />
                       )}
-                      {loadingMore ? 'Loading…' : 'Load more'}
+                      {loadingMore ? <BilingualText en={activityEn('loading')} el={activityEl('loading')} compact /> : <BilingualText en={activityEn('load_more')} el={activityEl('load_more')} compact />}
                     </Button>
                   </div>
                 )}
@@ -409,21 +586,25 @@ export default function ActivityPage() {
 
               {/* Notifications */}
               <TabsContent value="notifications" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {notifError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
-                      <p className="text-sm text-muted-foreground">Failed to load notifications.</p>
-                      <Button variant="secondary" size="sm" onClick={() => refetchNotif()}>Retry</Button>
+                      <p className="text-sm text-muted-foreground">
+                        <BilingualText en={activityEn('notifications_failed')} el={activityEl('notifications_failed')} compact />
+                      </p>
+                      <Button variant="secondary" size="sm" onClick={() => refetchNotif()}>
+                        <BilingualText en={activityEn('retry')} el={activityEl('retry')} compact />
+                      </Button>
                     </div>
                   ) : notifLoading ? (
                     Array.from({ length: 5 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : notifications.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        <CheckCircle2 className="icon-md text-status-success" />
                       </div>
-                      <p className="text-sm font-medium text-foreground">All caught up!</p>
-                      <p className="text-xs text-muted-foreground">No notifications right now.</p>
+                      <p className="text-sm font-medium text-foreground"><BilingualText en={activityEn('all_caught_up')} el={activityEl('all_caught_up')} compact /></p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={activityEn('no_notifications')} el={activityEl('no_notifications')} compact /></p>
                     </div>
                   ) : (
                     notifications.map((n) => <NotificationRow key={n.id} item={n} />)
@@ -431,9 +612,15 @@ export default function ActivityPage() {
                 </div>
                 {notifications.length > 0 && (
                   <div className="mt-3 flex items-center justify-between px-1">
-                    <p className="text-xs text-muted-foreground">{unreadCount} unread of {notifications.length} total</p>
-                    <Link href="/notifications" className="text-xs text-primary hover:underline flex items-center gap-1">
-                      View all <ArrowRight className="h-3 w-3" />
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText
+                        en={activityEn('unread_of_total').replace('{unread}', String(unreadCount)).replace('{total}', String(notifications.length))}
+                        el={activityEl('unread_of_total').replace('{unread}', String(unreadCount)).replace('{total}', String(notifications.length))}
+                        compact
+                      />
+                    </p>
+                    <Link href="/notifications" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
+                      <BilingualText en={activityEn('view_all')} el={activityEl('view_all')} compact /> <ArrowRight className="icon-sm" aria-hidden="true" />
                     </Link>
                   </div>
                 )}
@@ -441,19 +628,19 @@ export default function ActivityPage() {
 
               {/* Events */}
               <TabsContent value="events" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                   {activityLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : eventItems.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <Calendar className="icon-md text-muted-foreground" />
                       </div>
-                      <p className="text-sm font-medium text-foreground">No upcoming events</p>
-                      <p className="text-xs text-muted-foreground">Browse and join events in your ecosystem.</p>
-                      <Link href="/events">
-                        <Button variant="outline" size="sm">Browse events</Button>
-                      </Link>
+                      <p className="text-sm font-medium text-foreground"><BilingualText en={activityEn('no_events')} el={activityEl('no_events')} compact /></p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={activityEn('no_events_hint')} el={activityEl('no_events_hint')} compact /></p>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/events"><BilingualText en={activityEn('browse_events')} el={activityEl('browse_events')} compact /></Link>
+                      </Button>
                     </div>
                   ) : (
                     eventItems.map((item) => <NetworkActivityRow key={item.id} item={item} />)
@@ -462,80 +649,6 @@ export default function ActivityPage() {
               </TabsContent>
             </Tabs>
           </div>
-
-          {/* Sidebar */}
-          <div className="hidden lg:flex lg:flex-col lg:gap-4">
-            {/* Quick actions */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-sm">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-2 pb-4">
-                {[
-                  { href: '/discover', label: 'Explore People', icon: Users, color: 'text-violet-500' },
-                  { href: '/matches', label: 'View Matches', icon: TrendingUp, color: 'text-emerald-500' },
-                  { href: '/events', label: 'Browse Events', icon: Calendar, color: 'text-pink-500' },
-                  { href: '/achievements', label: 'Achievements', icon: Award, color: 'text-yellow-500' },
-                ].map((a) => {
-                  const AIcon = a.icon;
-                  return (
-                    <Link key={a.href} href={a.href}>
-                      <div className="flex items-center gap-2.5 rounded-lg p-2 hover:bg-muted/50 transition-colors">
-                        <AIcon className={cn('h-4 w-4 shrink-0', a.color)} />
-                        <span className="text-sm text-foreground/80">{a.label}</span>
-                        <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/50" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            {/* Activity breakdown */}
-            <Card className="border-border/50">
-              <CardHeader className="pb-3 pt-4">
-                <CardTitle className="text-sm">Activity Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-4 space-y-2.5">
-                {Object.entries(TYPE_CONFIG).slice(0, 6).map(([type, cfg]) => {
-                  const count = activityItems.filter((i) => i.type === type).length;
-                  const Icon = cfg.icon;
-                  return (
-                    <div key={type} className="flex items-center gap-2.5">
-                      <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-                        <Icon className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="flex-1 text-xs text-muted-foreground capitalize">{type}</span>
-                      <span className="text-xs font-semibold text-foreground">{count}</span>
-                      <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={cn('h-full rounded-full', cfg.color.replace('text-', 'bg-'))}
-                          style={{ width: `${activityItems.length > 0 ? (count / activityItems.length) * 100 : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-
-            {/* Streak / engagement */}
-            <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
-              <CardContent className="p-4 text-center">
-                <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary/10">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                </div>
-                <p className="mt-2 text-sm font-semibold text-foreground">Stay Active</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Connect, engage, and grow your network daily.</p>
-                <Link href="/analytics">
-                  <Button variant="outline" size="sm" className="mt-3 w-full h-8 text-xs gap-1.5">
-                    <Target className="h-3.5 w-3.5" /> View Analytics
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
     </AppShell>
   );

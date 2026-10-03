@@ -1,20 +1,21 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { TREND } from '@/lib/semantic-colors';
 import { Slot } from '@radix-ui/react-slot';
 import { Badge } from './badge';
 import { Button } from './button';
 
 const enhancedCardVariants = cva(
-  'relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-200',
+  'relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-none transition-colors duration-150',
   {
     variants: {
       variant: {
-        default: 'border-border/60 hover:border-border hover:shadow-md',
-        elevated: 'border-border/60 shadow-lg hover:shadow-xl hover:-translate-y-1',
-        outlined: 'border-2 border-border hover:border-primary/50',
+        default: 'border-border hover:border-foreground/15',
+        elevated: 'border-border',
+        outlined: 'border border-border hover:border-foreground/15',
         ghost: 'border-transparent bg-transparent hover:bg-secondary/50',
-        gradient: 'border-transparent bg-gradient-to-br from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10',
+        gradient: 'border-transparent bg-primary/[0.03] hover:bg-primary/[0.05]',
         glass: 'border-white/20 bg-white/10 backdrop-blur-md hover:bg-white/20',
       },
       size: {
@@ -50,14 +51,14 @@ export interface EnhancedCardProps
 }
 
 const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
-  ({ className, variant, size, interactive, asChild = false, loading, badge, badgeVariant, actions, header, footer, hover, children, ...props }, ref) => {
+  ({ className, variant, size, interactive, asChild = false, loading, badge, badgeVariant, actions, header, footer, hover: _hover, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'div';
     
     return (
       <Comp
+        data-surface="card"
         className={cn(
           enhancedCardVariants({ variant, size, interactive }),
-          hover && 'hover:shadow-md transition-shadow duration-200',
           loading && 'opacity-50 pointer-events-none',
           className,
         )}
@@ -95,7 +96,7 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
 
           {/* Footer */}
           {(footer || actions) && (
-            <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
               <div>{footer}</div>
               {actions && <div className="flex gap-2">{actions}</div>}
             </div>
@@ -128,7 +129,7 @@ export const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+    className={cn('page-section text-base font-semibold leading-tight tracking-tight sm:text-lg', className)}
     {...props}
   />
 ));
@@ -193,11 +194,11 @@ export const ProfileCard = React.forwardRef<
     >
       <div className="flex items-start gap-4">
         <div className="relative">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground font-semibold">
-            {profile.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+            {initialsOf(profile.name).toUpperCase()}
           </div>
           {profile.verified && (
-            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-status-success-mark rounded-full flex items-center justify-center">
               <div className="h-2 w-2 bg-white rounded-full" />
             </div>
           )}
@@ -243,8 +244,8 @@ export const ProfileCard = React.forwardRef<
           <Button size="sm" variant="outline" className="flex-1">
             Connect
           </Button>
-          <Button variant="ghost" size="icon">
-            <MessageCircle className="h-4 w-4" />
+          <Button variant="ghost" size="icon" aria-label={`Message ${profile.name}`}>
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       )}
@@ -268,9 +269,9 @@ export const StatsCard = React.forwardRef<
   }
 >(({ title, value, change, icon, trend, className, ...props }, ref) => {
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-green-600';
-    if (trend === 'down') return 'text-red-600';
-    return 'text-muted-foreground';
+    if (trend === 'up') return TREND.up;
+    if (trend === 'down') return TREND.down;
+    return TREND.flat;
   };
 
   const getTrendIcon = () => {
@@ -290,13 +291,13 @@ export const StatsCard = React.forwardRef<
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
+          <p className="page-stat text-2xl font-bold mt-1">{value}</p>
           {change && (
             <div className="flex items-center gap-1 mt-2">
               <span
                 className={cn(
                   'text-xs font-medium',
-                  change.type === 'increase' ? 'text-green-600' : 'text-red-600'
+                  change.type === 'increase' ? TREND.up : TREND.down
                 )}
               >
                 {change.type === 'increase' ? '+' : '-'}{change.value}%
@@ -347,14 +348,14 @@ export const ActivityCard = React.forwardRef<
     >
       <div className="flex items-start gap-3">
         {user && (
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
-            {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold flex-shrink-0">
+            {initialsOf(user.name).toUpperCase()}
           </div>
         )}
         
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm mb-1">{title}</h4>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mb-2">
             {description}
           </p>
           <div className="flex items-center justify-between">

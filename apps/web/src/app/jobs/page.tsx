@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -11,14 +12,10 @@ import {
   Search,
   Plus,
   ExternalLink,
-  X,
   Loader2,
   AlertCircle,
   Star,
-  DollarSign,
-  Clock,
   Filter,
-  TrendingUp,
   Code2,
   Megaphone,
   Palette,
@@ -26,12 +23,16 @@ import {
   BarChart3,
   Users,
   Sparkles,
-  ArrowRight,
-  BadgeCheck,
   Zap,
+  X,
+  Handshake,
+  Store,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
+import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,35 +42,46 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
+import { bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 
 const ROLE_FILTERS = [
-  { value: 'all',         label: 'All',          icon: Briefcase },
-  { value: 'engineering', label: 'Engineering',   icon: Code2     },
-  { value: 'marketing',   label: 'Marketing',    icon: Megaphone },
-  { value: 'design',      label: 'Design',       icon: Palette   },
-  { value: 'legal',       label: 'Legal',        icon: Scale     },
-  { value: 'analytics',   label: 'Analytics',    icon: BarChart3 },
-  { value: 'operations',  label: 'Operations',   icon: Users     },
+  { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
+  { value: 'engineering', labelKey: 'role_engineering' as const, icon: Code2     },
+  { value: 'marketing',   labelKey: 'role_marketing' as const,   icon: Megaphone },
+  { value: 'design',      labelKey: 'role_design' as const,      icon: Palette   },
+  { value: 'legal',       labelKey: 'role_legal' as const,       icon: Scale     },
+  { value: 'analytics',   labelKey: 'role_analytics' as const,   icon: BarChart3 },
+  { value: 'operations',  labelKey: 'role_operations' as const,  icon: Users     },
 ] as const;
 type RoleFilter = typeof ROLE_FILTERS[number]['value'];
 
-const EMPLOYMENT_TYPES = ['All', 'Full-time', 'Part-time', 'Contract', 'Co-founder', 'Advisor'] as const;
+const EMPLOYMENT_TYPES = [
+  { value: 'all',       labelKey: 'emp_all' as const },
+  { value: 'full-time', labelKey: 'emp_full_time' as const },
+  { value: 'part-time', labelKey: 'emp_part_time' as const },
+  { value: 'contract',  labelKey: 'emp_contract' as const },
+  { value: 'cofounder', labelKey: 'emp_cofounder' as const },
+  { value: 'advisor',   labelKey: 'emp_advisor' as const },
+] as const;
 
 function JobCard({ job, featured = false }: { job: JobPostingView; featured?: boolean }) {
   return (
     <Card className={cn(
       'card-interactive hover-lift group transition-all duration-200',
-      featured && 'border-primary/30 bg-gradient-to-br from-primary/[0.03] to-violet-500/[0.02]'
+      featured && 'border-primary/15 bg-primary/[0.03]'
     )}>
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           {/* Company avatar */}
           <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
-            <AvatarImage src={job.creator.avatarUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
-              {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
+            <AvatarImage src={job.creator?.avatarUrl ?? undefined} />
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
+              {initialsOf(job.creator.displayName)}
             </AvatarFallback>
           </Avatar>
 
@@ -77,10 +89,10 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary-accessible transition-colors">
                     {job.title}
                   </h3>
-                  {featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
+                  {featured && <Star className="icon-sm text-status-warning fill-status-warning" />}
                 </div>
                 <p className="text-sm text-muted-foreground">{job.creator.displayName}</p>
               </div>
@@ -88,9 +100,13 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 {job.role && (
                   <Badge variant="secondary" className="text-xs">{job.role}</Badge>
                 )}
+                {job.type && (
+                  <Badge variant="outline" className="text-xs">{job.type}</Badge>
+                )}
                 {job.isRemote && (
-                  <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                    <Wifi className="mr-1 h-3 w-3" />Remote
+                  <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
+                    <Wifi className="mr-1 icon-sm" />
+                    <BilingualText en={jobsEn('remote')} el={jobsEl('remote')} compact />
                   </Badge>
                 )}
               </div>
@@ -98,33 +114,23 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {job.location && (
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location}</span>
+                <span className="flex items-center gap-1"><MapPin className="icon-sm" />{job.location}</span>
               )}
               {!job.location && !job.isRemote && (
-                <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />Location not specified</span>
+                <span className="flex items-center gap-1">
+                  <Building2 className="icon-sm" />
+                  <BilingualText en={jobsEn('location_unknown')} el={jobsEl('location_unknown')} compact />
+                </span>
               )}
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Full-time</span>
-              <span className="flex items-center gap-1 text-emerald-600">
-                <DollarSign className="h-3 w-3" />Equity available
-              </span>
             </div>
           </div>
 
-          <Link href={job.href ?? `/jobs`} className="shrink-0">
-            <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8">
-              <ExternalLink className="h-3.5 w-3.5" />View
-            </Button>
-          </Link>
-        </div>
-
-        {/* Skills footer */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
-          <div className="flex flex-wrap gap-1.5">
-            {['React', 'TypeScript', 'Node.js'].slice(0, 3).map((skill) => (
-              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{skill}</span>
-            ))}
-          </div>
-          <span className="text-[11px] text-muted-foreground">Posted today</span>
+          <Button variant="ghost" size="sm" className="gap-1 shrink-0" asChild>
+            <Link href={job.href ?? `/jobs`}>
+              <ExternalLink className="icon-sm" />
+              <BilingualText en={jobsEn('view')} el={jobsEl('view')} compact />
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -135,7 +141,7 @@ function JobSkeleton() {
   return (
     <Card>
       <CardContent className="flex items-start gap-4 p-5">
-        <Skeleton className="h-11 w-11 rounded-xl shrink-0" />
+        <Skeleton className="h-11 w-11 rounded-lg shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-48" />
           <Skeleton className="h-3 w-32" />
@@ -160,7 +166,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
         isRemote: form.isRemote,
       }),
     onSuccess: () => {
-      success('Job posted!', 'Your opportunity is now live.');
+      success(jobsEn('posted'), jobsEn('posted_body'));
       onCreated();
       onClose();
     },
@@ -171,11 +177,15 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Post a job</DialogTitle>
+          <DialogTitle>
+            <BilingualText en={jobsEn('dialog_title')} el={jobsEl('dialog_title')} compact />
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Job title *</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_title')} el={jobsEl('field_title')} compact /> *
+            </label>
             <Input
               placeholder="e.g. Full-Stack Engineer (equity)"
               value={form.title}
@@ -185,7 +195,9 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Role / function</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_role')} el={jobsEl('field_role')} compact />
+            </label>
             <Input
               placeholder="e.g. Engineering, Marketing, Design"
               value={form.role}
@@ -194,7 +206,9 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Location</label>
+            <label className="text-sm font-medium">
+              <BilingualText en={jobsEn('field_location')} el={jobsEl('field_location')} compact />
+            </label>
             <Input
               placeholder="e.g. Athens, GR"
               value={form.location}
@@ -210,17 +224,19 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
               onChange={(e) => set('isRemote', e.target.checked)}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            Remote position
+            <BilingualText en={jobsEn('field_remote')} el={jobsEl('field_remote')} compact />
           </label>
         <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>
+              <BilingualText en={jobsEn('cancel')} el={jobsEl('cancel')} compact />
+            </Button>
             <Button
               className="gap-2"
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
-              Post job
+              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Briefcase className="icon-sm" />}
+              <BilingualText en={jobsEn('submit')} el={jobsEl('submit')} compact />
             </Button>
         </DialogFooter>
         </div>
@@ -231,13 +247,15 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
 
 export default function JobsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
-  const [employmentType, setEmploymentType] = useState<string>('All');
+  const [employmentType, setEmploymentType] = useState<(typeof EMPLOYMENT_TYPES)[number]['value']>('all');
   const [showPostForm, setShowPostForm] = useState(false);
+  const { openRailSection } = usePageRail();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['jobs'],
+    queryKey: qk('jobs'),
     queryFn: () => listJobs({ limit: 50 }),
     staleTime: 60_000,
     retry: 1,
@@ -252,111 +270,164 @@ export default function JobsPage() {
       j.creator.displayName.toLowerCase().includes(search.toLowerCase()) ||
       j.location?.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === 'all' || j.role?.toLowerCase().includes(roleFilter);
-    return matchSearch && matchRole;
+    const typeSlug = (j.type ?? '').toLowerCase().replace(/\s+/g, '-');
+    const roleSlug = (j.role ?? '').toLowerCase();
+    const matchEmp =
+      employmentType === 'all' ||
+      typeSlug === employmentType ||
+      (employmentType === 'cofounder' && (roleSlug.includes('co-founder') || roleSlug.includes('cofounder') || typeSlug.includes('cofounder')));
+    return matchSearch && matchRole && matchEmp;
   });
 
+  // The featured strip shows the postings flagged as featured, or the three
+  // newest when none are, and the sections below it do not repeat them - the
+  // same three cards used to appear twice, once as featured and again under
+  // Remote or On-site.
+  const showFeatured = !search && roleFilter === 'all';
+  const flagged = filtered.filter((j) => j.isFeatured);
+  const featuredJobs = showFeatured ? (flagged.length ? flagged : filtered).slice(0, 3) : [];
+  const featuredIds = new Set(featuredJobs.map((j) => j.id));
   const remoteJobs = filtered.filter((j) => j.isRemote);
   const onsiteJobs = filtered.filter((j) => !j.isRemote);
-  const featuredJobs = filtered.slice(0, 3);
+  const remoteRest = remoteJobs.filter((j) => !featuredIds.has(j.id));
+  const onsiteRest = onsiteJobs.filter((j) => !featuredIds.has(j.id));
+
+  // Offered to the assistant: the role and type chips, the search reset and
+  // the Post form, through the same setters; the postings go out as a list.
+  usePageList([
+    {
+      id: 'jobs',
+      labelEn: 'Job postings',
+      labelEl: 'Αγγελίες',
+      rows: isLoading ? undefined : filtered.map((j) =>
+        `${j.title}${j.role ? ` · ${j.role}` : ''} · ${j.creator.displayName} · ${j.isRemote ? 'remote' : (j.location ?? 'on-site')}${j.type ? ` · ${j.type}` : ''}`,
+      ),
+      total: jobs.length,
+    },
+  ]);
+  usePageControls([
+    choiceControl('role_filter', 'Role filter', 'Φίλτρο ρόλου', ROLE_FILTERS.map((r) => ({ value: r.value, en: jobsEn(r.labelKey), el: jobsEl(r.labelKey) })), roleFilter, (v) => setRoleFilter(v as RoleFilter)),
+    choiceControl('employment_type', 'Employment type', 'Τύπος απασχόλησης', EMPLOYMENT_TYPES.map((t) => ({ value: t.value, en: jobsEn(t.labelKey), el: jobsEl(t.labelKey) })), employmentType, (v) => setEmploymentType(v as typeof employmentType)),
+    {
+      id: 'clear_search',
+      labelEn: 'Clear the job search',
+      labelEl: 'Καθαρισμός αναζήτησης αγγελιών',
+      writes: false,
+      unavailableEn: search ? undefined : 'No search is set.',
+      unavailableEl: search ? undefined : 'Δεν υπάρχει αναζήτηση.',
+      run: () => setSearch(''),
+    },
+    { id: 'post_job', labelEn: 'Open the post a job form', labelEl: 'Άνοιγμα φόρμας νέας αγγελίας', writes: false, run: () => setShowPostForm(true) },
+  ]);
+
+  /*
+   * The column leads with the search and the roles. The three counts and the
+   * two filter tiers (role, then employment type) sat above them, four rows
+   * of chrome before the first posting; they live in the rail now, with the
+   * active filter count on its collapsed strip.
+   */
+  const activeFilters = (roleFilter !== 'all' ? 1 : 0) + (employmentType !== 'all' ? 1 : 0);
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Hiring at a glance',
+      labelEl: 'Προσλήψεις με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'open', label: jobsEn('stat_open'), labelEl: jobsEl('stat_open'), value: jobs.length || '\u2014', icon: Briefcase, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'remote', label: jobsEn('stat_remote'), labelEl: jobsEl('stat_remote'), value: remoteJobs.length || '\u2014', icon: Wifi, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'hiring', label: jobsEn('stat_hiring'), labelEl: jobsEl('stat_hiring'), value: new Set(jobs.map((j) => j.creator.displayName)).size || '\u2014', icon: Zap, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'sliders',
+      labelEn: 'Filters',
+      labelEl: 'Φίλτρα',
+      badge: activeFilters || null,
+      content: (
+        <div className="space-y-4">
+          <RailOptions
+            title="Role"
+            titleEl="Ρόλος"
+            options={ROLE_FILTERS.map((rf) => ({ value: rf.value, en: jobsEn(rf.labelKey), el: jobsEl(rf.labelKey), icon: rf.icon }))}
+            value={roleFilter}
+            onChange={setRoleFilter}
+          />
+          <RailOptions
+            title="Employment type"
+            titleEl="Τύπος απασχόλησης"
+            options={EMPLOYMENT_TYPES.map((t) => ({ value: t.value, en: jobsEn(t.labelKey), el: jobsEl(t.labelKey) }))}
+            value={employmentType}
+            onChange={setEmploymentType}
+          />
+          {activeFilters > 0 && (
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setRoleFilter('all'); setEmploymentType('all'); }} />
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Handshake} en="Open opportunities" el="Άνοιγμα ευκαιριών" onClick={() => router.push('/opportunities')} />
+          <RailAction icon={Store} en="Open marketplace" el="Άνοιγμα αγοράς" onClick={() => router.push('/marketplace')} />
+          <RailAction icon={Sparkles} en="Open discover" el="Άνοιγμα ανακάλυψης" onClick={() => router.push('/discover')} />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
     {showPostForm && (
       <PostJobForm
         onClose={() => setShowPostForm(false)}
-        onCreated={() => queryClient.invalidateQueries({ queryKey: ['jobs'] })}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: qk('jobs') })}
       />
     )}
     <AppShell
-      title="Jobs & Roles"
-      description="Equity & early-stage opportunities from startups in the CoFounderBay ecosystem"
+      showHelp
+      rail={rail}
       actions={
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-          <Plus className="h-4 w-4" />
-          Post a Role
+          <Plus className="icon-sm" />
+          <BilingualText en={jobsEn('post')} el={jobsEl('post')} compact />
         </Button>
       }
     >
-      <div className="space-y-5 pb-10">
-      {/* Stats bar */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: 'Open Roles', value: jobs.length || '25+', icon: Briefcase, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Remote-First', value: remoteJobs.length || '12+', icon: Wifi, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Startups Hiring', value: new Set(jobs.map((j) => j.creator.displayName)).size || '8+', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        ].map((s) => {
-          const SIcon = s.icon;
-          return (
-            <Card key={s.label} className="shadow-sm border-border/50">
-              <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
+      <div className="space-y-6 pb-10">
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search jobs, roles, companies…"
+            aria-label={bilingualInline("Search jobs, roles, companies", "Αναζήτηση θέσεων, ρόλων, εταιρειών")}
+            placeholder={bilingualInline(jobsEn('search'), jobsEl('search'))}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
-        {/* Role filter chips */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          {ROLE_FILTERS.map((rf) => {
-            const RIcon = rf.icon;
-            const isActive = roleFilter === rf.value;
-            return (
-              <button
-                key={rf.value}
-                onClick={() => setRoleFilter(rf.value)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
-                  isActive
-                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
-                )}
-              >
-                <RIcon className="h-3 w-3" />{rf.label}
-              </button>
-            );
-          })}
-        </div>
-        {/* Employment type tabs */}
-        <div className="flex flex-wrap gap-2">
-          {EMPLOYMENT_TYPES.map((t) => (
-            <button
-              key={t}
-              onClick={() => setEmploymentType(t)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                employmentType === t
-                  ? 'border-primary bg-primary/15 text-primary'
-                  : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
-              )}
-            >{t}</button>
-          ))}
-        </div>
       </div>
 
       {isError ? (
         <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <AlertCircle className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Failed to load jobs. Please check your connection.</p>
-          <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+          <AlertCircle className="icon-xl text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={jobsEn('load_failed')} el={jobsEl('load_failed')} compact />
+          </p>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>
+            <BilingualText en={jobsEn('try_again')} el={jobsEl('try_again')} compact />
+          </Button>
         </CardContent></Card>
       ) : isLoading ? (
         <div className="space-y-3">
@@ -365,23 +436,38 @@ export default function JobsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
+        // A role or type narrowed in the rail empties the list as surely as a
+        // search does; "post a job" would misread that as an empty board.
         <EmptyState
           illustration="rocket"
-          title={search ? 'No jobs match your search' : 'No jobs posted yet'}
+          title={
+            search ? <BilingualText en={jobsEn('empty_search')} el={jobsEl('empty_search')} />
+            : activeFilters > 0 ? <BilingualText en="No jobs match these filters" el="Καμία θέση δεν ταιριάζει με αυτά τα φίλτρα" />
+            : <BilingualText en={jobsEn('empty')} el={jobsEl('empty')} />
+          }
           description={
+            search ? <BilingualText en={jobsEn('empty_search_hint')} el={jobsEl('empty_search_hint')} />
+            : activeFilters > 0 ? <BilingualText en="The role and type filters are set in the side panel." el="Τα φίλτρα ρόλου και τύπου βρίσκονται στο πλευρικό πάνελ." />
+            : <BilingualText en={jobsEn('empty_hint')} el={jobsEl('empty_hint')} />
+          }
+          askAiPrompt={
             search
-              ? 'Try a different keyword or clear the search.'
-              : 'Be the first to post an opportunity for the community.'
+              ? `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`
+              : 'Help me write a cofounder or early-hire job post based on my profile gaps.'
           }
           action={
-            !search ? (
-              <Button className="gap-2" onClick={() => {}}>
-                <Plus className="h-4 w-4" />
-                Post a job
+            search ? (
+              <Button variant="secondary" onClick={() => setSearch('')}>
+                <BilingualText en={jobsEn('clear_search')} el={jobsEl('clear_search')} compact />
+              </Button>
+            ) : activeFilters > 0 ? (
+              <Button variant="secondary" onClick={() => openRailSection('filters')}>
+                <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
               </Button>
             ) : (
-              <Button variant="secondary" onClick={() => setSearch('')}>
-                Clear search
+              <Button className="gap-2" onClick={() => setShowPostForm(true)}>
+                <Plus className="icon-sm" />
+                <BilingualText en={jobsEn('post_job')} el={jobsEl('post_job')} compact />
               </Button>
             )
           }
@@ -389,39 +475,48 @@ export default function JobsPage() {
       ) : (
         <div className="space-y-6">
           <p className="text-xs text-muted-foreground">
-            {filtered.length} role{filtered.length !== 1 ? 's' : ''} found
-            {remoteJobs.length > 0 && ` · ${remoteJobs.length} remote`}
+            <BilingualText
+              en={`${filtered.length === 1 ? jobsEn('found_one') : jobsEn('found_many').replace('{n}', String(filtered.length))}${remoteJobs.length > 0 ? ` · ${jobsEn('remote_suffix').replace('{n}', String(remoteJobs.length))}` : ''}`}
+              el={`${filtered.length === 1 ? jobsEl('found_one') : jobsEl('found_many').replace('{n}', String(filtered.length))}${remoteJobs.length > 0 ? ` · ${jobsEl('remote_suffix').replace('{n}', String(remoteJobs.length))}` : ''}`}
+              compact
+            />
           </p>
 
           {/* Featured strip */}
-          {!search && roleFilter === 'all' && featuredJobs.length > 0 && (
+          {featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Roles</h2>
+                <Sparkles className="icon-sm text-primary-accessible" />
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
+                </h2>
               </div>
               {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}
             </section>
           )}
 
           {/* Remote jobs */}
-          {remoteJobs.length > 0 && (
+          {remoteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-emerald-500" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Remote Opportunities</h2>
+                <Wifi className="icon-sm text-status-success" />
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('remote_section')} el={jobsEl('remote_section')} compact />
+                </h2>
               </div>
-              {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {remoteRest.map((job) => <JobCard key={job.id} job={job} />)}
             </section>
           )}
 
-          {onsiteJobs.length > 0 && (
+          {onsiteRest.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-500" />
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">On-site / Hybrid</h2>
+                <MapPin className="icon-sm text-status-info" />
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <BilingualText en={jobsEn('onsite_section')} el={jobsEl('onsite_section')} compact />
+                </h2>
               </div>
-              {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {onsiteRest.map((job) => <JobCard key={job.id} job={job} />)}
             </section>
           )}
         </div>

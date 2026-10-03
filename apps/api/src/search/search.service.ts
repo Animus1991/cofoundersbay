@@ -126,11 +126,25 @@ export class SearchService {
           ? ({ updatedAt: 'desc' } as const)
           : ({ updatedAt: 'desc' } as const);
 
-    const [profiles, total] = await Promise.all([
+    /*
+     * The directory header shows "online now" and "new this week" next to the
+     * total. Those have to be counted over the same `where` as the results,
+     * not over the page of hits that happens to be loaded: a figure scoped to
+     * 20 rows sitting beside a figure scoped to the whole directory reads as
+     * one claim and is two.
+     *
+     * "Online" is a five-minute window on `lastSeenAt`, which is the same
+     * signal the admin dashboard counts and the only presence the schema
+     * records.
+     */
+    const onlineSince = new Date(Date.now() - 5 * 60 * 1000);
+    const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [profiles, total, onlineNow, newThisWeek, roleGroups] = await Promise.all([
       this.prisma.profile.findMany({
         where,
         include: {
-          user: { select: { id: true, role: true } },
+          user: { select: { id: true, role: true, lastSeenAt: true } },
           skills: { include: { skill: true } },
         },
         orderBy,
@@ -138,6 +152,17 @@ export class SearchService {
         skip: offset,
       }),
       this.prisma.profile.count({ where }),
+      this.prisma.profile.count({
+        where: { AND: [where, { user: { lastSeenAt: { gte: onlineSince } } }] },
+      }),
+      this.prisma.profile.count({
+        where: { AND: [where, { createdAt: { gte: weekStart } }] },
+      }),
+      this.prisma.profile.groupBy({
+        by: ['userId'],
+        where: { AND: [where, { user: { role: 'mentor' } }] },
+        _count: { userId: true },
+      }),
     ]);
 
     const hits = profiles.map((p) => ({
@@ -155,9 +180,209 @@ export class SearchService {
       skillSlugs: p.skills.map((s: { skill: { slug: string } }) => s.skill.slug),
       createdAt: Math.floor(p.createdAt.getTime() / 1000),
       updatedAt: Math.floor(p.updatedAt.getTime() / 1000),
+      lastSeenAt: p.user.lastSeenAt ? Math.floor(p.user.lastSeenAt.getTime() / 1000) : null,
     }));
 
-    return { hits, total };
+    return {
+      hits,
+      total,
+      stats: { onlineNow, newThisWeek, mentors: roleGroups.length },
+    };
+  }
+
+  /**
+   * Unified search the `/search` page calls: people, jobs, events, groups,
+   * opportunities — one payload with `href` on every hit so the client can
+   * render ResultCards instead of dropping rows that look like profile hits.
+   */
+  async searchGlobal(params: {
+    q: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const q = params.q.trim();
+    const category = params.category ?? 'all';
+    const limit = Math.min(Math.max(params.limit ?? 20, 1), 50);
+    const empty = {
+      results: [] as Array<Record<string, unknown>>,
+      total: 0,
+      categories: {
+        people: 0,
+        jobs: 0,
+        events: 0,
+        groups: 0,
+        mentors: 0,
+        opportunities: 0,
+      },
+    };
+    if (q.length < 2) return empty;
+
+    const contains = { contains: q, mode: 'insensitive' as const };
+    const wantPeople = category === 'all' || category === 'people';
+    const wantMentors = category === 'all' || category === 'mentors';
+    const wantJobs = category === 'all' || category === 'jobs';
+    const wantEvents = category === 'all' || category === 'events';
+    const wantGroups = category === 'all' || category === 'groups';
+    const wantOpps = category === 'all' || category === 'opportunities';
+
+    const [people, mentors, jobs, events, groups, opportunities] = await Promise.all([
+      wantPeople
+        ? this.prisma.profile.findMany({
+            where: {
+              OR: [
+                { displayName: contains },
+                { headline: contains },
+                { bio: contains },
+                { location: contains },
+              ],
+            },
+            include: { user: { select: { id: true, role: true } } },
+            take: limit,
+          })
+        : Promise.resolve([]),
+      wantMentors
+        ? this.prisma.profile.findMany({
+            where: {
+              user: { role: 'mentor' },
+              OR: [
+                { displayName: contains },
+                { headline: contains },
+                { bio: contains },
+                { location: contains },
+              ],
+            },
+            include: { user: { select: { id: true, role: true } } },
+            take: limit,
+          })
+        : Promise.resolve([]),
+      wantJobs
+        ? this.prisma.jobPosting.findMany({
+            where: {
+              isActive: true,
+              OR: [{ title: contains }, { description: contains }, { location: contains }, { role: contains }],
+            },
+            take: limit,
+          })
+        : Promise.resolve([]),
+      wantEvents
+        ? this.prisma.event.findMany({
+            where: {
+              OR: [{ title: contains }, { description: contains }, { location: contains }],
+            },
+            take: limit,
+            orderBy: { startAt: 'desc' },
+          })
+        : Promise.resolve([]),
+      wantGroups
+        ? this.prisma.group.findMany({
+            where: {
+              privacy: 'public',
+              OR: [{ name: contains }, { description: contains }, { category: contains }],
+            },
+            take: limit,
+          })
+        : Promise.resolve([]),
+      wantOpps
+        ? this.prisma.opportunity.findMany({
+            where: {
+              isActive: true,
+              OR: [{ title: contains }, { description: contains }, { company: contains }, { location: contains }],
+            },
+            take: limit,
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const peopleHits = people.map((p) => ({
+      id: p.userId,
+      type: 'user' as const,
+      title: p.displayName,
+      subtitle: p.headline ?? undefined,
+      description: p.bio ?? undefined,
+      imageUrl: p.avatarUrl ?? undefined,
+      href: `/profiles/${p.userId}`,
+      meta: p.location ? { location: p.location } : undefined,
+    }));
+    const mentorHits = mentors.map((p) => ({
+      id: p.userId,
+      type: 'user' as const,
+      title: p.displayName,
+      subtitle: p.headline ?? undefined,
+      description: p.bio ?? undefined,
+      imageUrl: p.avatarUrl ?? undefined,
+      href: `/profiles/${p.userId}`,
+      meta: p.location ? { location: p.location } : undefined,
+    }));
+    const jobHits = jobs.map((j) => ({
+      id: j.id,
+      type: 'job' as const,
+      title: j.title,
+      subtitle: j.role ?? undefined,
+      description: j.description ?? undefined,
+      href: `/jobs`,
+      meta: {
+        ...(j.location ? { location: j.location } : {}),
+      },
+    }));
+    const eventHits = events.map((e) => ({
+      id: e.id,
+      type: 'event' as const,
+      title: e.title,
+      subtitle: e.location ?? undefined,
+      description: e.description ?? undefined,
+      imageUrl: e.coverImageUrl ?? undefined,
+      href: `/events/${e.id}`,
+      meta: {
+        ...(e.location ? { location: e.location } : {}),
+        date: e.startAt.toISOString(),
+      },
+    }));
+    const groupHits = groups.map((g) => ({
+      id: g.id,
+      type: 'group' as const,
+      title: g.name,
+      subtitle: g.category ?? undefined,
+      description: g.description ?? undefined,
+      imageUrl: g.avatarUrl ?? undefined,
+      href: `/groups/${g.id}`,
+    }));
+    const oppHits = opportunities.map((o) => ({
+      id: o.id,
+      type: 'opportunity' as const,
+      title: o.title,
+      subtitle: o.company ?? undefined,
+      description: o.description ?? undefined,
+      href: `/opportunities`,
+      meta: o.location ? { location: o.location } : undefined,
+    }));
+
+    const byCategory = {
+      people: peopleHits,
+      mentors: mentorHits,
+      jobs: jobHits,
+      events: eventHits,
+      groups: groupHits,
+      opportunities: oppHits,
+    };
+
+    const results =
+      category === 'all'
+        ? [...peopleHits, ...jobHits, ...eventHits, ...groupHits, ...oppHits]
+        : byCategory[category as keyof typeof byCategory] ?? [];
+
+    return {
+      results: results.slice(0, limit),
+      total: results.length,
+      categories: {
+        people: peopleHits.length,
+        jobs: jobHits.length,
+        events: eventHits.length,
+        groups: groupHits.length,
+        mentors: mentorHits.length,
+        opportunities: oppHits.length,
+      },
+    };
   }
 
   /**

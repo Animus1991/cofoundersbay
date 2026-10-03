@@ -39,8 +39,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { getPublicPitchDeck, recordPitchView, submitPitchContactRequest, type PublicPitchDeck } from '@/lib/api';
+import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { PageContextualHelp } from '@/components/common/PageContextualHelp';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -175,45 +180,80 @@ const DEMO_DECK: PublicPitchDeck = {
   updatedAt: '2026-03-25T14:00:00Z',
 };
 
+
+// ─── Slide content shapes ─────────────────────────────────────────────────────
+/**
+ * A deck slide's `content` is a JSON blob whose shape depends on `slide.type`.
+ * Each renderer used to reach into it through `slide.content as any`, so a
+ * renamed field surfaced as a blank slide rather than a build error. These
+ * types name the fields each renderer actually reads.
+ */
+type SlideBase = (typeof DEMO_DECK.slides)[number];
+
+type CoverContent = { tagline: string; founded: string; stage: string; raising: string };
+type PointsContent = { headline: string; points: string[]; stat?: string; statLabel?: string };
+type TractionContent = { metrics: { value: string; label: string; growth: string }[] };
+type MarketContent = {
+  tam: string; tamLabel: string;
+  sam: string; samLabel: string;
+  som: string; somLabel: string;
+};
+type BusinessModelContent = {
+  headline?: string;
+  streams: { name: string; percent: number; amount: string }[];
+};
+type TeamContent = { members: { name: string; role: string; background: string }[] };
+type AskContent = {
+  amount: string;
+  valuation: string;
+  use: { label: string; percent: number }[];
+};
+
+/** Narrows a slide's `content` to the shape its renderer expects. */
+function contentOf<T>(slide: SlideBase): T {
+  return slide.content as T;
+}
+
 // ─── Slide renderers ──────────────────────────────────────────────────────────
-function CoverSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function CoverSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<CoverContent>(slide);
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-gradient-to-br from-primary/10 via-background to-primary/5">
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary font-medium">
+    <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-primary/[0.04]">
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible font-medium">
         {c.stage} • Raising {c.raising}
       </div>
-      <h1 className="text-5xl font-bold text-foreground mb-4">{slide.title}</h1>
+      {/* 48px fixed left roughly six characters per line on a 320px screen. */}
+      <h1 className="text-3xl font-semibold text-foreground mb-4 sm:text-4xl lg:text-5xl">{slide.title}</h1>
       <p className="text-xl text-muted-foreground max-w-2xl">{c.tagline}</p>
       <p className="text-sm text-muted-foreground mt-8">Founded {c.founded}</p>
     </div>
   );
 }
 
-function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function ProblemSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<PointsContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-          <Target className="h-6 w-6 text-red-600" />
+        <div className="p-2 rounded-lg bg-status-danger-bg ">
+          <Target className="icon-lg text-status-danger" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <p className="text-2xl font-semibold text-foreground mb-8">{c.headline}</p>
       <div className="space-y-4 mb-10">
-        {(c.points as string[]).map((point, i) => (
+        {c.points.map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <div className="mt-1 h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-red-600">{i + 1}</span>
+            <div className="mt-1 h-5 w-5 rounded-full bg-status-danger-bg flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-status-danger">{i + 1}</span>
             </div>
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
       </div>
       {c.stat && (
-        <div className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 inline-block">
-          <p className="text-4xl font-bold text-red-600">{c.stat}</p>
+        <div className="rounded-2xl bg-status-danger-bg border border-status-danger-border p-6 inline-block">
+          <p className="text-4xl font-bold text-status-danger">{c.stat}</p>
           <p className="text-muted-foreground mt-1">{c.statLabel}</p>
         </div>
       )}
@@ -221,21 +261,21 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function SolutionSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<PointsContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Lightbulb className="h-6 w-6 text-green-600" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Lightbulb className="icon-lg text-status-success" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <p className="text-2xl font-semibold text-foreground mb-8">{c.headline}</p>
       <div className="space-y-4">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="icon-md text-status-success mt-0.5 flex-shrink-0" />
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
@@ -244,22 +284,22 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function TractionSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<TractionContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-          <TrendingUp className="h-6 w-6 text-blue-600" />
+        <div className="p-2 rounded-lg bg-status-info-bg ">
+          <TrendingUp className="icon-lg text-status-info" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-2 gap-6">
-        {(c.metrics as any[]).map((m, i) => (
+        {c.metrics.map((m, i) => (
           <div key={i} className="rounded-2xl border bg-card p-6">
             <p className="text-4xl font-bold text-foreground">{m.value}</p>
             <p className="text-muted-foreground mt-1">{m.label}</p>
-            <Badge className="mt-3 bg-green-100 text-green-800 border-green-200">{m.growth} YoY</Badge>
+            <Badge className="mt-3 bg-status-success-bg text-status-success border-status-success-border">{m.growth} YoY</Badge>
           </div>
         ))}
       </div>
@@ -267,21 +307,21 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function MarketSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<MarketContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-          <Globe className="h-6 w-6 text-purple-600" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <Globe className="icon-lg text-status-accent" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="flex items-end gap-6 justify-center">
         {[
-          { val: c.tam, label: c.tamLabel, size: 'h-48', color: 'bg-purple-200 dark:bg-purple-900/40' },
-          { val: c.sam, label: c.samLabel, size: 'h-36', color: 'bg-purple-300 dark:bg-purple-800/50' },
-          { val: c.som, label: c.somLabel, size: 'h-24', color: 'bg-purple-500 dark:bg-purple-600' },
+          { val: c.tam, label: c.tamLabel, size: 'h-48', color: 'bg-status-accent-bg dark:bg-status-accent-mark' },
+          { val: c.sam, label: c.samLabel, size: 'h-36', color: 'bg-status-accent-mark dark:bg-status-accent-mark' },
+          { val: c.som, label: c.somLabel, size: 'h-24', color: 'bg-status-accent-mark dark:bg-status-accent-mark' },
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-2 flex-1">
             <p className="text-3xl font-bold">{item.val}</p>
@@ -295,18 +335,18 @@ function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function BusinessModelSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<BusinessModelContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-          <DollarSign className="h-6 w-6 text-amber-600" />
+        <div className="p-2 rounded-lg bg-status-warning-bg ">
+          <DollarSign className="icon-lg text-status-warning" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="space-y-5">
-        {(c.streams as any[]).map((stream, i) => (
+        {c.streams.map((stream, i) => (
           <div key={i}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">{stream.name}</span>
@@ -323,26 +363,26 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
   );
 }
 
-function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function TeamSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<TeamContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
-          <Users className="h-6 w-6 text-teal-600" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Users className="icon-lg text-status-success" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-3 gap-6">
-        {(c.members as any[]).map((member, i) => (
+        {c.members.map((member, i) => (
           <div key={i} className="rounded-2xl border bg-card p-6 text-center">
             <Avatar className="h-16 w-16 mx-auto mb-4">
               <AvatarFallback className="text-xl">
-                {member.name.split(' ').map((n: string) => n[0]).join('')}
+                {initialsOf(member.name)}
               </AvatarFallback>
             </Avatar>
             <p className="font-semibold">{member.name}</p>
-            <p className="text-sm text-primary mt-1">{member.role}</p>
+            <p className="text-sm text-primary-accessible mt-1">{member.role}</p>
             <p className="text-xs text-muted-foreground mt-2">{member.background}</p>
           </div>
         ))}
@@ -351,30 +391,30 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function AskSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<AskContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-          <BarChart2 className="h-6 w-6 text-indigo-600" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <BarChart2 className="icon-lg text-status-accent" />
         </div>
-        <h2 className="text-3xl font-bold">{slide.title}</h2>
+        <h2 className="text-3xl font-semibold">{slide.title}</h2>
       </div>
       <div className="flex items-center gap-8 mb-8">
         <div>
-          <p className="text-5xl font-bold text-primary">{c.amount}</p>
-          <p className="text-muted-foreground mt-1">Raising</p>
+          <p className="text-5xl font-bold text-primary-accessible">{c.amount}</p>
+          <p className="text-muted-foreground mt-1"><BilingualText en="Raising" el="Αναζητά" compact /></p>
         </div>
-        <ArrowRight className="h-8 w-8 text-muted-foreground" />
+        <ArrowRight className="icon-xl text-muted-foreground" />
         <div>
           <p className="text-2xl font-semibold">{c.valuation}</p>
-          <p className="text-muted-foreground mt-1">Pre-money valuation</p>
+          <p className="text-muted-foreground mt-1"><BilingualText en="Pre-money valuation" el="Αποτίμηση pre-money" compact /></p>
         </div>
       </div>
-      <p className="text-lg font-medium mb-4">Use of Funds</p>
+      <p className="text-lg font-medium mb-4"><BilingualText en="Use of Funds" el="Χρήση κεφαλαίων" compact /></p>
       <div className="space-y-3">
-        {(c.use as any[]).map((item, i) => (
+        {c.use.map((item, i) => (
           <div key={i}>
             <div className="flex justify-between text-sm mb-1">
               <span>{item.label}</span>
@@ -388,10 +428,10 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function GenericSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
+function GenericSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
-      <h2 className="text-3xl font-bold mb-6">{slide.title}</h2>
+      <h2 className="text-3xl font-semibold mb-6">{slide.title}</h2>
       <pre className="text-muted-foreground text-sm whitespace-pre-wrap">
         {JSON.stringify(slide.content, null, 2)}
       </pre>
@@ -399,7 +439,7 @@ function GenericSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function SlideRenderer({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
+function SlideRenderer({ slide }: { slide: SlideBase }) {
   switch (slide.type) {
     case 'cover': return <CoverSlide slide={slide} />;
     case 'problem': return <ProblemSlide slide={slide} />;
@@ -426,7 +466,7 @@ export default function PitchDeckPage() {
 
   // Fetch deck (falls back to demo if API unavailable)
   const { data } = useQuery({
-    queryKey: ['pitch-deck', deckId],
+    queryKey: qk('pitch-deck', deckId),
     queryFn: () => getPublicPitchDeck(deckId),
     retry: false,
   });
@@ -471,7 +511,7 @@ export default function PitchDeckPage() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {deck.logoUrl ? (
-              <img src={deck.logoUrl} alt={deck.companyName} className="h-7 w-auto" />
+              <img src={deck.logoUrl} alt={deck.companyName} className="h-7 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
               <div className="h-7 w-7 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
                 {deck.companyName[0]}
@@ -482,24 +522,44 @@ export default function PitchDeckPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
-              <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{deck.stats.views}</span>
-              <span className="flex items-center gap-1"><Share2 className="h-3 w-3" />{deck.stats.shares}</span>
+              <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
+              <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
+            {/* No AppShell on the public deck, so the page-registry help mounts here. */}
+            <PageContextualHelp compact />
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="h-4 w-4 mr-1.5" />Share
+              <Share2 className="icon-sm mr-1.5" /><BilingualText en="Share" el="Κοινοποίηση" compact />
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-1.5" />Contact
+                <Mail className="icon-sm mr-1.5" /><BilingualText en="Contact" el="Επικοινωνία" compact />
               </Button>
             )}
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+      <div className="flex flex-1 flex-col xl:flex-row max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 xl:hidden -mx-1 px-1">
+          {slides.map((slide, i) => (
+            <button
+              key={slide.id}
+              onClick={() => setCurrentSlide(i)}
+              className={cn(
+                'min-w-[8.5rem] rounded-lg border p-2 text-left text-xs transition-all',
+                i === currentSlide
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border bg-card',
+              )}
+            >
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="font-medium truncate">{slide.title}</div>
+            </button>
+          ))}
+        </div>
+
         {/* Slide thumbnails sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 w-36 flex-shrink-0">
+        <aside className="hidden xl:flex flex-col gap-2 w-36 flex-shrink-0">
           {slides.map((slide, i) => (
             <button
               key={slide.id}
@@ -511,7 +571,7 @@ export default function PitchDeckPage() {
                   : 'border-border bg-card'
               )}
             >
-              <div className="text-[10px] text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
               <div className="font-medium truncate">{slide.title}</div>
             </button>
           ))}
@@ -530,14 +590,17 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />Previous
+              <ChevronLeft className="icon-sm mr-1" /><BilingualText en="Previous" el="Προηγούμενη" compact />
             </Button>
 
             <div className="flex items-center gap-1.5">
               {slides.map((_, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setCurrentSlide(i)}
+                  aria-label={`Slide ${i + 1} of ${slides.length}`}
+                  aria-current={i === currentSlide ? 'step' : undefined}
                   className={cn(
                     'rounded-full transition-all',
                     i === currentSlide
@@ -553,7 +616,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.min(s + 1, slides.length - 1))}
               disabled={currentSlide === slides.length - 1}
             >
-              Next<ChevronRight className="h-4 w-4 ml-1" />
+              <BilingualText en="Next" el="Επόμενη" compact /><ChevronRight className="icon-sm ml-1" />
             </Button>
           </div>
 
@@ -564,13 +627,13 @@ export default function PitchDeckPage() {
         </main>
 
         {/* Author sidebar */}
-        <aside className="hidden xl:flex flex-col gap-4 w-56 flex-shrink-0">
+        <aside className="flex flex-col gap-4 w-full xl:w-56 flex-shrink-0">
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={deck.author.avatarUrl} />
                 <AvatarFallback>
-                  {deck.author.name.split(' ').map((n) => n[0]).join('')}
+                  {initialsOf(deck.author.name)}
                 </AvatarFallback>
               </Avatar>
               <div>
@@ -580,35 +643,35 @@ export default function PitchDeckPage() {
             </div>
             {deck.allowContact && (
               <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-2" />Get in Touch
+                <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
               </Button>
             )}
           </div>
 
           <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Deck Stats</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></p>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Views</span><span className="font-medium">{deck.stats.views}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Shares</span><span className="font-medium">{deck.stats.shares}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Contacts</span><span className="font-medium">{deck.stats.contactRequests}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></span><span className="font-medium">{deck.stats.views}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></span><span className="font-medium">{deck.stats.shares}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></span><span className="font-medium">{deck.stats.contactRequests}</span></div>
             </div>
           </div>
 
           <div className="rounded-xl border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Share</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"><BilingualText en="Share" el="Κοινοποίηση" compact /></p>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+              <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-3.5 w-3.5" />
+                  <Twitter className="icon-sm" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+              <Button aria-label="Share on LinkedIn" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-3.5 w-3.5" />
+                  <Linkedin className="icon-sm" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5" />}
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} aria-label="Copy link">
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
           </div>
@@ -623,7 +686,7 @@ export default function PitchDeckPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label htmlFor="cname">Your Name</Label>
+              <Label htmlFor="cname"><BilingualText en="Your Name" el="Το όνομά σας" compact /></Label>
               <Input
                 id="cname"
                 value={contactForm.name}
@@ -633,7 +696,7 @@ export default function PitchDeckPage() {
               />
             </div>
             <div>
-              <Label htmlFor="cemail">Email Address</Label>
+              <Label htmlFor="cemail"><BilingualText en="Email Address" el="Διεύθυνση email" compact /></Label>
               <Input
                 id="cemail"
                 type="email"
@@ -644,18 +707,18 @@ export default function PitchDeckPage() {
               />
             </div>
             <div>
-              <Label htmlFor="cmsg">Message (optional)</Label>
+              <Label htmlFor="cmsg"><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea
                 id="cmsg"
                 value={contactForm.message}
                 onChange={(e) => setContactForm((f) => ({ ...f, message: e.target.value }))}
-                placeholder="Hi, I'd love to learn more about your company..."
+                placeholder={bilingualInline("Hi, I'd love to learn more about your company…", "Γεια σας, θα ήθελα να μάθω περισσότερα για την εταιρεία σας…")}
                 className="mt-1.5 min-h-[80px]"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowContact(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setShowContact(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             <Button
               onClick={() => contactMutation.mutate(contactForm)}
               disabled={!contactForm.name || !contactForm.email || contactMutation.isPending}
@@ -670,27 +733,31 @@ export default function PitchDeckPage() {
       <Dialog open={showShare} onOpenChange={setShowShare}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Share Pitch Deck</DialogTitle>
+            <DialogTitle><BilingualText en="Share Pitch Deck" el="Κοινοποίηση pitch deck" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label>Link</Label>
+              <Label><BilingualText en="Link" el="Σύνδεσμος" compact /></Label>
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
-                <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+                <Button
+                  variant="outline"
+                  onClick={copyLink}
+                  aria-label={copied ? bilingualAria('Link copied', 'Ο σύνδεσμος αντιγράφηκε') : bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                >
+                  {copied ? <CheckCircle2 className="icon-sm text-status-success" aria-hidden="true" /> : <Link2 className="icon-sm" aria-hidden="true" />}
                 </Button>
               </div>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-4 w-4 mr-2" />Twitter
+                  <Twitter className="icon-sm mr-2" />Twitter
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-4 w-4 mr-2" />LinkedIn
+                  <Linkedin className="icon-sm mr-2" />LinkedIn
                 </a>
               </Button>
             </div>

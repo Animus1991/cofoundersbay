@@ -99,8 +99,13 @@ export type AnalyticsEvent =
   | { event: 'tenant_bulk_activate'; properties: { count: number } }
   | { event: 'tenant_bulk_suspend'; properties: { count: number } }
   | { event: 'tenant_bulk_delete'; properties: { count: number } }
+  | { event: 'tenant_export_csv'; properties: { count: number } }
   // Feature flags (A/B)
-  | { event: 'feature_flag_evaluated'; properties: { flag: string; variant: string } };
+  | { event: 'feature_flag_evaluated'; properties: { flag: string; variant: string } }
+  // First-run tours
+  | { event: 'tour_started'; properties: { tour: string; steps: number } }
+  | { event: 'tour_completed'; properties: { tour: string; steps: number } }
+  | { event: 'tour_skipped'; properties: { tour: string; step_index: number } };
 
 // ─── Public API ────────────────────────────────────────────────────────────────
 
@@ -137,7 +142,7 @@ async function reset() {
 async function setPersonProperties(props: Record<string, unknown>) {
   try {
     const ph = await getPostHog();
-    ph?.people.set(props);
+    ph?.people?.set(props);
   } catch { /* never throw */ }
 }
 

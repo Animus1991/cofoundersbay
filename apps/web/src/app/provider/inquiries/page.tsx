@@ -16,6 +16,12 @@ import {
   Inbox,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { formatRelativeTime } from '@/lib/utils';
+import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,6 +37,11 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 type Inquiry = {
   id: string;
@@ -42,54 +53,94 @@ type Inquiry = {
   receivedAt: string;
   status: 'new' | 'replied' | 'converted' | 'declined';
   budget?: string;
+  /** The requester's user id on live rows; Reply and View Profile use it. */
+  clientId?: string;
 };
 
-function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+function InquiryCard({
+  inquiry,
+  onStatus,
+}: {
+  inquiry: Inquiry;
+  /** Absent on sample rows: there is no inquiry behind them to update. */
+  onStatus?: (inquiry: Inquiry, status: 'in_discussion' | 'accepted' | 'declined') => void;
+}) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
-    new: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Mail },
-    replied: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-    converted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
-    declined: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: XCircle },
+    new: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Mail },
+    replied: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock },
+    converted: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: CheckCircle },
+    declined: { color: 'bg-muted text-muted-foreground border-border', icon: XCircle },
   };
 
   const config = statusConfig[inquiry.status];
   const StatusIcon = config.icon;
 
   return (
-    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+    <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
-        <div className="flex gap-4">
-          <Avatar className="h-12 w-12">
+        <div className="flex gap-3 sm:gap-4">
+          <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
             <AvatarImage src={inquiry.clientAvatar} />
             <AvatarFallback>{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-semibold">{inquiry.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 h-3 w-3" />
-                    {inquiry.status}
+                    <StatusIcon className="mr-1 icon-sm" />
+                    <StatusText value={inquiry.status} />
                   </Badge>
                 </div>
                 {inquiry.clientCompany && (
                   <p className="text-sm text-muted-foreground">{inquiry.clientCompany}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{inquiry.receivedAt}</span>
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="whitespace-nowrap text-xs text-muted-foreground">
+                  <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
+                </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open inquiry actions for ${inquiry.clientName}`}>
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Reply</DropdownMenuItem>
-                    <DropdownMenuItem>Mark as Converted</DropdownMenuItem>
-                    <DropdownMenuItem>View Profile</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Decline</DropdownMenuItem>
+                    {/* All four had no handler. Replying opens a thread with the
+                        client and moves the inquiry into discussion; converting
+                        accepts it; the statuses are the API's own. */}
+                    <DropdownMenuItem
+                      disabled={!inquiry.clientId}
+                      onSelect={() => {
+                        if (!inquiry.clientId) return;
+                        onStatus?.(inquiry, 'in_discussion');
+                        window.location.assign(`/messages?to=${inquiry.clientId}`);
+                      }}
+                    >
+                      <BilingualText en="Reply" el="Απάντηση" compact />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!onStatus || inquiry.status === 'converted'}
+                      onSelect={() => onStatus?.(inquiry, 'accepted')}
+                    >
+                      <BilingualText en="Mark as Converted" el="Σήμανση ως πελάτη" compact />
+                    </DropdownMenuItem>
+                    {inquiry.clientId ? (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></Link>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem disabled><BilingualText en="View Profile" el="Προβολή προφίλ" compact /></DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      className="text-destructive-accessible"
+                      disabled={!onStatus || inquiry.status === 'declined'}
+                      onSelect={() => onStatus?.(inquiry, 'declined')}
+                    >
+                      <BilingualText en="Decline" el="Απόρριψη" compact />
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -100,8 +151,26 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
             <p className="text-sm text-muted-foreground mt-2">{inquiry.message}</p>
             {inquiry.status === 'new' && (
               <div className="flex gap-2 mt-3">
-                <Button size="sm">Reply</Button>
-                <Button size="sm" variant="outline">View Details</Button>
+                {/* Both had no handler; they do what the menu's Reply and
+                    View Profile do. */}
+                <Button
+                  size="sm"
+                  disabled={!inquiry.clientId}
+                  onClick={() => {
+                    if (!inquiry.clientId) return;
+                    onStatus?.(inquiry, 'in_discussion');
+                    window.location.assign(`/messages?to=${inquiry.clientId}`);
+                  }}
+                >
+                  <BilingualText en="Reply" el="Απάντηση" compact />
+                </Button>
+                {inquiry.clientId ? (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                )}
               </div>
             )}
           </div>
@@ -111,6 +180,48 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   );
 }
 
+/**
+ * The page's own row from a service inquiry.
+ *
+ * `ServiceInquiry` has been in the schema all along with no controller over
+ * it, so this screen listed a fixed array while the marketplace sent people
+ * off-platform through a `contactUrl`.
+ *
+ * The page speaks in four states and the model in six; `in_discussion` is
+ * what "replied" means, and `cancelled` sits with `declined` because both end
+ * the conversation without work.
+ */
+const INQUIRY_STATE: Record<string, Inquiry['status']> = {
+  open: 'new',
+  in_discussion: 'replied',
+  accepted: 'converted',
+  completed: 'converted',
+  declined: 'declined',
+  cancelled: 'declined',
+};
+
+function toPageInquiry(row: ServiceInquiryItem): Inquiry {
+  return {
+    id: row.id,
+    clientName: row.client?.displayName ?? 'Someone',
+    clientId: row.client?.id,
+    clientAvatar: row.client?.avatarUrl ?? undefined,
+    service: row.offer.title,
+    message: row.message,
+    receivedAt: row.createdAt,
+    status: INQUIRY_STATE[row.status] ?? 'new',
+    budget:
+      row.budgetEstimate != null
+        ? new Intl.NumberFormat('en-GB', {
+            style: 'currency',
+            currency: row.currency,
+            maximumFractionDigits: 0,
+          }).format(row.budgetEstimate)
+        : undefined,
+  };
+}
+
+/** Shown to a provider with no inquiries yet. */
 const MOCK_INQUIRIES: Inquiry[] = [
     {
       id: '1',
@@ -118,9 +229,9 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'TechStart Inc',
       service: 'Startup Legal Package',
       message: 'Hi, I need help with my startup incorporation documents. We are a team of 3 co-founders and need founder agreements as well.',
-      receivedAt: '2 hours ago',
+      receivedAt: '2026-09-04T08:00:00.000Z',
       status: 'new',
-      budget: '$2,000-3,000',
+      budget: '€2,000–3,000',
     },
     {
       id: '2',
@@ -128,9 +239,9 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'GreenTech Co',
       service: 'Financial Model Creation',
       message: 'Looking for help with our Series A financial model. We need 5-year projections with multiple scenarios.',
-      receivedAt: '1 day ago',
+      receivedAt: '2026-09-03T10:00:00.000Z',
       status: 'replied',
-      budget: '$3,500-5,000',
+      budget: '€3,500–5,000',
     },
     {
       id: '3',
@@ -138,9 +249,9 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'DataFlow',
       service: 'Contract Review',
       message: 'Need to review our terms of service and privacy policy before launch.',
-      receivedAt: '2 days ago',
+      receivedAt: '2026-09-02T10:00:00.000Z',
       status: 'converted',
-      budget: '$1,500',
+      budget: '€1,500',
     },
     {
       id: '4',
@@ -148,18 +259,18 @@ const MOCK_INQUIRIES: Inquiry[] = [
       clientCompany: 'HealthPulse',
       service: 'Startup Legal Package',
       message: 'Interested in your legal package. Can you provide more details on what is included?',
-      receivedAt: '3 days ago',
+      receivedAt: '2026-09-01T10:00:00.000Z',
       status: 'new',
-      budget: '$2,500',
+      budget: '€2,500',
     },
     {
       id: '5',
       clientName: 'Tom Brown',
       service: 'Pitch Deck Design',
       message: 'Looking for a pitch deck redesign for our upcoming fundraise.',
-      receivedAt: '1 week ago',
+      receivedAt: '2026-08-28T10:00:00.000Z',
       status: 'declined',
-      budget: '$800',
+      budget: '€800',
     },
   ];
 
@@ -168,7 +279,28 @@ export default function ProviderInquiriesPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const inquiries = showDemoData ? MOCK_INQUIRIES : [];
+  const { data, isLoading } = useQuery({
+    queryKey: qk('provider', 'inquiries'),
+    queryFn: () => listServiceInquiries({ side: 'provider', limit: 100 }),
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const live = useMemo(() => (data?.inquiries ?? []).map(toPageInquiry), [data]);
+  const queryClient = useQueryClient();
+  const { success, error: toastError } = useToast();
+  const setStatus = async (inq: Inquiry, status: 'in_discussion' | 'accepted' | 'declined') => {
+    try {
+      await updateServiceInquiry(inq.id, { status });
+      if (status !== 'in_discussion') success(status === 'accepted' ? 'Marked as converted' : 'Inquiry declined', inq.clientName);
+    } catch (e) {
+      toastError('Could not update the inquiry', e instanceof Error ? e.message : undefined);
+    } finally {
+      void queryClient.invalidateQueries({ queryKey: qk('provider', 'inquiries') });
+    }
+  };
+  const inquiries =
+    live.length > 0 ? live : isLoading ? [] : showDemoData ? MOCK_INQUIRIES : [];
 
   const conversionRate = Math.round((inquiries.filter((i) => i.status === 'converted').length / Math.max(inquiries.length, 1)) * 100);
   const responseRate = Math.round(((inquiries.filter((i) => i.status === 'replied' || i.status === 'converted').length) / Math.max(inquiries.length, 1)) * 100);
@@ -189,27 +321,72 @@ export default function ProviderInquiriesPage() {
     converted: inquiries.filter((i) => i.status === 'converted').length,
   };
 
+  // Offered to the assistant: the tab and the card menu - reply (which
+  // opens the thread and marks the inquiry in discussion), convert, decline.
+  // The sample inquiries have no row behind them, as their menus say.
+  const sampleEn = live.length > 0 ? undefined : 'These inquiries are samples; there is nothing behind them to update.';
+  const sampleEl = live.length > 0 ? undefined : 'Τα αιτήματα είναι δείγματα· δεν υπάρχει κάτι πίσω τους για ενημέρωση.';
+  const byClient = (list: Inquiry[]) => rowOptions(list, (i) => i.id, (i) => i.clientName);
+  const inquiryById = (id?: string) => inquiries.find((i) => i.id === id);
+  usePageList([
+    {
+      id: 'inquiries',
+      labelEn: 'Inquiries',
+      labelEl: 'Αιτήματα',
+      rows: isLoading ? undefined : filteredInquiries.map((i) => `${i.clientName}${i.clientCompany ? ` (${i.clientCompany})` : ''} · ${i.service} · ${i.status}${i.budget ? ` · budget ${i.budget}` : ''}`),
+      total: inquiries.length,
+      sample: live.length === 0,
+    },
+  ]);
+  usePageControls([
+    choiceControl('inquiry_tab', 'Inquiry filter', 'Φίλτρο αιτημάτων', [
+      { value: 'all', en: 'All', el: 'Όλα' },
+      { value: 'new', en: 'New', el: 'Νέα' },
+      { value: 'replied', en: 'Replied', el: 'Απαντημένα' },
+      { value: 'converted', en: 'Converted', el: 'Μετατράπηκαν' },
+    ], activeTab, setActiveTab),
+    {
+      id: 'reply_inquiry',
+      labelEn: 'Reply to inquiry',
+      labelEl: 'Απάντηση σε αίτημα',
+      writes: true,
+      options: byClient(filteredInquiries.filter((i) => i.clientId)),
+      unavailableEn: sampleEn,
+      unavailableEl: sampleEl,
+      run: (v) => {
+        const inq = inquiryById(v);
+        if (!inq?.clientId) return;
+        void setStatus(inq, 'in_discussion');
+        window.location.assign(`/messages?to=${inq.clientId}`);
+      },
+    },
+    { id: 'convert_inquiry', labelEn: 'Mark inquiry as converted', labelEl: 'Σήμανση αιτήματος ως μετατροπής', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'converted')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'accepted'); } },
+    { id: 'decline_inquiry', labelEn: 'Decline inquiry', labelEl: 'Απόρριψη αιτήματος', writes: true, options: byClient(filteredInquiries.filter((i) => i.status !== 'declined')), unavailableEn: sampleEn, unavailableEl: sampleEl, run: (v) => { const inq = inquiryById(v); if (inq) void setStatus(inq, 'declined'); } },
+  ]);
+
   return (
     <AppShell
       title="Inquiries"
+      titleEl="Αιτήματα"
       description="Manage incoming service inquiries"
+      descriptionEl="Διαχειριστείτε τα εισερχόμενα αιτήματα για τις υπηρεσίες σας"
     >
       <div className="space-y-6">
 
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary' },
-            { label: 'New', value: counts.new, icon: Mail, color: 'text-blue-600' },
-            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-emerald-600' },
-            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-amber-600' },
-          ].map(({ label, value, icon: Icon, color }) => (
+            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
+            { label: 'New', labelEl: 'Νέα', value: counts.new, icon: Mail, color: 'text-status-info' },
+            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
+            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
+          ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="page-stat font-bold tabular-nums">{value}</p>
+                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                 </div>
               </CardContent>
             </Card>
@@ -218,9 +395,10 @@ export default function ProviderInquiriesPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
-            placeholder="Search inquiries..."
+            aria-label={bilingualInline("Search inquiries", "Αναζήτηση αιτημάτων")}
+            placeholder={bilingualInline("Search inquiries…", "Αναζήτηση αιτημάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -231,28 +409,28 @@ export default function ProviderInquiriesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">
-              All <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
+              <BilingualText en="All" el="Όλα" compact /> <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
             </TabsTrigger>
             <TabsTrigger value="new">
-              New <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
+              <BilingualText en="New" el="Νέο" compact /> <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
             </TabsTrigger>
             <TabsTrigger value="replied">
-              Replied <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
+              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
             </TabsTrigger>
             <TabsTrigger value="converted">
-              Converted <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
+              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filteredInquiries.map((inquiry) => (
-              <InquiryCard key={inquiry.id} inquiry={inquiry} />
+              <InquiryCard key={inquiry.id} inquiry={inquiry} onStatus={live.length > 0 ? (i, st) => void setStatus(i, st) : undefined} />
             ))}
             {filteredInquiries.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                  <h3 className="font-medium">No inquiries found</h3>
+                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
+                  <h3 className="font-medium"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'all'
                       ? 'You have no inquiries yet'

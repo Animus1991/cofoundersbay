@@ -26,7 +26,7 @@ export class AnalyticsController {
     return this.analytics.getOverview(
       user.id,
       period || '7d',
-      parseInt(topContentLimit || '5', 10),
+      Number(topContentLimit ?? '5'),
     );
   }
 
@@ -58,8 +58,8 @@ export class AnalyticsController {
   async getTopContent(
     @CurrentUser() user: { id: string },
     @Query('limit') limit?: string,
-  ): Promise<TopContent[]> {
-    return this.analytics.getTopContent(user.id, parseInt(limit || '10', 10));
+  ): Promise<TopContent[] | null> {
+    return this.analytics.getTopContent(user.id, Number(limit ?? '10'));
   }
 
   @Get('achievements')

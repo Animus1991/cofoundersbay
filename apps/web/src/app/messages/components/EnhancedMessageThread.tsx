@@ -1,5 +1,7 @@
 'use client';
 
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { 
@@ -33,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface Message {
   id: string;
@@ -90,6 +93,7 @@ export function EnhancedMessageThread({
   const [showSearch, setShowSearch] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  const [reporting, setReporting] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,7 +154,7 @@ export function EnhancedMessageThread({
             <p className="text-sm text-muted-foreground">
               {otherParticipant?.online ? (
                 <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="w-2 h-2 bg-status-success-mark rounded-full" />
                   Active now
                 </span>
               ) : (
@@ -161,54 +165,58 @@ export function EnhancedMessageThread({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
+          <Button aria-label="Search"
             variant="ghost"
             size="icon"
             onClick={() => setShowSearch(!showSearch)}
           >
-            <Search className="icon-md" />
+            <Search className="icon-md" aria-hidden="true" />
           </Button>
-          <Button
+          <Button aria-label="Call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('audio')}
           >
-            <Phone className="icon-md" />
+            <Phone className="icon-md" aria-hidden="true" />
           </Button>
-          <Button
+          <Button aria-label="Start video call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('video')}
           >
-            <Video className="icon-md" />
+            <Video className="icon-md" aria-hidden="true" />
           </Button>
-          <Button
+          <Button aria-label="More information"
             variant="ghost"
             size="icon"
             onClick={() => setShowInfo(!showInfo)}
           >
-            <Info className="icon-md" />
+            <Info className="icon-md" aria-hidden="true" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="icon-md" />
+              <Button aria-label="More options" variant="ghost" size="icon">
+                <MoreVertical className="icon-md" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onArchiveConversation}>
-                <Archive className="icon-sm mr-2" />
+                <Archive className="icon-sm mr-2" aria-hidden="true" />
                 Archive conversation
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Flag className="icon-sm mr-2" />
+              <DropdownMenuItem disabled={!otherParticipant} onSelect={() => setReporting(true)}>
+                <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Trash2 className="icon-sm mr-2" />
-                Delete conversation
-              </DropdownMenuItem>
+              <UnavailableMenuItem
+                className="text-destructive-accessible"
+                icon={<Trash2 className="icon-sm mr-2 mt-0.5" aria-hidden="true" />}
+                en="Delete conversation"
+                el="Διαγραφή συνομιλίας"
+                reasonEn="Conversations can be archived, not deleted."
+                reasonEl="Οι συνομιλίες αρχειοθετούνται, δεν διαγράφονται."
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -218,7 +226,7 @@ export function EnhancedMessageThread({
       {showSearch && (
         <div className="px-6 py-3 border-b bg-muted/50">
           <Input
-            placeholder="Search in conversation..."
+            placeholder={bilingualInline("Search in conversation…", "Αναζήτηση στη συνομιλία…")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-background"
@@ -299,7 +307,7 @@ export function EnhancedMessageThread({
                             />
                           ) : (
                             <>
-                              <Paperclip className="icon-sm" />
+                              <Paperclip className="icon-sm" aria-hidden="true" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
                                   {attachment.name}
@@ -308,8 +316,10 @@ export function EnhancedMessageThread({
                                   {formatFileSize(attachment.size)}
                                 </p>
                               </div>
-                              <Button size="icon" variant="ghost" className="h-8 w-8">
-                                <Download className="icon-sm" />
+                              <Button aria-label={`Download ${attachment.name}`} size="icon" variant="ghost" className="h-8 w-8" asChild>
+                                <a href={attachment.url} download={attachment.name}>
+                                  <Download className="icon-sm" aria-hidden="true" />
+                                </a>
                               </Button>
                             </>
                           )}
@@ -320,40 +330,43 @@ export function EnhancedMessageThread({
 
                   {/* Message actions */}
                   <div className={cn(
-                    "absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1",
+                    "absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex gap-1",
                     isOwn ? "left-0 -translate-x-full" : "right-0 translate-x-full"
                   )}>
-                    <Button
+                    <Button aria-label="Reply"
                       size="icon"
                       variant="secondary"
                       className="h-7 w-7"
                       onClick={() => setReplyingTo(message)}
                     >
-                      <Reply className="icon-sm" />
+                      <Reply className="icon-sm" aria-hidden="true" />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="secondary" className="h-7 w-7">
-                          <MoreVertical className="icon-sm" />
+                        <Button aria-label="More options" size="icon" variant="secondary" className="h-7 w-7">
+                          <MoreVertical className="icon-sm" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem>
-                          <Copy className="icon-sm mr-2" />
+                        <DropdownMenuItem onSelect={() => void navigator.clipboard?.writeText(message.content)}>
+                          <Copy className="icon-sm mr-2" aria-hidden="true" />
                           Copy
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Forward className="icon-sm mr-2" />
-                          Forward
-                        </DropdownMenuItem>
+                        <UnavailableMenuItem
+                          icon={<Forward className="icon-sm mr-2 mt-0.5" aria-hidden="true" />}
+                          en="Forward"
+                          el="Προώθηση"
+                          reasonEn="Forwarding messages is not supported yet."
+                          reasonEl="Η προώθηση μηνυμάτων δεν υποστηρίζεται ακόμη."
+                        />
                         {isOwn && (
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-destructive"
+                              className="text-destructive-accessible"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
-                              <Trash2 className="icon-sm mr-2" />
+                              <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                               Delete
                             </DropdownMenuItem>
                           </>
@@ -371,9 +384,9 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="icon-sm text-primary" />
+                        <CheckCheck className="icon-sm text-primary-accessible" />
                       ) : (
-                        <Check className="icon-sm" />
+                        <Check className="icon-sm" aria-hidden="true" />
                       )
                     )}
                   </div>
@@ -396,12 +409,12 @@ export function EnhancedMessageThread({
               {replyingTo.content}
             </p>
           </div>
-          <Button
+          <Button aria-label="More options"
             variant="ghost"
             size="icon"
             onClick={() => setReplyingTo(null)}
           >
-            <MoreVertical className="h-4 w-4 rotate-45" />
+            <MoreVertical className="icon-sm rotate-45" />
           </Button>
         </div>
       )}
@@ -416,20 +429,20 @@ export function EnhancedMessageThread({
                 className="flex items-center gap-2 px-3 py-2 bg-background rounded-lg"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="h-4 w-4" />
+                  <ImageIcon className="icon-sm" />
                 ) : (
-                  <Paperclip className="h-4 w-4" />
+                  <Paperclip className="icon-sm" />
                 )}
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
                 </span>
-                <Button
+                <Button aria-label="More options"
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
                   onClick={() => removeAttachment(index)}
                 >
-                  <MoreVertical className="h-3 w-3 rotate-45" />
+                  <MoreVertical className="icon-sm rotate-45" />
                 </Button>
               </div>
             ))}
@@ -447,15 +460,15 @@ export function EnhancedMessageThread({
             className="hidden"
             onChange={handleFileSelect}
           />
-          <Button
+          <Button aria-label="Attach file"
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="icon-md" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <ImageIcon className="h-5 w-5" />
+          <Button variant="ghost" size="icon" aria-label="Attach image" onClick={() => fileInputRef.current?.click()}>
+            <ImageIcon className="icon-md" />
           </Button>
           
           <div className="flex-1 relative">
@@ -464,28 +477,39 @@ export function EnhancedMessageThread({
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[48px] max-h-[200px]"
+              placeholder={bilingualInline("Type a message…", "Γράψτε ένα μήνυμα…")}
+              className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />
-            <Button
+            <Button aria-label="Add emoji"
+              disabled
+              title="Emoji picker is not available here yet"
               variant="ghost"
               size="icon"
               className="absolute right-2 bottom-2"
             >
-              <Smile className="h-5 w-5" />
+              <Smile className="icon-md" />
             </Button>
           </div>
 
-          <Button
+          <Button aria-label="Send message"
             onClick={handleSend}
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"
           >
-            <Send className="h-5 w-5" />
+            <Send className="icon-md" />
           </Button>
         </div>
       </div>
+      {reporting && otherParticipant && (
+        <ReportBlockModal
+          open
+          onOpenChange={setReporting}
+          userId={otherParticipant.id}
+          userName={otherParticipant.name}
+          mode="report"
+        />
+      )}
     </div>
   );
 }

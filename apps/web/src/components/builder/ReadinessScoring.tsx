@@ -1,32 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Target, 
-  Users,
-  TrendingUp,
-  DollarSign,
-  Rocket,
+import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Sparkles,
   RefreshCw,
-  Award,
-  Lightbulb,
-  FileText,
-  Code
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { READINESS_BAR, STATUS, readinessClasses } from '@/lib/semantic-colors';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT } from './BuilderStageChrome';
+import { builderEn, builderEl, BUILDER_PREVIEW_HINT_EL } from '@/lib/i18n/strings-builder';
+import { assessReadiness, pickReadinessDimensions, updateReadinessCriterion, type ReadinessScore } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 
 interface ReadinessDimension {
   id: string;
   name: string;
-  icon: any;
+  glyph: CfbGlyphName;
   score: number;
   maxScore: number;
   status: 'excellent' | 'good' | 'needs-work' | 'critical';
@@ -54,14 +52,54 @@ interface ReadinessData {
 
 interface ReadinessScoringProps {
   workspaceData?: any;
+  /**
+   * The workspace whose readiness this is. Without it the component can only
+   * show the empty checklist: the scores live on the server, keyed by
+   * workspace, and the assistant's `readiness_tick_criterion` writes to the
+   * same rows.
+   */
+  workspaceId?: string;
   onRefresh?: () => void;
+}
+
+function statusFromPercent(pct: number): ReadinessDimension['status'] {
+  if (pct >= 80) return 'excellent';
+  if (pct >= 60) return 'good';
+  if (pct >= 40) return 'needs-work';
+  return 'critical';
+}
+
+/** Server dimension -> the local shape the cards render. */
+function mergeServerDimension(
+  base: Omit<ReadinessDimension, 'score' | 'status' | 'recommendations'>,
+  scored: ReadinessScore | undefined,
+): ReadinessDimension {
+  const byId = new Map((scored?.criteria ?? []).map((c) => [c.id, c]));
+  const criteria = base.criteria.map((c) => {
+    const server = byId.get(c.id);
+    return {
+      ...c,
+      completed: server?.completed ?? false,
+      weight: server?.weight ?? c.weight,
+      evidence: server?.notes || undefined,
+    };
+  });
+  const max = scored && scored.maxScore > 0 ? scored.maxScore : base.maxScore;
+  const pct = scored ? (scored.score / max) * 100 : 0;
+  return {
+    ...base,
+    criteria,
+    score: scored?.score ?? 0,
+    status: statusFromPercent(pct),
+    recommendations: scored?.recommendations ?? [],
+  };
 }
 
 const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recommendations'>[] = [
   {
     id: 'team',
     name: 'Team Readiness',
-    icon: Users,
+    glyph: 'people',
     maxScore: 100,
     criteria: [
       { id: 't1', name: 'Co-founder identified', description: 'Have you found a co-founder or core team?', completed: false, weight: 25 },
@@ -75,7 +113,7 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   {
     id: 'market',
     name: 'Market Validation',
-    icon: TrendingUp,
+    glyph: 'chart',
     maxScore: 100,
     criteria: [
       { id: 'm1', name: 'Problem validated', description: 'Have you validated the problem exists?', completed: false, weight: 25 },
@@ -89,7 +127,7 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   {
     id: 'product',
     name: 'Product Readiness',
-    icon: Code,
+    glyph: 'sliders',
     maxScore: 100,
     criteria: [
       { id: 'p1', name: 'MVP defined', description: 'Have you defined your MVP scope?', completed: false, weight: 20 },
@@ -103,7 +141,7 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   {
     id: 'business',
     name: 'Business Model',
-    icon: DollarSign,
+    glyph: 'wallet',
     maxScore: 100,
     criteria: [
       { id: 'b1', name: 'Revenue model defined', description: 'Have you defined your revenue model?', completed: false, weight: 25 },
@@ -117,7 +155,7 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   {
     id: 'funding',
     name: 'Funding Readiness',
-    icon: Award,
+    glyph: 'award',
     maxScore: 100,
     criteria: [
       { id: 'f1', name: 'Pitch deck ready', description: 'Do you have an investor-ready pitch deck?', completed: false, weight: 25 },
@@ -131,7 +169,7 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   {
     id: 'execution',
     name: 'Execution Capability',
-    icon: Rocket,
+    glyph: 'flag',
     maxScore: 100,
     criteria: [
       { id: 'e1', name: 'Milestones defined', description: 'Have you defined clear milestones?', completed: false, weight: 20 },
@@ -144,7 +182,63 @@ const READINESS_DIMENSIONS: Omit<ReadinessDimension, 'score' | 'status' | 'recom
   }
 ];
 
-export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringProps) {
+const DIM_LABEL: Record<string, { en: string; el: string }> = {
+  team: { en: 'Team Readiness', el: 'Ετοιμότητα ομάδας' },
+  market: { en: 'Market Validation', el: 'Επικύρωση αγοράς' },
+  product: { en: 'Product Readiness', el: 'Ετοιμότητα προϊόντος' },
+  business: { en: 'Business Model', el: 'Επιχειρηματικό μοντέλο' },
+  funding: { en: 'Funding Readiness', el: 'Ετοιμότητα χρηματοδότησης' },
+  execution: { en: 'Execution Capability', el: 'Ικανότητα εκτέλεσης' },
+};
+
+const STAGE_LABEL: Record<string, { en: string; el: string }> = {
+  idea: { en: 'Idea', el: 'Ιδέα' },
+  validation: { en: 'Validation', el: 'Επικύρωση' },
+  mvp: { en: 'MVP', el: 'MVP' },
+  growth: { en: 'Growth', el: 'Ανάπτυξη' },
+  scale: { en: 'Scale', el: 'Κλίμακα' },
+};
+
+const CRITERION_EL: Record<string, { name: string; description: string }> = {
+  t1: { name: 'Συνιδρυτής εντοπισμένος', description: 'Έχετε βρει συνιδρυτή ή βασική ομάδα;' },
+  t2: { name: 'Συμπληρωματικές δεξιότητες', description: 'Η ομάδα έχει συμπληρωματικές δεξιότητες;' },
+  t3: { name: 'Πλήρης απασχόληση', description: 'Ένας τουλάχιστον ιδρυτής είναι πλήρους απασχόλησης;' },
+  t4: { name: 'Συμφωνία μετοχών', description: 'Έχετε συμφωνήσει στον διαμοιρασμό μετοχών;' },
+  t5: { name: 'Σύμβουλοι / μέντορες', description: 'Έχετε συμβούλους ή μέντορες;' },
+  t6: { name: 'Πλάνο προσλήψεων', description: 'Έχετε πλάνο προσλήψεων;' },
+  m1: { name: 'Πρόβλημα επικυρωμένο', description: 'Έχετε επικυρώσει ότι το πρόβλημα υπάρχει;' },
+  m2: { name: 'Συνεντεύξεις πελατών', description: 'Έχετε κάνει 20+ συνεντεύξεις πελατών;' },
+  m3: { name: 'Μέγεθος αγοράς', description: 'Έχετε ορίσει TAM/SAM/SOM;' },
+  m4: { name: 'ICP ορισμένο', description: 'Έχετε ορίσει το ιδανικό προφίλ πελάτη;' },
+  m5: { name: 'Ανάλυση ανταγωνισμού', description: 'Έχετε αναλύσει ανταγωνιστές;' },
+  m6: { name: 'Τιμολόγηση επικυρωμένη', description: 'Έχετε επικυρώσει τιμές με πελάτες;' },
+  p1: { name: 'MVP ορισμένο', description: 'Έχετε ορίσει το εύρος του MVP;' },
+  p2: { name: 'Βασικά χαρακτηριστικά', description: 'Τα βασικά χαρακτηριστικά χτίζονται ή υπάρχουν;' },
+  p3: { name: 'Δοκιμές χρηστών', description: 'Έχετε κάνει user testing;' },
+  p4: { name: 'Τεχνική αρχιτεκτονική', description: 'Η τεχνική αρχιτεκτονική είναι ορισμένη;' },
+  p5: { name: 'Πλάνο λανσαρίσματος', description: 'Έχετε πλάνο λανσαρίσματος;' },
+  p6: { name: 'Μετρήσεις ορισμένες', description: 'Έχετε ορίσει μετρήσεις επιτυχίας;' },
+  b1: { name: 'Μοντέλο εσόδων', description: 'Έχετε ορίσει το μοντέλο εσόδων;' },
+  b2: { name: 'Unit economics', description: 'Κατανοείτε τα unit economics;' },
+  b3: { name: 'BMC ολοκληρωμένο', description: 'Έχετε συμπληρώσει Business Model Canvas;' },
+  b4: { name: 'Οικονομικές προβλέψεις', description: 'Έχετε οικονομικές προβλέψεις;' },
+  b5: { name: 'Go-to-market', description: 'Έχετε στρατηγική go-to-market;' },
+  b6: { name: 'Συνεργασίες', description: 'Έχετε εντοπίσει βασικές συνεργασίες;' },
+  f1: { name: 'Pitch deck έτοιμο', description: 'Έχετε pitch deck για επενδυτές;' },
+  f2: { name: 'Στρατηγική χρηματοδότησης', description: 'Έχετε ορίσει στρατηγική χρηματοδότησης;' },
+  f3: { name: 'Λίστα επενδυτών', description: 'Έχετε λίστα στόχων επενδυτών;' },
+  f4: { name: 'Νομική δομή', description: 'Η νομική δομή είναι στη θέση της;' },
+  f5: { name: 'Data room', description: 'Έχετε προετοιμάσει data room;' },
+  f6: { name: 'Runway υπολογισμένο', description: 'Έχετε υπολογίσει τις ανάγκες runway;' },
+  e1: { name: 'Ορόσημα ορισμένα', description: 'Έχετε σαφή ορόσημα;' },
+  e2: { name: 'Sprint planning', description: 'Έχετε διαδικασία sprint/επανάληψης;' },
+  e3: { name: 'Εργαλεία και υποδομή', description: 'Τα εργαλεία και η υποδομή είναι έτοιμα;' },
+  e4: { name: 'Ρυθμός επικοινωνίας', description: 'Υπάρχει τακτική επικοινωνία ομάδας;' },
+  e5: { name: 'Λήψη αποφάσεων', description: 'Η διαδικασία αποφάσεων είναι σαφής;' },
+  e6: { name: 'Διαχείριση κινδύνου', description: 'Έχετε εντοπίσει και σχεδιάσει για κινδύνους;' },
+};
+
+export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: ReadinessScoringProps) {
   const [data, setData] = useState<ReadinessData>({
     overallScore: 0,
     overallStatus: 'critical',
@@ -155,118 +249,104 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [expandedDimension, setExpandedDimension] = useState<string | null>(null);
+  const { error: toastError } = useToast();
 
-  useEffect(() => {
-    // Initialize dimensions
-    const initialDimensions: ReadinessDimension[] = READINESS_DIMENSIONS.map(dim => ({
-      ...dim,
-      score: 0,
-      status: 'critical' as const,
-      recommendations: []
-    }));
-    
-    setData(prev => ({ ...prev, dimensions: initialDimensions }));
+  const applyDimensions = useCallback((scored: ReadinessScore[]) => {
+    const byDimension = new Map(scored.map((d) => [d.dimension, d]));
+    const dimensions = READINESS_DIMENSIONS.map((dim) =>
+      mergeServerDimension(dim, byDimension.get(dim.id)),
+    );
+    const overallScore = dimensions.length
+      ? Math.round(dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length)
+      : 0;
+    setData({
+      overallScore,
+      overallStatus: statusFromPercent(overallScore),
+      dimensions,
+      readinessLevel:
+        overallScore >= 80 ? 'scale'
+          : overallScore >= 60 ? 'growth'
+            : overallScore >= 40 ? 'mvp'
+              : overallScore >= 20 ? 'validation' : 'idea',
+      blockers: dimensions
+        .filter((d) => d.status === 'critical')
+        .map((d) => `${d.name} needs immediate attention`),
+      nextMilestones: dimensions.flatMap((d) => d.recommendations).slice(0, 5),
+    });
   }, []);
 
-  const analyzeReadiness = async () => {
+  /*
+   * This used to hand out `Math.random() > 0.4` per criterion behind a
+   * two-second "analysing" delay, so every press produced a different venture
+   * readiness for the same workspace and nothing was saved. The scores are
+   * server state (`builderReadinessScore`) — the same rows the assistant's
+   * `readiness_tick_criterion` writes — so they are read and written here.
+   */
+  const analyzeReadiness = useCallback(async () => {
+    if (!workspaceId) return;
     setIsAnalyzing(true);
-    
-    // Simulate AI analysis based on workspace data
-    setTimeout(() => {
-      const analyzedDimensions: ReadinessDimension[] = READINESS_DIMENSIONS.map(dim => {
-        // Simulate random completion for demo
-        const completedCriteria = dim.criteria.map(c => ({
-          ...c,
-          completed: Math.random() > 0.4,
-          evidence: Math.random() > 0.5 ? 'Based on workspace data' : undefined
-        }));
-        
-        const score = completedCriteria.reduce((sum, c) => 
-          sum + (c.completed ? c.weight : 0), 0
-        );
-        
-        const status = score >= 80 ? 'excellent' : 
-                       score >= 60 ? 'good' : 
-                       score >= 40 ? 'needs-work' : 'critical';
-        
-        const recommendations = completedCriteria
-          .filter(c => !c.completed)
-          .slice(0, 3)
-          .map(c => `Complete: ${c.name}`);
-        
-        return {
-          ...dim,
-          criteria: completedCriteria,
-          score,
-          status,
-          recommendations
-        };
-      });
-      
-      const overallScore = Math.round(
-        analyzedDimensions.reduce((sum, d) => sum + d.score, 0) / analyzedDimensions.length
-      );
-      
-      const overallStatus = overallScore >= 80 ? 'excellent' : 
-                            overallScore >= 60 ? 'good' : 
-                            overallScore >= 40 ? 'needs-work' : 'critical';
-      
-      const readinessLevel = overallScore >= 80 ? 'scale' :
-                             overallScore >= 60 ? 'growth' :
-                             overallScore >= 40 ? 'mvp' :
-                             overallScore >= 20 ? 'validation' : 'idea';
-      
-      const blockers = analyzedDimensions
-        .filter(d => d.status === 'critical')
-        .map(d => `${d.name} needs immediate attention`);
-      
-      const nextMilestones = analyzedDimensions
-        .flatMap(d => d.recommendations)
-        .slice(0, 5);
-      
-      setData({
-        overallScore,
-        overallStatus,
-        dimensions: analyzedDimensions,
-        readinessLevel,
-        nextMilestones,
-        blockers
-      });
-      
+    try {
+      const scored = pickReadinessDimensions(await assessReadiness({ workspaceId }));
+      if (!scored) {
+        toastError('Analysis failed');
+        return;
+      }
+      applyDimensions(scored);
+    } catch {
+      toastError('Analysis failed');
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
-  };
+    }
+  }, [workspaceId, applyDimensions]);
+
+  useEffect(() => {
+    // The empty checklist first, so the page has its shape before the request
+    // resolves — and permanently when there is no workspace to score.
+    applyDimensions([]);
+    if (workspaceId) void analyzeReadiness();
+  }, [workspaceId, analyzeReadiness, applyDimensions]);
 
   const toggleCriterion = (dimensionId: string, criterionId: string) => {
+    const dimension = data.dimensions.find((d) => d.id === dimensionId);
+    const criterion = dimension?.criteria.find((c) => c.id === criterionId);
+    if (!dimension || !criterion) return;
+    const completed = !criterion.completed;
+
+    // Optimistic, then reconciled with the score the server computed.
     setData(prev => ({
       ...prev,
       dimensions: prev.dimensions.map(dim => {
         if (dim.id !== dimensionId) return dim;
-        
-        const updatedCriteria = dim.criteria.map(c => 
-          c.id === criterionId ? { ...c, completed: !c.completed } : c
+        const updatedCriteria = dim.criteria.map(c =>
+          c.id === criterionId ? { ...c, completed } : c
         );
-        
-        const score = updatedCriteria.reduce((sum, c) => 
-          sum + (c.completed ? c.weight : 0), 0
-        );
-        
-        const status = score >= 80 ? 'excellent' : 
-                       score >= 60 ? 'good' : 
-                       score >= 40 ? 'needs-work' : 'critical';
-        
-        return { ...dim, criteria: updatedCriteria, score, status };
+        const score = updatedCriteria.reduce((sum, c) => sum + (c.completed ? c.weight : 0), 0);
+        return {
+          ...dim,
+          criteria: updatedCriteria,
+          score,
+          status: statusFromPercent((score / (dim.maxScore || 100)) * 100),
+        };
       })
     }));
+
+    if (!workspaceId) return;
+    void updateReadinessCriterion(workspaceId, {
+      dimension: dimensionId,
+      criterionId,
+      completed,
+    })
+      .then(() => analyzeReadiness())
+      .catch(() => analyzeReadiness());
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-100';
-      case 'good': return 'text-blue-600 bg-blue-100';
-      case 'needs-work': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'excellent': return 'text-status-success bg-status-success-bg';
+      case 'good': return 'text-status-info bg-status-info-bg';
+      case 'needs-work': return 'text-status-warning bg-status-warning-bg';
+      case 'critical': return 'text-status-danger bg-status-danger-bg';
+      default: return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -282,52 +362,68 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
 
   const getLevelDescription = (level: string) => {
     switch (level) {
-      case 'idea': return 'Early ideation stage - focus on problem validation';
-      case 'validation': return 'Validation stage - focus on customer discovery';
-      case 'mvp': return 'MVP stage - focus on building and testing';
-      case 'growth': return 'Growth stage - focus on scaling';
-      case 'scale': return 'Scale stage - ready for significant investment';
-      default: return '';
+      case 'idea':
+        return { en: builderEn('ready_lvl_idea'), el: builderEl('ready_lvl_idea') };
+      case 'validation':
+        return { en: builderEn('ready_lvl_val'), el: builderEl('ready_lvl_val') };
+      case 'mvp':
+        return { en: builderEn('ready_lvl_mvp'), el: builderEl('ready_lvl_mvp') };
+      case 'growth':
+        return { en: builderEn('ready_lvl_growth'), el: builderEl('ready_lvl_growth') };
+      case 'scale':
+        return { en: builderEn('ready_lvl_scale'), el: builderEl('ready_lvl_scale') };
+      default:
+        return { en: '', el: '' };
+    }
+  };
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case 'excellent':
+        return { en: builderEn('ready_st_exc'), el: builderEl('ready_st_exc') };
+      case 'good':
+        return { en: builderEn('ready_st_good'), el: builderEl('ready_st_good') };
+      case 'needs-work':
+        return { en: builderEn('ready_st_work'), el: builderEl('ready_st_work') };
+      case 'critical':
+        return { en: builderEn('ready_st_crit'), el: builderEl('ready_st_crit') };
+      default:
+        return { en: status, el: status };
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 rounded-lg">
-            <Target className="h-5 w-5 text-cyan-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Readiness Assessment</h2>
-            <p className="text-sm text-muted-foreground">
-              Evaluate your startup's readiness across key dimensions
-            </p>
-          </div>
-        </div>
-        <Button 
-          onClick={analyzeReadiness}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4 mr-2" />
-          )}
-          {isAnalyzing ? 'Analyzing...' : 'Analyze Readiness'}
-        </Button>
-      </div>
+      <BuilderStageHeader
+        glyph="award"
+        titleEn={builderEn('ready_title')}
+        titleEl={builderEl('ready_title')}
+        subtitleEn={builderEn('ready_sub')}
+        subtitleEl={builderEl('ready_sub')}
+        askPrompt="Score my Startup Builder readiness. Which dimension is weakest, and what should I complete next in Idea Core, BMC, Market, or Pitch?"
+        extraActions={
+          <>
+            <Button asChild variant="outline" size="sm" className={BUILDER_BTN}>
+              <Link href="/readiness">
+                <BilingualText en={builderEn('full_readiness_report')} el={builderEl('full_readiness_report')} compact />
+              </Link>
+            </Button>
+            <Button type="button" size="sm" className={BUILDER_BTN} onClick={() => void analyzeReadiness()} disabled={isAnalyzing}>
+              {isAnalyzing ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isAnalyzing ? builderEn('analyzing') : builderEn('ready_analyze')}
+                el={isAnalyzing ? builderEl('analyzing') : builderEl('ready_analyze')}
+                compact
+              />
+            </Button>
+          </>
+        }
+      />
 
       {/* Overall Score */}
-      <Card className={cn(
-        "border-2",
-        data.overallStatus === 'excellent' ? 'border-green-500' :
-        data.overallStatus === 'good' ? 'border-blue-500' :
-        data.overallStatus === 'needs-work' ? 'border-yellow-500' : 'border-red-500'
-      )}>
+      <Card className={cn("border-2", readinessClasses(data.overallStatus).border)}>
         <CardContent className="p-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Score Circle */}
             <div className="flex flex-col items-center justify-center">
               <div className="relative w-32 h-32">
@@ -339,7 +435,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     stroke="currentColor"
                     strokeWidth="12"
                     fill="none"
-                    className="text-gray-200"
+                    className="text-border"
                   />
                   <circle
                     cx="64"
@@ -349,32 +445,39 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     strokeWidth="12"
                     fill="none"
                     strokeDasharray={`${(data.overallScore / 100) * 352} 352`}
-                    className={cn(
-                      data.overallStatus === 'excellent' ? 'text-green-500' :
-                      data.overallStatus === 'good' ? 'text-blue-500' :
-                      data.overallStatus === 'needs-work' ? 'text-yellow-500' : 'text-red-500'
-                    )}
+                    className={readinessClasses(data.overallStatus).text}
                   />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold">{data.overallScore}</span>
-                  <span className="text-xs text-muted-foreground">/ 100</span>
+                {/* `gap-1.5`, as on /readiness: the score and its
+                    denominator were sharing a line box with no space between
+                    them. */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
+                  <span className={cn(BUILDER_STAT, 'leading-none')}>{data.overallScore}</span>
+                  <span className="text-xs leading-none text-muted-foreground">/ 100</span>
                 </div>
               </div>
-              <Badge className={cn("mt-4", getStatusColor(data.overallStatus))}>
-                {data.overallStatus.replace('-', ' ').toUpperCase()}
+              <Badge className={cn('mt-4', getStatusColor(data.overallStatus))}>
+                <BilingualText en={statusLabel(data.overallStatus).en} el={statusLabel(data.overallStatus).el} compact />
               </Badge>
             </div>
 
             {/* Stage Indicator */}
             <div className="flex flex-col justify-center">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Current Stage</h3>
-              <div className="flex items-center gap-2 mb-2">
-                <Rocket className="h-5 w-5 text-primary" />
-                <span className="text-xl font-semibold capitalize">{data.readinessLevel}</span>
+              <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                <BilingualText en={builderEn('ready_stage')} el={builderEl('ready_stage')} compact />
+              </h3>
+              <div className="mb-2 flex items-center gap-2">
+                <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
+                <span className="page-section font-semibold tracking-tight">
+                  <BilingualText
+                    en={STAGE_LABEL[data.readinessLevel]?.en ?? data.readinessLevel}
+                    el={STAGE_LABEL[data.readinessLevel]?.el ?? data.readinessLevel}
+                    compact
+                  />
+                </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                {getLevelDescription(data.readinessLevel)}
+                <BilingualText en={getLevelDescription(data.readinessLevel).en} el={getLevelDescription(data.readinessLevel).el} />
               </p>
               
               {/* Stage Progress */}
@@ -386,7 +489,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                       "h-2 flex-1 rounded-full",
                       ['idea', 'validation', 'mvp', 'growth', 'scale'].indexOf(data.readinessLevel) >= index
                         ? 'bg-primary'
-                        : 'bg-gray-200'
+                        // `bg-muted` is a fixed light value — on the dark theme the
+                        // unreached segments read as a bright bar, inverting the meaning.
+                        : 'bg-muted'
                     )}
                   />
                 ))}
@@ -396,15 +501,21 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
             {/* Quick Stats */}
             <div className="space-y-3">
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">Dimension Scores</h3>
-                {data.dimensions.slice(0, 4).map(dim => (
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                  <BilingualText en={builderEn('ready_dims')} el={builderEl('ready_dims')} compact />
+                </h3>
+                {data.dimensions.map(dim => (
                   <div key={dim.id} className="flex items-center justify-between text-sm mb-1">
-                    <span>{dim.name}</span>
+                    <span>
+                      <BilingualText
+                        en={DIM_LABEL[dim.id]?.en ?? dim.name}
+                        el={DIM_LABEL[dim.id]?.el ?? dim.name}
+                        compact
+                      />
+                    </span>
                     <span className={cn(
                       "font-medium",
-                      dim.status === 'excellent' ? 'text-green-600' :
-                      dim.status === 'good' ? 'text-blue-600' :
-                      dim.status === 'needs-work' ? 'text-yellow-600' : 'text-red-600'
+                      readinessClasses(dim.status).text
                     )}>
                       {dim.score}%
                     </span>
@@ -418,21 +529,23 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
 
       {/* Blockers & Next Steps */}
       {(data.blockers.length > 0 || data.nextMilestones.length > 0) && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {data.blockers.length > 0 && (
-            <Card className="border-red-200">
+            <Card className={STATUS.danger.border}>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-red-600">
-                  <XCircle className="h-5 w-5" />
-                  Critical Blockers
+                <CardTitle className={cn("flex items-center gap-2", STATUS.danger.text)}>
+                  <XCircle className="icon-sm" />
+                  <BilingualText en={builderEn('ready_blockers')} el={builderEl('ready_blockers')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
                   {data.blockers.map((blocker, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                      {blocker}
+                      <AlertTriangle className="icon-sm text-status-danger mt-0.5 shrink-0" />
+                      {BUILDER_PREVIEW_HINT_EL[blocker]
+                        ? <BilingualText en={blocker} el={BUILDER_PREVIEW_HINT_EL[blocker]} wrap />
+                        : blocker}
                     </li>
                   ))}
                 </ul>
@@ -441,19 +554,21 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
           )}
           
           {data.nextMilestones.length > 0 && (
-            <Card className="border-green-200">
+            <Card className={STATUS.success.border}>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-green-600">
-                  <Lightbulb className="h-5 w-5" />
-                  Recommended Next Steps
+                <CardTitle className={cn("flex items-center gap-2", STATUS.success.text)}>
+                  <CfbGlyph name="spark" className="icon-sm" />
+                  <BilingualText en={builderEn('ready_next')} el={builderEl('ready_next')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
                   {data.nextMilestones.map((milestone, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      {milestone}
+                      <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />
+                      {BUILDER_PREVIEW_HINT_EL[milestone]
+                        ? <BilingualText en={milestone} el={BUILDER_PREVIEW_HINT_EL[milestone]} wrap />
+                        : milestone}
                     </li>
                   ))}
                 </ul>
@@ -464,9 +579,8 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       )}
 
       {/* Dimension Details */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data.dimensions.map(dimension => {
-          const Icon = dimension.icon;
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {data.dimensions.map((dimension) => {
           const StatusIcon = getStatusIcon(dimension.status);
           const isExpanded = expandedDimension === dimension.id;
           
@@ -482,18 +596,20 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Icon className="h-5 w-5" />
-                    {dimension.name}
+                    <CfbGlyph name={dimension.glyph} className="icon-sm" />
+                    <BilingualText
+                      en={DIM_LABEL[dimension.id]?.en ?? dimension.name}
+                      el={DIM_LABEL[dimension.id]?.el ?? dimension.name}
+                      compact
+                    />
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Badge className={getStatusColor(dimension.status)}>
                       {dimension.score}%
                     </Badge>
                     <StatusIcon className={cn(
-                      "h-5 w-5",
-                      dimension.status === 'excellent' ? 'text-green-500' :
-                      dimension.status === 'good' ? 'text-blue-500' :
-                      dimension.status === 'needs-work' ? 'text-yellow-500' : 'text-red-500'
+                      "icon-sm",
+                      readinessClasses(dimension.status).text
                     )} />
                   </div>
                 </div>
@@ -503,9 +619,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                   value={dimension.score} 
                   className={cn(
                     "h-2 mb-4",
-                    dimension.status === 'excellent' ? '[&>div]:bg-green-500' :
-                    dimension.status === 'good' ? '[&>div]:bg-blue-500' :
-                    dimension.status === 'needs-work' ? '[&>div]:bg-yellow-500' : '[&>div]:bg-red-500'
+                    READINESS_BAR[dimension.status]
                   )}
                 />
                 
@@ -523,27 +637,35 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                         <div className={cn(
                           "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5",
                           criterion.completed 
-                            ? "bg-green-500 border-green-500" 
-                            : "border-gray-300"
+                            ? "bg-status-success-mark border-status-success" 
+                            : "border-border"
                         )}>
                           {criterion.completed && (
-                            <CheckCircle2 className="h-3 w-3 text-white" />
+                            <CheckCircle2 className="icon-sm text-ink" />
                           )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <span className={cn(
                               "font-medium text-sm",
-                              criterion.completed && "text-green-600"
+                              criterion.completed && "text-status-success"
                             )}>
-                              {criterion.name}
+                              <BilingualText
+                                en={criterion.name}
+                                el={CRITERION_EL[criterion.id]?.name ?? criterion.name}
+                                compact
+                              />
                             </span>
                             <Badge variant="outline" className="text-xs">
                               {criterion.weight}%
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {criterion.description}
+                            <BilingualText
+                              en={criterion.description}
+                              el={CRITERION_EL[criterion.id]?.description ?? criterion.description}
+                              compact
+                            />
                           </p>
                         </div>
                       </div>
@@ -553,7 +675,8 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                 
                 {!isExpanded && (
                   <div className="text-xs text-muted-foreground">
-                    {dimension.criteria.filter(c => c.completed).length} / {dimension.criteria.length} criteria met
+                    {dimension.criteria.filter((c) => c.completed).length} / {dimension.criteria.length}{' '}
+                    <BilingualText en={builderEn('ready_criteria')} el={builderEl('ready_criteria')} compact />
                   </div>
                 )}
               </CardContent>

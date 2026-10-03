@@ -17,7 +17,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export type EventData = {
   id: string;
@@ -49,7 +50,7 @@ type EventCardProps = {
 };
 
 function formatEventDate(date: Date): string {
-  return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 function formatEventTime(start: Date, end: Date): string {
@@ -58,17 +59,30 @@ function formatEventTime(start: Date, end: Date): string {
   return `${startTime} - ${endTime}`;
 }
 
+const EVENT_TYPE_LABEL: Record<string, { en: string; el: string }> = {
+  online: { en: 'Online', el: 'Διαδικτυακή' },
+  'in-person': { en: 'In person', el: 'Δια ζώσης' },
+  in_person: { en: 'In person', el: 'Δια ζώσης' },
+  hybrid: { en: 'Hybrid', el: 'Υβριδική' },
+};
+
+/** The format as a word in the reader's language, not the API's identifier. */
+function EventTypeLabel({ type }: { type: string }) {
+  const label = EVENT_TYPE_LABEL[type];
+  return label ? <BilingualText en={label.en} el={label.el} compact /> : <>{type}</>;
+}
+
 function EventTypeIcon({ type }: { type: EventData['type'] }) {
   switch (type) {
     case 'online':
-      return <Video className="h-4 w-4" />;
+      return <Video className="icon-sm" />;
     case 'in-person':
-      return <MapPin className="h-4 w-4" />;
+      return <MapPin className="icon-sm" />;
     case 'hybrid':
       return (
         <div className="flex">
-          <Video className="h-4 w-4" />
-          <MapPin className="h-4 w-4 -ml-1" />
+          <Video className="icon-sm" />
+          <MapPin className="icon-sm -ml-1" />
         </div>
       );
   }
@@ -101,16 +115,16 @@ export function EventCard({
 
   if (variant === 'compact') {
     return (
-      <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+      <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
         <CardContent className="p-4">
           <div className="flex gap-4">
             {/* Date box */}
             <div className="flex-shrink-0 text-center">
               <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
-                <span className="text-xs font-medium text-primary">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+                <span className="text-xs font-medium text-primary-accessible">
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
-                <span className="text-lg font-bold text-primary">
+                <span className="text-lg font-bold text-primary-accessible">
                   {event.startDate.getDate()}
                 </span>
               </div>
@@ -120,18 +134,18 @@ export function EventCard({
             <div className="flex-1 min-w-0">
               <Link
                 href={`/events/${event.id}`}
-                className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+                className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
               >
                 {event.title}
               </Link>
               <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
+                <Clock className="icon-sm" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <Badge variant="outline" className="text-xs gap-1">
                   <EventTypeIcon type={event.type} />
-                  {event.type}
+                  <EventTypeLabel type={event.type} />
                 </Badge>
                 <span className="text-xs text-muted-foreground">
                   {event.attendeesCount} attending
@@ -149,7 +163,7 @@ export function EventCard({
             >
               {rsvped ? (
                 <>
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <CheckCircle className="icon-sm mr-1" />
                   Going
                 </>
               ) : isFull ? (
@@ -179,8 +193,8 @@ export function EventCard({
             {/* Date badge */}
             <div className="absolute top-4 left-4">
               <div className="rounded-lg bg-background/90 backdrop-blur-sm px-3 py-2 text-center">
-                <span className="text-xs font-medium text-primary block">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+                <span className="text-xs font-medium text-primary-accessible block">
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
                 <span className="text-xl font-bold text-foreground">
                   {event.startDate.getDate()}
@@ -191,7 +205,7 @@ export function EventCard({
             <div className="absolute top-4 right-4">
               <Badge variant="secondary" className="gap-1">
                 <EventTypeIcon type={event.type} />
-                {event.type}
+                <EventTypeLabel type={event.type} />
               </Badge>
             </div>
           </div>
@@ -200,7 +214,7 @@ export function EventCard({
         <CardContent className="pt-4">
           <Link
             href={`/events/${event.id}`}
-            className="text-xl font-bold text-foreground hover:text-primary transition-colors"
+            className="text-xl font-bold text-foreground hover:text-primary-accessible transition-colors"
           >
             {event.title}
           </Link>
@@ -212,12 +226,12 @@ export function EventCard({
           {/* Meta */}
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
+              <Clock className="icon-sm" />
               {formatEventDate(event.startDate)} • {formatEventTime(event.startDate, event.endDate)}
             </div>
             {event.location && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="icon-sm" />
                 {event.location}
               </div>
             )}
@@ -227,8 +241,8 @@ export function EventCard({
           <div className="mt-4 flex items-center gap-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src={event.hostAvatar || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                {event.hostName[0]?.toUpperCase()}
+              <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
+                {initialsOf(event.hostName)}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -249,25 +263,25 @@ export function EventCard({
           )}
           
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
+          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" />
               {event.attendeesCount} attending
               {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 10 && (
-                <span className="text-amber-600 dark:text-amber-400">• {spotsLeft} spots left</span>
+                <span className="text-status-warning ">• {spotsLeft} spots left</span>
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button
+              <Button aria-label="Save"
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
-                className={cn(bookmarked && 'text-amber-500 dark:text-amber-400')}
+                className={cn(bookmarked && 'text-status-warning ')}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
-              <Button variant="ghost" size="icon" onClick={onShare}>
-                <Share2 className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={onShare} aria-label={`Share event ${event.title}`}>
+                <Share2 className="icon-sm" />
               </Button>
               <Button
                 variant={rsvped ? 'secondary' : 'default'}
@@ -276,7 +290,7 @@ export function EventCard({
               >
                 {rsvped ? (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <CheckCircle className="icon-sm mr-2" />
                     Going
                   </>
                 ) : isFull ? (
@@ -294,16 +308,16 @@ export function EventCard({
 
   // Default variant
   return (
-    <Card className={cn('group hover:shadow-md transition-shadow', className)}>
+    <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
       <CardContent className="pt-5">
         <div className="flex gap-4">
           {/* Date box */}
           <div className="flex-shrink-0 text-center">
             <div className="w-16 h-16 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-              <span className="text-xs font-medium text-primary">
-                {event.startDate.toLocaleDateString([], { month: 'short' })}
+              <span className="text-xs font-medium text-primary-accessible">
+                {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
               </span>
-              <span className="text-2xl font-bold text-primary">
+              <span className="text-2xl font-bold text-primary-accessible">
                 {event.startDate.getDate()}
               </span>
             </div>
@@ -311,44 +325,46 @@ export function EventCard({
           
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
+            {/* Wraps rather than squeezing: in a narrow card the type badge used
+                to take the title's width and cut it to two words. */}
+            <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
               <Link
                 href={`/events/${event.id}`}
-                className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
+                className="min-w-0 flex-1 basis-32 font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
               >
                 {event.title}
               </Link>
               <Badge variant="outline" className="flex-shrink-0 gap-1">
                 <EventTypeIcon type={event.type} />
-                {event.type}
+                <EventTypeLabel type={event.type} />
               </Badge>
             </div>
             
             <div className="mt-2 space-y-1">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="icon-sm" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               {event.location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+                  <MapPin className="icon-sm" />
                   <span className="truncate">{event.location}</span>
                 </div>
               )}
             </div>
             
             {/* Host & attendees */}
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <div className="flex min-w-0 items-center gap-2">
+                <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-[10px]">
-                    {event.hostName[0]?.toUpperCase()}
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-2xs">
+                    {initialsOf(event.hostName)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-muted-foreground">by {event.hostName}</span>
+                <span className="min-w-0 truncate text-xs text-muted-foreground">by {event.hostName}</span>
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
                 {event.attendeesCount} attending
               </span>
             </div>
@@ -356,14 +372,14 @@ export function EventCard({
         </div>
         
         {/* Actions */}
-        <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border/40">
-          <Button
+        <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border">
+          <Button aria-label="Save"
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
-            className={cn('h-8 w-8', bookmarked && 'text-amber-500 dark:text-amber-400')}
+            className={cn('h-8 w-8', bookmarked && 'text-status-warning ')}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </Button>
           <Button
             variant={rsvped ? 'secondary' : 'default'}
@@ -373,7 +389,7 @@ export function EventCard({
           >
             {rsvped ? (
               <>
-                <CheckCircle className="h-4 w-4 mr-1" />
+                <CheckCircle className="icon-sm mr-1" />
                 Going
               </>
             ) : isFull ? (

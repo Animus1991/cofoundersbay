@@ -1,3 +1,16 @@
+// Node 17+ hands back DNS results in resolver order instead of IPv4-first, so on
+// Windows `localhost` resolves to ::1 first. The local Postgres and Redis listen
+// on IPv4, and DATABASE_URL/REDIS_URL name `localhost`, so each connection stalls
+// on ::1 before falling back — ~210ms per connect, paid again on every pool
+// refill and reconnect.
+//
+// Development only. In production these point at real hosts, some of which may be
+// IPv6-only, and forcing IPv4 there could make them unreachable.
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('node:dns').setDefaultResultOrder('ipv4first');
+}
+
 // Sentry must be initialised before NestFactory to instrument the full request lifecycle.
 // We use a guarded dynamic require so the app still boots if the package is not yet installed.
 if (process.env.SENTRY_DSN) {
@@ -25,7 +38,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigModule } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { resolve } from 'path';
+import { extname, resolve } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -59,24 +72,9 @@ async function bootstrap() {
   
   // Get configuration
   const config = app.get(appConfig.KEY);
-  
-  // Serve uploaded files (local dev storage)
-  app.useStaticAssets(resolve(__dirname, '..', 'uploads'), {
-    prefix: '/uploads',
-  });
 
-  // Security & parsing middleware
-  app.use(cookieParser());
-  app.use(helmet({
-    contentSecurityPolicy: config.nodeEnv === 'production' ? undefined : false,
-    crossOriginEmbedderPolicy: false,
-  }));
-
-  // Apply global middleware
-  app.use(requestIdMiddleware);
-  // Note: PerformanceMiddleware is applied via NestJS module, not here
-
-  // CORS configuration
+  // CORS must be registered before local static uploads. The Research viewer
+  // downloads assets from the API origin with fetch, not only with <img>.
   console.log('[CORS] Allowed origins:', config.cors.origin);
   app.enableCors({
     origin: config.cors.origin,
@@ -86,6 +84,33 @@ async function bootstrap() {
     optionsSuccessStatus: 204,
     preflightContinue: false,
   });
+  
+  // Security & parsing middleware
+  app.use(cookieParser());
+  app.use(helmet({
+    contentSecurityPolicy: config.nodeEnv === 'production' ? undefined : false,
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  // Local uploads are registered after Helmet so they cannot bypass security
+  // headers. Their own CSP also makes any accidentally active document inert.
+  app.useStaticAssets(resolve(__dirname, '..', 'uploads'), {
+    prefix: '/uploads',
+    setHeaders: (response, filePath) => {
+      response.setHeader('X-Content-Type-Options', 'nosniff');
+      response.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'; sandbox");
+      response.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      const inlineRasterExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.bmp', '.ico']);
+      if (!inlineRasterExtensions.has(extname(filePath).toLowerCase())) {
+        // Covers both new documents and unsafe files left by older releases.
+        response.setHeader('Content-Disposition', 'attachment');
+      }
+    },
+  });
+
+  // Apply global middleware
+  app.use(requestIdMiddleware);
+  // Note: PerformanceMiddleware is applied via NestJS module, not here
 
   // Global pipes and interceptors
   app.useGlobalPipes(

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { qk } from '@/lib/query-keys';
 import {
   updateResearchBoard,
   listResearchCollaborators,
@@ -30,6 +31,7 @@ import {
   type OrgMembershipItem,
   type ResearchBoardVisibility,
 } from '@/lib/api';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface BoardSettingsPanelProps {
   board: ResearchBoard;
@@ -87,9 +89,9 @@ function CollaboratorRow({
     <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
       <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden shrink-0">
         {collab.avatarUrl ? (
-          <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" />
+          <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         ) : (
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-xs font-semibold text-primary-accessible">
             {(collab.displayName ?? collab.email)[0].toUpperCase()}
           </span>
         )}
@@ -103,9 +105,9 @@ function CollaboratorRow({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs" disabled={updateMutation.isPending}>
-                <RoleIcon className="h-3 w-3" />
+                <RoleIcon className="icon-sm" />
                 {roleInfo.label}
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -116,9 +118,9 @@ function CollaboratorRow({
                   <DropdownMenuItem
                     key={r}
                     onClick={() => updateMutation.mutate(r)}
-                    className={cn('gap-2', collab.role === r && 'text-primary')}
+                    className={cn('gap-2', collab.role === r && 'text-primary-accessible')}
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="icon-sm" />
                     <div>
                       <p className="text-sm">{info.label}</p>
                       <p className="text-xs text-muted-foreground">{info.desc}</p>
@@ -130,26 +132,26 @@ function CollaboratorRow({
           </DropdownMenu>
         ) : (
           <div className="flex items-center gap-1 text-xs text-muted-foreground px-2">
-            <RoleIcon className="h-3 w-3" />
+            <RoleIcon className="icon-sm" />
             <span>{roleInfo.label}</span>
           </div>
         )}
         {canManage && (
-          <Button
+          <Button aria-label="Remove member"
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive-accessible"
             onClick={() => removeMutation.mutate()}
             disabled={removeMutation.isPending}
           >
-            <UserMinus className="h-3.5 w-3.5" />
+            <UserMinus className="icon-sm" />
           </Button>
         )}
         {!isOwner && collab.userId === currentUserId && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible"
             onClick={() => removeMutation.mutate()}
           >
             Leave
@@ -169,7 +171,7 @@ function OrgOwnershipSection({
   onUpdate: (data: { visibility?: ResearchBoardVisibility }) => void;
 }) {
   const { data: orgData, isLoading } = useQuery({
-    queryKey: ['user-org-memberships'],
+    queryKey: qk('org', 'my-memberships'),
     queryFn: () => getUserOrganizations(),
   });
 
@@ -179,7 +181,7 @@ function OrgOwnershipSection({
   return (
     <div className="space-y-2">
       <label className="text-sm font-semibold flex items-center gap-1.5">
-        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+        <Building2 className="icon-sm text-muted-foreground" />
         Organization Ownership
       </label>
       <p className="text-xs text-muted-foreground">
@@ -188,32 +190,32 @@ function OrgOwnershipSection({
 
       {isLoading ? (
         <div className="flex items-center gap-2 py-3">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-sm animate-spin text-muted-foreground" />
           <span className="text-xs text-muted-foreground">Loading organizations…</span>
         </div>
       ) : memberships.length === 0 ? (
         <div className="rounded-lg border border-border p-3 text-center">
-          <Building2 className="h-5 w-5 mx-auto mb-1.5 text-muted-foreground/40" />
+          <Building2 className="icon-md mx-auto mb-1.5 text-muted-foreground/40" />
           <p className="text-xs text-muted-foreground">You don&apos;t belong to any organizations yet.</p>
         </div>
       ) : (
-        <div className="grid gap-1.5">
+        <div className="grid grid-cols-1 gap-1.5">
           {/* Personal (no org) option */}
           <button
             onClick={() => !currentOrgId ? undefined : onUpdate({ visibility: 'private' })}
             className={cn(
               'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
               !currentOrgId
-                ? 'border-primary bg-primary/5 text-primary'
+                ? 'border-primary bg-primary/5 text-primary-accessible'
                 : 'border-border hover:border-primary/40',
             )}
           >
-            <Lock className="h-4 w-4 shrink-0" />
+            <Lock className="icon-sm shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">Personal</p>
               <p className="text-xs text-muted-foreground">Owned by you only</p>
             </div>
-            {!currentOrgId && <Check className="h-4 w-4 text-primary shrink-0" />}
+            {!currentOrgId && <Check className="icon-sm text-primary-accessible shrink-0" />}
           </button>
 
           {/* Org options */}
@@ -228,22 +230,22 @@ function OrgOwnershipSection({
                 className={cn(
                   'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
                   isActive
-                    ? 'border-primary bg-primary/5 text-primary'
+                    ? 'border-primary bg-primary/5 text-primary-accessible'
                     : 'border-border hover:border-primary/40',
                 )}
               >
                 {m.organization.avatarUrl ? (
-                  <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" />
+                  <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                 ) : (
                   <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    <Building2 className="icon-sm text-primary-accessible" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{m.organization.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                 </div>
-                {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                {isActive && <Check className="icon-sm text-primary-accessible shrink-0" />}
               </button>
             );
           })}
@@ -263,13 +265,13 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
   const isOwner = board.ownerId === currentUserId;
 
   const { data: collabData, refetch: refetchCollabs } = useQuery({
-    queryKey: ['board-collaborators', board.id],
+    queryKey: qk('research-boards', 'collaborators', board.id),
     queryFn: () => listResearchCollaborators(board.id),
     enabled: open,
   });
 
   const { data: searchData } = useQuery<{ hits: SearchHit[]; total: number }>({
-    queryKey: ['user-search-invite', inviteQuery],
+    queryKey: qk('user-search-invite', inviteQuery),
     queryFn: () => searchProfiles({ q: inviteQuery, limit: 5 }),
     enabled: inviteQuery.length >= 2,
   });
@@ -277,8 +279,8 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
   const updateMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateResearchBoard>[1]) => updateResearchBoard(board.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['research-board', board.id] });
-      queryClient.invalidateQueries({ queryKey: ['research-boards'] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', board.id) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards') });
       success('Board updated', '');
     },
     onError: () => showError('Failed', 'Could not update board settings'),
@@ -313,7 +315,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+            <Settings className="icon-sm" />
             Board Settings
           </DialogTitle>
           <DialogDescription>Manage visibility and collaborators for "{board.title}"</DialogDescription>
@@ -328,7 +330,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
               className={cn(
                 'text-sm font-medium py-2.5 px-4 border-b-2 capitalize transition-colors',
                 activeTab === tab
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
@@ -343,7 +345,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
               {/* Visibility */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold">Visibility</label>
-                <div className="grid gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {VISIBILITY_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     const isActive = board.visibility === opt.value;
@@ -355,17 +357,17 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                         className={cn(
                           'flex items-center gap-3 p-3 rounded-lg border text-left transition-all',
                           isActive
-                            ? 'border-primary bg-primary/5 text-primary'
+                            ? 'border-primary bg-primary/5 text-primary-accessible'
                             : 'border-border hover:border-primary/40',
                           !isOwner && 'cursor-not-allowed opacity-60',
                         )}
                       >
-                        <Icon className="h-4 w-4 shrink-0" />
+                        <Icon className="icon-sm shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">{opt.label}</p>
                           <p className="text-xs text-muted-foreground">{opt.desc}</p>
                         </div>
-                        {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        {isActive && <Check className="icon-sm text-primary-accessible shrink-0" />}
                       </button>
                     );
                   })}
@@ -387,7 +389,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                     className="text-xs text-muted-foreground bg-secondary/50"
                   />
                   <Button variant="outline" size="sm" onClick={copyLink} className="gap-1.5 shrink-0">
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? <Check className="icon-sm" /> : <Copy className="icon-sm" />}
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                 </div>
@@ -404,7 +406,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Input
-                        placeholder="Search users by name…"
+                        placeholder={bilingualInline("Search users by name…", "Αναζήτηση χρηστών με όνομα…")}
                         value={inviteQuery}
                         onChange={(e) => setInviteQuery(e.target.value)}
                         className="pr-3"
@@ -418,10 +420,10 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                               onClick={() => { addCollabMutation.mutate(hit.userId); }}
                             >
                               {hit.avatarUrl ? (
-                                <img src={hit.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                <img src={hit.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                  <span className="text-xs font-bold text-primary">{(hit.displayName ?? 'U')[0]}</span>
+                                  <span className="text-xs font-bold text-primary-accessible">{(hit.displayName ?? 'U')[0]}</span>
                                 </div>
                               )}
                               <div className="min-w-0">
@@ -437,7 +439,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-1 shrink-0 capitalize">
                           {inviteRole}
-                          <ChevronDown className="h-3 w-3" />
+                          <ChevronDown className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -485,14 +487,14 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                     ))}
                     {collabData.collaborators.length === 0 && (
                       <div className="py-6 text-center text-sm text-muted-foreground">
-                        <UserPlus className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                        <UserPlus className="icon-lg mx-auto mb-2 opacity-40" />
                         No collaborators yet
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="icon-md animate-spin text-muted-foreground" />
                   </div>
                 )}
               </div>

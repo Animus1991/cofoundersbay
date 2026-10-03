@@ -1,0 +1,92 @@
+/**
+ * Wave F: sixty requests a person might type, thirty tasks each asked once in
+ * English and once in Greek, with what the assistant should propose.
+ *
+ * Written as people phrase things, not as the planner's keys: mixed tonos,
+ * polite and terse forms, names inside quotes the way a phone keyboard types
+ * them. A case passes when the planner proposes the expected tool with at
+ * least the expected arguments, and - for a question - proposes no write
+ * beside it. `copilotEval.test.ts` holds the bar at 95%.
+ */
+
+export type EvalCase = {
+  message: string;
+  tool: string;
+  args?: Record<string, string>;
+  /** A question: proposing any write beside it is a failure. */
+  read?: boolean;
+};
+
+export const EVAL_CASES: EvalCase[] = [
+  // ── Reads ──────────────────────────────────────────────────────────────
+  { message: 'What events are coming up this month?', tool: 'get_events', read: true },
+  { message: 'Τι εκδηλώσεις έχει αυτόν τον μήνα;', tool: 'get_events', read: true },
+  { message: 'Which of my milestones are overdue?', tool: 'get_milestones', read: true },
+  { message: 'Ποια ορόσημα έχουν καθυστερήσει;', tool: 'get_milestones', read: true },
+  { message: 'Are there any open jobs I could apply to?', tool: 'get_jobs', read: true },
+  { message: 'Υπάρχουν αγγελίες για θέσεις εργασίας;', tool: 'get_jobs', read: true },
+  { message: 'Who is on my shortlist?', tool: 'get_shortlist', read: true },
+  { message: 'Δείξε μου τα αποθηκευμένα προφίλ', tool: 'get_shortlist', read: true },
+  { message: 'Do I have unread messages?', tool: 'get_messages', read: true },
+  { message: 'Έχω αδιάβαστα μηνύματα;', tool: 'get_messages', read: true },
+  { message: 'Any connection requests waiting for me?', tool: 'get_connections', read: true },
+  { message: 'Έχω αιτήματα σύνδεσης σε αναμονή;', tool: 'get_connections', read: true },
+  { message: 'Which accelerator programmes are open right now?', tool: 'get_programs', read: true },
+  { message: 'Ποια προγράμματα επιτάχυνσης δέχονται αιτήσεις;', tool: 'get_programs', read: true },
+  { message: 'How many of the people I invited actually joined?', tool: 'get_invites', read: true },
+  { message: 'Πόσοι από όσους προσκάλεσα έγιναν μέλη;', tool: 'get_invites', read: true },
+  { message: 'What level am I and which badges have I earned?', tool: 'get_reputation', read: true },
+  { message: 'Ποια σήματα έχω κερδίσει;', tool: 'get_reputation', read: true },
+  { message: 'How investor ready is my startup?', tool: 'get_readiness', read: true },
+  { message: 'Πόσο καλή είναι η ετοιμότητα της startup μου;', tool: 'get_readiness', read: true },
+  { message: 'Which mentors are available for sessions?', tool: 'get_mentors', read: true },
+  { message: 'Ποιοι μέντορες είναι διαθέσιμοι;', tool: 'get_mentors', read: true },
+  { message: 'What bookings do I have next week?', tool: 'get_bookings', read: true },
+  { message: 'Τι κρατήσεις έχω την επόμενη εβδομάδα;', tool: 'get_bookings', read: true },
+  { message: 'Any new inquiries from clients?', tool: 'get_inquiries', read: true },
+  { message: 'Ήρθαν νέα αιτήματα πελατών;', tool: 'get_inquiries', read: true },
+  { message: 'Which cohorts are running in my organisation?', tool: 'get_org_cohorts', read: true },
+  { message: 'Ποιες κοόρτες τρέχουν στον οργανισμό μου;', tool: 'get_org_cohorts', read: true },
+  { message: 'Show me my best matches', tool: 'get_recommendations', read: true },
+  { message: 'Δείξε μου τις καλύτερες αντιστοιχίσεις μου', tool: 'get_recommendations', read: true },
+
+  // ── Searches, writes, drafts and navigation ────────────────────────────
+  { message: 'Find a technical cofounder in Athens', tool: 'search_people', args: { location: 'Athens' } },
+  { message: 'Βρες τεχνικό συνιδρυτή στην Αθήνα', tool: 'search_people', args: { location: 'Athens' } },
+  { message: 'Save Elena to my shortlist', tool: 'shortlist_add', args: { name: 'Elena' } },
+  { message: 'Αποθήκευσε την Έλενα στη λίστα μου', tool: 'shortlist_add', args: { name: 'Elena' } },
+  { message: 'Connect me with Nikos', tool: 'send_connection', args: { name: 'Nikos' } },
+  { message: 'Στείλε αίτημα σύνδεσης στον Νίκο', tool: 'send_connection', args: { name: 'Nikos' } },
+  { message: 'Message Sarah', tool: 'start_or_send_message', args: { name: 'Sarah' } },
+  { message: 'Στείλε μήνυμα στη Sarah', tool: 'start_or_send_message', args: { name: 'Sarah' } },
+  { message: 'Show my analytics for the last 30 days', tool: 'analytics_set_period', args: { period: '30d' } },
+  { message: 'Δείξε τα στατιστικά μου για τις τελευταίες 7 ημέρες', tool: 'analytics_set_period', args: { period: '7d' } },
+  { message: 'Create a workspace called "Helios"', tool: 'workspace_create', args: { name: 'Helios' } },
+  { message: 'Δημιούργησε χώρο εργασίας «Ήλιος»', tool: 'workspace_create', args: { name: 'Ήλιος' } },
+  { message: 'Open my matches', tool: 'navigate', args: { href: '/matches' } },
+  { message: 'Άνοιξε τα μηνύματα', tool: 'navigate', args: { href: '/messages' } },
+  { message: 'Join the Athens Founders group', tool: 'join_group', args: { groupName: 'Athens Founders' } },
+  { message: 'Γράψε με στην ομάδα Athens Founders', tool: 'join_group', args: { groupName: 'Athens Founders' } },
+  { message: 'Leave the Climate Builders group please', tool: 'leave_group', args: { groupName: 'Climate Builders' } },
+  { message: 'Βγάλε με από την ομάδα Climate Builders', tool: 'leave_group', args: { groupName: 'Climate Builders' } },
+  { message: 'Apply to the Pre-seed Bootcamp', tool: 'apply_to_program', args: { programTitle: 'Pre-seed Bootcamp' } },
+  { message: 'Κάνε αίτηση στο πρόγραμμα Pre-seed Bootcamp', tool: 'apply_to_program', args: { programTitle: 'Pre-seed Bootcamp' } },
+  { message: 'Invite ana@meltemi.example to CoFounderBay', tool: 'send_invite', args: { email: 'ana@meltemi.example' } },
+  { message: 'Προσκάλεσε την ana@meltemi.example', tool: 'send_invite', args: { email: 'ana@meltemi.example' } },
+  { message: 'Accept Sofia’s mentoring request', tool: 'respond_to_mentor_request', args: { decision: 'accept' } },
+  { message: 'Απόρριψε το αίτημα mentoring του Γιώργου', tool: 'respond_to_mentor_request', args: { decision: 'decline' } },
+  { message: 'Draft a milestone “Close the pre-seed round”', tool: 'draft_milestone', args: { title: 'Close the pre-seed round' } },
+  { message: 'Ετοίμασε ένα ορόσημο «Πρόσληψη πρώτου μηχανικού»', tool: 'draft_milestone', args: { title: 'Πρόσληψη πρώτου μηχανικού' } },
+  { message: 'Draft an event "Founder breakfast"', tool: 'draft_event', args: { title: 'Founder breakfast' } },
+  { message: 'Ετοίμασε εκδήλωση «Πρωινό ιδρυτών»', tool: 'draft_event', args: { title: 'Πρωινό ιδρυτών' } },
+  { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
+  { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },
+];
+
+/** Writes the planner may propose; a question proposing one of these fails. */
+export const WRITE_TOOLS = new Set([
+  'shortlist_add', 'shortlist_remove', 'send_connection', 'start_or_send_message', 'readiness_tick_criterion',
+  'workspace_create', 'investor_track_startup', 'investor_move_stage', 'update_profile', 'respond_to_connection',
+  'create_milestone', 'update_milestone_status', 'rsvp_event', 'create_event', 'canvas_command', 'join_group',
+  'leave_group', 'apply_to_program', 'send_invite', 'write_endorsement', 'respond_to_mentor_request', 'run_page_command',
+]);

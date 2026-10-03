@@ -1,49 +1,112 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSectionsForMode, type NavSection, type SidebarMode } from './nav-modes';
+import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
+import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NAV_LINK_DESCRIPTIONS } from '@/lib/nav-descriptions';
+import {
+  getNavDescriptionEl,
+  getNavLabelEl,
+  getNavSectionEl,
+} from '@/lib/i18n/strings-nav';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-
-type StoredUser = {
-  displayName?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
-} | null;
+import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { useRoleOptional } from '@/contexts/RoleContext';
+import { NotificationsBell } from './NotificationsBell';
+import { UserMenu } from './UserMenu';
+import { PreviewDemoBadge } from './TopBar';
+import { Button } from '@/components/ui/button';
 
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { expanded, toggle } = useSidebar();
-  const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
-  const [user, setUser] = useState<StoredUser>(null);
-  const [mounted, setMounted] = useState(false);
-  const [mode, setMode] = useState<SidebarMode>('work');
+  const { expanded, isRail, toggle, mounted } = useSidebar();
+  const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
+  const user = useStoredUser();
+  const role = useRoleOptional();
+  const primaryRole = role?.primaryRole;
+  const [mode, setMode] = useSidebarMode();
+  // Between `sm` and `lg` the aside is a fixed 68px rail, so it renders its
+  // collapsed contents regardless of the stored preference; the preference
+  // still governs from `lg` up, where the 240px drawer fits.
+  // Same first paint as AppShellFrame: expanded until `mounted`, so a stored
+  // collapse cannot disagree with the server HTML (OptimizedLink attributes
+  // and the logo link's aria-label both follow `showLabels`).
+  const pinnedLabels = (mounted ? expanded : true) && !isRail;
 
-  useEffect(() => {
-    setMounted(true);
-    if (typeof window === 'undefined') return;
-    const raw = localStorage.getItem('user');
-    if (!raw) return;
-    try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
-    // Restore saved mode preference
-    const savedMode = localStorage.getItem('cfb:sidebar-mode') as SidebarMode | null;
-    if (savedMode && ['work', 'explore', 'account'].includes(savedMode)) {
-      setMode(savedMode);
+  /*
+   * Hover peek, the same gesture the page rail on the right answers to. A
+   * collapsed sidebar (or the tablet rail) widens to the full drawer while a
+   * mouse rests on it, over the page rather than pushing it, and folds back
+   * when the pointer leaves, on Escape, or on navigation. The edge button
+   * still pins it open for good. Touch and pen taps do not peek: on a tablet
+   * a tap is a choice, and a drawer opening under the finger would steal it.
+   */
+  const [peeking, setPeeking] = useState(false);
+  const peekTimer = useRef<number | null>(null);
+  // Closing the drawer under a resting pointer (Escape, a link chosen from
+  // it) reflows the sidebar, and the browser answers with a fresh
+  // pointerenter that would reopen it at once. Held until the pointer leaves.
+  const peekHeld = useRef(false);
+  const clearPeekTimer = useCallback(() => {
+    if (peekTimer.current !== null) {
+      window.clearTimeout(peekTimer.current);
+      peekTimer.current = null;
     }
   }, []);
+  const startPeek = useCallback((event: React.PointerEvent) => {
+    if (pinnedLabels || event.pointerType !== 'mouse' || peekHeld.current) return;
+    clearPeekTimer();
+    // A short intent delay, so sweeping the pointer across to the page does
+    // not flash the drawer open.
+    peekTimer.current = window.setTimeout(() => setPeeking(true), 180);
+  }, [pinnedLabels, clearPeekTimer]);
+  const endPeek = useCallback(() => {
+    peekHeld.current = false;
+    clearPeekTimer();
+    peekTimer.current = window.setTimeout(() => setPeeking(false), 140);
+  }, [clearPeekTimer]);
+  const peekingRef = useRef(false);
+  peekingRef.current = peeking;
+  const closePeek = useCallback(() => {
+    clearPeekTimer();
+    if (peekingRef.current) peekHeld.current = true;
+    setPeeking(false);
+  }, [clearPeekTimer]);
+  useEffect(() => clearPeekTimer, [clearPeekTimer]);
+  useEffect(() => {
+    if (pinnedLabels) setPeeking(false);
+  }, [pinnedLabels]);
+  useEffect(() => {
+    closePeek();
+  }, [pathname, closePeek]);
+  useEffect(() => {
+    if (!peeking) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closePeek();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [peeking, closePeek]);
+  const showLabels = pinnedLabels || (mounted && peeking);
 
   // Redirect to login when session expires
   useEffect(() => {
     const handleLogout = () => {
+      if (isPreviewDemo()) return;
       router.replace('/login');
     };
     window.addEventListener('cfb:logout', handleLogout);
@@ -56,11 +119,16 @@ export function SideNav() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cfb:sidebar-mode', newMode);
     }
-  }, []);
+  }, [setMode]);
 
+  // primaryRole comes from RoleContext (root-level, API-backed — the single source
+  // of truth per docs/AI_PLATFORM_UPGRADE_PLAN.md §1.2). user?.role is a coarser
+  // string cached in localStorage at login and only used as a fallback while
+  // RoleContext is still loading or if it failed to fetch.
+  const effectiveRole = primaryRole ?? user?.role;
   const sections = useMemo(
-    () => getSectionsForMode(mode, user?.role),
-    [mode, user?.role],
+    () => getSectionsForMode(mode, effectiveRole),
+    [mode, effectiveRole],
   );
 
   // Hide sidebar on auth pages
@@ -74,91 +142,125 @@ export function SideNav() {
 
   if (isAuthPage) return null;
 
+  const rail = !showLabels;
+  const railSlot =
+    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg lg:h-[36px] lg:w-[36px]';
+  const chromeIcon = rail ? 'icon-md' : 'icon-sm';
+
   const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
     if (badgeType === 'messages' || href === '/messages') return unreadMessages;
     if (badgeType === 'connections' || href === '/connections') return pendingIntros;
-    if (badgeType === 'notifications' || href === '/notifications') return 0; // TODO: Add notifications count when available
+    if (badgeType === 'notifications' || href === '/notifications') return unreadNotifications;
     return 0;
   };
 
-  const initials =
-    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
-    user?.email?.slice(0, 2).toUpperCase() ||
-    'ME';
-
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 flex h-full flex-col border-r border-border/60 bg-card/98 backdrop-blur-sm',
-        'transition-[width] duration-200 ease-out will-change-[width]',
-        'hidden lg:flex',
-        expanded ? 'w-[240px]' : 'w-[68px]',
-      )}
-      aria-label="Main navigation"
-    >
-      {/* ── Logo header ── */}
-      <div
+    <TooltipProvider delayDuration={400}>
+      <aside
         className={cn(
-          'flex h-14 flex-shrink-0 items-center border-b border-border/60',
-          expanded ? 'justify-between px-4' : 'justify-center px-0',
+          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-visible border-r border-border bg-card/98 backdrop-blur-sm',
+          'transition-[width] duration-200 ease-out will-change-[width]',
+          // Rail from `sm`, drawer from `lg`. Width is pure CSS so the shell is
+          // correct on first paint; only the contents wait for `isRail`.
+          'hidden sm:flex',
+          'max-sm:pointer-events-none max-sm:invisible',
+          'w-[4.25rem]',
+          (mounted ? expanded : true) ? 'lg:w-[15rem]' : 'lg:w-[4.25rem]',
+          // Peeking floats the full drawer over the page; the page keeps its
+          // margin, so nothing underneath moves. Only after mount: a peek
+          // class on the first client paint would not have been on the server.
+          mounted && peeking && 'w-[15rem] shadow-xl lg:w-[15rem]',
         )}
+        onPointerEnter={startPeek}
+        onPointerLeave={endPeek}
+        data-rail={mounted && rail ? 'true' : undefined}
+        data-peek={mounted && peeking ? 'true' : undefined}
+        aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >
-        {expanded ? (
-          <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
-            <Logo size="sm" />
-          </OptimizedLink>
-        ) : (
-          <OptimizedLink href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-            <LogoIcon size={28} />
-          </OptimizedLink>
-        )}
-        {expanded && mounted && (
-          <button
-            onClick={toggle}
-            className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label="Collapse sidebar"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+        {/* ── Logo header ── */}
+        <div
+          className={cn(
+            'flex h-14 flex-shrink-0 items-center overflow-x-hidden border-b border-border',
+            showLabels ? 'justify-start pl-2 pr-3' : 'justify-center px-0',
+          )}
+        >
+          {showLabels ? (
+            <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <Logo size="sm" />
+            </OptimizedLink>
+          ) : (
+            <OptimizedLink
+              href="/"
+              // Collapsed, the logo is the mark alone - no wordmark to name the
+              // link - so every page with a collapsed sidebar (and the research
+              // canvas, which always collapses it) had a nameless home link.
+              aria-label="CoFounderBay home"
+              className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity"
+            >
+              <LogoIcon size={35} />
+            </OptimizedLink>
+          )}
+        </div>
 
-      {/* ── Mode Switcher ── */}
-      <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={expanded} />
+        {/* ── Mode Switcher ── */}
+        <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={showLabels} />
 
-      {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
-        {sections.map(({ section, links }) => (
-          <div key={section} className="mb-1">
-            {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
-                {section}
-              </p>
-            ) : (
-              <div className="mx-3 my-2 h-px bg-border/50" />
-            )}
-            <ul className="space-y-0.5 px-2">
-              {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
-                const active =
-                  pathname === href || (href !== '/' && pathname?.startsWith(href));
-                const badge = badgeFor(href, badgeType);
+        {/* ── Navigation ── */}
+        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
+          {sections.map(({ section, links }) => (
+            <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
+              {/* nav-section-label, not plain text-xs: these uppercase headings
+                  take the display steps' -2% per pass while the links under them
+                  take the +2% of the body scale (see globals.css). */}
+              {showLabels ? (
+                <p className="nav-section-label mx-3 mb-1 mt-2.5 text-xs text-muted-foreground first:mt-1">
+                  <BilingualText
+                    en={section}
+                    el={getNavSectionEl(section)}
+                    stacked
+                    primaryClassName="font-semibold uppercase tracking-widest"
+                    secondaryClassName="normal-case tracking-normal"
+                  />
+                </p>
+              ) : (
+                <div className="mx-auto my-1.5 h-px w-6 bg-border/50" />
+              )}
+              <ul className={cn('space-y-0.5', showLabels ? 'px-2' : 'flex w-full flex-col items-center px-0')}>
+                {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
+                  const active =
+                    pathname === href || (href !== '/' && pathname?.startsWith(href));
+                  const badge = badgeFor(href, badgeType);
 
-                return (
-                  <li key={`${section}-${href}`}>
+                  const navHint = NAV_LINK_DESCRIPTIONS[href];
+                  const navHintEl = getNavDescriptionEl(href);
+                  const labelEl = getNavLabelEl(href);
+
+                  // Remote introduced the /ai hub; use the Bot lucide glyph as the
+                  // navigational icon for AI Assistant / Ask AI entries.
+                  const FallbackIcon = href === '/ai' ? Bot : Icon;
+
+                  const link = (
                     <OptimizedLink
                       href={href}
                       aria-current={active ? 'page' : undefined}
-                      title={!expanded ? label : undefined}
+                      title={
+                        mounted && !showLabels
+                          ? bilingualAria(
+                              navHint ?? label,
+                              navHintEl ?? labelEl,
+                            )
+                          : undefined
+                      }
                       className={cn(
-                        'group relative flex items-center rounded-lg transition-all duration-150',
-                        expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
+                        'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
+                        showLabels ? 'gap-2 px-2 py-1.5' : cn(railSlot, 'justify-center p-0'),
                         active
-                          ? 'bg-primary/8 text-primary font-medium'
+                          ? 'bg-primary/8 text-foreground font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >
                       {/* Active left bar */}
-                      {active && expanded && (
+                      {active && showLabels && (
                         <span
                           className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary"
                           aria-hidden="true"
@@ -167,88 +269,119 @@ export function SideNav() {
 
                       {/* Icon + badge (collapsed) */}
                       <span className="relative flex-shrink-0">
-                        <Icon
+                        <NavIcon
+                          href={href}
+                          fallback={FallbackIcon}
                           className={cn(
-                            'h-4 w-4',
-                            active ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground',
+                            chromeIcon,
+                            active ? 'text-foreground' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
-                          aria-hidden="true"
                         />
-                        {badge > 0 && !expanded && (
-                          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold leading-none text-primary-foreground">
+                        {badge > 0 && !showLabels && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card"
+                          >
                             {badge > 9 ? '9+' : badge}
                           </span>
                         )}
                       </span>
+                      {!showLabels && <span className="sr-only">{bilingualAria(label, labelEl)}</span>}
 
                       {/* Label + badge (expanded) */}
-                      {expanded && (
+                      {showLabels && (
                         <>
-                          <span className="truncate text-sm leading-none">{label}</span>
+                          <BilingualText en={label} el={labelEl} stacked className="min-w-0 flex-1" />
                           {badge > 0 && (
                             <span
-                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"
-                              aria-label={`${badge} unread`}
+                              aria-hidden="true"
+                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground"
                             >
                               {badge > 99 ? '99+' : badge}
                             </span>
                           )}
                         </>
                       )}
+                      {badge > 0 && (
+                        <span className="sr-only">
+                          {bilingualAria(`${badge} unread`, `${badge} ${badge === 1 ? 'αδιάβαστο' : 'αδιάβαστα'}`)}
+                        </span>
+                      )}
                     </OptimizedLink>
-                  </li>
-                );
-              })}
-            </ul>
+                  );
+
+                  return (
+                    <li key={`${section}-${href}`} className={rail ? 'flex w-full justify-center' : undefined}>
+                      {showLabels && navHint ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>{link}</TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-[240px] text-xs">
+                            <p className="font-medium text-foreground">
+                              <BilingualText en={label} el={labelEl} />
+                            </p>
+                            {navHint && (
+                              <p className="text-muted-foreground">
+                                <BilingualText en={navHint} el={navHintEl} />
+                              </p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        link
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* Search + bell stay in the rail; command/locale/theme/demo live in UserMenu. */}
+        <div className={cn('flex-shrink-0 border-t border-border', showLabels ? 'space-y-1 p-2' : 'flex flex-col items-center gap-0.5 px-0 py-1.5')}>
+          <div className={cn(showLabels ? 'flex items-center gap-0.5' : 'flex flex-col items-center gap-0.5')}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
+              onClick={() => router.push('/search')}
+              aria-label={bilingualAria('Search', 'Αναζήτηση')}
+            >
+              <CfbGlyph name="discover" className={chromeIcon} />
+            </Button>
+            <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
           </div>
-        ))}
-      </nav>
+          {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
+          {mounted ? (
+            <UserMenu variant="sidebar" rail={rail} />
+          ) : (
+            <div className={cn('rounded-lg bg-secondary/40', showLabels ? 'h-10' : 'mx-auto h-9 w-9')} />
+          )}
+        </div>
 
-      {/* ── User profile footer ── */}
-      <div className="flex-shrink-0 border-t border-border/60 p-2">
-        {user && mounted ? (
-          <OptimizedLink
-            href="/profile"
-            title={!expanded ? (user.displayName ?? 'Profile') : undefined}
-            className={cn(
-              'flex items-center rounded-lg transition-colors hover:bg-secondary/60',
-              expanded ? 'gap-2.5 px-2 py-2' : 'justify-center p-2',
-            )}
-          >
-            <Avatar className="h-7 w-7 flex-shrink-0">
-              <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            {expanded && (
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium leading-tight text-foreground">
-                  {user.displayName ?? 'User'}
-                </p>
-                {user.role && (
-                  <p className="truncate text-xs capitalize leading-tight text-muted-foreground">
-                    {user.role}
-                  </p>
-                )}
-              </div>
-            )}
-          </OptimizedLink>
-        ) : (
-          <div className={cn('rounded-lg bg-secondary/40', expanded ? 'h-10' : 'h-9 w-9 mx-auto')} />
-        )}
-
-        {/* Expand button when collapsed */}
-        {!expanded && mounted && (
+        {mounted && !isRail && (
           <button
+            type="button"
+            data-sidebar-edge-toggle=""
             onClick={toggle}
-            className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label="Expand sidebar"
+            // The pinned state, not the peek: while peeking, this button is
+            // what keeps the drawer open after the pointer leaves.
+            aria-expanded={pinnedLabels}
+            aria-label={bilingualAria(
+              pinnedLabels ? commonEn('collapse_sidebar') : commonEn('expand_sidebar'),
+              pinnedLabels ? commonEl('collapse_sidebar') : commonEl('expand_sidebar'),
+            )}
+            className="absolute right-0 top-1/2 z-50 flex h-6 w-6 min-w-[24px] -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground/25"
           >
-            <PanelLeftOpen className="h-4 w-4" />
+            {pinnedLabels ? (
+              <ChevronLeft className="h-3.5 w-3.5" aria-hidden />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+            )}
           </button>
         )}
-      </div>
-    </aside>
+      </aside>
+    </TooltipProvider>
   );
 }

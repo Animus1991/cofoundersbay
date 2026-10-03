@@ -5,23 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  DollarSign, 
-  TrendingUp,
-  TrendingDown,
-  PiggyBank,
-  Calculator,
-  Target,
+import {
   AlertTriangle,
-  Sparkles,
-  Save,
+  CheckCircle2,
   RefreshCw,
-  BarChart3
+  Save,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface RevenueStream {
   name: string;
@@ -98,25 +98,42 @@ const defaultFinancialData: FinancialData = {
   }
 };
 
+
+/**
+ * A unit-economics verdict with its mark: the product's icons and status
+ * colours, where emoji (a check, a warning sign, a cross) rendered
+ * differently on every platform and carried the meaning alone.
+ */
+function Verdict({ ok, warn, children }: { ok: boolean; warn: boolean; children: React.ReactNode }) {
+  const Icon = ok ? CheckCircle2 : warn ? AlertTriangle : XCircle;
+  const tone = ok ? 'text-status-success' : warn ? 'text-status-warning' : 'text-status-danger';
+  return (
+    <div className={cn('mt-1 inline-flex items-center justify-center gap-1 text-xs', tone)}>
+      <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+/** Share of the six plan parts with anything in them; the stage header and the stored document both use it. */
+export function financialCompletion(data: FinancialData): number {
+  const parts = [
+    data.startupCosts.length > 0,
+    data.operatingCosts.length > 0,
+    data.revenueStreams.length > 0,
+    data.unitEconomics.cac > 0,
+    Boolean(data.pricingModel),
+    data.fundingRounds.length > 0,
+  ];
+  return Math.round((parts.filter(Boolean).length / parts.length) * 100);
+}
+
 export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProps) {
+  const t = useBuilderPrimaryText();
   const [data, setData] = useState<FinancialData>({ ...defaultFinancialData, ...initialData });
   const [activeTab, setActiveTab] = useState('costs');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [completionPercentage, setCompletionPercentage] = useState(0);
-
-  useEffect(() => {
-    let completed = 0;
-    let total = 6;
-    
-    if (data.startupCosts.length > 0) completed++;
-    if (data.operatingCosts.length > 0) completed++;
-    if (data.revenueStreams.length > 0) completed++;
-    if (data.unitEconomics.cac > 0) completed++;
-    if (data.pricingModel) completed++;
-    if (data.fundingRounds.length > 0) completed++;
-    
-    setCompletionPercentage((completed / total) * 100);
-  }, [data]);
+  const completionPercentage = financialCompletion(data);
 
   // Calculate derived metrics
   useEffect(() => {
@@ -252,53 +269,42 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-500/10 rounded-lg">
-            <DollarSign className="h-5 w-5 text-emerald-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Financial Planning</h2>
-            <p className="text-sm text-muted-foreground">
-              Revenue models, cost projections, and funding requirements
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <div className="w-2 h-2 rounded-full bg-emerald-500" />
-            {completionPercentage.toFixed(0)}% Complete
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
-            )}
-            AI Generate
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <BuilderStageHeader
+        glyph="wallet"
+        titleEn={builderEn('fin_title')}
+        titleEl={builderEl('fin_title')}
+        subtitleEn={builderEn('fin_sub')}
+        subtitleEl={builderEl('fin_sub')}
+        completion={completionPercentage}
+        extraActions={
+          <>
+            <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_generate')}
+                compact
+              />
+            </Button>
+            <Button size="sm" className={BUILDER_BTN} onClick={handleSave}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
+            </Button>
+          </>
+        }
+      />
 
       {/* Key Metrics Dashboard */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardContent className="p-3">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-red-500" />
-              <span className="text-sm text-muted-foreground">Monthly Burn</span>
+              <TrendingDown className="icon-sm text-status-danger" />
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
+                <BilingualText en={builderEn('fin_burn')} el={builderEl('fin_burn')} compact />
+              </span>
             </div>
-            <div className="text-2xl font-bold text-red-600">
+            <div className={cn(BUILDER_STAT, 'text-status-danger')}>
               {formatCurrency(data.burnRate > 0 ? data.burnRate : totalMonthlyOperating - totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -306,21 +312,30 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <PiggyBank className="h-4 w-4 text-blue-500" />
-              <span className="text-sm text-muted-foreground">Runway</span>
+              <CfbGlyph name="wallet" className="icon-sm text-status-info" />
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
+                <BilingualText en={builderEn('fin_runway')} el={builderEl('fin_runway')} compact />
+              </span>
             </div>
-            <div className="text-2xl font-bold text-blue-600">
-              {data.runway > 0 ? `${data.runway} months` : 'N/A'}
+            <div className={cn(BUILDER_STAT, 'text-status-info')}>
+              {data.runway > 0 ? (
+                <>
+                  {data.runway}{' '}
+                  <BilingualText en={builderEn('fin_months')} el={builderEl('fin_months')} compact />
+                </>
+              ) : 'N/A'}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <span className="text-sm text-muted-foreground">Monthly Revenue</span>
+              <TrendingUp className="icon-sm text-status-success" />
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
+                <BilingualText en={builderEn('fin_mrev')} el={builderEl('fin_mrev')} compact />
+              </span>
             </div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className={cn(BUILDER_STAT, 'text-status-success')}>
               {formatCurrency(totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -328,13 +343,15 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="h-4 w-4 text-purple-500" />
-              <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
+              <CfbGlyph name="chart" className="icon-sm text-status-accent" />
+              <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
+                <BilingualText en={builderEn('fin_ltv_cac')} el={builderEl('fin_ltv_cac')} compact />
+              </span>
             </div>
             <div className={cn(
-              "text-2xl font-bold",
-              data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-              data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+              BUILDER_STAT,
+              data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
+              data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
             )}>
               {data.unitEconomics.ltvCacRatio.toFixed(1)}x
             </div>
@@ -344,45 +361,47 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="costs" className="gap-1">
-            <TrendingDown className="h-3 w-3" />
-            Costs
+        <TabsList className={BUILDER_SUBTAB_LIST}>
+          <TabsTrigger value="costs" className={BUILDER_SUBTAB_TRIGGER}>
+            <TrendingDown className="icon-sm shrink-0" />
+            <BilingualText en={builderEn('fin_tab_costs')} el={builderEl('fin_tab_costs')} compact />
           </TabsTrigger>
-          <TabsTrigger value="revenue" className="gap-1">
-            <TrendingUp className="h-3 w-3" />
-            Revenue
+          <TabsTrigger value="revenue" className={BUILDER_SUBTAB_TRIGGER}>
+            <TrendingUp className="icon-sm shrink-0" />
+            <BilingualText en={builderEn('fin_tab_rev')} el={builderEl('fin_tab_rev')} compact />
           </TabsTrigger>
-          <TabsTrigger value="unit-economics" className="gap-1">
-            <Calculator className="h-3 w-3" />
-            Unit Economics
+          <TabsTrigger value="unit-economics" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="chart" className="icon-sm shrink-0" />
+            <BilingualText en={builderEn('fin_tab_unit')} el={builderEl('fin_tab_unit')} compact />
           </TabsTrigger>
-          <TabsTrigger value="funding" className="gap-1">
-            <PiggyBank className="h-3 w-3" />
-            Funding
+          <TabsTrigger value="funding" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="wallet" className="icon-sm shrink-0" />
+            <BilingualText en={builderEn('fin_tab_fund')} el={builderEl('fin_tab_fund')} compact />
           </TabsTrigger>
-          <TabsTrigger value="scenarios" className="gap-1">
-            <BarChart3 className="h-3 w-3" />
-            Scenarios
+          <TabsTrigger value="scenarios" className={BUILDER_SUBTAB_TRIGGER}>
+            <CfbGlyph name="compare" className="icon-sm shrink-0" />
+            <BilingualText en={builderEn('fin_tab_scen')} el={builderEl('fin_tab_scen')} compact />
           </TabsTrigger>
         </TabsList>
 
         {/* Costs Tab */}
         <TabsContent value="costs" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Startup Costs */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Startup Costs (One-time)</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => addCost('startup')}>
-                  + Add
+                <CardTitle>
+                  <BilingualText en={builderEn('fin_startup')} el={builderEl('fin_startup')} compact />
+                </CardTitle>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('startup')}>
+                  <BilingualText en={builderEn('add')} el={builderEl('add')} compact />
                 </Button>
               </CardHeader>
               <CardContent className="space-y-3">
                 {data.startupCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder="Category"
+                      placeholder={bilingualInline("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -391,7 +410,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder="Item name"
+                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -402,7 +421,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder="Amount"
+                        placeholder={bilingualInline("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.startupCosts];
@@ -411,6 +430,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                       />
                       <Button
+                        aria-label="Remove item"
                         variant="ghost"
                         size="icon"
                         onClick={() => {
@@ -426,7 +446,9 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 ))}
                 <div className="pt-3 border-t flex justify-between">
-                  <span className="font-medium">Total Startup Costs</span>
+                  <span className="font-medium">
+                    <BilingualText en={builderEn('fin_total_start')} el={builderEl('fin_total_start')} compact />
+                  </span>
                   <span className="font-bold">{formatCurrency(totalStartupCosts)}</span>
                 </div>
               </CardContent>
@@ -435,16 +457,18 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             {/* Operating Costs */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Operating Costs (Monthly)</CardTitle>
-                <Button variant="outline" size="sm" onClick={() => addCost('operating')}>
-                  + Add
+                <CardTitle>
+                  <BilingualText en={builderEn('fin_operating')} el={builderEl('fin_operating')} compact />
+                </CardTitle>
+                <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={() => addCost('operating')}>
+                  <BilingualText en={builderEn('add')} el={builderEl('add')} compact />
                 </Button>
               </CardHeader>
               <CardContent className="space-y-3">
                 {data.operatingCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder="Category"
+                      placeholder={bilingualInline("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -453,7 +477,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder="Item name"
+                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -464,7 +488,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder="Amount"
+                        placeholder={bilingualInline("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.operatingCosts];
@@ -473,6 +497,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                       />
                       <Button
+                        aria-label="Remove item"
                         variant="ghost"
                         size="icon"
                         onClick={() => {
@@ -488,7 +513,9 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 ))}
                 <div className="pt-3 border-t flex justify-between">
-                  <span className="font-medium">Total Monthly Operating</span>
+                  <span className="font-medium">
+                    <BilingualText en={builderEn('fin_total_op')} el={builderEl('fin_total_op')} compact />
+                  </span>
                   <span className="font-bold">{formatCurrency(totalMonthlyOperating)}</span>
                 </div>
               </CardContent>
@@ -500,17 +527,19 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <TabsContent value="revenue" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Revenue Streams</CardTitle>
-              <Button variant="outline" size="sm" onClick={addRevenueStream}>
-                + Add Stream
+              <CardTitle>
+                <BilingualText en={builderEn('fin_streams')} el={builderEl('fin_streams')} compact />
+              </CardTitle>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addRevenueStream}>
+                <BilingualText en={builderEn('fin_add_stream')} el={builderEl('fin_add_stream')} compact />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {data.revenueStreams.map((stream, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label>Name</Label>
+                      <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
                       <Input
                         value={stream.name}
                         onChange={(e) => {
@@ -518,11 +547,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, name: e.target.value };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        placeholder="Revenue stream name"
+                        placeholder={bilingualInline("Revenue stream name", "Όνομα πηγής εσόδων")}
                       />
                     </div>
                     <div>
-                      <Label>Type</Label>
+                      <Label><BilingualText en="Type" el="Τύπος" compact /></Label>
                       <select
                         value={stream.type}
                         onChange={(e) => {
@@ -530,17 +559,17 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, type: e.target.value as RevenueStream['type'] };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        className="w-full px-3 py-2 border rounded-md"
+                        className="w-full px-3 py-2 border rounded-xl"
                       >
-                        <option value="subscription">Subscription</option>
-                        <option value="transaction">Transaction</option>
-                        <option value="one-time">One-time</option>
-                        <option value="advertising">Advertising</option>
-                        <option value="other">Other</option>
+                        <option value="subscription">{bilingualInline("Subscription", "Συνδρομή")}</option>
+                        <option value="transaction">{bilingualInline("Transaction", "Συναλλαγή")}</option>
+                        <option value="one-time">{bilingualInline("One-time", "Εφάπαξ")}</option>
+                        <option value="advertising">{bilingualInline("Advertising", "Διαφήμιση")}</option>
+                        <option value="other">{bilingualInline("Other", "Άλλο")}</option>
                       </select>
                     </div>
                     <div>
-                      <Label>Monthly Revenue</Label>
+                      <Label><BilingualText en="Monthly Revenue" el="Μηνιαία έσοδα" compact /></Label>
                       <Input
                         type="number"
                         value={stream.monthlyRevenue || ''}
@@ -553,7 +582,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Growth Rate (%/mo)</Label>
+                      <Label><BilingualText en="Growth Rate (%/mo)" el="Ρυθμός ανάπτυξης (%/μήνα)" compact /></Label>
                       <Input
                         type="number"
                         value={stream.growthRate || ''}
@@ -570,20 +599,24 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               ))}
               
               <div className="pt-3 border-t flex justify-between">
-                <span className="font-medium">Total Monthly Revenue</span>
-                <span className="font-bold text-green-600">{formatCurrency(totalMonthlyRevenue)}</span>
+                <span className="font-medium">
+                  <BilingualText en={builderEn('fin_total_mrev')} el={builderEl('fin_total_mrev')} compact />
+                </span>
+                <span className="font-bold text-status-success">{formatCurrency(totalMonthlyRevenue)}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Pricing Model</CardTitle>
+              <CardTitle>
+                <BilingualText en={builderEn('fin_pricing')} el={builderEl('fin_pricing')} compact />
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <textarea
-                className="w-full min-h-[100px] p-3 border rounded-md"
-                placeholder="Describe your pricing model, tiers, and strategy..."
+                className="w-full min-h-[100px] p-3 border rounded-xl"
+                placeholder={t(builderEn('fin_pricing_ph'), builderEl('fin_pricing_ph'))}
                 value={data.pricingModel}
                 onChange={(e) => setData(prev => ({ ...prev, pricingModel: e.target.value }))}
               />
@@ -593,17 +626,19 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
         {/* Unit Economics Tab */}
         <TabsContent value="unit-economics" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Customer Acquisition</CardTitle>
+                <CardTitle>
+                  <BilingualText en={builderEn('fin_acq')} el={builderEl('fin_acq')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Customer Acquisition Cost (CAC)</Label>
+                  <Label><BilingualText en={builderEn('fin_cac')} el={builderEl('fin_cac')} compact /></Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.cac || ''}
+                    value={data.unitEconomics?.cac || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, cac: Number(e.target.value) }
@@ -611,14 +646,14 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     placeholder="$0"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Total marketing spend / new customers acquired
+                    <BilingualText en={builderEn('fin_cac_hint')} el={builderEl('fin_cac_hint')} />
                   </p>
                 </div>
                 <div>
-                  <Label>Payback Period (months)</Label>
+                  <Label><BilingualText en={builderEn('fin_payback')} el={builderEl('fin_payback')} compact /></Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.paybackPeriod || ''}
+                    value={data.unitEconomics?.paybackPeriod || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, paybackPeriod: Number(e.target.value) }
@@ -631,14 +666,16 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
             <Card>
               <CardHeader>
-                <CardTitle>Customer Value</CardTitle>
+                <CardTitle>
+                  <BilingualText en={builderEn('fin_value')} el={builderEl('fin_value')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>Lifetime Value (LTV)</Label>
+                  <Label><BilingualText en={builderEn('fin_ltv')} el={builderEl('fin_ltv')} compact /></Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.ltv || ''}
+                    value={data.unitEconomics?.ltv || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, ltv: Number(e.target.value) }
@@ -646,14 +683,14 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     placeholder="$0"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Average revenue per customer over their lifetime
+                    <BilingualText en={builderEn('fin_ltv_hint')} el={builderEl('fin_ltv_hint')} />
                   </p>
                 </div>
                 <div>
-                  <Label>Gross Margin (%)</Label>
+                  <Label><BilingualText en={builderEn('fin_margin')} el={builderEl('fin_margin')} compact /></Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.grossMargin || ''}
+                    value={data.unitEconomics?.grossMargin || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, grossMargin: Number(e.target.value) }
@@ -668,41 +705,44 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           {/* Unit Economics Health */}
           <Card>
             <CardHeader>
-              <CardTitle>Unit Economics Health</CardTitle>
+              <CardTitle>
+                <BilingualText en={builderEn('fin_health')} el={builderEl('fin_health')} compact />
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(
-                    "text-3xl font-bold mb-2",
-                    data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-                    data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+                    BUILDER_STAT,
+                    "mb-2",
+                    data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
+                    data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
                   )}>
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
-                  <div className="text-sm text-muted-foreground">LTV/CAC Ratio</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.ltvCacRatio >= 3 ? '✅ Healthy (>3x)' :
-                     data.unitEconomics.ltvCacRatio >= 1 ? '⚠️ Needs improvement' : '❌ Unsustainable'}
-                  </div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="LTV/CAC Ratio" el="Λόγος LTV/CAC" compact /></div>
+                  <Verdict ok={data.unitEconomics.ltvCacRatio >= 3} warn={data.unitEconomics.ltvCacRatio >= 1}>
+                    {data.unitEconomics.ltvCacRatio >= 3 ? 'Healthy (>3x)' :
+                     data.unitEconomics.ltvCacRatio >= 1 ? 'Needs improvement' : 'Unsustainable'}
+                  </Verdict>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-blue-600">
+                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-info')}>
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
-                  <div className="text-sm text-muted-foreground">Payback Period</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.paybackPeriod <= 12 ? '✅ Good (<12 mo)' : '⚠️ Long payback'}
-                  </div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Payback Period" el="Περίοδος απόσβεσης" compact /></div>
+                  <Verdict ok={data.unitEconomics.paybackPeriod <= 12} warn>
+                    {data.unitEconomics.paybackPeriod <= 12 ? 'Good (<12 mo)' : 'Long payback'}
+                  </Verdict>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-purple-600">
+                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-accent')}>
                     {data.unitEconomics.grossMargin}%
                   </div>
-                  <div className="text-sm text-muted-foreground">Gross Margin</div>
-                  <div className="text-xs mt-1">
-                    {data.unitEconomics.grossMargin >= 70 ? '✅ SaaS-level (>70%)' : '⚠️ Below SaaS average'}
-                  </div>
+                  <div className="text-sm text-muted-foreground"><BilingualText en="Gross Margin" el="Μικτό περιθώριο" compact /></div>
+                  <Verdict ok={data.unitEconomics.grossMargin >= 70} warn>
+                    {data.unitEconomics.grossMargin >= 70 ? 'SaaS-level (>70%)' : 'Below SaaS average'}
+                  </Verdict>
                 </div>
               </div>
             </CardContent>
@@ -713,17 +753,19 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <TabsContent value="funding" className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Funding Rounds</CardTitle>
-              <Button variant="outline" size="sm" onClick={addFundingRound}>
-                + Add Round
+              <CardTitle>
+                <BilingualText en={builderEn('fin_rounds')} el={builderEl('fin_rounds')} compact />
+              </CardTitle>
+              <Button variant="outline" size="sm" className={BUILDER_BTN} onClick={addFundingRound}>
+                <BilingualText en={builderEn('fin_add_round')} el={builderEl('fin_add_round')} compact />
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {data.fundingRounds.map((round, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label>Stage</Label>
+                      <Label><BilingualText en="Stage" el="Στάδιο" compact /></Label>
                       <Input
                         value={round.stage}
                         onChange={(e) => {
@@ -735,7 +777,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Amount</Label>
+                      <Label><BilingualText en="Amount" el="Ποσό" compact /></Label>
                       <Input
                         type="number"
                         value={round.amount || ''}
@@ -748,7 +790,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Timeline</Label>
+                      <Label><BilingualText en="Timeline" el="Χρονοδιάγραμμα" compact /></Label>
                       <Input
                         value={round.timeline}
                         onChange={(e) => {
@@ -760,7 +802,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label>Dilution (%)</Label>
+                      <Label><BilingualText en="Dilution (%)" el="Αραίωση (%)" compact /></Label>
                       <Input
                         type="number"
                         value={round.dilution || ''}
@@ -777,7 +819,9 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               ))}
               
               <div className="pt-3 border-t flex justify-between">
-                <span className="font-medium">Total Funding Target</span>
+                <span className="font-medium">
+                  <BilingualText en={builderEn('fin_total_fund')} el={builderEl('fin_total_fund')} compact />
+                </span>
                 <span className="font-bold">
                   {formatCurrency(data.fundingRounds.reduce((sum, r) => sum + r.amount, 0))}
                 </span>
@@ -788,18 +832,18 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
         {/* Scenarios Tab */}
         <TabsContent value="scenarios" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Conservative */}
-            <Card className="border-yellow-500/50">
+            <Card className="border-status-warning-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  Conservative
+                  <AlertTriangle className="icon-sm text-status-warning" />
+                  <BilingualText en={builderEn('fin_cons')} el={builderEl('fin_cons')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>12-Month Revenue</Label>
+                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.conservative.revenue12m || ''}
@@ -814,7 +858,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label>12-Month Costs</Label>
+                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.conservative.costs12m || ''}
@@ -830,11 +874,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 </div>
                 <div className="pt-3 border-t">
                   <div className="flex justify-between">
-                    <span>Net</span>
+                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
                       "font-bold",
                       data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m)}
                     </span>
@@ -844,16 +888,16 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </Card>
 
             {/* Realistic */}
-            <Card className="border-blue-500/50">
+            <Card className="border-status-info-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-500" />
-                  Realistic
+                  <CfbGlyph name="target" className="icon-sm text-status-info" />
+                  <BilingualText en={builderEn('fin_real')} el={builderEl('fin_real')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>12-Month Revenue</Label>
+                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.realistic.revenue12m || ''}
@@ -868,7 +912,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label>12-Month Costs</Label>
+                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.realistic.costs12m || ''}
@@ -884,11 +928,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 </div>
                 <div className="pt-3 border-t">
                   <div className="flex justify-between">
-                    <span>Net</span>
+                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
                       "font-bold",
                       data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m)}
                     </span>
@@ -898,16 +942,16 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </Card>
 
             {/* Aggressive */}
-            <Card className="border-green-500/50">
+            <Card className="border-status-success-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
-                  Aggressive
+                  <TrendingUp className="icon-sm text-status-success" />
+                  <BilingualText en={builderEn('fin_aggr')} el={builderEl('fin_aggr')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label>12-Month Revenue</Label>
+                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.aggressive.revenue12m || ''}
@@ -922,7 +966,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label>12-Month Costs</Label>
+                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
                   <Input
                     type="number"
                     value={data.scenarios.aggressive.costs12m || ''}
@@ -938,11 +982,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 </div>
                 <div className="pt-3 border-t">
                   <div className="flex justify-between">
-                    <span>Net</span>
+                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
                       "font-bold",
                       data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m)}
                     </span>

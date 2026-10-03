@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import {
   Building2, Plus, Settings, Palette, Globe, Mail, FileText,
   Eye, Save, X, Upload, Check, AlertTriangle, ExternalLink,
   ChevronRight, Trash2, Users, Image as ImageIcon, Type,
+  Search, RefreshCw, Download,
 } from 'lucide-react';
 import {
   listTenants, createTenant, updateTenant, deleteTenant,
@@ -19,20 +21,97 @@ import {
   type TenantItem, type TenantBranding,
 } from '@/lib/api';
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import { analytics } from '@/lib/analytics';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+
+type StatusFilter = 'all' | TenantItem['status'];
+type BrandingFilter = 'all' | 'branded' | 'unbranded';
+
+const STATUS_OPTIONS: { value: StatusFilter; en: string; el: string }[] = [
+  { value: 'all', en: 'All statuses', el: 'Όλες οι καταστάσεις' },
+  { value: 'active', en: 'Active', el: 'Ενεργοί' },
+  { value: 'draft', en: 'Draft', el: 'Πρόχειροι' },
+  { value: 'suspended', en: 'Suspended', el: 'Σε αναστολή' },
+];
+
+const BRANDING_OPTIONS: { value: BrandingFilter; en: string; el: string }[] = [
+  { value: 'all', en: 'Any branding', el: 'Οποιαδήποτε επωνυμία' },
+  { value: 'branded', en: 'With a logo', el: 'Με λογότυπο' },
+  { value: 'unbranded', en: 'No logo yet', el: 'Χωρίς λογότυπο' },
+];
+
+/** RFC 4180 quoting: a tenant name with a comma must not become two columns. */
+function csvCell(value: string | null | undefined): string {
+  const text = value ?? '';
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+const TENANT_DELETE_DESCRIPTION = (
+  <BilingualText
+    en="All their members, programs and data are removed permanently. This cannot be undone."
+    el="Όλα τα μέλη, προγράμματα και δεδομένα τους αφαιρούνται οριστικά. Δεν μπορεί να αναιρεθεί."
+  />
+);
 
 export default function TenantsAdminPage() {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const { data: tenants, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'tenants'],
+    queryKey: qk('admin', 'tenants'),
     queryFn: () => listTenants({ limit: 100 }),
   });
 
-  const tenantIds = tenants?.map(t => t.id) ?? [];
-  const { selectedIds, toggle, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
+  // One guarded list, used everywhere below. `tenants?.filter(...)` repeated
+  // at each call site guards nullishness only, so a payload that arrives as an
+  // object threw on the first stat card. Narrowing once means the rest of the
+  // page can treat it as the array it already assumed it was.
+  const tenantList = Array.isArray(tenants) ? tenants : [];
+
+  // Search is the column's own control - finding a tenant is what the list is
+  // for. Status and branding narrow it from the rail.
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [brandingFilter, setBrandingFilter] = useState<BrandingFilter>('all');
+  const visibleTenants = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tenantList.filter((t) => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (brandingFilter === 'branded' && !t.logoUrl) return false;
+      if (brandingFilter === 'unbranded' && t.logoUrl) return false;
+      if (!q) return true;
+      return [t.name, t.displayName, t.slug].some((v) => v?.toLowerCase().includes(q));
+    });
+  }, [tenantList, search, statusFilter, brandingFilter]);
+  const activeFilterCount = (statusFilter !== 'all' ? 1 : 0) + (brandingFilter !== 'all' ? 1 : 0);
+
+  // Selection follows what is on screen: "select all" must not reach tenants
+  // a filter is hiding, or a bulk suspend would act on rows nobody saw.
+  const tenantIds = visibleTenants.map((t) => t.id);
+  const { selectedIds, toggle, toggleAll, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
+
+  const exportCsv = () => {
+    const header = ['name', 'display_name', 'slug', 'status', 'website', 'has_logo', 'created_at'];
+    const rows = visibleTenants.map((t) =>
+      [t.name, t.displayName, t.slug, t.status, t.website, t.logoUrl ? 'yes' : 'no', t.createdAt].map(csvCell).join(','),
+    );
+    const blob = new Blob([[header.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tenants-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    void analytics.track('tenant_export_csv', { count: visibleTenants.length });
+  };
 
   const bulkActions = [
     {
@@ -40,7 +119,7 @@ export default function TenantsAdminPage() {
       label: 'Activate',
       onClick: async (ids: string[]) => {
         await Promise.all(ids.map(id => updateTenant(id, { status: 'active' })));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_activate', { count: ids.length });
       },
     },
@@ -50,7 +129,7 @@ export default function TenantsAdminPage() {
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
         await Promise.all(ids.map(id => updateTenant(id, { status: 'suspended' })));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_suspend', { count: ids.length });
       },
     },
@@ -59,9 +138,14 @@ export default function TenantsAdminPage() {
       label: 'Delete',
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
-        if (!confirm(`Delete ${ids.length} tenant(s)? This cannot be undone.`)) return;
+        const ok = await confirm({
+          title: <BilingualText en={`Delete ${ids.length} tenants?`} el={`Διαγραφή ${ids.length} tenants;`} />,
+          description: TENANT_DELETE_DESCRIPTION,
+          confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+        });
+        if (!ok) return;
         await Promise.all(ids.map(id => deleteTenant(id)));
-        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
         void analytics.track('tenant_bulk_delete', { count: ids.length });
       },
     },
@@ -70,79 +154,232 @@ export default function TenantsAdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>;
-      case 'pending':
-        return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Pending</Badge>;
+        return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="Active" el="Ενεργός" compact /></Badge>;
+      // `TenantItem['status']` is draft | active | suspended. This used to
+      // match 'pending', which the API never sends, so a draft tenant fell
+      // through to the raw string "draft" in a grey badge.
+      case 'draft':
+        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border"><BilingualText en="Draft" el="Πρόχειρο" compact /></Badge>;
       case 'suspended':
-        return <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Suspended</Badge>;
+        return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border"><BilingualText en="Suspended" el="Σε αναστολή" compact /></Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
+  const totals = [
+    { id: 'total', en: 'Total tenants', el: 'Σύνολο tenants', value: tenantList.length, icon: Building2, tone: 'text-primary-accessible' },
+    { id: 'active', en: 'Active', el: 'Ενεργοί', value: tenantList.filter((t) => t.status === 'active').length, icon: Check, tone: 'text-status-success' },
+    { id: 'branded', en: 'With branding', el: 'Με επωνυμία', value: tenantList.filter((t) => t.logoUrl).length, icon: Palette, tone: 'text-status-accent' },
+    { id: 'suspended', en: 'Suspended', el: 'Σε αναστολή', value: tenantList.filter((t) => t.status === 'suspended').length, icon: AlertTriangle, tone: 'text-status-warning' },
+  ];
+  const suspendedCount = totals[3].value;
+
+  /*
+   * The page rail. The column is the tenant list and the search that finds a
+   * row in it; the totals, the two narrowing filters and the list tools are
+   * about the list, so they sit one gesture away. The three stat cards that
+   * opened the page are the first three rows of "Totals" - same figures, same
+   * icons - and the badge is the suspended count, the one total that asks for
+   * someone to look.
+   */
+  usePageList([
+    {
+      id: 'tenants',
+      labelEn: 'Tenants',
+      labelEl: 'Tenants',
+      rows: isLoading ? undefined : visibleTenants.map((t) =>
+        `${t.displayName || t.name} (${t.slug}) · ${t.status}${t.logoUrl ? ' · branded' : ''}`,
+      ),
+      total: tenantList.length,
+    },
+  ]);
+  // Offered to the assistant: the rail's two filters, refresh, export, and
+  // opening the create form or a tenant's settings - the same handlers.
+  usePageControls([
+    choiceControl('status_filter', 'Tenant status filter', 'Φίλτρο κατάστασης tenant', STATUS_OPTIONS, statusFilter, (v) => { setStatusFilter(v as StatusFilter); clear(); }),
+    choiceControl('branding_filter', 'Branding filter', 'Φίλτρο επωνυμίας', BRANDING_OPTIONS, brandingFilter, (v) => { setBrandingFilter(v as BrandingFilter); clear(); }),
+    { id: 'refresh', labelEn: 'Refresh tenants', labelEl: 'Ανανέωση tenants', writes: false, run: () => void refetch() },
+    { id: 'export_csv', labelEn: 'Export tenants as CSV', labelEl: 'Εξαγωγή tenants σε CSV', writes: false, unavailableEn: visibleTenants.length ? undefined : 'No tenant matches the current filters.', run: exportCsv },
+    { id: 'create_tenant', labelEn: 'Open the create tenant form', labelEl: 'Άνοιγμα φόρμας νέου tenant', writes: false, run: () => setIsCreating(true) },
+    {
+      id: 'tenant_settings',
+      labelEn: 'Open tenant settings',
+      labelEl: 'Άνοιγμα ρυθμίσεων tenant',
+      writes: false,
+      // The page's guarded list: the payload is not always an array (the
+      // comment on tenantList says why), and `.map` on it threw.
+      options: tenantList.map((t) => ({ value: t.id, labelEn: t.displayName || t.name, labelEl: t.displayName || t.name })),
+      run: (value) => setSelectedTenant(tenantList.find((t) => t.id === value) ?? null),
+    },
+  ]);
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'totals',
+      glyph: 'chart',
+      labelEn: 'Tenant totals',
+      labelEl: 'Σύνολα tenants',
+      badge: suspendedCount || null,
+      content: (
+        <ul className="space-y-2">
+          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
+            <li key={id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
+              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
+                <BilingualText en={en} el={el} compact wrap />
+              </span>
+              <span className="page-stat font-bold tabular-nums">{isLoading ? '—' : value}</span>
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'filters',
+      glyph: 'target',
+      labelEn: 'Narrow the list',
+      labelEl: 'Φιλτράρισμα λίστας',
+      badge: activeFilterCount || null,
+      content: (
+        <div className="space-y-4">
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Status" el="Κατάσταση" compact />
+            </legend>
+            {STATUS_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={statusFilter === o.value}
+                onClick={() => { setStatusFilter(o.value); clear(); }}
+                className={cn(
+                  'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                  statusFilter === o.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+                )}
+              >
+                <BilingualText en={o.en} el={o.el} compact wrap />
+              </button>
+            ))}
+          </fieldset>
+          <fieldset className="space-y-1.5">
+            <legend className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <BilingualText en="Branding" el="Επωνυμία" compact />
+            </legend>
+            {BRANDING_OPTIONS.map((o) => (
+              <button
+                key={o.value}
+                type="button"
+                aria-pressed={brandingFilter === o.value}
+                onClick={() => { setBrandingFilter(o.value); clear(); }}
+                className={cn(
+                  'tap-target flex min-h-9 w-full items-center rounded-lg px-2.5 text-left text-sm transition-colors',
+                  brandingFilter === o.value ? 'bg-primary/10 font-medium text-primary-accessible' : 'hover:bg-muted/70',
+                )}
+              >
+                <BilingualText en={o.en} el={o.el} compact wrap />
+              </button>
+            ))}
+          </fieldset>
+        </div>
+      ),
+    },
+    {
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'List tools',
+      labelEl: 'Εργαλεία λίστας',
+      content: (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh tenants" el="Ανανέωση tenants" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportCsv}
+            disabled={visibleTenants.length === 0}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <BilingualText
+                en={`Export ${visibleTenants.length} as CSV`}
+                el={`Εξαγωγή ${visibleTenants.length} σε CSV`}
+                compact
+                wrap
+              />
+            </span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title="Tenant Management"
+      titleEl="Διαχείριση tenants"
       description="Manage organizations and their white-label branding"
+      descriptionEl="Διαχείριση οργανισμών και της white-label επωνυμίας τους"
+      rail={rail}
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
-          <Plus className="icon-sm" />
-          Create Tenant
+          <Plus className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Create Tenant" el="Νέος tenant" compact />
         </Button>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Overview Stats */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Tenants</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              <span className="text-xl font-bold">{tenants?.length || 0}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Check className="icon-md text-green-500" />
-              <span className="text-xl font-bold">
-                {tenants?.filter(t => t.status === 'active').length || 0}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">With Branding</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Palette className="icon-md text-purple-500" />
-              <span className="text-xl font-bold">
-                {tenants?.filter(t => t.logoUrl).length || 0}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tenant List */}
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Organizations</CardTitle>
-          <CardDescription>
-            Configure branding, SSO, and settings for each tenant
-          </CardDescription>
+      <Card>
+        <CardHeader className="gap-3 sm:flex-row sm:items-end sm:justify-between sm:space-y-0">
+          <div>
+            <CardTitle><BilingualText en="Organizations" el="Οργανισμοί" compact /></CardTitle>
+            <CardDescription>
+              <BilingualText
+                en="Configure branding, SSO, and settings for each tenant"
+                el="Ρυθμίσεις επωνυμίας, SSO και παραμέτρων ανά tenant"
+                compact
+                wrap
+              />
+            </CardDescription>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); clear(); }}
+              placeholder={bilingualInline('Search name or slug', 'Αναζήτηση ονόματος ή slug')}
+              aria-label={bilingualAria('Search tenants', 'Αναζήτηση tenants')}
+              className="pl-9"
+            />
+          </div>
         </CardHeader>
         <CardContent>
+          {/* What a filtered list owes its reader: which filter is on, and a
+              way out of it. The filters themselves live in the rail. */}
+          {activeFilterCount > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <span>
+                <BilingualText
+                  en={`Showing ${visibleTenants.length} of ${tenantList.length}`}
+                  el={`Εμφανίζονται ${visibleTenants.length} από ${tenantList.length}`}
+                  compact
+                />
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setStatusFilter('all'); setBrandingFilter('all'); clear(); }}
+              >
+                <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+              </Button>
+            </div>
+          )}
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -151,51 +388,78 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive" />
-              <p>Failed to load tenants</p>
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" aria-hidden="true" />
+              <p><BilingualText en="Failed to load tenants" el="Αποτυχία φόρτωσης tenants" compact /></p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
-                Retry
+                <BilingualText en="Retry" el="Επανάληψη" compact />
               </Button>
             </div>
-          ) : !tenants?.length ? (
+          ) : tenantList.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="h-8 w-8 mx-auto mb-2" />
-              <p>No tenants configured yet</p>
+              <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <p><BilingualText en="No tenants configured yet" el="Δεν υπάρχουν ακόμη tenants" compact /></p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
-                <Plus className="icon-sm" />
-                Create First Tenant
+                <Plus className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Create First Tenant" el="Δημιουργία πρώτου tenant" compact />
               </Button>
+            </div>
+          ) : visibleTenants.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Search className="icon-xl mx-auto mb-2" aria-hidden="true" />
+              <p>
+                <BilingualText
+                  en="No tenant matches this search and these filters."
+                  el="Κανένας tenant δεν ταιριάζει με την αναζήτηση και τα φίλτρα."
+                  compact
+                  wrap
+                />
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {tenants.map((tenant) => (
+              <label className="flex items-center gap-3 px-4 pb-1 text-xs font-medium text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  ref={(el) => { if (el) el.indeterminate = isPartiallySelected; }}
+                  onChange={toggleAll}
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+                />
+                <BilingualText
+                  en={`Select all ${visibleTenants.length}`}
+                  el={`Επιλογή όλων (${visibleTenants.length})`}
+                  compact
+                />
+              </label>
+              {visibleTenants.map((tenant) => (
                 <div
                   key={tenant.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
                     <BulkCheckbox
                       id={tenant.id}
                       selectedIds={selectedIds}
                       onToggle={toggle}
+                      label={`Select ${tenant.displayName || tenant.name}`}
                       className="shrink-0"
                     />
                     {tenant.logoUrl ? (
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary" />
+                        <Building2 className="icon-md text-primary-accessible" aria-hidden="true" />
                       </div>
                     )}
-                    <div className="flex-1">
-                      <h3 className="font-medium">{tenant.displayName || tenant.name}</h3>
-                      <p className="text-sm text-muted-foreground">/{tenant.slug}</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-medium">{tenant.displayName || tenant.name}</h3>
+                      <p className="truncate text-sm text-muted-foreground">/{tenant.slug}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex shrink-0 items-center gap-3">
                     {getStatusBadge(tenant.status)}
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
-                      <Settings className="icon-sm" />
+                    <Button aria-label={`Settings for ${tenant.displayName || tenant.name}`} variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
+                      <Settings className="icon-sm" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -222,7 +486,7 @@ export default function TenantsAdminPage() {
             setIsCreating(false);
           }}
           onSave={() => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+            queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') });
             setSelectedTenant(null);
             setIsCreating(false);
           }}
@@ -244,7 +508,9 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const isNew = !tenant;
   const [activeTab, setActiveTab] = useState('general');
   const [previewMode, setPreviewMode] = useState(false);
@@ -267,7 +533,7 @@ function TenantEditor({
 
   const [branding, setBranding] = useState({
     primaryColor: b?.primaryColor ?? '#8b5cf6',
-    secondaryColor: b?.secondaryColor ?? '#6366f1',
+    secondaryColor: b?.secondaryColor ?? '#6756dc',
     accentColor: b?.accentColor ?? '#f59e0b',
     backgroundStyle: b?.backgroundStyle ?? 'flat',
     headingFont: b?.headingFont ?? 'Inter',
@@ -295,35 +561,35 @@ function TenantEditor({
 
   const createMut = useMutation({
     mutationFn: () => createTenant({ ...general }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: () => updateTenant(tenant!.id, { ...general }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const brandingMut = useMutation({
     mutationFn: () => updateTenantBranding(tenant!.id, { ...branding }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
     onError: (e: Error) => setSaveError(e.message),
   });
 
   const publishMut = useMutation({
     mutationFn: () => publishTenantBranding(tenant!.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
   });
 
   const unpublishMut = useMutation({
     mutationFn: () => unpublishTenantBranding(tenant!.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }),
   });
 
   const deleteMut = useMutation({
     mutationFn: () => deleteTenant(tenant!.id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: qk('admin', 'tenants') }); onSave(); },
   });
 
   const isSaving = createMut.isPending || updateMut.isPending;
@@ -343,7 +609,17 @@ function TenantEditor({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tenant details"
+        tabIndex={-1}
+        className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
         <CardHeader className="flex flex-row items-center justify-between border-b shrink-0">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -354,7 +630,7 @@ function TenantEditor({
                 </Badge>
               )}
             </CardTitle>
-            <CardDescription>Configure organization settings and branding</CardDescription>
+            <CardDescription><BilingualText en="Configure organization settings and branding" el="Ρυθμίσεις και εμφάνιση του οργανισμού" wrap /></CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {!isNew && (
@@ -363,7 +639,7 @@ function TenantEditor({
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close tenant editor">
               <X className="icon-sm" />
             </Button>
           </div>
@@ -375,16 +651,16 @@ function TenantEditor({
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
-                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" />General</TabsTrigger>
-                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" />Colors & Fonts</TabsTrigger>
-                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Media</TabsTrigger>
-                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Content</TabsTrigger>
-                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Links & Legal</TabsTrigger>
-                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" />Email</TabsTrigger>}
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="icon-sm" /><BilingualText en="General" el="Γενικά" compact /></TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="icon-sm" /><BilingualText en="Colors & Fonts" el="Χρώματα & γραμματοσειρές" compact /></TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="icon-sm" /><BilingualText en="Media" el="Πολυμέσα" compact /></TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="icon-sm" /><BilingualText en="Content" el="Περιεχόμενο" compact /></TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="icon-sm" /><BilingualText en="Links & Legal" el="Σύνδεσμοι & νομικά" compact /></TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="icon-sm" /><BilingualText en="Email" el="Email" compact /></TabsTrigger>}
               </TabsList>
 
               {saveError && (
-                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
                   <AlertTriangle className="icon-sm shrink-0" />
                   {saveError}
                 </div>
@@ -405,43 +681,43 @@ function TenantEditor({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name</label>
+                    <label className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /></label>
                     <Input value={general.displayName} onChange={e => setGeneral(p => ({ ...p, displayName: e.target.value }))} placeholder="Acme Corporation" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Website</label>
+                    <label className="text-sm font-medium"><BilingualText en="Website" el="Ιστότοπος" compact /></label>
                     <Input value={general.website} onChange={e => setGeneral(p => ({ ...p, website: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Short Description</label>
-                  <Input value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder="One-line description shown in listings" maxLength={160} />
+                  <label className="text-sm font-medium"><BilingualText en="Short Description" el="Σύντομη περιγραφή" compact /></label>
+                  <Input value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder={bilingualInline("One-line description shown in listings", "Περιγραφή μίας γραμμής για τις λίστες")} maxLength={160} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Description</label>
-                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder="Detailed description of the organization..." className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label className="text-sm font-medium"><BilingualText en="Full Description" el="Πλήρης περιγραφή" compact /></label>
+                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder={bilingualInline("Detailed description of the organization…", "Αναλυτική περιγραφή του οργανισμού…")} className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">About Text (long-form landing page)</label>
-                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder="Full about section displayed on the tenant landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label className="text-sm font-medium"><BilingualText en="About Text (long-form landing page)" el="Κείμενο «Σχετικά» (σελίδα προορισμού)" wrap /></label>
+                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder={bilingualInline("Full about section displayed on the tenant landing page…", "Πλήρες κείμενο «Σχετικά» για τη σελίδα του οργανισμού…")} className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Logo URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Logo URL" el="URL λογοτύπου" compact /></label>
                     <Input value={general.logoUrl} onChange={e => setGeneral(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://cdn.acme.com/logo.png" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Favicon URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Favicon URL" el="URL favicon" compact /></label>
                     <Input value={general.faviconUrl} onChange={e => setGeneral(p => ({ ...p, faviconUrl: e.target.value }))} placeholder="https://cdn.acme.com/favicon.ico" />
                   </div>
                 </div>
                 {!isNew && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Status</label>
+                    <label className="text-sm font-medium"><BilingualText en="Organisation status" el="Κατάσταση οργανισμού" compact /></label>
                     <div className="flex gap-2">
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                           {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
                       ))}
@@ -459,7 +735,7 @@ function TenantEditor({
               {/* Colors & Fonts tab */}
               <TabsContent value="branding" className="space-y-6 mt-0">
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm">Color Palette</h4>
+                  <h4 className="font-medium text-sm"><BilingualText en="Color Palette" el="Παλέτα χρωμάτων" compact /></h4>
                   <div className="grid grid-cols-3 gap-4">
                     {([['primaryColor', 'Primary'], ['secondaryColor', 'Secondary'], ['accentColor', 'Accent']] as const).map(([key, label]) => (
                       <div key={key} className="space-y-2">
@@ -479,11 +755,11 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm">Background Style</h4>
+                  <h4 className="font-medium text-sm"><BilingualText en="Background Style" el="Στυλ φόντου" compact /></h4>
                   <div className="flex gap-2 flex-wrap">
                     {BG_STYLES.map(s => (
                       <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
-                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                         {s.charAt(0).toUpperCase() + s.slice(1)}
                       </button>
                     ))}
@@ -491,19 +767,19 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" />Typography</h4>
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" /><BilingualText en="Typography" el="Τυπογραφία" compact /></h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Heading Font</label>
+                      <label className="text-sm font-medium"><BilingualText en="Heading Font" el="Γραμματοσειρά τίτλων" compact /></label>
                       <select value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Body Font</label>
+                      <label className="text-sm font-medium"><BilingualText en="Body Font" el="Γραμματοσειρά κειμένου" compact /></label>
                       <select value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
@@ -522,7 +798,7 @@ function TenantEditor({
               {/* Media tab */}
               <TabsContent value="media" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Hero Image URL</label>
+                  <label className="text-sm font-medium"><BilingualText en="Hero Image URL" el="URL κεντρικής εικόνας" compact /></label>
                   <Input value={branding.heroImageUrl} onChange={e => setBranding(p => ({ ...p, heroImageUrl: e.target.value }))} placeholder="https://cdn.acme.com/hero-banner.jpg" />
                   <p className="text-xs text-muted-foreground">Displayed as hero background on /t/{general.slug || 'slug'}</p>
                 </div>
@@ -545,40 +821,40 @@ function TenantEditor({
               <TabsContent value="content" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Hero Title</label>
+                    <label className="text-sm font-medium"><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></label>
                     <Input value={branding.heroTitle} onChange={e => setBranding(p => ({ ...p, heroTitle: e.target.value }))} placeholder="Welcome to Our Innovation Hub" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">CTA Button Label</label>
+                    <label className="text-sm font-medium"><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></label>
                     <Input value={branding.ctaLabel} onChange={e => setBranding(p => ({ ...p, ctaLabel: e.target.value }))} placeholder="Get Started" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Hero Subtitle</label>
-                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label className="text-sm font-medium"><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></label>
+                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">CTA URL</label>
+                  <label className="text-sm font-medium"><BilingualText en="CTA URL" el="URL δράσης" compact /></label>
                   <Input value={branding.ctaUrl} onChange={e => setBranding(p => ({ ...p, ctaUrl: e.target.value }))} placeholder="/register or https://..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">About / Long-form Content</label>
-                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label className="text-sm font-medium"><BilingualText en="About / Long-form Content" el="Σχετικά / εκτενές περιεχόμενο" compact /></label>
+                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Onboarding Intro Text</label>
-                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label className="text-sm font-medium"><BilingualText en="Onboarding Intro Text" el="Εισαγωγικό κείμενο ένταξης" compact /></label>
+                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Dashboard Welcome Message</label>
-                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder="Here's what's happening..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label className="text-sm font-medium"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></label>
+                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder={bilingualInline("Here's what's happening…", "Να τι συμβαίνει…")} className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Community Naming</label>
+                  <label className="text-sm font-medium"><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></label>
                   <Input value={branding.communityNaming} onChange={e => setBranding(p => ({ ...p, communityNaming: e.target.value }))} placeholder='Custom label e.g. "Program", "Cohort", "Network"' />
-                  <p className="text-xs text-muted-foreground">Replaces the word "community" in the UI for this tenant</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={"Replaces the word \"community\" in the UI for this tenant"} el="Αντικαθιστά τη λέξη «κοινότητα» στο περιβάλλον αυτού του οργανισμού" wrap /></p>
                 </div>
                 {!isNew && (
                   <div className="flex justify-end pt-2">
@@ -594,27 +870,27 @@ function TenantEditor({
               <TabsContent value="links" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Support Email</label>
+                    <label className="text-sm font-medium"><BilingualText en="Support Email" el="Email υποστήριξης" compact /></label>
                     <Input type="email" value={branding.supportEmail} onChange={e => setBranding(p => ({ ...p, supportEmail: e.target.value }))} placeholder="support@acme.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Branding Website URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Branding Website URL" el="URL ιστότοπου" compact /></label>
                     <Input value={branding.websiteUrl} onChange={e => setBranding(p => ({ ...p, websiteUrl: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Privacy Policy URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Privacy Policy URL" el="URL πολιτικής απορρήτου" compact /></label>
                     <Input value={branding.privacyPolicyUrl} onChange={e => setBranding(p => ({ ...p, privacyPolicyUrl: e.target.value }))} placeholder="https://acme.com/privacy" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Terms of Service URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Terms of Service URL" el="URL όρων χρήσης" compact /></label>
                     <Input value={branding.termsUrl} onChange={e => setBranding(p => ({ ...p, termsUrl: e.target.value }))} placeholder="https://acme.com/terms" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Cookie Policy URL</label>
+                    <label className="text-sm font-medium"><BilingualText en="Cookie Policy URL" el="URL πολιτικής cookies" compact /></label>
                     <Input value={branding.cookiePolicyUrl} onChange={e => setBranding(p => ({ ...p, cookiePolicyUrl: e.target.value }))} placeholder="https://acme.com/cookies" />
                   </div>
                   <div className="space-y-2">
@@ -647,13 +923,13 @@ function TenantEditor({
                 <TabsContent value="email" className="space-y-4 mt-0">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Email Sender Name</label>
+                      <label className="text-sm font-medium"><BilingualText en="Email Sender Name" el="Όνομα αποστολέα email" compact /></label>
                       <Input value={branding.emailFromName} onChange={e => setBranding(p => ({ ...p, emailFromName: e.target.value }))} placeholder="Acme Startup Network" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Email Footer Text</label>
-                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label className="text-sm font-medium"><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></label>
+                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
@@ -673,18 +949,18 @@ function TenantEditor({
               <>
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
-                    View Public Page
+                    <ExternalLink className="icon-sm" />
+                    <BilingualText en="View Public Page" el="Προβολή δημόσιας σελίδας" compact />
                   </a>
                 </Button>
                 {b?.isBrandingActive ? (
-                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50">
-                    Unpublish Branding
+                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-status-warning border-status-warning-border hover:bg-status-warning-bg">
+                    <BilingualText en="Unpublish Branding" el="Απόσυρση εμφάνισης" compact />
                   </Button>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
-                    <Check className="h-4 w-4" />
-                    Publish Branding
+                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-status-success border-status-success-border hover:bg-status-success-bg">
+                    <Check className="icon-sm" />
+                    <BilingualText en="Publish Branding" el="Δημοσίευση εμφάνισης" compact />
                   </Button>
                 )}
               </>
@@ -692,12 +968,18 @@ function TenantEditor({
           </div>
           <div className="flex gap-2">
             {tenant && (
-              <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
-                <Trash2 className="h-4 w-4" />
-                Delete
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={async () => {
+                if (await confirm({
+                  title: <BilingualText en={`Delete tenant “${tenant.name}”?`} el={`Διαγραφή tenant “${tenant.name}”;`} />,
+                  description: TENANT_DELETE_DESCRIPTION,
+                  confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+                })) deleteMut.mutate();
+              }}>
+                <Trash2 className="icon-sm" />
+                <BilingualText en="Delete" el="Διαγραφή" compact />
               </Button>
             )}
-            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button variant="outline" onClick={onClose}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
             {isNew && (
               <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
                 <Plus className="icon-sm" />
@@ -740,14 +1022,14 @@ function TenantPreview({
           className="p-8 text-center relative"
           style={branding.heroImageUrl ? { backgroundImage: `url(${branding.heroImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: `linear-gradient(135deg, ${branding.primaryColor}22, ${branding.secondaryColor}22)` }}
         >
-          <h1 className="text-2xl font-bold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
+          <h1 className="text-2xl font-semibold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
           <p className="text-muted-foreground max-w-md mx-auto">{branding.heroSubtitle || 'Connect with founders, mentors, and investors in our ecosystem.'}</p>
           <div className="mt-6 flex justify-center gap-3">
             <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: branding.primaryColor }}>
               {branding.ctaLabel || 'Get Started'}
             </button>
             <button className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: branding.primaryColor, color: branding.primaryColor }}>
-              Learn More
+              <BilingualText en="Learn More" el="Μάθετε περισσότερα" compact />
             </button>
           </div>
         </div>
@@ -755,7 +1037,7 @@ function TenantPreview({
         {/* About section */}
         {branding.aboutText && (
           <div className="p-6 bg-muted/20">
-            <h2 className="text-lg font-semibold mb-2">About</h2>
+            <h2 className="text-lg font-semibold mb-2"><BilingualText en="About" el="Σχετικά" compact /></h2>
             <p className="text-sm text-muted-foreground">{branding.aboutText}</p>
           </div>
         )}

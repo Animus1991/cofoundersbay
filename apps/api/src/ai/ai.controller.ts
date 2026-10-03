@@ -1,5 +1,5 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Delete, Res, HttpStatus, NotFoundException } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Query, Req, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AIService } from './ai.service';
@@ -9,8 +9,13 @@ import { AIJobQueueService, AIJobData } from './ai-job-queue.service';
 import { AIRateLimitGuard } from './guards/ai-rate-limit.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { AIAgentType } from '@prisma/client';
-import { ChatRequestDto, CreateConversationDto } from './dto/chat.dto';
+import { ChatRequestDto, CreateConversationDto, UpdateAIPreferencesDto } from './dto/chat.dto';
+import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { getAgent, listAgents } from './agents/base-agent';
+import { toToolCatalog } from '@cofounderbay/shared';
+import { AIActionAuditService } from './ai-action-audit.service';
+import { RecordAIActionDto } from './dto/record-action.dto';
+import { reviewToolCalls } from './tool-calls';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -20,6 +25,7 @@ export class AIController {
     private readonly ollama: OllamaService,
     private readonly conversations: AIConversationService,
     private readonly jobQueue: AIJobQueueService,
+    private readonly actionAudit: AIActionAuditService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -44,6 +50,63 @@ export class AIController {
     return { agents: listAgents() };
   }
 
+  /**
+   * The function-calling catalogue, derived from `ACTION_DECLARATIONS` in
+   * `@cofounderbay/shared`.
+   *
+   * Served from the same declarations `reviewToolCalls` checks against, so a
+   * client cannot be shown one contract while the server enforces another.
+   * Executing an accepted call is still the web app's job, behind the
+   * confirmation the user gives it.
+   */
+  @Get('tools')
+  getTools(@CurrentUser() user: { id: string; role?: string | null }) {
+    // Only what this caller may use: an admin-only read is not offered to a
+    // founder's model, and would be refused by the endpoint if it were.
+    return { tools: toToolCatalog(user?.role ?? null) };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Action audit trail
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Records an assistant action the user confirmed.
+   *
+   * Validated against the same declarations as a model's tool call, so the
+   * trail cannot be filled with capabilities that do not exist. A rejected
+   * entry answers 200 with `recorded: false` and a reason rather than an
+   * error status: the action it describes has already happened, and turning a
+   * completed action into a failed request would misreport it to the user.
+   */
+  @Post('actions')
+  async recordAction(
+    @CurrentUser() user: { id: string },
+    @Body() dto: RecordAIActionDto,
+    @Req() req: Request,
+  ) {
+    return this.actionAudit.record({
+      actorId: user.id,
+      actionId: dto.actionId,
+      args: dto.args ?? {},
+      outcome: dto.outcome,
+      ipAddress: req.ip ?? null,
+      userAgent: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
+    });
+  }
+
+  /** The caller's own trail. The actor is taken from the token, never the query. */
+  @Get('actions')
+  async listActions(
+    @CurrentUser() user: { id: string },
+    @Query('limit') limitRaw?: string,
+  ) {
+    const limit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+    return this.actionAudit.listForActor(user.id, {
+      limit: Number.isFinite(limit) ? limit : undefined,
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────
   // Chat (Non-Streaming)
   // ─────────────────────────────────────────────────────────────
@@ -51,7 +114,7 @@ export class AIController {
   @Post('chat')
   @UseGuards(AIRateLimitGuard)
   async chat(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: string; role?: string | null },
     @Body() dto: ChatRequestDto,
   ) {
     const agent = getAgent(dto.agentId || 'general');
@@ -76,12 +139,17 @@ export class AIController {
     let success = false;
     let isFallback = false;
     let usedModel = dto.model || this.ollama.getDefaultModel();
+    let toolCalls: unknown = null;
 
     try {
       const response = await this.ollama.chat(messages, {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
+        tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
+        onToolCalls: (calls) => {
+          toolCalls = calls;
+        },
       });
 
       success = true;
@@ -98,10 +166,16 @@ export class AIController {
         });
       }
 
+      // Same contract as the streaming path: validated proposals, never
+      // executed here, and the rejections are reported rather than swallowed.
+      const review = reviewToolCalls(toolCalls, user?.role ?? null);
+
       return {
         message: response,
         agent: agent.config.id,
         model: usedModel,
+        ...(review.accepted.length ? { toolCalls: review.accepted } : {}),
+        ...(review.rejected.length ? { rejectedToolCalls: review.rejected } : {}),
       };
     } catch (err: any) {
       isFallback = true;
@@ -133,7 +207,7 @@ export class AIController {
   @Post('chat/stream')
   @UseGuards(AIRateLimitGuard)
   async chatStream(
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user: { id: string; role?: string | null },
     @Body() dto: ChatRequestDto,
     @Res() res: Response,
   ) {
@@ -171,6 +245,7 @@ export class AIController {
     const usedModel = dto.model || this.ollama.getDefaultModel();
     let success = false;
     let isFallback = false;
+    let toolCalls: unknown = null;
 
     try {
       let fullResponse = '';
@@ -179,6 +254,10 @@ export class AIController {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
+        tools: dto.enableTools ? toToolCatalog(user?.role ?? null) : undefined,
+        onToolCalls: (calls) => {
+          toolCalls = calls;
+        },
       })) {
         fullResponse += chunk;
         res.write(`data: ${JSON.stringify({ chunk, done: false })}\n\n`);
@@ -194,7 +273,28 @@ export class AIController {
         });
       }
 
-      res.write(`data: ${JSON.stringify({ done: true, model: usedModel })}\n\n`);
+      // Tool calls ride out on the terminal event, as *proposals*.
+      //
+      // This is the whole design constraint: the assistant must never replay an
+      // AI POST after partial streaming output, so there is no second call to
+      // the model here and no retry of this one. What the model asked for is
+      // assembled during the single stream, checked against the declarations,
+      // and handed to the client, which renders it as a confirmable card. If
+      // the user confirms, the client performs the action and any continuation
+      // is a *new* turn the user initiated — not a resend of this one.
+      //
+      // `rejected` travels too rather than being dropped silently: a model that
+      // keeps inventing capabilities is something the client can surface and a
+      // reader of the logs can act on.
+      const review = reviewToolCalls(toolCalls, user?.role ?? null);
+      res.write(
+        `data: ${JSON.stringify({
+          done: true,
+          model: usedModel,
+          ...(review.accepted.length ? { toolCalls: review.accepted } : {}),
+          ...(review.rejected.length ? { rejectedToolCalls: review.rejected } : {}),
+        })}\n\n`,
+      );
       res.end();
     } catch (err: any) {
       isFallback = true;
@@ -258,15 +358,54 @@ export class AIController {
     return { deleted };
   }
 
+  @Get('preferences')
+  async getPreferences(@CurrentUser() user: { id: string }) {
+    const preferences = await this.prisma.aIUserPreference.findUnique({
+      where: { userId: user.id },
+    });
+    return { preferences };
+  }
+
+  @Patch('preferences')
+  async updatePreferences(
+    @CurrentUser() user: { id: string },
+    @Body() dto: UpdateAIPreferencesDto,
+  ) {
+    const data = {
+      preferredModel: dto.preferredModel,
+      preferredProvider: dto.preferredProvider,
+      temperature: dto.temperature,
+      maxTokens: dto.maxTokens,
+      responseStyle: dto.responseStyle,
+      responseLanguage: dto.responseLanguage,
+      useEmoji: dto.useEmoji,
+      enableStreaming: dto.enableStreaming,
+      enableSuggestions: dto.enableSuggestions,
+      enableContextMemory: dto.enableContextMemory,
+      enableAutoSave: dto.enableAutoSave,
+      saveConversations: dto.saveConversations,
+      shareForTraining: dto.shareForTraining,
+      anonymizeData: dto.anonymizeData,
+    };
+    const preferences = await this.prisma.aIUserPreference.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, ...data },
+      update: data,
+    });
+    return { preferences };
+  }
+
   // ─────────────────────────────────────────────────────────────
   // Async Job Queue (heavy generation)
   // ─────────────────────────────────────────────────────────────
 
   @Post('jobs')
+  @UseGuards(AIRateLimitGuard)
   async enqueueJob(
     @CurrentUser() user: { id: string },
-    @Body() body: Omit<AIJobData, 'userId'>,
+    @Body() body: EnqueueJobDto,
   ) {
+    const startMs = Date.now();
     const jobId = await this.jobQueue.enqueueJob({ ...body, userId: user.id } as AIJobData);
     if (!jobId) {
       return {
@@ -274,12 +413,21 @@ export class AIController {
         message: 'Job queue is unavailable (Redis not configured). Use synchronous /ai/chat instead.',
       };
     }
+    await this.logUsage({
+      userId: user.id,
+      agentId: body.agentId ?? (body.type === 'analyze-profile' ? 'matching' : 'general'),
+      endpoint: '/ai/jobs',
+      responseTimeMs: Date.now() - startMs,
+      model: body.model ?? this.ollama.getDefaultModel(),
+      success: true,
+      isFallback: false,
+    });
     return { queued: true, jobId };
   }
 
   @Get('jobs/:id')
-  async getJobStatus(@Param('id') id: string) {
-    const status = await this.jobQueue.getJobStatus(id);
+  async getJobStatus(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    const status = await this.jobQueue.getJobStatus(id, user.id);
     if (!status) throw new NotFoundException(`AI job ${id} not found`);
     return status;
   }

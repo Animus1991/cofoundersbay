@@ -981,34 +981,67 @@ export class BuilderService {
   async assessReadiness(userId: string, dto: AssessReadinessDto) {
     await this.checkWorkspaceAccess(userId, dto.workspaceId, 'viewer');
 
-    const dimensions = dto.dimensions || Object.values(ReadinessDimension);
+    const dimensions = [...new Set(dto.dimensions ?? Object.values(ReadinessDimension))];
+    if (!dimensions.length || dimensions.some((dimension) => !Object.values(ReadinessDimension).includes(dimension))) {
+      throw new BadRequestException('Select at least one valid readiness dimension');
+    }
+    const weights: Record<ReadinessDimension, { accelerator: number; investor: number }> = {
+      team: { accelerator: 25, investor: 30 },
+      market: { accelerator: 20, investor: 25 },
+      product: { accelerator: 20, investor: 20 },
+      business: { accelerator: 15, investor: 15 },
+      funding: { accelerator: 10, investor: 5 },
+      execution: { accelerator: 10, investor: 5 },
+    };
     const results: any[] = [];
+    let lastAssessedAt: Date | null = null;
 
     for (const dimension of dimensions) {
-      const criteria = this.getReadinessCriteria(dimension);
-      
       // Get existing scores or create new assessment
       const existingScore = await this.prisma.builderReadinessScore.findFirst({
         where: { workspaceId: dto.workspaceId, dimension },
         orderBy: { version: 'desc' },
       });
 
-      const score = existingScore?.score || 0;
-      const status = this.getReadinessStatus(score);
+      const criteria = Array.isArray(existingScore?.criteria)
+        ? existingScore.criteria
+        : this.getReadinessCriteria(dimension);
+      const score = existingScore?.score ?? 0;
+      const maxScore = existingScore && existingScore.maxScore > 0 ? existingScore.maxScore : 100;
+      const status = this.getReadinessStatus((score / maxScore) * 100);
+      const assessedAt = existingScore?.assessedAt ?? null;
+      if (assessedAt && (!lastAssessedAt || assessedAt > lastAssessedAt)) {
+        lastAssessedAt = assessedAt;
+      }
 
       results.push({
+        id: existingScore?.id ?? null,
+        workspaceId: dto.workspaceId,
         dimension,
         score,
-        maxScore: 100,
+        maxScore,
         status,
-        criteria: existingScore?.criteria || criteria,
+        criteria,
         recommendations: this.generateRecommendations(dimension, criteria),
+        assessedAt,
       });
     }
 
-    const overallScore = Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length);
+    const overallScore = Math.round(results.reduce((sum, r) => sum + (r.score / r.maxScore) * 100, 0) / results.length);
+    const weightedScore = (audience: 'accelerator' | 'investor') => Math.round(
+      results.reduce((sum, r) => sum + (r.score / r.maxScore) * weights[r.dimension as ReadinessDimension][audience], 0)
+      / dimensions.reduce((sum, dimension) => sum + weights[dimension][audience], 0) * 100,
+    );
     const overallStatus = this.getReadinessStatus(overallScore);
     const readinessLevel = this.getReadinessLevel(overallScore);
+    const assessment = {
+      overallScore,
+      overallMax: 100,
+      dimensions: results,
+      lastAssessedAt,
+      acceleratorReadiness: weightedScore('accelerator'),
+      investorReadiness: weightedScore('investor'),
+    };
 
     return {
       workspaceId: dto.workspaceId,
@@ -1019,6 +1052,7 @@ export class BuilderService {
       blockers: results.filter((r) => r.status === 'critical').map((r) => `${r.dimension} needs immediate attention`),
       nextMilestones: results.flatMap((r) => r.recommendations).slice(0, 5),
       assessedAt: new Date(),
+      assessment,
     };
   }
 
@@ -1031,7 +1065,10 @@ export class BuilderService {
       orderBy: { version: 'desc' },
     });
 
-    const criteria = score?.criteria as any[] || this.getReadinessCriteria(dto.dimension);
+    const criteria = Array.isArray(score?.criteria) ? score.criteria : this.getReadinessCriteria(dto.dimension);
+    if (!criteria.some((criterion: any) => criterion.id === dto.criterionId)) {
+      throw new BadRequestException('Readiness criterion not found');
+    }
     
     // Update criterion
     const updatedCriteria = criteria.map((c: any) => {

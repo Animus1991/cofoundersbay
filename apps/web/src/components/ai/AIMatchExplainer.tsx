@@ -5,6 +5,7 @@ import { Sparkles, Loader2, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { sendAIChat } from '@/lib/ai-api';
+import { errorMessage } from '@/lib/utils';
 
 interface MatchUser {
   id: string;
@@ -67,8 +68,8 @@ export function AIMatchExplainer({
         context,
       });
       setExplanation(result.message);
-    } catch (err: any) {
-      setError(err.message || 'Failed to analyze match');
+    } catch (err: unknown) {
+      setError(errorMessage(err) || 'Failed to analyze match');
     } finally {
       setIsLoading(false);
     }
@@ -81,37 +82,37 @@ export function AIMatchExplainer({
         size="sm"
         onClick={fetchExplanation}
         disabled={isLoading}
-        className="gap-1.5 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-900/20"
+        className="gap-1.5 text-status-accent hover:text-status-accent hover:bg-status-accent-bg "
       >
         {isLoading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="icon-sm animate-spin" />
         ) : (
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="icon-sm" />
         )}
         {explanation ? 'Hide Analysis' : 'Why this match?'}
       </Button>
 
       {error && (
-        <div className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2">
+        <div className="text-xs text-destructive-accessible bg-destructive/10 rounded-md px-3 py-2">
           {error}
         </div>
       )}
 
       {explanation && (
-        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
-          <button
+        <div className="relative rounded-xl border border-status-accent-border bg-status-accent-bg p-4 animate-in fade-in slide-in-from-top-2">
+          <button aria-label="Dismiss explanation"
             onClick={() => setExplanation(null)}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="icon-sm" />
           </button>
           
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-              <Users className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Users className="icon-sm" />
             </div>
             <div className="flex-1 pr-4">
-              <div className="text-xs font-medium text-violet-600 dark:text-violet-400 mb-1">
+              <div className="text-xs font-medium text-status-accent mb-1">
                 Match Analysis
               </div>
               <div className="text-sm leading-relaxed">

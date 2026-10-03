@@ -71,7 +71,7 @@ export function ExportDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
+            <Download className="icon-sm" />
             {title}
           </DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -81,7 +81,7 @@ export function ExportDialog({
           {/* Row count info */}
           {rowCount != null && (
             <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString()}</span> {rowCount === 1 ? 'row' : 'rows'}
+              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString('en-GB')}</span> {rowCount === 1 ? 'row' : 'rows'}
               {columns && ` · ${selectedColumns.length} of ${columns.length} columns`}
             </div>
           )}
@@ -96,10 +96,10 @@ export function ExportDialog({
                   type="button"
                   onClick={() => setFormat(opt.value)}
                   className={cn(
-                    'w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors',
+                    'w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-colors',
                     format === opt.value
                       ? 'border-primary bg-primary/5'
-                      : 'border-border/60 hover:border-primary/40 hover:bg-muted/50',
+                      : 'border-border hover:border-primary/40 hover:bg-muted/50',
                   )}
                 >
                   <opt.icon className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -136,7 +136,7 @@ export function ExportDialog({
           {columns && columns.length > 0 && onColumnToggle && (
             <div>
               <p className="text-sm font-medium mb-2">Columns</p>
-              <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg border border-border/60 p-2">
+              <div className="max-h-40 overflow-y-auto space-y-1 rounded-lg border border-border p-2">
                 {columns.map((col) => (
                   <label key={col.key} className="flex items-center gap-2 cursor-pointer py-0.5">
                     <input
@@ -160,7 +160,7 @@ export function ExportDialog({
               onClick={handleExport}
               disabled={exporting || (columns ? selectedColumns.length === 0 : false)}
             >
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {exporting ? <Loader2 className="icon-sm animate-spin" /> : <Download className="icon-sm" />}
               {exporting ? 'Exporting...' : 'Export'}
             </Button>
           </div>

@@ -1,496 +1,461 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  Building2,
+  ChevronRight,
+  CreditCard,
+  Database,
+  Flag,
+  HardDrive,
+  RefreshCw,
+  ScrollText,
+  Shield,
+  ShieldAlert,
+  Timer,
+  UserCheck,
+  Users,
+} from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { RelativeTime } from '@/components/common/RelativeTime';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { adminGetAbuseStats, getAdminHealth, getAdminStats, type AdminHealth } from '@/lib/api';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { qk } from '@/lib/query-keys';
+import { cn, formatRelativeTime } from '@/lib/utils';
 
-import {
-  Users,
-  MessageSquare,
-  Calendar,
-  Briefcase,
-  AlertTriangle,
-  TrendingUp,
-  Shield,
-  Activity,
-  Clock,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react';
+/*
+ * The platform admin's home: what the platform holds, who is using it, what
+ * is waiting on an admin, and whether the API and its database are well.
+ *
+ * It used to resolve two promises written into this file - 1,247 users, a
+ * 0.037 conversion rate, and three security alerts ("Database connection
+ * timeout in last 5 minutes") that were shown in production to people whose
+ * database was fine. The period select changed the query key and nothing
+ * else. Every figure below now comes from an endpoint that counts it:
+ * `/admin/stats` for users and activity, `/admin/abuse/stats` for flags,
+ * `/admin/health` for the process and the database. Response time, error
+ * rate, cache hit rate, mentor sessions and conversion are not measured by
+ * any endpoint, so they are not shown rather than shown invented.
+ */
 
-const UserRoleChart = dynamic(
-  () => import('./Charts').then((m) => ({ default: m.UserRoleChart })),
-  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-secondary/40 rounded-lg" /> },
-);
-const EngagementChart = dynamic(
-  () => import('./Charts').then((m) => ({ default: m.EngagementChart })),
-  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-secondary/40 rounded-lg" /> },
-);
+type Period = 'today' | 'week' | 'month';
 
-interface AdminMetrics {
-  timestamp: string;
-  users: {
-    total: number;
-    active: number;
-    new: number;
-    byRole: Record<string, number>;
-  };
-  engagement: {
-    messages: number;
-    connections: number;
-    events: number;
-    groups: number;
-  };
-  performance: {
-    avgResponseTime: number;
-    errorRate: number;
-    uptime: number;
-    cacheHitRate: number;
-  };
-  business: {
-    mentorSessions: number;
-    jobPostings: number;
-    profileViews: number;
-    conversionRate: number;
-  };
-}
+const PERIODS: ReadonlyArray<{ value: Period; en: string; el: string; short: string; shortEl: string }> = [
+  { value: 'today', en: 'Today', el: 'Σήμερα', short: 'Today', shortEl: 'Σήμερα' },
+  { value: 'week', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες', short: '7 days', shortEl: '7 ημέρες' },
+  { value: 'month', en: 'Last 30 days', el: 'Τελευταίες 30 ημέρες', short: '30 days', shortEl: '30 ημέρες' },
+];
 
-interface SecurityAlert {
-  type: 'warning' | 'error' | 'info';
-  message: string;
-  timestamp: string;
-}
-
-const fetchAdminMetrics = async (): Promise<AdminMetrics> => {
-  // Simulate API call - in real implementation, this would call the analytics API
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        timestamp: new Date().toISOString(),
-        users: {
-          total: 1247,
-          active: 892,
-          new: 47,
-          byRole: {
-            founder: 523,
-            mentor: 312,
-            investor: 189,
-            org: 223,
-          },
-        },
-        engagement: {
-          messages: 3421,
-          connections: 156,
-          events: 23,
-          groups: 45,
-        },
-        performance: {
-          avgResponseTime: 245,
-          errorRate: 0.012,
-          uptime: 0.998,
-          cacheHitRate: 0.87,
-        },
-        business: {
-          mentorSessions: 67,
-          jobPostings: 34,
-          profileViews: 8923,
-          conversionRate: 0.037,
-        },
-      });
-    }, 1000);
-  });
+const ROLE_LABEL: Record<string, { en: string; el: string }> = {
+  founder: { en: 'Founders', el: 'Ιδρυτές' },
+  mentor: { en: 'Mentors', el: 'Μέντορες' },
+  investor: { en: 'Investors', el: 'Επενδυτές' },
+  org: { en: 'Organisations', el: 'Οργανισμοί' },
+  admin: { en: 'Admins', el: 'Διαχειριστές' },
 };
 
-const fetchSecurityAlerts = async (): Promise<SecurityAlert[]> => {
-  // Simulate API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        {
-          type: 'warning',
-          message: 'High error rate detected on authentication endpoints',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        },
-        {
-          type: 'info',
-          message: 'New user registration spike detected',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          type: 'error',
-          message: 'Database connection timeout in last 5 minutes',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        },
-      ]);
-    }, 800);
-  });
+const HEALTH: Record<AdminHealth['status'], { en: string; el: string; variant: 'success' | 'warning' | 'destructive' }> = {
+  healthy: { en: 'Healthy', el: 'Υγιής', variant: 'success' },
+  degraded: { en: 'Degraded', el: 'Υποβαθμισμένη', variant: 'warning' },
+  unhealthy: { en: 'Unhealthy', el: 'Εκτός λειτουργίας', variant: 'destructive' },
+};
+
+/** When the API process started, from the health check's own clock. */
+function runningSince(health: AdminHealth): string | null {
+  const at = Date.parse(health.timestamp) - health.uptime * 1000;
+  if (Number.isNaN(at)) return null;
+  const d = new Date(at);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  // Numeric on purpose: the same string reads correctly in either language.
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+type Attention = {
+  id: string;
+  tone: 'warning' | 'danger';
+  en: string;
+  el: string;
+  detailEn?: string;
+  detailEl?: string;
+  href: string;
 };
 
 export default function AdminDashboardPage() {
-  const [timeRange, setTimeRange] = useState('7d');
-  const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
+  const [period, setPeriod] = useState<Period>('week');
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
-  const {
-    data: metrics,
-    isLoading: metricsLoading,
-    error: metricsError,
-    refetch: refetchMetrics,
-  } = useQuery({
-    queryKey: ['admin-metrics', timeRange],
-    queryFn: fetchAdminMetrics,
-    refetchInterval: refreshInterval,
+  const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+    queryKey: qk('admin', 'stats'),
+    queryFn: getAdminStats,
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const { data: abuse, refetch: refetchAbuse } = useQuery({
+    queryKey: qk('admin', 'abuse', 'stats'),
+    queryFn: adminGetAbuseStats,
+    staleTime: 30_000,
+    retry: 0,
+  });
+  // The one figure here that changes minute to minute, so the one that polls.
+  const { data: health, isLoading: healthLoading, isError: healthError, refetch: refetchHealth } = useQuery({
+    queryKey: qk('admin', 'health'),
+    queryFn: getAdminHealth,
+    enabled: apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
-  const {
-    data: alerts,
-    isLoading: alertsLoading,
-    refetch: refetchAlerts,
-  } = useQuery({
-    queryKey: ['admin-alerts'],
-    queryFn: fetchSecurityAlerts,
-    refetchInterval: refreshInterval,
-  });
-
-  // Prepare chart data
-  const userRoleData = metrics?.users.byRole
-    ? Object.entries(metrics.users.byRole).map(([role, count]) => ({
-        name: role.charAt(0).toUpperCase() + role.slice(1),
-        value: count,
-      }))
-    : [];
-
-  const engagementData = metrics?.engagement
-    ? [
-        { name: 'Messages', value: metrics.engagement.messages, icon: MessageSquare },
-        { name: 'Connections', value: metrics.engagement.connections, icon: Users },
-        { name: 'Events', value: metrics.engagement.events, icon: Calendar },
-        { name: 'Groups', value: metrics.engagement.groups, icon: Briefcase },
-      ]
-    : [];
-
-  const performanceData = metrics?.performance
-    ? [
-        { name: 'Response Time', value: metrics.performance.avgResponseTime, max: 500, unit: 'ms' },
-        { name: 'Error Rate', value: metrics.performance.errorRate * 100, max: 5, unit: '%' },
-        { name: 'Uptime', value: metrics.performance.uptime * 100, max: 100, unit: '%' },
-        { name: 'Cache Hit Rate', value: metrics.performance.cacheHitRate * 100, max: 100, unit: '%' },
-      ]
-    : [];
-
-  const getAlertIcon = (type: SecurityAlert['type']) => {
-    switch (type) {
-      case 'error':
-        return <XCircle className="icon-sm text-red-500" />;
-      case 'warning':
-        return <AlertTriangle className="icon-sm text-yellow-500" />;
-      case 'info':
-        return <CheckCircle className="icon-sm text-blue-500" />;
-    }
+  const refreshAll = () => {
+    void refetchStats();
+    void refetchAbuse();
+    void refetchHealth();
   };
 
-  const getAlertColor = (type: SecurityAlert['type']) => {
-    switch (type) {
-      case 'error':
-        return 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950';
-      case 'warning':
-        return 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950';
-      case 'info':
-        return 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950';
-    }
-  };
+  const stats = statsData?.stats;
+  const byRole = stats?.usersByRole ?? {};
+  const total = stats?.totalUsers ?? 0;
+  const newUsers = period === 'today' ? stats?.newUsersToday : period === 'week' ? stats?.newUsersThisWeek : stats?.newUsersThisMonth;
+  const activeUsers = period === 'today' ? stats?.activeUsersToday : period === 'week' ? stats?.activeUsersThisWeek : stats?.activeUsersThisMonth;
+  const activeShare = total && activeUsers != null ? Math.round((activeUsers / total) * 100) : null;
+  const periodLabel = PERIODS.find((p) => p.value === period) ?? PERIODS[1];
+  const pendingReports = stats?.pendingReports ?? 0;
+  const pendingFlags = abuse?.pendingFlags ?? 0;
+  const topOffender = abuse?.topOffenders?.[0];
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    
-    if (diffMins < 60) {
-      return `${diffMins} minutes ago`;
-    } else if (diffMins < 1440) {
-      return `${Math.floor(diffMins / 60)} hours ago`;
-    } else {
-      return `${Math.floor(diffMins / 1440)} days ago`;
-    }
-  };
+  // A share per role, largest first: five slices of a pie drew their labels
+  // off the card, and a row per role reads its count and share exactly.
+  const roleRows = Object.entries(byRole)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([role, n]) => ({ role, n, share: total ? Math.round((n / total) * 100) : 0 }));
+  // Totals of unlike things (messages, groups, jobs) are figures, not bars on
+  // one axis.
+  const activity = [
+    { id: 'messages', en: 'Messages', el: 'Μηνύματα', value: stats?.totalMessages, href: '/messages' },
+    { id: 'connections', en: 'Connections', el: 'Συνδέσεις', value: stats?.totalConnections, href: '/connections' },
+    { id: 'events', en: 'Events', el: 'Εκδηλώσεις', value: stats?.totalEvents, href: '/events' },
+    { id: 'groups', en: 'Groups', el: 'Ομάδες', value: stats?.totalGroups, href: '/admin/communities' },
+    { id: 'jobs', en: 'Jobs', el: 'Αγγελίες', value: stats?.totalJobs, href: '/jobs' },
+  ];
 
-  if (metricsError) {
-    return (
-      <div className="p-8">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-red-600 mb-2">Dashboard Error</h2>
-          <p className="text-muted-foreground">Failed to load admin metrics</p>
-          <Button onClick={() => refetchMetrics()} className="mt-4">
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
+  // What is waiting on an admin, from the same counts the tiles show.
+  const attention: Attention[] = [];
+  if (health && health.status !== 'healthy') {
+    attention.push({
+      id: 'health',
+      tone: health.status === 'unhealthy' ? 'danger' : 'warning',
+      en: health.services?.database?.status === 'down' ? 'The database is not answering' : 'The API is running short of memory',
+      el: health.services?.database?.status === 'down' ? 'Η βάση δεδομένων δεν αποκρίνεται' : 'Η μνήμη του API εξαντλείται',
+      href: '/admin/security-monitoring',
+    });
+  }
+  if (pendingReports > 0) {
+    attention.push({
+      id: 'reports',
+      tone: 'warning',
+      en: `${pendingReports} ${pendingReports === 1 ? 'report waits' : 'reports wait'} for review`,
+      el: `${pendingReports} ${pendingReports === 1 ? 'αναφορά περιμένει' : 'αναφορές περιμένουν'} έλεγχο`,
+      detailEn: 'Moderation queue',
+      detailEl: 'Ουρά ελέγχου',
+      href: '/admin',
+    });
+  }
+  if (pendingFlags > 0) {
+    attention.push({
+      id: 'flags',
+      tone: (topOffender?.maxSeverity ?? 0) >= 0.7 ? 'danger' : 'warning',
+      en: `${pendingFlags} abuse ${pendingFlags === 1 ? 'flag' : 'flags'} not yet resolved`,
+      el: `${pendingFlags} ${pendingFlags === 1 ? 'σήμανση κατάχρησης' : 'σημάνσεις κατάχρησης'} χωρίς απόφαση`,
+      detailEn: topOffender ? `Most flagged: ${topOffender.displayName ?? topOffender.email} (${topOffender.flagCount})` : undefined,
+      detailEl: topOffender ? `Περισσότερες σημάνσεις: ${topOffender.displayName ?? topOffender.email} (${topOffender.flagCount})` : undefined,
+      href: '/admin/security-monitoring',
+    });
   }
 
+  usePageControls([
+    choiceControl('period', 'Period', 'Περίοδος', PERIODS, period, (v) => setPeriod(v as Period)),
+    { id: 'refresh', labelEn: 'Refresh figures', labelEl: 'Ανανέωση στοιχείων', writes: false, run: refreshAll },
+  ]);
+  usePageList([
+    {
+      id: 'attention',
+      labelEn: 'Needs attention',
+      labelEl: 'Χρειάζεται προσοχή',
+      rows: statsLoading ? undefined : attention.map((a) => (a.detailEn ? `${a.en} · ${a.detailEn}` : a.en)),
+    },
+  ]);
+
+  const dash = '—';
+  const since = health ? runningSince(health) : null;
+  const memory = health?.services?.memory;
+  const database = health?.services?.database;
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor and manage your CoFounderBay platform
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-background"
-          >
-            <option value="1d">Last 24 hours</option>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </select>
-          
-          <Button
-            variant="outline"
-            onClick={() => {
-              refetchMetrics();
-              refetchAlerts();
-            }}
-          >
-            Refresh
+    <AppShell
+      title="Platform overview"
+      titleEl="Επισκόπηση πλατφόρμας"
+      description="Who uses the platform, what waits on an admin, and how the API is running."
+      descriptionEl="Ποιοι χρησιμοποιούν την πλατφόρμα, τι περιμένει διαχειριστή και πώς λειτουργεί το API."
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Period" className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
+            {PERIODS.map((p) => (
+              <button
+                key={p.value}
+                type="button"
+                aria-pressed={period === p.value}
+                onClick={() => setPeriod(p.value)}
+                className={cn(
+                  'min-h-9 rounded-lg px-3 text-sm font-medium transition-colors focus-ring',
+                  period === p.value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <BilingualText en={p.short} el={p.shortEl} compact />
+              </button>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={refreshAll}>
+            <RefreshCw className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Four figures; the two that ask for work link to where it is done. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <MetricTile
+            icon={Users}
+            label="Users"
+            labelEl="Χρήστες"
+            value={statsLoading ? dash : total.toLocaleString('en-GB')}
+            caption={newUsers != null ? `${newUsers} new · ${periodLabel.en.toLowerCase()}` : undefined}
+            captionEl={newUsers != null ? `${newUsers} νέοι · ${periodLabel.el.toLowerCase()}` : undefined}
+            href="/admin/users"
+          />
+          <MetricTile
+            icon={UserCheck}
+            label="Active users"
+            labelEl="Ενεργοί χρήστες"
+            value={statsLoading || activeUsers == null ? dash : activeUsers.toLocaleString('en-GB')}
+            caption={activeShare != null ? `${activeShare}% of all users · ${periodLabel.en.toLowerCase()}` : undefined}
+            captionEl={activeShare != null ? `${activeShare}% του συνόλου · ${periodLabel.el.toLowerCase()}` : undefined}
+          />
+          <MetricTile
+            icon={Flag}
+            label="Reports to review"
+            labelEl="Αναφορές προς έλεγχο"
+            value={statsLoading ? dash : pendingReports}
+            caption={pendingReports ? 'Open the moderation queue' : 'The queue is clear'}
+            captionEl={pendingReports ? 'Άνοιγμα ουράς ελέγχου' : 'Η ουρά είναι άδεια'}
+            href="/admin"
+          />
+          <MetricTile
+            icon={ShieldAlert}
+            label="Abuse flags"
+            labelEl="Σημάνσεις κατάχρησης"
+            value={abuse ? pendingFlags : dash}
+            caption={abuse ? `${abuse.totalFlags} raised · ${abuse.dismissedFlags} dismissed` : undefined}
+            captionEl={abuse ? `${abuse.totalFlags} συνολικά · ${abuse.dismissedFlags} απορρίφθηκαν` : undefined}
+            href="/admin/security-monitoring"
+          />
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.users.total.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +{metrics?.users.new} new today
-            </p>
-            <div className="mt-2">
-              <Progress value={(metrics?.users.active || 0) / (metrics?.users.total || 1) * 100} className="h-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {((metrics?.users.active || 0) / (metrics?.users.total || 1) * 100).toFixed(1)}% active
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-            <Activity className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">
-              {metricsLoading ? '...' : (
-                Object.values(metrics?.engagement || {}).reduce((a, b) => a + b, 0).toLocaleString()
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total interactions
-            </p>
-            <div className="mt-2 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>Messages</span>
-                <span>{metrics?.engagement.messages}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span>Connections</span>
-                <span>{metrics?.engagement.connections}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Performance</CardTitle>
-            <TrendingUp className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">
-              {metricsLoading ? '...' : `${metrics?.performance.avgResponseTime}ms`}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Avg response time
-            </p>
-            <div className="mt-2 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>Uptime</span>
-                <span>{((metrics?.performance.uptime || 0) * 100).toFixed(2)}%</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span>Error Rate</span>
-                <span>{((metrics?.performance.errorRate || 0) * 100).toFixed(2)}%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Business</CardTitle>
-            <Briefcase className="icon-sm text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.business.mentorSessions}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Mentor sessions
-            </p>
-            <div className="mt-2 space-y-1">
-              <div className="flex justify-between text-xs">
-                <span>Job Posts</span>
-                <span>{metrics?.business.jobPostings}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span>Conversion</span>
-                <span>{((metrics?.business.conversionRate || 0) * 100).toFixed(1)}%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>User Distribution by Role</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <UserRoleChart data={userRoleData} />
-          </CardContent>
-        </Card>
-
-        {/* Engagement Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Engagement Metrics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EngagementChart data={engagementData} />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance and Alerts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Performance Metrics */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>System Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {performanceData.map((metric) => (
-                <div key={metric.name} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{metric.name}</span>
-                    <span>{metric.value.toFixed(metric.unit === '%' ? 1 : 0)}{metric.unit}</span>
-                  </div>
-                  <Progress 
-                    value={(metric.value / metric.max) * 100} 
-                    className="h-2"
-                  />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="icon-sm" />
-              Security Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {alertsLoading ? (
-                <div className="text-center text-muted-foreground py-4">
-                  Loading alerts...
-                </div>
-              ) : alerts?.length === 0 ? (
-                <div className="text-center text-muted-foreground py-4">
-                  No active alerts
-                </div>
-              ) : (
-                alerts?.map((alert, index) => (
-                  <div
-                    key={index}
-                    className={`p-3 rounded-lg border ${getAlertColor(alert.type)}`}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="min-w-0 space-y-6 lg:col-span-2">
+            <SectionCard title="Needs attention" titleEl="Χρειάζεται προσοχή" icon={AlertTriangle}>
+              {statsLoading && <Skeleton className="h-14" />}
+              {attention.map((a) => (
+                <Link
+                  key={a.id}
+                  href={a.href}
+                  className={cn(
+                    'group flex items-center gap-3 rounded-lg border p-3 transition-colors focus-ring',
+                    a.tone === 'danger'
+                      ? 'border-status-danger-border hover:bg-status-danger-bg'
+                      : 'border-status-warning-border hover:bg-status-warning-bg',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                      a.tone === 'danger' ? 'bg-status-danger-bg text-status-danger' : 'bg-status-warning-bg text-status-warning',
+                    )}
+                    aria-hidden="true"
                   >
-                    <div className="flex items-start gap-2">
-                      {getAlertIcon(alert.type)}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {alert.message}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <Clock className="icon-sm" />
-                          {formatTimestamp(alert.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))
+                    {a.id === 'reports' ? <Flag className="icon-sm" /> : a.id === 'flags' ? <ShieldAlert className="icon-sm" /> : <Database className="icon-sm" />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium">
+                      <BilingualText en={a.en} el={a.el} wrap />
+                    </span>
+                    {a.detailEn ? (
+                      <span className="block text-xs text-muted-foreground">
+                        <BilingualText en={a.detailEn} el={a.detailEl} wrap />
+                      </span>
+                    ) : null}
+                  </span>
+                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
+                </Link>
+              ))}
+              {!statsLoading && attention.length === 0 && (
+                <EmptyLine en="Nothing waits on an admin: no open reports, no unresolved flags." el="Τίποτα δεν περιμένει διαχειριστή: καμία ανοιχτή αναφορά ή σήμανση." />
               )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </SectionCard>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col">
-              <Users className="icon-lg mb-2" />
-              <span className="text-sm">User Management</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Shield className="icon-lg mb-2" />
-              <span className="text-sm">Security</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Activity className="icon-lg mb-2" />
-              <span className="text-sm">Analytics</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Briefcase className="icon-lg mb-2" />
-              <span className="text-sm">Business</span>
-            </Button>
+            <SectionCard title="Activity to date" titleEl="Δραστηριότητα έως σήμερα" icon={Activity}>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+                {activity.map((a) => (
+                  <Link
+                    key={a.id}
+                    href={a.href}
+                    className="rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring"
+                  >
+                    <p className="page-stat text-xl font-semibold tabular-nums tracking-tight">
+                      {statsLoading || a.value == null ? dash : a.value.toLocaleString('en-GB')}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      <BilingualText en={a.en} el={a.el} stacked wrap />
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Users by role"
+              titleEl="Χρήστες ανά ρόλο"
+              icon={Users}
+              action={{ href: '/admin/analytics', label: 'Analytics', labelEl: 'Αναλυτικά' }}
+            >
+              {statsLoading && <Skeleton className="h-32" />}
+              {!statsLoading && roleRows.length === 0 && (
+                <EmptyLine en="No users counted yet." el="Δεν έχουν καταμετρηθεί χρήστες ακόμα." />
+              )}
+              {roleRows.length > 0 && (
+                <ul className="space-y-3">
+                  {roleRows.map(({ role, n, share }) => (
+                    <li key={role} className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)_auto] items-center gap-3 text-sm">
+                      <span className="min-w-0">
+                        <BilingualText en={ROLE_LABEL[role]?.en ?? role} el={ROLE_LABEL[role]?.el} stacked wrap />
+                      </span>
+                      <Progress value={share} className="h-1.5" aria-label={`${ROLE_LABEL[role]?.en ?? role}: ${share}% of users`} />
+                      <span className="w-20 text-right tabular-nums text-muted-foreground">
+                        <span className="font-medium text-foreground">{n}</span> · {share}%
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </SectionCard>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="min-w-0 space-y-6">
+            <SectionCard title="System health" titleEl="Υγεία συστήματος" icon={Shield}>
+              {healthLoading && apiAvailable && <Skeleton className="h-40" />}
+              {(healthError || (!apiAvailable && !health)) && (
+                <EmptyLine en="The health check did not answer. The API may be down." el="Ο έλεγχος υγείας δεν απάντησε. Το API ίσως είναι εκτός λειτουργίας." />
+              )}
+              {health && (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Badge variant={HEALTH[health.status]?.variant ?? 'warning'}>
+                      <BilingualText en={HEALTH[health.status]?.en ?? health.status} el={HEALTH[health.status]?.el} compact />
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      <BilingualText en="Checked" el="Έλεγχος" compact />{' '}
+                      <RelativeTime date={health.timestamp} format={formatRelativeTime} />
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    <dl className="text-sm">
+                      <div className="flex items-center gap-3">
+                        <Database className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <dt className="min-w-0 flex-1 text-muted-foreground">
+                          <BilingualText en="Database round trip" el="Απόκριση βάσης δεδομένων" stacked wrap />
+                        </dt>
+                        <dd className="shrink-0 font-medium tabular-nums">
+                          {database?.status === 'down' ? (
+                            <BilingualText en="Down" el="Εκτός" compact />
+                          ) : database?.latency != null ? (
+                            `${database.latency} ms`
+                          ) : (
+                            dash
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="space-y-2">
+                      <dl className="text-sm">
+                        <div className="flex items-center gap-3">
+                          <HardDrive className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                          <dt className="min-w-0 flex-1 text-muted-foreground">
+                            <BilingualText en="API heap in use" el="Μνήμη API σε χρήση" stacked wrap />
+                          </dt>
+                          <dd className="shrink-0 font-medium tabular-nums">
+                            {memory ? `${memory.used} / ${memory.total} MB` : dash}
+                          </dd>
+                        </div>
+                      </dl>
+                      {memory ? (
+                        <Progress
+                          value={memory.percentage}
+                          className="ml-7 h-1.5 w-[calc(100%-1.75rem)]"
+                          aria-label={`API heap ${memory.percentage}% in use`}
+                        />
+                      ) : null}
+                    </div>
+                    <dl className="text-sm">
+                      <div className="flex items-center gap-3">
+                        <Timer className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+                        <dt className="min-w-0 flex-1 text-muted-foreground">
+                          <BilingualText en="API running since" el="Το API λειτουργεί από" stacked wrap />
+                        </dt>
+                        <dd className="shrink-0 font-medium tabular-nums">{since ?? dash}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText
+                      en={`Version ${health.version} · checked every 30 seconds while this tab is open.`}
+                      el={`Έκδοση ${health.version} · έλεγχος κάθε 30 δευτερόλεπτα με ανοιχτή καρτέλα.`}
+                      stacked
+                      wrap
+                    />
+                  </p>
+                </div>
+              )}
+            </SectionCard>
+
+            <QuickLinks
+              label="Admin sections"
+              links={[
+                { href: '/admin', icon: Flag, label: 'Moderation console', labelEl: 'Κονσόλα ελέγχου' },
+                { href: '/admin/user-management', icon: Users, label: 'User management', labelEl: 'Διαχείριση χρηστών' },
+                { href: '/admin/tenants', icon: Building2, label: 'Organisations', labelEl: 'Οργανισμοί' },
+                { href: '/admin/security-monitoring', icon: Shield, label: 'Security', labelEl: 'Ασφάλεια' },
+                { href: '/admin/analytics', icon: BarChart3, label: 'Analytics', labelEl: 'Αναλυτικά' },
+                { href: '/admin/audit-log', icon: ScrollText, label: 'Audit log', labelEl: 'Αρχείο ελέγχου' },
+                { href: '/admin/billing', icon: CreditCard, label: 'Billing', labelEl: 'Χρεώσεις' },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }

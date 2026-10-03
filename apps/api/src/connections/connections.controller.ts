@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -54,6 +55,15 @@ export class ConnectionsController {
   ) {
     const input = respondSchema.parse(body);
     return this.connections.respondToRequest(connectionId, user.id, input.status);
+  }
+
+  /** The sender's half of `respond`: take back a request nobody has answered. */
+  @Delete(':connectionId')
+  async withdraw(
+    @CurrentUser() user: { id: string },
+    @Param('connectionId') connectionId: string,
+  ) {
+    return this.connections.withdrawRequest(connectionId, user.id);
   }
 
   @Post('block/:userId')

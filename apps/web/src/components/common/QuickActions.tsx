@@ -30,35 +30,35 @@ const defaultActions: QuickAction[] = [
     label: 'Search',
     icon: Search,
     href: '/discover',
-    color: 'bg-blue-500 hover:bg-blue-600',
+    color: 'bg-primary hover:bg-primary/90',
   },
   {
     id: 'post',
     label: 'New Post',
     icon: Edit,
     href: '/feed/new',
-    color: 'bg-purple-500 hover:bg-purple-600',
+    color: 'bg-status-accent-mark hover:bg-status-accent-mark',
   },
   {
     id: 'message',
     label: 'Messages',
     icon: MessageCircle,
     href: '/messages',
-    color: 'bg-emerald-500 hover:bg-emerald-600',
+    color: 'bg-status-success-mark hover:bg-status-success-mark',
   },
   {
     id: 'matches',
     label: 'Matches',
     icon: Users,
     href: '/matches',
-    color: 'bg-pink-500 hover:bg-pink-600',
+    color: 'bg-status-accent-mark hover:bg-status-accent-mark',
   },
   {
     id: 'events',
     label: 'Events',
     icon: Calendar,
     href: '/events',
-    color: 'bg-amber-500 hover:bg-amber-600',
+    color: 'bg-status-warning-mark hover:bg-status-warning-mark',
   },
 ];
 
@@ -74,9 +74,9 @@ export function QuickActions({
   const [isOpen, setIsOpen] = useState(false);
 
   const positionClasses = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6',
-    'bottom-center': 'bottom-6 left-1/2 -translate-x-1/2',
+    'bottom-right': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6',
+    'bottom-left': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 lg:bottom-6 lg:left-6',
+    'bottom-center': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 lg:bottom-6',
   };
 
   return (
@@ -102,13 +102,13 @@ export function QuickActions({
                 {action.label}
               </span>
               {/* Icon button */}
-              <button
+              <button aria-label={action.label}
                 className={cn(
-                  'h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-white transition-transform hover:scale-110',
+                  'h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-ink transition-transform hover:scale-110',
                   action.color
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="icon-md" />
               </button>
             </div>
           );
@@ -136,7 +136,7 @@ export function QuickActions({
       </div>
 
       {/* Main FAB button */}
-      <Button
+      <Button aria-label="Close"
         size="icon"
         className={cn(
           'h-14 w-14 rounded-full shadow-lg transition-all duration-300',
@@ -144,12 +144,13 @@ export function QuickActions({
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+        {isOpen ? <X className="icon-lg" /> : <Plus className="icon-lg" />}
       </Button>
 
       {/* Backdrop */}
       {isOpen && (
         <div
+          aria-hidden="true"
           className="fixed inset-0 bg-background/60 backdrop-blur-sm -z-10"
           onClick={() => setIsOpen(false)}
         />
@@ -173,15 +174,15 @@ export function FloatingActionButton({
   className?: string;
 }) {
   const button = (
-    <Button
+    <Button aria-label="{label}"
       size="icon"
       className={cn(
-        'fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
+        'fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full shadow-md z-50',
         className
       )}
       onClick={onClick}
     >
-      <Icon className="h-6 w-6" />
+      <Icon className="icon-lg" />
       {label && <span className="sr-only">{label}</span>}
     </Button>
   );

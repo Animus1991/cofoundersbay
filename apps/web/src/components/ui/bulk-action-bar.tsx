@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { bilingualAria } from '@/lib/i18n/format';
 
 export interface BulkAction {
   id: string;
@@ -42,17 +43,18 @@ export function BulkActionBar({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: position === 'bottom' ? 24 : -24 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
+          data-surface="overlay"
           className={cn(
-            'fixed z-40 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5',
-            'bg-popover border border-border rounded-full shadow-2xl',
-            'ring-1 ring-primary/20',
-            position === 'bottom' ? 'bottom-6' : 'top-6',
+            'bg-popover border border-border rounded-xl shadow-none',
+            position === 'bottom'
+              ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[calc(100vw-1.5rem)] flex-wrap justify-center lg:bottom-6'
+              : 'top-[calc(4.5rem+env(safe-area-inset-top))] lg:top-6',
             className,
           )}
         >
           {/* Count + clear */}
-          <div className="flex items-center gap-2 pr-3 border-r border-border/60">
-            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+          <div className="flex items-center gap-2 pr-3 border-r border-border">
+            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-2xs font-bold">
               {count}
             </span>
             <span className="text-sm font-medium text-foreground whitespace-nowrap">
@@ -62,9 +64,10 @@ export function BulkActionBar({
               type="button"
               onClick={onClearSelection}
               className="p-0.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              title="Clear selection"
+              title={bilingualAria('Clear selection', 'Εκκαθάριση επιλογής')}
+              aria-label={bilingualAria('Clear selection', 'Εκκαθάριση επιλογής')}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="icon-sm" />
             </button>
           </div>
 
@@ -99,21 +102,29 @@ interface BulkCheckboxProps {
   id: string;
   selectedIds: string[];
   onToggle: (id: string) => void;
+  /**
+   * What the box selects - "Select Acme Corp". Required: a bare checkbox in a
+   * list row is announced as "checkbox, not checked" with nothing to say
+   * which row it belongs to.
+   */
+  label: string;
   className?: string;
 }
 
-export function BulkCheckbox({ id, selectedIds, onToggle, className }: BulkCheckboxProps) {
+export function BulkCheckbox({ id, selectedIds, onToggle, label, className }: BulkCheckboxProps) {
   const checked = selectedIds.includes(id);
   return (
     <input
       type="checkbox"
+      aria-label={label}
       checked={checked}
       onChange={() => onToggle(id)}
       onClick={(e) => e.stopPropagation()}
       className={cn(
+        // No resting fade: at 40% the unchecked box drew its edge well under
+        // the 3:1 a control's boundary needs (WCAG 1.4.11), and the rows that
+        // use it carry no `group` class, so it never came back on hover.
         'h-4 w-4 rounded border-border cursor-pointer accent-primary',
-        'transition-opacity',
-        !checked && 'opacity-40 group-hover:opacity-100',
         className,
       )}
     />

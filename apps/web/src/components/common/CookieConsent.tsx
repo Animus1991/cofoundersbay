@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Cookie, X, Settings, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/layout/SidebarContext';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type CookiePreferences = {
   essential: boolean;
@@ -24,11 +27,16 @@ const defaultPreferences: CookiePreferences = {
 };
 
 export function CookieConsent() {
+  const { mobileNavOpen } = useSidebar();
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
 
   useEffect(() => {
+    if (isPreviewDemo()) {
+      localStorage.setItem(COOKIE_CONSENT_KEY, 'true');
+      return;
+    }
     // Check if user has already consented
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {
@@ -80,32 +88,32 @@ export function CookieConsent() {
     saveConsent(preferences);
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || mobileNavOpen) return null;
 
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-[100] p-4 transition-transform duration-300',
+        'pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 p-3 sm:p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >
-      <div className="mx-auto max-w-4xl">
-        <div className="rounded-xl border border-border/60 bg-card shadow-lg backdrop-blur-sm">
+      <div className="pointer-events-none mx-auto max-w-4xl">
+        <div className="pointer-events-auto rounded-xl border border-border bg-card shadow-lg backdrop-blur-sm">
           {!showSettings ? (
             /* Main Banner */
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Cookie className="h-5 w-5 text-primary" />
+                  <Cookie className="icon-md text-primary-accessible" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground mb-1">We value your privacy</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-1"><BilingualText en="We value your privacy" el="Σεβόμαστε το απόρρητό σας" compact /></h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
                     By clicking "Accept All", you consent to our use of cookies. 
                     Read our{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
+                    <Link href="/privacy" className="text-primary-accessible hover:underline">
+                      <BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact />
                     </Link>{' '}
                     to learn more.
                   </p>
@@ -117,8 +125,8 @@ export function CookieConsent() {
                     onClick={() => setShowSettings(true)}
                     className="text-xs gap-1.5"
                   >
-                    <Settings className="h-3.5 w-3.5" />
-                    Customize
+                    <Settings className="icon-sm" />
+                    <BilingualText en="Customize" el="Προσαρμογή" compact />
                   </Button>
                   <Button
                     variant="outline"
@@ -126,15 +134,15 @@ export function CookieConsent() {
                     onClick={acceptEssential}
                     className="text-xs"
                   >
-                    Essential Only
+                    <BilingualText en="Essential Only" el="Μόνο τα απαραίτητα" compact />
                   </Button>
                   <Button
                     size="sm"
                     onClick={acceptAll}
                     className="text-xs gap-1.5"
                   >
-                    <Check className="h-3.5 w-3.5" />
-                    Accept All
+                    <Check className="icon-sm" />
+                    <BilingualText en="Accept All" el="Αποδοχή όλων" compact />
                   </Button>
                 </div>
               </div>
@@ -145,32 +153,32 @@ export function CookieConsent() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Settings className="h-4 w-4 text-primary" />
+                    <Settings className="icon-sm text-primary-accessible" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Cookie Preferences</h3>
-                    <p className="text-xs text-muted-foreground">Manage your cookie settings</p>
+                    <h3 className="text-sm font-semibold text-foreground"><BilingualText en="Cookie Preferences" el="Προτιμήσεις cookies" compact /></h3>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Manage your cookie settings" el="Διαχειριστείτε τις ρυθμίσεις cookies" compact /></p>
                   </div>
                 </div>
-                <Button
+                <Button aria-label="Close"
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
                   onClick={() => setShowSettings(false)}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" />
                 </Button>
               </div>
 
               <div className="space-y-3 mb-4">
                 {/* Essential Cookies */}
-                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 p-3">
+                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-3">
                   <div className="flex-1 min-w-0 pr-4">
-                    <p className="text-sm font-medium text-foreground">Essential Cookies</p>
-                    <p className="text-xs text-muted-foreground">Required for the website to function properly</p>
+                    <p className="text-sm font-medium text-foreground"><BilingualText en="Essential Cookies" el="Απαραίτητα cookies" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Required for the website to function properly" el="Απαιτούνται για τη σωστή λειτουργία του ιστότοπου" wrap /></p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">Always on</span>
+                    <span className="text-xs text-muted-foreground"><BilingualText en="Always on" el="Πάντα ενεργά" compact /></span>
                     <div className="h-5 w-9 rounded-full bg-primary/20 flex items-center justify-end px-0.5">
                       <div className="h-4 w-4 rounded-full bg-primary" />
                     </div>
@@ -178,10 +186,10 @@ export function CookieConsent() {
                 </div>
 
                 {/* Analytics Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
-                    <p className="text-sm font-medium text-foreground">Analytics Cookies</p>
-                    <p className="text-xs text-muted-foreground">Help us understand how visitors use our site</p>
+                    <p className="text-sm font-medium text-foreground"><BilingualText en="Analytics Cookies" el="Cookies ανάλυσης" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Help us understand how visitors use our site" el="Μας βοηθούν να καταλάβουμε πώς χρησιμοποιείται ο ιστότοπος" wrap /></p>
                   </div>
                   <input
                     type="checkbox"
@@ -198,10 +206,10 @@ export function CookieConsent() {
                 </label>
 
                 {/* Marketing Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
-                    <p className="text-sm font-medium text-foreground">Marketing Cookies</p>
-                    <p className="text-xs text-muted-foreground">Used to deliver personalized advertisements</p>
+                    <p className="text-sm font-medium text-foreground"><BilingualText en="Marketing Cookies" el="Cookies μάρκετινγκ" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Used to deliver personalized advertisements" el="Χρησιμοποιούνται για εξατομικευμένες διαφημίσεις" wrap /></p>
                   </div>
                   <input
                     type="checkbox"
@@ -218,10 +226,10 @@ export function CookieConsent() {
                 </label>
 
                 {/* Preference Cookies */}
-                <label className="flex items-center justify-between rounded-lg border border-border/60 p-3 cursor-pointer hover:bg-muted/20 transition-colors">
+                <label className="flex items-center justify-between rounded-lg border border-border p-3 cursor-pointer hover:bg-muted/20 transition-colors">
                   <div className="flex-1 min-w-0 pr-4">
-                    <p className="text-sm font-medium text-foreground">Preference Cookies</p>
-                    <p className="text-xs text-muted-foreground">Remember your settings and preferences</p>
+                    <p className="text-sm font-medium text-foreground"><BilingualText en="Preference Cookies" el="Cookies προτιμήσεων" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Remember your settings and preferences" el="Θυμούνται τις ρυθμίσεις και τις προτιμήσεις σας" wrap /></p>
                   </div>
                   <input
                     type="checkbox"
@@ -238,9 +246,9 @@ export function CookieConsent() {
                 </label>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-border/60">
-                <Link href="/privacy" className="text-xs text-primary hover:underline">
-                  Learn more about cookies
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                <Link href="/privacy" className="text-xs text-primary-accessible hover:underline">
+                  <BilingualText en="Learn more about cookies" el="Μάθετε περισσότερα για τα cookies" compact />
                 </Link>
                 <div className="flex gap-2">
                   <Button
@@ -249,15 +257,15 @@ export function CookieConsent() {
                     onClick={() => setShowSettings(false)}
                     className="text-xs"
                   >
-                    Cancel
+                    <BilingualText en="Cancel" el="Ακύρωση" compact />
                   </Button>
                   <Button
                     size="sm"
                     onClick={saveCustom}
                     className="text-xs gap-1.5"
                   >
-                    <Check className="h-3.5 w-3.5" />
-                    Save Preferences
+                    <Check className="icon-sm" />
+                    <BilingualText en="Save Preferences" el="Αποθήκευση προτιμήσεων" compact />
                   </Button>
                 </div>
               </div>

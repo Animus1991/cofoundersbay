@@ -19,6 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
 
 interface Invite {
   id: string;
@@ -38,7 +40,7 @@ export function InviteSystem() {
     : '';
 
   const { data: invites = [], isLoading } = useQuery({
-    queryKey: ['invites'],
+    queryKey: qk('invites'),
     queryFn: async () => {
       const response = await fetch('/api/v1/invites', {
         headers: {
@@ -51,7 +53,7 @@ export function InviteSystem() {
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['invite-stats'],
+    queryKey: qk('invites', 'stats'),
     queryFn: async () => {
       const response = await fetch('/api/v1/invites/stats', {
         headers: {
@@ -77,8 +79,8 @@ export function InviteSystem() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['invites'] });
-      queryClient.invalidateQueries({ queryKey: ['invite-stats'] });
+      queryClient.invalidateQueries({ queryKey: qk('invites') });
+      queryClient.invalidateQueries({ queryKey: qk('invites', 'stats') });
       setEmail('');
     },
   });
@@ -102,32 +104,32 @@ export function InviteSystem() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+      <Card className="bg-primary/[0.03]">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">
-              <Gift className="h-6 w-6 text-primary" />
+              <Gift className="icon-lg text-primary-accessible" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Invite Friends & Earn Rewards</h2>
+              <h2 className="text-xl font-semibold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>
               <p className="text-sm text-muted-foreground">
-                Get premium features when your friends join
+                <BilingualText en="Get premium features when your friends join" el="Αποκτήστε premium δυνατότητες όταν εγγράφονται οι φίλοι σας" wrap />
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.totalInvites || 0}</p>
-              <p className="text-xs text-muted-foreground">Invites Sent</p>
+              <p className="page-stat text-xl font-bold">{stats?.totalInvites || 0}</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Invites Sent" el="Προσκλήσεις που στάλθηκαν" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.acceptedInvites || 0}</p>
-              <p className="text-xs text-muted-foreground">Accepted</p>
+              <p className="page-stat text-xl font-bold">{stats?.acceptedInvites || 0}</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτές" compact /></p>
             </div>
             <div className="space-y-1">
-              <p className="text-xl font-bold">{stats?.rewards || 0}</p>
-              <p className="text-xs text-muted-foreground">Rewards Earned</p>
+              <p className="page-stat text-xl font-bold">{stats?.rewards || 0}</p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Rewards Earned" el="Ανταμοιβές" compact /></p>
             </div>
           </div>
         </CardContent>
@@ -136,24 +138,24 @@ export function InviteSystem() {
       <Tabs defaultValue="email">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="email">
-            <Mail className="h-4 w-4 mr-2" />
-            Email Invite
+            <Mail className="icon-sm mr-2" />
+            <BilingualText en="Email Invite" el="Πρόσκληση με email" compact />
           </TabsTrigger>
           <TabsTrigger value="link">
-            <Share2 className="h-4 w-4 mr-2" />
-            Share Link
+            <Share2 className="icon-sm mr-2" />
+            <BilingualText en="Share Link" el="Κοινοποίηση συνδέσμου" compact />
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="email" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Send Email Invitation</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Send Email Invitation" el="Αποστολή πρόσκλησης email" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSendInvite} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email"><BilingualText en="Email Address" el="Διεύθυνση email" compact /></Label>
                   <div className="flex gap-2">
                     <Input
                       id="email"
@@ -167,8 +169,8 @@ export function InviteSystem() {
                       type="submit"
                       disabled={sendInviteMutation.isPending || !email}
                     >
-                      <Send className="h-4 w-4 mr-2" />
-                      Send
+                      <Send className="icon-sm mr-2" />
+                      <BilingualText en="Send" el="Αποστολή" compact />
                     </Button>
                   </div>
                 </div>
@@ -178,7 +180,7 @@ export function InviteSystem() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Sent Invitations</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Sent Invitations" el="Απεσταλμένες προσκλήσεις" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -196,12 +198,12 @@ export function InviteSystem() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-full bg-secondary">
-                          <Mail className="h-4 w-4" />
+                          <Mail className="icon-sm" />
                         </div>
                         <div>
                           <p className="font-medium">{invite.email}</p>
                           <p className="text-xs text-muted-foreground">
-                            Sent {new Date(invite.sentAt).toLocaleDateString()}
+                            Sent {new Date(invite.sentAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                           </p>
                         </div>
                       </div>
@@ -221,8 +223,8 @@ export function InviteSystem() {
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Users className="mx-auto h-12 w-12 mb-2 opacity-40" />
-                  <p>No invitations sent yet</p>
+                  <Users className="mx-auto h-12 w-12 mb-2 opacity-40" aria-hidden="true" />
+                  <p><BilingualText en="No invitations sent yet" el="Δεν έχουν σταλεί προσκλήσεις ακόμα" compact /></p>
                 </div>
               )}
             </CardContent>
@@ -232,11 +234,11 @@ export function InviteSystem() {
         <TabsContent value="link" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Your Referral Link</CardTitle>
+              <CardTitle className="text-lg"><BilingualText en="Your Referral Link" el="Ο σύνδεσμος παραπομπής σας" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Share this link with friends</Label>
+                <Label><BilingualText en="Share this link with friends" el="Μοιραστείτε αυτόν τον σύνδεσμο με φίλους" compact /></Label>
                 <div className="flex gap-2">
                   <Input
                     value={inviteLink}
@@ -246,13 +248,13 @@ export function InviteSystem() {
                   <Button onClick={handleCopyLink} variant="outline">
                     {copied ? (
                       <>
-                        <Check className="h-4 w-4 mr-2 text-green-500" />
-                        Copied!
+                        <Check className="icon-sm mr-2 text-status-success" />
+                        <BilingualText en="Copied!" el="Αντιγράφηκε!" compact />
                       </>
                     ) : (
                       <>
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy
+                        <Copy className="icon-sm mr-2" />
+                        <BilingualText en="Copy" el="Αντιγραφή" compact />
                       </>
                     )}
                   </Button>

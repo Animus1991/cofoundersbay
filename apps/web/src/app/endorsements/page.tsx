@@ -1,31 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   getMeProfile,
   getEndorsementsForUser,
+  getGivenEndorsements,
   getEndorsementStats,
   approveEndorsement,
   declineEndorsement,
+  listConnectionRequests,
   type EndorsementItem,
 } from '@/lib/api';
+import { queryKeys, qk } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MessageButton } from '@/components/common/PersonActions';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { bilingualInline, formatDate } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
-  Handshake, Plus, Star, CheckCircle2, Clock, MessageSquare,
-  User, ChevronRight, Award, TrendingUp, BadgeCheck, Quote,
-  ThumbsUp, ThumbsDown, Send, Search, Filter,
+  Handshake, Plus, Star, CheckCircle2, Clock, Award, BadgeCheck, Quote,
+  ThumbsUp, ThumbsDown, Search, Users, UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { cn, initialsOf } from '@/lib/utils';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,11 +51,13 @@ type Endorsement = {
   toUserId: string;
   toUserName: string;
   toUserAvatar?: string;
+  toUserRole?: string;
   skill?: string;
   content: string;
   relationship?: string;
   isApproved: boolean;
-  createdAt: string;
+  /** ISO timestamp, or null for a sample before the page knows today's date. */
+  createdAt: string | null;
 };
 
 type SkillEndorsement = {
@@ -51,142 +66,171 @@ type SkillEndorsement = {
   endorsers: { name: string; avatar?: string }[];
 };
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
+// ── Sample data ────────────────────────────────────────────────────────────────
 
-const RECEIVED: Endorsement[] = [
+/*
+ * Shown while sample data is on. The people are the demo world's own - the
+ * mentor, co-founder, investor and founder the rest of the showcase shows -
+ * in the roles it gives them, and each date is an age in days, so the samples
+ * stay recent whenever the page is opened.
+ */
+type SampleEndorsement = Omit<Endorsement, 'createdAt'> & { ageDays: number };
+
+const SAMPLE_RECEIVED: SampleEndorsement[] = [
   {
-    id: '1', fromUserId: 'u1', fromUserName: 'Sarah Chen', fromUserRole: 'Angel Investor & Product Advisor',
-    toUserId: 'me', toUserName: 'Me',
-    skill: 'Product Strategy',
-    content: 'Exceptional product thinking and ability to translate complex problems into elegant solutions. One of the sharpest product minds I\'ve worked with. Highly recommend working with them.',
-    relationship: 'Investor', isApproved: true, createdAt: 'Jan 15, 2025',
+    id: 'sample-end-1', fromUserId: 'user-elena', fromUserName: 'Elena Papadopoulos', fromUserRole: 'Founder & CEO at Harbor',
+    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Go-to-market', relationship: 'Peer founder',
+    content: 'Alex shared their outbound playbook with our team without being asked. Two of our first five customers came from it.',
+    isApproved: false, ageDays: 1,
   },
   {
-    id: '2', fromUserId: 'u2', fromUserName: 'Michael Torres', fromUserRole: 'CTO at HorizonTech',
-    toUserId: 'me', toUserName: 'Me',
-    skill: 'Technical Leadership',
-    content: 'An outstanding technical leader who seamlessly bridges business and engineering. Consistently delivers on commitments and elevates the entire team.',
-    relationship: 'Co-founder', isApproved: false, createdAt: 'Jan 20, 2025',
+    id: 'sample-end-2', fromUserId: 'user-marcus', fromUserName: 'Marcus Chen', fromUserRole: 'Technical cofounder · Full-stack',
+    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Customer discovery', relationship: 'Trial project',
+    content: 'We spent two weeks on a trial project. Alex ran twelve customer interviews in that time and came back with the one feature we should cut.',
+    isApproved: false, ageDays: 3,
   },
   {
-    id: '3', fromUserId: 'u3', fromUserName: 'Emma Williams', fromUserRole: 'Ex-Stripe, Fintech Angel',
-    toUserId: 'me', toUserName: 'Me',
-    skill: 'Fundraising',
-    content: 'Incredibly well-prepared founder. Knows their numbers inside and out, tells a compelling story, and treats investor relationships with the care they deserve.',
-    relationship: 'Investor', isApproved: true, createdAt: 'Jan 5, 2025',
+    id: 'sample-end-3', fromUserId: 'user-sarah', fromUserName: 'Dr. Sarah Kim', fromUserRole: 'Startup mentor',
+    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Product strategy', relationship: 'Mentor',
+    content: 'Alex takes feedback on Monday and ships the change by Friday. Over six sessions the onboarding went from nine steps to three.',
+    isApproved: true, ageDays: 12,
   },
   {
-    id: '4', fromUserId: 'u4', fromUserName: 'Andreas Papadopoulos', fromUserRole: 'Partner at Athena Ventures',
-    toUserId: 'me', toUserName: 'Me',
-    skill: 'Team Building',
-    content: 'Built an A-team in a challenging market. The team culture they\'ve created is rare. This founder knows how to attract and retain top talent.',
-    relationship: 'Investor', isApproved: false, createdAt: 'Dec 28, 2024',
+    id: 'sample-end-4', fromUserId: 'user-nikos', fromUserName: 'Nikos Andreou', fromUserRole: 'Angel investor · Seed',
+    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Fundraising', relationship: 'Investor',
+    content: 'A well-prepared founder: knows the numbers, answers the hard question first, and follows up when promised.',
+    isApproved: true, ageDays: 30,
   },
 ];
 
-const GIVEN: Endorsement[] = [
+const SAMPLE_GIVEN: SampleEndorsement[] = [
   {
-    id: '5', fromUserId: 'me', fromUserName: 'Me',
-    toUserId: 'u5', toUserName: 'Sofia Papadaki', toUserAvatar: undefined,
-    skill: 'Growth Marketing',
-    content: 'Sofia has an incredible ability to identify growth opportunities and execute on them rapidly. She helped us 3x our user base in 4 months with scrappy, high-ROI campaigns.',
-    relationship: 'Service Provider', isApproved: true, createdAt: 'Dec 10, 2024',
+    id: 'sample-end-5', fromUserId: 'me', fromUserName: 'Alex Demo',
+    toUserId: 'user-marcus', toUserName: 'Marcus Chen', toUserRole: 'Technical cofounder · Full-stack',
+    skill: 'Full-stack engineering', relationship: 'Trial project',
+    content: 'Marcus shipped a working prototype in nine days, with tests, and wrote down every shortcut he took.',
+    isApproved: false, ageDays: 5,
   },
   {
-    id: '6', fromUserId: 'me', fromUserName: 'Me',
-    toUserId: 'u6', toUserName: 'Nikos Andreou', toUserAvatar: undefined,
-    skill: 'UI/UX Design',
-    content: 'Nikos transformed our product\'s visual identity and UX. His design systems thinking saved us months of rework. An absolute professional.',
-    relationship: 'Service Provider', isApproved: true, createdAt: 'Nov 18, 2024',
+    id: 'sample-end-6', fromUserId: 'me', fromUserName: 'Alex Demo',
+    toUserId: 'user-elena', toUserName: 'Elena Papadopoulos', toUserRole: 'Founder & CEO at Harbor',
+    skill: 'Product', relationship: 'Peer founder',
+    content: "Elena sees the product from the customer's chair. Her teardown of our onboarding was the most useful hour of the quarter.",
+    isApproved: true, ageDays: 20,
   },
 ];
 
-const MY_SKILLS: SkillEndorsement[] = [
-  { skill: 'Product Strategy', count: 8, endorsers: [{ name: 'Sarah Chen' }, { name: 'Michael T.' }, { name: 'Emma W.' }] },
-  { skill: 'Technical Leadership', count: 6, endorsers: [{ name: 'Michael Torres' }, { name: 'Andreas P.' }] },
-  { skill: 'Fundraising', count: 5, endorsers: [{ name: 'Emma Williams' }, { name: 'Sarah C.' }] },
-  { skill: 'Team Building', count: 4, endorsers: [{ name: 'Andreas P.' }] },
-  { skill: 'Go-to-Market', count: 3, endorsers: [{ name: 'Sofia P.' }] },
-  { skill: 'Pitch & Storytelling', count: 3, endorsers: [{ name: 'Emma W.' }] },
+const SAMPLE_CONNECTIONS = [
+  { id: 'user-sarah', name: 'Dr. Sarah Kim', role: 'Mentor' },
+  { id: 'user-marcus', name: 'Marcus Chen', role: 'Co-founder' },
+  { id: 'user-nikos', name: 'Nikos Andreou', role: 'Investor' },
+  { id: 'user-elena', name: 'Elena Papadopoulos', role: 'Founder' },
 ];
 
-// ── Endorsement Card ───────────────────────────────────────────────────────────
+function stampSample(rows: SampleEndorsement[], now: number | null): Endorsement[] {
+  return rows.map(({ ageDays, ...row }) => ({
+    ...row,
+    createdAt: now == null ? null : new Date(now - ageDays * 86_400_000).toISOString(),
+  }));
+}
+
+// ── Endorsement card ───────────────────────────────────────────────────────────
 
 function EndorsementCard({
   endorsement,
   type,
+  sample,
   onApprove,
   onDecline,
 }: {
   endorsement: Endorsement;
   type: 'received' | 'given';
+  sample: boolean;
   onApprove?: (id: string) => void;
   onDecline?: (id: string) => void;
 }) {
+  const { primary } = useLanguagePreference();
   const user = type === 'received'
     ? { name: endorsement.fromUserName, avatar: endorsement.fromUserAvatar, role: endorsement.fromUserRole, id: endorsement.fromUserId }
-    : { name: endorsement.toUserName, avatar: endorsement.toUserAvatar, id: endorsement.toUserId };
-  const initials = user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    : { name: endorsement.toUserName, avatar: endorsement.toUserAvatar, role: endorsement.toUserRole, id: endorsement.toUserId };
+  const initials = initialsOf(user.name);
+  const waitingOnMe = !endorsement.isApproved && type === 'received';
+  const waitingOnThem = !endorsement.isApproved && type === 'given';
 
   return (
     <Card className={cn(
       'transition-all hover:border-primary/20',
-      !endorsement.isApproved && type === 'received' && 'border-amber-500/30 bg-amber-500/5',
+      // Waiting on the reader: a warning edge, not an amber-filled card.
+      waitingOnMe && 'border-l-2 border-l-status-warning',
     )}>
       <CardContent className="p-5">
-        {/* Quote icon + pending badge */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3">
-            <Link href={`/p/${user.id}`}>
-              <Avatar className="h-11 w-11 rounded-xl">
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+          <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
+            <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open ${user.name}'s profile`, `Άνοιγμα προφίλ: ${user.name}`)}>
+              <Avatar className="h-11 w-11 rounded-lg">
+                <AvatarImage src={user.avatar} alt="" />
+                <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initials}</AvatarFallback>
               </Avatar>
             </Link>
-            <div>
-              <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary transition-colors">
+            <div className="min-w-0">
+              <Link href={`/profiles/${user.id}`} className="text-sm font-semibold transition-colors hover:text-primary-accessible">
                 {user.name}
               </Link>
               {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
-              {endorsement.relationship && <p className="text-xs text-muted-foreground">Relationship: {endorsement.relationship}</p>}
+              {endorsement.relationship && (
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${endorsement.relationship}`} compact />
+                </p>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             {endorsement.skill && (
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
-            {!endorsement.isApproved && type === 'received' && (
-              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <Clock className="icon-sm mr-1" />Pending
+            {waitingOnMe && (
+              <Badge variant="outline" className="border-status-warning-border bg-status-warning-bg text-xs text-status-warning">
+                <Clock className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Waiting for you" el="Περιμένει εσάς" compact />
               </Badge>
             )}
-            {endorsement.isApproved && <BadgeCheck className="icon-sm text-blue-500" />}
+            {waitingOnThem && (
+              <Badge variant="outline" className="text-xs">
+                <Clock className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Not yet approved" el="Δεν έχει εγκριθεί" compact />
+              </Badge>
+            )}
+            {endorsement.isApproved && (
+              <BadgeCheck className="icon-sm text-status-info" aria-label={bilingualInline('Approved and shown on the profile', 'Εγκρίθηκε και εμφανίζεται στο προφίλ')} />
+            )}
           </div>
         </div>
 
-        {/* Quote */}
-        <div className="relative pl-4 border-l-2 border-primary/30">
-          <Quote className="absolute -top-1 -left-0.5 icon-sm text-primary/50" />
-          <p className="text-sm text-muted-foreground leading-relaxed italic">{endorsement.content}</p>
+        <div className="relative border-l-2 border-primary/30 pl-4">
+          <Quote className="absolute -left-0.5 -top-1 icon-sm text-primary-emphasis/50" aria-hidden="true" />
+          <p className="text-sm italic leading-relaxed text-muted-foreground">{endorsement.content}</p>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-          <span className="text-xs text-muted-foreground">{endorsement.createdAt}</span>
-          {!endorsement.isApproved && type === 'received' && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+          <span className="text-xs text-muted-foreground">
+            {endorsement.createdAt ? formatDate(endorsement.createdAt, primary === 'el' ? 'el' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+          </span>
+          {waitingOnMe && (
             <div className="flex gap-2">
               <Button size="sm" className="gap-1" onClick={() => onApprove?.(endorsement.id)}>
-                <ThumbsUp className="icon-sm" />Approve
+                <ThumbsUp className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Approve" el="Έγκριση" compact />
               </Button>
               <Button size="sm" variant="outline" className="gap-1" onClick={() => onDecline?.(endorsement.id)}>
-                <ThumbsDown className="icon-sm" />Decline
+                <ThumbsDown className="icon-sm" aria-hidden="true" />
+                <BilingualText en="Decline" el="Απόρριψη" compact />
               </Button>
             </div>
           )}
-          {(endorsement.isApproved || type === 'given') && (
-            <Button variant="ghost" size="sm" className="gap-1">
-              <MessageSquare className="icon-sm" />Reply
-            </Button>
+          {/* Endorsements have no reply endpoint; replying to someone is
+              opening a thread with them. A sample has no one behind it. */}
+          {!waitingOnMe && !sample && (
+            <MessageButton userId={user.id} displayName={user.name} variant="ghost" />
           )}
         </div>
       </CardContent>
@@ -194,86 +238,132 @@ function EndorsementCard({
   );
 }
 
-// ── Skills Grid ────────────────────────────────────────────────────────────────
+// ── Skills ─────────────────────────────────────────────────────────────────────
 
-function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
-  const maxCount = Math.max(...skills.map(s => s.count));
+function SkillsList({ skills }: { skills: SkillEndorsement[] }) {
+  if (skills.length === 0) {
+    return (
+      <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+        <BilingualText
+          en="Skills appear here once an endorsement that names one is approved."
+          el="Οι δεξιότητες εμφανίζονται εδώ όταν εγκριθεί μια σύσταση που αναφέρει μία."
+          wrap
+        />
+      </p>
+    );
+  }
+  const maxCount = Math.max(...skills.map((s) => s.count));
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Award className="icon-sm text-primary" />My Endorsed Skills
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {skills.map(s => (
-          <div key={s.skill} className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{s.skill}</span>
-                <div className="flex -space-x-1">
-                  {s.endorsers.slice(0, 3).map((e, i) => (
-                    <Avatar key={i} className="h-5 w-5 rounded-full border border-background">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">{e.name[0]}</AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
+    <ul className="space-y-3">
+      {skills.map((s) => (
+        <li key={s.skill} className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="truncate text-sm font-medium">{s.skill}</span>
+              <div className="flex -space-x-1" aria-hidden="true">
+                {s.endorsers.slice(0, 3).map((e, i) => (
+                  <Avatar key={`${e.name}-${i}`} className="h-5 w-5 rounded-full border border-background">
+                    <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{e.name[0]}</AvatarFallback>
+                  </Avatar>
+                ))}
               </div>
-              <span className="text-xs font-semibold text-primary">{s.count}</span>
             </div>
-            <Progress value={(s.count / maxCount) * 100} className="h-1.5" />
+            <span className="text-xs font-semibold tabular-nums text-primary-accessible">{s.count}</span>
           </div>
-        ))}
-      </CardContent>
-    </Card>
+          <Progress
+            value={(s.count / maxCount) * 100}
+            className="h-1.5"
+            aria-label={bilingualInline(`${s.skill}: ${s.count} endorsements`, `${s.skill}: ${s.count} συστάσεις`)}
+          />
+        </li>
+      ))}
+    </ul>
   );
 }
 
-// ── Request Panel ──────────────────────────────────────────────────────────────
+// ── Ask for one ────────────────────────────────────────────────────────────────
 
-function RequestPanel() {
+function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<string> }) {
   const [search, setSearch] = useState('');
-  const CONNECTIONS = [
-    { id: 'c1', name: 'Sarah Chen', role: 'Investor', endorsed: true },
-    { id: 'c2', name: 'Michael Torres', role: 'CTO', endorsed: false },
-    { id: 'c3', name: 'Emma Williams', role: 'Angel', endorsed: false },
-    { id: 'c4', name: 'Sofia Papadaki', role: 'Growth Marketer', endorsed: false },
-  ];
-  const filtered = CONNECTIONS.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+
+  // The reader's own accepted connections; the sample names stay as the
+  // fallback for a session that has none.
+  const { data: accepted } = useQuery({
+    queryKey: qk('connections', 'accepted', 'for-endorsements'),
+    queryFn: () => listConnectionRequests({ type: 'accepted', limit: 50 }),
+    enabled: !!meId,
+    staleTime: 5 * 60_000,
+  });
+
+  const real = (accepted?.connections ?? []).map((c) => {
+    const other = c.requesterId === meId ? c.receiver : c.requester;
+    return {
+      id: other?.id ?? c.id,
+      name: other?.displayName ?? '',
+      role: other?.role ?? '',
+      endorsed: endorsedIds.has(other?.id ?? ''),
+      real: true as const,
+    };
+  }).filter((c) => c.name);
+
+  const people = real.length
+    ? real
+    : SAMPLE_CONNECTIONS.map((c) => ({ ...c, endorsed: endorsedIds.has(c.id), real: false as const }));
+  const filtered = people.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Send className="icon-sm text-primary" />Request Endorsements
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input placeholder="Search connections..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
-        </div>
-        <div className="space-y-2">
-          {filtered.map(c => (
-            <div key={c.id} className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">{c.name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-xs font-medium">{c.name}</p>
-                  <p className="text-xs text-muted-foreground">{c.role}</p>
-                </div>
+    <div className="space-y-3">
+      <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+        <BilingualText
+          en="Asking is a message: there is no request form, so the thread is the request."
+          el="Το αίτημα είναι ένα μήνυμα: δεν υπάρχει φόρμα αιτήματος, η συνομιλία είναι το αίτημα."
+          wrap
+        />
+      </p>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Input
+          placeholder={bilingualInline('Search connections…', 'Αναζήτηση επαφών…')}
+          aria-label={bilingualInline('Search connections', 'Αναζήτηση επαφών')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="h-9 pl-9 text-sm"
+        />
+      </div>
+      <ul className="space-y-2">
+        {filtered.map((c) => (
+          <li key={c.id} className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Avatar className="h-7 w-7 rounded-lg">
+                <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-bold text-primary-accessible">{c.name[0]}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium">{c.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{c.role}</p>
               </div>
-              {c.endorsed ? (
-                <Badge variant="secondary" size="sm"><CheckCircle2 className="icon-sm mr-1" />Endorsed</Badge>
-              ) : (
-                <Button size="sm" variant="outline">Request</Button>
-              )}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            {c.endorsed ? (
+              <Badge variant="secondary" size="sm">
+                <CheckCircle2 className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Endorsed you" el="Σας σύστησε" compact />
+              </Badge>
+            ) : c.real ? (
+              <MessageButton userId={c.id} displayName={c.name} variant="outline" />
+            ) : (
+              /* A sample name has no thread to open; the control says so
+                 rather than looking available. */
+              <Button size="sm" variant="outline" disabled title={bilingualInline('Sample connection', 'Ενδεικτική επαφή')}>
+                <BilingualText en="Ask" el="Αίτημα" compact />
+              </Button>
+            )}
+          </li>
+        ))}
+        {filtered.length === 0 && (
+          <li className="px-1 text-xs text-muted-foreground">
+            <BilingualText en="No connection matches." el="Καμία επαφή δεν ταιριάζει." compact />
+          </li>
+        )}
+      </ul>
+    </div>
   );
 }
 
@@ -283,179 +373,310 @@ function mapApiItem(item: EndorsementItem): Endorsement {
   return {
     id: item.id,
     fromUserId: item.fromUserId,
-    fromUserName: item.fromUser.displayName,
-    fromUserAvatar: item.fromUser.avatarUrl ?? undefined,
-    fromUserRole: item.fromUser.headline ?? undefined,
+    fromUserName: item.fromUser?.displayName ?? 'Unknown',
+    fromUserAvatar: item.fromUser?.avatarUrl ?? undefined,
+    fromUserRole: item.fromUser?.headline ?? undefined,
     toUserId: item.toUserId,
-    toUserName: 'Me',
+    toUserName: item.toUser?.displayName ?? 'Unknown',
+    toUserAvatar: item.toUser?.avatarUrl ?? undefined,
+    toUserRole: item.toUser?.headline ?? undefined,
     skill: item.skill ?? undefined,
     content: item.content,
     relationship: item.relationship ?? undefined,
     isApproved: item.isApproved,
-    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    createdAt: item.createdAt,
   };
 }
 
 export default function EndorsementsPage() {
+  const [giving, setGiving] = useState(false);
+  const [tab, setTab] = useState<'received' | 'given'>('received');
   const { showDemoData } = useDemoData();
   const qc = useQueryClient();
+  const router = useRouter();
+  const storedUser = useStoredUser();
 
-  // Demo-mode local state
-  const [demoReceived, setDemoReceived] = useState(RECEIVED);
+  // Samples carry an age, stamped once the page knows today's date: a date
+  // computed during the server pass would disagree with hydration.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
+  const [sampleReceived, setSampleReceived] = useState(SAMPLE_RECEIVED);
 
-  // Real API: current user
   const { data: meData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 300_000,
     enabled: !showDemoData,
   });
-  const meId = meData?.profile?.userId;
+  const meId = meData?.profile?.userId ?? storedUser?.id;
 
-  // Real API: received endorsements
-  const { data: receivedData } = useQuery({
-    queryKey: ['endorsements', 'received', meId],
+  const { data: receivedData, isLoading: receivedLoading } = useQuery({
+    queryKey: qk('endorsements', 'received', meId),
     queryFn: () => getEndorsementsForUser(meId!, { includeUnapproved: true }),
     enabled: !showDemoData && !!meId,
     staleTime: 60_000,
   });
-
-  // Real API: stats
+  const { data: givenData, isLoading: givenLoading } = useQuery({
+    queryKey: qk('endorsements', 'given'),
+    queryFn: getGivenEndorsements,
+    enabled: !showDemoData,
+    staleTime: 60_000,
+  });
   const { data: statsData } = useQuery({
-    queryKey: ['endorsements', 'stats'],
+    queryKey: qk('endorsements', 'stats'),
     queryFn: getEndorsementStats,
     enabled: !showDemoData,
     staleTime: 60_000,
   });
 
-  // Computed data
-  const received: Endorsement[] = showDemoData
-    ? demoReceived
-    : (receivedData?.endorsements.map(mapApiItem) ?? []);
-  const given: Endorsement[] = showDemoData ? GIVEN : [];
+  const received: Endorsement[] = useMemo(
+    () => (showDemoData ? stampSample(sampleReceived, now) : (receivedData?.endorsements ?? []).map(mapApiItem)),
+    [showDemoData, sampleReceived, now, receivedData],
+  );
+  const given: Endorsement[] = useMemo(
+    () => (showDemoData ? stampSample(SAMPLE_GIVEN, now) : (givenData?.endorsements ?? []).map(mapApiItem)),
+    [showDemoData, now, givenData],
+  );
+  // Whoever has already written one is shown as such rather than asked again.
+  const endorsedIds = useMemo(
+    () => new Set(received.map((e) => e.fromUserId).filter(Boolean)),
+    [received],
+  );
 
-  const mySkills: SkillEndorsement[] = showDemoData
-    ? MY_SKILLS
-    : (() => {
-        const skillMap = new Map<string, { count: number; endorsers: { name: string }[] }>();
-        for (const e of received.filter(r => r.isApproved)) {
-          if (!e.skill) continue;
-          const entry = skillMap.get(e.skill) ?? { count: 0, endorsers: [] };
-          entry.count++;
-          entry.endorsers.push({ name: e.fromUserName });
-          skillMap.set(e.skill, entry);
-        }
-        return Array.from(skillMap.entries())
-          .map(([skill, data]) => ({ skill, ...data }))
-          .sort((a, b) => b.count - a.count);
-      })();
+  // Counted from approved endorsements that name a skill, the same way for
+  // samples and real ones: a sample list of four cannot claim eight.
+  const mySkills: SkillEndorsement[] = useMemo(() => {
+    const skillMap = new Map<string, { count: number; endorsers: { name: string }[] }>();
+    for (const e of received.filter((r) => r.isApproved)) {
+      if (!e.skill) continue;
+      const entry = skillMap.get(e.skill) ?? { count: 0, endorsers: [] };
+      entry.count++;
+      entry.endorsers.push({ name: e.fromUserName });
+      skillMap.set(e.skill, entry);
+    }
+    return Array.from(skillMap.entries())
+      .map(([skill, data]) => ({ skill, ...data }))
+      .sort((a, b) => b.count - a.count);
+  }, [received]);
 
-  const pendingCount = !showDemoData
-    ? (statsData?.stats?.pending ?? received.filter(e => !e.isApproved).length)
-    : received.filter(e => !e.isApproved).length;
+  const pendingCount = showDemoData
+    ? received.filter((e) => !e.isApproved).length
+    : (statsData?.stats?.pending ?? received.filter((e) => !e.isApproved).length);
+  const receivedApproved = showDemoData
+    ? received.filter((e) => e.isApproved).length
+    : (statsData?.stats?.total ?? received.filter((e) => e.isApproved).length);
+  const givenCount = showDemoData ? given.length : (statsData?.stats?.given ?? given.length);
 
-  // Mutations
   const approveMutation = useMutation({
     mutationFn: approveEndorsement,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('endorsements') }),
   });
   const declineMutation = useMutation({
     mutationFn: declineEndorsement,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk('endorsements') }),
   });
 
   const handleApprove = (id: string) => {
     if (showDemoData) {
-      setDemoReceived(prev => prev.map(e => e.id === id ? { ...e, isApproved: true } : e));
+      setSampleReceived((prev) => prev.map((e) => (e.id === id ? { ...e, isApproved: true } : e)));
     } else {
       approveMutation.mutate(id);
     }
   };
   const handleDecline = (id: string) => {
     if (showDemoData) {
-      setDemoReceived(prev => prev.filter(e => e.id !== id));
+      setSampleReceived((prev) => prev.filter((e) => e.id !== id));
     } else {
       declineMutation.mutate(id);
     }
   };
 
+  // Offered to the assistant: the tab, and Approve / Decline on an
+  // endorsement waiting for the reader - the same handlers the card calls.
+  // Approval shows it on the profile and declining removes it; neither has an
+  // opposite endpoint, so neither offers an undo.
+  const waiting = received.filter((e) => !e.isApproved);
+  usePageControls([
+    choiceControl('endorsements_tab', 'Endorsements tab', 'Καρτέλα συστάσεων', [
+      { value: 'received', en: 'Received', el: 'Ληφθείσες' },
+      { value: 'given', en: 'Given', el: 'Δοσμένες' },
+    ], tab, (v) => setTab(v as typeof tab)),
+    {
+      id: 'approve_endorsement',
+      labelEn: showDemoData ? 'Approve sample endorsement (this screen only)' : 'Approve endorsement',
+      labelEl: showDemoData ? 'Έγκριση δείγματος σύστασης (μόνο σε αυτή την οθόνη)' : 'Έγκριση σύστασης',
+      writes: !showDemoData,
+      options: rowOptions(waiting, (e) => e.id, (e) => `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}`),
+      unavailableEn: waiting.length ? undefined : 'No endorsement is waiting for approval.',
+      unavailableEl: waiting.length ? undefined : 'Καμία σύσταση δεν περιμένει έγκριση.',
+      run: (v) => { if (v) handleApprove(v); },
+    },
+    {
+      id: 'decline_endorsement',
+      labelEn: showDemoData ? 'Decline sample endorsement (this screen only)' : 'Decline endorsement',
+      labelEl: showDemoData ? 'Απόρριψη δείγματος σύστασης (μόνο σε αυτή την οθόνη)' : 'Απόρριψη σύστασης',
+      writes: !showDemoData,
+      options: rowOptions(waiting, (e) => e.id, (e) => `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}`),
+      unavailableEn: waiting.length ? undefined : 'No endorsement is waiting for approval.',
+      unavailableEl: waiting.length ? undefined : 'Καμία σύσταση δεν περιμένει έγκριση.',
+      run: (v) => { if (v) handleDecline(v); },
+    },
+    { id: 'give_endorsement', labelEn: 'Open the endorsement form', labelEl: 'Άνοιγμα φόρμας σύστασης', writes: false, run: () => setGiving(true) },
+  ]);
+  usePageList([
+    {
+      id: 'received',
+      labelEn: 'Endorsements received',
+      labelEl: 'Συστάσεις που λάβατε',
+      rows: !showDemoData && receivedLoading ? undefined : received.map((e) =>
+        `${e.fromUserName}${e.skill ? ` · ${e.skill}` : ''}${e.relationship ? ` · ${e.relationship}` : ''} · ${e.isApproved ? 'approved' : 'waiting for your approval'}`,
+      ),
+      sample: showDemoData,
+    },
+    {
+      id: 'given',
+      labelEn: 'Endorsements given',
+      labelEl: 'Συστάσεις που δώσατε',
+      rows: !showDemoData && givenLoading ? undefined : given.map((e) =>
+        `${e.toUserName}${e.skill ? ` · ${e.skill}` : ''} · ${e.isApproved ? 'approved' : 'not yet approved by them'}`,
+      ),
+      sample: showDemoData,
+    },
+  ]);
+
+  /*
+   * The column leads with the endorsements themselves. The figures, the
+   * skills they add up to and the ask-for-one list were a second column
+   * inside the page; they are the rail's now.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'award',
+      labelEn: 'At a glance',
+      labelEl: 'Με μια ματιά',
+      content: (
+        <RailStats
+          items={[
+            { key: 'received', label: 'Received and shown', labelEl: 'Ληφθείσες και ορατές', value: receivedApproved, icon: Star, tone: 'bg-primary/10 text-primary-accessible' },
+            { key: 'pending', label: 'Waiting for your approval', labelEl: 'Περιμένουν την έγκρισή σας', value: pendingCount, icon: Clock, tone: 'bg-status-warning-bg text-status-warning' },
+            { key: 'given', label: 'Endorsements you gave', labelEl: 'Συστάσεις που δώσατε', value: givenCount, icon: Handshake, tone: 'bg-status-success-bg text-status-success' },
+          ]}
+        />
+      ),
+      badge: pendingCount || null,
+    },
+    {
+      id: 'skills',
+      glyph: 'target',
+      labelEn: 'Endorsed skills',
+      labelEl: 'Δεξιότητες με συστάσεις',
+      content: <SkillsList skills={mySkills} />,
+    },
+    {
+      id: 'ask',
+      glyph: 'messages',
+      labelEn: 'Ask for an endorsement',
+      labelEl: 'Ζητήστε σύσταση',
+      content: <RequestPanel meId={meId} endorsedIds={endorsedIds} />,
+    },
+    {
+      id: 'related',
+      glyph: 'flag',
+      labelEn: 'Linked pages',
+      labelEl: 'Συνδεδεμένες σελίδες',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={Users} en="Open members" el="Άνοιγμα μελών" onClick={() => router.push('/members')} />
+          <RailAction icon={UserPlus} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
+          <RailAction icon={Handshake} en="Open mentoring" el="Άνοιγμα mentoring" onClick={() => router.push('/mentoring')} />
+        </div>
+      ),
+    },
+  ];
+
+  const loadingList = !showDemoData && (tab === 'received' ? receivedLoading : givenLoading);
+
   return (
-    <AppShell title="Endorsements" description="Build credibility through peer endorsements and skill validation">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
-        {/* Left: Tabs */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary' },
-              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600' },
-              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600' },
-            ].map(s => (
-              <Card key={s.label}>
-                <CardContent className="p-3 flex items-center gap-2">
-                  <div className="rounded-lg bg-secondary p-1.5 shrink-0">
-                    <s.icon className={cn('icon-sm', s.color)} />
-                  </div>
-                  <div>
-                    <p className="font-bold tabular-nums">{s.value}</p>
-                    <p className="text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+    <AppShell rail={rail}>
+      <div className="space-y-6 pb-10">
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Endorsements"
+            detail="These endorsements are samples written by the demo's own people. Approve and Decline change this screen only."
+            askAiPrompt="These endorsements are samples. Who should I ask for an endorsement first, and what should it say?"
+          />
+        )}
+
+        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <TabsList>
+              <TabsTrigger value="received" className="gap-1.5">
+                <BilingualText en="Received" el="Ληφθείσες" compact />
+                {pendingCount > 0 && <Badge variant="secondary" size="sm" className="px-1.5">{pendingCount}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="given" className="gap-1.5">
+                <BilingualText en="Given" el="Δοσμένες" compact />
+                <span className="tabular-nums text-muted-foreground">{givenCount}</span>
+              </TabsTrigger>
+            </TabsList>
+            <Button size="sm" className="gap-1.5" onClick={() => setGiving(true)}>
+              <Plus className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Give an endorsement" el="Δώστε σύσταση" compact />
+            </Button>
           </div>
 
-          <Tabs defaultValue="received">
-            <div className="flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="received" className="gap-1.5">
-                  Received
-                  {pendingCount > 0 && <Badge variant="secondary" size="sm" className="px-1.5">{pendingCount}</Badge>}
-                </TabsTrigger>
-                <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
-              </TabsList>
-              <Button size="sm" className="h-8 gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" />Give Endorsement
-              </Button>
-            </div>
+          <TabsContent value="received" className="mt-4 space-y-3">
+            {pendingCount > 0 && (
+              <div className="rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-status-warning">
+                <BilingualText
+                  en={pendingCount === 1 ? '1 endorsement is waiting for your approval before it shows on your profile.' : `${pendingCount} endorsements are waiting for your approval before they show on your profile.`}
+                  el={pendingCount === 1 ? '1 σύσταση περιμένει την έγκρισή σας για να εμφανιστεί στο προφίλ σας.' : `${pendingCount} συστάσεις περιμένουν την έγκρισή σας για να εμφανιστούν στο προφίλ σας.`}
+                  wrap
+                />
+              </div>
+            )}
+            {loadingList ? (
+              <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
+                <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
+              </CardContent></Card>
+            ) : received.length === 0 ? (
+              <Card><CardContent className="py-12 text-center">
+                <Star className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
+                <p className="font-medium"><BilingualText en="No endorsements received yet" el="Δεν έχετε λάβει συστάσεις ακόμα" /></p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  <BilingualText en="Ask a connection who has worked with you; the side panel lists them." el="Ζητήστε από μια επαφή που έχει συνεργαστεί μαζί σας· το πλευρικό πάνελ τις δείχνει." wrap />
+                </p>
+              </CardContent></Card>
+            ) : (
+              received.map((e) => (
+                <EndorsementCard key={e.id} endorsement={e} type="received" sample={showDemoData} onApprove={handleApprove} onDecline={handleDecline} />
+              ))
+            )}
+          </TabsContent>
 
-            <TabsContent value="received" className="space-y-3 mt-4">
-              {pendingCount > 0 && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-400">
-                  <strong>{pendingCount} pending endorsement{pendingCount > 1 ? 's' : ''}</strong> awaiting your approval
-                </div>
-              )}
-              {received.map(e => (
-                <EndorsementCard key={e.id} endorsement={e} type="received" onApprove={handleApprove} onDecline={handleDecline} />
-              ))}
-              {received.length === 0 && (
-                <Card><CardContent className="py-12 text-center">
-                  <Star className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium">No endorsements received yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ask connections to endorse your skills</p>
-                </CardContent></Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="given" className="space-y-3 mt-4">
-              {given.map(e => <EndorsementCard key={e.id} endorsement={e} type="given" />)}
-              {given.length === 0 && (
-                <Card><CardContent className="py-12 text-center">
-                  <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="font-medium">No endorsements given yet</p>
-                  <Button size="sm" className="mt-4"><Plus className="h-3.5 w-3.5 mr-1.5" />Give First Endorsement</Button>
-                </CardContent></Card>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Right: Sidebar */}
-        <div className="space-y-4">
-          <SkillsGrid skills={mySkills} />
-          <RequestPanel />
-        </div>
+          <TabsContent value="given" className="mt-4 space-y-3">
+            {loadingList ? (
+              <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">
+                <BilingualText en="Loading endorsements…" el="Φόρτωση συστάσεων…" compact />
+              </CardContent></Card>
+            ) : given.length === 0 ? (
+              <Card><CardContent className="py-12 text-center">
+                <Handshake className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
+                <p className="font-medium"><BilingualText en="No endorsements given yet" el="Δεν έχετε δώσει συστάσεις ακόμα" /></p>
+                <Button size="sm" className="mt-4 gap-1.5" onClick={() => setGiving(true)}>
+                  <Award className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Write your first endorsement" el="Γράψτε την πρώτη σας σύσταση" compact />
+                </Button>
+              </CardContent></Card>
+            ) : (
+              given.map((e) => <EndorsementCard key={e.id} endorsement={e} type="given" sample={showDemoData} />)
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
+
+      <GiveEndorsementDialog open={giving} onOpenChange={setGiving} />
     </AppShell>
   );
 }

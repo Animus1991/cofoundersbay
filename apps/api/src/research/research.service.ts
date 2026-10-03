@@ -68,14 +68,14 @@ export class ResearchService {
 
   // ─── Boards ────────────────────────────────────────────────────────────────
 
-  async listBoards(userId: string): Promise<ResearchBoardDto[]> {
+  async listBoards(userId: string, archived = false): Promise<ResearchBoardDto[]> {
     const boards = await this.prisma.researchBoard.findMany({
       where: {
         OR: [
           { ownerId: userId },
           { collaborators: { some: { userId } } },
         ],
-        isArchived: false,
+        isArchived: archived,
       },
       include: {
         _count: { select: { nodes: true } },
@@ -306,6 +306,16 @@ export class ResearchService {
     },
   ): Promise<ResearchNodeDto> {
     await this.assertBoardAccess(userId, boardId, 'edit');
+
+    if (data.uploadId) {
+      const ownedResearchAsset = await this.prisma.upload.findFirst({
+        where: { id: data.uploadId, userId, kind: 'research_asset' },
+        select: { id: true },
+      });
+      if (!ownedResearchAsset) {
+        throw new NotFoundException('Research asset not found');
+      }
+    }
 
     // Get max zIndex
     const maxZ = await this.prisma.researchNode.aggregate({

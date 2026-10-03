@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { MessageComposer } from './MessageComposer';
+import { qk } from '@/lib/query-keys';
 
 interface Message {
   id: string;
@@ -41,7 +42,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['messages', conversationId],
+    queryKey: qk('messages', conversationId),
     queryFn: async () => {
       const response = await fetch(`/api/v1/messages/${conversationId}`, {
         headers: {
@@ -80,8 +81,8 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: qk('messages', conversationId) });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
       setReplyingTo(null);
     },
   });
@@ -99,7 +100,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      queryClient.invalidateQueries({ queryKey: qk('messages', conversationId) });
     },
   });
 
@@ -209,25 +210,25 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                   <div className="absolute -right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/message:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <MoreVertical className="h-3 w-3" />
+                        <Button aria-label="Message actions" variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <MoreVertical className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setReplyingTo(message)}>
-                          <Reply className="h-4 w-4 mr-2" />
+                          <Reply className="icon-sm mr-2" />
                           Reply
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleCopyMessage(message.content)}>
-                          <Copy className="h-4 w-4 mr-2" />
+                          <Copy className="icon-sm mr-2" />
                           Copy
                         </DropdownMenuItem>
                         {isOwn && (
                           <DropdownMenuItem
                             onClick={() => deleteMessageMutation.mutate(message.id)}
-                            className="text-destructive"
+                            className="text-destructive-accessible"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
+                            <Trash2 className="icon-sm mr-2" />
                             Delete
                           </DropdownMenuItem>
                         )}
@@ -241,9 +242,9 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                   {isOwn && (
                     <>
                       {message.readAt ? (
-                        <CheckCheck className="h-3 w-3 text-blue-500" />
+                        <CheckCheck className="icon-sm text-status-info" />
                       ) : (
-                        <Check className="h-3 w-3" />
+                        <Check className="icon-sm" />
                       )}
                     </>
                   )}
@@ -260,19 +261,19 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       {replyingTo && (
         <div className="px-4 py-2 bg-secondary/40 border-t flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Reply className="h-4 w-4 text-muted-foreground" />
+            <Reply className="icon-sm text-muted-foreground" />
             <div className="text-sm">
               <span className="text-muted-foreground">Replying to </span>
               <span className="font-medium">{replyingTo.senderName}</span>
             </div>
           </div>
-          <Button
+          <Button aria-label="Cancel reply"
             variant="ghost"
             size="sm"
             onClick={() => setReplyingTo(null)}
             className="h-6 w-6 p-0"
           >
-            <X className="h-3 w-3" />
+            <X className="icon-sm" />
           </Button>
         </div>
       )}

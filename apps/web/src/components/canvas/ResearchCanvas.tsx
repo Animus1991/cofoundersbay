@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/useModalA11y";
+import { bilingualAria } from "@/lib/i18n/format";
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { bilingualInline } from '@/lib/i18n/format';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -30,12 +34,12 @@ interface NodeColor {
 }
 
 const NODE_COLORS: Record<string, NodeColor> = {
-  blue:   { bg: "bg-card", border: "border-blue-400/70",   icon: "text-blue-500",   label: "Blue", solid: "hsl(221 90% 60%)" },
-  purple: { bg: "bg-card", border: "border-purple-400/70", icon: "text-purple-500", label: "Purple", solid: "hsl(262 72% 60%)" },
-  green:  { bg: "bg-card", border: "border-emerald-400/70",icon: "text-emerald-500",label: "Green", solid: "hsl(162 63% 45%)" },
-  amber:  { bg: "bg-card", border: "border-amber-400/70",  icon: "text-amber-500",  label: "Amber", solid: "hsl(38 92% 55%)" },
-  rose:   { bg: "bg-card", border: "border-rose-400/70",   icon: "text-rose-500",   label: "Rose", solid: "hsl(0 72% 55%)" },
-  slate:  { bg: "bg-card", border: "border-slate-400/70",  icon: "text-slate-400",  label: "Slate", solid: "hsl(220 9% 55%)" },
+  blue:   { bg: "bg-card", border: "border-status-info-border",   icon: "text-status-info",   label: "Blue", solid: "hsl(221 90% 60%)" },
+  purple: { bg: "bg-card", border: "border-status-accent-border", icon: "text-status-accent", label: "Purple", solid: "hsl(262 72% 60%)" },
+  green:  { bg: "bg-card", border: "border-status-success-border",icon: "text-status-success",label: "Green", solid: "hsl(162 63% 45%)" },
+  amber:  { bg: "bg-card", border: "border-status-warning-border",  icon: "text-status-warning",  label: "Amber", solid: "hsl(38 92% 55%)" },
+  rose:   { bg: "bg-card", border: "border-status-danger-border",   icon: "text-status-danger",   label: "Rose", solid: "hsl(0 72% 55%)" },
+  slate:  { bg: "bg-card", border: "border-border",  icon: "text-muted-foreground",  label: "Slate", solid: "hsl(220 9% 55%)" },
 };
 
 interface CanvasNodeData {
@@ -140,7 +144,7 @@ function fmtSize(bytes: number) {
 }
 
 function nodeIcon(type: NodeType, colorKey: string, size = "w-5 h-5") {
-  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary";
+  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary-accessible";
   switch (type) {
     case "image":    return <ImageIcon className={cn(size, col)} />;
     case "pdf":      return <FileType className={cn(size, col)} />;
@@ -180,7 +184,7 @@ interface RichTextEditorProps {
   readOnly?: boolean;
 }
 
-function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -189,10 +193,30 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     }
   }, []);
 
-  const exec = (command: string, val?: string) => {
+  const exec = (command: string, val?: string, range?: Range) => {
     editorRef.current?.focus();
+    if (range) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
     document.execCommand(command, false, val);
     if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const insertLink = () => {
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : undefined;
+    const savedRange = range && editorRef.current?.contains(range.commonAncestorContainer) ? range : undefined;
+    const url = window.prompt("Enter URL")?.trim();
+    if (!url) return;
+    try {
+      const protocol = new URL(url, document.baseURI).protocol;
+      if (protocol === "javascript:" || protocol === "data:") return;
+    } catch {
+      return;
+    }
+    exec("createLink", url, savedRange);
   };
 
   const ToolBtn = ({ cmd, val, title, children }: { cmd: string; val?: string; title: string; children: React.ReactNode }) => (
@@ -200,7 +224,7 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
       type="button"
       title={title}
       onMouseDown={(e) => { e.preventDefault(); exec(cmd, val); }}
-      className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+      className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
     >
       {children}
     </button>
@@ -210,42 +234,49 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     <div className="flex flex-col flex-1 min-h-0">
       {!readOnly && (
         <div className="flex flex-wrap gap-0.5 p-2 border-b border-border bg-card sticky top-0 z-10">
-          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="redo" title="Redo"><RotateCw className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="redo" title="Redo"><RotateCw className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="bold" title="Bold"><Bold className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="italic" title="Italic"><Italic className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="underline" title="Underline"><Underline className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="bold" title="Bold"><Bold className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="italic" title="Italic"><Italic className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="underline" title="Underline"><Underline className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-[11px] font-bold">H1</span></ToolBtn>
-          <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-[11px] font-bold">H2</span></ToolBtn>
-          <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-[11px]">P</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="createLink" val={prompt("Enter URL") || undefined} title="Insert link">
-            <Link2 className="w-3.5 h-3.5" />
-          </ToolBtn>
+          <button
+            type="button"
+            title="Insert link"
+            aria-label={bilingualAria("Insert link", "Εισαγωγή συνδέσμου")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertLink}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Link2 className="icon-sm" />
+          </button>
         </div>
       )}
       <div
         ref={editorRef}
         contentEditable={!readOnly}
         suppressContentEditableWarning
-        data-placeholder="Start writing your research notes…"
+        data-placeholder={bilingualInline("Start writing your research notes…", "Ξεκινήστε να γράφετε τις σημειώσεις έρευνας…")}
         onInput={() => { if (editorRef.current) onChange(editorRef.current.innerHTML); }}
         className={cn(
           "flex-1 p-4 outline-none overflow-y-auto text-sm text-foreground leading-relaxed",
           "prose prose-sm max-w-none",
           "[&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1.5",
           "[&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4",
-          "[&_a]:text-primary [&_a]:underline",
+          "[&_a]:text-primary-accessible [&_a]:underline",
           !readOnly && "cursor-text"
         )}
       />
@@ -302,10 +333,20 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
   const isPdf = node.type === "pdf";
   const isText = node.type === "text" || node.type === "note";
   const isDoc = node.type === "document" && !isPdf && !isImage;
+  const viewerRef = useModalA11y<HTMLDivElement>(true, onClose);
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Escape was handled by hand here; the rest of what a dialog owes a
+          keyboard user was not. `useModalA11y` adds the semantics, the focus
+          move, the trap and the scroll lock — it was written for exactly this
+          kind of overlay, welded into a canvas with exit animations. */}
       <motion.div
+        ref={viewerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Node viewer"
+        tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -323,20 +364,20 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               className="flex-1 bg-transparent text-sm font-semibold text-foreground outline-none truncate placeholder:text-muted-foreground"
-              placeholder="Untitled"
+              placeholder={bilingualInline("Untitled", "Χωρίς τίτλο")}
             />
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
-                <span className="text-[11px] text-amber-500 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Unsaved
+                <span className="text-2xs text-status-warning flex items-center gap-1">
+                  <AlertCircle className="icon-sm" /> Unsaved
                 </span>
               )}
               {(isText || isDoc) && (
                 <button
                   onClick={handleSave}
-                  className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                  className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
-                  <Save className="w-3.5 h-3.5" /> Save
+                  <Save className="icon-sm" /> Save
                 </button>
               )}
               {node.url && (
@@ -346,14 +387,14 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                   title="Download"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="icon-sm" />
                 </a>
               )}
-              <button
+              <button aria-label="Close"
                 onClick={onClose}
                 className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="icon-sm" />
               </button>
             </div>
           </div>
@@ -363,11 +404,11 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             {tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-accessible text-2xs font-medium"
               >
-                <Tag className="w-3 h-3" />
+                <Tag className="icon-sm" />
                 {tag}
-                <button
+                <button aria-label={`Remove ${tag}`}
                   onClick={() => removeTag(tag)}
                   className="ml-0.5 hover:text-primary/70 transition-colors"
                 >
@@ -380,14 +421,14 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTag(); }}
-                placeholder="Add tag..."
-                className="h-6 px-2 rounded bg-secondary text-[11px] outline-none placeholder:text-muted-foreground min-w-[80px]"
+                placeholder={bilingualInline("Add tag…", "Προσθήκη ετικέτας…")}
+                className="h-6 px-2 rounded bg-secondary text-2xs outline-none placeholder:text-muted-foreground min-w-[80px]"
               />
-              <button
+              <button aria-label="Add tag"
                 onClick={addTag}
-                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-md bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="icon-sm" />
               </button>
             </div>
           </div>
@@ -398,18 +439,18 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
           {isImage && node.url && (
             <div className="flex flex-col items-center min-h-full p-4 gap-3">
               <div className="flex items-center gap-2">
-                <button onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
+                <button aria-label="Zoom out" onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomOut className="w-3.5 h-3.5" />
+                  <ZoomOut className="icon-sm" />
                 </button>
-                <span className="text-[12px] text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
-                <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
+                <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
+                <button aria-label="Zoom in" onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomIn className="w-3.5 h-3.5" />
+                  <ZoomIn className="icon-sm" />
                 </button>
-                <button onClick={() => setImgZoom(1)}
+                <button aria-label="Reset zoom" onClick={() => setImgZoom(1)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  <Maximize2 className="icon-sm" />
                 </button>
               </div>
               <div className="overflow-auto flex-1 flex items-start justify-center w-full">
@@ -446,8 +487,8 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               <p className="text-sm">Preview not available for this file type.</p>
               {node.url && (
                 <a href={node.url} download={node.title}
-                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
-                  <Download className="w-3.5 h-3.5" /> Download
+                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
+                  <Download className="icon-sm" /> Download
                 </a>
               )}
             </div>
@@ -456,9 +497,9 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
 
         {/* Footer with metadata */}
         <div className="flex-none px-4 py-2 border-t border-border bg-card/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between text-2xs text-muted-foreground">
             <span>
-              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString()}`}
+              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
             </span>
             {node.fileSize && <span>{fmtSize(node.fileSize)}</span>}
           </div>
@@ -504,6 +545,7 @@ export default function ResearchCanvas() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, () => setShowShortcuts(false));
   
   // History for undo/redo
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -1015,7 +1057,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary" />
+            <Layers className="icon-md text-primary-accessible" />
             Research Canvas
           </h1>
           <span className="text-xs text-muted-foreground">
@@ -1025,11 +1067,11 @@ export default function ResearchCanvas() {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search nodes..."
+              placeholder={bilingualInline("Search nodes…", "Αναζήτηση κόμβων…")}
               className="h-8 pl-8 pr-3 rounded-lg bg-secondary text-sm outline-none placeholder:text-muted-foreground min-w-[200px]"
             />
           </div>
@@ -1053,7 +1095,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Undo (Ctrl+Z)"
           >
-            <Undo2 className="w-3.5 h-3.5" />
+            <Undo2 className="icon-sm" />
           </button>
           <button
             onClick={redo}
@@ -1061,7 +1103,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Redo (Ctrl+Y)"
           >
-            <Redo2 className="w-3.5 h-3.5" />
+            <Redo2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1071,7 +1113,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
-            <ZoomOut className="w-3.5 h-3.5" />
+            <ZoomOut className="icon-sm" />
           </button>
           <span className="text-xs text-muted-foreground min-w-[42px] text-center">
             {Math.round(zoom * 100)}%
@@ -1081,14 +1123,14 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
-            <ZoomIn className="w-3.5 h-3.5" />
+            <ZoomIn className="icon-sm" />
           </button>
           <button
             onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset view"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
+            <Maximize2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1097,21 +1139,21 @@ export default function ResearchCanvas() {
             onClick={() => setShowGrid(!showGrid)}
             className={cn(
               "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-              showGrid ? "bg-primary/10 text-primary" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              showGrid ? "bg-primary/10 text-primary-accessible" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle grid"
           >
-            <Grid3x3 className="w-3.5 h-3.5" />
+            <Grid3x3 className="icon-sm" />
           </button>
           <button
             onClick={() => setShowMinimap(!showMinimap)}
             className={cn(
               "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-              showMinimap ? "bg-primary/10 text-primary" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              showMinimap ? "bg-primary/10 text-primary-accessible" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle minimap"
           >
-            <Layout className="w-3.5 h-3.5" />
+            <Layout className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1120,13 +1162,13 @@ export default function ResearchCanvas() {
             onClick={() => createNode("note", 100, 100)}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5" /> Note
+            <Plus className="icon-sm" /> Note
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Upload className="w-3.5 h-3.5" /> Upload
+            <Upload className="icon-sm" /> Upload
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1136,14 +1178,14 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Export canvas"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="icon-sm" />
           </button>
           <button
             onClick={importCanvas}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Import canvas"
           >
-            <FileOutput className="w-3.5 h-3.5" />
+            <FileOutput className="icon-sm" />
           </button>
 
           <button
@@ -1151,7 +1193,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Keyboard shortcuts"
           >
-            <Keyboard className="w-3.5 h-3.5" />
+            <Keyboard className="icon-sm" />
           </button>
         </div>
       </div>
@@ -1209,47 +1251,47 @@ export default function ResearchCanvas() {
               onDoubleClick={() => setViewerNode(node)}
               onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, node.id); }}
             >
-              <div className="flex-none px-3 py-2 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between gap-2">
+              <div className="flex-none px-3 py-2 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {nodeIcon(node.type, node.colorKey, "w-4 h-4 flex-none")}
-                  <span className="text-[13px] font-medium text-foreground truncate">
+                  <span className="text-sm font-medium text-foreground truncate">
                     {node.title}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 flex-none">
-                  {node.pinned && <Pin className="w-3 h-3 text-primary" />}
-                  {node.starred && <Star className="w-3 h-3 text-amber-500" fill="currentColor" />}
-                  {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
+                  {node.pinned && <Pin className="icon-sm text-primary-accessible" />}
+                  {node.starred && <Star className="icon-sm text-status-warning" fill="currentColor" />}
+                  {node.locked && <Lock className="icon-sm text-muted-foreground" />}
                 </div>
               </div>
 
-              <div className="flex-1 p-3 overflow-hidden text-[12px] text-muted-foreground leading-relaxed">
+              <div className="flex-1 p-3 overflow-hidden text-xs text-muted-foreground leading-relaxed">
                 {node.type === "image" && node.url && (
                   <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" />
                 )}
                 {node.type === "pdf" && (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
                     <FileType className={cn("w-10 h-10", colorConf.icon)} />
-                    <span className="text-[11px]">PDF Document</span>
+                    <span className="text-2xs">PDF Document</span>
                   </div>
                 )}
                 {(node.type === "note" || node.type === "text" || node.type === "document") && (
-                  <div
+                  <SanitizedHtml
                     className="prose prose-sm max-w-none line-clamp-6"
-                    dangerouslySetInnerHTML={{ __html: node.content || "<p class='text-muted-foreground/40'>Empty note...</p>" }}
+                    html={node.content || "<p class='text-muted-foreground/40'>Empty note...</p>"}
                   />
                 )}
               </div>
 
               {node.tags && node.tags.length > 0 && (
-                <div className="flex-none px-3 py-1.5 border-t border-border/50 bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
+                <div className="flex-none px-3 py-1.5 border-t border-border bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
                   {node.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary">
+                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-accessible">
                       {tag}
                     </span>
                   ))}
                   {node.tags.length > 3 && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] text-muted-foreground">
+                    <span className="px-1.5 py-0.5 rounded text-2xs text-muted-foreground">
                       +{node.tags.length - 3}
                     </span>
                   )}
@@ -1262,16 +1304,16 @@ export default function ResearchCanvas() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity shadow-md"
                   title="Create connection"
                 >
-                  <GitBranch className="w-3 h-3" />
+                  <GitBranch className="icon-sm" />
                 </button>
               )}
               {connectionStart && connectionStart !== node.id && (
                 <button
                   onClick={(e) => { e.stopPropagation(); completeConnection(node.id); }}
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md animate-pulse"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-status-success-mark text-ink flex items-center justify-center shadow-md animate-pulse"
                   title="Complete connection"
                 >
-                  <Check className="w-4 h-4" />
+                  <Check className="icon-sm" />
                 </button>
               )}
             </motion.div>
@@ -1352,32 +1394,32 @@ export default function ResearchCanvas() {
                   onClick={() => { setViewerNode(nodes.find(n => n.id === contextMenu.nodeId) || null); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Eye className="w-4 h-4" /> Open
+                  <Eye className="icon-sm" /> Open
                 </button>
                 <button
                   onClick={() => { duplicateNodes([contextMenu.nodeId!]); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Copy className="w-4 h-4" /> Duplicate
+                  <Copy className="icon-sm" /> Duplicate
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { pinned: !nodes.find(n => n.id === contextMenu.nodeId)?.pinned }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Pin className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
+                  <Pin className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { starred: !nodes.find(n => n.id === contextMenu.nodeId)?.starred }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Star className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
+                  <Star className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
                 </button>
                 <div className="h-px bg-border my-1" />
                 <button
                   onClick={() => { deleteNodes([contextMenu.nodeId!]); setContextMenu(null); }}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-2"
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
                 >
-                  <Trash className="w-4 h-4" /> Delete
+                  <Trash className="icon-sm" /> Delete
                 </button>
               </>
             ) : (
@@ -1386,13 +1428,13 @@ export default function ResearchCanvas() {
                   onClick={() => { createNode("note", (contextMenu.x - panX) / zoom, (contextMenu.y - panY) / zoom); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <StickyNote className="w-4 h-4" /> New Note
+                  <StickyNote className="icon-sm" /> New Note
                 </button>
                 <button
                   onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Upload className="w-4 h-4" /> Upload File
+                  <Upload className="icon-sm" /> Upload File
                 </button>
               </>
             )}
@@ -1417,6 +1459,11 @@ export default function ResearchCanvas() {
         {showShortcuts && (
           <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
+              ref={shortcutsRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Keyboard shortcuts"
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -1424,14 +1471,14 @@ export default function ResearchCanvas() {
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="w-5 h-5 text-primary" />
+                  <Keyboard className="icon-md text-primary-accessible" />
                   Keyboard Shortcuts
                 </h2>
-                <button
+                <button aria-label="Close shortcuts"
                   onClick={() => setShowShortcuts(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="icon-sm" />
                 </button>
               </div>
               <div className="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
@@ -1469,8 +1516,8 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-2 border-t border-border bg-card/30 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           <span>{filteredNodes.length} nodes visible</span>
-          {selected.size > 0 && <span className="text-primary">{selected.size} selected</span>}
-          {connectionStart && <span className="text-amber-500">Drawing connection...</span>}
+          {selected.size > 0 && <span className="text-primary-accessible">{selected.size} selected</span>}
+          {connectionStart && <span className="text-status-warning">Drawing connection...</span>}
         </div>
         <div className="flex items-center gap-4">
           <span>Pan: {Math.round(panX)}, {Math.round(panY)}</span>

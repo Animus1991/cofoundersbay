@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useQueryClient } from '@tanstack/react-query';
+import { qk } from '@/lib/query-keys';
 
 interface Message {
   id: string;
@@ -9,6 +10,10 @@ interface Message {
   body: string;
   createdAt: string;
   readAt?: string;
+  /** Present only while an optimistic message is awaiting its server ack. */
+  tempId?: string;
+  /** emoji -> userIds who reacted with it */
+  reactions?: Record<string, string[]>;
   sender: {
     id: string;
     profile: {
@@ -16,6 +21,46 @@ interface Message {
       avatarUrl?: string;
     };
   };
+}
+
+/**
+ * Shape of the infinite-query cache these handlers patch in place.
+ * Every updater below took `old: any`, so a change to the page shape would
+ * have produced a silently empty thread instead of a type error.
+ */
+interface MessagePage {
+  messages: Message[];
+  nextCursor?: string | null;
+}
+
+interface MessagesCache {
+  pages: MessagePage[];
+  pageParams: unknown[];
+}
+
+/** Applies `fn` to every message in the cache, leaving the pages intact. */
+function mapCachedMessages(
+  old: MessagesCache | undefined,
+  fn: (msg: Message) => Message,
+): MessagesCache | undefined {
+  if (!old?.pages) return old;
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({ ...page, messages: page.messages.map(fn) })),
+  };
+}
+
+/** Prepends a message to the newest page. */
+function prependCachedMessage(
+  old: MessagesCache | undefined,
+  message: Message,
+): MessagesCache | undefined {
+  if (!old?.pages) return old;
+  const pages = [...old.pages];
+  if (pages[0]?.messages) {
+    pages[0] = { ...pages[0], messages: [message, ...pages[0].messages] };
+  }
+  return { ...old, pages };
 }
 
 interface TypingIndicator {
@@ -54,22 +99,12 @@ export function useRealtimeMessages(conversationId?: string) {
     return on('message:new', ({ message }: { message: Message }) => {
       // Update messages query cache
       queryClient.setQueryData(
-        ['messages', message.conversationId],
-        (old: any) => {
-          if (!old?.pages) return old;
-          const newPages = [...old.pages];
-          if (newPages[0]?.messages) {
-            newPages[0] = {
-              ...newPages[0],
-              messages: [message, ...newPages[0].messages],
-            };
-          }
-          return { ...old, pages: newPages };
-        }
+        qk('messages', message.conversationId),
+        (old: MessagesCache | undefined) => prependCachedMessage(old, message),
       );
 
       // Update conversation list
-      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: qk('conversations') });
     });
   }, [connected, on, queryClient]);
 
@@ -82,17 +117,11 @@ export function useRealtimeMessages(conversationId?: string) {
 
       // Replace optimistic message with real one
       queryClient.setQueryData(
-        ['messages', message.conversationId],
-        (old: any) => {
-          if (!old?.pages) return old;
-          const newPages = old.pages.map((page: any) => ({
-            ...page,
-            messages: page.messages.map((msg: any) =>
-              msg.tempId === tempId ? { ...message, tempId: undefined } : msg
-            ),
-          }));
-          return { ...old, pages: newPages };
-        }
+        qk('messages', message.conversationId),
+        (old: MessagesCache | undefined) =>
+          mapCachedMessages(old, (msg) =>
+            msg.tempId === tempId ? { ...message, tempId: undefined } : msg,
+          ),
       );
     });
   }, [connected, on, queryClient]);
@@ -133,17 +162,9 @@ export function useRealtimeMessages(conversationId?: string) {
 
     return on('message:read', ({ messageId, userId, readAt }: ReadReceipt) => {
       queryClient.setQueryData(
-        ['messages', conversationId],
-        (old: any) => {
-          if (!old?.pages) return old;
-          const newPages = old.pages.map((page: any) => ({
-            ...page,
-            messages: page.messages.map((msg: any) =>
-              msg.id === messageId ? { ...msg, readAt } : msg
-            ),
-          }));
-          return { ...old, pages: newPages };
-        }
+        qk('messages', conversationId),
+        (old: MessagesCache | undefined) =>
+          mapCachedMessages(old, (msg) => (msg.id === messageId ? { ...msg, readAt } : msg)),
       );
     });
   }, [connected, conversationId, on, queryClient]);
@@ -154,30 +175,23 @@ export function useRealtimeMessages(conversationId?: string) {
 
     return on('message:reaction', ({ messageId, userId, emoji }: MessageReaction) => {
       queryClient.setQueryData(
-        ['messages', conversationId],
-        (old: any) => {
-          if (!old?.pages) return old;
-          const newPages = old.pages.map((page: any) => ({
-            ...page,
-            messages: page.messages.map((msg: any) => {
-              if (msg.id !== messageId) return msg;
-              const reactions = msg.reactions || {};
-              const current = reactions[emoji] || [];
-              const hasReacted = current.includes(userId);
-              
-              return {
-                ...msg,
-                reactions: {
-                  ...reactions,
-                  [emoji]: hasReacted
-                    ? current.filter((id: string) => id !== userId)
-                    : [...current, userId],
-                },
-              };
-            }),
-          }));
-          return { ...old, pages: newPages };
-        }
+        qk('messages', conversationId),
+        (old: MessagesCache | undefined) =>
+          mapCachedMessages(old, (msg) => {
+            if (msg.id !== messageId) return msg;
+            const reactions = msg.reactions ?? {};
+            const current = reactions[emoji] ?? [];
+            const hasReacted = current.includes(userId);
+            return {
+              ...msg,
+              reactions: {
+                ...reactions,
+                [emoji]: hasReacted
+                  ? current.filter((id) => id !== userId)
+                  : [...current, userId],
+              },
+            };
+          }),
       );
     });
   }, [connected, conversationId, on, queryClient]);
@@ -191,7 +205,7 @@ export function useRealtimeMessages(conversationId?: string) {
       const userId = localStorage.getItem('userId') || '';
 
       // Optimistic update
-      const optimisticMessage = {
+      const optimisticMessage: Message = {
         id: tempId,
         tempId,
         conversationId,
@@ -208,8 +222,8 @@ export function useRealtimeMessages(conversationId?: string) {
       };
 
       queryClient.setQueryData(
-        ['messages', conversationId],
-        (old: any) => {
+        qk('messages', conversationId),
+        (old: MessagesCache | undefined) => {
           if (!old?.pages) return old;
           const newPages = [...old.pages];
           if (newPages[0]?.messages) {

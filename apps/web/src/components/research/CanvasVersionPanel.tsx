@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,7 @@ import {
   Minus, Edit2, Move,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
 import {
   listCanvasVersions,
@@ -52,6 +54,10 @@ import {
   type CanvasDiff,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { LocalTime } from '@/components/common/LocalTime';
+import { qk } from '@/lib/query-keys';
+import { bilingualInline } from '@/lib/i18n/format';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -108,20 +114,20 @@ function timeAgo(iso: string) {
 
 function triggerMeta(type: string) {
   switch (type) {
-    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-green-600 bg-green-50 border-green-200' };
-    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-blue-500 bg-blue-50 border-blue-200' };
-    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-orange-600 bg-orange-50 border-orange-200' };
-    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-violet-600 bg-violet-50 border-violet-200' };
-    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-teal-600 bg-teal-50 border-teal-200' };
-    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-amber-600 bg-amber-50 border-amber-200' };
-    default:              return { label: 'Manual',     icon: Camera,       color: 'text-purple-600 bg-purple-50 border-purple-200' };
+    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-status-success bg-status-success-bg border-status-success-border' };
+    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
+    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    default:              return { label: 'Manual',     icon: Camera,       color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
   }
 }
 
 function branchStatusColor(status: string) {
   switch (status) {
-    case 'active':   return 'bg-emerald-500/15 text-emerald-700 border-emerald-200';
-    case 'merged':   return 'bg-violet-500/15 text-violet-700 border-violet-200';
+    case 'active':   return 'bg-status-success/15 text-status-success border-status-success-border';
+    case 'merged':   return 'bg-status-accent/15 text-status-accent border-status-accent-border';
     case 'archived': return 'bg-muted text-muted-foreground border-border';
     default:         return 'bg-muted text-muted-foreground border-border';
   }
@@ -134,22 +140,22 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success">
           <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger">
           <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning">
           <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info">
           <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}
@@ -173,7 +179,7 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="h-4 w-4 text-primary" />
+            <GitCommit className="icon-sm text-primary-accessible" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -188,12 +194,12 @@ function DiffDetailDialog({
 
           {diff.added.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide flex items-center gap-1">
-                <Plus className="h-3 w-3" /> Added ({diff.added.length})
+              <p className="text-xs font-semibold text-status-success uppercase tracking-wide flex items-center gap-1">
+                <Plus className="icon-sm" /> Added ({diff.added.length})
               </p>
               {diff.added.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-emerald-50 border border-emerald-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-success-bg border border-status-success-border">
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -202,12 +208,12 @@ function DiffDetailDialog({
 
           {diff.removed.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-red-700 uppercase tracking-wide flex items-center gap-1">
-                <Minus className="h-3 w-3" /> Removed ({diff.removed.length})
+              <p className="text-xs font-semibold text-status-danger uppercase tracking-wide flex items-center gap-1">
+                <Minus className="icon-sm" /> Removed ({diff.removed.length})
               </p>
               {diff.removed.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-red-50 border border-red-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-danger-bg border border-status-danger-border">
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate line-through text-muted-foreground">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -216,17 +222,17 @@ function DiffDetailDialog({
 
           {diff.modified.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
-                <Edit2 className="h-3 w-3" /> Modified ({diff.modified.length})
+              <p className="text-xs font-semibold text-status-warning uppercase tracking-wide flex items-center gap-1">
+                <Edit2 className="icon-sm" /> Modified ({diff.modified.length})
               </p>
               {diff.modified.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-amber-50 border border-amber-100 space-y-0.5">
+                <div key={n.id} className="p-1.5 rounded bg-status-warning-bg border border-status-warning-border space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                    <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                     <span className="text-xs font-medium truncate">{n.title ?? '(untitled)'}</span>
                   </div>
                   {n.changes.map((c, i) => (
-                    <div key={i} className="text-[10px] text-muted-foreground pl-2">
+                    <div key={i} className="text-2xs text-muted-foreground pl-2">
                       <span className="font-medium capitalize">{c.field}:</span>{' '}
                       <span className="line-through">{String(c.before ?? '–').slice(0, 30)}</span>
                       {' → '}
@@ -240,13 +246,13 @@ function DiffDetailDialog({
 
           {diff.moved.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1">
-                <Move className="h-3 w-3" /> Moved ({diff.moved.length})
+              <p className="text-xs font-semibold text-status-info uppercase tracking-wide flex items-center gap-1">
+                <Move className="icon-sm" /> Moved ({diff.moved.length})
               </p>
               {diff.moved.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-blue-50 border border-blue-100">
+                <div key={n.id} className="p-1.5 rounded bg-status-info-bg border border-status-info-border">
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     ({Math.round(n.before.posX)}, {Math.round(n.before.posY)}) → ({Math.round(n.after.posX)}, {Math.round(n.after.posY)})
                   </div>
                 </div>
@@ -256,16 +262,16 @@ function DiffDetailDialog({
 
           {(diff.edgeDiff.added.length > 0 || diff.edgeDiff.removed.length > 0) && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
-                <ArrowRight className="h-3 w-3" /> Edges
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-1">
+                <ArrowRight className="icon-sm" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-success-bg border border-status-success-border text-status-success">
                   + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-danger-bg border border-status-danger-border text-status-danger">
                   − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
@@ -297,7 +303,7 @@ function RestoreConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertTriangle className="icon-sm text-status-warning" />
             Restore canvas?
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -308,7 +314,7 @@ function RestoreConfirmDialog({
         <DialogFooter className="flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}>Cancel</Button>
           <Button variant="destructive" size="sm" onClick={onConfirm} disabled={isPending}>
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RotateCcw className="h-3.5 w-3.5 mr-1" />}
+            {isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <RotateCcw className="icon-sm mr-1" />}
             Restore
           </Button>
         </DialogFooter>
@@ -329,11 +335,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   const [restoring, setRestoring] = useState(false);
   const [previewData, setPreviewData] = useState<BoardSnapshotFull | null>(null);
   const [previewDiff, setPreviewDiff] = useState<CanvasDiff | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['snapshots', boardId],
+    queryKey: qk('research-boards', 'snapshots', boardId),
     queryFn: () => listSnapshots(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const snapshots: BoardSnapshot[] = data ?? [];
@@ -344,7 +354,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       await createSnapshot(boardId, snapshotLabel.trim() || undefined);
       success('Snapshot saved');
       setSnapshotLabel('');
-      queryClient.invalidateQueries({ queryKey: ['snapshots', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'snapshots', boardId) });
     } catch {
       toastError('Failed to save snapshot');
     } finally {
@@ -358,8 +368,8 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
     try {
       await restoreBoardSnapshot(boardId, restoreTarget.id);
       success('Canvas restored to snapshot');
-      queryClient.invalidateQueries({ queryKey: ['snapshots', boardId] });
-      queryClient.invalidateQueries({ queryKey: ['board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'snapshots', boardId) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       setRestoreTarget(null);
     } catch {
       toastError('Restore failed');
@@ -376,9 +386,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
 
   const grouped: Record<string, BoardSnapshot[]> = {};
   for (const snap of snapshots) {
-    const dateKey = new Date(snap.createdAt).toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
+    const dateKey = new Date(snap.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(snap);
   }
@@ -386,18 +394,18 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   return (
     <div className="space-y-3 flex flex-col h-full">
       {/* Save */}
-      <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+      <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
         <Label className="text-xs font-medium">Save current state</Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Label (optional)…"
+            placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
             value={snapshotLabel}
             onChange={(e) => setSnapshotLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             className="text-sm h-8"
           />
-          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating} aria-label={bilingualAria('Save snapshot', 'Αποθήκευση στιγμιότυπου')}>
+            {creating ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Captures all nodes and connectors.</p>
@@ -406,7 +414,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       {/* Refresh */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -416,7 +424,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : snapshots.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <History className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <History className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No snapshots yet</p>
             <p className="text-xs mt-1">Save your first snapshot to track history.</p>
           </div>
@@ -428,14 +436,14 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                 const meta = triggerMeta(snap.triggerType);
                 const Icon = meta.icon;
                 return (
-                  <div key={snap.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+                  <div key={snap.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
                     <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
-                      <Icon className="h-3.5 w-3.5" />
+                      <Icon className="icon-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{snap.label ?? 'Snapshot'}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-muted-foreground">{new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <LocalTime value={snap.createdAt} className="text-xs text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">·</span>
                         <span className="text-xs text-muted-foreground">{snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}</span>
                         {snap.createdBy && (
@@ -444,7 +452,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                             <div className="flex items-center gap-1">
                               <Avatar className="h-3.5 w-3.5">
                                 <AvatarImage src={snap.createdBy.avatarUrl} />
-                                <AvatarFallback className="text-[8px]">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-2xs">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
                               </Avatar>
                               <span className="text-xs text-muted-foreground">{snap.createdBy.displayName}</span>
                             </div>
@@ -454,10 +462,10 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
-                        <Eye className="h-3.5 w-3.5" />
+                        <Eye className="icon-sm" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(snap)}>
-                        <RotateCcw className="h-3.5 w-3.5" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(snap)}>
+                        <RotateCcw className="icon-sm" />
                       </Button>
                     </div>
                   </div>
@@ -474,15 +482,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="h-4 w-4 text-primary" />
+                <History className="icon-sm text-primary-accessible" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
             </DialogHeader>
             <div className="py-2 space-y-3">
               <div className="flex gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" />{previewData.nodeCount} nodes</span>
+                <span className="flex items-center gap-1.5"><Layers className="icon-sm" />{previewData.nodeCount} nodes</span>
                 {Array.isArray(previewData.connectors) && (
-                  <span className="flex items-center gap-1.5"><ChevronRight className="h-3.5 w-3.5" />{(previewData.connectors as unknown[]).length} connectors</span>
+                  <span className="flex items-center gap-1.5"><ChevronRight className="icon-sm" />{(previewData.connectors as unknown[]).length} connectors</span>
                 )}
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
@@ -501,7 +509,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             <DialogFooter className="gap-2">
               <Button variant="outline" size="sm" onClick={() => { setPreviewId(null); setPreviewData(null); }}>Close</Button>
               <Button variant="default" size="sm" onClick={() => { setRestoreTarget(snapshots.find((s) => s.id === previewId) ?? null); setPreviewId(null); setPreviewData(null); }}>
-                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Restore this
+                <RotateCcw className="icon-sm mr-1" /> Restore this
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -529,11 +537,15 @@ function VersionsTab({ boardId }: { boardId: string }) {
   const [diffVersion, setDiffVersion] = useState<CanvasVersion | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<CanvasVersion | null>(null);
   const [restoring, setRestoring] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['canvas-versions', boardId],
+    queryKey: qk('research-boards', 'versions', boardId),
     queryFn: () => listCanvasVersions(boardId),
-    refetchInterval: 90_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(90_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const versions: CanvasVersion[] = data ?? [];
@@ -544,7 +556,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
       await createCanvasVersion(boardId, { label: label.trim() || undefined, triggerType: 'manual' });
       success('Version committed');
       setLabel('');
-      queryClient.invalidateQueries({ queryKey: ['canvas-versions', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'versions', boardId) });
     } catch {
       toastError('Failed to commit version');
     } finally {
@@ -558,8 +570,8 @@ function VersionsTab({ boardId }: { boardId: string }) {
     try {
       await restoreCanvasVersion(boardId, restoreTarget.id);
       success('Canvas restored to this version');
-      queryClient.invalidateQueries({ queryKey: ['canvas-versions', boardId] });
-      queryClient.invalidateQueries({ queryKey: ['board', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'versions', boardId) });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'board', boardId) });
       setRestoreTarget(null);
     } catch {
       toastError('Restore failed');
@@ -571,18 +583,18 @@ function VersionsTab({ boardId }: { boardId: string }) {
   return (
     <div className="space-y-3 flex flex-col h-full">
       {/* Commit */}
-      <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+      <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
         <Label className="text-xs font-medium">Commit current state</Label>
         <div className="flex gap-2">
           <Input
-            placeholder="Commit message (optional)…"
+            placeholder={bilingualInline("Commit message (optional)…", "Μήνυμα αλλαγής (προαιρετικά)…")}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             className="text-sm h-8"
           />
-          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <GitCommit className="h-3.5 w-3.5" />}
+          <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating} aria-label={bilingualAria('Commit version', 'Καταχώριση έκδοσης')}>
+            {creating ? <Loader2 className="icon-sm animate-spin" /> : <GitCommit className="icon-sm" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Records a diff-tracked version with change summary.</p>
@@ -590,7 +602,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -599,7 +611,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitCommit className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <GitCommit className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No versions yet</p>
             <p className="text-xs mt-1">Commit your first version to track diffs.</p>
           </div>
@@ -607,15 +619,15 @@ function VersionsTab({ boardId }: { boardId: string }) {
           const meta = triggerMeta(v.triggerType);
           const Icon = meta.icon;
           return (
-            <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
+            <div key={v.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
               <div className={cn('h-7 w-7 rounded-full flex items-center justify-center shrink-0 border', meta.color)}>
-                <Icon className="h-3.5 w-3.5" />
+                <Icon className="icon-sm" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium truncate">{v.label ?? 'Version'}</p>
                   {v.branchName && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0">
                       <GitBranch className="h-2.5 w-2.5 mr-0.5" />{v.branchName}
                     </Badge>
                   )}
@@ -624,7 +636,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{v.changeSummary}</p>
                 )}
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-muted-foreground">{timeAgo(v.createdAt)}</span>
+                  <span className="text-xs text-muted-foreground"><RelativeTime date={v.createdAt} format={timeAgo} /></span>
                   <span className="text-xs text-muted-foreground">·</span>
                   <span className="text-xs text-muted-foreground">{v.nodeCount} nodes</span>
                   {v.createdBy && (
@@ -639,11 +651,11 @@ function VersionsTab({ boardId }: { boardId: string }) {
               <div className="flex items-center gap-1 shrink-0">
                 {v.diffData && !v.diffData.isEmpty && (
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="View diff" onClick={() => setDiffVersion(v)}>
-                    <Eye className="h-3.5 w-3.5" />
+                    <Eye className="icon-sm" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(v)}>
-                  <RotateCcw className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(v)}>
+                  <RotateCcw className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -682,11 +694,15 @@ function BranchesTab({ boardId }: { boardId: string }) {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['canvas-branches', boardId],
+    queryKey: qk('research-boards', 'branches', boardId),
     queryFn: () => listCanvasBranches(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const branches: CanvasBranch[] = data ?? [];
@@ -698,7 +714,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
       await createCanvasBranch(boardId, { name: name.trim(), description: desc.trim() || undefined });
       success(`Branch "${name.trim()}" created`);
       setName(''); setDesc(''); setShowCreate(false);
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     } catch (e) {
       toastError(e instanceof Error ? e.message : 'Failed to create branch');
     } finally {
@@ -710,7 +726,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
     mutationFn: ({ branchId }: { branchId: string }) => archiveCanvasBranch(boardId, branchId),
     onSuccess: () => {
       success('Branch archived');
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     },
     onError: () => toastError('Failed to archive branch'),
   });
@@ -720,7 +736,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
     onSuccess: () => {
       success('Branch deleted');
       setDeletingId(null);
-      queryClient.invalidateQueries({ queryKey: ['canvas-branches', boardId] });
+      queryClient.invalidateQueries({ queryKey: qk('research-boards', 'branches', boardId) });
     },
     onError: () => toastError('Failed to delete branch'),
   });
@@ -730,12 +746,12 @@ function BranchesTab({ boardId }: { boardId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Manage isolated canvas branches</p>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="h-3 w-3" />New
+          <Plus className="icon-sm" />New
         </Button>
       </div>
 
       {showCreate && (
-        <div className="p-3 bg-muted/50 rounded-lg border border-border/60 space-y-2">
+        <div className="p-3 bg-muted/50 rounded-lg border border-border space-y-2">
           <Label className="text-xs font-medium">New branch</Label>
           <Input
             placeholder="branch-name (lowercase, hyphens)"
@@ -744,7 +760,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Input
-            placeholder="Description (optional)…"
+            placeholder={bilingualInline("Description (optional)…", "Περιγραφή (προαιρετικά)…")}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             className="text-sm h-8"
@@ -752,7 +768,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowCreate(false); setName(''); setDesc(''); }}>Cancel</Button>
             <Button size="sm" className="h-7 text-xs" onClick={handleCreate} disabled={creating || !name.trim()}>
-              {creating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <GitBranch className="h-3 w-3 mr-1" />}
+              {creating ? <Loader2 className="icon-sm animate-spin mr-1" /> : <GitBranch className="icon-sm mr-1" />}
               Create
             </Button>
           </div>
@@ -761,7 +777,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />Refresh
         </Button>
       </div>
 
@@ -770,26 +786,26 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}</div>
         ) : branches.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <GitBranch className="icon-xl mx-auto mb-2 opacity-30" />
             <p className="text-sm">No branches yet</p>
             <p className="text-xs mt-1">Create a branch to experiment safely.</p>
           </div>
         ) : branches.map((b) => (
-          <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
-            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-violet-50 border-violet-200 text-violet-600">
-              <GitBranch className="h-3.5 w-3.5" />
+          <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors">
+            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-status-accent-bg border-status-accent-border text-status-accent">
+              <GitBranch className="icon-sm" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">{b.name}</p>
-                {b.isDefault && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">default</Badge>}
-                <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4', branchStatusColor(b.status))}>
+                {b.isDefault && <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>}
+                <Badge variant="outline" className={cn('text-2xs px-1.5 py-0 h-4', branchStatusColor(b.status))}>
                   {b.status}
                 </Badge>
               </div>
               {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate">{b.description}</p>}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-muted-foreground">{timeAgo(b.updatedAt)}</span>
+                <span className="text-xs text-muted-foreground"><RelativeTime date={b.updatedAt} format={timeAgo} /></span>
                 {b.nodeCount != null && (
                   <>
                     <span className="text-xs text-muted-foreground">·</span>
@@ -808,16 +824,16 @@ function BranchesTab({ boardId }: { boardId: string }) {
                     disabled={archiveMutation.isPending}
                     onClick={() => archiveMutation.mutate({ branchId: b.id })}
                   >
-                    <Archive className="h-3.5 w-3.5" />
+                    <Archive className="icon-sm" />
                   </Button>
                 )}
                 <Button
                   variant="ghost" size="sm"
-                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive hover:text-destructive"
+                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-accessible hover:text-destructive-accessible"
                   title="Delete"
                   onClick={() => setDeletingId(b.id)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="icon-sm" />
                 </Button>
               </div>
             )}
@@ -829,7 +845,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="h-4 w-4 text-destructive" />Delete branch?
+              <AlertTriangle className="icon-sm text-destructive-accessible" />Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.
@@ -842,7 +858,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               disabled={deleteMutation.isPending}
               onClick={() => deletingId && deleteMutation.mutate({ branchId: deletingId })}
             >
-              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+              {deleteMutation.isPending ? <Loader2 className="icon-sm animate-spin mr-1" /> : <Trash2 className="icon-sm mr-1" />}
               Delete
             </Button>
           </DialogFooter>
@@ -865,9 +881,9 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
-        <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/60">
+        <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <History className="h-4 w-4 text-primary" />
+            <History className="icon-sm text-primary-accessible" />
             Canvas History
           </SheetTitle>
           <SheetDescription className="text-xs">
@@ -878,13 +894,13 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
         <Tabs defaultValue="snapshots" className="flex flex-col flex-1 overflow-hidden px-4 pt-3">
           <TabsList className="grid grid-cols-3 h-8 mb-3 shrink-0">
             <TabsTrigger value="snapshots" className="text-xs flex items-center gap-1">
-              <Camera className="h-3 w-3" />Snapshots
+              <Camera className="icon-sm" />Snapshots
             </TabsTrigger>
             <TabsTrigger value="versions" className="text-xs flex items-center gap-1">
-              <GitCommit className="h-3 w-3" />Versions
+              <GitCommit className="icon-sm" />Versions
             </TabsTrigger>
             <TabsTrigger value="branches" className="text-xs flex items-center gap-1">
-              <GitBranch className="h-3 w-3" />Branches
+              <GitBranch className="icon-sm" />Branches
             </TabsTrigger>
           </TabsList>
 

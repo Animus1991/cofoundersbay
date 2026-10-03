@@ -1,9 +1,10 @@
 'use client';
 
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
   UserCheck,
@@ -25,6 +26,9 @@ import {
   type ConnectionRequestItem,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,8 +39,13 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -72,15 +81,15 @@ function ConnectionCard({
         <Link href={`/profiles/${other.id}`}>
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary font-semibold">
-              {other.displayName[0]?.toUpperCase()}
+            <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
+              {initialsOf(other.displayName)}
             </AvatarFallback>
           </Avatar>
         </Link>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+            <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -103,11 +112,11 @@ function ConnectionCard({
                 agentId="matching"
                 cacheKey={`conn-match-${connection.id}`}
                 variant="icon"
-                label="AI collaboration insight"
+                label={bilingualAria(connectionsEn('ai_collaboration'), connectionsEl('ai_collaboration'))}
               />
               <Button variant="secondary" size="sm" className="gap-2" onClick={onMessage}>
                 <MessageCircle className="icon-sm" />
-                Message
+                <BilingualText en={connectionsEn('message')} el={connectionsEl('message')} compact />
               </Button>
             </>
           ) : isReceiver && connection.status === 'pending' ? (
@@ -119,22 +128,22 @@ function ConnectionCard({
                 disabled={isPending}
               >
                 <Check className="icon-sm" />
-                Accept
+                <BilingualText en={connectionsEn('accept')} el={connectionsEl('accept')} compact />
               </Button>
-              <Button
+              <Button aria-label={bilingualAria(connectionsEn('decline'), connectionsEl('decline'))}
                 variant="ghost"
                 size="sm"
-                className="gap-1 text-muted-foreground hover:text-destructive"
+                className="gap-1 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >
-                <X className="icon-sm" />
+                <X className="icon-sm" aria-hidden="true" />
               </Button>
             </>
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
               <Clock className="mr-1 icon-sm" />
-              Pending
+              <BilingualText en={connectionsEn('pending')} el={connectionsEl('pending')} compact />
             </Badge>
           )}
         </div>
@@ -162,21 +171,21 @@ function IntroRequestCard({
           <Link href={`/profiles/${sender.id}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold">
-                {sender.displayName[0]?.toUpperCase()}
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
+                {initialsOf(sender.displayName)}
               </AvatarFallback>
             </Avatar>
           </Link>
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+              <Link href={`/profiles/${sender.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
-              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary gap-1">
+              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary-accessible gap-1">
                 <Handshake className="icon-sm" />
-                Intro request
+                <BilingualText en={connectionsEn('intro_request')} el={connectionsEl('intro_request')} compact />
               </Badge>
             </div>
 
@@ -186,28 +195,28 @@ function IntroRequestCard({
 
             {connection.message && (
               <div className="flex gap-2 rounded-xl bg-secondary/50 px-3 py-2.5">
-                <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary/60" />
+                <Quote className="icon-sm shrink-0 mt-0.5 text-primary/60" />
                 <p className="text-sm text-foreground/80 italic">{connection.message}</p>
               </div>
             )}
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
-                <Check className="h-3.5 w-3.5" />
-                Accept intro
+                <Check className="icon-sm" />
+                <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 text-muted-foreground hover:text-destructive"
+                className="gap-1.5 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >
-                <X className="h-3.5 w-3.5" />
-                Decline
+                <X className="icon-sm" />
+                <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
-              <p className="ml-auto text-xs text-muted-foreground">
-                {new Date(connection.createdAt).toLocaleDateString()}
+              <p className="ml-auto shrink-0 text-xs text-muted-foreground">
+                {new Date(connection.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             </div>
           </div>
@@ -237,43 +246,66 @@ export default function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [tab, setTab] = useState<'intros' | 'received' | 'sent' | 'accepted'>('intros');
+  // Offered to the assistant: the tab, through the same setter. Accepting and
+  // declining are offered below, once the rows are known.
+  usePageControls([
+    choiceControl('tab', 'Connections tab', 'Καρτέλα συνδέσεων', [
+      { value: 'intros', en: 'Intros', el: 'Συστάσεις' },
+      { value: 'received', en: 'Received requests', el: 'Ληφθέντα αιτήματα' },
+      { value: 'sent', en: 'Sent requests', el: 'Σταλμένα αιτήματα' },
+      { value: 'accepted', en: 'Connected', el: 'Συνδεδεμένοι' },
+    ], tab, (v) => setTab(v as typeof tab)),
+  ]);
   const [justAcceptedUser, setJustAcceptedUser] = useState<{
     id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null;
   } | null>(null);
 
-  const viewerId =
-    typeof window !== 'undefined'
-      ? (() => {
-          try {
-            return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null;
-          } catch {
-            return null;
-          }
-        })()
-      : null;
+  // Read after mount, so the server and the first client render agree.
+  const viewerId = useStoredUser()?.id ?? null;
 
+  // Intros and Received are the same read (requests waiting on the reader),
+  // so they share one cache entry.
+  const listType = tab === 'intros' ? 'received' : tab;
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['connections', tab],
-    queryFn: () =>
-      listConnectionRequests({
-        type: tab === 'intros' ? 'received' : tab,
-      }),
+    queryKey: qk('connections', listType),
+    queryFn: () => listConnectionRequests({ type: listType }),
     staleTime: 30_000,
   });
+
+  /*
+   * The network figures were counted from whichever tab was open: on Intros
+   * (requests received) "Sent, pending" was always 0 and "Connected" counted
+   * only accepted requests the reader had received. Each figure now comes
+   * from its own read - the same three the tabs use, so they share a cache.
+   */
+  const [receivedQ, sentQ, acceptedQ] = useQueries({
+    queries: (['received', 'sent', 'accepted'] as const).map((type) => ({
+      queryKey: qk('connections', type),
+      queryFn: () => listConnectionRequests({ type }),
+      staleTime: 30_000,
+    })),
+  });
+  const countOf = (q: typeof receivedQ) => {
+    const list = q.data?.connections;
+    return q.data ? (Array.isArray(list) ? list.length : 0) : null;
+  };
+  const receivedCount = countOf(receivedQ);
+  const sentCount = countOf(sentQ);
+  const acceptedCount = countOf(acceptedQ);
 
   const respondMutation = useMutation({
     mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string; acceptedUserInfo?: { id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null } }) =>
       respondToConnectionRequest(id, status).then(() => otherUserId),
     onSuccess: (otherUserId, { status, acceptedUserInfo }) => {
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: qk('connections') });
       if (status === 'accepted' && otherUserId && acceptedUserInfo) {
         setJustAcceptedUser(acceptedUserInfo);
       } else if (status !== 'accepted') {
-        success('Request declined', 'The request has been removed.');
+        success(bilingualInline('Request declined', 'Το αίτημα απορρίφθηκε'), bilingualInline('The request has been removed.', 'Το αίτημα αφαιρέθηκε.'));
       }
     },
     onError: (err) => {
-      showError('Could not respond', err instanceof Error ? err.message : 'Please try again');
+      showError(bilingualInline('Could not respond', 'Δεν ήταν δυνατή η απάντηση'), err instanceof Error ? err.message : bilingualInline('Please try again', 'Δοκιμάστε ξανά'));
     },
   });
 
@@ -292,9 +324,105 @@ export default function ConnectionsPage() {
       ? allConnections.filter((c) => c.receiverId === viewerId && c.status === 'pending')
       : allConnections;
 
-  const introCount = connections.filter(
-    (c) => c.receiverId === viewerId && c.status === 'pending',
-  ).length;
+  const introCount = receivedCount ?? 0;
+
+  // What the tab shows, and the row buttons as commands: Accept and Decline
+  // on a request someone sent the reader - the same mutation the buttons run.
+  const otherOf = (c: (typeof connections)[number]) => (c.requesterId === viewerId ? c.receiver : c.requester);
+  const incoming = connections.filter((c) => c.receiverId === viewerId && c.status === 'pending');
+  const respond = (id: string | undefined, status: 'accepted' | 'declined') => {
+    const c = incoming.find((row) => row.id === id);
+    if (!c) return;
+    const other = otherOf(c);
+    respondMutation.mutate({
+      id: c.id,
+      status,
+      otherUserId: c.requesterId,
+      acceptedUserInfo: { id: c.requesterId, displayName: other?.displayName ?? '', avatarUrl: other?.avatarUrl ?? null, role: other?.role, headline: other?.headline ?? null },
+    });
+  };
+  usePageList([
+    {
+      id: 'connections',
+      labelEn: 'Connections',
+      labelEl: 'Συνδέσεις',
+      rows: isLoading ? undefined : connections.map((c) => {
+        const other = otherOf(c);
+        return `${other?.displayName ?? 'Someone'}${other?.role ? ` · ${other.role}` : ''}${other?.headline ? ` · ${other.headline}` : ''} · ${c.status}`;
+      }),
+    },
+  ]);
+  usePageControls([
+    {
+      id: 'accept_request',
+      labelEn: 'Accept connection request',
+      labelEl: 'Αποδοχή αιτήματος σύνδεσης',
+      writes: true,
+      options: rowOptions(incoming, (c) => c.id, (c) => otherOf(c)?.displayName ?? 'Request'),
+      unavailableEn: incoming.length ? undefined : 'No request is waiting on this tab.',
+      unavailableEl: incoming.length ? undefined : 'Κανένα αίτημα δεν περιμένει σε αυτή την καρτέλα.',
+      run: (v) => respond(v, 'accepted'),
+    },
+    {
+      id: 'decline_request',
+      labelEn: 'Decline connection request',
+      labelEl: 'Απόρριψη αιτήματος σύνδεσης',
+      writes: true,
+      options: rowOptions(incoming, (c) => c.id, (c) => otherOf(c)?.displayName ?? 'Request'),
+      unavailableEn: incoming.length ? undefined : 'No request is waiting on this tab.',
+      unavailableEl: incoming.length ? undefined : 'Κανένα αίτημα δεν περιμένει σε αυτή την καρτέλα.',
+      run: (v) => respond(v, 'declined'),
+    },
+  ]);
+
+  // Unknown until its own read answers: a dash, never a 0 that means "loading".
+  const figure = (n: number | null) => (n == null ? '—' : n);
+  const networkStats = [
+    { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: figure(acceptedCount), icon: Users, tone: 'accent' as const },
+    { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: figure(receivedCount), icon: Handshake, tone: 'warning' as const },
+    { labelEn: connectionsEn('stat_sent_pending'), labelEl: connectionsEl('stat_sent_pending'), value: figure(sentCount), icon: Send, tone: 'info' as const },
+    {
+      labelEn: connectionsEn('stat_total_interactions'),
+      labelEl: connectionsEl('stat_total_interactions'),
+      value: receivedCount == null || sentCount == null || acceptedCount == null ? '—' : receivedCount + sentCount + acceptedCount,
+      icon: TrendingUp,
+      tone: 'success' as const,
+    },
+  ];
+
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'people',
+      labelEn: 'Network',
+      labelEl: 'Δίκτυο',
+      content: (
+        <RailStats
+          items={networkStats.map((s) => ({
+            key: s.labelEn,
+            label: s.labelEn,
+            labelEl: s.labelEl,
+            value: s.value,
+            icon: s.icon,
+            tone: `${STATUS[s.tone].bg} ${STATUS[s.tone].icon}`,
+          }))}
+        />
+      ),
+    },
+    {
+      id: 'go',
+      glyph: 'discover',
+      labelEn: 'Where to go next',
+      labelEl: 'Πού να πάτε μετά',
+      content: (
+        <div className="space-y-1">
+          <RailAction icon={UserPlus} en={connectionsEn('find_people')} el={connectionsEl('find_people')} onClick={() => router.push('/discover')} />
+          <RailAction icon={Compass} en="Open matches" el="Άνοιγμα αντιστοιχίσεων" onClick={() => router.push('/matches')} />
+          <RailAction icon={MessageCircle} en="Open messages" el="Άνοιγμα μηνυμάτων" onClick={() => router.push('/messages')} />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -305,50 +433,15 @@ export default function ConnectionsPage() {
       />
     )}
     <AppShell
-      title="Connections"
-      description="Manage your network and connection requests"
-      actions={
-        <Link href="/discover">
-          <Button className="gap-2">
-            <UserPlus className="icon-sm" />
-            Find people
-          </Button>
-        </Link>
-      }
+      showHelp
+      rail={rail}
     >
-      <div className="space-y-5 pb-10">
-      {/* Stats bar */}
-      {!isLoading && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: 'Connected', value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Intro Requests', value: introCount, icon: Handshake, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Sent Pending', value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Total Interactions', value: (data?.connections ?? []).length, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          ].map((s) => {
-            const SIcon = s.icon;
-            return (
-              <Card key={s.label} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                    <SIcon className="icon-sm" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-
+      <div className="space-y-6 pb-10">
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">
             <Handshake className="icon-sm" />
-            Intro Requests
+            <BilingualText en={connectionsEn('intro_requests')} el={connectionsEl('intro_requests')} compact />
             {introCount > 0 && (
               <Badge variant="destructive" size="sm" className="ml-1 px-1.5">
                 {introCount}
@@ -357,15 +450,15 @@ export default function ConnectionsPage() {
           </TabsTrigger>
           <TabsTrigger value="received" className="gap-2">
             <UserCheck className="icon-sm" />
-            Received
+            <BilingualText en={connectionsEn('received')} el={connectionsEl('received')} compact />
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
             <Send className="icon-sm" />
-            Sent
+            <BilingualText en={connectionsEn('sent')} el={connectionsEl('sent')} compact />
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
             <Users className="icon-sm" />
-            Connected
+            <BilingualText en={connectionsEn('connected')} el={connectionsEl('connected')} compact />
           </TabsTrigger>
         </TabsList>
 
@@ -373,23 +466,24 @@ export default function ConnectionsPage() {
         <TabsContent value="intros" className="mt-6 space-y-3">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load requests.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Requests could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των αιτημάτων." wrap /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
           ) : connections.length === 0 ? (
             <EmptyState
               illustration="default"
-              title="No intro requests"
-              description="When someone sends you a connection request with a message, it appears here."
+              title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
+              description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
+              askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
               action={
-                <Link href="/discover">
-                  <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" asChild>
+                  <Link href="/discover">
                     <Compass className="icon-sm" />
-                    Discover people
-                  </Button>
-                </Link>
+                    <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
+                  </Link>
+                </Button>
               }
             />
           ) : (
@@ -398,7 +492,7 @@ export default function ConnectionsPage() {
                 key={c.id}
                 connection={c}
                 isPending={respondMutation.isPending}
-                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester.headline ?? null } })}
+                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester?.headline ?? null } })}
                 onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
               />
             ))
@@ -410,8 +504,8 @@ export default function ConnectionsPage() {
           <TabsContent key={t} value={t} className="mt-6 space-y-3">
             {isError && tab === t ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load connections.</p>
-                <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Connections could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των συνδέσεων." wrap /></p>
+                <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
               </CardContent></Card>
             ) : isLoading && tab === t ? (
               Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
@@ -419,27 +513,42 @@ export default function ConnectionsPage() {
               <EmptyState
                 illustration={t === 'accepted' ? 'connection' : 'default'}
                 title={
-                  t === 'received'
-                    ? 'No pending requests'
-                    : t === 'sent'
-                      ? 'No sent requests'
-                      : 'No connections yet'
+                  <BilingualText
+                    en={
+                      t === 'received' ? connectionsEn('no_pending_requests')
+                        : t === 'sent' ? connectionsEn('no_sent_requests')
+                        : connectionsEn('no_connections_yet')
+                    }
+                    el={
+                      t === 'received' ? connectionsEl('no_pending_requests')
+                        : t === 'sent' ? connectionsEl('no_sent_requests')
+                        : connectionsEl('no_connections_yet')
+                    }
+                  />
                 }
                 description={
-                  t === 'accepted'
-                    ? 'Start connecting with founders, mentors, and investors.'
-                    : t === 'sent'
-                      ? 'Browse profiles and send connection requests.'
-                      : 'When people send you requests, they appear here.'
+                  <BilingualText
+                    en={
+                      t === 'accepted' ? connectionsEn('start_connecting')
+                        : t === 'sent' ? connectionsEn('browse_profiles')
+                        : connectionsEn('when_people_send')
+                    }
+                    el={
+                      t === 'accepted' ? connectionsEl('start_connecting')
+                        : t === 'sent' ? connectionsEl('browse_profiles')
+                        : connectionsEl('when_people_send')
+                    }
+                  />
                 }
+                askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={
                   t !== 'received' ? (
-                    <Link href="/discover">
-                      <Button variant="secondary" className="gap-2">
+                    <Button variant="secondary" className="gap-2" asChild>
+                      <Link href="/discover">
                         <Compass className="icon-sm" />
-                        Discover people
-                      </Button>
-                    </Link>
+                        <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
+                      </Link>
+                    </Button>
                   ) : undefined
                 }
               />
@@ -449,7 +558,7 @@ export default function ConnectionsPage() {
                   ? { id: c.receiverId, displayName: c.receiver?.displayName ?? '', avatarUrl: c.receiver?.avatarUrl ?? null, role: c.receiver?.role, headline: c.receiver?.headline ?? null }
                   : { id: c.requesterId, displayName: c.requester?.displayName ?? '', avatarUrl: c.requester?.avatarUrl ?? null, role: c.requester?.role, headline: c.requester?.headline ?? null };
                 return (
-                  <div key={c.id} className="rounded-xl overflow-hidden border border-border/60 shadow-sm">
+                  <div key={c.id} className="rounded-xl overflow-hidden border border-border shadow-sm">
                     <ConnectionCard
                       connection={c}
                       viewerId={viewerId}

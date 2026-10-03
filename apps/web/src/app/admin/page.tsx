@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import {
   Users,
   Flag,
@@ -76,6 +77,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatCard } from '@/components/common/StatCard';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { BilingualText } from '@/components/common/BilingualText';
+
 import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
 import { ScoreInspector } from '@/components/admin/ScoreInspector';
 import { AbuseMonitorPanel } from '@/components/admin/AbuseMonitorPanel';
@@ -84,19 +88,23 @@ import { BehaviorAdminPanel } from '@/components/behavioral/BehaviorAdminPanel';
 import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { qk } from '@/lib/query-keys';
+import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { bilingualInline } from '@/lib/i18n/format';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-400' },
-  fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400' },
-  other: { label: 'Other', color: 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400' },
+  spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  harassment: { label: 'Harassment', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
+  fake: { label: 'Fake Profile', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
+  inappropriate: { label: 'Inappropriate', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  other: { label: 'Other', color: 'bg-muted text-foreground border-border ' },
 };
 
 const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'text-amber-600 dark:text-amber-400', icon: Clock },
-  reviewed: { label: 'Under Review', color: 'text-blue-600 dark:text-blue-400', icon: Eye },
-  resolved: { label: 'Resolved', color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'text-status-warning ', icon: Clock },
+  reviewed: { label: 'Under Review', color: 'text-status-info ', icon: Eye },
+  resolved: { label: 'Resolved', color: 'text-status-success ', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
@@ -117,12 +125,12 @@ function EmailTemplatesTab() {
   const [sending, setSending] = useState(false);
 
   const { data: listData, isLoading: listLoading } = useQuery({
-    queryKey: ['admin-email-templates'],
+    queryKey: qk('admin', 'email-templates'),
     queryFn: listAdminEmailTemplates,
   });
 
   const { data: preview, isLoading: previewLoading } = useQuery({
-    queryKey: ['admin-email-preview', selectedId],
+    queryKey: qk('admin', 'email-preview', selectedId),
     queryFn: () => getAdminEmailTemplatePreview(selectedId!),
     enabled: !!selectedId,
   });
@@ -145,16 +153,16 @@ function EmailTemplatesTab() {
 
   return (
     <TabsContent value="email" className="mt-6 space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Template list */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">Templates</CardTitle>
+            <CardTitle className="text-sm font-semibold"><BilingualText en="Templates" el="Πρότυπα" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {listLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 border-b border-border/40 px-4 py-3">
+                <div key={i} className="flex items-center gap-3 border-b border-border px-4 py-3">
                   <Skeleton className="icon-sm rounded" />
                   <Skeleton className="h-4 flex-1" />
                 </div>
@@ -164,7 +172,7 @@ function EmailTemplatesTab() {
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedId(tpl.id)}
-                  className={`flex w-full items-center justify-between gap-3 border-b border-border/40 px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
+                  className={`flex w-full items-center justify-between gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
                     selectedId === tpl.id ? 'bg-secondary' : ''
                   }`}
                 >
@@ -172,7 +180,7 @@ function EmailTemplatesTab() {
                     <p className="text-sm font-medium text-foreground truncate">{tpl.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{tpl.description}</p>
                   </div>
-                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground" />
+                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 </button>
               ))
             )}
@@ -201,7 +209,7 @@ function EmailTemplatesTab() {
                     onClick={handleTestSend}
                     disabled={!testEmail || sending}
                   >
-                    <Send className="icon-sm" />
+                    <Send className="icon-sm" aria-hidden="true" />
                     {sending ? 'Sending…' : 'Test Send'}
                   </Button>
                 </div>
@@ -216,8 +224,8 @@ function EmailTemplatesTab() {
           <CardContent>
             {!selectedId && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Mail className="icon-lg text-muted-foreground mb-3" />
-                <p className="text-sm text-muted-foreground">Select a template to preview it</p>
+                <Mail className="icon-lg text-muted-foreground mb-3" aria-hidden="true" />
+                <p className="text-sm text-muted-foreground"><BilingualText en="Select a template to preview it" el="Επιλέξτε πρότυπο για προεπισκόπηση" compact /></p>
               </div>
             )}
             {selectedId && previewLoading && (
@@ -268,15 +276,15 @@ function ReportCard({
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${report.reported.id}`}>
               <Avatar className="icon-md">
-                <AvatarFallback className="bg-destructive/20 text-destructive">
+                <AvatarFallback className="bg-destructive/20 text-destructive-accessible">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
-                  {report.reported.name || report.reported.email}
+                <Link href={`/profiles/${report.reported.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                  {report.reported?.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
                 <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
@@ -284,7 +292,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} format={formatTimeAgo} />
               </p>
             </div>
           </div>
@@ -295,30 +303,30 @@ function ReportCard({
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
-                  <MoreHorizontal className="icon-sm" />
+                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${report.reported.id}`}>
-                    <Eye className="icon-sm mr-2" />
-                    View profile
+                    <Eye className="icon-sm mr-2" aria-hidden="true" />
+                    <BilingualText en="View profile" el="Προβολή προφίλ" compact />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
-                  <CheckCircle className="icon-sm mr-2" />
-                  Resolve
+                <DropdownMenuItem onClick={onResolve} className="text-status-success">
+                  <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Resolve" el="Επίλυση" compact />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDismiss}>
-                  <XCircle className="icon-sm mr-2" />
-                  Dismiss
+                  <XCircle className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Dismiss" el="Απόρριψη" compact />
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBanUser} className="text-destructive">
+                <DropdownMenuItem onClick={onBanUser} className="text-destructive-accessible">
                   <Ban className="icon-sm mr-2" />
-                  Ban user
+                  <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -332,10 +340,10 @@ function ReportCard({
         {report.status === 'pending' && (
           <div className="mt-4 flex items-center gap-2">
             <Button size="sm" variant="secondary" onClick={onDismiss} disabled={isActing}>
-              Dismiss
+              <BilingualText en="Dismiss" el="Απόρριψη" compact />
             </Button>
             <Button size="sm" onClick={onResolve} disabled={isActing}>
-              Resolve
+              <BilingualText en="Resolve" el="Επίλυση" compact />
             </Button>
           </div>
         )}
@@ -360,27 +368,27 @@ function UserRow({
   const displayName = user.profile?.displayName ?? user.email;
 
   return (
-    <div className="flex items-center gap-4 border-b border-border/40 p-4 transition-colors hover:bg-secondary/30">
+    <div className="flex items-center gap-4 border-b border-border p-4 transition-colors hover:bg-secondary/30">
       <Link href={`/profiles/${user.id}`}>
         <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
+          <AvatarFallback className="bg-primary/20 text-primary-accessible">
             {displayName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-accessible transition-colors">
             {displayName}
           </Link>
           <Badge
             variant="outline"
             className={cn(
               'text-xs',
-              user.moderationStatus === 'active' ? 'text-emerald-400 border-emerald-500/30' :
-              user.moderationStatus === 'suspended' ? 'text-amber-400 border-amber-500/30' :
-              'text-red-400 border-red-500/30',
+              user.moderationStatus === 'active' ? 'text-status-success border-status-success-border' :
+              user.moderationStatus === 'suspended' ? 'text-status-warning border-status-warning-border' :
+              'text-status-danger border-status-danger-border',
             )}
           >
             {user.moderationStatus}
@@ -391,51 +399,51 @@ function UserRow({
       <div className="hidden text-right sm:block">
         <p className="text-sm capitalize text-foreground">{user.role}</p>
         {user.lastSeenAt && (
-          <p className="text-xs text-muted-foreground">{formatTimeAgo(user.lastSeenAt)}</p>
+          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} format={formatTimeAgo} /></p>
         )}
       </div>
       <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
         <p className="text-xs text-muted-foreground">
-          Joined {formatTimeAgo(user.createdAt)}
+          <BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} format={formatTimeAgo} />
         </p>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={isActing}>
-            <MoreHorizontal className="icon-sm" />
+          <Button aria-label="More options" variant="ghost" size="icon" disabled={isActing}>
+            <MoreHorizontal className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
             <Link href={`/profiles/${user.id}`}>
-              <Eye className="mr-2 icon-sm" />
-              View profile
+              <Eye className="mr-2 icon-sm" aria-hidden="true" />
+              <BilingualText en="View profile" el="Προβολή προφίλ" compact />
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
-            <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
+            <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
               <AlertTriangle className="mr-2 icon-sm" />
-              Suspend
+              <BilingualText en="Suspend" el="Αναστολή" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
-              Reactivate
+              <BilingualText en="Reactivate" el="Επανενεργοποίηση" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
-            <DropdownMenuItem onClick={onBan} className="text-destructive">
+            <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
               <Ban className="mr-2 icon-sm" />
-              Ban permanently
+              <BilingualText en="Ban permanently" el="Οριστικός αποκλεισμός" compact />
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
-              Unban
+              <BilingualText en="Unban" el="Άρση αποκλεισμού" compact />
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -444,39 +452,99 @@ function UserRow({
   );
 }
 
+/** The console's sections, grouped by the job each serves. */
+const ADMIN_TAB_GROUPS: ReadonlyArray<{
+  en: string;
+  el: string;
+  tabs: ReadonlyArray<{ value: string; en: string; el: string; icon: typeof Flag }>;
+}> = [
+  {
+    en: 'Moderation',
+    el: 'Έλεγχος',
+    tabs: [
+      { value: 'reports', en: 'Reports', el: 'Αναφορές', icon: Flag },
+      { value: 'abuse', en: 'Abuse monitor', el: 'Καταχρήσεις', icon: AlertTriangle },
+      { value: 'audit', en: 'Audit log', el: 'Αρχείο ελέγχου', icon: Shield },
+    ],
+  },
+  {
+    en: 'People',
+    el: 'Άνθρωποι',
+    tabs: [
+      { value: 'users', en: 'Users', el: 'Χρήστες', icon: Users },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κύκλοι', icon: GraduationCap },
+    ],
+  },
+  {
+    en: 'Content',
+    el: 'Περιεχόμενο',
+    tabs: [
+      { value: 'content', en: 'Events & jobs', el: 'Εκδηλώσεις & αγγελίες', icon: Layers },
+      { value: 'email', en: 'Email templates', el: 'Πρότυπα email', icon: Mail },
+    ],
+  },
+  {
+    en: 'Insights',
+    el: 'Αναλύσεις',
+    tabs: [
+      { value: 'analytics', en: 'Analytics', el: 'Αναλυτικά', icon: BarChart3 },
+      { value: 'score-inspector', en: 'Score inspector', el: 'Έλεγχος βαθμολογίας', icon: BarChart3 },
+      { value: 'behavior', en: 'Behaviour AI', el: 'Συμπεριφορά (AI)', icon: Brain },
+      { value: 'experiments', en: 'Experiments', el: 'Πειράματα', icon: FlaskConical },
+      { value: 'gamification', en: 'Gamification', el: 'Παιχνιδοποίηση', icon: Zap },
+    ],
+  },
+];
+
+const WIDE_QUERY = '(min-width: 1024px)';
+/** True from lg up, where the console's sections become a column. */
+function useWide(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const list = window.matchMedia(WIDE_QUERY);
+      list.addEventListener?.('change', onChange);
+      return () => list.removeEventListener?.('change', onChange);
+    },
+    () => window.matchMedia(WIDE_QUERY).matches,
+    () => false,
+  );
+}
+
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('reports');
+  const wide = useWide();
   const [userSearch, setUserSearch] = useState('');
   const [cohortSearch, setCohortSearch] = useState('');
   const [showNewCohort, setShowNewCohort] = useState(false);
   const [newCohort, setNewCohort] = useState({ name: '', slug: '', description: '', startDate: '', endDate: '', capacity: '' });
 
   const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: qk('admin', 'stats'),
     queryFn: () => getAdminStats(),
     staleTime: 30_000,
   });
 
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
-    queryKey: ['admin-reports'],
+    queryKey: qk('admin', 'reports', 'home'),
     queryFn: () => listAdminReports({ limit: 100 }),
   });
 
   const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
-    queryKey: ['admin-users', userSearch],
+    queryKey: qk('admin', 'users', 'home', userSearch),
     queryFn: () => listAdminUsers({ q: userSearch || undefined, limit: 100 }),
   });
 
   const { data: auditData, isLoading: auditLoading } = useQuery({
-    queryKey: ['admin-audit-logs'],
+    queryKey: qk('admin', 'audit-logs', 'home'),
     queryFn: () => listAdminAuditLogs({ limit: 50 }),
     enabled: activeTab === 'audit',
   });
 
   const { data: cohortsData, isLoading: cohortsLoading, refetch: refetchCohorts } = useQuery({
-    queryKey: ['admin-cohorts', cohortSearch],
+    queryKey: qk('admin', 'cohorts', cohortSearch),
     queryFn: () => listAdminCohorts({ q: cohortSearch || undefined, limit: 50 }),
     enabled: activeTab === 'cohorts',
   });
@@ -499,14 +567,14 @@ export default function AdminPage() {
   });
 
   const { data: eventsData, isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useQuery({
-    queryKey: ['admin-events'],
+    queryKey: qk('events', 'admin'),
     queryFn: () => listEvents({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
   });
 
   const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: ['admin-jobs'],
+    queryKey: qk('jobs', 'admin'),
     queryFn: () => listJobs({ limit: 50 }),
     enabled: activeTab === 'content',
     retry: 1,
@@ -516,8 +584,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id, featured }: { type: 'event' | 'group' | 'job'; id: string; featured: boolean }) =>
       featureContent(type, id, featured),
     onSuccess: (_, { featured }) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      queryClient.invalidateQueries({ queryKey: qk('events') });
+      queryClient.invalidateQueries({ queryKey: qk('jobs') });
       success(featured ? 'Featured' : 'Unfeatured', 'Content visibility updated.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -527,8 +595,8 @@ export default function AdminPage() {
     mutationFn: ({ type, id }: { type: 'event' | 'group' | 'job'; id: string }) =>
       removeContent(type, id, 'Removed by admin'),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      queryClient.invalidateQueries({ queryKey: qk('events') });
+      queryClient.invalidateQueries({ queryKey: qk('jobs') });
       success('Removed', 'Content removed from the platform.');
     },
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
@@ -564,8 +632,8 @@ export default function AdminPage() {
         moderationStatus: banUserId ? 'banned' : undefined,
       }),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'reports') });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
       if (vars.banUserId) success('User banned', 'Report resolved and user banned.');
       else if (vars.status === 'resolved') success('Report resolved', 'Action recorded.');
       else success('Report dismissed', 'No action taken.');
@@ -577,7 +645,7 @@ export default function AdminPage() {
     mutationFn: ({ userId, status }: { userId: string; status: 'active' | 'suspended' | 'banned' }) =>
       updateAdminUserModeration(userId, status),
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: qk('admin', 'users') });
       const labels: Record<string, string> = {
         active: 'reactivated',
         suspended: 'suspended',
@@ -601,115 +669,212 @@ export default function AdminPage() {
       )
     : users;
 
+  // A cohort delete used to run on the first click of a hover-only icon. It
+  // asks now, from the button and from the assistant alike.
+  const deleteCohort = async (cohort: { id: string; name: string }) => {
+    if (await confirm(deleteConfirmCopy({ en: 'cohort', el: 'κοορτής' }, cohort.name))) deleteCohortMutation.mutate(cohort.id);
+  };
+
+  // Offered to the assistant: the tab, Refresh, the audit export, and each
+  // row's actions on reports, users, cohorts, events and jobs - the same
+  // mutations the row buttons run.
+  const cohorts = cohortsData?.cohorts ?? [];
+  const events = eventsData?.events ?? [];
+  const jobs = jobsData?.jobs ?? [];
+  const openReportRows = reports.filter((r) => r.status === 'pending' || r.status === 'reviewed');
+  const reportLabel = (r: AdminReportItem) => `${r.type} — ${r.reported.name}`;
+  const userName = (u: (typeof users)[number]) => u.profile?.displayName || u.email;
+  usePageList([
+    { id: 'reports', labelEn: 'Reports', labelEl: 'Αναφορές', rows: reportsLoading ? undefined : reports.map((r) => `${reportLabel(r)} · ${r.status} · by ${r.reporter.name}: ${r.reason}`) },
+    { id: 'users', labelEn: 'Users', labelEl: 'Χρήστες', rows: usersLoading ? undefined : filteredUsers.map((u) => `${userName(u)} · ${u.email} · ${u.role} · ${u.moderationStatus}${u.reportsCount ? ` · ${u.reportsCount} reports` : ''}`) },
+    { id: 'cohorts', labelEn: 'Cohorts', labelEl: 'Κύκλοι', rows: activeTab === 'cohorts' && !cohortsLoading ? cohorts.map((c) => `${c.name} · ${c.isActive ? 'active' : 'inactive'}${c.capacity ? ` · capacity ${c.capacity}` : ''}`) : undefined },
+    { id: 'events', labelEn: 'Events', labelEl: 'Εκδηλώσεις', rows: activeTab === 'content' && !eventsLoading ? events.map((e) => `${e.title} · ${e.startAt.slice(0, 10)}${e.isFeatured ? ' · featured' : ''}`) : undefined },
+    { id: 'jobs', labelEn: 'Jobs', labelEl: 'Αγγελίες', rows: activeTab === 'content' && !jobsLoading ? jobs.map((j) => `${j.title} · ${j.creator.displayName}${j.isFeatured ? ' · featured' : ''}`) : undefined },
+  ]);
+  usePageControls([
+    choiceControl('admin_tab', 'Admin section', 'Ενότητα διαχείρισης', [
+      { value: 'reports', en: 'Reports', el: 'Αναφορές' },
+      { value: 'users', en: 'Users', el: 'Χρήστες' },
+      { value: 'content', en: 'Content', el: 'Περιεχόμενο' },
+      { value: 'cohorts', en: 'Cohorts', el: 'Κύκλοι' },
+      { value: 'analytics', en: 'Analytics', el: 'Στατιστικά' },
+      { value: 'audit', en: 'Audit log', el: 'Αρχείο ελέγχου' },
+      { value: 'email', en: 'Email templates', el: 'Πρότυπα email' },
+      { value: 'gamification', en: 'Gamification', el: 'Gamification' },
+      { value: 'score-inspector', en: 'Score inspector', el: 'Επιθεώρηση βαθμολογίας' },
+      { value: 'abuse', en: 'Abuse monitor', el: 'Παρακολούθηση κατάχρησης' },
+      { value: 'experiments', en: 'Experiments', el: 'Πειράματα' },
+      { value: 'behavior', en: 'Behavior AI', el: 'Behavior AI' },
+    ], activeTab, setActiveTab),
+    { id: 'refresh', labelEn: 'Refresh all admin data', labelEl: 'Ανανέωση όλων των δεδομένων', writes: false, run: () => { void refetchReports(); void refetchUsers(); void refetchStats(); } },
+    {
+      id: 'export_audit_log',
+      labelEn: 'Export the audit log as CSV',
+      labelEl: 'Εξαγωγή αρχείου ελέγχου σε CSV',
+      writes: false,
+      unavailableEn: auditData?.logs?.length ? undefined : 'Open the audit log first; nothing is loaded to export.',
+      unavailableEl: auditData?.logs?.length ? undefined : 'Ανοίξτε πρώτα το αρχείο ελέγχου· δεν έχει φορτωθεί τίποτα.',
+      run: exportAuditLogCSV,
+    },
+    { id: 'resolve_report', labelEn: 'Resolve report', labelEl: 'Επίλυση αναφοράς', writes: true, options: rowOptions(openReportRows, (r) => r.id, reportLabel), run: (v) => { if (v) reportMutation.mutate({ id: v, status: 'resolved' }); } },
+    { id: 'dismiss_report', labelEn: 'Dismiss report', labelEl: 'Απόρριψη αναφοράς', writes: true, options: rowOptions(openReportRows, (r) => r.id, reportLabel), run: (v) => { if (v) reportMutation.mutate({ id: v, status: 'dismissed' }); } },
+    {
+      id: 'ban_reported_user',
+      labelEn: 'Resolve report and ban the reported user',
+      labelEl: 'Επίλυση αναφοράς και αποκλεισμός χρήστη',
+      writes: true,
+      options: rowOptions(openReportRows, (r) => r.id, reportLabel),
+      run: (v) => { const r = reports.find((x) => x.id === v); if (r) reportMutation.mutate({ id: r.id, status: 'resolved', banUserId: r.reported.id }); },
+    },
+    // One field each way (admin.service updateUserModerationStatus): the
+    // previous status is restored by the command that sets it.
+    { id: 'suspend_user', labelEn: 'Suspend user', labelEl: 'Αναστολή χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus === 'active'), (u) => u.id, userName), undo: (v) => ({ control: 'reactivate_user', value: v }), run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'suspended' }); } },
+    { id: 'reactivate_user', labelEn: 'Reactivate user', labelEl: 'Επανενεργοποίηση χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'active'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'suspended' ? { control: 'suspend_user', value: v } : prior === 'banned' ? { control: 'ban_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'active' }); } },
+    { id: 'ban_user', labelEn: 'Ban user', labelEl: 'Αποκλεισμός χρήστη', writes: true, options: rowOptions(filteredUsers.filter((u) => u.moderationStatus !== 'banned'), (u) => u.id, userName), undo: (v) => { const prior = users.find((u) => u.id === v)?.moderationStatus; return prior === 'active' ? { control: 'reactivate_user', value: v } : prior === 'suspended' ? { control: 'suspend_user', value: v } : undefined; }, run: (v) => { if (v) userMutation.mutate({ userId: v, status: 'banned' }); } },
+    { id: 'delete_cohort', labelEn: 'Delete cohort', labelEl: 'Διαγραφή κύκλου', writes: true, options: rowOptions(cohorts, (c) => c.id, (c) => c.name), unavailableEn: activeTab === 'cohorts' ? undefined : 'Open the Cohorts tab first.', unavailableEl: activeTab === 'cohorts' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Κύκλοι.', run: (v) => { const c = cohorts.find((x) => x.id === v); if (c) void deleteCohort(c); } },
+    { id: 'feature_event', labelEn: 'Feature or unfeature event', labelEl: 'Προβολή ή απόσυρση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const e = events.find((x) => x.id === v); if (e) featureMutation.mutate({ type: 'event', id: e.id, featured: !e.isFeatured }); } },
+    { id: 'feature_job', labelEn: 'Feature or unfeature job', labelEl: 'Προβολή ή απόσυρση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { const j = jobs.find((x) => x.id === v); if (j) featureMutation.mutate({ type: 'job', id: j.id, featured: !j.isFeatured }); } },
+    { id: 'remove_event', labelEn: 'Remove event', labelEl: 'Αφαίρεση εκδήλωσης', writes: true, options: rowOptions(events, (e) => e.id, (e) => e.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'event', id: v }); } },
+    { id: 'remove_job', labelEn: 'Remove job', labelEl: 'Αφαίρεση αγγελίας', writes: true, options: rowOptions(jobs, (j) => j.id, (j) => j.title), unavailableEn: activeTab === 'content' ? undefined : 'Open the Events & jobs tab first.', unavailableEl: activeTab === 'content' ? undefined : 'Ανοίξτε πρώτα την καρτέλα Εκδηλώσεις & αγγελίες.', run: (v) => { if (v) removeContentMutation.mutate({ type: 'job', id: v }); } },
+  ]);
+
+  /*
+   * The six platform totals used to sit above the tabs, so the first thing an
+   * admin saw was a row of figures rather than the queue they came to work.
+   * Same six cards, same values, same trends, one gesture to the right - and
+   * the badge on the collapsed strip is the open-reports count, so the one
+   * figure that asks for action is visible without opening anything.
+   */
+  const openReports = stats?.pendingReports ?? pendingReports;
+  const rail: PageRailSection[] = [
+    {
+      id: 'summary',
+      glyph: 'chart',
+      labelEn: 'Platform totals',
+      labelEl: 'Σύνολα πλατφόρμας',
+      badge: openReports > 0 ? openReports : null,
+      content: (
+        <div className="space-y-2">
+          <StatCard
+            label="Total Users"
+            value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+            trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
+          />
+          <StatCard
+            label="Active Today"
+            value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Pending Reports"
+            value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
+            icon={<Flag className="icon-md" aria-hidden="true" />}
+            trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
+          />
+          <StatCard
+            label="Connections"
+            value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Messages"
+            value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <StatCard
+            label="Events"
+            value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
+            icon={<Users className="icon-md" />}
+          />
+          <Link
+            href="/admin/dashboard"
+            className="flex min-h-10 items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-primary-accessible hover:bg-muted/70 focus-ring"
+          >
+            <BilingualText en="Platform overview and API health" el="Επισκόπηση πλατφόρμας και υγεία API" compact wrap />
+          </Link>
+        </div>
+      ),
+    },
+    {
+      // The page's utilities, moved out of the header and the audit tab's
+      // card header: one Refresh for every query the page runs, and the
+      // audit-log export. Moved, not copied - the header and the card no
+      // longer carry either button.
+      id: 'tools',
+      glyph: 'sliders',
+      labelEn: 'Data tools',
+      labelEl: 'Εργαλεία δεδομένων',
+      content: (
+        <div className="space-y-0.5">
+          <button
+            type="button"
+            onClick={() => { void refetchReports(); void refetchUsers(); void refetchStats(); }}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
+          >
+            <RefreshCw className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Refresh all data" el="Ανανέωση όλων των δεδομένων" compact wrap /></span>
+          </button>
+          <button
+            type="button"
+            onClick={exportAuditLogCSV}
+            disabled={!auditData?.logs?.length}
+            className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="icon-sm shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1"><BilingualText en="Export audit log (CSV)" el="Εξαγωγή αρχείου ελέγχου (CSV)" compact wrap /></span>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
-      title="Admin Dashboard"
-      description="Manage users, moderate content, and monitor platform health"
-      actions={
-        <Button
-          variant="secondary"
-          size="sm"
-          className="gap-2"
-          onClick={() => { void refetchReports(); void refetchUsers(); }}
-        >
-          <RefreshCw className="icon-sm" />
-          Refresh
-        </Button>
-      }
+      title="Admin console"
+      titleEl="Κονσόλα διαχείρισης"
+      description="Reports, people, content and the platform's tools."
+      descriptionEl="Αναφορές, άνθρωποι, περιεχόμενο και τα εργαλεία της πλατφόρμας."
+      showHelp
+      rail={rail}
     >
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-        <StatCard
-          label="Total Users"
-          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
-          trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
-        />
-        <StatCard
-          label="Active Today"
-          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Pending Reports"
-          value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-          icon={<Flag className="icon-md" />}
-          trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
-        />
-        <StatCard
-          label="Connections"
-          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Messages"
-          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
-        />
-        <StatCard
-          label="Events"
-          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
-        />
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="reports" className="gap-2">
-            <Flag className="icon-sm" />
-            Reports
-            {pendingReports > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
-                {pendingReports}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="users" className="gap-2">
-            <Users className="icon-sm" />
-            Users
-          </TabsTrigger>
-          <TabsTrigger value="content" className="gap-2">
-            <Layers className="icon-sm" />
-            Content
-          </TabsTrigger>
-          <TabsTrigger value="cohorts" className="gap-2">
-            <GraduationCap className="icon-sm" />
-            Cohorts
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="gap-2">
-            <BarChart3 className="icon-sm" />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="audit" className="gap-2">
-            <Shield className="icon-sm" />
-            Audit Log
-          </TabsTrigger>
-          <TabsTrigger value="email" className="gap-2">
-            <Mail className="icon-sm" />
-            Email Templates
-          </TabsTrigger>
-          <TabsTrigger value="gamification" className="gap-2">
-            <Zap className="icon-sm" />
-            Gamification
-          </TabsTrigger>
-          <TabsTrigger value="score-inspector" className="gap-2">
-            <BarChart3 className="icon-sm" />
-            Score Inspector
-          </TabsTrigger>
-          <TabsTrigger value="abuse" className="gap-2">
-            <AlertTriangle className="icon-sm" />
-            Abuse Monitor
-          </TabsTrigger>
-          <TabsTrigger value="experiments" className="gap-2">
-            <FlaskConical className="icon-sm" />
-            Experiments
-          </TabsTrigger>
-          <TabsTrigger value="behavior" className="gap-2">
-            <Brain className="icon-sm" />
-            Behavior AI
-          </TabsTrigger>
+      {/*
+        Twelve sections in one horizontal strip hid a third of them past its
+        edge at every desktop width ("Abus" was the last visible). On a
+        desktop they are a column, grouped by the job each one serves, so all
+        twelve are visible and the four groups say where to look; below lg
+        the same list is the scrolling strip it was, in the same order.
+      */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        orientation={wide ? 'vertical' : 'horizontal'}
+        className="lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-6"
+      >
+        <TabsList className="lg:sticky lg:top-24 lg:flex lg:w-full lg:flex-col lg:items-stretch lg:gap-0.5 lg:overflow-visible lg:p-1.5">
+          {ADMIN_TAB_GROUPS.map((group) => (
+            <Fragment key={group.en}>
+              <span aria-hidden="true" className="hidden px-3 pb-1 pt-3 text-2xs font-medium text-muted-foreground/80 first:pt-1.5 lg:block">
+                <BilingualText en={group.en} el={group.el} compact />
+              </span>
+              {group.tabs.map(({ value, en, el, icon: Icon }) => (
+                <TabsTrigger key={value} value={value} className="gap-2 lg:justify-start lg:whitespace-normal lg:text-left">
+                  <Icon className="icon-sm shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 lg:flex-1">
+                    <BilingualText en={en} el={el} stacked wrap />
+                  </span>
+                  {value === 'reports' && pendingReports > 0 && (
+                    <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+                      {pendingReports}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              ))}
+            </Fragment>
+          ))}
         </TabsList>
+
+        <div className="min-w-0 lg:[&>[role=tabpanel]]:mt-0">
 
         {/* Reports Tab */}
         <TabsContent value="reports" className="mt-6 space-y-4">
@@ -739,9 +904,9 @@ export default function AdminPage() {
           ) : reports.filter((r) => r.status === 'pending').length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
-                <h3 className="text-lg font-semibold text-foreground">All clear!</h3>
-                <p className="text-sm text-muted-foreground">No pending reports to review</p>
+                <Shield className="mx-auto mb-4 h-12 w-12 text-status-success" aria-hidden="true" />
+                <h3 className="text-lg font-semibold text-foreground"><BilingualText en="All clear!" el="Όλα καθαρά!" compact /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="No pending reports to review" el="Δεν υπάρχουν αναφορές για έλεγχο" compact /></p>
               </CardContent>
             </Card>
           ) : (
@@ -775,11 +940,11 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-base">User Management</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="User Management" el="Διαχείριση χρηστών" compact /></CardTitle>
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
-                    placeholder="Search users…"
+                    placeholder={bilingualInline("Search users…", "Αναζήτηση χρηστών…")}
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                     className="pl-9"
@@ -790,7 +955,7 @@ export default function AdminPage() {
             <CardContent className="p-0">
               {usersLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                     <Skeleton className="h-10 w-10 rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-36" />
@@ -799,7 +964,7 @@ export default function AdminPage() {
                   </div>
                 ))
               ) : filteredUsers.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground">No users found</div>
+                <div className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact /></div>
               ) : (
                 filteredUsers.map((user) => (
                   <UserRow
@@ -822,29 +987,29 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                Events
+                <Calendar className="icon-sm text-muted-foreground" />
+                <BilingualText en="Events" el="Εκδηλώσεις" compact />
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> <BilingualText en="Refresh" el="Ανανέωση" compact />
               </Button>
             </div>
             {eventsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
-                  <Skeleton className="h-8 w-8 rounded shrink-0" />
+                <div key={i} className="flex items-center gap-4 border-b border-border p-4">
+                  <Skeleton className="h-8 w-8 rounded-md shrink-0" />
                   <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact /> <button className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
                   {(eventsData?.events ?? []).map((ev) => (
-                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{ev.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{ev.mode} · {ev.attendeesCount} attendees</p>
@@ -852,19 +1017,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={ev.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={ev.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {ev.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {ev.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
                       </div>
                     </div>
@@ -878,29 +1043,29 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
-                Job Postings
+                <Briefcase className="icon-sm text-muted-foreground" />
+                <BilingualText en="Job Postings" el="Αγγελίες θέσεων" compact />
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> <BilingualText en="Refresh" el="Ανανέωση" compact />
               </Button>
             </div>
             {jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
-                  <Skeleton className="h-8 w-8 rounded shrink-0" />
+                <div key={i} className="flex items-center gap-4 border-b border-border p-4">
+                  <Skeleton className="h-8 w-8 rounded-md shrink-0" />
                   <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact /> <button className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No job postings found" el="Δεν βρέθηκαν αγγελίες" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
                   {(jobsData?.jobs ?? []).map((job) => (
-                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-foreground truncate">{job.title}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{job.type ?? 'Full-time'} · {job.location ?? 'Remote'}</p>
@@ -908,19 +1073,19 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={job.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={job.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {job.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {job.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
                       </div>
                     </div>
@@ -935,27 +1100,27 @@ export default function AdminPage() {
         <TabsContent value="cohorts" className="mt-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
-                placeholder="Search cohorts…"
+                placeholder={bilingualInline("Search cohorts…", "Αναζήτηση κοορτών…")}
                 value={cohortSearch}
                 onChange={(e) => setCohortSearch(e.target.value)}
                 className="pl-9"
               />
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
-              <Plus className="h-4 w-4" />
-              New Cohort
+              <Plus className="icon-sm" />
+              <BilingualText en="New Cohort" el="Νέα κοορτή" compact />
             </Button>
           </div>
 
           {showNewCohort && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Create New Cohort / Program</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέας κοορτής / προγράμματος" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">Name *</label>
                     <Input placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
@@ -966,20 +1131,20 @@ export default function AdminPage() {
                     <Input placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
                     <Input type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">End Date</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
                     <Input type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Capacity</label>
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
                     <Input type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
                   </div>
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground">Description</label>
-                    <Input placeholder="Short description…" value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
+                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+                    <Input placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
                 <div className="flex gap-2 pt-1">
@@ -994,7 +1159,7 @@ export default function AdminPage() {
                     })}>
                     {createCohortMutation.isPending ? 'Creating…' : 'Create'}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}>Cancel</Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
               </CardContent>
             </Card>
@@ -1007,13 +1172,13 @@ export default function AdminPage() {
           ) : (cohortsData?.cohorts ?? []).length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="font-semibold text-foreground">No cohorts yet</h3>
-                <p className="text-sm text-muted-foreground">Create your first cohort or program above</p>
+                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
+                <h3 className="font-semibold text-foreground"><BilingualText en="No cohorts yet" el="Δεν υπάρχουν κοορτές ακόμα" compact /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Create your first cohort or program above" el="Δημιουργήστε την πρώτη σας κοορτή ή πρόγραμμα παραπάνω" wrap /></p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {(cohortsData?.cohorts ?? []).map((cohort) => (
                 <Card key={cohort.id} className="group">
                   <CardContent className="pt-5">
@@ -1026,13 +1191,13 @@ export default function AdminPage() {
                         )}
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Badge variant="secondary" className="gap-1 text-xs">
-                            <UserCheck className="h-3 w-3" />
+                            <UserCheck className="icon-sm" />
                             {cohort._count.members} members
                           </Badge>
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(cohort.startDate).toLocaleDateString()}
+                              <Calendar className="icon-sm" />
+                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                             </Badge>
                           )}
                           {cohort.capacity && (
@@ -1040,14 +1205,14 @@ export default function AdminPage() {
                           )}
                         </div>
                       </div>
-                      <Button
+                      <Button aria-label="Delete"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive opacity-0 group-hover:opacity-100"
-                        onClick={() => deleteCohortMutation.mutate(cohort.id)}
+                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+                        onClick={() => void deleteCohort(cohort)}
                         disabled={deleteCohortMutation.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="icon-sm" />
                       </Button>
                     </div>
                   </CardContent>
@@ -1059,10 +1224,10 @@ export default function AdminPage() {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Users by Role</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Users by Role" el="Χρήστες ανά ρόλο" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats?.usersByRole && Object.entries(stats.usersByRole).map(([role, count]) => (
@@ -1075,26 +1240,26 @@ export default function AdminPage() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">New Users</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="New Users" el="Νέοι χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">Today</span>
+                  <span className="text-sm text-foreground"><BilingualText en="Today" el="Σήμερα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersToday ?? 0}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">This Week</span>
+                  <span className="text-sm text-foreground"><BilingualText en="This Week" el="Αυτή την εβδομάδα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersThisWeek ?? 0}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-foreground">This Month</span>
+                  <span className="text-sm text-foreground"><BilingualText en="This Month" el="Αυτόν τον μήνα" compact /></span>
                   <Badge variant="secondary">{stats?.newUsersThisMonth ?? 0}</Badge>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Active Users" el="Ενεργοί χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -1122,23 +1287,13 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Admin Audit Log</CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={exportAuditLogCSV}
-                  disabled={!auditData?.logs?.length}
-                  className="gap-1.5"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Export CSV
-                </Button>
+                <CardTitle className="text-base"><BilingualText en="Admin Audit Log" el="Αρχείο ενεργειών διαχείρισης" compact /></CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               {auditLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <div key={i} className="flex items-center gap-4 border-b border-border p-4">
                     <Skeleton className="h-8 w-8 rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />
@@ -1148,14 +1303,14 @@ export default function AdminPage() {
                 ))
               ) : (auditData?.logs ?? []).length === 0 ? (
                 <div className="py-12 text-center">
-                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">No audit logs yet</p>
+                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
+                  <p className="text-sm text-muted-foreground"><BilingualText en="No audit logs yet" el="Δεν υπάρχουν εγγραφές ακόμα" compact /></p>
                 </div>
               ) : (
                 (auditData?.logs ?? []).map((log) => (
-                  <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
+                  <div key={log.id} className="flex items-start gap-4 border-b border-border p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="h-4 w-4 text-primary" />
+                      <Shield className="icon-sm text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1165,7 +1320,7 @@ export default function AdminPage() {
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
                         {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
-                        {formatTimeAgo(log.createdAt)}
+                        <RelativeTime date={log.createdAt} format={formatTimeAgo} />
                       </p>
                       {log.meta && Object.keys(log.meta).length > 0 && (
                         <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">
@@ -1204,6 +1359,7 @@ export default function AdminPage() {
         <TabsContent value="behavior" className="mt-6">
           <BehaviorAdminPanel />
         </TabsContent>
+        </div>
       </Tabs>
     </AppShell>
   );

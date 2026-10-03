@@ -6,6 +6,7 @@ import { CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ProfileField = {
   id: string;
@@ -40,15 +41,15 @@ export function ProfileCompletionRing({
   const circumference = 2 * Math.PI * config.radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const colorClass = 
-    percentage >= 80 ? 'stroke-emerald-500 dark:stroke-emerald-400' : 
-    percentage >= 50 ? 'stroke-amber-500 dark:stroke-amber-400' : 
-    'stroke-red-500 dark:stroke-red-400';
+  const strokeColor =
+    percentage >= 80 ? 'hsl(var(--status-success-mark))' :
+    percentage >= 50 ? 'hsl(var(--status-warning-mark))' :
+    'hsl(var(--status-danger-mark))';
 
-  const textColorClass = 
-    percentage >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 
-    percentage >= 50 ? 'text-amber-600 dark:text-amber-400' : 
-    'text-red-600 dark:text-red-400';
+  const textColorClass =
+    percentage >= 80 ? STATUS.success.text :
+    percentage >= 50 ? STATUS.warning.text :
+    STATUS.danger.text;
 
   return (
     <div className={cn('relative flex items-center justify-center', config.container)}>
@@ -72,7 +73,8 @@ export function ProfileCompletionRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className={cn(colorClass, 'transition-all duration-1000 ease-out')}
+          stroke={strokeColor}
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
       {showLabel && (
@@ -117,11 +119,11 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
           )}
         </div>
         {nextStep?.href && (
-          <Link href={nextStep.href}>
-            <Button size="sm" variant="secondary">
+          <Button size="sm" variant="secondary" asChild>
+            <Link href={nextStep.href}>
               Complete
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -132,7 +134,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             Profile Strength
           </CardTitle>
           <span className="text-xs text-muted-foreground">
@@ -149,15 +151,15 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
         {/* Status message */}
         <div className="text-center">
           {percentage >= 80 ? (
-            <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.success.text)}>
               Great job! Your profile is looking strong.
             </p>
           ) : percentage >= 50 ? (
-            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.warning.text)}>
               Good progress! Complete a few more fields to stand out.
             </p>
           ) : (
-            <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.danger.text)}>
               Complete your profile to get better matches.
             </p>
           )}
@@ -170,13 +172,13 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
               key={field.id}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors',
-                field.completed ? 'bg-emerald-500/10' : 'bg-secondary/40'
+                field.completed ? STATUS.success.bg : 'bg-secondary/40'
               )}
             >
               {field.completed ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                <CheckCircle2 className={cn('icon-md flex-shrink-0', STATUS.success.icon)} />
               ) : (
-                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <Circle className="icon-md text-muted-foreground flex-shrink-0" />
               )}
               <span
                 className={cn(
@@ -187,11 +189,11 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
                 {field.label}
               </span>
               {!field.completed && field.href && (
-                <Link href={field.href}>
-                  <Button size="sm" variant="ghost" className="h-7 px-2">
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
+                <Button size="sm" variant="ghost" className="h-7 px-2" asChild>
+                  <Link href={field.href}>
+                    <ArrowRight className="icon-sm" />
+                  </Link>
+                </Button>
               )}
             </div>
           ))}
@@ -199,12 +201,12 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
 
         {/* CTA for next step */}
         {nextStep?.href && (
-          <Link href={nextStep.href} className="block">
-            <Button className="w-full gap-2">
+          <Button className="w-full gap-2" asChild>
+            <Link href={nextStep.href} className="block">
               Complete "{nextStep.label}"
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
         )}
       </CardContent>
     </Card>

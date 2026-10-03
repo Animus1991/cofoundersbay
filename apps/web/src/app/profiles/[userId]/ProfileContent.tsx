@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
@@ -41,6 +42,10 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { qk } from '@/lib/query-keys';
+import { usePageControls } from '@/lib/page-controls';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -58,9 +63,9 @@ function SocialLinkButton({
       href={href.startsWith('http') ? href : `https://${href}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+      className="flex items-center gap-1.5 rounded-lg border border-border bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="icon-sm" />
       {label}
     </a>
   );
@@ -108,14 +113,13 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const [connecting, setConnecting] = useState(false);
   const [messaging, setMessaging] = useState(false);
 
-  const viewerId =
-    typeof window !== 'undefined'
-      ? (() => { try { return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null; } catch { return null; } })()
-      : null;
+  // Read after mount, so the server and the first client render agree on
+  // whether this is the reader's own profile.
+  const viewerId = useStoredUser()?.id ?? null;
   const hasToken = useIsAuthenticated();
 
   const { data: profile, isLoading, isError } = useQuery({
-    queryKey: ['public-profile', userId],
+    queryKey: qk('public-profile', userId),
     queryFn: () => getPublicProfile(userId),
     staleTime: 2 * 60_000,
     enabled: !!userId,
@@ -123,7 +127,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   });
 
   const { data: connStatus } = useQuery({
-    queryKey: ['connection-status', userId],
+    queryKey: qk('connection-status', userId),
     queryFn: () => getConnectionStatus(userId),
     staleTime: 30_000,
     enabled: !!userId && hasToken,
@@ -133,7 +137,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     setConnecting(true);
     try {
       await sendConnectionRequest({ receiverId: userId });
-      queryClient.setQueryData(['connection-status', userId], {
+      queryClient.setQueryData(qk('connection-status', userId), {
         status: 'pending', connectionId: null, direction: 'sent',
       });
       success('Request sent!', `Your connection request has been sent.`);
@@ -162,10 +166,45 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     );
   };
 
+  /*
+   * Connect, message and share, offered to the assistant. Connecting names no
+   * page-level undo: the request's id is not known here until the status is
+   * read again, and the assistant's own send_connection action carries the
+   * partial withdraw the API allows (pending requests only).
+   */
+  const own = viewerId === userId;
+  const blocked = connStatus?.status === 'blocked';
+  const connected = connStatus?.status === 'accepted';
+  const pending = connStatus?.status === 'pending';
+  const noActor = !viewerId ? 'Sign in first.' : own ? 'This is your own profile.' : blocked ? 'This connection is blocked.' : undefined;
+  const noActorEl = !viewerId ? 'Συνδεθείτε πρώτα.' : own ? 'Αυτό είναι το δικό σας προφίλ.' : blocked ? 'Η σύνδεση είναι αποκλεισμένη.' : undefined;
+  usePageControls([
+    {
+      id: 'connect_with_person',
+      labelEn: 'Send a connection request',
+      labelEl: 'Αποστολή αιτήματος σύνδεσης',
+      writes: true,
+      unavailableEn: noActor ?? (connected ? 'You are already connected.' : pending ? 'A request is already pending.' : undefined),
+      unavailableEl: noActorEl ?? (connected ? 'Είστε ήδη συνδεδεμένοι.' : pending ? 'Υπάρχει ήδη εκκρεμές αίτημα.' : undefined),
+      run: handleConnect,
+    },
+    {
+      id: 'message_person',
+      labelEn: 'Open a conversation with this person',
+      labelEl: 'Άνοιγμα συνομιλίας με αυτό το άτομο',
+      // Opens the thread, creating it when there is none - a write.
+      writes: true,
+      unavailableEn: noActor,
+      unavailableEl: noActorEl,
+      run: handleMessage,
+    },
+    { id: 'copy_profile_link', labelEn: 'Copy the profile link', labelEl: 'Αντιγραφή συνδέσμου προφίλ', writes: false, run: handleShare },
+  ]);
+
   if (isLoading)
     return (
       <AppShell>
-        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
           <div className="space-y-4">
             <Skeleton className="h-64 w-full rounded-2xl" />
             <Skeleton className="h-32 w-full rounded-2xl" />
@@ -183,10 +222,17 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     return (
       <AppShell>
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <p className="text-lg font-semibold text-foreground">Profile not found</p>
-          <p className="text-sm text-muted-foreground">This profile may have been removed or is not publicly visible.</p>
-          <button onClick={() => router.back()} className="text-sm text-primary hover:underline">
-            ← Go back
+          <p className="text-lg font-semibold text-foreground">
+            <BilingualText en="Profile not found" el="Το προφίλ δεν βρέθηκε" />
+          </p>
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en="This profile may have been removed or is not publicly visible."
+              el="Αυτό το προφίλ μπορεί να έχει αφαιρεθεί ή να μην είναι δημόσια ορατό."
+            />
+          </p>
+          <button onClick={() => router.back()} className="text-sm text-primary-accessible hover:underline">
+            <BilingualText en="Go back" el="Επιστροφή" compact />
           </button>
         </div>
       </AppShell>
@@ -204,14 +250,15 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       return acc;
     }, []);
 
-  const connButtonLabel =
+  const connLabel: [string, string] =
     connStatus?.status === 'blocked'
-      ? 'Blocked'
+      ? ['Blocked', 'Αποκλεισμένο']
       : connStatus?.status === 'accepted'
-      ? 'Connected'
+      ? ['Connected', 'Συνδεδεμένοι']
       : connStatus?.status === 'pending' && connStatus.direction === 'sent'
-        ? 'Request sent'
-        : 'Connect';
+        ? ['Request sent', 'Το αίτημα στάλθηκε']
+        : ['Connect', 'Σύνδεση'];
+  const connButtonLabel = <BilingualText en={connLabel[0]} el={connLabel[1]} compact />;
 
   const isBlocked = connStatus?.status === 'blocked';
   const isConnected = connStatus?.status === 'accepted';
@@ -220,35 +267,47 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   return (
     <AppShell
       title={profile.displayName}
-      description={profile.headline ?? `${profile.role} on CoFounderBay`}
+      // `??` guarded the headline but not the role, so a profile payload without
+      // one interpolated the word itself and the page header read "undefined on
+      // CoFounderBay". Passing undefined lets resolvePageHeader fall back to the
+      // registry's own description, the same way the title already does.
+      description={
+        profile.headline ?? (profile.role ? `${profile.role} on CoFounderBay` : undefined)
+      }
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleShare}
+            title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+            aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+          >
             <Share2 className="icon-sm" />
           </Button>
-          <Link href="/discover">
-            <Button variant="secondary" size="sm" className="gap-2">
+          <Button variant="secondary" size="sm" className="gap-2" asChild>
+            <Link href="/discover">
               <ArrowLeft className="icon-sm" />
-              Back
-            </Button>
-          </Link>
+              <BilingualText en="Back" el="Πίσω" compact />
+            </Link>
+          </Button>
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
         {/* Identity card */}
         <div className="space-y-4">
           <Card className="animate-fade-in">
             <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible text-xl font-bold">
                   {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
 
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
+                <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
                 {profile.headline && (
                   <p className="text-sm text-muted-foreground">{profile.headline}</p>
                 )}
@@ -260,19 +319,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               <div className="w-full space-y-2 text-sm text-muted-foreground">
                 {profile.location && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <MapPin className="icon-sm shrink-0" />
                     {profile.location}
                   </p>
                 )}
                 {profile.timezone && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <Clock className="icon-sm shrink-0" />
                     {profile.timezone}
                   </p>
                 )}
                 {profile.languages?.length ? (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="h-3.5 w-3.5 shrink-0" />
+                    <Languages className="icon-sm shrink-0" />
                     {profile.languages.join(' · ')}
                   </p>
                 ) : null}
@@ -288,11 +347,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant={isConnected || isBlocked ? 'secondary' : 'default'}
                   >
                     {connecting ? (
-                      <Loader2 className="icon-sm animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                     ) : isConnected || isBlocked ? (
-                      <UserCheck className="icon-sm" />
+                      <UserCheck className="icon-sm" aria-hidden="true" />
                     ) : (
-                      <UserPlus className="icon-sm" />
+                      <UserPlus className="icon-sm" aria-hidden="true" />
                     )}
                     {connButtonLabel}
                   </Button>
@@ -303,11 +362,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     disabled={messaging || isBlocked}
                   >
                     {messaging ? (
-                      <Loader2 className="icon-sm animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                     ) : (
-                      <MessageCircle className="icon-sm" />
+                      <MessageCircle className="icon-sm" aria-hidden="true" />
                     )}
-                    Message
+                    <BilingualText en="Message" el="Μήνυμα" compact />
                   </Button>
                   <AIInsightButton
                     prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
@@ -322,9 +381,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               )}
 
               {isOwnProfile && (
-                <Link href="/profile/edit" className="w-full">
-                  <Button variant="secondary" className="w-full">Edit your profile</Button>
-                </Link>
+                <Button variant="secondary" className="w-full" asChild>
+                  <Link href="/profile/edit" className="w-full"><BilingualText en="Edit your profile" el="Επεξεργασία προφίλ" compact /></Link>
+                </Button>
               )}
             </CardContent>
           </Card>
@@ -338,8 +397,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2 pt-0">
-                {profile.skills.map((s) => (
-                  <SkillChip key={s.skillId} label={s.skillName} />
+                {profile.skills.map((s, i) => (
+                  // skillId can be absent on a partially-populated payload, and
+                  // key={undefined} is the same as no key to React.
+                  <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
                 ))}
               </CardContent>
             </Card>
@@ -365,7 +426,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-primary" />
+                  <RoleIcon className="icon-sm text-primary-accessible" />
                   {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} details
                 </CardTitle>
               </CardHeader>
@@ -375,7 +436,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
                 {/* Social links */}
                 {rolePayload.links && typeof rolePayload.links === 'object' && (
-                  <div className="space-y-1.5 pt-2 border-t border-border/60">
+                  <div className="space-y-1.5 pt-2 border-t border-border">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Links</p>
                     <div className="flex flex-wrap gap-2">
                       {(

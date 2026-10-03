@@ -1,237 +1,306 @@
 'use client';
 
-import {
-  PieChart,
-  TrendingUp,
-  Users,
-  Rocket,
-  Calendar,
-  Award,
-  BarChart3,
-} from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Award, CalendarCheck, Rocket, Users } from 'lucide-react';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MetricTile } from '@/components/dashboard/MetricTile';
+import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { useTenant } from '@/components/providers/TenantContext';
+import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  getOrgCohortDetail,
+  getOrgCohorts,
+  getProgramParticipants,
+  getTenantMembers,
+  listEvents,
+  listOrganizationPrograms,
+} from '@/lib/api';
+import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { qk } from '@/lib/query-keys';
+import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
+
+/*
+ * Workspace analytics, counted.
+ *
+ * The member count and the role split were live; the rest was written in: a
+ * programme table of 2024-25 accelerators, a growth series that stopped at
+ * March with 156 members, and four engagement figures that were permanent
+ * dashes. The role split also counted every plain "member" as a founder.
+ *
+ * Programmes, their participants and each cohort's sessions are read from
+ * the organisation that owns the workspace (the lists /tenant/programs and
+ * /org/cohorts show); growth comes from join dates; and the period selector,
+ * which changed nothing, sets the window for what happens over time.
+ */
+
+const PERIODS = [
+  { value: '7d', en: 'Last 7 days', el: 'Τελευταίες 7 ημέρες', days: 7 },
+  { value: '30d', en: 'Last 30 days', el: 'Τελευταίες 30 ημέρες', days: 30 },
+  { value: '90d', en: 'Last 90 days', el: 'Τελευταίες 90 ημέρες', days: 90 },
+  { value: '1y', en: 'Last year', el: 'Τελευταίο έτος', days: 365 },
+] as const;
+
+const DAY = 86_400_000;
 
 export default function TenantAnalyticsPage() {
-  // Mock data
-  const metrics = {
-    totalMembers: 156,
-    activeStartups: 28,
-    programsRun: 12,
-    mentorSessions: 245,
+  const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('30d');
+  const windowDays = PERIODS.find((p) => p.value === period)?.days ?? 30;
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? null;
+  const { slug, membership } = useCurrentOrg();
+  const organizationId = membership?.organizationId ?? null;
+
+  const { data, isLoading: membersLoading } = useQuery({
+    queryKey: qk('tenant', 'members', tenantId),
+    queryFn: () => getTenantMembers(tenantId!, { limit: 500 }),
+    enabled: Boolean(tenantId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: programData, isLoading: programsLoading } = useQuery({
+    queryKey: qk('programs', 'organization', organizationId),
+    queryFn: () => listOrganizationPrograms(organizationId!),
+    enabled: Boolean(organizationId),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const programs = useMemo(() => programData ?? [], [programData]);
+  const participantQueries = useQueries({
+    queries: programs.map((program) => ({
+      queryKey: qk('org', 'participants', program.id),
+      queryFn: () => getProgramParticipants(program.id),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+  const { data: cohortsData } = useQuery({
+    queryKey: qk('org', 'cohorts', slug),
+    queryFn: () => getOrgCohorts(slug!, { limit: 50 }),
+    enabled: Boolean(slug),
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const cohorts = useMemo(() => cohortsData?.cohorts ?? [], [cohortsData]);
+  const cohortQueries = useQueries({
+    queries: cohorts.map((cohort) => ({
+      queryKey: qk('org', slug, 'cohort', cohort.id),
+      queryFn: () => getOrgCohortDetail(slug!, cohort.id),
+      enabled: Boolean(slug),
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+  const { data: eventsData } = useQuery({
+    queryKey: qk('events', 'tenant'),
+    queryFn: () => listEvents({ scope: 'upcoming', limit: 5 }),
+    staleTime: 60_000,
+    retry: 0,
+  });
+
+  const members = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const now = Date.now();
+  const inWindow = (iso: string) => {
+    const age = now - Date.parse(iso);
+    return age >= 0 && age <= windowDays * DAY;
   };
 
-  const memberGrowth = [
-    { month: 'Jan', count: 120 },
-    { month: 'Feb', count: 135 },
-    { month: 'Mar', count: 156 },
-  ];
+  const joinedInWindow = members.filter((m) => inWindow(m.joinedAt)).length;
+  const founders = members.filter((m) => m.role === 'founder').length;
+  const sessions = cohortQueries.flatMap((q) => q.data?.sessions ?? []);
+  const heldInWindow = sessions.filter((s) => s.status === 'completed' && inWindow(s.scheduledAt)).length;
+  const ahead = sessions.filter((s) => s.status === 'scheduled' && Date.parse(s.scheduledAt) >= now).length;
+  const participantRows = participantQueries.flatMap((q, i) => (q.data?.participants ?? []).map((row) => ({ row, program: programs[i] })));
+  const waiting = participantRows.filter(({ row }) => row.status === 'applied').length;
+  const programsRun = programs.filter((p) => p.status === 'active' || p.status === 'completed').length;
 
-  const programPerformance = [
-    { name: 'Spring Accelerator 2025', startups: 12, graduated: 0, funded: 0, progress: 65 },
-    { name: 'AI Innovation Lab', startups: 8, graduated: 0, funded: 0, progress: 30 },
-    { name: 'Fall Accelerator 2024', startups: 10, graduated: 8, funded: 5, progress: 100 },
-    { name: 'Summer Accelerator 2024', startups: 12, graduated: 10, funded: 7, progress: 100 },
-  ];
+  const programPerformance = programs
+    .filter((p) => p.status !== 'draft' && p.status !== 'archived')
+    .map((p, i) => {
+      const rows = participantQueries[programs.indexOf(p)]?.data?.participants ?? [];
+      const graduated = rows.filter((r) => r.status === 'completed').length;
+      return {
+        key: `${p.id}-${i}`,
+        name: p.title,
+        status: p.status,
+        enrolled: p.participantCount,
+        capacity: p.capacity,
+        applications: p.applicationCount,
+        graduated,
+        fill: p.capacity ? Math.min(100, Math.round((p.participantCount / p.capacity) * 100)) : 0,
+      };
+    });
 
-  const memberDistribution = [
-    { role: 'Founders', count: 85, percentage: 55 },
-    { role: 'Mentors', count: 25, percentage: 16 },
-    { role: 'Investors', count: 20, percentage: 13 },
-    { role: 'Admins', count: 10, percentage: 6 },
-    { role: 'Other', count: 16, percentage: 10 },
-  ];
+  const distribution = useMemo(() => {
+    const buckets: Array<[string, string, (role: string) => boolean]> = [
+      ['Founders', 'Ιδρυτές', (r) => r === 'founder'],
+      ['Mentors', 'Μέντορες', (r) => r === 'mentor'],
+      ['Investors', 'Επενδυτές', (r) => r === 'investor'],
+      ['Team', 'Ομάδα', (r) => r === 'owner' || r === 'admin' || r === 'member'],
+    ];
+    const counted = buckets.map(([en, el, match]) => ({ en, el, count: members.filter((m) => match(m.role)).length }));
+    const other = members.length - counted.reduce((sum, b) => sum + b.count, 0);
+    return [...counted, ...(other > 0 ? [{ en: 'Other', el: 'Άλλοι', count: other }] : [])].map((b) => ({
+      ...b,
+      percentage: members.length ? Math.round((b.count / members.length) * 100) : 0,
+    }));
+  }, [members]);
 
-  const engagementMetrics = [
-    { name: 'Mentor Sessions', value: 245, change: '+18%' },
-    { name: 'Messages Sent', value: '1.2K', change: '+25%' },
-    { name: 'Events Attended', value: 89, change: '+12%' },
-    { name: 'Resources Accessed', value: 456, change: '+8%' },
-  ];
+  // Members at the end of each of the last six months, from join dates.
+  const growth = Array.from({ length: 6 }, (_, i) => {
+    const end = new Date(now);
+    end.setDate(1);
+    end.setHours(0, 0, 0, 0);
+    end.setMonth(end.getMonth() - (5 - i) + 1);
+    const cutoff = Math.min(end.getTime(), now + 1);
+    return {
+      month: new Date(end.getTime() - 1).toLocaleDateString('en-GB', { month: 'short' }),
+      count: members.filter((m) => Date.parse(m.joinedAt) < cutoff).length,
+    };
+  });
+  const maxGrowth = Math.max(1, ...growth.map((g) => g.count));
+
+  const periodLabel = PERIODS.find((p) => p.value === period);
+  usePageList([
+    {
+      id: 'tenant_programs',
+      labelEn: 'Program performance',
+      labelEl: 'Απόδοση προγραμμάτων',
+      rows: programsLoading ? undefined : programPerformance.map((p) => `${p.name} · ${p.status} · ${p.enrolled}/${p.capacity ?? '—'} places · ${p.graduated} graduated · ${p.applications} applications`),
+    },
+  ]);
+  usePageControls([
+    choiceControl('period', 'Analytics period', 'Περίοδος αναλυτικών', PERIODS.map((p) => ({ value: p.value, en: p.en, el: p.el })), period, (v) => setPeriod(v as typeof period)),
+  ]);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground">
-              Track your organization's performance
-            </p>
-          </div>
-          <Select defaultValue="30d">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Time period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
-            </SelectContent>
-          </Select>
+    <AppShell
+      title="Analytics"
+      titleEl="Αναλυτικά"
+      description="Member growth, engagement, and program activity. Filter by time range to compare periods."
+      descriptionEl="Αύξηση μελών, συμμετοχή και δραστηριότητα προγραμμάτων. Φιλτράρετε ανά χρονικό διάστημα για να συγκρίνετε περιόδους."
+      actions={(
+        <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+          <SelectTrigger aria-label="Time period" className="w-[150px]">
+            <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
+          </SelectTrigger>
+          <SelectContent>
+            {PERIODS.map((p) => (
+              <SelectItem key={p.value} value={p.value}>{p.en}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+          <MetricTile
+            icon={Users}
+            label="Members"
+            labelEl="Μέλη"
+            value={data ? members.length : '—'}
+            caption={`${joinedInWindow} joined, ${periodLabel?.en.toLowerCase()}`}
+            captionEl={`${joinedInWindow} νέα, ${periodLabel?.el.toLowerCase()}`}
+            href="/tenant/members"
+          />
+          <MetricTile icon={Rocket} label="Founders" labelEl="Ιδρυτές" value={data ? founders : '—'} caption="Members with the founder role" captionEl="Μέλη με ρόλο ιδρυτή" href="/tenant/members" />
+          <MetricTile icon={Award} label="Programs run" labelEl="Προγράμματα" value={programData ? programsRun : '—'} caption={`${programs.filter((p) => p.status === 'upcoming').length} upcoming`} captionEl={`${programs.filter((p) => p.status === 'upcoming').length} προσεχώς`} href="/tenant/programs" />
+          <MetricTile
+            icon={CalendarCheck}
+            label="Mentor sessions"
+            labelEl="Συνεδρίες μεντόρων"
+            value={cohortsData ? heldInWindow : '—'}
+            caption={`held, ${periodLabel?.en.toLowerCase()}`}
+            captionEl={`πραγματοποιήθηκαν, ${periodLabel?.el.toLowerCase()}`}
+            href="/org/cohorts"
+          />
         </div>
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="h-5 w-5 text-primary" />
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+          <SectionCard title="Program performance" titleEl="Απόδοση προγραμμάτων" action={{ href: '/tenant/programs', label: 'Programs', labelEl: 'Προγράμματα' }} contentClassName="space-y-4">
+            {programsLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}
+            {programPerformance.map((program) => (
+              <div key={program.key} className="space-y-1.5">
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate font-medium">{program.name}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {program.enrolled}/{program.capacity ?? '—'} places
+                  </span>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Members</p>
-                  <p className="text-xl font-bold">{metrics.totalMembers}</p>
-                </div>
+                <Progress value={program.fill} className="h-1.5" aria-label={`${program.name}: ${program.fill}% of places filled`} />
+                <p className="text-xs tabular-nums text-muted-foreground">
+                  {program.applications} applications · {program.graduated} graduated
+                </p>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Rocket className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Active Startups</p>
-                  <p className="text-xl font-bold">{metrics.activeStartups}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Award className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Programs Run</p>
-                  <p className="text-xl font-bold">{metrics.programsRun}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Mentor Sessions</p>
-                  <p className="text-xl font-bold">{metrics.mentorSessions}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            ))}
+            {!programsLoading && programPerformance.length === 0 && (
+              <EmptyLine en="Programs appear here once one is published." el="Τα προγράμματα εμφανίζονται μόλις δημοσιευτεί ένα." />
+            )}
+          </SectionCard>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Program Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Program Performance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {programPerformance.map((program) => (
-                <div key={program.name} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{program.name}</span>
-                    <span className="text-muted-foreground">
-                      {program.graduated}/{program.startups} graduated
-                    </span>
-                  </div>
-                  <Progress value={program.progress} className="h-2" />
-                  <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span>{program.startups} startups</span>
-                    <span>{program.funded} funded</span>
-                  </div>
+          <SectionCard title="Member distribution" titleEl="Κατανομή μελών" action={{ href: '/tenant/members', label: 'Members', labelEl: 'Μέλη' }} contentClassName="space-y-3">
+            {membersLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-8" />)}
+            {distribution.map((item) => (
+              <div key={item.en} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    <BilingualText en={item.en} el={item.el} />
+                  </span>
+                  <span className="font-medium tabular-nums">
+                    {item.count} <span className="text-xs text-muted-foreground">({item.percentage}%)</span>
+                  </span>
+                </div>
+                <Progress value={item.percentage} className="h-1.5" aria-label={`${item.en}: ${item.percentage}% of members`} />
+              </div>
+            ))}
+            {!membersLoading && members.length === 0 && (
+              <EmptyLine en="Invite members to see how the workspace is made up." el="Προσκαλέστε μέλη για να δείτε τη σύνθεση του χώρου." />
+            )}
+          </SectionCard>
+
+          <SectionCard title="Engagement" titleEl="Συμμετοχή">
+            <dl className="grid grid-cols-2 gap-3">
+              {[
+                { en: 'Sessions held', el: 'Συνεδρίες', value: cohortsData ? heldInWindow : '—', note: periodLabel?.en.toLowerCase() },
+                { en: 'Sessions ahead', el: 'Προγραμματισμένες', value: cohortsData ? ahead : '—', note: 'scheduled' },
+                { en: 'Upcoming events', el: 'Επόμενες εκδηλώσεις', value: eventsData ? (eventsData.events ?? []).length : '—', note: 'next on the calendar' },
+                { en: 'Applications waiting', el: 'Αιτήσεις σε αναμονή', value: programData ? waiting : '—', note: 'for a decision' },
+              ].map((cell) => (
+                <div key={cell.en} className="rounded-lg bg-muted/40 p-3">
+                  <dt className="text-xs text-muted-foreground">
+                    <BilingualText en={cell.en} el={cell.el} stacked wrap />
+                  </dt>
+                  <dd className="mt-1 text-lg font-semibold tabular-nums">{cell.value}</dd>
+                  {cell.note ? <dd className="text-xs text-muted-foreground">{cell.note}</dd> : null}
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </dl>
+          </SectionCard>
 
-          {/* Member Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Member Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {memberDistribution.map((item) => (
-                <div key={item.role}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>{item.role}</span>
-                    <span className="text-muted-foreground">
-                      {item.count} ({item.percentage}%)
+          <SectionCard title="Member growth" titleEl="Αύξηση μελών" contentClassName="space-y-2.5">
+            {growth.map((month, index) => {
+              const prev = index > 0 ? growth[index - 1].count : null;
+              const change = prev ? Math.round(((month.count - prev) / prev) * 100) : null;
+              return (
+                <div key={`${month.month}-${index}`} className="grid grid-cols-[2.5rem_1fr_3rem] items-center gap-3 text-sm">
+                  <span className="font-medium">{month.month}</span>
+                  <span className="relative h-6 overflow-hidden rounded bg-muted/40">
+                    <span className="absolute inset-y-0 left-0 flex items-center justify-end rounded bg-primary/25 pr-2 text-xs font-medium tabular-nums" style={{ width: `${Math.max(8, (month.count / maxGrowth) * 100)}%` }}>
+                      {month.count}
                     </span>
-                  </div>
-                  <Progress value={item.percentage} className="h-2" />
+                  </span>
+                  <span className={cn('text-right text-xs tabular-nums', change && change > 0 ? 'text-status-success' : 'text-muted-foreground')}>
+                    {change == null ? '—' : change > 0 ? `+${change}%` : `${change}%`}
+                  </span>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Engagement Metrics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Engagement</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {engagementMetrics.map((metric) => (
-                  <div key={metric.name} className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-sm text-muted-foreground">{metric.name}</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-xl font-bold">{metric.value}</span>
-                      <span className="text-xs text-green-600">{metric.change}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Member Growth */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Member Growth</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {memberGrowth.map((month, index) => {
-                  const prevCount = index > 0 ? memberGrowth[index - 1].count : month.count;
-                  const growth = ((month.count - prevCount) / prevCount * 100).toFixed(1);
-                  return (
-                    <div key={month.month} className="flex items-center gap-4">
-                      <div className="w-12 text-sm font-medium">{month.month}</div>
-                      <div className="flex-1">
-                        <div
-                          className="h-8 bg-primary/20 rounded flex items-center justify-end pr-2"
-                          style={{ width: `${(month.count / 200) * 100}%` }}
-                        >
-                          <span className="text-xs font-medium">{month.count}</span>
-                        </div>
-                      </div>
-                      {index > 0 && (
-                        <span className="text-xs text-green-600 w-12">+{growth}%</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+              );
+            })}
+          </SectionCard>
         </div>
       </div>
     </AppShell>

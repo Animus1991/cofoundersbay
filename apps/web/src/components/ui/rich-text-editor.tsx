@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { bilingualInline } from '@/lib/i18n/format';
 
 interface RichTextEditorProps {
   value: string;
@@ -146,9 +147,9 @@ export function RichTextEditor({
     : 0;
 
   return (
-    <div className={cn('rounded-lg border border-border/60 overflow-hidden bg-background', isFocused && 'ring-2 ring-ring ring-offset-0', className)}>
+    <div className={cn('rounded-xl border border-border overflow-hidden bg-background', className)}>
       {/* Toolbar */}
-      <div className={cn('flex flex-wrap items-center gap-0.5 p-1.5 border-b border-border/60 bg-muted/30', toolbarClassName)}>
+      <div className={cn('flex flex-wrap items-center gap-0.5 p-1.5 border-b border-border bg-muted/30', toolbarClassName)}>
         {TOOLBAR_GROUPS.map((group, gi) => (
           <span key={gi} className="flex items-center">
             {gi > 0 && <span className="w-px h-5 bg-border/60 mx-1" />}
@@ -160,7 +161,7 @@ export function RichTextEditor({
                 disabled={disabled}
                 onMouseDown={(e) => { e.preventDefault(); exec(btn.command, btn.arg); }}
                 className={cn(
-                  'p-1.5 rounded hover:bg-accent transition-colors disabled:opacity-40',
+                  'p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed',
                   isActive(btn.command) && 'bg-accent text-accent-foreground',
                 )}
               >
@@ -175,9 +176,9 @@ export function RichTextEditor({
           title="Insert Link"
           disabled={disabled}
           onMouseDown={(e) => { e.preventDefault(); openLinkDialog(); }}
-          className="p-1.5 rounded hover:bg-accent transition-colors disabled:opacity-40"
+          className="p-1.5 rounded-md hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <Link2 className="h-3.5 w-3.5" />
+          <Link2 className="icon-sm" />
         </button>
 
         {showWordCount && (
@@ -190,7 +191,7 @@ export function RichTextEditor({
       {/* Editable area */}
       <div className="relative">
         {isEmpty && !isFocused && (
-          <div className="absolute top-3 left-3 text-muted-foreground/60 text-sm pointer-events-none select-none">
+          <div className="absolute top-3 left-3 text-muted-foreground text-sm pointer-events-none select-none">
             {placeholder}
           </div>
         )}
@@ -206,7 +207,7 @@ export function RichTextEditor({
           className={cn(
             'p-3 text-sm outline-none',
             'prose prose-sm max-w-none dark:prose-invert',
-            '[&_a]:text-primary [&_a]:underline',
+            '[&_a]:text-primary-accessible [&_a]:underline',
             '[&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground',
             '[&_pre]:bg-muted [&_pre]:rounded [&_pre]:p-2 [&_pre]:font-mono [&_pre]:text-xs',
             '[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5',
@@ -235,7 +236,7 @@ export function RichTextEditor({
               <Input
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
-                placeholder="Link text..."
+                placeholder={bilingualInline("Link text…", "Κείμενο συνδέσμου…")}
               />
             </div>
             <div className="flex gap-2">
