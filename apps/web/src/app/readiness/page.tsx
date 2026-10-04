@@ -397,15 +397,14 @@ function ScoreEmblem({
           </defs>
           <circle cx={cx} cy={cy} r={r - 14} fill={`url(#${glowId}-fill)`} />
           <circle cx={cx} cy={cy} r={r + 6} fill="none" stroke="hsl(var(--primary) / 0.18)" strokeWidth={2} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="currentColor" strokeWidth={6} className="text-muted/30" />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={4.5} />
           <circle
             cx={cx}
             cy={cy}
             r={r}
             fill="none"
-            stroke="currentColor"
-            strokeWidth={6}
-            className={colors.text}
+            stroke="#e89a3c"
+            strokeWidth={4.5}
             strokeLinecap="round"
             strokeDasharray={`${(score / 100) * circ} ${circ}`}
             filter={`url(#${glowId})`}

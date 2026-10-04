@@ -95,8 +95,8 @@ function ScoreBadge({ score }: { score: number }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={2} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e9c89a" strokeWidth={2}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={1.5} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e89a3c" strokeWidth={1.5}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"

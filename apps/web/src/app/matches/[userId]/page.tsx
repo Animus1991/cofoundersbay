@@ -118,8 +118,8 @@ function DonutScore({ score }: { score: number }) {
       <svg width={104} height={104} viewBox="0 0 100 100" aria-hidden="true">
         {/* The track was a literal #333333, invisible on the dark card and
             heavy on the light one; it is the muted token now. */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={4} />
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--primary))" strokeWidth={4}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={3} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e89a3c" strokeWidth={3}
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeDashoffset={circ / 4}
           strokeLinecap="round"

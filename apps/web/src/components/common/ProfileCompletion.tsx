@@ -32,9 +32,9 @@ export function ProfileCompletionRing({
   showLabel?: boolean;
 }) {
   const sizeConfig = {
-    sm: { container: 'h-16 w-16', radius: 28, stroke: 2.5, text: 'text-sm' },
-    md: { container: 'h-24 w-24', radius: 42, stroke: 3.5, text: 'text-lg' },
-    lg: { container: 'h-32 w-32', radius: 56, stroke: 4.5, text: 'text-2xl' },
+    sm: { container: 'h-16 w-16', radius: 28, stroke: 2, text: 'text-sm' },
+    md: { container: 'h-24 w-24', radius: 42, stroke: 3, text: 'text-lg' },
+    lg: { container: 'h-32 w-32', radius: 56, stroke: 4, text: 'text-2xl' },
   };
 
   const config = sizeConfig[size];
@@ -56,7 +56,7 @@ export function ProfileCompletionRing({
           r={config.radius}
           fill="none"
           strokeWidth={config.stroke}
-          className="stroke-secondary"
+          stroke="#483822"
         />
         {/* Progress circle */}
         <circle
@@ -68,8 +68,8 @@ export function ProfileCompletionRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          stroke="currentColor"
-          className={cn('transition-all duration-1000 ease-out', textColorClass)}
+          stroke="#e89a3c"
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
       {showLabel && (
