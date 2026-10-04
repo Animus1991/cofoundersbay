@@ -34,6 +34,10 @@ export const CFB_GLYPH_NAMES = [
   'profile',
   'compare',
   'applications',
+  'gauge',
+  'deck',
+  'growth',
+  'feed',
   'more',
   'default',
 ] as const;
@@ -46,12 +50,12 @@ const PATH_GLYPH: Record<string, CfbGlyphName> = {
   '/settings/ai': 'spark',
   '/matches/compare': 'compare',
   '/builder/applications': 'applications',
-  '/builder/pitch-deck': 'builder',
+  '/builder/pitch-deck': 'deck',
 };
 
 const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   dashboard: 'home',
-  readiness: 'chart',
+  readiness: 'gauge',
   analytics: 'chart',
   builder: 'builder',
   research: 'research',
@@ -66,7 +70,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   search: 'discover',
   members: 'people',
   mentoring: 'mentor',
-  investors: 'chart',
+  investors: 'growth',
   opportunities: 'target',
   groups: 'community',
   events: 'calendar',
@@ -80,21 +84,21 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   marketplace: 'briefcase',
   jobs: 'briefcase',
   ai: 'spark',
-  pitch: 'builder',
+  pitch: 'deck',
   'data-room': 'wallet',
   coaching: 'mentor',
   'expert-reviews': 'award',
   help: 'book',
-  activity: 'spark',
+  activity: 'feed',
   achievements: 'award',
-  feed: 'spark',
+  feed: 'feed',
   profile: 'profile',
   notifications: 'bell',
   settings: 'sliders',
   referrals: 'people',
   reputation: 'shield',
   mentor: 'mentor',
-  investor: 'chart',
+  investor: 'growth',
   provider: 'briefcase',
   org: 'building',
   admin: 'shield',
@@ -162,12 +166,14 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <path d="M18.2 18.8 17.4 17.3M19.4 18.8 20.2 17.4" />
     </>
   ),
+  // Blocks being assembled. It used to be three rising bars - the chart
+  // glyph's twin, drawn beside Readiness and Analytics in the nav.
   builder: (
     <>
-      <path d="M5 18.5V11.5h4V18.5M10.5 18.5V8h4v10.5M16 18.5V5.5h3.5V18.5" />
-      <path d="M4.5 18.5h15" />
-      <circle cx="7" cy="9.5" r="1.05" fill="currentColor" stroke="none" />
-      <circle cx="12.5" cy="6" r="1.05" fill="currentColor" stroke="none" />
+      <rect x="3.8" y="12.6" width="7.2" height="7" rx="1.9" />
+      <rect x="13" y="12.6" width="7.2" height="7" rx="1.9" />
+      <rect x="8.4" y="4.4" width="7.2" height="7" rx="1.9" />
+      <circle cx="12" cy="7.9" r="1.05" fill="currentColor" stroke="none" />
     </>
   ),
   research: (
@@ -342,6 +348,43 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
     <>
       <rect x="5" y="3.8" width="14" height="16.4" rx="2.2" />
       <path d="M8.2 8.2h7.6M8.2 12h7.6M8.2 15.8h4.6" />
+    </>
+  ),
+  // Readiness: a dial, not a bar chart - it is one score against a bar.
+  gauge: (
+    <>
+      <path d="M4.6 16.4a7.4 7.4 0 0 1 14.8 0" />
+      <path d="M6.4 11.3l1.1.8M12 8.9v1.3M17.6 11.3l-1.1.8" />
+      <path d="M12 16.4l3.4-4.2" />
+      <circle cx="12" cy="16.4" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // A slide on its stand: the pitch deck.
+  deck: (
+    <>
+      <rect x="3.6" y="4.4" width="16.8" height="11.2" rx="2.2" />
+      <path d="M12 15.6v3.4M8.8 19.6h6.4" />
+      <path d="M7.4 8.6h5.2M7.4 11.6h3.2" />
+      <circle cx="16.2" cy="10.1" r="1.15" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Capital that compounds: investors and their surfaces.
+  growth: (
+    <>
+      <path d="M4.4 17.6l5-5.2 3.4 3 6.6-7" />
+      <path d="M15.4 8.4h4v4" />
+      <circle cx="9.4" cy="12.4" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M4.4 20h15.2" />
+    </>
+  ),
+  // Posts in a column: the feed and activity, not the assistant's spark.
+  feed: (
+    <>
+      <rect x="4" y="4" width="16" height="6.6" rx="2" />
+      <rect x="4" y="13.4" width="16" height="6.6" rx="2" />
+      <circle cx="7.6" cy="7.3" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="7.6" cy="16.7" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M10.6 7.3h6M10.6 16.7h4" />
     </>
   ),
   more: (

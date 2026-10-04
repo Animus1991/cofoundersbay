@@ -296,9 +296,9 @@ function MatchListRow({
                 strokeLinecap="round" />
             </svg>
             <Link href={`/profiles/${hit.userId}`}>
-              <Avatar className="h-10 w-10 border-2 border-background m-0.5 rounded-lg">
+              <Avatar className="h-10 w-10 border-2 border-background m-0.5">
                 <AvatarImage src={hit.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-sm font-semibold rounded-lg">{initials}</AvatarFallback>
+                <AvatarFallback className="text-sm font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Link>
           </div>
@@ -324,7 +324,7 @@ function MatchListRow({
               </div>
               {/* Score text */}
               <div className="text-right shrink-0">
-                <p className={cn('text-lg font-black tabular-nums leading-none', colors.icon)}>{score}%</p>
+                <p className={cn('text-lg font-bold tabular-nums leading-none', colors.icon)}>{score}%</p>
                 <p className="text-2xs text-muted-foreground mt-0.5">match</p>
               </div>
             </div>
@@ -425,9 +425,9 @@ function MatchPreviewPanel({
         <div className="space-y-4 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
-            <Avatar className="h-16 w-16 rounded-xl border-2 border-border">
+            <Avatar className="h-16 w-16 border-2 border-border">
               <AvatarImage src={hit.avatarUrl ?? undefined} />
-              <AvatarFallback className="rounded-xl text-base font-bold bg-muted">
+              <AvatarFallback className="text-base font-bold bg-muted">
                 {hit.displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -1041,7 +1041,7 @@ export default function MatchesPage() {
                     <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>
                   <div className="min-w-0">
-                    <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
+                    <p className={cn('text-lg font-bold tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
                     <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
                       <BilingualText en={labelEn} el={labelEl} compact wrap />
                     </p>

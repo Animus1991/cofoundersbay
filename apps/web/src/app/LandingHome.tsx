@@ -434,7 +434,7 @@ export function LandingHome() {
           </div>
 
           <h1
-            className="animate-fade-in font-display text-5xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl"
+            className="animate-fade-in font-display text-5xl font-semibold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl"
             style={{ animationDelay: '100ms' }}
           >
             Find your{' '}
@@ -525,7 +525,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-14 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="How it works" el="Πώς λειτουργεί" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="From profile to co-founder in 3 steps" el="Από το προφίλ στον συνιδρυτή σε 3 βήματα" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
@@ -564,7 +564,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Roles" el="Ρόλοι" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="Built for every role in the ecosystem" el="Φτιαγμένο για κάθε ρόλο του οικοσυστήματος" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -608,7 +608,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Platform" el="Πλατφόρμα" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="Everything your startup network needs" el="Ό,τι χρειάζεται το δίκτυο της startup σας" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -641,7 +641,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="By the numbers" el="Σε αριθμούς" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="A thriving ecosystem" el="Ένα ζωντανό οικοσύστημα" compact />
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -669,7 +669,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Testimonials" el="Μαρτυρίες" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="Loved by founders, mentors & investors" el="Αγαπημένο από ιδρυτές, μέντορες & επενδυτές" wrap />
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -714,7 +714,7 @@ export function LandingHome() {
         <div className="mx-auto w-full">
           <div className="mb-12 text-center animate-fade-in">
             <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Pricing" el="Τιμές" compact /></Badge>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
               <BilingualText en="Simple, transparent pricing" el="Απλές, διαφανείς τιμές" compact />
             </h2>
             <p className="mt-3 text-muted-foreground">
@@ -738,7 +738,7 @@ export function LandingHome() {
                   </Badge>
                 )}
                 <div className="mb-5">
-                  <h3 className="font-bold text-lg text-foreground"><L en={name} /></h3>
+                  <h3 className="font-semibold text-lg text-foreground"><L en={name} /></h3>
                   <div className="mt-2 flex items-baseline gap-1">
                     <span className="font-display text-3xl font-bold text-foreground">{price === 'Custom' ? <L en="Custom" /> : price}</span>
                     <span className="text-sm text-muted-foreground">/<L en={period} /></span>
@@ -776,7 +776,7 @@ export function LandingHome() {
               <Network className="h-7 w-7 text-primary-accessible" />
             </div>
           </div>
-          <h2 className="font-display text-4xl font-bold text-foreground">
+          <h2 className="font-display text-4xl font-semibold text-foreground">
             <BilingualText en="Ready to find your people?" el="Έτοιμοι να βρείτε τους ανθρώπους σας;" compact />
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">

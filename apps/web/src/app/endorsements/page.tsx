@@ -167,9 +167,9 @@ function EndorsementCard({
         <div className="mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
           <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
             <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open ${user.name}'s profile`, `Άνοιγμα προφίλ: ${user.name}`)}>
-              <Avatar className="h-11 w-11 rounded-lg">
+              <Avatar className="h-11 w-11">
                 <AvatarImage src={user.avatar} alt="" />
-                <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{initials}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initials}</AvatarFallback>
               </Avatar>
             </Link>
             <div className="min-w-0">
@@ -333,8 +333,8 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
         {filtered.map((c) => (
           <li key={c.id} className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
-              <Avatar className="h-7 w-7 rounded-lg">
-                <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-bold text-primary-accessible">{c.name[0]}</AvatarFallback>
+              <Avatar className="h-7 w-7">
+                <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary-accessible">{c.name[0]}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate text-xs font-medium">{c.name}</p>

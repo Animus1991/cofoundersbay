@@ -24,14 +24,19 @@ describe('CoFounderBay original glyph family', () => {
 
   it('maps product routes to the matching mark without dropping destinations', () => {
     expect(glyphForHref('/dashboard/founder')).toBe('home');
-    expect(glyphForHref('/builder/pitch-deck')).toBe('builder');
+    expect(glyphForHref('/builder/pitch-deck')).toBe('deck');
+    expect(glyphForHref('/builder')).toBe('builder');
+    expect(glyphForHref('/readiness')).toBe('gauge');
+    expect(glyphForHref('/analytics')).toBe('chart');
+    expect(glyphForHref('/investors')).toBe('growth');
     expect(glyphForHref('/builder/applications')).toBe('applications');
     expect(glyphForHref('/matches/compare')).toBe('compare');
     expect(glyphForHref('/settings/ai')).toBe('spark');
     expect(glyphForHref('/expert-reviews')).toBe('award');
-    expect(glyphForHref('/pitch/demo')).toBe('builder');
+    expect(glyphForHref('/pitch/demo')).toBe('deck');
     expect(glyphForHref('/data-room/abc')).toBe('wallet');
-    expect(glyphForHref('/feed')).toBe('spark');
+    expect(glyphForHref('/feed')).toBe('feed');
+    expect(glyphForHref('/ai')).toBe('spark');
     expect(glyphForHref('/messages?tab=ai')).toBe('messages');
     expect(glyphForHref('/unknown-surface')).toBe('default');
     expect(glyphForMode('work')).toBe('builder');

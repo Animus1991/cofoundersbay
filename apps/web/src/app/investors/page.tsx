@@ -234,9 +234,9 @@ function InvestorCard({
     <Card className="group transition-all hover:border-primary/30">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
-          <Avatar className="h-11 w-11 shrink-0 rounded-lg">
+          <Avatar className="h-11 w-11 shrink-0">
             <AvatarImage src={investor.avatarUrl} alt="" />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-sm font-bold text-primary-accessible">
+            <AvatarFallback className="bg-primary/10 text-sm font-bold text-primary-accessible">
               {initials}
             </AvatarFallback>
           </Avatar>

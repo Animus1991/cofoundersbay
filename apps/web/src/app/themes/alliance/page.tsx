@@ -51,7 +51,7 @@ export default function AllianceThemePage() {
               <Sparkles className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en="Alliance theme preview · sample content" el="Προεπισκόπηση θέματος Alliance · δείγμα περιεχομένου" wrap /></span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+            <h1 className="text-5xl md:text-6xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
               <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
@@ -132,7 +132,7 @@ export default function AllianceThemePage() {
                     </div>
                     <div className="min-w-0 flex-1 basis-40 pt-2">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-bold sm:text-xl">{person.name}</h3>
+                        <h3 className="text-lg font-semibold sm:text-xl">{person.name}</h3>
                         <Badge variant="secondary" className="text-xs">
                           <Star className="icon-sm mr-1 fill-status-warning text-yellow-400" aria-hidden="true" />
                           {person.badge}
@@ -191,7 +191,7 @@ export default function AllianceThemePage() {
           <div className="space-y-6">
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
+                <h3 className="font-semibold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { tag: '#AIStartups', count: '2.5K posts' },
@@ -217,7 +217,7 @@ export default function AllianceThemePage() {
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
                 <Sparkles className="icon-xl mb-3" />
-                <h3 className="font-bold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
+                <h3 className="font-semibold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
                 <p className="text-sm text-blue-100 mb-4">
                   <BilingualText en="Unlock premium features and connect with top founders" el="Ξεκλειδώστε premium λειτουργίες και γνωρίστε κορυφαίους ιδρυτές" wrap />
                 </p>
@@ -229,7 +229,7 @@ export default function AllianceThemePage() {
 
             <Card className="border-0 shadow-lg">
               <CardContent className="p-6">
-                <h3 className="font-bold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
+                <h3 className="font-semibold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
                 <div className="space-y-3">
                   {[
                     { title: 'Startup Pitch Night', date: 'Tomorrow, 6 PM' },

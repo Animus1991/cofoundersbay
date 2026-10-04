@@ -213,7 +213,7 @@ export default function PricingPage() {
             <Crown className="mr-1.5 icon-sm" />
             <BilingualText en="Simple, transparent pricing" el="Απλές, διαφανείς τιμές" compact />
           </Badge>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
             <BilingualText en="Choose the plan that fits your journey" el="Επιλέξτε το πλάνο που ταιριάζει στη διαδρομή σας" wrap />
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
@@ -337,7 +337,7 @@ export default function PricingPage() {
       {/* Feature Comparison Table */}
       <div className="border-t border-border bg-secondary/20">
         <div className="mx-auto max-w-7xl px-6 py-16">
-          <h2 className="mb-8 text-center font-display text-2xl font-bold text-foreground">
+          <h2 className="mb-8 text-center font-display text-2xl font-semibold text-foreground">
             <BilingualText en="Compare all features" el="Σύγκριση όλων των δυνατοτήτων" compact />
           </h2>
 
@@ -395,7 +395,7 @@ export default function PricingPage() {
 
       {/* FAQ Section */}
       <div className="mx-auto max-w-4xl px-6 py-16">
-        <h2 className="mb-8 text-center font-display text-2xl font-bold text-foreground">
+        <h2 className="mb-8 text-center font-display text-2xl font-semibold text-foreground">
           <BilingualText en="Frequently asked questions" el="Συχνές ερωτήσεις" compact />
         </h2>
 
@@ -437,7 +437,7 @@ export default function PricingPage() {
       {/* CTA Section */}
       <div className="border-t border-border bg-primary/[0.03]">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
-          <h2 className="font-display text-3xl font-bold text-foreground">
+          <h2 className="font-display text-3xl font-semibold text-foreground">
             <BilingualText en="Ready to accelerate your startup journey?" el="Έτοιμοι να επιταχύνετε τη διαδρομή της startup σας;" wrap />
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">

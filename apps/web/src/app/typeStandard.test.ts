@@ -120,6 +120,28 @@ describe('product type standard', () => {
     expect(px('#main-content .type-page')).toBeCloseTo(STEP.title, 2);
   });
 
+  it('keeps headings semibold and never reaches for black weights', () => {
+    // The weight ladder (AGENTS.md): body normal, labels medium, headings and
+    // figures semibold, bold only for tabular figures. Seventeen headings on
+    // the landing, pricing and Alliance pages had drifted to bold, and two
+    // match figures to black - heavier than any face the display font loads.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) return walk(full);
+        return entry.endsWith('.tsx') && !entry.includes('.test.') ? [full] : [];
+      });
+    const offenders = ['src/app', 'src/components'].flatMap(walk).flatMap((path) => {
+      const text = readFileSync(path, 'utf8');
+      const rel = path.replace(/\\/g, '/');
+      return [
+        ...[...text.matchAll(/<h[1-3]\b[^>]*className="[^"]*\bfont-(bold|extrabold|black)\b/g)].map(() => `${rel}: bold heading`),
+        ...[...text.matchAll(/\bfont-(extrabold|black)\b/g)].map((m) => `${rel}: ${m[0]}`),
+      ];
+    });
+    expect(offenders).toEqual([]);
+  });
+
   it('keeps the SideNav mode switcher on its own chrome caption', () => {
     expect(fontSize(ROLES.phone, '.type-caption')).toBe('12.61px');
   });
