@@ -12,39 +12,9 @@ import { useToast } from '@/components/ui/toast';
 import { errorMessage as readErrorMessage } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { verifyEmail, resendVerification } from '@/lib/api';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'no-token';
-
-async function verifyEmail(token: string): Promise<{ ok: boolean; email?: string }> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-  const response = await fetch(`${apiBase}/auth/verify-email?token=${encodeURIComponent(token)}`, {
-    credentials: 'include',
-  });
-  
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.message || 'Verification failed');
-  }
-  
-  return response.json();
-}
-
-async function resendVerification(email: string): Promise<{ ok: boolean }> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-  const response = await fetch(`${apiBase}/auth/resend-verification`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-    credentials: 'include',
-  });
-  
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.message || 'Failed to resend verification');
-  }
-  
-  return response.json();
-}
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
