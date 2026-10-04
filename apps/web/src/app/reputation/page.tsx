@@ -87,8 +87,8 @@ function LevelRing({ progress, level, size = 140 }: { progress: number; level: n
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" strokeWidth={4.5} className="text-muted/20" />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="hsl(var(--foreground) / 0.65)" strokeWidth={4.5} strokeLinecap="round"
-          className="transition-[stroke-dasharray] duration-700"
+          stroke="currentColor" strokeWidth={4.5} strokeLinecap="round"
+          className="text-primary transition-[stroke-dasharray] duration-700"
           strokeDasharray={`${(pct / 100) * circ} ${circ}`}
         />
       </svg>

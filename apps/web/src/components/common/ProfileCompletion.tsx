@@ -41,10 +41,10 @@ export function ProfileCompletionRing({
   const circumference = 2 * Math.PI * config.radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  /* Ring and figure stay neutral; the threshold words and badges around it
-     carry the status colour, like everywhere else the fine-ring style is used. */
-  const strokeColor = 'hsl(var(--foreground) / 0.65)';
-  const textColorClass = 'text-foreground';
+  const textColorClass =
+    percentage >= 80 ? STATUS.success.text :
+    percentage >= 50 ? STATUS.warning.text :
+    STATUS.danger.text;
 
   return (
     <div className={cn('relative flex items-center justify-center', config.container)}>
@@ -68,8 +68,8 @@ export function ProfileCompletionRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          stroke={strokeColor}
-          className="transition-all duration-1000 ease-out"
+          stroke="currentColor"
+          className={cn('transition-all duration-1000 ease-out', textColorClass)}
         />
       </svg>
       {showLabel && (

@@ -403,8 +403,9 @@ function ScoreEmblem({
             cy={cy}
             r={r}
             fill="none"
-            stroke="hsl(var(--foreground) / 0.65)"
+            stroke="currentColor"
             strokeWidth={6}
+            className={colors.text}
             strokeLinecap="round"
             strokeDasharray={`${(score / 100) * circ} ${circ}`}
             filter={`url(#${glowId})`}
