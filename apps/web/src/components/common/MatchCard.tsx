@@ -86,7 +86,7 @@ function getScoreTier(score: number) {
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  const { label, colors } = getScoreTier(score);
+  const { label } = getScoreTier(score);
   const r = 18, cx = 22, cy = 22;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
@@ -95,19 +95,18 @@ function ScoreBadge({ score }: { score: number }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={2} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="currentColor" strokeWidth={2}
-            className={colors.text}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={2} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e9c89a" strokeWidth={2}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className={cn('absolute text-2xs font-medium tabular-nums', colors.text)}>
+        <span className="absolute text-2xs font-medium tabular-nums text-[#483822]">
           {score}%
         </span>
       </div>
-      <span className={cn('text-xs font-medium', colors.text)}>
+      <span className="text-xs font-medium text-[#483822]">
         <BilingualText en={label.en} el={label.el} compact />
       </span>
     </div>
