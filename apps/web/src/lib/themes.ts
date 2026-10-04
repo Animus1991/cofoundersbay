@@ -229,11 +229,12 @@ export function applyTheme(themeName: ThemeName) {
 
 export function getStoredTheme(): ThemeName {
   if (typeof window === 'undefined') return 'dark';
-  
+
   const stored = localStorage.getItem('theme') as ThemeName;
   if (stored && themes[stored]) return stored;
-  
-  return 'dark';
+
+  // No saved choice: resolve to what the OS asks for, matching RoleTheme.
+  return getSystemTheme();
 }
 
 export function getSystemTheme(): 'dark' | 'light' {

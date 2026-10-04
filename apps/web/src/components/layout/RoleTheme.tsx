@@ -78,9 +78,11 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Get stored theme
+    // Get stored theme. No saved choice: follow the OS instead of forcing
+    // dark on every new user.
     const storedTheme = localStorage.getItem('theme') as Theme | null;
-    const initialTheme = storedTheme || 'dark';
+    const initialTheme = storedTheme
+      || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     setThemeState(initialTheme);
 
     // Get stored user role
@@ -106,6 +108,10 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     const handleChange = () => {
       if (initialTheme === 'system') {
         applyTheme('system', initialRole);
+      } else if (!localStorage.getItem('theme')) {
+        const next: Theme = mediaQuery.matches ? 'dark' : 'light';
+        setThemeState(next);
+        applyTheme(next, initialRole);
       }
     };
     mediaQuery.addEventListener('change', handleChange);
@@ -128,7 +134,10 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
         }
       }
       if (e.key === 'theme') {
-        setTheme((e.newValue as Theme) || 'dark');
+        setTheme(
+          (e.newValue as Theme)
+          || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+        );
       }
     };
 
