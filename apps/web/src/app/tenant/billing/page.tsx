@@ -270,7 +270,7 @@ export default function TenantBillingPage() {
                 {seatsLoading ? (
                   <p className="text-sm text-muted-foreground p-3"><BilingualText en="Loading seats…" el="Φόρτωση θέσεων…" compact /></p>
                 ) : seats.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="No seats allocated yet." el="Δεν έχουν δοθεί θέσεις ακόμα." compact /></p>
+                  <p className="text-sm text-muted-foreground p-3"><BilingualText en="No seats allocated yet." el="Δεν έχουν δοθεί θέσεις ακόμα." compact wrap /></p>
                 ) : (
                   seats.map(seat => (
                     <SeatRow

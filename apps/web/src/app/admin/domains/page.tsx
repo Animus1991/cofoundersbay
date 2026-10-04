@@ -261,7 +261,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       {isLoading ? (
         <p className="text-sm text-muted-foreground"><BilingualText en="Loading domains..." el="Φόρτωση τομέων…" compact /></p>
       ) : domains.length === 0 ? (
-        <p className="text-sm text-muted-foreground"><BilingualText en="No domains configured yet." el="Δεν έχουν οριστεί τομείς ακόμα." compact /></p>
+        <p className="text-sm text-muted-foreground"><BilingualText en="No domains configured yet." el="Δεν έχουν οριστεί τομείς ακόμα." compact wrap /></p>
       ) : (
         <div className="space-y-2">
           {domains.map((d) => (

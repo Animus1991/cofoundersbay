@@ -167,7 +167,7 @@ export function MilestoneFormModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-ring sm:h-9 sm:w-9"
               aria-label={bilingualAria(commonEn('close'), commonEl('close'))}
             >
               <X className="icon-sm" />

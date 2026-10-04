@@ -212,7 +212,7 @@ export function ReportBlockModal({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Shield className="icon-md text-primary-accessible" />
-                <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact />
+                <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact wrap />
               </DialogTitle>
               <DialogDescription>
                 Choose an action for {userName}
@@ -261,14 +261,14 @@ export function ReportBlockModal({
                 Report {userName}
               </DialogTitle>
               <DialogDescription>
-                <BilingualText en="Help us understand what happened" el="Βοηθήστε μας να καταλάβουμε τι συνέβη" compact />
+                <BilingualText en="Help us understand what happened" el="Βοηθήστε μας να καταλάβουμε τι συνέβη" compact wrap />
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
               <div>
                 <p id="ReportBlockModal-cap1-cap" className="text-sm font-medium mb-3 block">
-                  <BilingualText en="Why are you reporting this user?" el="Γιατί αναφέρετε αυτόν τον χρήστη;" compact />
+                  <BilingualText en="Why are you reporting this user?" el="Γιατί αναφέρετε αυτόν τον χρήστη;" compact wrap />
                 </p>
                 <div role="group" aria-labelledby="ReportBlockModal-cap1-cap" className="space-y-2">
                   {REPORT_REASONS.map((reason) => (

@@ -390,7 +390,7 @@ export default function AdminTaxonomyPage() {
               {isError && (
                 <div className="flex items-center gap-2 p-6 text-destructive-accessible justify-center">
                   <AlertCircle className="icon-md" />
-                  <span className="text-sm"><BilingualText en="Failed to load skills." el="Δεν ήταν δυνατή η φόρτωση των δεξιοτήτων." compact /></span>
+                  <span className="text-sm"><BilingualText en="Failed to load skills." el="Δεν ήταν δυνατή η φόρτωση των δεξιοτήτων." compact wrap /></span>
                   <Button variant="outline" size="sm" onClick={() => refetch()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></Button>
                 </div>
               )}

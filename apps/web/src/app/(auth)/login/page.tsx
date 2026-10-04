@@ -244,7 +244,7 @@ function LoginPageContent() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            <BilingualText en="Don't have an account?" el="Δεν έχετε λογαριασμό;" compact />{' '}
+            <BilingualText en="Don't have an account?" el="Δεν έχετε λογαριασμό;" compact wrap />{' '}
             <Link href="/register" className="font-medium text-primary-accessible hover:underline">
               <BilingualText en="Create one free" el="Δημιουργήστε δωρεάν" compact />
             </Link>

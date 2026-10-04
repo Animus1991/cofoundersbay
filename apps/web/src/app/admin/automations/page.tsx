@@ -31,6 +31,7 @@ import {
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
+import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
@@ -101,7 +102,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
       >
         <div className="flex items-center justify-between p-5 border-b">
           <h2 id="automation-rule-title" className="text-lg font-semibold"><BilingualText en="Create Automation Rule" el="Δημιουργία κανόνα αυτοματισμού" compact /></h2>
-          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button type="button" aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')} onClick={onClose} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground focus-ring sm:h-9 sm:w-9"><X className="icon-sm" aria-hidden="true" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -201,7 +202,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold"><BilingualText en="Edit Rule" el="Επεξεργασία κανόνα" compact /></h2>
-          <button aria-label="Close" onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button type="button" aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')} onClick={onClose} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground focus-ring sm:h-9 sm:w-9"><X className="icon-sm" aria-hidden="true" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -492,7 +493,7 @@ export default function AutomationsPage() {
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
                 <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact /></p>
+                <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact wrap /></p>
               </Card>
             )}
             {rules.map(rule => (

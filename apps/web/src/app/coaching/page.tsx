@@ -1113,7 +1113,7 @@ export default function CoachingPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-status-success font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact /></p>
+                      <p className="text-xs text-status-success font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact wrap /></p>
                     </div>
                   </div>
                 </CardContent>

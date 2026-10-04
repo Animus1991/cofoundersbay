@@ -189,7 +189,7 @@ function AddLeadModal({
           <h2 id="fundraising-modal-title" className="page-section font-semibold">
             <BilingualText en={fundraisingEn('modal_new')} el={fundraisingEl('modal_new')} />
           </h2>
-          <button type="button" onClick={onClose} className={cn(BUILDER_BTN, 'p-1.5 text-muted-foreground hover:bg-muted')} aria-label={bilingualAria(fundraisingEn('cancel'), fundraisingEl('cancel'))}>
+          <button type="button" onClick={onClose} className={cn(BUILDER_BTN, 'inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:bg-muted sm:h-9 sm:w-9')} aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}>
             <X className="icon-sm" />
           </button>
         </div>

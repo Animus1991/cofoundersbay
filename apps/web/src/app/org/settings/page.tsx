@@ -386,7 +386,7 @@ export default function OrgSettingsPage() {
                   <BilingualText en="Team Members" el="Μέλη ομάδας" compact />
                 </CardTitle>
                 <CardDescription>
-                  <BilingualText en="Manage your organization's team" el="Διαχείριση της ομάδας του οργανισμού σας" compact />
+                  <BilingualText en="Manage your organization's team" el="Διαχείριση της ομάδας του οργανισμού σας" compact wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

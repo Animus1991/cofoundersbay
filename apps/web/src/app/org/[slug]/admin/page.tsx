@@ -572,7 +572,7 @@ export default function OrgAdminPage() {
             </Avatar>
             <div className="min-w-0">
               <h1 className="break-words text-2xl sm:text-3xl font-semibold text-foreground">{org.name}</h1>
-              <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact /></p>
+              <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact wrap /></p>
             </div>
           </div>
           <Button variant="outline" asChild>
@@ -749,7 +749,7 @@ export default function OrgAdminPage() {
                 <CardContent>
                   <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." compact /></p>
+                    <p className="text-sm"><BilingualText en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." compact wrap /></p>
                   </div>
                 </CardContent>
               </Card>
@@ -760,7 +760,7 @@ export default function OrgAdminPage() {
                 <CardContent>
                   <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." compact /></p>
+                    <p className="text-sm"><BilingualText en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." compact wrap /></p>
                   </div>
                 </CardContent>
               </Card>
@@ -771,7 +771,7 @@ export default function OrgAdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base"><BilingualText en="Role Permissions" el="Δικαιώματα ρόλων" compact /></CardTitle>
-                <CardDescription><BilingualText en="What each role can do" el="Τι μπορεί να κάνει κάθε ρόλος" compact /></CardDescription>
+                <CardDescription><BilingualText en="What each role can do" el="Τι μπορεί να κάνει κάθε ρόλος" compact wrap /></CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {['owner', 'admin', 'member'].map((role) => (

@@ -214,7 +214,7 @@ export function AdminAnalyticsDashboard() {
         <div className="bg-white rounded-xl border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4"><BilingualText en="Badge Unlock Rates (Top 6)" el="Ποσοστά απόκτησης διακρίσεων (κορυφαίες 6)" compact /></h3>
           {topBadges.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8"><BilingualText en="No badges defined yet." el="Δεν έχουν οριστεί διακρίσεις ακόμα." compact /></p>
+            <p className="text-sm text-muted-foreground text-center py-8"><BilingualText en="No badges defined yet." el="Δεν έχουν οριστεί διακρίσεις ακόμα." compact wrap /></p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>

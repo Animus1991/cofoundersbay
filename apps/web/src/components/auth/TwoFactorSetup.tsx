@@ -125,7 +125,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
         </div>
 
         <div className="space-y-2">
-          <p className="text-sm font-medium"><BilingualText en="Can&apos;t scan the QR code?" el="Δεν σαρώνεται ο κωδικός QR;" compact /></p>
+          <p className="text-sm font-medium"><BilingualText en="Can&apos;t scan the QR code?" el="Δεν σαρώνεται ο κωδικός QR;" compact wrap /></p>
           <div className="flex items-center gap-2">
             <code className="flex-1 rounded bg-secondary px-3 py-2 text-sm font-mono">
               {setupData?.secret}

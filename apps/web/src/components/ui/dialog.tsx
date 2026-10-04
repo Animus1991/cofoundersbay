@@ -3,6 +3,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useReturnFocus } from './use-return-focus';
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -31,7 +32,9 @@ const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     hideClose?: boolean;
   }
->(({ className, children, hideClose = false, ...props }, ref) => (
+>(({ className, children, hideClose = false, onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
+  const returnFocus = useReturnFocus(onOpenAutoFocus, onCloseAutoFocus);
+  return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -52,6 +55,7 @@ const DialogContent = React.forwardRef<
         className,
       )}
       {...props}
+      {...returnFocus}
     >
       {children}
       {!hideClose && (
@@ -67,7 +71,8 @@ const DialogContent = React.forwardRef<
       )}
     </DialogPrimitive.Content>
   </DialogPortal>
-));
+  );
+});
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

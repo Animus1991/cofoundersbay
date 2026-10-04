@@ -313,7 +313,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            <BilingualText en="Already have an account?" el="Έχετε ήδη λογαριασμό;" compact />{' '}
+            <BilingualText en="Already have an account?" el="Έχετε ήδη λογαριασμό;" compact wrap />{' '}
             <Link href="/login" className="font-medium text-primary-accessible hover:underline">
               <BilingualText en="Sign in" el="Σύνδεση" compact />
             </Link>

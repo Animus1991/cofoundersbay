@@ -36,6 +36,8 @@ for (const r of routes) {
       if (!vis(el)) continue;
       const pair = el.parentElement;
       if (!pair) continue;
+      // screen-reader-only text is not painted
+      if (pair.closest('.sr-only') || pair.getBoundingClientRect().width <= 2) continue;
       const text = pair.textContent.trim().replace(/\s+/g, ' ').slice(0, 70);
       const inChrome = !!pair.closest(chromeSel);
       // content inside a horizontal scroller is meant to run past the viewport

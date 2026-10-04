@@ -3053,6 +3053,13 @@ a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide
   display: none;
 }
 
+/* A chip in a horizontal scroll strip keeps its width: the strip scrolls,
+   the chip does not shrink. Flex shrank /projects' stage filters at 390px
+   to "All…", "Ide…" inside a strip that could simply have scrolled. */
+.flex.overflow-x-auto > :is(button, a, [role='tab'], [role='radio']) {
+  flex-shrink: 0;
+}
+
 /* Progress tracks: a thin grey rail, a quiet fill. */
 #main-content [role="progressbar"] {
   background-color: hsl(var(--foreground) / 0.06);

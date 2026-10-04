@@ -393,7 +393,7 @@ export default function ReputationPage() {
                           size="sm"
                           illustration="rocket"
                           title={<BilingualText en={reputationEn('no_xp_yet_title')} el={reputationEl('no_xp_yet_title')} />}
-                          description={<BilingualText en={reputationEn('no_xp_yet_desc')} el={reputationEl('no_xp_yet_desc')} compact />}
+                          description={<BilingualText en={reputationEn('no_xp_yet_desc')} el={reputationEl('no_xp_yet_desc')} compact wrap />}
                           action={<Button size="sm" asChild><Link href="/builder"><Hammer className="icon-sm" aria-hidden /><BilingualText en="Open Builder" el="Άνοιγμα Builder" compact /></Link></Button>}
                         />
                       ) : (
@@ -410,7 +410,7 @@ export default function ReputationPage() {
                         <Flame className="icon-sm text-status-warning" aria-hidden />
                         <BilingualText en={reputationEn('streak_title')} el={reputationEl('streak_title')} />
                       </CardTitle>
-                      <CardDescription><BilingualText en={reputationEn('streak_desc')} el={reputationEl('streak_desc')} compact /></CardDescription>
+                      <CardDescription><BilingualText en={reputationEn('streak_desc')} el={reputationEl('streak_desc')} compact wrap /></CardDescription>
                     </CardHeader>
                     <CardContent>
                       {!streakData || (streakData.currentStreak === 0 && streakData.longestStreak === 0) ? (
@@ -459,7 +459,7 @@ export default function ReputationPage() {
                     <EmptyState
                       size="sm"
                       title={<BilingualText en={reputationEn('no_badges_title')} el={reputationEl('no_badges_title')} />}
-                      description={<BilingualText en={reputationEn('no_badges_desc')} el={reputationEl('no_badges_desc')} compact />}
+                      description={<BilingualText en={reputationEn('no_badges_desc')} el={reputationEl('no_badges_desc')} compact wrap />}
                     />
                   </CardContent></Card>
                 ) : (
@@ -473,7 +473,7 @@ export default function ReputationPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base"><BilingualText en={reputationEn('history_title')} el={reputationEl('history_title')} /></CardTitle>
-                    <CardDescription><BilingualText en={reputationEn('history_desc')} el={reputationEl('history_desc')} compact /></CardDescription>
+                    <CardDescription><BilingualText en={reputationEn('history_desc')} el={reputationEl('history_desc')} compact wrap /></CardDescription>
                   </CardHeader>
                   <CardContent>
                     {events.length === 0 ? (

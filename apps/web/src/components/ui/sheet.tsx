@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useReturnFocus } from './use-return-focus';
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
@@ -51,7 +52,9 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   SheetContentProps
->(({ side = 'right', className, children, ...props }, ref) => (
+>(({ side = 'right', className, children, onOpenAutoFocus, onCloseAutoFocus, ...props }, ref) => {
+  const returnFocus = useReturnFocus(onOpenAutoFocus, onCloseAutoFocus);
+  return (
   <SheetPortal>
     <SheetOverlay />
     <DialogPrimitive.Content
@@ -59,6 +62,7 @@ const SheetContent = React.forwardRef<
       data-surface="overlay"
       className={cn(sheetVariants({ side }), className)}
       {...props}
+      {...returnFocus}
     >
       {children}
       {/* Their 44px tap target, with our bilingual label and focus-ring token.
@@ -72,7 +76,8 @@ const SheetContent = React.forwardRef<
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </SheetPortal>
-));
+  );
+});
 SheetContent.displayName = DialogPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (

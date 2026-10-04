@@ -450,7 +450,7 @@ export function CopilotWorkspace({
             <BilingualText
               en="Writes wait for your confirm."
               el="Οι εγγραφές περιμένουν επιβεβαίωση."
-              compact
+              compact wrap
             />
           </p>
           ) : null}

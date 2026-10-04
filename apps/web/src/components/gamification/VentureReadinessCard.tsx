@@ -193,7 +193,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                 <BilingualText
                   en="Investor and accelerator readiness is scored separately"
                   el="Η ετοιμότητα για επενδυτές και επιταχυντές βαθμολογείται ξεχωριστά"
-                  compact
+                  compact wrap
                 />
               </Link>
             </p>

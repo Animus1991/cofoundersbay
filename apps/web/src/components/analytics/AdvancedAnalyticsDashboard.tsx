@@ -255,7 +255,7 @@ export function AdvancedAnalyticsDashboard() {
               <BilingualText en="Connection Growth" el="Αύξηση συνδέσεων" compact />
             </CardTitle>
             <CardDescription>
-              <BilingualText en="Your network expansion over time" el="Η ανάπτυξη του δικτύου σας στον χρόνο" compact />
+              <BilingualText en="Your network expansion over time" el="Η ανάπτυξη του δικτύου σας στον χρόνο" compact wrap />
             </CardDescription>
           </CardHeader>
           <CardContent>

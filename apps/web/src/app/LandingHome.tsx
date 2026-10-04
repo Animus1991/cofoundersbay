@@ -777,7 +777,7 @@ export function LandingHome() {
             </div>
           </div>
           <h2 className="font-display text-4xl font-semibold text-foreground">
-            <BilingualText en="Ready to find your people?" el="Έτοιμοι να βρείτε τους ανθρώπους σας;" compact />
+            <BilingualText en="Ready to find your people?" el="Έτοιμοι να βρείτε τους ανθρώπους σας;" compact wrap />
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
             Join thousands of founders, mentors, and investors already building meaningful

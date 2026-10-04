@@ -795,7 +795,7 @@ export default function FeedPage() {
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">
-          <BilingualText en="Preferences are unavailable right now." el="Οι προτιμήσεις δεν είναι διαθέσιμες αυτή τη στιγμή." compact />
+          <BilingualText en="Preferences are unavailable right now." el="Οι προτιμήσεις δεν είναι διαθέσιμες αυτή τη στιγμή." compact wrap />
         </p>
       ),
     },

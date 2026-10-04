@@ -302,7 +302,7 @@ export default function EventDetailPage() {
                   ))}
                   {full && (
                     <p className="text-xs text-muted-foreground">
-                      <BilingualText en="The event is at capacity." el="Η εκδήλωση είναι πλήρης." compact />
+                      <BilingualText en="The event is at capacity." el="Η εκδήλωση είναι πλήρης." compact wrap />
                     </p>
                   )}
                 </div>

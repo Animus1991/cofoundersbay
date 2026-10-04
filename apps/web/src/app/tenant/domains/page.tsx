@@ -524,7 +524,7 @@ export default function TenantDomainsPage() {
         <div className="grid grid-cols-3 gap-3">
           <Card className="border-border">
             <CardContent className="py-3 px-4">
-              <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact /></p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact wrap /></p>
               <p className="page-stat text-2xl font-bold mt-0.5">{domains.length}</p>
             </CardContent>
           </Card>
@@ -536,7 +536,7 @@ export default function TenantDomainsPage() {
           </Card>
           <Card className="border-border">
             <CardContent className="py-3 px-4">
-              <p className="text-xs text-muted-foreground"><BilingualText en="Primary Domain" el="Κύριος τομέας" compact /></p>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Primary Domain" el="Κύριος τομέας" compact wrap /></p>
               <p className="text-sm font-medium mt-0.5 truncate">
                 {primaryDomain?.domainName ?? <span className="text-muted-foreground">—</span>}
               </p>

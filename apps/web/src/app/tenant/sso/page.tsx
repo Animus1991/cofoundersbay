@@ -660,7 +660,7 @@ export default function TenantSSOPage() {
                       <div className="space-y-1">
                         <label htmlFor="sso-allowed-domains" className="text-xs font-medium"><BilingualText en="Allowed email domains" el="Επιτρεπόμενοι τομείς email" compact /></label>
                         <Input id="sso-allowed-domains" value={allowedDomains} onChange={e => setAllowedDomains(e.target.value)} placeholder={bilingualInline('uoa.gr, di.uoa.gr (comma-separated)', 'uoa.gr, di.uoa.gr (με κόμμα)')} />
-                        <p className="text-xs text-muted-foreground"><BilingualText en="Leave empty to allow any domain." el="Αφήστε κενό για οποιονδήποτε τομέα." compact /></p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en="Leave empty to allow any domain." el="Αφήστε κενό για οποιονδήποτε τομέα." compact wrap /></p>
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-lg border">
                         <div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { overlayOpener } from '@/components/ui/use-return-focus';
 
 const FOCUSABLE = [
   'a[href]',
@@ -36,11 +37,18 @@ export function useModalA11y<T extends HTMLElement = HTMLDivElement>(
 ) {
   const containerRef = useRef<T | null>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  // The latest onClose, read at key time. With `onClose` as an effect
+  // dependency, every parent render (an inline arrow is a new function) re-ran
+  // the effect while the dialog was open: focus jumped back to the first field
+  // mid-typing, and the "opener" was re-captured from inside the dialog, so on
+  // close focus went to a node that no longer existed - i.e. to <body>.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
 
-    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    previouslyFocused.current = overlayOpener(containerRef.current);
 
     const node = containerRef.current;
     if (node) {
@@ -57,7 +65,7 @@ export function useModalA11y<T extends HTMLElement = HTMLDivElement>(
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== 'Tab') return;
@@ -88,9 +96,11 @@ export function useModalA11y<T extends HTMLElement = HTMLDivElement>(
       document.removeEventListener('keydown', onKeyDown, true);
       document.body.style.overflow = overflow;
       document.body.style.paddingRight = paddingRight;
-      previouslyFocused.current?.focus?.({ preventScroll: true });
+      const opener = previouslyFocused.current;
+      previouslyFocused.current = null;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return containerRef;
 }

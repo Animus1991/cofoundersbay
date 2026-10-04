@@ -994,7 +994,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact /> <button className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact wrap /> <button className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" compact /></CardContent></Card>
             ) : (
@@ -1050,7 +1050,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact /> <button className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact wrap /> <button className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No job postings found" el="Δεν βρέθηκαν αγγελίες" compact /></CardContent></Card>
             ) : (

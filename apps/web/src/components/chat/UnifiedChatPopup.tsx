@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { overlayOpener } from '@/components/ui/use-return-focus';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import {
@@ -260,10 +261,22 @@ export function UnifiedChatPopup() {
     try { sessionStorage.setItem(TAB_KEY, tab); } catch { /* ignore */ }
   }, []);
 
-  // Focus popup container when it opens or is restored (accessibility)
+  // Focus popup container when it opens or is restored (accessibility), and
+  // hand focus back to whatever opened it when it closes. A page's "Ask AI" or
+  // "Message" button opens the popup through context, so without this the
+  // keyboard user who pressed Escape was left on <body>.
+  const openerRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
     if (isOpen && !isMinimized) {
+      const opener = overlayOpener(popupRef.current);
+      if (opener && !popupRef.current?.contains(opener)) openerRef.current = opener;
       setTimeout(() => popupRef.current?.focus(), 50);
+      return;
+    }
+    if (!isOpen) {
+      const opener = openerRef.current;
+      openerRef.current = null;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
     }
   }, [isOpen, isMinimized]);
 
@@ -661,7 +674,7 @@ export function UnifiedChatPopup() {
           type="button"
           onClick={minimize}
           onMouseDown={(e) => e.stopPropagation()}
-          className="shrink-0 rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/20 focus-ring sm:h-8 sm:w-8"
           aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
           title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
         >
@@ -671,7 +684,7 @@ export function UnifiedChatPopup() {
           type="button"
           onClick={close}
           onMouseDown={(e) => e.stopPropagation()}
-          className="shrink-0 rounded-full p-1.5 hover:bg-white/20 transition-colors"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/20 focus-ring sm:h-8 sm:w-8"
           aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
           title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}
         >

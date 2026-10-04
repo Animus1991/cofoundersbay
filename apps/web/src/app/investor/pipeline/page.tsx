@@ -469,7 +469,7 @@ export default function InvestorPipelinePage() {
                   <div key={stage.key} className="flex min-w-0 flex-1 items-center gap-2">
                     <div className="min-w-0 flex-1 text-center">
                       <p className="page-stat font-bold tabular-nums">{count}</p>
-                      <p className="truncate text-2xs text-muted-foreground"><BilingualText en={stage.label} el={stage.labelEl} compact /></p>
+                      <p className="text-2xs leading-snug text-muted-foreground"><BilingualText en={stage.label} el={stage.labelEl} compact wrap /></p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>
                     {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="hidden icon-sm shrink-0 text-muted-foreground/40 sm:block" aria-hidden="true" />}

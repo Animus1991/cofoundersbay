@@ -52,7 +52,7 @@ export default function AllianceThemePage() {
               <span className="text-sm font-medium"><BilingualText en="Alliance theme preview · sample content" el="Προεπισκόπηση θέματος Alliance · δείγμα περιεχομένου" wrap /></span>
             </div>
             <h1 className="text-5xl md:text-6xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-              <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact />
+              <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact wrap />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
               <BilingualText en="Join the premier network for startup founders, investors, and innovators" el="Μπείτε στο δίκτυο για ιδρυτές startups, επενδυτές και καινοτόμους" wrap />

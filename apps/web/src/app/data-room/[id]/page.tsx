@@ -944,7 +944,7 @@ export default function DataRoomPage() {
                 <BilingualText en="Drop files here or click to browse" el="Αφήστε αρχεία εδώ ή πατήστε για αναζήτηση" wrap />
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                <BilingualText en="PDF, DOC, XLS, PPT up to 100MB" el="PDF, DOC, XLS, PPT έως 100MB" compact />
+                <BilingualText en="PDF, DOC, XLS, PPT up to 100MB" el="PDF, DOC, XLS, PPT έως 100MB" compact wrap />
               </p>
             </div>
             <div>

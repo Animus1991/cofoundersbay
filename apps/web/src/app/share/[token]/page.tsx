@@ -449,7 +449,7 @@ export default function SharePage() {
               <Card className="border-primary/15 bg-primary/5">
                 <CardContent className="p-4 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium"><BilingualText en="Want to leave feedback?" el="Θέλετε να αφήσετε σχόλιο;" compact /></p>
+                    <p className="text-sm font-medium"><BilingualText en="Want to leave feedback?" el="Θέλετε να αφήσετε σχόλιο;" compact wrap /></p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       <BilingualText en="Sign in or create a free account to comment on this document." el="Συνδεθείτε ή δημιουργήστε δωρεάν λογαριασμό για να σχολιάσετε αυτό το έγγραφο." wrap />
                     </p>

@@ -260,7 +260,7 @@ export function ScoreInspector() {
           {/* Badges */}
           <Section title={`Badges (${report.badges.length})`} icon={Award}>
             {report.badges.length === 0 ? (
-              <p className="text-sm text-muted-foreground"><BilingualText en="No badges earned yet." el="Δεν έχουν κερδηθεί διακρίσεις ακόμα." compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No badges earned yet." el="Δεν έχουν κερδηθεί διακρίσεις ακόμα." compact wrap /></p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {report.badges.map((b) => (
@@ -310,14 +310,14 @@ export function ScoreInspector() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground"><BilingualText en="No streak record found." el="Δεν βρέθηκε σερί." compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No streak record found." el="Δεν βρέθηκε σερί." compact wrap /></p>
             )}
           </Section>
 
           {/* Anomaly Flags */}
           <Section title={`Abuse Flags (${report.anomalies.length})`} icon={AlertTriangle}>
             {report.anomalies.length === 0 ? (
-              <p className="text-sm text-muted-foreground"><BilingualText en="No abuse flags on this user." el="Καμία επισήμανση κατάχρησης για αυτόν τον χρήστη." compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No abuse flags on this user." el="Καμία επισήμανση κατάχρησης για αυτόν τον χρήστη." compact wrap /></p>
             ) : (
               <div className="space-y-2">
                 {report.anomalies.map((a) => (

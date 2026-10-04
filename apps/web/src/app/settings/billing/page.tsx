@@ -379,7 +379,7 @@ export default function UserBillingPage() {
                 </>); })()}
               </div>
             ) : !showContactForm ? (
-              <p className="text-sm text-muted-foreground"><BilingualText en="No billing contact set." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης." compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="No billing contact set." el="Δεν έχουν οριστεί στοιχεία τιμολόγησης." compact wrap /></p>
             ) : null}
 
             {showContactForm && (

@@ -1262,7 +1262,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
       <CardContent className="space-y-8">
         {/* Looking For */}
         <div>
-          <p id="ob-lookingfor" className="block text-sm font-medium mb-1"><BilingualText en="Who are you looking for?" el="Ποιον ψάχνετε;" compact /></p>
+          <p id="ob-lookingfor" className="block text-sm font-medium mb-1"><BilingualText en="Who are you looking for?" el="Ποιον ψάχνετε;" compact wrap /></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Select all that apply" el="Επιλέξτε όσα ισχύουν" compact /></p>
           <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-lookingfor">
             {LOOKING_FOR_ROLES.map(role => (

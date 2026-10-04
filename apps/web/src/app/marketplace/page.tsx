@@ -481,7 +481,7 @@ export default function MarketplacePage() {
         <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact /></p>
+              <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></p>
               <p className="text-sm text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
             </div>
             {/* Theirs turns a dead button into a real link to /provider/services;

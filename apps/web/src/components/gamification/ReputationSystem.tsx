@@ -245,7 +245,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <Card>
             <CardHeader>
               <CardTitle><BilingualText en="Level Progression" el="Πρόοδος επιπέδων" compact /></CardTitle>
-              <CardDescription><BilingualText en="Your journey through the ranks" el="Η πορεία σας στα επίπεδα" compact /></CardDescription>
+              <CardDescription><BilingualText en="Your journey through the ranks" el="Η πορεία σας στα επίπεδα" compact wrap /></CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -296,7 +296,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <Card>
             <CardHeader>
               <CardTitle><BilingualText en="Recent Activity" el="Πρόσφατη δραστηριότητα" compact /></CardTitle>
-              <CardDescription><BilingualText en="Your latest reputation changes" el="Οι πιο πρόσφατες αλλαγές φήμης" compact /></CardDescription>
+              <CardDescription><BilingualText en="Your latest reputation changes" el="Οι πιο πρόσφατες αλλαγές φήμης" compact wrap /></CardDescription>
             </CardHeader>
             <CardContent>
               {recentActivities.length === 0 && (

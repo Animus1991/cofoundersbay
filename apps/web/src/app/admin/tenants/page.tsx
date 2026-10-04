@@ -715,7 +715,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium"><BilingualText en="Organisation status" el="Κατάσταση οργανισμού" compact /></p>
-                    <div className="flex gap-2" role="group" aria-label={bilingualInline('Organisation status', 'Κατάσταση οργανισμού')}>
+                    <div className="flex flex-wrap gap-2" role="group" aria-label={bilingualInline('Organisation status', 'Κατάσταση οργανισμού')}>
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" aria-pressed={general.status === s} onClick={() => setGeneral(p => ({ ...p, status: s }))}
                           className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
@@ -728,7 +728,7 @@ function TenantEditor({
                 <div className="flex justify-end pt-2">
                   <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
                     <Save className="icon-sm" />
-                    {isSaving ? 'Saving…' : isNew ? 'Create Tenant' : 'Save General'}
+                    {isSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : isNew ? <BilingualText en="Create Tenant" el="Δημιουργία οργανισμού" compact /> : <BilingualText en="Save General" el="Αποθήκευση γενικών" compact />}
                   </Button>
                 </div>
               </TabsContent>
@@ -737,7 +737,7 @@ function TenantEditor({
               <TabsContent value="branding" className="space-y-6 mt-0">
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm"><BilingualText en="Color Palette" el="Παλέτα χρωμάτων" compact /></h4>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     {([['primaryColor', 'Primary'], ['secondaryColor', 'Secondary'], ['accentColor', 'Accent']] as const).map(([key, label]) => (
                       <div key={key} className="space-y-2">
                         <label htmlFor={`tn-branding-${key}`} className="text-sm font-medium">{label}</label>
@@ -790,7 +790,7 @@ function TenantEditor({
                   <div className="flex justify-end pt-2 gap-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
                       <Save className="icon-sm" />
-                      {isBrandingSaving ? 'Saving…' : 'Save Colors & Fonts'}
+                      {isBrandingSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Colors &amp; Fonts" el="Αποθήκευση χρωμάτων και γραμματοσειρών" compact />}
                     </Button>
                   </div>
                 )}
@@ -812,7 +812,7 @@ function TenantEditor({
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
                       <Save className="icon-sm" />
-                      {isBrandingSaving ? 'Saving…' : 'Save Media'}
+                      {isBrandingSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Media" el="Αποθήκευση πολυμέσων" compact />}
                     </Button>
                   </div>
                 )}
@@ -861,7 +861,7 @@ function TenantEditor({
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
                       <Save className="icon-sm" />
-                      {isBrandingSaving ? 'Saving…' : 'Save Content'}
+                      {isBrandingSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Content" el="Αποθήκευση περιεχομένου" compact />}
                     </Button>
                   </div>
                 )}
@@ -913,7 +913,7 @@ function TenantEditor({
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
                       <Save className="icon-sm" />
-                      {isBrandingSaving ? 'Saving…' : 'Save Links'}
+                      {isBrandingSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Links" el="Αποθήκευση συνδέσμων" compact />}
                     </Button>
                   </div>
                 )}
@@ -935,7 +935,7 @@ function TenantEditor({
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
                       <Save className="icon-sm" />
-                      {isBrandingSaving ? 'Saving…' : 'Save Email Settings'}
+                      {isBrandingSaving ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Email Settings" el="Αποθήκευση ρυθμίσεων email" compact />}
                     </Button>
                   </div>
                 </TabsContent>
@@ -944,8 +944,11 @@ function TenantEditor({
           )}
         </div>
 
-        <div className="flex justify-between items-center p-4 border-t shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Five actions in one unwrapping row ran 79px past a 390px dialog.
+            The row wraps; publishing and the public page sit apart from the
+            Delete / Cancel / Save group. */}
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t p-4">
+          <div className="flex flex-wrap items-center gap-2">
             {tenant && (
               <>
                 <Button variant="outline" size="sm" className="gap-2" asChild>
@@ -967,7 +970,7 @@ function TenantEditor({
               </>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {tenant && (
               <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={async () => {
                 if (await confirm({

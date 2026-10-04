@@ -198,7 +198,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                 <BilingualText
                   en="Everything this page offers beyond its main content."
                   el="Ό,τι προσφέρει αυτή η σελίδα πέρα από το κύριο περιεχόμενο."
-                  compact
+                  compact wrap
                 />
               </SheetDescription>
             </SheetHeader>

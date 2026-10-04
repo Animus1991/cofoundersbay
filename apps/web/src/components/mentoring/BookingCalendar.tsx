@@ -377,7 +377,7 @@ export function BookingCalendar({
 
               {/* Notes */}
               <div className="space-y-2">
-                <label htmlFor="bc-f1" className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact /></label>
+                <label htmlFor="bc-f1" className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact wrap /></label>
                 <Textarea id="bc-f1"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}

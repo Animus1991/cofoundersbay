@@ -523,7 +523,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile" titleEl="Επεξεργασία προφίλ">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
-          <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact /></p>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load your profile." el="Δεν ήταν δυνατή η φόρτωση του προφίλ σας." compact wrap /></p>
           <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}><BilingualText en="Try again" el="Δοκιμάστε ξανά" compact /></Button>
         </div>
       </AppShell>
@@ -1211,7 +1211,7 @@ export default function ProfileEditPage() {
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
                     <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
-                      <CheckCircle2 className="icon-sm" /> <BilingualText en="Your profile is fully complete!" el="Το προφίλ σας είναι πλήρες!" compact />
+                      <CheckCircle2 className="icon-sm" /> <BilingualText en="Your profile is fully complete!" el="Το προφίλ σας είναι πλήρες!" compact wrap />
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (

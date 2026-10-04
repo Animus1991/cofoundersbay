@@ -417,7 +417,7 @@ export default function AISettingsPage() {
                   value={String(prefs.temperature)}
                   onValueChange={(v) => updatePref('temperature', parseFloat(v))}
                 >
-                  <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full sm:w-48">
+                  <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full sm:w-64">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -441,7 +441,7 @@ export default function AISettingsPage() {
                   value={String(prefs.maxTokens)}
                   onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
                 >
-                  <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full sm:w-48">
+                  <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full sm:w-64">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

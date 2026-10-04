@@ -848,7 +848,7 @@ export default function ExpertReviewsPage() {
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact />{' '}
+                  <BilingualText en="No experts match your search." el="Κανένας ειδικός δεν ταιριάζει με την αναζήτηση." compact wrap />{' '}
                   {listingFilters > 0 ? (
                     <button className="text-primary-accessible hover:underline" onClick={() => openRailSection('filters')}>
                       <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />

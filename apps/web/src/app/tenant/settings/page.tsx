@@ -273,7 +273,7 @@ export default function TenantSettingsPage() {
               <CardHeader>
                 <CardTitle><BilingualText en="Connected Services" el="Συνδεδεμένες υπηρεσίες" compact /></CardTitle>
                 <CardDescription>
-                  <BilingualText en="Integrate with external services" el="Σύνδεση με εξωτερικές υπηρεσίες" compact />
+                  <BilingualText en="Integrate with external services" el="Σύνδεση με εξωτερικές υπηρεσίες" compact wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -349,7 +349,7 @@ export default function TenantSettingsPage() {
               <CardHeader>
                 <CardTitle><BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact /></CardTitle>
                 <CardDescription>
-                  <BilingualText en="Manage your payment information" el="Διαχείριση στοιχείων πληρωμής" compact />
+                  <BilingualText en="Manage your payment information" el="Διαχείριση στοιχείων πληρωμής" compact wrap />
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
