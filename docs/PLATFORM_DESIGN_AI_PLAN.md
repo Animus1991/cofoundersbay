@@ -1845,7 +1845,7 @@ Vitest 783/783 (99 αρχεία), typecheck web 0. Οι μετρήσεις brows
 | `cursor/phone-component-sizes-53e0` | `477ca958` | 0 |
 | `integration/ai-platform-upgrade` | `0e792ce7` | 0 |
 | `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe32` | 0 |
-| `main` | `91d6ea3a` | 0 · αυτό το branch είναι 384 commits μπροστά |
+| `main` | `91d6ea3a` | 0 · το `0b4a7818` είναι 383 commits μπροστά· οι σημειώσεις αυτού του ελέγχου κάθονται από πάνω |
 
 Τα 14 commits που μπήκαν είναι τα `9fab86d9` … `0b4a7818`: συγχώνευση του §30, κύματα καθαρότητας 1–4, ελληνικός κατάλογος, εξουσιοδότηση tenant/org, αναφορές εντολών του assistant, και το default θέμα που ακολουθεί το λειτουργικό. Δεν υπάρχει δεύτερο tip. Το April `main` δεν ενώθηκε. Το wrapper upstream του §33.1 δεν είναι remote αυτού του clone· η κρίση εκεί (χωρίς κοινό merge-base, δεν γίνεται merge) δεν αλλάζει.
 
