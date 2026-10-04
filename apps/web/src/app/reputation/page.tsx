@@ -84,10 +84,10 @@ function LevelRing({ progress, level, size = 140 }: { progress: number; level: n
       aria-label={bilingualAria(`Level ${level} of 10, ${pct}% of the way to the next level`, `Επίπεδο ${level} από 10, ${pct}% της διαδρομής προς το επόμενο`)}
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#483822" strokeWidth={3.5} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={3.5} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="#e89a3c" strokeWidth={3.5} strokeLinecap="round"
+          stroke="hsl(var(--ring-gold))" strokeWidth={3.5} strokeLinecap="round"
           className="transition-[stroke-dasharray] duration-700"
           strokeDasharray={`${(pct / 100) * circ} ${circ}`}
         />

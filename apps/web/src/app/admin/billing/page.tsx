@@ -21,7 +21,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -612,7 +612,7 @@ export default function AdminBillingPage() {
             <DialogTitle><BilingualText en="Override Subscription Plan" el="Παράκαμψη πλάνου συνδρομής" compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground"><BilingualText en="Select a new plan to apply immediately. This bypasses payment." el="Επιλέξτε νέο πλάνο που εφαρμόζεται αμέσως, χωρίς πληρωμή." wrap /></p>
+            <DialogDescription><BilingualText en="Select a new plan to apply immediately. This bypasses payment." el="Επιλέξτε νέο πλάνο που εφαρμόζεται αμέσως, χωρίς πληρωμή." wrap /></DialogDescription>
             <div className="space-y-1.5">
               <Label htmlFor="overridePlanId" className="text-xs"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>

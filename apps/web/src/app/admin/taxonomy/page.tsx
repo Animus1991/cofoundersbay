@@ -31,6 +31,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -145,6 +146,7 @@ function SkillDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{skill ? <BilingualText en="Edit skill" el="Επεξεργασία δεξιότητας" compact /> : <BilingualText en="Add a skill" el="Προσθήκη δεξιότητας" compact />}</DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Add or rename a taxonomy skill and choose its category." el="Προσθήκη ή μετονομασία δεξιότητας ταξινόμησης και επιλογή κατηγορίας." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div>

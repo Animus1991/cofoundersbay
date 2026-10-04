@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -455,6 +455,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                 <DialogTitle>
                   <BilingualText en={expanded.labelEn} el={expanded.labelEl} />
                 </DialogTitle>
+                <DialogDescription className="sr-only"><BilingualText en="Larger view of this side panel section." el="Μεγαλύτερη προβολή αυτής της ενότητας του πλαϊνού πίνακα." /></DialogDescription>
               </DialogHeader>
               <div className="mt-2">{expanded.content}</div>
             </>

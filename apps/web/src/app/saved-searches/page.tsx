@@ -32,6 +32,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -253,6 +254,7 @@ function EditSearchDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle><BilingualText en={savedSearchesEn('edit_title')} el={savedSearchesEl('edit_title')} compact wrap /></DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Rename the search or change how often it alerts you." el="Μετονομάστε την αναζήτηση ή αλλάξτε τη συχνότητα ειδοποιήσεων." /></DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">

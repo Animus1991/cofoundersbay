@@ -113,6 +113,13 @@ html {
        the edge taking --ring while typing. */
     --input:            232 5% 92%;
     --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
+
+    /* Score/progress rings — the brand-banner gold on its quiet brown
+       (#e89a3c on #483822). `ink` carries the ring's % and tier text; dark
+       themes lift track and ink so the ring stays legible. */
+    --ring-gold:        33 82% 55%;
+    --ring-gold-track:  31 37% 21%;
+    --ring-gold-ink:    31 37% 21%;
     /* Base radius = the card corner. Tailwind steps (tailwind.config.ts):
        sm/DEFAULT 6 · md/lg 10 · xl 12 · 2xl 14 · 3xl 18.
        Softer than cursor.com (cards ~12, buttons ~8) by one notch, same
@@ -197,6 +204,8 @@ html {
     --border: 232 12% 13.6%;           /* ~1.12 on card */
     --input: 232 12% 15%;              /* ~1.16 on card */
     --ring: 248 47% 76.6%;
+    --ring-gold-track:  30 22% 38%;   /* quiet on the dark card */
+    --ring-gold-ink:    36 55% 80%;   /* the banner's pale-gold text */
     color-scheme: dark;
   }
 
@@ -225,6 +234,8 @@ html {
     --border: 215 16% 22.8%;           /* ~1.12 on card */
     --input: 215 16% 24.4%;            /* ~1.16 on card */
     --ring: 199 36% 40%;
+    --ring-gold-track:  30 22% 38%;
+    --ring-gold-ink:    36 55% 80%;
     --gradient-hero: linear-gradient(hsl(215 26% 13%), hsl(215 26% 13%));
     color-scheme: dark;
   }
@@ -280,6 +291,8 @@ html {
     --border: 240 6% 10.8%;            /* ~1.12 on card */
     --input: 240 6% 12.2%;             /* ~1.15 on card */
     --ring: 258 28% 54%;
+    --ring-gold-track:  30 22% 38%;
+    --ring-gold-ink:    36 55% 80%;
     --gradient-hero: linear-gradient(hsl(240 7% 6.8%), hsl(240 7% 6.8%));
     color-scheme: dark;
   }

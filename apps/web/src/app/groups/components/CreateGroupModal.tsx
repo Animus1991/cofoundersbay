@@ -4,7 +4,7 @@ import { useState, useId } from 'react';
 import { Loader2, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
@@ -66,6 +66,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle><BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact /></DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Name the community, choose its URL slug and set who can join." el="Ονομάστε την κοινότητα, επιλέξτε το slug της και ορίστε ποιοι μπορούν να συμμετάσχουν." /></DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

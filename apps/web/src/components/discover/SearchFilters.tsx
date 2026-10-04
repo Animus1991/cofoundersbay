@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -272,6 +273,7 @@ export function SearchFilters({
                 <Filter className="icon-md text-primary-accessible" />
                 Search Filters
               </SheetTitle>
+              <SheetDescription className="sr-only"><BilingualText en="Refine search results by role, skills and other criteria." el="Περιορίστε τα αποτελέσματα αναζήτησης με ρόλο, δεξιότητες και άλλα κριτήρια." /></SheetDescription>
             </SheetHeader>
 
             <Accordion type="multiple" defaultValue={['role', 'skills']} className="mt-6">

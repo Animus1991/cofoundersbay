@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -683,6 +684,7 @@ export default function PitchDeckPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Contact {deck.author.name}</DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Send a message to this deck's author." el="Στείλτε μήνυμα στον δημιουργό αυτού του deck." /></DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
@@ -734,6 +736,7 @@ export default function PitchDeckPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle><BilingualText en="Share Pitch Deck" el="Κοινοποίηση pitch deck" compact /></DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Copy or share the link to this pitch deck." el="Αντιγράψτε ή κοινοποιήστε τον σύνδεσμο αυτού του pitch deck." /></DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>

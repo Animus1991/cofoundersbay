@@ -63,6 +63,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -785,6 +786,7 @@ export default function AdminUserManagementPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{detailUser?.name}</DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Account details and admin actions for this member." el="Στοιχεία λογαριασμού και ενέργειες διαχείρισης για αυτό το μέλος." /></DialogDescription>
           </DialogHeader>
           {detailUser && (
             <div className="space-y-3 text-sm">

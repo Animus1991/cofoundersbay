@@ -20,7 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { MatchCard } from '@/components/common/MatchCard';
 import { SkillChip } from '@/components/common/SkillChip';
@@ -120,6 +120,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <BarChart3 className="icon-md text-primary-accessible" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Compatibility score, dimensions and reasons for this match." el="Βαθμός συμβατότητας, διαστάσεις και λόγοι για αυτή την αντιστοίχιση." /></DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">

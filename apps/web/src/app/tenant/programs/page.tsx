@@ -26,6 +26,7 @@ import { useToast } from '@/components/ui/toast';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -530,6 +531,7 @@ export default function TenantProgramsPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{form.id ? 'Edit program' : 'Create program'}</DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Create or edit the program's name, description and type." el="Δημιουργία ή επεξεργασία ονόματος, περιγραφής και τύπου προγράμματος." /></DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 gap-4 py-2">
             <div className="space-y-1.5">

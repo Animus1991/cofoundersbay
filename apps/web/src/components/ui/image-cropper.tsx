@@ -3,10 +3,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { ZoomIn, ZoomOut, RotateCcw, Check, X, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 import { pressableProps } from '@/lib/pressable';
+import { bilingualInline } from '@/lib/i18n/format';
 interface CropArea { x: number; y: number; size: number }
 
 interface ImageCropperProps {
@@ -224,6 +225,7 @@ export function ImageCropper({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription className="sr-only">{bilingualInline('Upload an image and adjust its crop.', 'Ανεβάστε εικόνα και προσαρμόστε την περικοπή της.')}</DialogDescription>
         </DialogHeader>
 
         {!imageSrc ? (

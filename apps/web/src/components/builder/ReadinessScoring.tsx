@@ -433,7 +433,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cx="64"
                     cy="64"
                     r="56"
-                    stroke="#483822"
+                    stroke="hsl(var(--ring-gold-track))"
                     strokeWidth="3.5"
                     fill="none"
                   />
@@ -441,7 +441,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cx="64"
                     cy="64"
                     r="56"
-                    stroke="#e89a3c"
+                    stroke="hsl(var(--ring-gold))"
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     fill="none"

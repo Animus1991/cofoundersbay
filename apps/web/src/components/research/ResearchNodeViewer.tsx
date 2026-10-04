@@ -16,7 +16,7 @@ import {
   Database, Briefcase, FolderOpen, CircleDollarSign, ListTodo, Flag,
   Repeat, MessageSquare, Plus, X, Check, Link2, Link2Off, ExternalLink,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/toast';
 import { ResearchNode } from '@/lib/api';
 import { RichTextEditor } from './RichTextEditor';
@@ -407,6 +407,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         'flex flex-col gap-0 p-0 overflow-hidden max-w-4xl h-[88vh]',
       )}>
         <DialogTitle className="sr-only">{node.title ?? 'Research Node'}</DialogTitle>
+        <DialogDescription className="sr-only"><BilingualText en="View and edit this research node." el="Προβολή και επεξεργασία αυτού του κόμβου έρευνας." /></DialogDescription>
         {/* ── Header: icon + editable title + unsaved/save ── */}
         <div className="flex-none flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
           <div className="flex-none p-1.5 rounded-lg" style={{ background: `${nodeColor}20` }}>

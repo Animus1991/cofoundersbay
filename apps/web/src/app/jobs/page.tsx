@@ -41,7 +41,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
@@ -180,6 +180,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
           <DialogTitle>
             <BilingualText en={jobsEn('dialog_title')} el={jobsEl('dialog_title')} compact />
           </DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Post a role so candidates can apply." el="Δημοσιεύστε μια θέση για να υποβάλουν υποψήφιοι αίτηση." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">

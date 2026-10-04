@@ -32,7 +32,7 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
@@ -722,9 +722,9 @@ export default function DiscoverPage() {
             <DialogTitle><BilingualText en={discoverEn('save_search_title')} el={discoverEl('save_search_title')} compact /></DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
+            <DialogDescription>
               <BilingualText en={discoverEn('save_search_desc')} el={discoverEl('save_search_desc')} />
-            </p>
+            </DialogDescription>
             <div className="space-y-2">
               <Label htmlFor="save-search-name"><BilingualText en={discoverEn('save_name_label')} el={discoverEl('save_name_label')} compact /></Label>
               <Input

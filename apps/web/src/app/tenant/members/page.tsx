@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -231,6 +232,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           <DialogTitle className="flex items-center gap-2">
             <Send className="icon-md text-primary-accessible" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Invite people to the workspace and assign each a role." el="Προσκαλέστε άτομα στον χώρο εργασίας και ορίστε ρόλο σε καθέναν." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">

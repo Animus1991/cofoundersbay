@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useTheme } from '@/components/layout/RoleTheme';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
@@ -40,10 +41,13 @@ type CommandItem = {
 type CommandPaletteProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Opens the `?` shortcut reference — supplied by the host so `?` works globally too. */
+  onOpenShortcuts?: () => void;
 };
 
-export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
   const router = useRouter();
+  const { setTheme } = useTheme();
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -135,7 +139,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       label: 'Get recommendations',
       description: 'AI-powered suggestions',
       icon: Sparkles,
-      action: () => router.push('/matches'),
+      action: () => router.push('/recommendations'),
       category: 'actions',
     },
     {
@@ -152,22 +156,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       id: 'theme-light',
       label: 'Switch to Light mode',
       icon: Sun,
-      action: () => {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-        localStorage.setItem('theme', 'light');
-      },
+      action: () => setTheme('light'),
       category: 'settings',
     },
     {
       id: 'theme-dark',
       label: 'Switch to Dark mode',
       icon: Moon,
-      action: () => {
-        document.documentElement.classList.remove('light');
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      },
+      action: () => setTheme('dark'),
       category: 'settings',
     },
     {
@@ -189,7 +185,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       description: 'View all shortcuts',
       icon: Keyboard,
       shortcut: ['?'],
-      action: () => {}, // Could open a shortcuts modal
+      action: () => onOpenShortcuts?.(),
       category: 'help',
     },
     {
@@ -200,7 +196,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       action: () => router.push('/help'),
       category: 'help',
     },
-  ], [router]);
+  ], [router, setTheme, onOpenShortcuts]);
 
   // Filter commands based on search
   const filteredCommands = useMemo(() => {
@@ -278,7 +274,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[min(70dvh,calc(100svh_-_5.5rem))] flex-col gap-0 overflow-hidden p-0 max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0 md:max-h-[min(92dvh,720px)] md:max-w-lg">
+      <DialogContent
+        aria-describedby={undefined}
+        className="flex max-h-[min(70dvh,calc(100svh_-_5.5rem))] flex-col gap-0 overflow-hidden p-0 max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0 md:max-h-[min(92dvh,720px)] md:max-w-lg"
+      >
         <DialogTitle className="sr-only">Command palette</DialogTitle>
         {/* Search input */}
         <div className="shrink-0 border-b border-border p-4 pr-12">

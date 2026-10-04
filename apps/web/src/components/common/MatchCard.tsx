@@ -95,18 +95,18 @@ function ScoreBadge({ score }: { score: number }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#483822" strokeWidth={1.5} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e89a3c" strokeWidth={1.5}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={1.5} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold))" strokeWidth={1.5}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className="absolute text-2xs font-medium tabular-nums text-[#483822]">
+        <span className="absolute text-2xs font-medium tabular-nums text-[hsl(var(--ring-gold-ink))]">
           {score}%
         </span>
       </div>
-      <span className="text-xs font-medium text-[#483822]">
+      <span className="text-xs font-medium text-[hsl(var(--ring-gold-ink))]">
         <BilingualText en={label.en} el={label.el} compact />
       </span>
     </div>

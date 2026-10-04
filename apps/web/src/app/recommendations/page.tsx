@@ -28,7 +28,7 @@ import {
   X,
   Info,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -132,6 +132,7 @@ function BreakdownModal({
             <Star className="icon-sm text-primary-accessible" />
             Match Score Breakdown
           </DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="How the overall score breaks down by dimension." el="Πώς αναλύεται ο συνολικός βαθμός ανά διάσταση." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">

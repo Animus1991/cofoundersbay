@@ -19,9 +19,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
@@ -475,6 +475,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                 <History className="icon-sm text-primary-accessible" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
+              <DialogDescription className="sr-only">{bilingualInline('Preview of a saved canvas snapshot.', 'Προεπισκόπηση αποθηκευμένου στιγμιότυπου καμβά.')}</DialogDescription>
             </DialogHeader>
             <div className="py-2 space-y-3">
               <div className="flex gap-4 text-sm text-muted-foreground">

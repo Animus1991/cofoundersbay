@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -145,6 +146,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
               <Send className="icon-md text-primary-accessible" />
               <BilingualText en="Create Post" el="Νέα ανάρτηση" />
             </DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Write and publish a post to the feed." el="Συντάξτε και δημοσιεύστε μια ανάρτηση στη ροή." /></DialogDescription>
           </DialogHeader>
 
           {/* Post type selector */}

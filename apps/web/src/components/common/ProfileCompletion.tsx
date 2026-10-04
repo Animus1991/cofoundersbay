@@ -56,7 +56,7 @@ export function ProfileCompletionRing({
           r={config.radius}
           fill="none"
           strokeWidth={config.stroke}
-          stroke="#483822"
+          stroke="hsl(var(--ring-gold-track))"
         />
         {/* Progress circle */}
         <circle
@@ -68,7 +68,7 @@ export function ProfileCompletionRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          stroke="#e89a3c"
+          stroke="hsl(var(--ring-gold))"
           className="transition-all duration-1000 ease-out"
         />
       </svg>

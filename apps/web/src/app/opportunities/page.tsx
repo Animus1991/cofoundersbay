@@ -43,7 +43,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
@@ -440,6 +440,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
           <DialogTitle>
             <BilingualText en={opportunitiesEn('post')} el={opportunitiesEl('post')} compact />
           </DialogTitle>
+          <DialogDescription className="sr-only"><BilingualText en="Post an opportunity so community members can respond." el="Δημοσιεύστε μια ευκαιρία για να ανταποκριθούν τα μέλη της κοινότητας." /></DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">

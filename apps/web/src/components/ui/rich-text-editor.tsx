@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 
@@ -219,7 +219,10 @@ export function RichTextEditor({
       {/* Link dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader><DialogTitle>Insert Link</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Insert Link</DialogTitle>
+            <DialogDescription className="sr-only">{bilingualInline('Insert a link into the text.', 'Εισαγωγή συνδέσμου στο κείμενο.')}</DialogDescription>
+          </DialogHeader>
           <div className="space-y-3">
             <div>
               <label htmlFor="rte-f1" className="text-sm font-medium mb-1 block">URL</label>

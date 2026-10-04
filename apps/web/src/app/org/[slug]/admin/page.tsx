@@ -46,6 +46,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -814,11 +815,13 @@ export default function OrgAdminPage() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle><BilingualText en="Invite member" el="Πρόσκληση μέλους" compact /></DialogTitle>
+            <DialogDescription className="sr-only"><BilingualText en="Add an existing user to the organisation by their user ID." el="Προσθέστε υπάρχοντα χρήστη στον οργανισμό με το αναγνωριστικό του." /></DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></p>
+              <label htmlFor="invite-user-id" className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></label>
               <Input
+                id="invite-user-id"
                 value={inviteUserId}
                 onChange={(e) => setInviteUserId(e.target.value)}
                 placeholder={bilingualInline("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
@@ -826,9 +829,9 @@ export default function OrgAdminPage() {
               />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
+              <label htmlFor="invite-role" className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
-                <SelectTrigger aria-label="Role" className="mt-2">
+                <SelectTrigger id="invite-role" aria-label="Role" className="mt-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
