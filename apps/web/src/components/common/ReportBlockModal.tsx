@@ -267,10 +267,10 @@ export function ReportBlockModal({
 
             <div className="space-y-4 py-4">
               <div>
-                <Label className="text-sm font-medium mb-3 block">
+                <p id="ReportBlockModal-cap1-cap" className="text-sm font-medium mb-3 block">
                   <BilingualText en="Why are you reporting this user?" el="Γιατί αναφέρετε αυτόν τον χρήστη;" compact />
-                </Label>
-                <div className="space-y-2">
+                </p>
+                <div role="group" aria-labelledby="ReportBlockModal-cap1-cap" className="space-y-2">
                   {REPORT_REASONS.map((reason) => (
                     <label
                       key={reason.value}

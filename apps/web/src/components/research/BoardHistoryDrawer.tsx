@@ -37,7 +37,6 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 
-import { pressableProps } from '@/lib/pressable';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface BoardSnapshot {
@@ -252,9 +251,9 @@ export function BoardHistoryDrawer({
 
           {/* Create snapshot */}
           <div className="mt-4 space-y-2 p-3 bg-muted/50 rounded-lg border border-border">
-            <Label className="text-xs font-medium">Save current state</Label>
+            <Label htmlFor="snapshotLabel" className="text-xs font-medium">Save current state</Label>
             <div className="flex gap-2">
-              <Input
+              <Input id="snapshotLabel"
                 placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
                 value={snapshotLabel}
                 onChange={(e) => setSnapshotLabel(e.target.value)}
@@ -319,7 +318,6 @@ export function BoardHistoryDrawer({
                         key={snap.id}
                         className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={() => setPreviewSnapshot(snap)}
-                        {...pressableProps()}
                       >
                         <div className={cn(
                           'h-7 w-7 rounded-full flex items-center justify-center shrink-0 border',

@@ -73,7 +73,6 @@ import {
 } from '@/lib/i18n/LanguagePreferenceContext';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
-import { pressableProps } from '@/lib/pressable';
 function PreviewHint({ text }: { text: string }) {
   const el = BUILDER_PREVIEW_HINT_EL[text];
   if (!el) return <>{text}</>;
@@ -368,11 +367,11 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>
+            <Label htmlFor="docType">
               <BilingualText en={builderEn('doc_type')} el={builderEl('doc_type')} compact />
             </Label>
             <Select value={docType} onValueChange={setDocType}>
-              <SelectTrigger aria-label={builderEn('doc_type')} className="min-h-11">
+              <SelectTrigger id="docType" aria-label={builderEn('doc_type')} className="min-h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -384,10 +383,10 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>
+            <Label htmlFor="title">
               <BilingualText en={builderEn('title')} el={builderEl('title')} compact />
             </Label>
-            <Input
+            <Input id="title"
               placeholder={t(builderEn('title_ph'), builderEl('title_ph'))}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -1075,8 +1074,7 @@ export function BuilderWorkspace({
               <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}
-          {...pressableProps()}>
+              <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}>
                 <BilingualText en={builderEn('create_first')} el={builderEl('create_first')} compact />
               </Button>
               <BuilderAskAiButton

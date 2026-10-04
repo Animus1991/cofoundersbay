@@ -142,8 +142,8 @@ function ReviewDecisionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Feedback {decision !== 'approved' && <span className="text-destructive-accessible">*</span>}</Label>
-            <Textarea
+            <Label htmlFor="feedback">Feedback {decision !== 'approved' && <span className="text-destructive-accessible">*</span>}</Label>
+            <Textarea id="feedback"
               placeholder={
                 decision === 'approved'
                   ? 'Optional comments for the author...'
@@ -157,8 +157,8 @@ function ReviewDecisionDialog({
 
           {decision === 'approved' && (
             <div className="space-y-1.5">
-              <Label>Rating (optional)</Label>
-              <div className="flex gap-1">
+              <p id="rating-optional-cap" className="text-sm font-medium leading-tight">Rating (optional)</p>
+              <div role="group" aria-labelledby="rating-optional-cap" className="flex gap-1">
                 {[1, 2, 3, 4, 5].map(n => (
                   <button aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-pressed={rating !== null && n <= rating}
                     key={n}

@@ -9,6 +9,18 @@ const CASES = [
   { route: '/milestones', trigger: /New milestone|Νέο ορόσημο/i, name: 'milestone-new' },
   { route: '/groups', trigger: /Create|Δημιουργία/i, name: 'group-create' },
   { route: '/messages', trigger: /New message|Νέο μήνυμα/i, name: 'message-compose' },
+  { route: '/jobs', trigger: /Post|Δημοσίευση|New job|Νέα θέση/i, name: 'job-post' },
+  { route: '/opportunities', trigger: /Post|Δημοσίευση|New opportunity/i, name: 'opp-post' },
+  { route: '/programs', trigger: /Apply|Αίτηση|Υποβολή|View|Προβολή/i, name: 'program-apply' },
+  { route: '/research', trigger: /New board|Νέος πίνακας|Create|Δημιουργία|Templates|Πρότυπα/i, name: 'research-create' },
+  { route: '/matches', trigger: /^Connect$|^Σύνδεση$/i, name: 'match-connect' },
+  { route: '/mentoring', trigger: /^Book$|^Κράτηση$/i, name: 'mentor-book' },
+  { route: '/recommendations', trigger: /breakdown|ανάλυση|View|Προβολή|Explain/i, name: 'rec-breakdown' },
+  { route: '/tenant/members', trigger: /Invite|Πρόσκληση/i, name: 'member-invite' },
+  { route: '/admin/communities', trigger: /Create|New|Δημιουργία|Νέα/i, name: 'admin-comm-create' },
+  { route: '/admin/taxonomy', trigger: /Add|New|Προσθήκη|Νέο/i, name: 'admin-tax-add' },
+  { route: '/admin/billing', trigger: /New coupon|Νέο κουπόνι|Add coupon/i, name: 'admin-billing' },
+  { route: '/saved-searches', trigger: /Edit|Επεξεργασία|Rename|Μετονομασία/i, name: 'saved-search-edit' },
 ];
 
 const b = await chromium.launch();

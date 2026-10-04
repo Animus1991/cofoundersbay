@@ -340,12 +340,12 @@ export default function AISettingsPage() {
               {/* Model Selection */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label><BilingualText en="Preferred Model" el="Προτιμώμενο μοντέλο" compact /></Label>
+                  <Label htmlFor="preferredModel"><BilingualText en="Preferred Model" el="Προτιμώμενο μοντέλο" compact /></Label>
                   <Select
                     value={prefs.preferredModel}
                     onValueChange={(v) => updatePref('preferredModel', v)}
                   >
-                    <SelectTrigger aria-label="Preferred Model">
+                    <SelectTrigger id="preferredModel" aria-label="Preferred Model">
                       <SelectValue placeholder={bilingualInline("Select model", "Επιλογή μοντέλου")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -376,12 +376,12 @@ export default function AISettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label><BilingualText en="Default Agent" el="Προεπιλεγμένος πράκτορας" compact /></Label>
+                  <Label htmlFor="defaultAgent"><BilingualText en="Default Agent" el="Προεπιλεγμένος πράκτορας" compact /></Label>
                   <Select
                     value={prefs.defaultAgent}
                     onValueChange={(v) => updatePref('defaultAgent', v)}
                   >
-                    <SelectTrigger aria-label="Default Agent">
+                    <SelectTrigger id="defaultAgent" aria-label="Default Agent">
                       <SelectValue placeholder={bilingualInline("Select agent", "Επιλογή βοηθού")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -409,7 +409,7 @@ export default function AISettingsPage() {
 
               {/* Temperature Selection */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label htmlFor="prefs" className="flex items-center gap-2">
                   <ThermometerSun className="icon-sm text-muted-foreground" />
                   <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
                 </Label>
@@ -417,7 +417,7 @@ export default function AISettingsPage() {
                   value={String(prefs.temperature)}
                   onValueChange={(v) => updatePref('temperature', parseFloat(v))}
                 >
-                  <SelectTrigger aria-label="Creativity (Temperature)" className="w-full sm:w-48">
+                  <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full sm:w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -436,12 +436,12 @@ export default function AISettingsPage() {
 
               {/* Max Tokens */}
               <div className="space-y-2">
-                <Label><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
+                <Label htmlFor="prefs-2"><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
                 <Select
                   value={String(prefs.maxTokens)}
                   onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
                 >
-                  <SelectTrigger aria-label="Max Response Length" className="w-full sm:w-48">
+                  <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full sm:w-48">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -488,10 +488,10 @@ export default function AISettingsPage() {
 
               {/* Language */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <p id="page-cap5-cap" className="flex items-center gap-2">
                   <Languages className="icon-sm text-muted-foreground" />
                   {t('Response Language')}
-                </Label>
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {t('Tap a language. The same setting is in the header globe and in Settings.')}
                 </p>

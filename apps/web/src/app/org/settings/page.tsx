@@ -323,8 +323,8 @@ export default function OrgSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label><BilingualText en="Logo" el="Λογότυπο" compact /></Label>
-                  <div className="flex items-center gap-4">
+                  <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Logo" el="Λογότυπο" compact /></p>
+                  <div role="group" aria-labelledby="page-cap1-cap" className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
                       <Building2 className="icon-xl text-muted-foreground" />
                     </div>
@@ -349,9 +349,9 @@ export default function OrgSettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact /></Label>
+                  <Label htmlFor="page-f2"><BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact /></Label>
                   <div className="flex items-center gap-2">
-                    <Input placeholder="accelerator.yourdomain.com" />
+                    <Input id="page-f2" placeholder="accelerator.yourdomain.com" />
                     <Button variant="outline" disabled title="Custom domains are not connected yet"><BilingualText en="Verify" el="Επαλήθευση" compact /></Button>
                   </div>
                   <p className="text-xs text-muted-foreground">

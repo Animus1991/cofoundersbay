@@ -268,8 +268,8 @@ export default function CreateProjectPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Label><BilingualText en={projectEn('field_stage')} el={projectEl('field_stage')} compact /> *</Label>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={projectEn('field_stage')} el={projectEl('field_stage')} compact /> *</p>
+                <div role="group" aria-labelledby="page-cap1-cap" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {STATUS_OPTIONS.map((opt) => {
                     const fullKey = PROJECT_STAGE_FULL_KEYS[opt.value];
                     return (
@@ -361,8 +361,8 @@ export default function CreateProjectPage() {
               </div>
 
               <div className="space-y-3">
-                <Label><BilingualText en={projectEn('field_roles')} el={projectEl('field_roles')} compact /></Label>
-                <div className="flex flex-wrap gap-2">
+                <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en={projectEn('field_roles')} el={projectEl('field_roles')} compact /></p>
+                <div role="group" aria-labelledby="page-cap2-cap" className="flex flex-wrap gap-2">
                   {PROJECT_COMMON_ROLES.map((role) => (
                     <button
                       key={role.en}
@@ -419,8 +419,8 @@ export default function CreateProjectPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Label><BilingualText en={projectEn('field_tags')} el={projectEl('field_tags')} compact /></Label>
-                <div className="flex flex-wrap gap-2">
+                <p id="page-cap3-cap" className="text-sm font-medium leading-tight"><BilingualText en={projectEn('field_tags')} el={projectEl('field_tags')} compact /></p>
+                <div role="group" aria-labelledby="page-cap3-cap" className="flex flex-wrap gap-2">
                   {COMMON_TAGS.map((tag) => (
                     <button
                       key={tag}

@@ -185,9 +185,9 @@ export default function ProviderProfilePage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
+                  <Label htmlFor="serviceType"><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
                   <Select value={serviceType} onValueChange={setServiceType}>
-                    <SelectTrigger aria-label="Service Type"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="serviceType" aria-label="Service Type"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SERVICE_TYPES.map(s => (
                         <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -218,9 +218,9 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Years in Business" el="Χρόνια λειτουργίας" compact /></Label>
+                    <Label htmlFor="yearsInBusiness"><BilingualText en="Years in Business" el="Χρόνια λειτουργίας" compact /></Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>
-                      <SelectTrigger aria-label="Years in Business"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="yearsInBusiness" aria-label="Years in Business"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -322,10 +322,10 @@ export default function ProviderProfilePage() {
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <Label><BilingualText en="Starting Price (USD)" el="Αρχική τιμή (USD)" compact /></Label>
+                  <Label htmlFor="startingPrice"><BilingualText en="Starting Price (USD)" el="Αρχική τιμή (USD)" compact /></Label>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">$</span>
-                    <Input
+                    <Input id="startingPrice"
                       type="number"
                       value={startingPrice}
                       onChange={e => setStartingPrice(e.target.value)}

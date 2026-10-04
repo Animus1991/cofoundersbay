@@ -539,8 +539,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <Card key={index} className="p-4">
                   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
-                      <Input
+                      <Label htmlFor={`rs-name-${index}`}><BilingualText en="Name" el="Όνομα" compact /></Label>
+                      <Input id={`rs-name-${index}`}
                         value={stream.name}
                         onChange={(e) => {
                           const newStreams = [...data.revenueStreams];
@@ -551,8 +551,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label><BilingualText en="Type" el="Τύπος" compact /></Label>
-                      <select
+                      <Label htmlFor={`rs-type-${index}`}><BilingualText en="Type" el="Τύπος" compact /></Label>
+                      <select id={`rs-type-${index}`}
                         value={stream.type}
                         onChange={(e) => {
                           const newStreams = [...data.revenueStreams];
@@ -569,8 +569,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       </select>
                     </div>
                     <div>
-                      <Label><BilingualText en="Monthly Revenue" el="Μηνιαία έσοδα" compact /></Label>
-                      <Input
+                      <Label htmlFor={`rs-monthlyRevenue-${index}`}><BilingualText en="Monthly Revenue" el="Μηνιαία έσοδα" compact /></Label>
+                      <Input id={`rs-monthlyRevenue-${index}`}
                         type="number"
                         value={stream.monthlyRevenue || ''}
                         onChange={(e) => {
@@ -582,8 +582,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label><BilingualText en="Growth Rate (%/mo)" el="Ρυθμός ανάπτυξης (%/μήνα)" compact /></Label>
-                      <Input
+                      <Label htmlFor={`rs-growthRate-${index}`}><BilingualText en="Growth Rate (%/mo)" el="Ρυθμός ανάπτυξης (%/μήνα)" compact /></Label>
+                      <Input id={`rs-growthRate-${index}`}
                         type="number"
                         value={stream.growthRate || ''}
                         onChange={(e) => {
@@ -635,8 +635,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('fin_cac')} el={builderEl('fin_cac')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f5"><BilingualText en={builderEn('fin_cac')} el={builderEl('fin_cac')} compact /></Label>
+                  <Input id="FinancialPlanning-f5"
                     type="number"
                     value={data.unitEconomics?.cac || ''}
                     onChange={(e) => setData(prev => ({
@@ -650,8 +650,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </p>
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('fin_payback')} el={builderEl('fin_payback')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f6"><BilingualText en={builderEn('fin_payback')} el={builderEl('fin_payback')} compact /></Label>
+                  <Input id="FinancialPlanning-f6"
                     type="number"
                     value={data.unitEconomics?.paybackPeriod || ''}
                     onChange={(e) => setData(prev => ({
@@ -672,8 +672,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('fin_ltv')} el={builderEl('fin_ltv')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f7"><BilingualText en={builderEn('fin_ltv')} el={builderEl('fin_ltv')} compact /></Label>
+                  <Input id="FinancialPlanning-f7"
                     type="number"
                     value={data.unitEconomics?.ltv || ''}
                     onChange={(e) => setData(prev => ({
@@ -687,8 +687,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </p>
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('fin_margin')} el={builderEl('fin_margin')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f8"><BilingualText en={builderEn('fin_margin')} el={builderEl('fin_margin')} compact /></Label>
+                  <Input id="FinancialPlanning-f8"
                     type="number"
                     value={data.unitEconomics?.grossMargin || ''}
                     onChange={(e) => setData(prev => ({
@@ -765,8 +765,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <Card key={index} className="p-4">
                   <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
-                      <Label><BilingualText en="Stage" el="Στάδιο" compact /></Label>
-                      <Input
+                      <Label htmlFor={`fr-stage-${index}`}><BilingualText en="Stage" el="Στάδιο" compact /></Label>
+                      <Input id={`fr-stage-${index}`}
                         value={round.stage}
                         onChange={(e) => {
                           const newRounds = [...data.fundingRounds];
@@ -777,8 +777,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label><BilingualText en="Amount" el="Ποσό" compact /></Label>
-                      <Input
+                      <Label htmlFor={`fr-amount-${index}`}><BilingualText en="Amount" el="Ποσό" compact /></Label>
+                      <Input id={`fr-amount-${index}`}
                         type="number"
                         value={round.amount || ''}
                         onChange={(e) => {
@@ -790,8 +790,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label><BilingualText en="Timeline" el="Χρονοδιάγραμμα" compact /></Label>
-                      <Input
+                      <Label htmlFor={`fr-timeline-${index}`}><BilingualText en="Timeline" el="Χρονοδιάγραμμα" compact /></Label>
+                      <Input id={`fr-timeline-${index}`}
                         value={round.timeline}
                         onChange={(e) => {
                           const newRounds = [...data.fundingRounds];
@@ -802,8 +802,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                     <div>
-                      <Label><BilingualText en="Dilution (%)" el="Αραίωση (%)" compact /></Label>
-                      <Input
+                      <Label htmlFor={`fr-dilution-${index}`}><BilingualText en="Dilution (%)" el="Αραίωση (%)" compact /></Label>
+                      <Input id={`fr-dilution-${index}`}
                         type="number"
                         value={round.dilution || ''}
                         onChange={(e) => {
@@ -843,8 +843,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f13"><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
+                  <Input id="FinancialPlanning-f13"
                     type="number"
                     value={data.scenarios.conservative.revenue12m || ''}
                     onChange={(e) => setData(prev => ({
@@ -858,8 +858,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f14"><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
+                  <Input id="FinancialPlanning-f14"
                     type="number"
                     value={data.scenarios.conservative.costs12m || ''}
                     onChange={(e) => setData(prev => ({
@@ -897,8 +897,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f15"><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
+                  <Input id="FinancialPlanning-f15"
                     type="number"
                     value={data.scenarios.realistic.revenue12m || ''}
                     onChange={(e) => setData(prev => ({
@@ -912,8 +912,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f16"><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
+                  <Input id="FinancialPlanning-f16"
                     type="number"
                     value={data.scenarios.realistic.costs12m || ''}
                     onChange={(e) => setData(prev => ({
@@ -951,8 +951,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f17"><BilingualText en={builderEn('fin_12rev')} el={builderEl('fin_12rev')} compact /></Label>
+                  <Input id="FinancialPlanning-f17"
                     type="number"
                     value={data.scenarios.aggressive.revenue12m || ''}
                     onChange={(e) => setData(prev => ({
@@ -966,8 +966,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
-                  <Input
+                  <Label htmlFor="FinancialPlanning-f18"><BilingualText en={builderEn('fin_12cost')} el={builderEl('fin_12cost')} compact /></Label>
+                  <Input id="FinancialPlanning-f18"
                     type="number"
                     value={data.scenarios.aggressive.costs12m || ''}
                     onChange={(e) => setData(prev => ({

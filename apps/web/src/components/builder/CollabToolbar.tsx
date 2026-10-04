@@ -188,10 +188,10 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
         ) : (
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>
+              <Label htmlFor="label">
                 <BilingualText en={builderEn('collab_share_label')} el={builderEl('collab_share_label')} compact />
               </Label>
-              <Input
+              <Input id="label"
                 placeholder={t(
                   'e.g. Investor preview, Mentor review…',
                   'π.χ. προεπισκόπηση επενδυτή, αξιολόγηση μέντορα…',
@@ -201,10 +201,10 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
               />
             </div>
             <div className="space-y-1.5">
-              <Label>
+              <p id="CollabToolbar-cap2-cap" className="text-sm font-medium leading-tight">
                 <BilingualText en={builderEn('collab_share_permission')} el={builderEl('collab_share_permission')} compact />
-              </Label>
-              <div className="flex gap-2">
+              </p>
+              <div role="group" aria-labelledby="CollabToolbar-cap2-cap" className="flex gap-2">
                 {(['view', 'comment', 'suggest'] as const).map((p) => (
                   <Button
                     key={p}
@@ -219,10 +219,10 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>
+              <p id="CollabToolbar-cap3-cap" className="text-sm font-medium leading-tight">
                 <BilingualText en={builderEn('collab_expires')} el={builderEl('collab_expires')} compact />
-              </Label>
-              <div className="flex gap-2 flex-wrap">
+              </p>
+              <div role="group" aria-labelledby="CollabToolbar-cap3-cap" className="flex gap-2 flex-wrap">
                 {expiryOptions.map((opt) => (
                   <Button
                     key={opt.v}

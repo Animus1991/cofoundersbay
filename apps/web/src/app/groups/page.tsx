@@ -92,7 +92,7 @@ function GroupCard({
     <Card
       className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer overflow-hidden"
       onClick={() => router.push(`/groups/${group.id}`)}
-      {...pressableProps({ role: 'link' })}
+      {...pressableProps({ role: 'link', label: group.name })}
     >
       {/* Cover Image */}
       {group.coverImageUrl ? (

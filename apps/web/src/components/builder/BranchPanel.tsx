@@ -110,8 +110,8 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label><BilingualText en="Name" el="Όνομα" compact /></Label>
-            <Input
+            <Label htmlFor="name"><BilingualText en="Name" el="Όνομα" compact /></Label>
+            <Input id="name"
               placeholder="e.g. revised-financials, investor-v2..."
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -119,8 +119,8 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
             />
           </div>
           <div className="space-y-1.5">
-            <Label><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
-            <Textarea
+            <Label htmlFor="description"><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
+            <Textarea id="description"
               placeholder={bilingualInline("What changes are you exploring in this variant?", "Ποιες αλλαγές δοκιμάζετε σε αυτή την εκδοχή;")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -188,12 +188,12 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label><BilingualText en="Proposal title" el="Τίτλος πρότασης" compact /></Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+            <Label htmlFor="title"><BilingualText en="Proposal title" el="Τίτλος πρότασης" compact /></Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label><BilingualText en="Description" el="Περιγραφή" compact /></Label>
-            <Textarea
+            <Label htmlFor="description-2"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
+            <Textarea id="description-2"
               placeholder={bilingualInline("Summarise the changes you've made and why…", "Συνοψίστε τις αλλαγές σας και τον λόγο…")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}

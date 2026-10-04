@@ -196,9 +196,9 @@ export default function MentorProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Years of Experience" el="Χρόνια εμπειρίας" compact /></Label>
+                    <Label htmlFor="yearsExp"><BilingualText en="Years of Experience" el="Χρόνια εμπειρίας" compact /></Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>
-                      <SelectTrigger aria-label="Years of Experience"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="yearsExp" aria-label="Years of Experience"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
                           <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
@@ -207,9 +207,9 @@ export default function MentorProfilePage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Hours Available / Week" el="Διαθέσιμες ώρες / εβδομάδα" compact /></Label>
+                    <Label htmlFor="hoursPerWeek"><BilingualText en="Hours Available / Week" el="Διαθέσιμες ώρες / εβδομάδα" compact /></Label>
                     <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
-                      <SelectTrigger aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
+                      <SelectTrigger id="hoursPerWeek" aria-label="Hours Available / Week"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '8', '10', '15', '20'].map(v => (
                           <SelectItem key={v} value={v}>{v}h/week</SelectItem>
@@ -346,10 +346,10 @@ export default function MentorProfilePage() {
                 </div>
                 {!isFree && (
                   <div className="space-y-2">
-                    <Label><BilingualText en="Hourly Rate (USD)" el="Ωριαία αμοιβή (USD)" compact /></Label>
+                    <Label htmlFor="hourlyRate"><BilingualText en="Hourly Rate (USD)" el="Ωριαία αμοιβή (USD)" compact /></Label>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">$</span>
-                      <Input
+                      <Input id="hourlyRate"
                         type="number"
                         value={hourlyRate}
                         onChange={e => setHourlyRate(e.target.value)}
@@ -362,9 +362,9 @@ export default function MentorProfilePage() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
+                  <Label htmlFor="sessionDuration"><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                   <Select value={sessionDuration} onValueChange={setSessionDuration}>
-                    <SelectTrigger aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="sessionDuration" aria-label="Default Session Duration" className="w-48"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {[15, 30, 45, 60, 90, 120].map(d => (
                         <SelectItem key={d} value={String(d)}>

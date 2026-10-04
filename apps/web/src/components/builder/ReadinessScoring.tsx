@@ -593,9 +593,11 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 isExpanded && "md:col-span-2 lg:col-span-3"
               )}
               onClick={() => setExpandedDimension(isExpanded ? null : dimension.id)}
-              {...pressableProps({ expanded: isExpanded })}
             >
-              <CardHeader className="pb-3">
+              {/* The keyboard/ARIA toggle lives on the header: a pressable
+                  wrapper around the whole card would flatten the criterion
+                  checkboxes it reveals when expanded. */}
+              <CardHeader className="pb-3" {...pressableProps({ expanded: isExpanded })}>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <CfbGlyph name={dimension.glyph} className="icon-sm" />

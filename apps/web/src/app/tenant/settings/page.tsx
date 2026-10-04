@@ -183,7 +183,7 @@ export default function TenantSettingsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label><BilingualText en="Require Approval for New Members" el="Έγκριση για νέα μέλη" compact /></Label>
+                    <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Require Approval for New Members" el="Έγκριση για νέα μέλη" compact /></p>
                     <p className="text-sm text-muted-foreground">
                       <BilingualText en="New members must be approved by an admin" el="Τα νέα μέλη εγκρίνονται από διαχειριστή" wrap />
                     </p>
@@ -192,7 +192,7 @@ export default function TenantSettingsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label><BilingualText en="Auto-approve from Allowed Domains" el="Αυτόματη έγκριση από επιτρεπόμενους τομείς" wrap /></Label>
+                    <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en="Auto-approve from Allowed Domains" el="Αυτόματη έγκριση από επιτρεπόμενους τομείς" wrap /></p>
                     <p className="text-sm text-muted-foreground">
                       <BilingualText en="Automatically approve members from specific email domains" el="Αυτόματη έγκριση μελών από συγκεκριμένους τομείς email" wrap />
                     </p>
@@ -201,8 +201,8 @@ export default function TenantSettingsPage() {
                 </div>
                 {autoApprove && (
                   <div className="space-y-2">
-                    <Label><BilingualText en="Allowed Domains" el="Επιτρεπόμενοι τομείς" compact /></Label>
-                    <Input placeholder="example.com, company.org" />
+                    <Label htmlFor="page-f3"><BilingualText en="Allowed Domains" el="Επιτρεπόμενοι τομείς" compact /></Label>
+                    <Input id="page-f3" placeholder="example.com, company.org" />
                   </div>
                 )}
               </CardContent>
@@ -217,9 +217,9 @@ export default function TenantSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label><BilingualText en="SSO Provider" el="Πάροχος SSO" compact /></Label>
+                  <Label htmlFor="page-f4"><BilingualText en="SSO Provider" el="Πάροχος SSO" compact /></Label>
                   <Select defaultValue="none">
-                    <SelectTrigger aria-label="SSO Provider">
+                    <SelectTrigger id="page-f4" aria-label="SSO Provider">
                       <SelectValue placeholder={bilingualInline("Select provider", "Επιλογή παρόχου")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -247,7 +247,7 @@ export default function TenantSettingsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></Label>
+                    <p id="page-cap5-cap" className="text-sm font-medium leading-tight"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
                     <p className="text-sm text-muted-foreground">
                       <BilingualText en="Send email notifications to members" el="Αποστολή ειδοποιήσεων email στα μέλη" wrap />
                     </p>
@@ -256,7 +256,7 @@ export default function TenantSettingsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label><BilingualText en="Weekly Digest" el="Εβδομαδιαία σύνοψη" compact /></Label>
+                    <p id="page-cap6-cap" className="text-sm font-medium leading-tight"><BilingualText en="Weekly Digest" el="Εβδομαδιαία σύνοψη" compact /></p>
                     <p className="text-sm text-muted-foreground">
                       <BilingualText en="Send weekly summary emails to members" el="Αποστολή εβδομαδιαίας σύνοψης στα μέλη" wrap />
                     </p>

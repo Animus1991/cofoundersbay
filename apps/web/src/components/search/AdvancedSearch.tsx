@@ -286,7 +286,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                     key={result.id}
                     className="p-3 hover:bg-secondary/40 cursor-pointer transition-colors"
                     onClick={() => handleSelect(result)}
-                    {...pressableProps({ role: 'link' })}
+                    {...pressableProps({ role: 'link', label: result.title })}
                   >
                     <div className="flex items-center gap-3">
                       {result.avatarUrl ? (

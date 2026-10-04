@@ -20,15 +20,19 @@ import {
   Star,
   BadgeCheck,
   Bookmark,
+  Search,
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, getDashboardStats, sendConnectionRequest, saveToShortlist, type SearchHit
+  searchProfiles, getRecommendations, getDashboardStats, sendConnectionRequest, saveToShortlist, createSavedSearch, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
@@ -110,7 +114,43 @@ export default function DiscoverPage() {
   // Connection request dialog
   const [connectionTarget, setConnectionTarget] = useState<ProfileCardData | null>(null);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
+  // Save-search dialog (opened from the filters bar, the assistant, or the
+  // /saved-searches "New Search" link which lands here as ?saveSearch=true).
+  const [saveSearchOpen, setSaveSearchOpen] = useState(false);
+  const [saveSearchName, setSaveSearchName] = useState('');
+  const [saveSearchAlerts, setSaveSearchAlerts] = useState(true);
+  const [saveSearchBusy, setSaveSearchBusy] = useState(false);
   const queryClient = useQueryClient();
+
+  // Arriving links carry search state in the URL: /saved-searches "Run" sends
+  // the stored query and filters, "New Search" sends saveSearch=true. Both
+  // were dead before — apply them once, after mount, then drop the flag so a
+  // refresh keeps the filters without reopening the dialog.
+  const urlAppliedRef = useRef(false);
+  useEffect(() => {
+    if (urlAppliedRef.current) return;
+    urlAppliedRef.current = true;
+    const p = new URLSearchParams(window.location.search);
+    const next: SearchFiltersValues = { ...defaultFilters };
+    const q = p.get('q');
+    if (q) next.q = q;
+    const pick = (key: string) => p.get(key)?.split(',').map((s) => s.trim()).filter(Boolean) ?? [];
+    const roles = pick('roles'); if (roles.length) next.role = roles;
+    const skills = pick('skills'); if (skills.length) next.skills = skills;
+    const industries = pick('industries'); if (industries.length) next.industries = industries;
+    const locations = pick('locations'); if (locations.length) next.location = locations[0];
+    if (q || roles.length || skills.length || industries.length || locations.length) {
+      setFilters(next);
+      setActiveTab('search');
+    }
+    if (p.get('saveSearch') === 'true') {
+      setSaveSearchName(q ?? '');
+      setSaveSearchOpen(true);
+      p.delete('saveSearch');
+      const qs = p.toString();
+      router.replace(qs ? `/discover?${qs}` : '/discover', { scroll: false });
+    }
+  }, [router]);
 
   const hasToken = useIsAuthenticated();
   const { data: recommendationsData, isLoading: suggestionsLoading } = useQuery({
@@ -223,6 +263,40 @@ export default function DiscoverPage() {
     }
   };
 
+  const openSaveSearch = () => {
+    setSaveSearchName((n) => n || filters.q.trim());
+    setSaveSearchOpen(true);
+  };
+
+  const handleSaveSearch = async () => {
+    const name = saveSearchName.trim();
+    if (!name || saveSearchBusy) return;
+    setSaveSearchBusy(true);
+    try {
+      await createSavedSearch({
+        name,
+        query: filters.q.trim(),
+        filters: {
+          roles: filters.role.length ? filters.role : undefined,
+          skills: filters.skills.length ? filters.skills : undefined,
+          industries: filters.industries.length ? filters.industries : undefined,
+          locations: filters.location.trim() ? [filters.location.trim()] : undefined,
+          stage: filters.stage.length ? filters.stage : undefined,
+        },
+        alertsEnabled: saveSearchAlerts,
+        alertFrequency: 'daily',
+      });
+      void queryClient.invalidateQueries({ queryKey: qk('saved-searches') });
+      success('Search saved', 'It will appear under Saved Searches and watch for new matches.');
+      setSaveSearchOpen(false);
+      setSaveSearchName('');
+    } catch (err) {
+      showError('Could not save', err instanceof Error && err.message ? err.message : 'Try again from Saved Searches');
+    } finally {
+      setSaveSearchBusy(false);
+    }
+  };
+
   // Apply role filter to hits
   const filteredHits = roleFilter === 'all' ? hits : hits.filter((h) =>
     h.role?.toLowerCase().includes(roleFilter.replace('_', ' ')) ||
@@ -266,6 +340,7 @@ export default function DiscoverPage() {
       { value: 'list', en: 'List', el: 'Λίστα' },
     ], viewMode, (v) => setViewMode(v as ViewMode)),
     { id: 'reset_filters', labelEn: 'Reset the search filters', labelEl: 'Επαναφορά φίλτρων αναζήτησης', writes: false, run: () => setFilters(defaultFilters) },
+    { id: 'save_search', labelEn: 'Save the current search', labelEl: 'Αποθήκευση τρέχουσας αναζήτησης', writes: false, run: () => openSaveSearch() },
     { id: 'connect_with', labelEn: 'Open a connection request to', labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleConnect(hitToProfile(h)); } },
     { id: 'message_person', labelEn: 'Message', labelEl: 'Μήνυμα σε', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleMessage(hitToProfile(h)); } },
     { id: 'save_person', labelEn: 'Save to shortlist', labelEl: 'Αποθήκευση στη λίστα', writes: true, options: byName(shown), run: (v) => { const h = hitById(v); return h ? handleBookmark(hitToProfile(h)) : ROW_GONE; } },
@@ -333,6 +408,7 @@ export default function DiscoverPage() {
         <div className="space-y-1">
           <RailAction icon={TrendingUp} en={discoverEn('view_matches')} el={discoverEl('view_matches')} onClick={() => router.push('/matches')} />
           <RailAction icon={Bookmark} en="Open shortlist" el="Άνοιγμα λίστας" onClick={() => router.push('/shortlist')} />
+          <RailAction icon={Search} en={discoverEn('saved_searches_link')} el={discoverEl('saved_searches_link')} onClick={() => router.push('/saved-searches')} />
           <RailAction icon={Users} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
         </div>
       ),
@@ -380,6 +456,7 @@ export default function DiscoverPage() {
             onSearch={runSearch}
             loading={loading}
             resultCount={total}
+            onSaveSearch={openSaveSearch}
           />
 
           {/* Results */}
@@ -636,6 +713,49 @@ export default function DiscoverPage() {
           onSend={handleSendConnection}
         />
       )}
+
+      {/* Save search — keeps the current query and filters under a name so
+          it can re-run from /saved-searches and raise alerts. */}
+      <Dialog open={saveSearchOpen} onOpenChange={setSaveSearchOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle><BilingualText en={discoverEn('save_search_title')} el={discoverEl('save_search_title')} compact /></DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              <BilingualText en={discoverEn('save_search_desc')} el={discoverEl('save_search_desc')} />
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="save-search-name"><BilingualText en={discoverEn('save_name_label')} el={discoverEl('save_name_label')} compact /></Label>
+              <Input
+                id="save-search-name"
+                value={saveSearchName}
+                onChange={(e) => setSaveSearchName(e.target.value)}
+                placeholder={discoverEn('save_name_placeholder')}
+                autoFocus
+              />
+            </div>
+            <label htmlFor="save-search-alerts" className="flex items-center gap-2.5 text-sm text-foreground cursor-pointer">
+              <input
+                id="save-search-alerts"
+                type="checkbox"
+                checked={saveSearchAlerts}
+                onChange={(e) => setSaveSearchAlerts(e.target.checked)}
+                className="h-4 w-4 rounded border-border text-primary focus-visible:ring-2 focus-visible:ring-primary"
+              />
+              <BilingualText en={discoverEn('save_alerts')} el={discoverEl('save_alerts')} compact />
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveSearchOpen(false)}>
+              <BilingualText en={discoverEn('save_cancel')} el={discoverEl('save_cancel')} compact />
+            </Button>
+            <Button onClick={() => void handleSaveSearch()} disabled={!saveSearchName.trim() || saveSearchBusy}>
+              <BilingualText en={saveSearchBusy ? discoverEn('saving') : discoverEn('save_confirm')} el={saveSearchBusy ? discoverEl('saving') : discoverEl('save_confirm')} compact />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
         </div>
     </AppShell>
   );

@@ -359,8 +359,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label><BilingualText en={builderEn('mvp_scope_label')} el={builderEl('mvp_scope_label')} compact /></Label>
-                  <Textarea
+                  <Label htmlFor="scope"><BilingualText en={builderEn('mvp_scope_label')} el={builderEl('mvp_scope_label')} compact /></Label>
+                  <Textarea id="scope"
                     placeholder={t(builderEn('mvp_scope_ph'), builderEl('mvp_scope_ph'))}
                     value={data.scope}
                     onChange={(e) => setData(prev => ({ ...prev, scope: e.target.value }))}
@@ -368,16 +368,16 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   />
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('mvp_launch')} el={builderEl('mvp_launch')} compact /></Label>
-                  <Input
+                  <Label htmlFor="targetLaunchDate"><BilingualText en={builderEn('mvp_launch')} el={builderEl('mvp_launch')} compact /></Label>
+                  <Input id="targetLaunchDate"
                     type="date"
                     value={data.targetLaunchDate}
                     onChange={(e) => setData(prev => ({ ...prev, targetLaunchDate: e.target.value }))}
                   />
                 </div>
                 <div>
-                  <Label><BilingualText en={builderEn('mvp_complexity')} el={builderEl('mvp_complexity')} compact /></Label>
-                  <Textarea
+                  <Label htmlFor="technicalComplexity"><BilingualText en={builderEn('mvp_complexity')} el={builderEl('mvp_complexity')} compact /></Label>
+                  <Textarea id="technicalComplexity"
                     placeholder={t(builderEn('mvp_complexity_ph'), builderEl('mvp_complexity_ph'))}
                     value={data.technicalComplexity}
                     onChange={(e) => setData(prev => ({ ...prev, technicalComplexity: e.target.value }))}
@@ -623,8 +623,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                             />
                           </div>
                           <div>
-                            <Label className="text-xs text-muted-foreground">Goals</Label>
-                            <div className="flex flex-wrap gap-2 mt-1">
+                            <p id="goals-cap" className="text-xs text-muted-foreground">Goals</p>
+                            <div role="group" aria-labelledby="goals-cap" className="flex flex-wrap gap-2 mt-1">
                               {sprint.goals.map((goal, goalIndex) => (
                                 <Badge key={goalIndex} variant="secondary" className="gap-1">
                                   {goal}

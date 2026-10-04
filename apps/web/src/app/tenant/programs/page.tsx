@@ -550,12 +550,12 @@ export default function TenantProgramsPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label><BilingualText en="Type" el="Τύπος" compact /></Label>
+              <Label htmlFor="programType"><BilingualText en="Type" el="Τύπος" compact /></Label>
               <Select
                 value={form.programType}
                 onValueChange={(v) => setForm((f) => ({ ...f, programType: v }))}
               >
-                <SelectTrigger aria-label="Type">
+                <SelectTrigger id="programType" aria-label="Type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

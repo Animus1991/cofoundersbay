@@ -15,6 +15,7 @@ import {
   Users,
   Sparkles,
   Search,
+  Bookmark,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,7 @@ type SearchFiltersProps = {
   onSearch: () => void;
   loading?: boolean;
   resultCount?: number;
+  onSaveSearch?: () => void;
 };
 
 const roles = [
@@ -152,6 +154,7 @@ export function SearchFilters({
   onSearch,
   loading,
   resultCount,
+  onSaveSearch,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -463,6 +466,12 @@ export function SearchFilters({
           <Search className="h-4 w-4 sm:hidden" />
           {loading ? 'Searching...' : 'Search'}
         </Button>
+        {onSaveSearch && (
+          <Button variant="outline" onClick={onSaveSearch} className="min-h-10 w-full gap-2 sm:w-auto">
+            <Bookmark className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Save search" el="Αποθήκευση αναζήτησης" compact />
+          </Button>
+        )}
       </div>
 
       {/* Quick role filters */}

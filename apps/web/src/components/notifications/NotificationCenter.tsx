@@ -86,7 +86,11 @@ function NotificationRow({
           window.location.href = notification.link;
         }
       }}
-      {...pressableProps({ role: notification.link ? 'link' : 'button' })}
+      // Rows that navigate keep a link role (inner buttons stay announced).
+      // A linkless row only marks itself read on click — the same action the
+      // inline button already gives keyboard users — so it stays unfocusable
+      // rather than wrapping those buttons in a presentational button role.
+      {...(notification.link ? pressableProps({ role: 'link' }) : {})}
     >
       <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
         <Icon className="icon-sm" />

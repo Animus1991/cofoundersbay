@@ -230,10 +230,10 @@ export default function NotificationPreferencesPage() {
             <div className="space-y-3 px-6 py-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0 space-y-0.5">
-                  <Label className="flex items-center gap-2 text-sm font-medium">
+                  <p id="page-cap1-cap" className="flex items-center gap-2 text-sm font-medium">
                     {prefs.quietHours.enabled ? <VolumeX className="icon-sm" aria-hidden="true" /> : <Volume2 className="icon-sm" aria-hidden="true" />}
                     <BilingualText en="Quiet hours" el="Ώρες ησυχίας" compact />
-                  </Label>
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     <BilingualText en="Pause push notifications during these hours" el="Παύση push ειδοποιήσεων αυτές τις ώρες" compact wrap />
                   </p>
@@ -248,9 +248,9 @@ export default function NotificationPreferencesPage() {
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                   {([['start', 'From', 'Από'], ['end', 'To', 'Έως']] as const).map(([key, en, el]) => (
                     <div key={key} className="flex items-center gap-2">
-                      <Label className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact /></Label>
+                      <Label htmlFor="page-f2" className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact /></Label>
                       <Select value={prefs.quietHours[key]} onValueChange={(v) => setQuietHours({ [key]: v })}>
-                        <SelectTrigger className="w-[100px]" aria-label={key === 'start' ? 'Quiet hours start time' : 'Quiet hours end time'}>
+                        <SelectTrigger id="page-f2" className="w-[100px]" aria-label={key === 'start' ? 'Quiet hours start time' : 'Quiet hours end time'}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

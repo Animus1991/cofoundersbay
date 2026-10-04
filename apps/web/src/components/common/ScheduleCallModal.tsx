@@ -284,8 +284,8 @@ export function ScheduleCallModal({
 
             {/* Call Type */}
             <div className="space-y-2">
-              <Label><BilingualText en="Call Type" el="Τύπος κλήσης" compact /></Label>
-              <div className="grid grid-cols-2 gap-3">
+              <p id="ScheduleCallModal-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Call Type" el="Τύπος κλήσης" compact /></p>
+              <div role="group" aria-labelledby="ScheduleCallModal-cap1-cap" className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setCallType('video')}
@@ -319,9 +319,9 @@ export function ScheduleCallModal({
 
             {/* Duration */}
             <div className="space-y-2">
-              <Label><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
+              <Label htmlFor="duration"><BilingualText en="Duration" el="Διάρκεια" compact /></Label>
               <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger aria-label="Duration">
+                <SelectTrigger id="duration" aria-label="Duration">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -334,8 +334,8 @@ export function ScheduleCallModal({
 
             {/* Message */}
             <div className="space-y-2">
-              <Label><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
-              <Textarea
+              <Label htmlFor="message"><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
+              <Textarea id="message"
                 placeholder={bilingualInline("Add a note about what you'd like to discuss…", "Προσθέστε σημείωση για το τι θέλετε να συζητήσετε…")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

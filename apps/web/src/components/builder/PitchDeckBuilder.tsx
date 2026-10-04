@@ -789,7 +789,7 @@ export function PitchDeckBuilder({
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">
+            <Label htmlFor="deckType" className="text-xs text-muted-foreground">
               <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
             </Label>
             <Select
@@ -798,7 +798,7 @@ export function PitchDeckBuilder({
                 setData((prev) => ({ ...prev, deckType: value as PitchDeckData['deckType'] }))
               }
             >
-              <SelectTrigger
+              <SelectTrigger id="deckType"
                 className="h-8 min-h-8 w-full rounded-xl text-xs"
                 aria-label={bilingualAria(builderEn('pitch_deck_type'), builderEl('pitch_deck_type'))}
               >
@@ -856,10 +856,10 @@ export function PitchDeckBuilder({
           <div className="space-y-4">
               <div className="grid grid-cols-1 gap-3">
                 <div className="min-w-0 space-y-1.5">
-                  <Label>
+                  <Label htmlFor="companyName">
                     <BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact />
                   </Label>
-                  <Input
+                  <Input id="companyName"
                     className="min-h-11 rounded-xl"
                     value={data.companyName}
                     onChange={(event) => setData((prev) => ({ ...prev, companyName: event.target.value }))}
@@ -867,10 +867,10 @@ export function PitchDeckBuilder({
                   />
                 </div>
                 <div className="min-w-0 space-y-1.5">
-                  <Label>
+                  <Label htmlFor="tagline">
                     <BilingualText en={builderEn('pitch_tagline')} el={builderEl('pitch_tagline')} compact />
                   </Label>
-                  <Input
+                  <Input id="tagline"
                     className="min-h-11 rounded-xl"
                     value={data.tagline}
                     onChange={(event) => setData((prev) => ({ ...prev, tagline: event.target.value }))}
@@ -878,10 +878,10 @@ export function PitchDeckBuilder({
                   />
                 </div>
                 <div className="min-w-0 space-y-1.5">
-                  <Label>
+                  <Label htmlFor="askAmount">
                     <BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact />
                   </Label>
-                  <Input
+                  <Input id="askAmount"
                     className="min-h-11 rounded-xl"
                     value={data.askAmount}
                     onChange={(event) => setData((prev) => ({ ...prev, askAmount: event.target.value }))}
@@ -890,12 +890,12 @@ export function PitchDeckBuilder({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>
+                <Label htmlFor="line">
                   <BilingualText en={builderEn('pitch_use_funds')} el={builderEl('pitch_use_funds')} compact />
                 </Label>
                 {data.useOfFunds.map((line, index) => (
                   <div key={`fund-${index}`} className="flex gap-2">
-                    <Input
+                    <Input id="line"
                       className="rounded-xl"
                       value={line}
                       onChange={(event) => {

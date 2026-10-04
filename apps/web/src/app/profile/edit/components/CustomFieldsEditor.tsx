@@ -121,14 +121,14 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                   <div className="flex-1 space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label><BilingualText en="Field Type" el="Τύπος πεδίου" compact /></Label>
+                        <Label htmlFor={`cf-type-${field.id}`}><BilingualText en="Field Type" el="Τύπος πεδίου" compact /></Label>
                         <Select
                           value={field.type}
                           onValueChange={(value) =>
                             updateField(field.id, { type: value as CustomField['type'] })
                           }
                         >
-                          <SelectTrigger aria-label="Field Type">
+                          <SelectTrigger id={`cf-type-${field.id}`} aria-label="Field Type">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -145,8 +145,9 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                       </div>
 
                       <div className="space-y-2">
-                        <Label><BilingualText en="Field Label" el="Ετικέτα πεδίου" compact /></Label>
+                        <Label htmlFor={`cf-label-${field.id}`}><BilingualText en="Field Label" el="Ετικέτα πεδίου" compact /></Label>
                         <Input
+                          id={`cf-label-${field.id}`}
                           placeholder="e.g., Company, Portfolio, etc."
                           value={field.label}
                           onChange={(e) =>
@@ -157,10 +158,11 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     </div>
 
                     <div className="space-y-2">
-                      <Label><BilingualText en="Value" el="Τιμή" compact /></Label>
+                      <Label htmlFor={`cf-value-${field.id}`}><BilingualText en="Value" el="Τιμή" compact /></Label>
                       <div className="flex items-center gap-2">
                         <Icon className="icon-sm text-muted-foreground" />
                         <Input
+                          id={`cf-value-${field.id}`}
                           type={field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'}
                           placeholder={
                             field.type === 'url'

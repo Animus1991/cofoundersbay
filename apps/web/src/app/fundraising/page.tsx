@@ -191,17 +191,17 @@ function AddLeadModal({
           </button>
         </div>
         <div className="space-y-1.5">
-          <Label><BilingualText en={fundraisingEn('field_name')} el={fundraisingEl('field_name')} compact /> *</Label>
-          <Input className={BUILDER_BTN} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t(fundraisingEn('name_ph'), fundraisingEl('name_ph'))} />
+          <Label htmlFor="name"><BilingualText en={fundraisingEn('field_name')} el={fundraisingEl('field_name')} compact /> *</Label>
+          <Input id="name" className={BUILDER_BTN} required value={name} onChange={(e) => setName(e.target.value)} placeholder={t(fundraisingEn('name_ph'), fundraisingEl('name_ph'))} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label><BilingualText en={fundraisingEn('field_firm')} el={fundraisingEl('field_firm')} compact /></Label>
-            <Input className={BUILDER_BTN} value={firm} onChange={(e) => setFirm(e.target.value)} placeholder={t(fundraisingEn('firm_ph'), fundraisingEl('firm_ph'))} />
+            <Label htmlFor="firm"><BilingualText en={fundraisingEn('field_firm')} el={fundraisingEl('field_firm')} compact /></Label>
+            <Input id="firm" className={BUILDER_BTN} value={firm} onChange={(e) => setFirm(e.target.value)} placeholder={t(fundraisingEn('firm_ph'), fundraisingEl('firm_ph'))} />
           </div>
           <div className="space-y-1.5">
-            <Label><BilingualText en={fundraisingEn('field_type')} el={fundraisingEl('field_type')} compact /></Label>
-            <select className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
+            <Label htmlFor="type"><BilingualText en={fundraisingEn('field_type')} el={fundraisingEl('field_type')} compact /></Label>
+            <select id="type" className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
               {INVESTOR_TYPES.map((item) => (
                 <option key={item} value={item}>
                   {t(item, INVESTOR_TYPE_EL[item] ?? item)}
@@ -212,25 +212,25 @@ function AddLeadModal({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label><BilingualText en={fundraisingEn('field_stage')} el={fundraisingEl('field_stage')} compact /></Label>
-            <Input className={BUILDER_BTN} value={stage} onChange={(e) => setStage(e.target.value)} />
+            <Label htmlFor="stage"><BilingualText en={fundraisingEn('field_stage')} el={fundraisingEl('field_stage')} compact /></Label>
+            <Input id="stage" className={BUILDER_BTN} value={stage} onChange={(e) => setStage(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <Label><BilingualText en={fundraisingEn('field_check')} el={fundraisingEl('field_check')} compact /></Label>
-            <Input className={BUILDER_BTN} value={checkSize} onChange={(e) => setCheckSize(e.target.value)} />
+            <Label htmlFor="checkSize"><BilingualText en={fundraisingEn('field_check')} el={fundraisingEl('field_check')} compact /></Label>
+            <Input id="checkSize" className={BUILDER_BTN} value={checkSize} onChange={(e) => setCheckSize(e.target.value)} />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label><BilingualText en={fundraisingEn('field_status')} el={fundraisingEl('field_status')} compact /></Label>
-          <select className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value as InvestorStatus)}>
+          <Label htmlFor="status"><BilingualText en={fundraisingEn('field_status')} el={fundraisingEl('field_status')} compact /></Label>
+          <select id="status" className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value as InvestorStatus)}>
             {PIPELINE_STAGES.map((s) => (
               <option key={s} value={s}>{t(fundraisingEn(INVESTOR_STATUS_KEYS[s]), fundraisingEl(INVESTOR_STATUS_KEYS[s]))}</option>
             ))}
           </select>
         </div>
         <div className="space-y-1.5">
-          <Label><BilingualText en={fundraisingEn('field_notes')} el={fundraisingEl('field_notes')} compact /></Label>
-          <textarea className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t(fundraisingEn('notes_ph'), fundraisingEl('notes_ph'))} />
+          <Label htmlFor="notes"><BilingualText en={fundraisingEn('field_notes')} el={fundraisingEl('field_notes')} compact /></Label>
+          <textarea id="notes" className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t(fundraisingEn('notes_ph'), fundraisingEl('notes_ph'))} />
         </div>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" className={BUILDER_BTN} onClick={onClose}>

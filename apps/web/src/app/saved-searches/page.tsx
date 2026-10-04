@@ -269,8 +269,8 @@ function EditSearchDialog({
           </div>
 
           <div className="space-y-2">
-            <Label><BilingualText en={savedSearchesEn('frequency_label')} el={savedSearchesEl('frequency_label')} compact /></Label>
-            <div className="flex gap-2">
+            <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={savedSearchesEn('frequency_label')} el={savedSearchesEl('frequency_label')} compact /></p>
+            <div role="group" aria-labelledby="page-cap1-cap" className="flex gap-2">
               {/* `capitalize` on a raw value was doing the labelling; each
                   cadence has its own pair now, and Greek answers "how often"
                   with an adverb where English uses an adjective. */}

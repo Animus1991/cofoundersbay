@@ -413,9 +413,9 @@ export default function MentorAvailabilityPage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
+                    <Label htmlFor="sessionDuration"><BilingualText en="Default Session Duration" el="Προεπιλεγμένη διάρκεια συνεδρίας" compact /></Label>
                     <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>
-                      <SelectTrigger aria-label="Default Session Duration">
+                      <SelectTrigger id="sessionDuration" aria-label="Default Session Duration">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -428,9 +428,9 @@ export default function MentorAvailabilityPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label><BilingualText en="Buffer Between Sessions" el="Διάλειμμα μεταξύ συνεδριών" compact /></Label>
+                    <Label htmlFor="bufferTime"><BilingualText en="Buffer Between Sessions" el="Διάλειμμα μεταξύ συνεδριών" compact /></Label>
                     <Select value={String(bufferTime)} onValueChange={v => setBufferTime(Number(v))}>
-                      <SelectTrigger aria-label="Buffer Between Sessions">
+                      <SelectTrigger id="bufferTime" aria-label="Buffer Between Sessions">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -443,9 +443,9 @@ export default function MentorAvailabilityPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label><BilingualText en="Minimum Notice Period" el="Ελάχιστη προειδοποίηση" compact /></Label>
+                    <Label htmlFor="noticeHours"><BilingualText en="Minimum Notice Period" el="Ελάχιστη προειδοποίηση" compact /></Label>
                     <Select value={String(noticeHours)} onValueChange={v => setNoticeHours(Number(v))}>
-                      <SelectTrigger aria-label="Minimum Notice Period">
+                      <SelectTrigger id="noticeHours" aria-label="Minimum Notice Period">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>

@@ -17,7 +17,6 @@ import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 
-import { pressableProps } from '@/lib/pressable';
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
 type CreatePostProps = {
@@ -103,7 +102,6 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           isExpanded && 'hidden'
         )}
         onClick={() => setIsExpanded(true)}
-        {...pressableProps()}
       >
         <CardContent className="pt-4">
           <div className="flex items-center gap-3">
@@ -113,9 +111,13 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 {initialsOf(user.displayName)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 rounded-full bg-secondary/60 px-4 py-2.5 text-sm text-muted-foreground">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
+              className="flex-1 rounded-full bg-secondary/60 px-4 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
               {placeholder}
-            </div>
+            </button>
           </div>
           <div className="mt-3 flex items-center justify-end gap-2 border-t border-border pt-3">
             {postTypes.slice(0, 4).map((pt) => (

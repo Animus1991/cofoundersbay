@@ -44,6 +44,24 @@ export const DISCOVER_STRINGS: Record<string, BilingualPair> = {
   view_all: { en: 'View all', el: 'Προβολή όλων' },
   explore_more: { en: 'Explore more', el: 'Εξερεύνηση περισσότερων' },
 
+  // save search
+  save_search: { en: 'Save search', el: 'Αποθήκευση αναζήτησης' },
+  save_search_title: { en: 'Save this search', el: 'Αποθήκευση αναζήτησης' },
+  save_search_desc: {
+    en: 'Re-run these filters anytime and get alerted to new matches.',
+    el: 'Τρέξτε ξανά αυτά τα φίλτρα όποτε θέλετε και ενημερωθείτε για νέες αντιστοιχίσεις.',
+  },
+  save_name_label: { en: 'Search name', el: 'Όνομα αναζήτησης' },
+  save_name_placeholder: {
+    en: 'e.g. Technical cofounders in Athens',
+    el: 'π.χ. Τεχνικοί συνιδρυτές στην Αθήνα',
+  },
+  save_alerts: { en: 'Alert me to new matches', el: 'Ειδοποίηση για νέες αντιστοιχίσεις' },
+  save_cancel: { en: 'Cancel', el: 'Ακύρωση' },
+  save_confirm: { en: 'Save', el: 'Αποθήκευση' },
+  saving: { en: 'Saving…', el: 'Αποθήκευση…' },
+  saved_searches_link: { en: 'Open saved searches', el: 'Αποθηκευμένες αναζητήσεις' },
+
   // toast
   connection_sent: { en: 'Connection request sent!', el: 'Το αίτημα σύνδεσης στάλθηκε!' },
   profile_saved: { en: 'Profile saved', el: 'Προφίλ αποθηκεύτηκε' },

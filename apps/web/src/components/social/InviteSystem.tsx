@@ -238,9 +238,9 @@ export function InviteSystem() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label><BilingualText en="Share this link with friends" el="Μοιραστείτε αυτόν τον σύνδεσμο με φίλους" compact /></Label>
+                <Label htmlFor="inviteLink"><BilingualText en="Share this link with friends" el="Μοιραστείτε αυτόν τον σύνδεσμο με φίλους" compact /></Label>
                 <div className="flex gap-2">
-                  <Input
+                  <Input id="inviteLink"
                     value={inviteLink}
                     readOnly
                     className="font-mono text-sm"

@@ -343,6 +343,8 @@ export const TOAST_EL: Record<string, string> = {
   "Screen sharing started": "Η κοινή χρήση οθόνης ξεκίνησε",
   "Screen sharing stopped": "Η κοινή χρήση οθόνης σταμάτησε",
   "Search failed": "Η αναζήτηση απέτυχε",
+  "Search saved": "Η αναζήτηση αποθηκεύτηκε",
+  "It will appear under Saved Searches and watch for new matches.": "Θα εμφανιστεί στις Αποθηκευμένες αναζητήσεις και θα παρακολουθεί νέες αντιστοιχίσεις.",
   "Seat revoked": "Η θέση ανακλήθηκε",
   "Secret key copied to clipboard": "Το μυστικό κλειδί αντιγράφηκε",
   "Select at least one user first.": "Επιλέξτε πρώτα τουλάχιστον έναν χρήστη.",

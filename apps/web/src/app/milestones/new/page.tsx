@@ -170,8 +170,8 @@ export default function NewMilestonePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></Label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact /></p>
+                  <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-1.5">
                     {CATEGORIES.map((c) => (
                       <button
                         key={c}
@@ -191,8 +191,8 @@ export default function NewMilestonePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label><BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact /></Label>
-                  <div className="flex gap-1.5">
+                  <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact /></p>
+                  <div role="group" aria-labelledby="page-cap2-cap" className="flex gap-1.5">
                     {PRIORITIES.map((p) => (
                       <button
                         key={p.value}

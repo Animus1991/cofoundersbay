@@ -737,9 +737,9 @@ export default function PitchDeckPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label><BilingualText en="Link" el="Σύνδεσμος" compact /></Label>
+              <Label htmlFor="page-f1"><BilingualText en="Link" el="Σύνδεσμος" compact /></Label>
               <div className="flex gap-2 mt-1.5">
-                <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
+                <Input id="page-f1" value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button
                   variant="outline"
                   onClick={copyLink}

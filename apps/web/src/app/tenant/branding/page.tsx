@@ -330,8 +330,8 @@ export default function TenantBrandingPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label><BilingualText en="Background Style" el="Στυλ φόντου" compact /></Label>
-                    <div className="flex flex-wrap gap-2">
+                    <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Background Style" el="Στυλ φόντου" compact /></p>
+                    <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-2">
                       {BG_STYLES.map((s) => (
                         <button
                           key={s.value}
@@ -390,8 +390,8 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-6">
                   {(['headingFont', 'bodyFont'] as const).map((key) => (
                     <div key={key} className="space-y-2">
-                      <Label>{key === 'headingFont' ? 'Heading Font' : 'Body Font'}</Label>
-                      <div className="flex flex-wrap gap-2">
+                      <p id="page-cap2-cap" className="text-sm font-medium leading-tight">{key === 'headingFont' ? 'Heading Font' : 'Body Font'}</p>
+                      <div role="group" aria-labelledby="page-cap2-cap" className="flex flex-wrap gap-2">
                         {GOOGLE_FONTS.map((font) => (
                           <button
                             key={font}
@@ -438,8 +438,8 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-5">
                   {/* Logo Upload */}
                   <div className="space-y-3">
-                    <Label><BilingualText en="Organization Logo" el="Λογότυπο οργανισμού" compact /></Label>
-                    <div className="flex items-start gap-4">
+                    <p id="page-cap3-cap" className="text-sm font-medium leading-tight"><BilingualText en="Organization Logo" el="Λογότυπο οργανισμού" compact /></p>
+                    <div role="group" aria-labelledby="page-cap3-cap" className="flex items-start gap-4">
                       <ImageCropperTrigger
                         cropShape="rect"
                         aspectRatio={2}
@@ -486,8 +486,8 @@ export default function TenantBrandingPage() {
 
                   {/* Favicon Upload */}
                   <div className="space-y-3">
-                    <Label><BilingualText en="Favicon" el="Favicon" compact /></Label>
-                    <div className="flex items-start gap-4">
+                    <p id="page-cap4-cap" className="text-sm font-medium leading-tight"><BilingualText en="Favicon" el="Favicon" compact /></p>
+                    <div role="group" aria-labelledby="page-cap4-cap" className="flex items-start gap-4">
                       <ImageCropperTrigger
                         cropShape="circle"
                         aspectRatio={1}
@@ -537,8 +537,8 @@ export default function TenantBrandingPage() {
                     { key: 'emailLogoUrl' as const, label: 'Email Logo URL', hint: 'Shown in email headers. Transparent PNG recommended.' },
                   ].map(({ key, label, hint }) => (
                     <div key={key} className="space-y-2">
-                      <Label>{label}</Label>
-                      <Input
+                      <Label htmlFor="page-f5">{label}</Label>
+                      <Input id="page-f5"
                         value={form[key] ?? ''}
                         onChange={(e) => setField(key, e.target.value)}
                         placeholder="https://..."
@@ -568,32 +568,32 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f6"><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></Label>
+                      <Input id="page-f6"
                         value={form.heroTitle ?? ''}
                         onChange={(e) => setField('heroTitle', e.target.value)}
                         placeholder="Your next co-founder is waiting"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f7"><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></Label>
+                      <Input id="page-f7"
                         value={form.heroSubtitle ?? ''}
                         onChange={(e) => setField('heroSubtitle', e.target.value)}
                         placeholder="Build, connect, grow with your community"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f8"><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></Label>
+                      <Input id="page-f8"
                         value={form.ctaLabel ?? ''}
                         onChange={(e) => setField('ctaLabel', e.target.value)}
                         placeholder="Get Started"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label><BilingualText en="CTA Button URL" el="URL κουμπιού δράσης" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f9"><BilingualText en="CTA Button URL" el="URL κουμπιού δράσης" compact /></Label>
+                      <Input id="page-f9"
                         value={form.ctaUrl ?? ''}
                         onChange={(e) => setField('ctaUrl', e.target.value)}
                         placeholder="/register"
@@ -601,8 +601,8 @@ export default function TenantBrandingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="About Text" el="Κείμενο «Σχετικά»" compact /></Label>
-                    <Textarea
+                    <Label htmlFor="page-f10"><BilingualText en="About Text" el="Κείμενο «Σχετικά»" compact /></Label>
+                    <Textarea id="page-f10"
                       rows={4}
                       value={form.aboutText ?? ''}
                       onChange={(e) => setField('aboutText', e.target.value)}
@@ -618,8 +618,8 @@ export default function TenantBrandingPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></Label>
-                    <Input
+                    <Label htmlFor="page-f11"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></Label>
+                    <Input id="page-f11"
                       value={form.dashboardWelcomeText ?? ''}
                       onChange={(e) => setField('dashboardWelcomeText', e.target.value)}
                       placeholder="Welcome back! Continue building your network."
@@ -627,8 +627,8 @@ export default function TenantBrandingPage() {
                     <p className="text-xs text-muted-foreground"><BilingualText en="Shown on login page and dashboard header." el="Εμφανίζεται στη σύνδεση και στην κεφαλίδα του πίνακα." wrap /></p>
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Onboarding Introduction" el="Εισαγωγή ένταξης" compact /></Label>
-                    <Textarea
+                    <Label htmlFor="page-f12"><BilingualText en="Onboarding Introduction" el="Εισαγωγή ένταξης" compact /></Label>
+                    <Textarea id="page-f12"
                       rows={3}
                       value={form.onboardingIntroText ?? ''}
                       onChange={(e) => setField('onboardingIntroText', e.target.value)}
@@ -649,8 +649,8 @@ export default function TenantBrandingPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></Label>
-                    <Input
+                    <Label htmlFor="page-f13"><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></Label>
+                    <Input id="page-f13"
                       value={form.communityNaming ?? ''}
                       onChange={(e) => setField('communityNaming', e.target.value)}
                       placeholder={bilingualInline("Community (default)", "Κοινότητα (προεπιλογή)")}
@@ -702,8 +702,8 @@ export default function TenantBrandingPage() {
                       { key: 'cookiePolicyUrl' as const, label: 'Cookie Policy URL', placeholder: 'https://...', type: 'url' },
                     ].map(({ key, label, placeholder }) => (
                       <div key={key} className="space-y-2">
-                        <Label>{label}</Label>
-                        <Input
+                        <Label htmlFor="page-f14">{label}</Label>
+                        <Input id="page-f14"
                           value={form[key] ?? ''}
                           onChange={(e) => setField(key, e.target.value)}
                           placeholder={placeholder}
@@ -726,10 +726,10 @@ export default function TenantBrandingPage() {
                       { key: 'websiteFooterUrl' as const, label: 'Footer Website', placeholder: 'https://...' },
                     ].map(({ key, label, placeholder }) => (
                       <div key={key} className="space-y-2">
-                        <Label>{label}</Label>
+                        <Label htmlFor="page-f15">{label}</Label>
                         <div className="flex items-center gap-2">
                           <Link2 className="icon-sm text-muted-foreground shrink-0" />
-                          <Input
+                          <Input id="page-f15"
                             value={form[key] ?? ''}
                             onChange={(e) => setField(key, e.target.value)}
                             placeholder={placeholder}
@@ -752,8 +752,8 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-5">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label><BilingualText en="Sender Name" el="Όνομα αποστολέα" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f16"><BilingualText en="Sender Name" el="Όνομα αποστολέα" compact /></Label>
+                      <Input id="page-f16"
                         value={form.emailFromName ?? ''}
                         onChange={(e) => setField('emailFromName', e.target.value)}
                         placeholder="TechHub Accelerator"
@@ -761,8 +761,8 @@ export default function TenantBrandingPage() {
                       <p className="text-xs text-muted-foreground">Shown as "From" in emails.</p>
                     </div>
                     <div className="space-y-2">
-                      <Label><BilingualText en="Email Logo URL" el="URL λογοτύπου email" compact /></Label>
-                      <Input
+                      <Label htmlFor="page-f17"><BilingualText en="Email Logo URL" el="URL λογοτύπου email" compact /></Label>
+                      <Input id="page-f17"
                         value={form.emailLogoUrl ?? ''}
                         onChange={(e) => setField('emailLogoUrl', e.target.value)}
                         placeholder="https://..."
@@ -770,8 +770,8 @@ export default function TenantBrandingPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></Label>
-                    <Textarea
+                    <Label htmlFor="page-f18"><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></Label>
+                    <Textarea id="page-f18"
                       rows={2}
                       value={form.emailFooterText ?? ''}
                       onChange={(e) => setField('emailFooterText', e.target.value)}
@@ -779,8 +779,8 @@ export default function TenantBrandingPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label><BilingualText en="Email Signature" el="Υπογραφή email" compact /></Label>
-                    <Textarea
+                    <Label htmlFor="page-f19"><BilingualText en="Email Signature" el="Υπογραφή email" compact /></Label>
+                    <Textarea id="page-f19"
                       rows={3}
                       value={form.emailSignature ?? ''}
                       onChange={(e) => setField('emailSignature', e.target.value)}

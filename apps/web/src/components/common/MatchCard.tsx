@@ -163,7 +163,10 @@ function MatchCardInner({
           onClick();
         }
       }}
-      {...(onClick ? pressableProps({ pressed: isSelected }) : {})}
+      // A link role keeps the inner action buttons announced (role="button"
+      // would flatten them); the label keeps the card's name from becoming
+      // its entire text content.
+      {...(onClick ? pressableProps({ role: 'link', label: bilingualAria(`Preview ${displayName}`, `Προεπισκόπηση: ${displayName}`) }) : {})}
     >
       {/* Left score-color border strip */}
       <div
