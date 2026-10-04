@@ -434,7 +434,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cy="64"
                     r="56"
                     stroke="currentColor"
-                    strokeWidth="5.5"
+                    strokeWidth="5"
                     fill="none"
                     className="text-border"
                   />
@@ -442,12 +442,11 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cx="64"
                     cy="64"
                     r="56"
-                    stroke="currentColor"
-                    strokeWidth="5.5"
+                    stroke="hsl(var(--foreground) / 0.65)"
+                    strokeWidth="5"
                     strokeLinecap="round"
                     fill="none"
                     strokeDasharray={`${(data.overallScore / 100) * 352} 352`}
-                    className={readinessClasses(data.overallStatus).text}
                   />
                 </svg>
                 {/* `gap-1.5`, as on /readiness: the score and its

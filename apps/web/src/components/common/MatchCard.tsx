@@ -86,7 +86,7 @@ function getScoreTier(score: number) {
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  const { label, stroke } = getScoreTier(score);
+  const { label } = getScoreTier(score);
   const r = 18, cx = 22, cy = 22;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
@@ -95,20 +95,18 @@ function ScoreBadge({ score }: { score: number }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={2.5} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke={stroke} strokeWidth={2.5}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={2} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--foreground) / 0.65)" strokeWidth={2}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className="absolute text-2xs font-semibold tabular-nums"
-          style={{ color: stroke }}>
+        <span className="absolute text-2xs font-medium tabular-nums text-foreground">
           {score}%
         </span>
       </div>
-      <span className="text-2xs font-medium tracking-wide"
-        style={{ color: stroke }}>
+      <span className="text-2xs font-normal tracking-wide text-muted-foreground">
         <BilingualText en={label.en} el={label.el} compact />
       </span>
     </div>
