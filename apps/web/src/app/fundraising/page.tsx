@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useModalA11y } from '@/hooks/useModalA11y';
+import { useHydrated } from '@/components/common/RelativeTime';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
@@ -51,6 +52,8 @@ import {
   fmtMoney,
   daysUntil,
   readFundraisingOverlay,
+  resolveFundraisingLeads,
+  resolveFundraisingDocs,
   type InvestorLead,
   type InvestorStatus,
   type DataRoomDoc,
@@ -252,9 +255,15 @@ function RoundCard({
   round: ReturnType<typeof fundraisingRoundView>;
   onAdd: () => void;
 }) {
+  const { primary } = useLanguagePreference();
+  // The page is prerendered, so "days left" computed during render is frozen
+  // at build time — the client hydrates with a different day count (#418).
+  // Until the browser has its own clock the tile shows the fixed closing
+  // date, which renders identically on both sides.
+  const hydrated = useHydrated();
   const pct = Math.round((round.raised / round.target) * 100);
   const remaining = round.target - round.raised;
-  const days = daysUntil(round.closingDate);
+  const days = hydrated ? daysUntil(round.closingDate) : null;
   const roundKey = ROUND_STATUS_KEYS[round.status];
 
   return (
@@ -305,7 +314,7 @@ function RoundCard({
           {[
             { glyph: 'people' as const, label: 'stat_investors' as const, value: round.investors.toString() },
             { glyph: 'chart' as const, label: 'stat_committed_amt' as const, value: fmtMoney(round.raised, round.currency) },
-            { glyph: 'calendar' as const, label: 'stat_closing' as const, value: days === null ? null : days < 0 ? 'overdue' : `${days}` },
+            { glyph: 'calendar' as const, label: 'stat_closing' as const, value: !round.closingDate ? null : days === null ? formatShortDate(round.closingDate, primary) : days < 0 ? 'overdue' : `${days}` },
             { glyph: 'award' as const, label: 'lead_investor' as const, value: round.leadInvestor ?? '' },
           ].map((s) => (
             <div key={s.label} className="rounded-xl bg-background/60 p-3">
@@ -321,15 +330,17 @@ function RoundCard({
                   : s.label === 'stat_closing' && s.value === null
                     ? <BilingualText en={fundraisingEn('closing_tbd')} el={fundraisingEl('closing_tbd')} compact />
                     : s.label === 'stat_closing' && s.value
-                      // One text node with the count inside, so a locale can
-                      // put the number where its grammar wants it.
-                      ? s.value === '1'
-                        ? <BilingualText en={fundraisingEn('days_left_one')} el={fundraisingEl('days_left_one')} compact />
-                        : <BilingualText
-                            en={fundraisingEn('days_left').replace('{count}', s.value)}
-                            el={fundraisingEl('days_left').replace('{count}', s.value)}
-                            compact
-                          />
+                      ? /^\d+$/.test(s.value)
+                        // One text node with the count inside, so a locale can
+                        // put the number where its grammar wants it.
+                        ? s.value === '1'
+                          ? <BilingualText en={fundraisingEn('days_left_one')} el={fundraisingEl('days_left_one')} compact />
+                          : <BilingualText
+                              en={fundraisingEn('days_left').replace('{count}', s.value)}
+                              el={fundraisingEl('days_left').replace('{count}', s.value)}
+                              compact
+                            />
+                        : s.value
                       : s.label === 'lead_investor' && !s.value
                         ? <BilingualText en={fundraisingEn('none_yet')} el={fundraisingEl('none_yet')} compact />
                         : s.value}
@@ -698,15 +709,21 @@ export default function FundraisingPage() {
   const [addStatus, setAddStatus] = useState<InvestorStatus>('prospect');
   const { success } = useToast();
 
+  // The overlay lives in sessionStorage: the server cannot see it, so reading
+  // it during the first client render produced different leads/docs/statuses
+  // than the prerendered HTML — a hydration mismatch plus a visible pop-in of
+  // rows. Until hydration the page renders the overlay-free seed state
+  // (identical to the server); the overlay applies one frame later.
+  const hydrated = useHydrated();
   const leads = useMemo(() => {
-    const all = listFundraisingLeads();
+    const all = hydrated ? listFundraisingLeads() : resolveFundraisingLeads();
     if (showDemoData) return all;
     const createdIds = new Set(readFundraisingOverlay().created.map((l) => l.id));
     return all.filter((l) => createdIds.has(l.id));
-  }, [showDemoData, tick]);
+  }, [hydrated, showDemoData, tick]);
   const docs = useMemo(
-    () => (showDemoData ? listFundraisingDocs() : []),
-    [showDemoData, tick],
+    () => (showDemoData ? (hydrated ? listFundraisingDocs() : resolveFundraisingDocs()) : []),
+    [hydrated, showDemoData, tick],
   );
   const stats = fundraisingPipelineStats(leads);
   const round = showDemoData ? fundraisingRoundView(leads) : null;
