@@ -434,7 +434,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cy="64"
                     r="56"
                     stroke="currentColor"
-                    strokeWidth="12"
+                    strokeWidth="5.5"
                     fill="none"
                     className="text-border"
                   />
@@ -443,7 +443,8 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cy="64"
                     r="56"
                     stroke="currentColor"
-                    strokeWidth="12"
+                    strokeWidth="5.5"
+                    strokeLinecap="round"
                     fill="none"
                     strokeDasharray={`${(data.overallScore / 100) * 352} 352`}
                     className={readinessClasses(data.overallStatus).text}
