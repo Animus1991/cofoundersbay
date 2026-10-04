@@ -428,11 +428,17 @@ export function BuilderWorkspace({
   onOpenStage,
   dialog,
   onDialogChange,
+  extraRailSections,
 }: {
   onOpenStage?: (tab: string) => void;
   /** Controlled from the page, whose context bar carries Invite and New document. */
   dialog?: BuilderWorkspaceDialog;
   onDialogChange?: (next: BuilderWorkspaceDialog) => void;
+  /**
+   * Page-level rail sections merged after this workspace's own, so the page
+   * renders one rail instead of a second <PageRail> stacked at right:0.
+   */
+  extraRailSections?: PageRailSection[];
 } = {}) {
   const {
     workspace,
@@ -881,7 +887,7 @@ export function BuilderWorkspace({
 
   return (
     <div className="min-w-0 space-y-6 overflow-x-clip">
-      <PageRail sections={rail} />
+      <PageRail sections={extraRailSections ? [...rail, ...extraRailSections] : rail} />
 
       <Card className="min-w-0">
         <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">

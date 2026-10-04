@@ -100,6 +100,11 @@ interface PitchDeckBuilderProps {
   bmc?: unknown;
   market?: unknown;
   askPrompt?: string;
+  /**
+   * Page-level rail sections merged after this deck's own, so the page renders
+   * one rail instead of a second <PageRail> stacked at right:0.
+   */
+  extraRailSections?: PageRailSection[];
 }
 
 const EMPTY_PITCH: PitchDeckData = {
@@ -426,6 +431,7 @@ export function PitchDeckBuilder({
   bmc,
   market,
   askPrompt,
+  extraRailSections,
 }: PitchDeckBuilderProps) {
   const t = useBuilderPrimaryText();
   const fieldId = useId();
@@ -942,7 +948,7 @@ export function PitchDeckBuilder({
       {/* Declared and rendered here: this is a component, not a page, so
           there is no AppShell to take a `rail` prop. PageRail is fixed, so
           it lands exactly where that prop would have put it. */}
-      <PageRail sections={rail} />
+      <PageRail sections={extraRailSections ? [...rail, ...extraRailSections] : rail} />
       <BuilderStageHeader
         glyph="builder"
         titleEn={builderEn('tab_pitch')}

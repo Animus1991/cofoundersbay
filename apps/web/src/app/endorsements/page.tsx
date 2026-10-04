@@ -189,7 +189,7 @@ function EndorsementCard({
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
             {waitingOnMe && (
-              <Badge variant="outline" className="border-status-warning-border bg-status-warning-bg text-xs text-status-warning">
+              <Badge variant="outline" className="border-status-warning-border text-xs text-status-warning">
                 <Clock className="mr-1 icon-sm" aria-hidden="true" />
                 <BilingualText en="Waiting for you" el="Περιμένει εσάς" compact />
               </Badge>
@@ -628,7 +628,8 @@ export default function EndorsementsPage() {
 
           <TabsContent value="received" className="mt-4 space-y-3">
             {pendingCount > 0 && (
-              <div className="rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-status-warning">
+              <div className="flex items-center gap-2 rounded-lg border border-border border-l-2 border-l-status-warning bg-card px-3 py-2 text-sm text-status-warning">
+                <Clock className="icon-sm shrink-0" aria-hidden="true" />
                 <BilingualText
                   en={pendingCount === 1 ? '1 endorsement is waiting for your approval before it shows on your profile.' : `${pendingCount} endorsements are waiting for your approval before they show on your profile.`}
                   el={pendingCount === 1 ? '1 σύσταση περιμένει την έγκρισή σας για να εμφανιστεί στο προφίλ σας.' : `${pendingCount} συστάσεις περιμένουν την έγκρισή σας για να εμφανιστούν στο προφίλ σας.`}

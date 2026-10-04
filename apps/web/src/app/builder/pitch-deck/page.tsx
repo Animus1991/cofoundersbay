@@ -147,7 +147,6 @@ function PitchDeckPageContent() {
   return (
     <AppShell
       showHelp
-      rail={rail}
       contentClassName="builder-copy overflow-x-clip"
       askAi={`Help me complete the investor pitch deck for ${workspaceName || 'this startup'}. Draft only empty slides and empty fields; keep the company name and the ask if they are already written.`}
     >
@@ -200,6 +199,7 @@ function PitchDeckPageContent() {
           ideaCore={ideaCore}
           bmc={bmc}
           market={market}
+          extraRailSections={rail}
         />
       </div>
 

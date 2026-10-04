@@ -81,7 +81,12 @@ type PageRailCtx = {
   setPeeked: (value: boolean) => void;
   /** True while a page has actually registered a rail. */
   hasRail: boolean;
-  setHasRail: (value: boolean) => void;
+  /**
+   * The mounted rail registers its presence; internal to PageRail. Counted,
+   * not a boolean: two rails sharing a page (a tab component's own rail on
+   * top of the page's) cannot leave hasRail false when one of them unmounts.
+   */
+  registerRailPresence: (id: object) => () => void;
   /**
    * Open the rail on a named section: a peek on the desktop, the sheet below
    * `lg`. This is how a keyboard shortcut, a canvas command or an assistant
@@ -106,7 +111,7 @@ const PageRailContext = createContext<PageRailCtx>({
   togglePinned: () => {},
   setPeeked: () => {},
   hasRail: false,
-  setHasRail: () => {},
+  registerRailPresence: () => () => {},
   openRailSection: () => {},
   registerRailOpener: () => {},
   sections: [],
@@ -127,6 +132,18 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
   const [peeked, setPeeked] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [hasRail, setHasRail] = useState(false);
+  /* Every mounted PageRail puts its identity in this set. hasRail stays true
+     while any entry remains, so one rail unmounting (a tab switching away)
+     cannot strip the margin a surviving rail still needs. */
+  const railIds = useRef(new Set<object>());
+  const registerRailPresence = useCallback((id: object) => {
+    railIds.current.add(id);
+    setHasRail(true);
+    return () => {
+      railIds.current.delete(id);
+      setHasRail(railIds.current.size > 0);
+    };
+  }, []);
   /* The opener belongs to whichever PageRail is mounted, so it lives in a ref
      rather than state: registering it must not re-render the provider's whole
      subtree. A no-op until a rail registers. */
@@ -198,7 +215,7 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
         togglePinned,
         setPeeked,
         hasRail,
-        setHasRail,
+        registerRailPresence,
         openRailSection,
         registerRailOpener,
         sections,

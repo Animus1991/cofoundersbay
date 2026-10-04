@@ -62,6 +62,10 @@ const PREVIEW_WS_DESC_EL: Record<string, string> = {
     'Δείγμα χώρου εργασίας — επίδειξη προεπισκόπησης, όχι πραγματικά δεδομένα ιδρυτή.',
 };
 
+/* Tabs whose content mounts its own <PageRail>; on those the page hands its
+   sections to that rail instead of mounting a second one over it. */
+const SELF_RAIL_TABS = new Set(['overview', 'pitch-deck']);
+
 const TAB_TO_DOC: Record<string, BuilderDocumentType> = {
   'idea-core': 'idea_core',
   bmc: 'business_model_canvas',
@@ -307,7 +311,7 @@ function BuilderPageContent() {
   return (
     <AppShell
       showHelp
-      rail={rail}
+      rail={SELF_RAIL_TABS.has(activeTab) ? undefined : rail}
       askAi="Summarize this startup workspace and tell me the next Builder section to complete — Idea Core, BMC, Market, or Pitch."
       contentClassName="builder-copy overflow-x-clip"
     >
@@ -414,7 +418,12 @@ function BuilderPageContent() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6" data-tour="builder-overview">
-            <BuilderWorkspace onOpenStage={setActiveTab} dialog={workspaceDialog} onDialogChange={setWorkspaceDialog} />
+            <BuilderWorkspace
+              onOpenStage={setActiveTab}
+              dialog={workspaceDialog}
+              onDialogChange={setWorkspaceDialog}
+              extraRailSections={rail}
+            />
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
@@ -459,6 +468,7 @@ function BuilderPageContent() {
               ideaCore={getDocumentContent('idea_core')}
               bmc={getDocumentContent('business_model_canvas')}
               market={getDocumentContent('market_analysis')}
+              extraRailSections={rail}
             />
           </TabsContent>
 

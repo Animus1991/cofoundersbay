@@ -124,11 +124,11 @@ function StarterColumn({
                 BUILDER_BTN,
                 'type-ui flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left font-medium transition-colors',
                 writes
-                  ? 'bg-status-warning-bg text-status-warning hover:bg-status-warning-bg/70'
+                  ? 'border-l-2 border-l-status-warning bg-card text-foreground hover:bg-secondary'
                   : 'bg-card text-foreground hover:bg-secondary',
               )}
             >
-              <CfbGlyph name={starter.glyph} className="icon-sm shrink-0 opacity-80" aria-hidden="true" />
+              <CfbGlyph name={starter.glyph} className={cn('icon-sm shrink-0', writes ? 'text-status-warning' : 'opacity-80')} aria-hidden="true" />
               <span className="min-w-0 leading-snug">
                 {sayOne(starter.en, starter.el)}
               </span>

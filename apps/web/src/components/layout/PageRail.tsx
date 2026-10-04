@@ -54,7 +54,7 @@ export type PageRailSection = {
  * two are separate.
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
-  const { pinned, peeked, open, togglePinned, setPeeked, setHasRail, registerRailOpener, registerRailSections } = usePageRail();
+  const { pinned, peeked, open, togglePinned, setPeeked, registerRailPresence, registerRailOpener, registerRailSections } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
@@ -68,12 +68,15 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
-  // floating chat button steps aside. Cleared on unmount, so navigating to a
-  // page without a rail gives the width straight back.
+  // floating chat button steps aside. Presence is counted per mounted rail:
+  // unregistering on unmount releases only this rail's claim, so a rail that
+  // outlives it keeps the width it needs. An empty rail renders nothing and
+  // claims nothing.
+  const railId = useRef<object>({});
   useEffect(() => {
-    setHasRail(sections.length > 0);
-    return () => setHasRail(false);
-  }, [sections.length, setHasRail]);
+    if (sections.length === 0) return;
+    return registerRailPresence(railId.current);
+  }, [sections.length, registerRailPresence]);
 
   // The table of contents, for the assistant: ids, labels and badges, never
   // the content. Emptied on unmount so a page without a rail is not described

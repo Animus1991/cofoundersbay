@@ -241,24 +241,27 @@ function ShortlistCard({
                 )}
               </div>
               {profile?.headline && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{profile.headline}</p>}
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                {profile?.role && (
-                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                    <Briefcase className="icon-sm" />
-                    <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
-                  </div>
-                )}
-                {profile?.location && (
-                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                    <MapPin className="icon-sm" />
-                    {profile.location}
-                  </div>
-                )}
-              </div>
+              {(profile?.role || profile?.location) && (
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  {profile?.role && (
+                    <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                      <Briefcase className="icon-sm" />
+                      <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
+                    </div>
+                  )}
+                  {profile?.location && (
+                    <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                      <MapPin className="icon-sm" />
+                      {profile.location}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            {/* Actions — quiet but always visible: hover-only controls do not
+                exist on touch, and a saved person is not a guessing game. */}
+            <div className="flex items-center gap-1 shrink-0 transition-opacity">
               <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <Edit2 className="icon-sm" />
               </button>
@@ -286,37 +289,42 @@ function ShortlistCard({
             </div>
           )}
 
-          {/* Status label picker */}
-          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <span className="text-2xs text-muted-foreground font-medium"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
-            {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
-              <button
-                key={key}
-                onClick={() => setStatusLabel(statusLabel === key ? null : key)}
-                className={cn(
-                  'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
-                  statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
-                )}
-              >
-                <cfg.icon className="h-3 w-3" aria-hidden="true" />
-                <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
-              </button>
-            ))}
-          </div>
-
-          {/* Note */}
-          {!editingNote && item.note && (
-            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-muted/50 px-3 py-2">
-              <Tag className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
-              <p className="text-xs text-foreground/80 flex-1">{item.note}</p>
+          {/* Working state: the label the reader gave this person, their note
+              and the housekeeping line are their own band, not a fourth stray
+              row under the identity block. */}
+          <div className="mt-3 space-y-2 border-t border-border/60 pt-2.5">
+            {/* Status label picker */}
+            <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={bilingualAria(shortlistEn('label'), shortlistEl('label'))}>
+              <span className="text-2xs text-muted-foreground font-medium"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
+              {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
+                <button
+                  key={key}
+                  aria-pressed={statusLabel === key}
+                  onClick={() => setStatusLabel(statusLabel === key ? null : key)}
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
+                    statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
+                  )}
+                >
+                  <cfg.icon className="h-3 w-3" aria-hidden="true" />
+                  <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
+                </button>
+              ))}
             </div>
-          )}
-          {editingNote && (
-            <NoteEditor initial={item.note ?? ''} onSave={handleSaveNote} onCancel={() => setEditingNote(false)} isSaving={savingNote} />
-          )}
 
-          {/* Footer */}
-          <div className="mt-2 flex items-center justify-between">
+            {/* Note */}
+            {!editingNote && item.note && (
+              <div className="flex items-start gap-1.5 rounded-lg bg-muted/50 px-3 py-2">
+                <Tag className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
+                <p className="text-xs text-foreground/80 flex-1">{item.note}</p>
+              </div>
+            )}
+            {editingNote && (
+              <NoteEditor initial={item.note ?? ''} onSave={handleSaveNote} onCancel={() => setEditingNote(false)} isSaving={savingNote} />
+            )}
+
+            {/* Footer */}
+            <div className="flex items-center justify-between">
             <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <Clock className="icon-sm" />
               {/* The date itself stays pinned to UTC, as every date in the
@@ -333,6 +341,7 @@ function ShortlistCard({
                   <GitMerge className="icon-sm" /> <BilingualText en={shortlistEn('compare')} el={shortlistEl('compare')} compact />
                 </Link>
               </Button>
+            </div>
             </div>
           </div>
         </div>
