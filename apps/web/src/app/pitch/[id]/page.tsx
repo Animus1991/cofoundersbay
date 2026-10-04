@@ -464,6 +464,11 @@ export default function PitchDeckPage() {
   const [showShare, setShowShare] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [copied, setCopied] = useState(false);
+  // The share links quote this page's URL. Read during render it was ''
+  // on the server and the real URL in the browser — a hydration mismatch on
+  // every visit. Stamped after mount instead.
+  const [pageUrl, setPageUrl] = useState('');
+  useEffect(() => setPageUrl(window.location.href), []);
 
   // Fetch deck (falls back to demo if API unavailable)
   const { data } = useQuery({
@@ -509,27 +514,31 @@ export default function PitchDeckPage() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top bar */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        {/* At 390px the bar ran 28px past the screen: name, deck badge and
+            three labelled buttons in one unshrinkable row. The identity now
+            yields (truncates), the deck badge waits for `sm`, and Share keeps
+            only its icon on a phone. */}
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             {deck.logoUrl ? (
               <img src={deck.logoUrl} alt={deck.companyName} className="h-7 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
-              <div className="h-7 w-7 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+              <div className="h-7 w-7 shrink-0 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
                 {deck.companyName[0]}
               </div>
             )}
-            <span className="font-semibold">{deck.companyName}</span>
-            <Badge variant="outline" className="text-xs">{deck.title}</Badge>
+            <span className="truncate font-semibold">{deck.companyName}</span>
+            <Badge variant="outline" className="hidden max-w-[16rem] truncate text-xs sm:inline-flex">{deck.title}</Badge>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
               <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
               <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
             {/* No AppShell on the public deck, so the page-registry help mounts here. */}
             <PageContextualHelp compact />
-            <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="icon-sm mr-1.5" /><BilingualText en="Share" el="Κοινοποίηση" compact />
+            <Button variant="outline" size="sm" onClick={() => setShowShare(true)} aria-label={bilingualAria('Share', 'Κοινοποίηση')}>
+              <Share2 className="icon-sm sm:mr-1.5" aria-hidden="true" /><span className="hidden sm:inline"><BilingualText en="Share" el="Κοινοποίηση" compact /></span>
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
@@ -628,16 +637,16 @@ export default function PitchDeckPage() {
         </main>
 
         {/* Author sidebar */}
-        <aside className="flex flex-col gap-4 w-full xl:w-56 flex-shrink-0">
+        <aside className="flex flex-col gap-4 w-full xl:w-64 flex-shrink-0">
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={deck.author.avatarUrl} />
                 <AvatarFallback>
                   {initialsOf(deck.author.name)}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold">{deck.author.name}</p>
                 <p className="text-xs text-muted-foreground">{deck.author.headline}</p>
               </div>
@@ -661,17 +670,17 @@ export default function PitchDeckPage() {
           <div className="rounded-xl border bg-card p-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"><BilingualText en="Share" el="Κοινοποίηση" compact /></p>
             <div className="flex gap-2">
-              <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
+              <Button aria-label={bilingualAria('Share on X', 'Κοινοποίηση στο X')} variant="outline" size="icon" className="h-8 w-8" asChild>
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
                   <Twitter className="icon-sm" />
                 </a>
               </Button>
-              <Button aria-label="Share on LinkedIn" variant="outline" size="icon" className="h-8 w-8" asChild>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
+              <Button aria-label={bilingualAria('Share on LinkedIn', 'Κοινοποίηση στο LinkedIn')} variant="outline" size="icon" className="h-8 w-8" asChild>
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
                   <Linkedin className="icon-sm" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} aria-label="Copy link">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}>
                 {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
@@ -683,7 +692,7 @@ export default function PitchDeckPage() {
       <Dialog open={showContact} onOpenChange={setShowContact}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Contact {deck.author.name}</DialogTitle>
+            <DialogTitle><BilingualText en={`Contact ${deck.author.name}`} el={`Επικοινωνία με ${deck.author.name}`} wrap /></DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Send a message to this deck's author." el="Στείλτε μήνυμα στον δημιουργό αυτού του deck." /></DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -742,7 +751,7 @@ export default function PitchDeckPage() {
             <div>
               <Label htmlFor="page-f1"><BilingualText en="Link" el="Σύνδεσμος" compact /></Label>
               <div className="flex gap-2 mt-1.5">
-                <Input id="page-f1" value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
+                <Input id="page-f1" value={pageUrl} readOnly />
                 <Button
                   variant="outline"
                   onClick={copyLink}
@@ -754,12 +763,12 @@ export default function PitchDeckPage() {
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
-                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
                   <Twitter className="icon-sm mr-2" />Twitter
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
                   <Linkedin className="icon-sm mr-2" />LinkedIn
                 </a>
               </Button>

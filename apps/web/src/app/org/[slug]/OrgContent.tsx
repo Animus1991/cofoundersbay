@@ -19,6 +19,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { ListEmptyState } from '@/components/common/EmptyStates';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
 
 interface OrgContentProps {
   org: OrgProfile;
@@ -44,6 +45,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
   const opportunities: OpportunityItem[] = opportunitiesData?.opportunities ?? [];
   const cohorts: CohortItem[] = cohortsData?.cohorts ?? [];
   const members: OrgMember[] = membersData?.members ?? [];
+  const [tab, setTab] = useState('opportunities');
 
   return (
     <AppShell>
@@ -134,40 +136,57 @@ export function OrgContent({ org, slug }: OrgContentProps) {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           {[
-            { label: 'Opportunities', value: org._count.opportunities },
-            { label: 'Programs', value: org._count.cohorts },
-            { label: 'Members', value: org._count.members },
-            { label: 'Events', value: org._count.events },
-          ].map(({ label, value }) => (
-            <Card key={label} className="border-border">
-              <CardContent className="pt-5 pb-4 text-center">
+            { label: 'Opportunities', labelEl: 'Ευκαιρίες', value: org._count.opportunities, tab: 'opportunities' },
+            { label: 'Programs', labelEl: 'Προγράμματα', value: org._count.cohorts, tab: 'programs' },
+            { label: 'Members', labelEl: 'Μέλη', value: org._count.members, tab: 'members' },
+            { label: 'Events', labelEl: 'Εκδηλώσεις', value: org._count.events, tab: null },
+          ].map(({ label, labelEl, value, tab: target }) => {
+            const body = (
+              <>
                 <div className="text-2xl font-bold text-foreground tabular-nums">{value}</div>
-                <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
-              </CardContent>
-            </Card>
-          ))}
+                <div className="text-xs text-muted-foreground mt-0.5"><BilingualText en={label} el={labelEl} compact wrap /></div>
+              </>
+            );
+            // A figure that has a tab opens it: the tile was a second copy
+            // of the tab's count with nothing to do.
+            return target ? (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setTab(target)}
+                aria-pressed={tab === target}
+                className={'rounded-xl border bg-card px-3 pt-5 pb-4 text-center transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ' + (tab === target ? 'border-primary/40' : 'border-border')}
+              >
+                {body}
+              </button>
+            ) : (
+              <Card key={label} className="border-border">
+                <CardContent className="pt-5 pb-4 text-center">{body}</CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="opportunities" className="space-y-6">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-6">
           <TabsList className="h-9">
             <TabsTrigger value="opportunities" className="text-sm gap-1.5">
               <Briefcase className="icon-sm" aria-hidden="true" />
-              Opportunities
+              <BilingualText en="Opportunities" el="Ευκαιρίες" compact />
               {opportunities.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{opportunities.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="programs" className="text-sm gap-1.5">
               <GraduationCap className="icon-sm" aria-hidden="true" />
-              Programs
+              <BilingualText en="Programs" el="Προγράμματα" compact />
               {cohorts.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{cohorts.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="members" className="text-sm gap-1.5">
               <Users className="icon-sm" aria-hidden="true" />
-              Members
+              <BilingualText en="Members" el="Μέλη" compact />
               {members.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{members.length}</Badge>
               )}
@@ -198,8 +217,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 icon={Briefcase}
                 tone="info"
                 size="compact"
-                title="No open opportunities"
-                description="This organization is not currently hiring or posting collaboration calls. Follow them to be notified when new ones are posted."
+                title={<BilingualText en="No open opportunities" el="Δεν υπάρχουν ανοιχτές ευκαιρίες" wrap />}
+                description={<BilingualText en="This organization is not currently hiring or posting collaboration calls." el="Ο οργανισμός δεν προσλαμβάνει ούτε δημοσιεύει προσκλήσεις συνεργασίας αυτή τη στιγμή." wrap />}
               />
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -215,11 +234,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                             variant={opp.isActive ? 'default' : 'secondary'}
                             className="shrink-0 text-xs h-5"
                           >
-                            {opp.isActive ? 'Active' : 'Closed'}
+                            {opp.isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Closed" el="Έκλεισε" compact />}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {opp.type} {opp.location ? `· ${opp.location}` : ''}
+                          <StatusText value={opp.type} />{opp.location ? ` · ${opp.location}` : ''}
                         </p>
                         {opp.description && (
                           <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{opp.description}</p>
@@ -260,8 +279,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 icon={GraduationCap}
                 tone="success"
                 size="compact"
-                title="No public programs yet"
-                description="When this organization publishes accelerators, bootcamps, or incubators, they will appear here with open applications."
+                title={<BilingualText en="No public programs yet" el="Δεν υπάρχουν ακόμη δημόσια προγράμματα" wrap />}
+                description={<BilingualText en="When this organization publishes accelerators, bootcamps, or incubators, they will appear here with open applications." el="Όταν ο οργανισμός δημοσιεύσει επιταχυντές, bootcamps ή θερμοκοιτίδες, θα εμφανιστούν εδώ με ανοιχτές αιτήσεις." wrap />}
               />
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -277,7 +296,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                             variant={cohort.isActive ? 'default' : 'secondary'}
                             className="shrink-0 text-xs h-5"
                           >
-                            {cohort.isActive ? 'Active' : 'Inactive'}
+                            {cohort.isActive ? <BilingualText en="Active" el="Ενεργό" compact /> : <BilingualText en="Inactive" el="Ανενεργό" compact />}
                           </Badge>
                         </div>
                         {cohort.description && (
@@ -286,11 +305,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users className="icon-sm" />
-                            {cohort._count.members} members
+                            <BilingualText en={`${cohort._count.members} members`} el={`${cohort._count.members} μέλη`} compact />
                           </span>
-                          {cohort.capacity && <span>Cap: {cohort.capacity}</span>}
+                          {cohort.capacity && <span><BilingualText en={`Capacity ${cohort.capacity}`} el={`Χωρητικότητα ${cohort.capacity}`} compact /></span>}
                           {cohort.startDate && (
-                            <span>Starts {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
+                            <span><BilingualText en={`Starts ${new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`} el={`Ξεκινά ${new Date(cohort.startDate).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`} compact /></span>
                           )}
                         </div>
                       </div>
@@ -324,8 +343,8 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 icon={Users}
                 tone="primary"
                 size="compact"
-                title="No public members listed"
-                description="Members appear here once they accept a program invite and choose to display their affiliation publicly."
+                title={<BilingualText en="No public members listed" el="Δεν εμφανίζονται δημόσια μέλη" wrap />}
+                description={<BilingualText en="Members appear here once they accept a program invite and choose to display their affiliation publicly." el="Τα μέλη εμφανίζονται εδώ μόλις αποδεχτούν πρόσκληση σε πρόγραμμα και επιλέξουν να δείχνουν δημόσια τη σύνδεσή τους." wrap />}
               />
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -373,7 +392,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           <TabsContent value="about">
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="text-base">About {org.name}</CardTitle>
+                <CardTitle className="text-base"><BilingualText en={`About ${org.name}`} el={`Σχετικά με ${org.name}`} wrap /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
                 {org.mission && (

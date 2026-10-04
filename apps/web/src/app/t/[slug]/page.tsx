@@ -25,6 +25,8 @@ import {
 import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 function hexToHsl(hex: string): string | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -100,11 +102,11 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           {tenant.logoUrl && (
             <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           )}
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
+          <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl mb-4 drop-shadow">
             {b?.heroTitle || tenantName}
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-white/80 mb-8 drop-shadow-sm">
-            {b?.heroSubtitle || tenant.shortDescription || tenant.description || 'Join our startup ecosystem'}
+            {b?.heroSubtitle || tenant.shortDescription || tenant.description || <BilingualText en="Join our startup ecosystem" el="Μπείτε στο οικοσύστημά μας" wrap secondaryClassName="text-white/75" />}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -116,13 +118,13 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
                 className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
               >
                 <Building2 className="icon-sm" />
-                {sso.provider?.loginButtonText || 'Sign in with Organization SSO'}
+                {sso.provider?.loginButtonText || <BilingualText en="Sign in with Organization SSO" el="Σύνδεση με SSO οργανισμού" compact secondaryClassName="text-white/75" />}
               </Button>
             )}
 
             <Button size="lg" className="bg-white text-foreground hover:bg-white/90 gap-2 shadow" asChild>
               <Link href={b?.ctaUrl || '/register'}>
-                {b?.ctaLabel || 'Get Started'}
+                {b?.ctaLabel || <BilingualText en="Get Started" el="Ξεκινήστε" compact />}
                 <ChevronRight className="icon-sm" />
               </Link>
             </Button>
@@ -130,13 +132,13 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
               <Link href="/login">
                 <LogIn className="icon-sm" />
-                <BilingualText en="Sign In" el="Σύνδεση" compact />
+                <BilingualText en="Sign In" el="Σύνδεση" compact secondaryClassName="text-white/75" />
               </Link>
             </Button>
           </div>
 
           {sso?.ssoRequired && (
-            <p className="mt-4 text-xs text-white/60"><BilingualText en="This organization requires SSO authentication for member access." el="Αυτός ο οργανισμός απαιτεί σύνδεση SSO για πρόσβαση μελών." wrap /></p>
+            <p className="mt-4 text-xs text-white/75"><BilingualText en="This organization requires SSO authentication for member access." el="Αυτός ο οργανισμός απαιτεί σύνδεση SSO για πρόσβαση μελών." wrap secondaryClassName="text-white/75" /></p>
           )}
         </div>
       </section>
@@ -150,7 +152,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
                 <Building2 className="icon-md text-primary-accessible" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold mb-3">About {tenantName}</h2>
+                <h2 className="text-xl font-semibold mb-3"><BilingualText en={`About ${tenantName}`} el={`Σχετικά με ${tenantName}`} wrap /></h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                   {b?.aboutText || tenant.aboutText}
                 </p>
@@ -164,17 +166,17 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
       <section className="mx-auto max-w-5xl px-6 py-16">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[
-            { icon: Users, title: b?.communityNaming ? `Join the ${b.communityNaming}` : 'Connect', desc: 'Find co-founders, mentors, and collaborators' },
-            { icon: Sparkles, title: 'AI Matching', desc: 'Smart compatibility scoring for better teams' },
-            { icon: Shield, title: 'Trusted Network', desc: 'Verified profiles and moderated community' },
+            { icon: Users, title: b?.communityNaming ? `Join the ${b.communityNaming}` : 'Connect', titleEl: b?.communityNaming ? `Μπείτε στην κοινότητα ${b.communityNaming}` : 'Συνδεθείτε', desc: 'Find co-founders, mentors, and collaborators', descEl: 'Βρείτε συνιδρυτές, μέντορες και συνεργάτες' },
+            { icon: Sparkles, title: 'AI Matching', titleEl: 'Αντιστοίχιση με AI', desc: 'Smart compatibility scoring for better teams', descEl: 'Έξυπνη βαθμολόγηση συμβατότητας για καλύτερες ομάδες' },
+            { icon: Shield, title: 'Trusted Network', titleEl: 'Αξιόπιστο δίκτυο', desc: 'Verified profiles and moderated community', descEl: 'Επαληθευμένα προφίλ και κοινότητα με εποπτεία' },
           ].map((f) => (
             <Card key={f.title} className="text-center border-border hover:border-primary/30 transition-colors">
               <CardContent className="pt-6 pb-6">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   <f.icon className="h-6 w-6 text-primary-accessible" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <h3 className="font-semibold text-foreground mb-1"><BilingualText en={f.title} el={f.titleEl} wrap /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en={f.desc} el={f.descEl} wrap /></p>
               </CardContent>
             </Card>
           ))}
@@ -187,7 +189,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           <CardContent className="pt-8 pb-8">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
             <h2 className="text-2xl font-semibold mb-2">
-              {b?.dashboardWelcomeText || `Ready to join ${tenantName}?`}
+              {b?.dashboardWelcomeText || <BilingualText en={`Ready to join ${tenantName}?`} el={`Έτοιμοι να μπείτε στο ${tenantName};`} wrap />}
             </h2>
             <p className="text-muted-foreground mb-6">
               <BilingualText en="Connect with the right people and build something great." el="Συνδεθείτε με τους σωστούς ανθρώπους και φτιάξτε κάτι σπουδαίο." wrap />
@@ -196,12 +198,12 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
                   <Building2 className="icon-sm" />
-                  {sso.provider?.loginButtonText || 'SSO Login'}
+                  {sso.provider?.loginButtonText || <BilingualText en="SSO Login" el="Σύνδεση SSO" compact />}
                 </Button>
               )}
               <Button size="lg" className="gap-2" asChild>
                 <Link href={b?.ctaUrl || '/register'}>
-                  {b?.ctaLabel || 'Join Now'}
+                  {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
                   <ChevronRight className="icon-sm" />
                 </Link>
               </Button>
@@ -216,12 +218,12 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           <div className="flex items-center gap-3">
             {tenant.logoUrl
               ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-              : <Badge variant="secondary" className="text-xs">{tenant.status}</Badge>}
+              : <Badge variant="secondary" className="text-xs"><StatusText value={tenant.status} /></Badge>}
             <span className="text-sm font-medium">{tenantName}</span>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
-              <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href={`mailto:${b.supportEmail}`} aria-label={bilingualAria('Email support', 'Email υποστήριξης')} className="text-muted-foreground hover:text-foreground transition-colors">
                 <Mail className="icon-sm" />
               </a>
             )}
@@ -231,17 +233,17 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </a>
             )}
             {b?.linkedinUrl && (
-              <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Linkedin className="icon-sm" />
               </a>
             )}
             {b?.twitterUrl && (
-              <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" aria-label="X / Twitter" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Twitter className="icon-sm" />
               </a>
             )}
             {b?.instagramUrl && (
-              <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Instagram className="icon-sm" />
               </a>
             )}

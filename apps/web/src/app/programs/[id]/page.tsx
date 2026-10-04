@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Building2, Calendar, CheckCircle2, Clock, Globe, Loader2, MapPin, Users, Zap } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Loader2, Zap } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,21 @@ import { programsEl, programsEn } from '@/lib/i18n/strings-programs';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { qk } from '@/lib/query-keys';
 import { usePageControls } from '@/lib/page-controls';
+import { StatusText } from '@/components/common/StatusText';
+import type { ReactNode } from 'react';
+
+/**
+ * One labelled fact. No icon: the calm-surface rule hides decorative glyphs
+ * inside cards, and the caption is what names the value.
+ */
+function Fact({ en, el, children }: { en: string; el: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs text-muted-foreground"><BilingualText en={en} el={el} compact /></dt>
+      <dd className="mt-1 font-medium text-foreground">{children}</dd>
+    </div>
+  );
+}
 
 function formatDate(d: string | null): string {
   if (!d) return '—';
@@ -134,48 +149,46 @@ export default function ProgramDetailPage() {
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
+          {/* Each figure under its own name: the card listed "Aegean Venture
+              Lab · Accelerator · Active · Athens" with nothing saying which
+              was the organiser, the type, the status or the place. */}
           <Card>
-            <CardContent className="grid grid-cols-1 gap-3 p-5 text-sm sm:grid-cols-2">
-              <p className="flex items-center gap-2">
-                <Building2 className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                {program.organization?.slug ? (
-                  <Link href={`/org/${program.organization.slug}`} className="hover:text-primary-accessible">
-                    {program.organization.name}
-                  </Link>
-                ) : (
-                  program.organization?.name ?? '—'
-                )}
-              </p>
-              <p className="flex items-center gap-2 capitalize">
-                <Badge variant="secondary">{program.programType.replaceAll('_', ' ')}</Badge>
-                <Badge variant="outline">{program.status}</Badge>
-              </p>
-              <p className="flex items-center gap-2">
-                <Calendar className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                {formatDate(program.startDate)} – {formatDate(program.endDate)}
-              </p>
-              <p className="flex items-center gap-2">
-                <Clock className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                <BilingualText en={programsEn('application_deadline')} el={programsEl('application_deadline')} compact />:{' '}
-                {formatDate(program.applicationDeadline)}
-              </p>
-              <p className="flex items-center gap-2">
-                {program.isRemote ? (
-                  <Globe className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                ) : (
-                  <MapPin className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                )}
-                {program.isRemote ? 'Remote' : program.location ?? '—'}
-              </p>
-              <p className="flex items-center gap-2">
-                <Users className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-                {program.participantCount}
-                {program.capacity != null && (
-                  <>
-                    /{program.capacity} <BilingualText en={programsEn('spots_taken')} el={programsEl('spots_taken')} compact />
-                  </>
-                )}
-              </p>
+            <CardContent className="p-5">
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+                <Fact en="Organiser" el="Διοργανωτής">
+                  {program.organization?.slug ? (
+                    <Link href={`/org/${program.organization.slug}`} className="hover:text-primary-accessible hover:underline underline-offset-4">
+                      {program.organization.name}
+                    </Link>
+                  ) : (
+                    program.organization?.name ?? '—'
+                  )}
+                </Fact>
+                <Fact en="Type and status" el="Τύπος και κατάσταση">
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary"><StatusText value={program.programType} /></Badge>
+                    <Badge variant="outline"><StatusText value={program.status} /></Badge>
+                  </span>
+                </Fact>
+                <Fact en="Dates" el="Ημερομηνίες">
+                  {formatDate(program.startDate)} – {formatDate(program.endDate)}
+                </Fact>
+                <Fact en={programsEn('application_deadline')} el={programsEl('application_deadline')}>
+                  {formatDate(program.applicationDeadline)}
+                </Fact>
+                <Fact en="Location" el="Τοποθεσία">
+                  {program.isRemote ? <BilingualText en="Remote" el="Εξ αποστάσεως" compact /> : program.location ?? '—'}
+                </Fact>
+                <Fact en="Places" el="Θέσεις">
+                  <span className="tabular-nums">{program.participantCount}</span>
+                  {program.capacity != null && (
+                    <>
+                      <span className="tabular-nums">/{program.capacity}</span>{' '}
+                      <span className="text-muted-foreground"><BilingualText en={programsEn('spots_taken')} el={programsEl('spots_taken')} compact /></span>
+                    </>
+                  )}
+                </Fact>
+              </dl>
             </CardContent>
           </Card>
           {program.description && (
@@ -186,15 +199,19 @@ export default function ProgramDetailPage() {
             </Card>
           )}
           {(program.industries?.length ?? 0) > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <section aria-labelledby="program-industries" className="space-y-2">
+              <h2 id="program-industries" className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Industries" el="Κλάδοι" compact /></h2>
+              <div className="flex flex-wrap gap-2">
               {program.industries.map((i) => (
                 <Badge key={i} variant="secondary">{i}</Badge>
               ))}
-            </div>
+              </div>
+            </section>
           )}
           {(program.benefits?.length ?? 0) > 0 && (
             <Card>
-              <CardContent className="p-5">
+              <CardContent className="space-y-3 p-5">
+                <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="What the programme offers" el="Τι προσφέρει το πρόγραμμα" compact wrap /></h2>
                 <ul className="space-y-1.5 text-sm">
                   {program.benefits.map((b) => (
                     <li key={b} className="flex items-start gap-2">

@@ -87,8 +87,8 @@ function PostCard({
     <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
-          <Pin className="icon-sm" />
-          Pinned post
+          <Pin className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Pinned post" el="Καρφιτσωμένη δημοσίευση" compact />
         </div>
       )}
 
@@ -416,10 +416,11 @@ export default function GroupDetailPage() {
       <div className="space-y-4">
         <button
           onClick={() => router.push('/groups')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          type="button"
+          className="-ml-2 flex min-h-11 items-center gap-2 rounded-lg px-2 text-sm text-muted-foreground transition-colors hover:text-foreground focus-ring sm:min-h-9"
         >
-          <ArrowLeft className="icon-sm" />
-          Back to Groups
+          <ArrowLeft className="icon-sm" aria-hidden="true" />
+          <BilingualText en="Back to Groups" el="Πίσω στις κοινότητες" compact />
         </button>
 
         <div className="rounded-2xl border border-border bg-card/70 overflow-hidden">
@@ -428,11 +429,11 @@ export default function GroupDetailPage() {
               className="h-40 w-full bg-cover bg-center"
               style={{ backgroundImage: `url(${group.coverImageUrl})` }}
             />
-          ) : (
-            <div className="h-32 w-full bg-primary/[0.06]" />
-          )}
+          ) : null}
 
-          <div className="px-6 pb-5 -mt-8 relative">
+          {/* Without a cover the header starts at the card's edge: a blank
+              band under an avatar half-sitting on it read as a missing image. */}
+          <div className={cn('relative px-6 pb-5', group.coverImageUrl ? '-mt-8' : 'pt-5')}>
             {/* On a phone the join button drops under the name instead of
                 being pushed off the card's right edge. */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -449,7 +450,7 @@ export default function GroupDetailPage() {
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
-                      <span className="capitalize">{group.privacy}</span>
+                      <StatusText value={group.privacy} />
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="icon-sm" />
@@ -483,9 +484,14 @@ export default function GroupDetailPage() {
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-2xl">{group.description}</p>
             )}
 
-            {(group.tags?.length ?? 0) > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {group.tags.map((tag) => (
+            {((group.tags?.length ?? 0) > 0 || group.category) && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                {/* Category first, then tags: one row of descriptors instead of
+                    a lone badge on a line of its own below them. */}
+                {group.category && (
+                  <Badge variant="secondary"><StatusText value={group.category} /></Badge>
+                )}
+                {(group.tags ?? []).map((tag) => (
                   <span key={tag} className="rounded-full bg-secondary/60 px-2.5 py-0.5 text-xs text-muted-foreground">
                     #{tag}
                   </span>
@@ -493,11 +499,6 @@ export default function GroupDetailPage() {
               </div>
             )}
 
-            {group.category && (
-              <div className="mt-3">
-                <Badge variant="secondary"><StatusText value={group.category} /></Badge>
-              </div>
-            )}
           </div>
         </div>
 
@@ -545,7 +546,7 @@ export default function GroupDetailPage() {
                       onClick={handleCreatePost}
                     >
                       {submittingPost ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
-                      Post
+                      <BilingualText en="Post" el="Δημοσίευση" compact />
                     </Button>
                   </div>
                 </div>
@@ -560,9 +561,9 @@ export default function GroupDetailPage() {
 
               {postsQuery.isError && (
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
-                  <p className="text-sm text-muted-foreground">Failed to load posts</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load posts" el="Δεν φορτώθηκαν οι δημοσιεύσεις" compact /></p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="icon-sm" /> Retry
+                    <RefreshCw className="icon-sm" aria-hidden="true" /> <BilingualText en="Retry" el="Δοκιμάστε ξανά" compact />
                   </Button>
                 </div>
               )}
@@ -573,10 +574,10 @@ export default function GroupDetailPage() {
                   tone="primary"
                   variant="dashed"
                   size="compact"
-                  title="No posts yet"
+                  title={<BilingualText en="No posts yet" el="Δεν υπάρχουν ακόμη δημοσιεύσεις" wrap />}
                   description={isMember
-                    ? 'Be the first to start a discussion — share an update, ask a question, or post a resource.'
-                    : 'Join this community to read and start discussions.'}
+                    ? <BilingualText en="Be the first to start a discussion — share an update, ask a question, or post a resource." el="Ξεκινήστε πρώτοι τη συζήτηση — μοιραστείτε νέα, κάντε μια ερώτηση ή δημοσιεύστε έναν πόρο." wrap />
+                    : <BilingualText en="Join this community to read and start discussions." el="Γίνετε μέλος για να διαβάζετε και να ξεκινάτε συζητήσεις." wrap />}
                 />
               )}
 
@@ -598,7 +599,7 @@ export default function GroupDetailPage() {
               {/* Rules */}
               {group.rules.length > 0 && (
                 <div className="rounded-xl border border-border bg-card/70 p-4 space-y-3">
-                  <h3 className="text-sm font-semibold">Group Rules</h3>
+                  <h3 className="text-sm font-semibold"><BilingualText en="Group Rules" el="Κανόνες κοινότητας" compact /></h3>
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
@@ -627,7 +628,7 @@ export default function GroupDetailPage() {
                           <AvatarFallback className="text-2xs">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
+                          <p className="text-xs font-medium truncate">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</p>
                           {m.role !== 'member' && (
                             <p className="text-2xs text-primary-accessible"><StatusText value={m.role} /></p>
                           )}

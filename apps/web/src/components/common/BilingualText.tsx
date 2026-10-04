@@ -113,38 +113,67 @@ export function BilingualText({
 
   if (compact) {
     const separatorClassName = cn('bilingual-separator shrink-0', separatorNarrow);
+    if (wrap) {
+      return (
+        <span className={cn('inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-0.5', className)}>
+          <span lang={resolved.primaryLang}
+          {...pairMark} className={cn('break-words', primaryClassName)}>
+            {resolved.primaryText}
+            {/* Inside the first language's span, so a wrapped pair never leaves the dot on a line of its own. */}
+            <span className={cn(separatorClassName, 'ml-0.5')} aria-hidden="true">
+              ·
+            </span>
+          </span>
+          <span
+            lang={resolved.secondaryLang ?? undefined}
+            className={cn('bilingual-secondary text-muted-foreground break-words', secondaryNarrow, secondaryClassName)}
+          >
+            {resolved.secondaryText}
+          </span>
+        </span>
+      );
+    }
+    /*
+     * One line, and the reader's language is never the half that is cut.
+     *
+     * This used to truncate the pair as a unit: in a 312px card "Link
+     * Unavailable · Ο σύνδεσμος…" became "Link Unav… · Ο σύνδεσμος δεν είναι …",
+     * and where the parent did not constrain width (a button in a card, a
+     * line in a flex column) the pair ran past its surface instead — 13
+     * labels across 160 routes, up to 182px outside their box.
+     *
+     * The pair is now a wrapping row clipped to one line box. When both
+     * halves fit, both show, exactly as before. When they do not, the second
+     * language (with its dot) drops to the clipped second line and the first
+     * stays whole; only a first half that alone exceeds the width still
+     * ellipsises. Its min-content is now the first half, so a shrink-to-fit
+     * parent (a button) sizes to its surface instead of escaping it.
+     */
     return (
       <span
         className={cn(
-          'inline-flex min-w-0 max-w-full items-baseline gap-0.5',
-          wrap ? 'flex-wrap' : 'truncate',
+          'inline-flex min-w-0 max-w-full flex-wrap items-baseline overflow-hidden max-h-[calc(1lh+2px)]',
           className,
         )}
       >
         <span lang={resolved.primaryLang}
-        {...pairMark} className={cn(wrap ? 'break-words' : 'truncate', primaryClassName)}>
+        {...pairMark} className={cn('min-w-0 max-w-full truncate', primaryClassName)}>
           {resolved.primaryText}
-          {/* Inside the first language's span, so a wrapped pair never leaves the dot on a line of its own. */}
-          {wrap && (
-            <span className={cn(separatorClassName, 'ml-0.5')} aria-hidden="true">
-              ·
-            </span>
-          )}
         </span>
-        {!wrap && (
-          <span className={separatorClassName} aria-hidden="true">
-            ·
-          </span>
-        )}
         <span
           lang={resolved.secondaryLang ?? undefined}
+          // Breakable anywhere so it adds nothing to the pair's min-content:
+          // a nowrap second half held a 203px card open at 237px. Whether it
+          // shares the first line is still decided by its one-line width.
           className={cn(
-            'bilingual-secondary text-muted-foreground',
-            wrap ? 'break-words' : 'truncate',
+            'bilingual-secondary text-muted-foreground min-w-0 [overflow-wrap:anywhere]',
             secondaryNarrow,
             secondaryClassName,
           )}
         >
+          <span className={cn(separatorClassName, 'mx-0.5')} aria-hidden="true">
+            ·
+          </span>
           {resolved.secondaryText}
         </span>
       </span>

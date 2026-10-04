@@ -538,7 +538,7 @@ export default function CohortDetailPage() {
                 <p className="text-xs text-muted-foreground mt-1">
                   <BilingualText
                     en={`${stats.activeStartups} active startups • ${stats.totalMentors} mentors`}
-                    el={`${stats.activeStartups} startups • ${stats.totalMentors} μέντορες`}
+                    el={`${stats.activeStartups} ενεργές startups • ${stats.totalMentors} μέντορες`}
                     compact
                     wrap
                   />
@@ -653,7 +653,7 @@ export default function CohortDetailPage() {
                 <div className="space-y-4">
                   {matches.slice(0, 3).map((match) => (
                     <div key={match.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                      <div className="flex -space-x-2">
+                      <div className="flex shrink-0 -space-x-1">
                         <Avatar className="h-8 w-8 border-2 border-card">
                           <AvatarFallback className="bg-muted text-2xs font-semibold">
                             {initialsOf(match.participant1.name)}
@@ -832,7 +832,7 @@ export default function CohortDetailPage() {
               <div className="space-y-4">
                 {matches.map((match) => (
                   <div key={match.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                    <div className="flex -space-x-3">
+                    <div className="flex shrink-0 -space-x-2">
                       <Avatar className="h-12 w-12 border-2 border-card">
                         <AvatarFallback className="bg-muted text-sm font-semibold">
                           {initialsOf(match.participant1.name)}

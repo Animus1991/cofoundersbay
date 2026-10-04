@@ -263,11 +263,13 @@ export default function PrivacyPage() {
               { icon: UserCheck, label: 'Your Rights', labelEl: 'Τα δικαιώματά σας', desc: 'Access, correct, delete', descEl: 'Πρόσβαση, διόρθωση, διαγραφή' },
               { icon: Trash2, label: 'No Selling', labelEl: 'Καμία πώληση', desc: 'We never sell your data', descEl: 'Δεν πουλάμε ποτέ τα δεδομένα σας' },
             ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4">
+              // Four across, a side icon left ~88px for the text and the Greek
+              // ran out of its tile; the icon sits above the text there.
+              <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 lg:flex-col lg:gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground"><BilingualText en={item.label} el={item.labelEl} compact /></p>
                   <p className="text-xs text-muted-foreground"><BilingualText en={item.desc} el={item.descEl} wrap /></p>
                 </div>

@@ -98,19 +98,40 @@ const STATUS_EL: Record<string, string> = {
   ui: 'διεπαφή',
   infra: 'υποδομή',
   billing: 'χρεώσεις',
+  // Opportunity types
+  job: 'θέση εργασίας',
+  mentorship: 'καθοδήγηση',
+  cofounder: 'συνιδρυτής',
+  investment: 'επένδυση',
+  partnership: 'συνεργασία',
+  internship: 'πρακτική άσκηση',
+  freelance: 'ελεύθερος επαγγελματίας',
+  advisor: 'σύμβουλος',
+  collaboration: 'συνεργασία',
+  webinar: 'διαδικτυακό σεμινάριο',
+  workshop: 'εργαστήριο',
+  meetup: 'συνάντηση',
 };
+
+/** "in_progress" → "In progress": an enum value read as a word, not a token. */
+function sentenceCase(value: string): string {
+  const spaced = value.replace(/_/g, ' ').trim();
+  return spaced ? spaced[0].toUpperCase() + spaced.slice(1) : spaced;
+}
 
 export function statusEl(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
-  return STATUS_EL[value.toLowerCase().replace(/_/g, ' ').trim()] ?? STATUS_EL[value.toLowerCase()];
+  const el = STATUS_EL[value.toLowerCase().replace(/_/g, ' ').trim()] ?? STATUS_EL[value.toLowerCase()];
+  return el ? sentenceCase(el) : undefined;
 }
 
 /**
- * A status or role value with its Greek beside it. Unknown values render as
- * given, so a new enum member shows in English rather than disappearing.
+ * A status or role value with its Greek beside it, in sentence case
+ * ("Accepted · Εγκρίθηκε", not "accepted · εγκρίθηκε") — a raw lower-case
+ * token on a chip read as a leaked enum. Unknown values render as given, so
+ * a new enum member shows in English rather than disappearing.
  */
 export function StatusText({ value, className }: { value: string | null | undefined; className?: string }) {
   if (!value) return null;
-  const en = value.replace(/_/g, ' ');
-  return <BilingualText en={en} el={statusEl(value)} compact className={className} />;
+  return <BilingualText en={sentenceCase(value)} el={statusEl(value)} compact className={className} />;
 }
