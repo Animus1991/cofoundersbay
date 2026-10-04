@@ -41,6 +41,7 @@ import {
 import { bilingualInline } from '@/lib/i18n/format';
 import { statusEl } from '@/components/common/StatusText';
 
+import { pressableProps } from '@/lib/pressable';
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
   if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="SSO Required" el="SSO υποχρεωτικό" compact /></Badge>;
   if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border"><BilingualText en="SSO Optional" el="SSO προαιρετικό" compact /></Badge>;
@@ -183,6 +184,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
     <div
       className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
       onClick={onClick}
+      {...pressableProps()}
     >
       <div className="flex items-center gap-4">
         {tenant.logoUrl ? (

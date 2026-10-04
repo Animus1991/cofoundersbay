@@ -37,6 +37,7 @@ import {
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 interface Message {
   id: string;
   senderId: string;
@@ -284,6 +285,7 @@ export function EnhancedMessageThread({
                     selectedMessage === message.id && "ring-2 ring-primary"
                   )}
                   onClick={() => setSelectedMessage(message.id)}
+                  {...pressableProps({ pressed: selectedMessage === message.id })}
                 >
                   <p className="text-sm whitespace-pre-wrap break-words">
                     {message.content}

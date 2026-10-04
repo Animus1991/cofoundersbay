@@ -33,6 +33,7 @@ import { mentorDemoRating } from '@/lib/demo/mentor-world';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
   'E-commerce', 'Marketplace', 'Web3/Crypto', 'Climate Tech', 'AgriTech',
@@ -311,6 +312,7 @@ export default function MentorProfilePage() {
                     <div
                       key={f.value}
                       onClick={() => toggleChip(sessionFormats, setSessionFormats, f.value)}
+                      {...pressableProps({ pressed: sessionFormats.includes(f.value) })}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
                         sessionFormats.includes(f.value)

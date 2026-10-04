@@ -73,6 +73,7 @@ import {
 } from '@/lib/i18n/LanguagePreferenceContext';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
+import { pressableProps } from '@/lib/pressable';
 function PreviewHint({ text }: { text: string }) {
   const el = BUILDER_PREVIEW_HINT_EL[text];
   if (!el) return <>{text}</>;
@@ -1074,7 +1075,8 @@ export function BuilderWorkspace({
               <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}>
+              <Button size="sm" className={BUILDER_BTN} onClick={() => setShowCreateDocDialog(true)}
+          {...pressableProps()}>
                 <BilingualText en={builderEn('create_first')} el={builderEl('create_first')} compact />
               </Button>
               <BuilderAskAiButton

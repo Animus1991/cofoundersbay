@@ -67,6 +67,7 @@ import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { qk } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 
+import { pressableProps } from '@/lib/pressable';
 const RESEARCH_TOUR: TourStep[] = [
   {
     target: 'research-actions',
@@ -1025,7 +1026,7 @@ function BoardCard({
 
   if (viewMode === 'list') {
     return (
-      <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
+      <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link' })}>
         <CardContent className="flex items-center gap-4 p-4">
           <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={glyph} className="icon-sm" />
@@ -1050,7 +1051,7 @@ function BoardCard({
   }
 
   return (
-    <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen}>
+    <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link' })}>
       <CardContent className="flex h-full flex-col gap-3 p-5">
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">

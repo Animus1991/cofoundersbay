@@ -7,6 +7,7 @@ const pg = await (await b.newContext({ viewport: { width: 1440, height: 900 } })
 await pg.addInitScript(() => {
   localStorage.setItem('user', JSON.stringify({ id: 'u_1', email: 'a@b.test', role: 'platform_admin' }));
   localStorage.setItem('cfb_demo_data', '1');
+  localStorage.setItem('accessToken', 'preview-demo');
   localStorage.setItem('cookie_consent', 'accepted');
   for (const tour of ['sidebar','main','onboarding','welcome'])
     for (const u of ['preview','u_1','preview-demo-user']) localStorage.setItem(`cfb.tour.${tour}.${u}`, 'done');

@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
+import { pressableProps } from '@/lib/pressable';
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
   text: string;
@@ -162,6 +163,7 @@ function MatchCardInner({
           onClick();
         }
       }}
+      {...(onClick ? pressableProps({ pressed: isSelected }) : {})}
     >
       {/* Left score-color border strip */}
       <div

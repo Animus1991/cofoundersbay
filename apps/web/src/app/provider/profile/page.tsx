@@ -31,6 +31,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
   { value: 'accounting', label: 'Accounting & Finance' },
@@ -306,6 +307,7 @@ export default function ProviderProfilePage() {
                     <div
                       key={pm.value}
                       onClick={() => setPricingModel(pm.value)}
+                      {...pressableProps({ pressed: pricingModel === pm.value })}
                       className={cn(
                         'flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all',
                         pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border'

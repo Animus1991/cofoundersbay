@@ -21,6 +21,7 @@ import { builderEn, builderEl, BUILDER_PREVIEW_HINT_EL } from '@/lib/i18n/string
 import { assessReadiness, pickReadinessDimensions, updateReadinessCriterion, type ReadinessScore } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 
+import { pressableProps } from '@/lib/pressable';
 interface ReadinessDimension {
   id: string;
   name: string;
@@ -592,6 +593,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                 isExpanded && "md:col-span-2 lg:col-span-3"
               )}
               onClick={() => setExpandedDimension(isExpanded ? null : dimension.id)}
+              {...pressableProps({ expanded: isExpanded })}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -633,6 +635,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                           e.stopPropagation();
                           toggleCriterion(dimension.id, criterion.id);
                         }}
+                        {...pressableProps({ role: 'checkbox', checked: criterion.completed })}
                       >
                         <div className={cn(
                           "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5",

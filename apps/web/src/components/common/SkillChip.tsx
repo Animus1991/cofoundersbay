@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
-
 type SkillChipProps = {
   label: string;
   active?: boolean;
@@ -27,9 +26,11 @@ export function SkillChip({
   };
 
   const isInteractive = onClick || removable;
+  const Tag = onClick && !removable ? 'button' : 'span';
 
   return (
-    <span
+    <Tag
+      {...(Tag === 'button' ? { type: 'button' as const, 'aria-pressed': active } : {})}
       onClick={onClick}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border-0 font-medium transition-all duration-200',
@@ -55,7 +56,7 @@ export function SkillChip({
           <X className="icon-sm" />
         </button>
       )}
-    </span>
+    </Tag>
   );
 }
 

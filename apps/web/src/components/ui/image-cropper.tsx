@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
+import { pressableProps } from '@/lib/pressable';
 interface CropArea { x: number; y: number; size: number }
 
 interface ImageCropperProps {
@@ -229,6 +230,7 @@ export function ImageCropper({
           <div
             className="border-2 border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
             onClick={() => fileInputRef.current?.click()}
+            {...pressableProps({ label: 'Drop image here or press Enter to browse' })}
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
           >

@@ -26,6 +26,7 @@ import {
 import { bilingualAria } from '@/lib/i18n/format';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 /* ─── Types ─── */
 type Tab = 'extract' | 'connect' | 'synthesize' | 'questions' | 'chat';
 
@@ -324,6 +325,7 @@ export function AIAnalysisPanel({
                       <div
                         key={s.id}
                         onClick={() => toggleExtracted(s.id)}
+                        {...pressableProps({ pressed: s.accepted === true })}
                         className={cn(
                           'rounded-xl border p-2.5 cursor-pointer transition-all',
                           isRejected ? 'opacity-40 border-border bg-card' :
@@ -423,6 +425,7 @@ export function AIAnalysisPanel({
                       <div
                         key={c.id}
                         onClick={() => toggleConn(c.id)}
+                        {...pressableProps({ pressed: c.accepted === true })}
                         className={cn(
                           'rounded-xl border p-2.5 cursor-pointer transition-all',
                           isRejected ? 'opacity-40 border-border bg-card' :

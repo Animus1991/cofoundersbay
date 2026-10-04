@@ -34,6 +34,7 @@ import {
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
   'connection_request_sent','connection_not_answered','connection_accepted',
@@ -604,6 +605,7 @@ export default function AutomationsPage() {
                 <Card
                   className="p-3 cursor-pointer hover:bg-muted/30 transition-colors"
                   onClick={() => setSelectedExecution(selectedExecution === exec.id ? null : exec.id)}
+                  {...pressableProps({ expanded: selectedExecution === exec.id })}
                 >
                   <div className="flex items-center gap-3">
                     {execStatusIcon(exec.status)}

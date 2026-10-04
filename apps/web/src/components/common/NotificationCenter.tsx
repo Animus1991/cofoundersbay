@@ -136,7 +136,7 @@ function NotificationItem({
     );
   }
 
-  return <div onClick={onMarkAsRead}>{content}</div>;
+  return <button type="button" onClick={onMarkAsRead} className="w-full text-left">{content}</button>;
 }
 
 export function NotificationCenter({

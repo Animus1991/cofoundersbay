@@ -53,6 +53,7 @@ import {
 import { CreateGroupModal } from './components/CreateGroupModal';
 import { qk } from '@/lib/query-keys';
 
+import { pressableProps } from '@/lib/pressable';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
 const TYPE_FILTERS = [
@@ -91,6 +92,7 @@ function GroupCard({
     <Card
       className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer overflow-hidden"
       onClick={() => router.push(`/groups/${group.id}`)}
+      {...pressableProps({ role: 'link' })}
     >
       {/* Cover Image */}
       {group.coverImageUrl ? (

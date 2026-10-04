@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,6 +36,7 @@ import { listNotifications, markNotificationRead, markAllNotificationsRead, type
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { qk } from '@/lib/query-keys';
 
+import { pressableProps } from '@/lib/pressable';
 // Use NotificationItem from @/lib/api
 
 const NOTIFICATION_ICONS = {
@@ -85,6 +86,7 @@ function NotificationRow({
           window.location.href = notification.link;
         }
       }}
+      {...pressableProps({ role: notification.link ? 'link' : 'button' })}
     >
       <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
         <Icon className="icon-sm" />
@@ -289,15 +291,16 @@ export function NotificationCenter() {
             {categories.map((category) => {
               const Icon = category.icon;
               return (
-                <Badge
+                <button
                   key={category.value}
-                  variant={categoryFilter === category.value ? 'default' : 'outline'}
-                  className="cursor-pointer gap-1"
+                  type="button"
+                  aria-pressed={categoryFilter === category.value}
+                  className={cn(badgeVariants({ variant: categoryFilter === category.value ? 'default' : 'outline' }), 'border-0 shadow-none !shadow-none cursor-pointer gap-1')}
                   onClick={() => setCategoryFilter(category.value)}
                 >
                   <Icon className="icon-sm" />
                   {category.label}
-                </Badge>
+                </button>
               );
             })}
           </div>

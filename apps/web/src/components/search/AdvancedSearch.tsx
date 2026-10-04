@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, X, Filter, TrendingUp, Clock, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 
+import { pressableProps } from '@/lib/pressable';
 interface SearchResult {
   id: string;
   type: 'user' | 'post' | 'event' | 'opportunity';
@@ -230,14 +231,14 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {recentSearches.map((search, index) => (
-                    <Badge
+                    <button
                       key={index}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-secondary/80"
+                      type="button"
+                      className={cn(badgeVariants({ variant: 'secondary' }), 'border-0 shadow-none !shadow-none cursor-pointer hover:bg-secondary/80')}
                       onClick={() => handleRecentSearch(search)}
                     >
                       {search}
-                    </Badge>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -251,14 +252,14 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {suggestions.map((suggestion: string, index: number) => (
-                    <Badge
+                    <button
                       key={index}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-secondary"
+                      type="button"
+                      className={cn(badgeVariants({ variant: 'outline' }), 'border-0 shadow-none !shadow-none cursor-pointer hover:bg-secondary')}
                       onClick={() => setQuery(suggestion)}
                     >
                       {suggestion}
-                    </Badge>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -285,6 +286,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                     key={result.id}
                     className="p-3 hover:bg-secondary/40 cursor-pointer transition-colors"
                     onClick={() => handleSelect(result)}
+                    {...pressableProps({ role: 'link' })}
                   >
                     <div className="flex items-center gap-3">
                       {result.avatarUrl ? (

@@ -30,7 +30,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,6 +46,7 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
   { id: 'role', title: 'What\'s your role?', icon: Target },
@@ -598,6 +599,7 @@ function RoleStep({ selectedRole, onSelect }: { selectedRole: string; onSelect: 
               <div
                 key={key}
                 onClick={() => onSelect(key)}
+                {...pressableProps({ pressed: selectedRole === key })}
                 className={cn(
                   'p-6 rounded-lg border-2 cursor-pointer transition-colors hover:border-primary/30',
                   selectedRole === key
@@ -815,15 +817,16 @@ function SkillsStep({
               {selectedSkills.map(skillId => {
                 const skill = skillsData?.find((s: any) => s.id === skillId);
                 return (
-                  <Badge
+                  <button
                     key={skillId}
-                    variant="secondary"
-                    className="gap-1 cursor-pointer"
+                    type="button"
+                    aria-label={bilingualInline(`Remove ${skill?.name ?? 'skill'}`, `Αφαίρεση ${skill?.name ?? 'δεξιότητας'}`)}
+                    className={cn(badgeVariants({ variant: 'secondary' }), 'border-0 shadow-none !shadow-none gap-1 cursor-pointer')}
                     onClick={() => onSkillToggle(skillId)}
                   >
                     {skill?.name}
-                    <button className="ml-1 text-xs">×</button>
-                  </Badge>
+                    <span className="ml-1 text-xs" aria-hidden="true">×</span>
+                  </button>
                 );
               })}
             </div>

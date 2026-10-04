@@ -17,6 +17,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 
+import { pressableProps } from '@/lib/pressable';
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
 type CreatePostProps = {
@@ -102,6 +103,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           isExpanded && 'hidden'
         )}
         onClick={() => setIsExpanded(true)}
+        {...pressableProps()}
       >
         <CardContent className="pt-4">
           <div className="flex items-center gap-3">

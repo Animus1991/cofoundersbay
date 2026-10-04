@@ -37,6 +37,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 
+import { pressableProps } from '@/lib/pressable';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface BoardSnapshot {
@@ -318,6 +319,7 @@ export function BoardHistoryDrawer({
                         key={snap.id}
                         className="flex items-start gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={() => setPreviewSnapshot(snap)}
+                        {...pressableProps()}
                       >
                         <div className={cn(
                           'h-7 w-7 rounded-full flex items-center justify-center shrink-0 border',
