@@ -297,14 +297,16 @@ function SelectButtons({
     }
   };
 
+  const groupId = useId();
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-foreground">{label}</label>
-      <div className="flex flex-wrap gap-2">
+      <p id={groupId} className="text-sm font-medium text-foreground">{label}</p>
+      <div className="flex flex-wrap gap-2" role="group" aria-labelledby={groupId}>
         {normalized.map((opt) => (
           <button
             key={opt.value}
             type="button"
+            aria-pressed={selected.includes(opt.value)}
             onClick={() => toggle(opt.value)}
             className={cn(
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
@@ -738,12 +740,12 @@ export default function ProfileEditPage() {
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium"><BilingualText en="About / Bio" el="Σχετικά / Βιογραφικό" compact /></label>
+                      <label htmlFor="pe-f1" className="text-sm font-medium"><BilingualText en="About / Bio" el="Σχετικά / Βιογραφικό" compact /></label>
                       <span className={cn("text-xs", form.bio.length > 400 ? "text-status-warning" : "text-muted-foreground")}>
                         {form.bio.length}/500
                       </span>
                     </div>
-                    <Textarea
+                    <Textarea id="pe-f1"
                       value={form.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
                       placeholder={bilingualInline("Tell the community about your background, what you're working on, and what you're looking for…", "Πείτε στην κοινότητα για το υπόβαθρό σας, τι φτιάχνετε και τι αναζητάτε…")}
@@ -993,8 +995,8 @@ export default function ProfileEditPage() {
                     />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium"><BilingualText en="Meeting Preference" el="Προτίμηση συνάντησης" compact /></label>
-                        <select
+                        <label htmlFor="pe-f2" className="text-sm font-medium"><BilingualText en="Meeting Preference" el="Προτίμηση συνάντησης" compact /></label>
+                        <select id="pe-f2"
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
                           className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
@@ -1006,8 +1008,8 @@ export default function ProfileEditPage() {
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium"><BilingualText en="Hourly Rate (optional)" el="Ωριαία αμοιβή (προαιρετικά)" compact /></label>
-                        <Input
+                        <label htmlFor="pe-f3" className="text-sm font-medium"><BilingualText en="Hourly Rate (optional)" el="Ωριαία αμοιβή (προαιρετικά)" compact /></label>
+                        <Input id="pe-f3"
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
                           placeholder="e.g., $100/hour or Free"
@@ -1044,16 +1046,16 @@ export default function ProfileEditPage() {
                     />
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium"><BilingualText en="Min Check Size" el="Ελάχιστο ποσό επένδυσης" compact /></label>
-                        <Input
+                        <label htmlFor="pe-f4" className="text-sm font-medium"><BilingualText en="Min Check Size" el="Ελάχιστο ποσό επένδυσης" compact /></label>
+                        <Input id="pe-f4"
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
                           placeholder="e.g., $25K"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium"><BilingualText en="Max Check Size" el="Μέγιστο ποσό επένδυσης" compact /></label>
-                        <Input
+                        <label htmlFor="pe-f5" className="text-sm font-medium"><BilingualText en="Max Check Size" el="Μέγιστο ποσό επένδυσης" compact /></label>
+                        <Input id="pe-f5"
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
                           placeholder="e.g., $500K"
@@ -1113,43 +1115,43 @@ export default function ProfileEditPage() {
                 <CardContent className="space-y-5 pt-6">
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label htmlFor="pe-f6" className="text-sm font-medium flex items-center gap-2">
                         <Globe className="icon-sm text-muted-foreground" /> <BilingualText en="Personal Website" el="Προσωπικός ιστότοπος" compact />
                       </label>
-                      <Input
+                      <Input id="pe-f6"
                         value={form.websiteUrl}
                         onChange={(e) => updateField('websiteUrl', e.target.value)}
                         placeholder="https://..."
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label htmlFor="pe-f7" className="text-sm font-medium flex items-center gap-2">
                         <Linkedin className="icon-sm text-status-info" /> LinkedIn
                       </label>
-                      <Input
+                      <Input id="pe-f7"
                         value={form.linkedinUrl}
                         onChange={(e) => updateField('linkedinUrl', e.target.value)}
                         placeholder="https://linkedin.com/in/..."
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label htmlFor="pe-f8" className="text-sm font-medium flex items-center gap-2">
                         <Github className="icon-sm" /> GitHub
                       </label>
-                      <Input
+                      <Input id="pe-f8"
                         value={form.githubUrl}
                         onChange={(e) => updateField('githubUrl', e.target.value)}
                         placeholder="https://github.com/..."
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label htmlFor="pe-f9" className="text-sm font-medium flex items-center gap-2">
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 5.964H5.078z"/>
                         </svg>
                         X (Twitter)
                       </label>
-                      <Input
+                      <Input id="pe-f9"
                         value={form.twitterUrl}
                         onChange={(e) => updateField('twitterUrl', e.target.value)}
                         placeholder="https://x.com/..."

@@ -183,10 +183,10 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <label htmlFor="job-f1" className="text-sm font-medium">
               <BilingualText en={jobsEn('field_title')} el={jobsEl('field_title')} compact /> *
             </label>
-            <Input
+            <Input id="job-f1"
               placeholder="e.g. Full-Stack Engineer (equity)"
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
@@ -195,10 +195,10 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <label htmlFor="job-f2" className="text-sm font-medium">
               <BilingualText en={jobsEn('field_role')} el={jobsEl('field_role')} compact />
             </label>
-            <Input
+            <Input id="job-f2"
               placeholder="e.g. Engineering, Marketing, Design"
               value={form.role}
               onChange={(e) => set('role', e.target.value)}
@@ -206,10 +206,10 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <label htmlFor="job-f3" className="text-sm font-medium">
               <BilingualText en={jobsEn('field_location')} el={jobsEl('field_location')} compact />
             </label>
-            <Input
+            <Input id="job-f3"
               placeholder="e.g. Athens, GR"
               value={form.location}
               onChange={(e) => set('location', e.target.value)}

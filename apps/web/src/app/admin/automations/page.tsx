@@ -104,16 +104,16 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Rule Name *</label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
+            <label htmlFor="auto-a-ruleName" className="text-sm font-medium">Rule Name *</label>
+            <Input id="auto-a-ruleName" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder={bilingualInline("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
+            <label htmlFor="auto-a-description" className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+            <Input id="auto-a-description" value={description} onChange={e => setDescription(e.target.value)} placeholder={bilingualInline("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
-            <select
+            <label htmlFor="auto-f1" className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
+            <select id="auto-f1"
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
@@ -122,8 +122,8 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
-            <select
+            <label htmlFor="auto-f2" className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
+            <select id="auto-f2"
               value={actionType}
               onChange={e => setActionType(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
@@ -132,8 +132,8 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
-            <textarea
+            <label htmlFor="auto-f3" className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
+            <textarea id="auto-f3"
               value={actionParamsRaw}
               onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
               rows={5}
@@ -147,12 +147,12 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
-              <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
+              <label htmlFor="auto-f4" className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
+              <Input id="auto-f4" type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium"><BilingualText en="Priority (lower = first)" el="Προτεραιότητα (μικρότερη = πρώτα)" compact /></label>
-              <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
+              <label htmlFor="auto-f5" className="text-sm font-medium"><BilingualText en="Priority (lower = first)" el="Προτεραιότητα (μικρότερη = πρώτα)" compact /></label>
+              <Input id="auto-f5" type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>
@@ -204,16 +204,16 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Rule Name *</label>
-            <Input value={name} onChange={e => setName(e.target.value)} />
+            <label htmlFor="auto-a-ruleName" className="text-sm font-medium">Rule Name *</label>
+            <Input id="auto-a-ruleName" value={name} onChange={e => setName(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-            <Input value={description} onChange={e => setDescription(e.target.value)} />
+            <label htmlFor="auto-a-description" className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+            <Input id="auto-a-description" value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
-            <select
+            <label htmlFor="auto-f6" className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>
+            <select id="auto-f6"
               value={triggerType}
               onChange={e => setTriggerType(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
@@ -222,8 +222,8 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
-            <select
+            <label htmlFor="auto-f7" className="text-sm font-medium"><BilingualText en="Action Type" el="Τύπος ενέργειας" compact /></label>
+            <select id="auto-f7"
               value={actionType}
               onChange={e => setActionType(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none"
@@ -232,8 +232,8 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
-            <textarea
+            <label htmlFor="auto-f8" className="text-sm font-medium"><BilingualText en="Action Params (JSON)" el="Παράμετροι ενέργειας (JSON)" compact /></label>
+            <textarea id="auto-f8"
               value={actionParamsRaw}
               onChange={e => setActionParamsRaw(e.target.value)}
               rows={5}
@@ -242,12 +242,12 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
-              <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
+              <label htmlFor="auto-f9" className="text-sm font-medium"><BilingualText en="Delay (seconds)" el="Καθυστέρηση (δευτερόλεπτα)" compact /></label>
+              <Input id="auto-f9" type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium"><BilingualText en="Priority" el="Προτεραιότητα" compact /></label>
-              <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
+              <label htmlFor="auto-a-priority" className="text-sm font-medium"><BilingualText en="Priority" el="Προτεραιότητα" compact /></label>
+              <Input id="auto-a-priority" type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
             </div>
           </div>
         </div>

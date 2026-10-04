@@ -149,11 +149,13 @@ function MermaidGenTab({
 
       {/* Diagram type */}
       <div className="space-y-1">
-        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</label>
-        <div className="grid grid-cols-2 gap-1">
+        <p id="ccp-diagtype" className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</p>
+        <div className="grid grid-cols-2 gap-1" role="group" aria-labelledby="ccp-diagtype">
           {MERMAID_TYPES.map((mt) => (
             <button
               key={mt.value}
+              type="button"
+              aria-pressed={mermaidType === mt.value}
               onClick={() => setMermaidType(mt.value)}
               className={cn(
                 'text-2xs px-2 py-1.5 rounded-lg border transition-colors text-left',
@@ -170,8 +172,8 @@ function MermaidGenTab({
 
       {/* Prompt */}
       <div className="space-y-1">
-        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
-        <textarea
+        <label htmlFor="ccp-f1" className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
+        <textarea id="ccp-f1"
           rows={4}
           value={mermaidPrompt}
           onChange={(e) => setMermaidPrompt(e.target.value)}
@@ -195,7 +197,7 @@ function MermaidGenTab({
       {generatedCode && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Generated Code</label>
+            <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Generated Code</p>
             <button onClick={handleCopy} className="text-2xs text-muted-foreground hover:text-foreground flex items-center gap-1">
               {copied ? <Check className="w-2.5 h-2.5 text-status-success" /> : <Copy className="w-2.5 h-2.5" />}
               {copied ? 'Copied' : 'Copy'}
@@ -556,8 +558,8 @@ export function CanvasCopilotPanel({
 
           {/* Workspace ID */}
           <div className="space-y-1">
-            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
-            <input
+            <label htmlFor="ccp-f2" className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
+            <input id="ccp-f2"
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
               placeholder={bilingualInline("Paste workspace UUID…", "Επικολλήστε το UUID του χώρου εργασίας…")}
@@ -567,8 +569,8 @@ export function CanvasCopilotPanel({
 
           {/* Document type */}
           <div className="space-y-1">
-            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
-            <select
+            <label htmlFor="ccp-f3" className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
+            <select id="ccp-f3"
               value={exportDocType}
               onChange={(e) => setExportDocType(e.target.value)}
               className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60"
@@ -581,8 +583,8 @@ export function CanvasCopilotPanel({
 
           {/* Title */}
           <div className="space-y-1">
-            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
-            <input
+            <label htmlFor="ccp-f4" className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
+            <input id="ccp-f4"
               value={exportTitle}
               onChange={(e) => setExportTitle(e.target.value)}
               placeholder={bilingualInline("Auto-generated if empty", "Δημιουργείται αυτόματα αν μείνει κενό")}

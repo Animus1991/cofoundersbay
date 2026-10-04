@@ -222,8 +222,8 @@ export function RichTextEditor({
           <DialogHeader><DialogTitle>Insert Link</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium mb-1 block">URL</label>
-              <Input
+              <label htmlFor="rte-f1" className="text-sm font-medium mb-1 block">URL</label>
+              <Input id="rte-f1"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
                 placeholder="https://example.com"
@@ -232,8 +232,8 @@ export function RichTextEditor({
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Link text (optional)</label>
-              <Input
+              <label htmlFor="rte-f2" className="text-sm font-medium mb-1 block">Link text (optional)</label>
+              <Input id="rte-f2"
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
                 placeholder={bilingualInline("Link text…", "Κείμενο συνδέσμου…")}

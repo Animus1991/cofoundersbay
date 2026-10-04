@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +69,7 @@ export function MilestoneFormModal({
   error?: string;
 }) {
   const t = useMilestonePrimaryText();
+  const fieldId = useId();
   const { open: openAskAi } = usePopupChat();
   const isEdit = !!initial;
   const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
@@ -185,10 +186,11 @@ export function MilestoneFormModal({
 
           {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label htmlFor={`${fieldId}-title`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <BilingualText en={milestoneEn('field_title')} el={milestoneEl('field_title')} compact /> <span className="text-destructive-accessible">*</span>
             </label>
             <Input
+              id={`${fieldId}-title`}
               className="rounded-xl"
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
@@ -201,10 +203,11 @@ export function MilestoneFormModal({
 
           {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label htmlFor={`${fieldId}-desc`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <BilingualText en={milestoneEn('field_desc')} el={milestoneEl('field_desc')} compact />
             </label>
             <textarea
+              id={`${fieldId}-desc`}
               value={form.description}
               onChange={(e) => set('description', e.target.value)}
               placeholder={t(milestoneEn('desc_ph'), milestoneEl('desc_ph'))}
@@ -217,10 +220,11 @@ export function MilestoneFormModal({
           {/* Status + Priority row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={`${fieldId}-status`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <BilingualText en={milestoneEn('field_status')} el={milestoneEl('field_status')} compact />
               </label>
               <select
+                id={`${fieldId}-status`}
                 value={form.status}
                 onChange={(e) => set('status', e.target.value as MilestoneStatus)}
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -232,10 +236,11 @@ export function MilestoneFormModal({
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={`${fieldId}-priority`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <BilingualText en={milestoneEn('field_priority')} el={milestoneEl('field_priority')} compact />
               </label>
               <select
+                id={`${fieldId}-priority`}
                 value={form.priority}
                 onChange={(e) => set('priority', e.target.value as MilestonePriority)}
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -250,10 +255,11 @@ export function MilestoneFormModal({
           {/* Category + Due date row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={`${fieldId}-category`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <BilingualText en={milestoneEn('field_category')} el={milestoneEl('field_category')} compact />
               </label>
               <select
+                id={`${fieldId}-category`}
                 value={form.category}
                 onChange={(e) => set('category', e.target.value)}
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -265,11 +271,12 @@ export function MilestoneFormModal({
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={`${fieldId}-due`} className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <CfbGlyph name="calendar" className="icon-sm" />
                 <BilingualText en={milestoneEn('field_due')} el={milestoneEl('field_due')} compact />
               </label>
               <Input
+                id={`${fieldId}-due`}
                 className="rounded-xl"
                 type="date"
                 value={form.dueDate}
@@ -281,12 +288,13 @@ export function MilestoneFormModal({
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={`${fieldId}-progress`} className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <BilingualText en={milestoneEn('field_progress')} el={milestoneEl('field_progress')} compact />
               </label>
               <span className="text-xs font-semibold tabular-nums text-foreground">{form.progress}%</span>
             </div>
             <input
+              id={`${fieldId}-progress`}
               type="range"
               min={0}
               max={100}
@@ -305,11 +313,12 @@ export function MilestoneFormModal({
 
           {/* Collaborator */}
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label htmlFor={`${fieldId}-collab`} className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <CfbGlyph name="people" className="icon-sm" />
               <BilingualText en={milestoneEn('field_collab')} el={milestoneEl('field_collab')} compact />
             </label>
             <Input
+              id={`${fieldId}-collab`}
               className="rounded-xl"
               value={form.collaboratorId}
               onChange={(e) => set('collaboratorId', e.target.value)}
@@ -322,11 +331,12 @@ export function MilestoneFormModal({
 
           {/* Notes */}
           <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label htmlFor={`${fieldId}-notes`} className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <CfbGlyph name="book" className="icon-sm" />
               <BilingualText en={milestoneEn('field_notes')} el={milestoneEl('field_notes')} compact />
             </label>
             <textarea
+              id={`${fieldId}-notes`}
               value={form.notes}
               onChange={(e) => set('notes', e.target.value)}
               placeholder={t(milestoneEn('notes_ph'), milestoneEl('notes_ph'))}

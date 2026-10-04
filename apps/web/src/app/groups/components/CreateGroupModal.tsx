@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { Loader2, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { bilingualInline } from '@/lib/i18n/format';
-import { statusEl } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
+import { BilingualText } from '@/components/common/BilingualText';
 
 const CATEGORIES = ['Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
@@ -20,6 +21,7 @@ interface Props {
 
 export function CreateGroupModal({ onClose, onCreated }: Props) {
   const { success, error: toastError } = useToast();
+  const fieldId = useId();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -63,25 +65,31 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create Group</DialogTitle>
+          <DialogTitle><BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact /></DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Group Name *</label>
+            <label htmlFor={`${fieldId}-name`} className="text-xs font-medium text-muted-foreground">
+              <BilingualText en="Community name" el="Όνομα κοινότητας" compact /> *
+            </label>
             <Input
+              id={`${fieldId}-name`}
               value={form.name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. SaaS Founders Hub"
+              placeholder={bilingualInline('e.g. SaaS Founders Hub', 'π.χ. SaaS Founders Hub')}
               required
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Slug (URL) *</label>
+            <label htmlFor={`${fieldId}-slug`} className="text-xs font-medium text-muted-foreground">
+              <BilingualText en="Slug (URL)" el="Slug (URL)" compact /> *
+            </label>
             <div className="flex items-center gap-0 rounded-lg border border-input overflow-hidden">
               <span className="bg-secondary/60 px-3 py-2 text-xs text-muted-foreground border-r border-input">/groups/</span>
               <input
+                id={`${fieldId}-slug`}
                 value={form.slug}
                 onChange={(e) => setForm((f) => ({ ...f, slug: slugify(e.target.value) }))}
                 className="flex-1 bg-transparent px-3 py-2 text-sm outline-none"
@@ -92,8 +100,11 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Description</label>
+            <label htmlFor={`${fieldId}-desc`} className="text-xs font-medium text-muted-foreground">
+              <BilingualText en="Description" el="Περιγραφή" compact />
+            </label>
             <textarea
+              id={`${fieldId}-desc`}
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="w-full rounded-xl border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none"
@@ -104,13 +115,16 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Category</label>
+              <label htmlFor={`${fieldId}-category`} className="text-xs font-medium text-muted-foreground">
+                <BilingualText en="Category" el="Κατηγορία" compact />
+              </label>
               <select
+                id={`${fieldId}-category`}
                 value={form.category}
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                 className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none"
               >
-                <option value="">None</option>
+                <option value="">{bilingualInline('None', 'Καμία')}</option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c}>{bilingualInline(c, statusEl(c))}</option>
                 ))}
@@ -118,12 +132,15 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Privacy</label>
-              <div className="flex gap-2">
+              <p className="text-xs font-medium text-muted-foreground">
+                <BilingualText en="Privacy" el="Απόρρητο" compact />
+              </p>
+              <div className="flex gap-2" role="group" aria-label={bilingualInline('Privacy', 'Απόρρητο')}>
                 {(['public', 'private'] as const).map((p) => (
                   <button
                     key={p}
                     type="button"
+                    aria-pressed={form.privacy === p}
                     onClick={() => setForm((f) => ({ ...f, privacy: p }))}
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs font-medium transition-colors',
@@ -132,8 +149,8 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
                         : 'border-border text-muted-foreground hover:border-primary/40',
                     )}
                   >
-                    {p === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
-                    {p}
+                    {p === 'public' ? <Globe className="icon-sm" aria-hidden="true" /> : <Lock className="icon-sm" aria-hidden="true" />}
+                    <StatusText value={p} />
                   </button>
                 ))}
               </div>
@@ -141,8 +158,11 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Tags (comma-separated)</label>
+            <label htmlFor={`${fieldId}-tags`} className="text-xs font-medium text-muted-foreground">
+              <BilingualText en="Tags (comma-separated)" el="Ετικέτες (με κόμμα)" compact />
+            </label>
             <Input
+              id={`${fieldId}-tags`}
               value={form.tags}
               onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
               placeholder="SaaS, B2B, Growth"
@@ -151,11 +171,11 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
 
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
             <Button type="submit" className="flex-1 gap-2" disabled={loading || !form.name.trim()}>
               {loading ? <Loader2 className="icon-sm animate-spin" /> : null}
-              Create Group
+              <BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact />
             </Button>
           </div>
         </form>

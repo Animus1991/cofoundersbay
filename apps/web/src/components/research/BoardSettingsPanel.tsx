@@ -180,10 +180,10 @@ function OrgOwnershipSection({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-semibold flex items-center gap-1.5">
+      <p id="bsp-org" className="text-sm font-semibold flex items-center gap-1.5">
         <Building2 className="icon-sm text-muted-foreground" />
         Organization Ownership
-      </label>
+      </p>
       <p className="text-xs text-muted-foreground">
         Assign this board to an organization to share it with all members.
       </p>
@@ -199,7 +199,7 @@ function OrgOwnershipSection({
           <p className="text-xs text-muted-foreground">You don&apos;t belong to any organizations yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-1.5">
+        <div className="grid grid-cols-1 gap-1.5" role="group" aria-labelledby="bsp-org">
           {/* Personal (no org) option */}
           <button
             onClick={() => !currentOrgId ? undefined : onUpdate({ visibility: 'private' })}
@@ -344,8 +344,8 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
             <>
               {/* Visibility */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Visibility</label>
-                <div className="grid grid-cols-1 gap-2">
+                <p id="bsp-visibility" className="text-sm font-semibold">Visibility</p>
+                <div className="grid grid-cols-1 gap-2" role="group" aria-labelledby="bsp-visibility">
                   {VISIBILITY_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     const isActive = board.visibility === opt.value;
@@ -381,9 +381,9 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
 
               {/* Share Link */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Share Link</label>
+                <label htmlFor="bsp-f1" className="text-sm font-semibold">Share Link</label>
                 <div className="flex gap-2">
-                  <Input
+                  <Input id="bsp-f1"
                     readOnly
                     value={`${typeof window !== 'undefined' ? window.location.origin : ''}/research/${board.id}`}
                     className="text-xs text-muted-foreground bg-secondary/50"
@@ -402,10 +402,10 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
               {/* Invite */}
               {isOwner && (
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold">Invite Collaborators</label>
+                  <label htmlFor="bsp-f2" className="text-sm font-semibold">Invite Collaborators</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Input
+                      <Input id="bsp-f2"
                         placeholder={bilingualInline("Search users by name…", "Αναζήτηση χρηστών με όνομα…")}
                         value={inviteQuery}
                         onChange={(e) => setInviteQuery(e.target.value)}

@@ -824,10 +824,10 @@ export default function ResearchBoardsPage() {
 
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label htmlFor="rb-f1" className="text-sm font-medium">
                     <BilingualText en={researchEn('field_title')} el={researchEl('field_title')} compact />
                   </label>
-                  <Input
+                  <Input id="rb-f1"
                     className="rounded-xl"
                     placeholder={t(researchEn('title_ph'), researchEl('title_ph'))}
                     value={newBoardTitle}
@@ -837,10 +837,10 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <label htmlFor="rb-f2" className="text-sm font-medium">
                     <BilingualText en={researchEn('field_desc')} el={researchEl('field_desc')} compact />
                   </label>
-                  <Input
+                  <Input id="rb-f2"
                     className="rounded-xl"
                     placeholder={t(researchEn('desc_ph'), researchEl('desc_ph'))}
                     value={newBoardDescription}
@@ -849,14 +849,15 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <p id="rb-color" className="text-sm font-medium">
                     <BilingualText en={researchEn('field_color')} el={researchEl('field_color')} compact />
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                  </p>
+                  <div className="flex flex-wrap gap-2" role="group" aria-labelledby="rb-color">
                     {BOARD_COLORS.map((color) => (
                       <button
                         key={color.nameKey}
                         type="button"
+                        aria-pressed={newBoardColor === color.value}
                         onClick={() => setNewBoardColor(color.value)}
                         className={cn(
                           'h-8 w-8 rounded-xl border-2 transition-all',
@@ -874,14 +875,15 @@ export default function ResearchBoardsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
+                  <p id="rb-icon" className="text-sm font-medium">
                     <BilingualText en={researchEn('field_icon')} el={researchEl('field_icon')} compact />
-                  </label>
-                  <div className="flex flex-wrap gap-2">
+                  </p>
+                  <div className="flex flex-wrap gap-2" role="group" aria-labelledby="rb-icon">
                     {BOARD_ICONS.map((icon) => (
                       <button
                         key={icon.value}
                         type="button"
+                        aria-pressed={newBoardIcon === icon.value}
                         onClick={() => setNewBoardIcon(icon.value)}
                         className={cn(
                           'flex h-10 w-10 items-center justify-center rounded-xl border transition-all',

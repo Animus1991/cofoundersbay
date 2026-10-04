@@ -541,8 +541,8 @@ export function AIAnalysisPanel({
               </div>
 
               <div>
-                <label className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide">Focus (optional)</label>
-                <input
+                <label htmlFor="aia-f1" className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide">Focus (optional)</label>
+                <input id="aia-f1"
                   value={questionFocus}
                   onChange={(e) => setQuestionFocus(e.target.value)}
                   placeholder="e.g. methodology gaps, theoretical tensions…"

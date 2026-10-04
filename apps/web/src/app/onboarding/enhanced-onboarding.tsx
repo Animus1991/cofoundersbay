@@ -675,8 +675,8 @@ function ProfileStep({
         {/* Basic Info */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Display Name *</label>
-            <Input
+            <label htmlFor="ob-f1" className="block text-sm font-medium mb-2">Display Name *</label>
+            <Input id="ob-f1"
               value={data.displayName}
               onChange={(e) => setData({ ...data, displayName: e.target.value })}
               placeholder="John Doe"
@@ -685,8 +685,8 @@ function ProfileStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2"><BilingualText en="Headline" el="Τίτλος" compact /></label>
-            <Input
+            <label htmlFor="ob-f2" className="block text-sm font-medium mb-2"><BilingualText en="Headline" el="Τίτλος" compact /></label>
+            <Input id="ob-f2"
               value={data.headline}
               onChange={(e) => setData({ ...data, headline: e.target.value })}
               placeholder="Founder at Tech Startup"
@@ -695,8 +695,8 @@ function ProfileStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Bio *</label>
-            <Textarea
+            <label htmlFor="ob-f3" className="block text-sm font-medium mb-2">Bio *</label>
+            <Textarea id="ob-f3"
               value={data.bio}
               onChange={(e) => setData({ ...data, bio: e.target.value })}
               placeholder={bilingualInline("Tell us about your background, experience, and what you're looking for…", "Πείτε μας για το υπόβαθρο, την εμπειρία σας και τι αναζητάτε…")}
@@ -710,8 +710,8 @@ function ProfileStep({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
-              <Input
+              <label htmlFor="ob-f4" className="block text-sm font-medium mb-2"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
+              <Input id="ob-f4"
                 value={data.location}
                 onChange={(e) => setData({ ...data, location: e.target.value })}
                 placeholder="San Francisco, CA"
@@ -719,9 +719,9 @@ function ProfileStep({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
+              <label className="block text-sm font-medium mb-2" htmlFor="ob-timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
               <Select value={data.timezone} onValueChange={(value) => setData({ ...data, timezone: value })}>
-                <SelectTrigger aria-label="Timezone">
+                <SelectTrigger id="ob-timezone">
                   <SelectValue placeholder={bilingualInline("Select timezone", "Επιλογή ζώνης ώρας")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -887,7 +887,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
 
         {/* Commitment Level */}
         <div>
-          <label className="block text-sm font-medium mb-2"><BilingualText en="Commitment Level" el="Επίπεδο δέσμευσης" compact /></label>
+          <label className="block text-sm font-medium mb-2" htmlFor="ob-commitment"><BilingualText en="Commitment Level" el="Επίπεδο δέσμευσης" compact /></label>
           <Select
             value={data.preferences.commitment}
             onValueChange={(value) =>
@@ -897,7 +897,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               })
             }
           >
-            <SelectTrigger aria-label="Commitment Level">
+            <SelectTrigger id="ob-commitment">
               <SelectValue placeholder={bilingualInline("Select commitment level", "Επιλογή βαθμού δέσμευσης")} />
             </SelectTrigger>
             <SelectContent>
@@ -911,7 +911,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
 
         {/* Notification Frequency */}
         <div>
-          <label className="block text-sm font-medium mb-2"><BilingualText en="Notification Frequency" el="Συχνότητα ειδοποιήσεων" compact /></label>
+          <label className="block text-sm font-medium mb-2" htmlFor="ob-notiffreq"><BilingualText en="Notification Frequency" el="Συχνότητα ειδοποιήσεων" compact /></label>
           <Select
             value={data.preferences.notificationFrequency}
             onValueChange={(value) =>
@@ -921,7 +921,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
               })
             }
           >
-            <SelectTrigger aria-label="Notification Frequency">
+            <SelectTrigger id="ob-notiffreq">
               <SelectValue placeholder={bilingualInline("Select notification frequency", "Επιλογή συχνότητας ειδοποιήσεων")} />
             </SelectTrigger>
             <SelectContent>
@@ -1153,12 +1153,13 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
       <CardContent className="space-y-8">
         {/* Availability */}
         <div>
-          <label className="block text-sm font-medium mb-3"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /> <span className="text-status-danger">*</span></label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <p id="ob-availability" className="block text-sm font-medium mb-3"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /> <span className="text-status-danger">*</span></p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="group" aria-labelledby="ob-availability">
             {AVAILABILITY_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 type="button"
+                aria-pressed={data.values.availability === opt.value}
                 onClick={() => setData({ ...data, values: { ...data.values, availability: opt.value } })}
                 className={cn(
                   'p-3 rounded-lg border-2 text-left transition-all',
@@ -1175,13 +1176,14 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Work Style */}
         <div>
-          <label className="block text-sm font-medium mb-1"><BilingualText en="Work Style" el="Τρόπος δουλειάς" compact /> <span className="text-status-danger">*</span></label>
+          <p id="ob-workstyle" className="block text-sm font-medium mb-1"><BilingualText en="Work Style" el="Τρόπος δουλειάς" compact /> <span className="text-status-danger">*</span></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Select all that apply" el="Επιλέξτε όσα ισχύουν" compact /></p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2" role="group" aria-labelledby="ob-workstyle">
             {WORK_STYLES.map(ws => (
               <button
                 key={ws.id}
                 type="button"
+                aria-pressed={data.values.workStyle.includes(ws.id)}
                 onClick={() => toggleWorkStyle(ws.id)}
                 className={cn(
                   'p-3 rounded-lg border-2 text-left flex items-center gap-2 transition-all',
@@ -1202,9 +1204,9 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Core Values */}
         <div>
-          <label className="block text-sm font-medium mb-1"><BilingualText en="Core Values" el="Βασικές αξίες" compact /></label>
+          <p id="ob-corevalues" className="block text-sm font-medium mb-1"><BilingualText en="Core Values" el="Βασικές αξίες" compact /></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Choose up to 5 that resonate most with you" el="Επιλέξτε έως 5 που σας εκφράζουν" wrap /></p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-corevalues">
             {CORE_VALUES.map(val => {
               const selected = data.values.coreValues.includes(val);
               const maxReached = data.values.coreValues.length >= 5;
@@ -1212,6 +1214,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
                 <button
                   key={val}
                   type="button"
+                aria-pressed={selected}
                   onClick={() => toggleCoreValue(val)}
                   disabled={!selected && maxReached}
                   className={cn(
@@ -1256,13 +1259,14 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
       <CardContent className="space-y-8">
         {/* Looking For */}
         <div>
-          <label className="block text-sm font-medium mb-1"><BilingualText en="Who are you looking for?" el="Ποιον ψάχνετε;" compact /></label>
+          <p id="ob-lookingfor" className="block text-sm font-medium mb-1"><BilingualText en="Who are you looking for?" el="Ποιον ψάχνετε;" compact /></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Select all that apply" el="Επιλέξτε όσα ισχύουν" compact /></p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-lookingfor">
             {LOOKING_FOR_ROLES.map(role => (
               <button
                 key={role}
                 type="button"
+                aria-pressed={data.matchPrefs.lookingFor.includes(role)}
                 onClick={() => toggle('lookingFor', role)}
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
@@ -1282,13 +1286,14 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
 
         {/* Industries */}
         <div>
-          <label className="block text-sm font-medium mb-1"><BilingualText en="Industry Focus" el="Κλάδοι ενδιαφέροντος" compact /></label>
+          <p id="ob-industries" className="block text-sm font-medium mb-1"><BilingualText en="Industry Focus" el="Κλάδοι ενδιαφέροντος" compact /></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Which industries interest you most?" el="Ποιοι κλάδοι σας ενδιαφέρουν περισσότερο;" wrap /></p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-industries">
             {INDUSTRIES.map(ind => (
               <button
                 key={ind}
                 type="button"
+                aria-pressed={data.matchPrefs.industries.includes(ind)}
                 onClick={() => toggle('industries', ind)}
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
@@ -1305,13 +1310,14 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
 
         {/* Startup Stages */}
         <div>
-          <label className="block text-sm font-medium mb-1"><BilingualText en="Preferred Startup Stage" el="Προτιμώμενο στάδιο startup" compact /></label>
+          <p id="ob-stages" className="block text-sm font-medium mb-1"><BilingualText en="Preferred Startup Stage" el="Προτιμώμενο στάδιο startup" compact /></p>
           <p className="text-xs text-muted-foreground mb-3"><BilingualText en="What stages are you most interested in working with?" el="Με ποια στάδια σας ενδιαφέρει να δουλέψετε;" wrap /></p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-labelledby="ob-stages">
             {STAGES.map(stage => (
               <button
                 key={stage}
                 type="button"
+                aria-pressed={data.matchPrefs.stages.includes(stage)}
                 onClick={() => toggle('stages', stage)}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm border-2 font-medium transition-all',

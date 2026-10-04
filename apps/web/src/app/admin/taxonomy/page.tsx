@@ -148,12 +148,12 @@ function SkillDialog({
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div>
-            <label className="block text-sm font-medium mb-1">Name *</label>
-            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g. Machine Learning" />
+            <label htmlFor="tax-f1" className="block text-sm font-medium mb-1">Name *</label>
+            <Input id="tax-f1" value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g. Machine Learning" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Slug *</label>
-            <Input
+            <label htmlFor="tax-f2" className="block text-sm font-medium mb-1">Slug *</label>
+            <Input id="tax-f2"
               value={slug}
               onChange={(e) => { setSlug(e.target.value); setAutoSlug(false); }}
               placeholder="e.g. machine-learning"
@@ -161,9 +161,9 @@ function SkillDialog({
             <p className="text-xs text-muted-foreground mt-1"><BilingualText en="URL-friendly identifier, must be unique" el="Αναγνωριστικό για URL, μοναδικό" wrap /></p>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1"><BilingualText en="Category" el="Κατηγορία" compact /></label>
+            <label className="block text-sm font-medium mb-1" htmlFor="tax-category"><BilingualText en="Category" el="Κατηγορία" compact /></label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger aria-label="Category">
+              <SelectTrigger id="tax-category">
                 <SelectValue placeholder={bilingualInline("Select category", "Επιλογή κατηγορίας")} />
               </SelectTrigger>
               <SelectContent>

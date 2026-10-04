@@ -1114,29 +1114,29 @@ export default function AdminPage() {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Name *</label>
-                    <Input placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
+                    <label htmlFor="cohort-f1" className="text-xs font-medium text-muted-foreground">Name *</label>
+                    <Input id="cohort-f1" placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
                       onChange={(e) => setNewCohort(p => ({ ...p, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground">Slug *</label>
-                    <Input placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
+                    <label htmlFor="cohort-f2" className="text-xs font-medium text-muted-foreground">Slug *</label>
+                    <Input id="cohort-f2" placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
-                    <Input type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
+                    <label htmlFor="cohort-f3" className="text-xs font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
+                    <Input id="cohort-f3" type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
-                    <Input type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
+                    <label htmlFor="cohort-f4" className="text-xs font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
+                    <Input id="cohort-f4" type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
-                    <Input type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
+                    <label htmlFor="cohort-f5" className="text-xs font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
+                    <Input id="cohort-f5" type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
                   </div>
                   <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-                    <Input placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
+                    <label htmlFor="cohort-f6" className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+                    <Input id="cohort-f6" placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
                 <div className="flex gap-2 pt-1">

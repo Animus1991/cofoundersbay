@@ -234,8 +234,8 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         </DialogHeader>
         <div className="space-y-4 py-1">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Email addresses" el="Διευθύνσεις email" compact /></label>
-            <Textarea
+            <label htmlFor="tm-f1" className="text-sm font-medium"><BilingualText en="Email addresses" el="Διευθύνσεις email" compact /></label>
+            <Textarea id="tm-f1"
               placeholder="john@startup.com, jane@venture.com (one per line or comma-separated)"
               value={emails}
               onChange={(e) => setEmails(e.target.value)}
@@ -244,9 +244,9 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium"><BilingualText en="Assign role" el="Ανάθεση ρόλου" compact /></label>
+            <label className="text-sm font-medium" htmlFor="tm-role"><BilingualText en="Assign role" el="Ανάθεση ρόλου" compact /></label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger aria-label="Assign role"><SelectValue /></SelectTrigger>
+              <SelectTrigger id="tm-role"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="founder"><BilingualText en="Founder" el="Ιδρυτής" compact /></SelectItem>
                 <SelectItem value="mentor"><BilingualText en="Mentor" el="Μέντορας" compact /></SelectItem>

@@ -22,7 +22,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { FeedPostComposer } from '@/components/feed/FeedPostComposer';
@@ -747,15 +747,16 @@ export default function FeedPage() {
       content: preferences ? (
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">
+            <p id="feed-ctypes" className="text-sm font-medium mb-2 block">
               <BilingualText en={feedEn('content_types')} el={feedEl('content_types')} compact />
-            </label>
-            <div className="flex flex-wrap gap-1">
+            </p>
+            <div className="flex flex-wrap gap-1" role="group" aria-labelledby="feed-ctypes">
               {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
-                <Badge
+                <button
                   key={type}
-                  variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  type="button"
+                  aria-pressed={preferences.contentTypes.includes(type)}
+                  className={cn(badgeVariants({ variant: preferences.contentTypes.includes(type) ? 'default' : 'outline' }), 'border-0 shadow-none !shadow-none cursor-pointer')}
                   onClick={() => {
                     const newTypes = preferences.contentTypes.includes(type)
                       ? preferences.contentTypes.filter(t => t !== type)
@@ -764,20 +765,21 @@ export default function FeedPage() {
                   }}
                 >
                   {type}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium mb-2 block">
+            <p id="feed-topics" className="text-sm font-medium mb-2 block">
               <BilingualText en={feedEn('topics')} el={feedEl('topics')} compact />
-            </label>
-            <div className="flex flex-wrap gap-1">
+            </p>
+            <div className="flex flex-wrap gap-1" role="group" aria-labelledby="feed-topics">
               {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
-                <Badge
+                <button
                   key={topic}
-                  variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  type="button"
+                  aria-pressed={preferences.topics.includes(topic)}
+                  className={cn(badgeVariants({ variant: preferences.topics.includes(topic) ? 'default' : 'outline' }), 'border-0 shadow-none !shadow-none cursor-pointer')}
                   onClick={() => {
                     const newTopics = preferences.topics.includes(topic)
                       ? preferences.topics.filter(t => t !== topic)
@@ -786,7 +788,7 @@ export default function FeedPage() {
                   }}
                 >
                   #{topic}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>

@@ -34,7 +34,7 @@ import {
   type GroupPost,
   type GroupComment,
 } from '@/lib/api';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
@@ -129,6 +129,8 @@ function PostCard({
       <div className="flex items-center gap-3 pt-1 border-t border-border">
         <div className="relative">
           <button
+            type="button"
+            aria-label={bilingualAria('React', 'Αντίδραση')}
             onClick={() => setShowReactions((p) => !p)}
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
@@ -145,6 +147,8 @@ function PostCard({
               {REACTIONS.map((emoji) => (
                 <button
                   key={emoji}
+                  type="button"
+                  aria-label={bilingualAria(`React ${emoji}`, `Αντίδραση ${emoji}`)}
                   onClick={() => {
                     onReact(post.id, emoji);
                     setShowReactions(false);
@@ -203,7 +207,7 @@ function PostCard({
                 placeholder={bilingualInline("Write a comment…", "Γράψτε ένα σχόλιο…")}
                 className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
               />
-              <Button aria-label="Send"
+              <Button aria-label={bilingualAria('Send comment', 'Αποστολή σχολίου')}
                 size="icon"
                 className="h-8 w-8 shrink-0"
                 disabled={submittingComment || !newComment.trim()}

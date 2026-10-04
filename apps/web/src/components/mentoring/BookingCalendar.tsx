@@ -338,10 +338,12 @@ export function BookingCalendar({
 
               {/* Meeting type */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground"><BilingualText en="Meeting type" el="Τύπος συνάντησης" compact /></label>
-                <div className="flex gap-2">
+                <p id="bc-mtype" className="text-sm font-medium text-foreground"><BilingualText en="Meeting type" el="Τύπος συνάντησης" compact /></p>
+                <div className="flex gap-2" role="group" aria-labelledby="bc-mtype">
                   {mentor.meetingTypes.includes('video') && (
                     <button
+                      type="button"
+                      aria-pressed={meetingType === 'video'}
                       onClick={() => setMeetingType('video')}
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
@@ -356,6 +358,8 @@ export function BookingCalendar({
                   )}
                   {mentor.meetingTypes.includes('in-person') && (
                     <button
+                      type="button"
+                      aria-pressed={meetingType === 'in-person'}
                       onClick={() => setMeetingType('in-person')}
                       className={cn(
                         'flex items-center gap-2 rounded-lg border px-4 py-2 transition-colors',
@@ -373,8 +377,8 @@ export function BookingCalendar({
 
               {/* Notes */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact /></label>
-                <Textarea
+                <label htmlFor="bc-f1" className="text-sm font-medium text-foreground"><BilingualText en="What would you like to discuss?" el="Τι θα θέλατε να συζητήσετε;" compact /></label>
+                <Textarea id="bc-f1"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder={bilingualInline("Share your goals, challenges, or questions…", "Μοιραστείτε στόχους, προκλήσεις ή ερωτήσεις…")}

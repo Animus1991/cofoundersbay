@@ -190,13 +190,13 @@ function ApplyModal({
             )}
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">
+            <label htmlFor="prog-f1" className="text-sm font-medium">
               <BilingualText en={programsEn('fit_label')} el={programsEl('fit_label')} compact />{' '}
               <span className="text-muted-foreground">
                 <BilingualText en={programsEn('optional')} el={programsEl('optional')} compact />
               </span>
             </label>
-            <Textarea
+            <Textarea id="prog-f1"
               placeholder={t('fit_placeholder')}
               value={note}
               onChange={(e) => setNote(e.target.value)}

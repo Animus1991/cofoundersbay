@@ -23,6 +23,7 @@ import {
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
 import { analytics } from '@/lib/analytics';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -670,55 +671,55 @@ function TenantEditor({
               <TabsContent value="general" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Internal Name *</label>
-                    <Input value={general.name} onChange={e => setGeneral(p => ({ ...p, name: e.target.value }))} placeholder="acme-corp" />
+                    <label htmlFor="tn-general-name" className="text-sm font-medium">Internal Name *</label>
+                    <Input id="tn-general-name" value={general.name} onChange={e => setGeneral(p => ({ ...p, name: e.target.value }))} placeholder="acme-corp" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">URL Slug *</label>
-                    <Input value={general.slug} onChange={e => setGeneral(p => ({ ...p, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))} placeholder="acme" />
+                    <label htmlFor="tn-general-slug" className="text-sm font-medium">URL Slug *</label>
+                    <Input id="tn-general-slug" value={general.slug} onChange={e => setGeneral(p => ({ ...p, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))} placeholder="acme" />
                     <p className="text-xs text-muted-foreground">Public URL: /t/{general.slug || 'slug'}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /></label>
-                    <Input value={general.displayName} onChange={e => setGeneral(p => ({ ...p, displayName: e.target.value }))} placeholder="Acme Corporation" />
+                    <label htmlFor="tn-general-displayName" className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /></label>
+                    <Input id="tn-general-displayName" value={general.displayName} onChange={e => setGeneral(p => ({ ...p, displayName: e.target.value }))} placeholder="Acme Corporation" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Website" el="Ιστότοπος" compact /></label>
-                    <Input value={general.website} onChange={e => setGeneral(p => ({ ...p, website: e.target.value }))} placeholder="https://acme.com" />
+                    <label htmlFor="tn-general-website" className="text-sm font-medium"><BilingualText en="Website" el="Ιστότοπος" compact /></label>
+                    <Input id="tn-general-website" value={general.website} onChange={e => setGeneral(p => ({ ...p, website: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Short Description" el="Σύντομη περιγραφή" compact /></label>
-                  <Input value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder={bilingualInline("One-line description shown in listings", "Περιγραφή μίας γραμμής για τις λίστες")} maxLength={160} />
+                  <label htmlFor="tn-general-shortDescription" className="text-sm font-medium"><BilingualText en="Short Description" el="Σύντομη περιγραφή" compact /></label>
+                  <Input id="tn-general-shortDescription" value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder={bilingualInline("One-line description shown in listings", "Περιγραφή μίας γραμμής για τις λίστες")} maxLength={160} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Full Description" el="Πλήρης περιγραφή" compact /></label>
-                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder={bilingualInline("Detailed description of the organization…", "Αναλυτική περιγραφή του οργανισμού…")} className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label htmlFor="tn-general-description" className="text-sm font-medium"><BilingualText en="Full Description" el="Πλήρης περιγραφή" compact /></label>
+                  <textarea id="tn-general-description" value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder={bilingualInline("Detailed description of the organization…", "Αναλυτική περιγραφή του οργανισμού…")} className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="About Text (long-form landing page)" el="Κείμενο «Σχετικά» (σελίδα προορισμού)" wrap /></label>
-                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder={bilingualInline("Full about section displayed on the tenant landing page…", "Πλήρες κείμενο «Σχετικά» για τη σελίδα του οργανισμού…")} className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label htmlFor="tn-general-aboutText" className="text-sm font-medium"><BilingualText en="About Text (long-form landing page)" el="Κείμενο «Σχετικά» (σελίδα προορισμού)" wrap /></label>
+                  <textarea id="tn-general-aboutText" value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder={bilingualInline("Full about section displayed on the tenant landing page…", "Πλήρες κείμενο «Σχετικά» για τη σελίδα του οργανισμού…")} className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Logo URL" el="URL λογοτύπου" compact /></label>
-                    <Input value={general.logoUrl} onChange={e => setGeneral(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://cdn.acme.com/logo.png" />
+                    <label htmlFor="tn-general-logoUrl" className="text-sm font-medium"><BilingualText en="Logo URL" el="URL λογοτύπου" compact /></label>
+                    <Input id="tn-general-logoUrl" value={general.logoUrl} onChange={e => setGeneral(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://cdn.acme.com/logo.png" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Favicon URL" el="URL favicon" compact /></label>
-                    <Input value={general.faviconUrl} onChange={e => setGeneral(p => ({ ...p, faviconUrl: e.target.value }))} placeholder="https://cdn.acme.com/favicon.ico" />
+                    <label htmlFor="tn-general-faviconUrl" className="text-sm font-medium"><BilingualText en="Favicon URL" el="URL favicon" compact /></label>
+                    <Input id="tn-general-faviconUrl" value={general.faviconUrl} onChange={e => setGeneral(p => ({ ...p, faviconUrl: e.target.value }))} placeholder="https://cdn.acme.com/favicon.ico" />
                   </div>
                 </div>
                 {!isNew && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Organisation status" el="Κατάσταση οργανισμού" compact /></label>
-                    <div className="flex gap-2">
+                    <p className="text-sm font-medium"><BilingualText en="Organisation status" el="Κατάσταση οργανισμού" compact /></p>
+                    <div className="flex gap-2" role="group" aria-label={bilingualInline('Organisation status', 'Κατάσταση οργανισμού')}>
                       {(['draft', 'active', 'suspended'] as const).map(s => (
-                        <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
+                        <button key={s} type="button" aria-pressed={general.status === s} onClick={() => setGeneral(p => ({ ...p, status: s }))}
                           className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
-                          {s.charAt(0).toUpperCase() + s.slice(1)}
+                          <StatusText value={s} />
                         </button>
                       ))}
                     </div>
@@ -739,10 +740,10 @@ function TenantEditor({
                   <div className="grid grid-cols-3 gap-4">
                     {([['primaryColor', 'Primary'], ['secondaryColor', 'Secondary'], ['accentColor', 'Accent']] as const).map(([key, label]) => (
                       <div key={key} className="space-y-2">
-                        <label className="text-sm font-medium">{label}</label>
+                        <label htmlFor={`tn-branding-${key}`} className="text-sm font-medium">{label}</label>
                         <div className="flex gap-2">
-                          <input type="color" value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
-                          <Input value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
+                          <input type="color" aria-label={`${label} color picker`} value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
+                          <Input id={`tn-branding-${key}`} value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
                         </div>
                       </div>
                     ))}
@@ -770,15 +771,15 @@ function TenantEditor({
                   <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" /><BilingualText en="Typography" el="Τυπογραφία" compact /></h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium"><BilingualText en="Heading Font" el="Γραμματοσειρά τίτλων" compact /></label>
-                      <select value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
+                      <label htmlFor="tn-branding-headingFont" className="text-sm font-medium"><BilingualText en="Heading Font" el="Γραμματοσειρά τίτλων" compact /></label>
+                      <select id="tn-branding-headingFont" value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
                         className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium"><BilingualText en="Body Font" el="Γραμματοσειρά κειμένου" compact /></label>
-                      <select value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
+                      <label htmlFor="tn-branding-bodyFont" className="text-sm font-medium"><BilingualText en="Body Font" el="Γραμματοσειρά κειμένου" compact /></label>
+                      <select id="tn-branding-bodyFont" value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
                         className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                         {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                       </select>
@@ -798,8 +799,8 @@ function TenantEditor({
               {/* Media tab */}
               <TabsContent value="media" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Hero Image URL" el="URL κεντρικής εικόνας" compact /></label>
-                  <Input value={branding.heroImageUrl} onChange={e => setBranding(p => ({ ...p, heroImageUrl: e.target.value }))} placeholder="https://cdn.acme.com/hero-banner.jpg" />
+                  <label htmlFor="tn-branding-heroImageUrl" className="text-sm font-medium"><BilingualText en="Hero Image URL" el="URL κεντρικής εικόνας" compact /></label>
+                  <Input id="tn-branding-heroImageUrl" value={branding.heroImageUrl} onChange={e => setBranding(p => ({ ...p, heroImageUrl: e.target.value }))} placeholder="https://cdn.acme.com/hero-banner.jpg" />
                   <p className="text-xs text-muted-foreground">Displayed as hero background on /t/{general.slug || 'slug'}</p>
                 </div>
                 {branding.heroImageUrl && (
@@ -821,39 +822,39 @@ function TenantEditor({
               <TabsContent value="content" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></label>
-                    <Input value={branding.heroTitle} onChange={e => setBranding(p => ({ ...p, heroTitle: e.target.value }))} placeholder="Welcome to Our Innovation Hub" />
+                    <label htmlFor="tn-branding-heroTitle" className="text-sm font-medium"><BilingualText en="Hero Title" el="Κεντρικός τίτλος" compact /></label>
+                    <Input id="tn-branding-heroTitle" value={branding.heroTitle} onChange={e => setBranding(p => ({ ...p, heroTitle: e.target.value }))} placeholder="Welcome to Our Innovation Hub" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></label>
-                    <Input value={branding.ctaLabel} onChange={e => setBranding(p => ({ ...p, ctaLabel: e.target.value }))} placeholder="Get Started" />
+                    <label htmlFor="tn-branding-ctaLabel" className="text-sm font-medium"><BilingualText en="CTA Button Label" el="Κείμενο κουμπιού δράσης" compact /></label>
+                    <Input id="tn-branding-ctaLabel" value={branding.ctaLabel} onChange={e => setBranding(p => ({ ...p, ctaLabel: e.target.value }))} placeholder="Get Started" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></label>
-                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label htmlFor="tn-branding-heroSubtitle" className="text-sm font-medium"><BilingualText en="Hero Subtitle" el="Κεντρικός υπότιτλος" compact /></label>
+                  <textarea id="tn-branding-heroSubtitle" value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="CTA URL" el="URL δράσης" compact /></label>
-                  <Input value={branding.ctaUrl} onChange={e => setBranding(p => ({ ...p, ctaUrl: e.target.value }))} placeholder="/register or https://..." />
+                  <label htmlFor="tn-branding-ctaUrl" className="text-sm font-medium"><BilingualText en="CTA URL" el="URL δράσης" compact /></label>
+                  <Input id="tn-branding-ctaUrl" value={branding.ctaUrl} onChange={e => setBranding(p => ({ ...p, ctaUrl: e.target.value }))} placeholder="/register or https://..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="About / Long-form Content" el="Σχετικά / εκτενές περιεχόμενο" compact /></label>
-                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <label htmlFor="tn-branding-aboutText" className="text-sm font-medium"><BilingualText en="About / Long-form Content" el="Σχετικά / εκτενές περιεχόμενο" compact /></label>
+                  <textarea id="tn-branding-aboutText" value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Onboarding Intro Text" el="Εισαγωγικό κείμενο ένταξης" compact /></label>
-                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label htmlFor="tn-branding-onboardingIntroText" className="text-sm font-medium"><BilingualText en="Onboarding Intro Text" el="Εισαγωγικό κείμενο ένταξης" compact /></label>
+                    <textarea id="tn-branding-onboardingIntroText" value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></label>
-                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder={bilingualInline("Here's what's happening…", "Να τι συμβαίνει…")} className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label htmlFor="tn-branding-dashboardWelcomeText" className="text-sm font-medium"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></label>
+                    <textarea id="tn-branding-dashboardWelcomeText" value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder={bilingualInline("Here's what's happening…", "Να τι συμβαίνει…")} className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></label>
-                  <Input value={branding.communityNaming} onChange={e => setBranding(p => ({ ...p, communityNaming: e.target.value }))} placeholder='Custom label e.g. "Program", "Cohort", "Network"' />
+                  <label htmlFor="tn-branding-communityNaming" className="text-sm font-medium"><BilingualText en="Community Naming" el="Όνομα κοινότητας" compact /></label>
+                  <Input id="tn-branding-communityNaming" value={branding.communityNaming} onChange={e => setBranding(p => ({ ...p, communityNaming: e.target.value }))} placeholder='Custom label e.g. "Program", "Cohort", "Network"' />
                   <p className="text-xs text-muted-foreground"><BilingualText en={"Replaces the word \"community\" in the UI for this tenant"} el="Αντικαθιστά τη λέξη «κοινότητα» στο περιβάλλον αυτού του οργανισμού" wrap /></p>
                 </div>
                 {!isNew && (
@@ -870,42 +871,42 @@ function TenantEditor({
               <TabsContent value="links" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Support Email" el="Email υποστήριξης" compact /></label>
-                    <Input type="email" value={branding.supportEmail} onChange={e => setBranding(p => ({ ...p, supportEmail: e.target.value }))} placeholder="support@acme.com" />
+                    <label htmlFor="tn-branding-supportEmail" className="text-sm font-medium"><BilingualText en="Support Email" el="Email υποστήριξης" compact /></label>
+                    <Input id="tn-branding-supportEmail" type="email" value={branding.supportEmail} onChange={e => setBranding(p => ({ ...p, supportEmail: e.target.value }))} placeholder="support@acme.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Branding Website URL" el="URL ιστότοπου" compact /></label>
-                    <Input value={branding.websiteUrl} onChange={e => setBranding(p => ({ ...p, websiteUrl: e.target.value }))} placeholder="https://acme.com" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Privacy Policy URL" el="URL πολιτικής απορρήτου" compact /></label>
-                    <Input value={branding.privacyPolicyUrl} onChange={e => setBranding(p => ({ ...p, privacyPolicyUrl: e.target.value }))} placeholder="https://acme.com/privacy" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Terms of Service URL" el="URL όρων χρήσης" compact /></label>
-                    <Input value={branding.termsUrl} onChange={e => setBranding(p => ({ ...p, termsUrl: e.target.value }))} placeholder="https://acme.com/terms" />
+                    <label htmlFor="tn-branding-websiteUrl" className="text-sm font-medium"><BilingualText en="Branding Website URL" el="URL ιστότοπου" compact /></label>
+                    <Input id="tn-branding-websiteUrl" value={branding.websiteUrl} onChange={e => setBranding(p => ({ ...p, websiteUrl: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Cookie Policy URL" el="URL πολιτικής cookies" compact /></label>
-                    <Input value={branding.cookiePolicyUrl} onChange={e => setBranding(p => ({ ...p, cookiePolicyUrl: e.target.value }))} placeholder="https://acme.com/cookies" />
+                    <label htmlFor="tn-branding-privacyPolicyUrl" className="text-sm font-medium"><BilingualText en="Privacy Policy URL" el="URL πολιτικής απορρήτου" compact /></label>
+                    <Input id="tn-branding-privacyPolicyUrl" value={branding.privacyPolicyUrl} onChange={e => setBranding(p => ({ ...p, privacyPolicyUrl: e.target.value }))} placeholder="https://acme.com/privacy" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">LinkedIn</label>
-                    <Input value={branding.linkedinUrl} onChange={e => setBranding(p => ({ ...p, linkedinUrl: e.target.value }))} placeholder="https://linkedin.com/company/acme" />
+                    <label htmlFor="tn-branding-termsUrl" className="text-sm font-medium"><BilingualText en="Terms of Service URL" el="URL όρων χρήσης" compact /></label>
+                    <Input id="tn-branding-termsUrl" value={branding.termsUrl} onChange={e => setBranding(p => ({ ...p, termsUrl: e.target.value }))} placeholder="https://acme.com/terms" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Twitter / X</label>
-                    <Input value={branding.twitterUrl} onChange={e => setBranding(p => ({ ...p, twitterUrl: e.target.value }))} placeholder="https://x.com/acme" />
+                    <label htmlFor="tn-branding-cookiePolicyUrl" className="text-sm font-medium"><BilingualText en="Cookie Policy URL" el="URL πολιτικής cookies" compact /></label>
+                    <Input id="tn-branding-cookiePolicyUrl" value={branding.cookiePolicyUrl} onChange={e => setBranding(p => ({ ...p, cookiePolicyUrl: e.target.value }))} placeholder="https://acme.com/cookies" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Instagram</label>
-                    <Input value={branding.instagramUrl} onChange={e => setBranding(p => ({ ...p, instagramUrl: e.target.value }))} placeholder="https://instagram.com/acme" />
+                    <label htmlFor="tn-branding-linkedinUrl" className="text-sm font-medium">LinkedIn</label>
+                    <Input id="tn-branding-linkedinUrl" value={branding.linkedinUrl} onChange={e => setBranding(p => ({ ...p, linkedinUrl: e.target.value }))} placeholder="https://linkedin.com/company/acme" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="tn-branding-twitterUrl" className="text-sm font-medium">Twitter / X</label>
+                    <Input id="tn-branding-twitterUrl" value={branding.twitterUrl} onChange={e => setBranding(p => ({ ...p, twitterUrl: e.target.value }))} placeholder="https://x.com/acme" />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="tn-branding-instagramUrl" className="text-sm font-medium">Instagram</label>
+                    <Input id="tn-branding-instagramUrl" value={branding.instagramUrl} onChange={e => setBranding(p => ({ ...p, instagramUrl: e.target.value }))} placeholder="https://instagram.com/acme" />
                   </div>
                 </div>
                 {!isNew && (
@@ -923,13 +924,13 @@ function TenantEditor({
                 <TabsContent value="email" className="space-y-4 mt-0">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium"><BilingualText en="Email Sender Name" el="Όνομα αποστολέα email" compact /></label>
-                      <Input value={branding.emailFromName} onChange={e => setBranding(p => ({ ...p, emailFromName: e.target.value }))} placeholder="Acme Startup Network" />
+                      <label htmlFor="tn-branding-emailFromName" className="text-sm font-medium"><BilingualText en="Email Sender Name" el="Όνομα αποστολέα email" compact /></label>
+                      <Input id="tn-branding-emailFromName" value={branding.emailFromName} onChange={e => setBranding(p => ({ ...p, emailFromName: e.target.value }))} placeholder="Acme Startup Network" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium"><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></label>
-                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <label htmlFor="tn-branding-emailFooterText" className="text-sm font-medium"><BilingualText en="Email Footer Text" el="Κείμενο υποσέλιδου email" compact /></label>
+                    <textarea id="tn-branding-emailFooterText" value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">

@@ -443,12 +443,13 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Type</label>
-            <div className="flex gap-2 flex-wrap">
+            <p id="opp-type" className="text-sm font-medium">Type</p>
+            <div className="flex gap-2 flex-wrap" role="group" aria-labelledby="opp-type">
               {(Object.entries(OPP_TYPE_DISPLAY) as [OpportunityType, typeof OPP_TYPE_DISPLAY['job']][]).map(([key, cfg]) => (
                 <button
                   key={key}
                   type="button"
+                  aria-pressed={form.type === key}
                   onClick={() => set('type', key)}
                   className={cn(
                     'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
@@ -464,8 +465,8 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Title *</label>
-            <Input
+            <label htmlFor="opp-f1" className="text-sm font-medium">Title *</label>
+            <Input id="opp-f1"
               placeholder="e.g. CTO Co-founder, Growth Lead"
               value={form.title}
               onChange={(e) => set('title', e.target.value)}
@@ -473,8 +474,8 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Role / function</label>
-            <Input
+            <label htmlFor="opp-f2" className="text-sm font-medium">Role / function</label>
+            <Input id="opp-f2"
               placeholder="e.g. Engineering, Marketing"
               value={form.role}
               onChange={(e) => set('role', e.target.value)}
@@ -482,8 +483,8 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Location</label>
-            <Input
+            <label htmlFor="opp-f3" className="text-sm font-medium">Location</label>
+            <Input id="opp-f3"
               placeholder="e.g. Athens, GR"
               value={form.location}
               onChange={(e) => set('location', e.target.value)}

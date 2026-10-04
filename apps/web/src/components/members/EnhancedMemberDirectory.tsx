@@ -197,12 +197,12 @@ export function EnhancedMemberDirectory() {
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Role" el="Ρόλος" compact /></label>
+                  <label className="text-sm font-medium" htmlFor="emd-role"><BilingualText en="Role" el="Ρόλος" compact /></label>
                   <Select
                     value={filters.role}
                     onValueChange={(value) => setFilters({ ...filters, role: value })}
                   >
-                    <SelectTrigger aria-label="Role">
+                    <SelectTrigger id="emd-role">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -216,12 +216,12 @@ export function EnhancedMemberDirectory() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
+                  <label className="text-sm font-medium" htmlFor="emd-location"><BilingualText en="Location" el="Τοποθεσία" compact /></label>
                   <Select
                     value={filters.location}
                     onValueChange={(value) => setFilters({ ...filters, location: value })}
                   >
-                    <SelectTrigger aria-label="Location">
+                    <SelectTrigger id="emd-location">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -236,12 +236,12 @@ export function EnhancedMemberDirectory() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Experience" el="Εμπειρία" compact /></label>
+                  <label className="text-sm font-medium" htmlFor="emd-experience"><BilingualText en="Experience" el="Εμπειρία" compact /></label>
                   <Select
                     value={filters.experience}
                     onValueChange={(value) => setFilters({ ...filters, experience: value })}
                   >
-                    <SelectTrigger aria-label="Experience">
+                    <SelectTrigger id="emd-experience">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -255,12 +255,12 @@ export function EnhancedMemberDirectory() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></label>
+                  <label className="text-sm font-medium" htmlFor="emd-availability"><BilingualText en="Availability" el="Διαθεσιμότητα" compact /></label>
                   <Select
                     value={filters.availability}
                     onValueChange={(value) => setFilters({ ...filters, availability: value })}
                   >
-                    <SelectTrigger aria-label="Availability">
+                    <SelectTrigger id="emd-availability">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

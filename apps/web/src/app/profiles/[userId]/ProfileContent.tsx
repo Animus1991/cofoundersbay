@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
+import { StatusText } from '@/components/common/StatusText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -72,8 +73,23 @@ function SocialLinkButton({
 }
 
 type RolePayloadValue = string | string[] | Record<string, string> | null | undefined;
+
+// camelCase payload keys that ship Greek labels; an unknown key keeps the
+// derived English label rather than inventing a translation.
+const PAYLOAD_LABELS: Record<string, [string, string]> = {
+  lookingFor: ['Looking for', 'Αναζητά'],
+  availability: ['Availability', 'Διαθεσιμότητα'],
+  industries: ['Industries', 'Κλάδοι'],
+  services: ['Services', 'Υπηρεσίες'],
+  expertise: ['Expertise', 'Εξειδίκευση'],
+  hourlyRate: ['Hourly rate', 'Ωριαία χρέωση'],
+  stage: ['Stage', 'Στάδιο'],
+};
+
 function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloadValue }) {
-  const label = entryKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+  const derived = entryKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase());
+  const [en, el] = PAYLOAD_LABELS[entryKey] ?? [derived, derived];
+  const label = <BilingualText en={en} el={el} compact />;
   if (!value) return null;
   if (Array.isArray(value) && value.length > 0) {
     return (
@@ -394,7 +410,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Skills
+                  <BilingualText en="Skills" el="Δεξιότητες" compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2 pt-0">
@@ -413,7 +429,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
           {profile.bio && (
             <Card className="animate-fade-in stagger-2">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">About</CardTitle>
+                <CardTitle className="text-base"><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
@@ -428,7 +444,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
                   <RoleIcon className="icon-sm text-primary-accessible" />
-                  {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} details
+                  <StatusText value={profile.role} /> <BilingualText en="details" el="στοιχεία" compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -438,7 +454,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 {/* Social links */}
                 {rolePayload.links && typeof rolePayload.links === 'object' && (
                   <div className="space-y-1.5 pt-2 border-t border-border">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Links</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
                     <div className="flex flex-wrap gap-2">
                       {(
                         [
