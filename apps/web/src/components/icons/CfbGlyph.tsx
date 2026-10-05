@@ -30,6 +30,7 @@ export const CFB_GLYPH_NAMES = [
   'bell',
   'sliders',
   'spark',
+  'star',
   'wallet',
   'building',
   'profile',
@@ -46,6 +47,9 @@ export const CFB_GLYPH_NAMES = [
 export type CfbGlyphName = (typeof CFB_GLYPH_NAMES)[number];
 
 const PATH_GLYPH: Record<string, CfbGlyphName> = {
+  // Every role's home, whatever its last segment (/dashboard/mentor is the
+  // mentor's overview, not the mentor glyph).
+  '/dashboard': 'home',
   '/ai': 'spark',
   '/ai/capabilities': 'spark',
   '/settings/ai': 'spark',
@@ -66,7 +70,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   calendar: 'calendar',
   messages: 'messages',
   matches: 'matches',
-  recommendations: 'spark',
+  recommendations: 'star',
   discover: 'discover',
   search: 'search',
   members: 'people',
@@ -108,18 +112,88 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   onboarding: 'spark',
   login: 'profile',
   register: 'people',
+  // Leaves: the last segment of a section's page names it more exactly than
+  // the section does (/admin/analytics is a chart, not another shield).
+  applications: 'applications',
+  cohorts: 'community',
+  communities: 'community',
+  earnings: 'wallet',
+  mentees: 'people',
+  mentors: 'mentor',
+  portfolio: 'briefcase',
+  reports: 'flag',
+  reviews: 'star',
+  scouting: 'discover',
+  startups: 'builder',
+  tenants: 'building',
+  users: 'people',
+  watchlist: 'bookmark',
 };
 
-export function glyphForHref(href: string): CfbGlyphName {
-  const path = (href.split('?')[0] || '/').replace(/\/+$/, '') || '/';
+/*
+ * Sections whose first segment is a family, not a destination: every page
+ * under /admin used to wear the shield, so an admin's sidebar was fifteen
+ * identical marks (org and tenant: one each; mentor, investor, provider:
+ * five for ten). A page in a family gets a glyph only if its own last
+ * segment has one; otherwise its list shows the icon its nav entry names.
+ */
+const FAMILY_SEGMENTS = new Set(['admin', 'org', 'tenant', 'mentor', 'investor', 'provider', 'settings']);
+
+function normalisePath(href: string): string {
+  return (href.split('?')[0] || '/').replace(/\/+$/, '') || '/';
+}
+
+/**
+ * The glyph that names this destination itself, or undefined when the route
+ * only has its family's mark. Nav lists use this so that a page without a
+ * glyph of its own shows the icon its entry names instead of a duplicate.
+ */
+export function specificGlyphForHref(href: string): CfbGlyphName | undefined {
+  const path = normalisePath(href);
   if (PATH_GLYPH[path]) return PATH_GLYPH[path];
   const prefixes = Object.keys(PATH_GLYPH).sort((a, b) => b.length - a.length);
   for (const prefix of prefixes) {
     if (path.startsWith(`${prefix}/`)) return PATH_GLYPH[prefix];
   }
-  const segment = path.split('/').filter(Boolean)[0];
+  const segments = path.split('/').filter(Boolean);
+  if (segments.length === 0) return undefined;
+  const leaf = SEGMENT_GLYPH[segments[segments.length - 1]];
+  if (leaf) return leaf;
+  if (FAMILY_SEGMENTS.has(segments[0])) return undefined;
+  return SEGMENT_GLYPH[segments[0]];
+}
+
+export function glyphForHref(href: string): CfbGlyphName {
+  const specific = specificGlyphForHref(href);
+  if (specific) return specific;
+  const segment = normalisePath(href).split('/').filter(Boolean)[0];
   if (segment && SEGMENT_GLYPH[segment]) return SEGMENT_GLYPH[segment];
   return 'default';
+}
+
+/**
+ * One glyph per list. Walks a nav list in order; the first entry to claim a
+ * glyph keeps it, and any later entry that resolves to the same glyph (or to
+ * none of its own) gets null, which tells NavIcon to draw the entry's own
+ * icon. Learning Hub keeps the book; Help & Support draws its help circle.
+ */
+export function distinctNavGlyphs(hrefs: readonly string[]): (CfbGlyphName | null)[] {
+  const used = new Set<CfbGlyphName>();
+  return hrefs.map((href) => {
+    const glyph = specificGlyphForHref(href);
+    if (!glyph || used.has(glyph)) return null;
+    used.add(glyph);
+    return glyph;
+  });
+}
+
+/** distinctNavGlyphs over a sectioned list, shaped like the list. */
+export function sectionNavGlyphs(
+  sections: readonly { links: readonly { href: string }[] }[],
+): (CfbGlyphName | null)[][] {
+  const flat = distinctNavGlyphs(sections.flatMap((s) => s.links.map((l) => l.href)));
+  let i = 0;
+  return sections.map((s) => s.links.map(() => flat[i++] ?? null));
 }
 
 export function glyphForMode(mode: string): CfbGlyphName {
@@ -206,14 +280,14 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="15" cy="11.4" r="1" fill="currentColor" stroke="none" />
     </>
   ),
+  // Two circles that overlap: what two people share. It used to be the
+  // brand's surfer-and-planet scene, drawn again for Ask AI and the
+  // fallback mark; at 16px the three were one blob, side by side in the nav.
   matches: (
     <>
-      <circle cx="13.2" cy="10.4" r="6.2" />
-      <path d="M5.2 14.1h14.4" transform="rotate(-14 12.4 14.1)" strokeWidth="2.15" />
-      <circle cx="10.2" cy="9.4" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M10.2 11v2.6M9.2 11.8 7.3 10.3" />
-      <circle cx="14.8" cy="17.6" r="1.35" fill="currentColor" stroke="none" />
-      <path d="M13.9 16.6 12.4 14.2M15.7 16.6 17.4 14.4" />
+      <circle cx="9.1" cy="12" r="5.4" />
+      <circle cx="14.9" cy="12" r="5.4" />
+      <circle cx="12" cy="12" r="1.05" fill="currentColor" stroke="none" />
     </>
   ),
   discover: (
@@ -316,15 +390,17 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="14.5" cy="16" r="2.05" fill="currentColor" stroke="none" />
     </>
   ),
+  // The assistant: a four-point spark and a small one beside it.
   spark: (
     <>
-      <circle cx="12.4" cy="11.6" r="5.8" />
-      <path d="M5.4 14.6h13.4" transform="rotate(-14 12.1 14.6)" strokeWidth="2.1" />
-      <circle cx="9.8" cy="10.6" r="1.35" fill="currentColor" stroke="none" />
-      <path d="M9.8 12v2.2M8.9 12.6 7.3 11.2" />
-      <circle cx="14.4" cy="17.8" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M13.6 16.9 12.2 14.8M15.2 16.9 16.8 14.9" />
-      <path d="M12 2.6v2.6M10.4 3.8 12 2.4l1.6 1.4" />
+      <path d="M10.6 4.2c.6 3.7 2.5 5.6 6.2 6.2-3.7.6-5.6 2.5-6.2 6.2-.6-3.7-2.5-5.6-6.2-6.2 3.7-.6 5.6-2.5 6.2-6.2Z" />
+      <path d="M18.2 15.4v3.6M16.4 17.2H20" />
+    </>
+  ),
+  // Picked for you, and what reviewers give: a soft five-point star.
+  star: (
+    <>
+      <path d="M12 4.4 14.3 9l5 .75-3.6 3.5.85 5L12 15.9l-4.55 2.35.85-5-3.6-3.5 5-.75L12 4.4Z" />
     </>
   ),
   wallet: (
@@ -434,11 +510,12 @@ export function NavIcon({
   className,
 }: {
   href?: string;
-  name?: CfbGlyphName;
+  /** null: the list already shows this route's glyph; draw `fallback`. */
+  name?: CfbGlyphName | null;
   fallback?: LucideIcon;
   className?: string;
 }) {
-  const resolved = name ?? (href ? glyphForHref(href) : undefined);
+  const resolved = name === null ? undefined : (name ?? (href ? glyphForHref(href) : undefined));
   if (resolved) return <CfbGlyph name={resolved} className={className} />;
   if (Fallback) return <Fallback className={className} aria-hidden="true" />;
   return <CfbGlyph name="default" className={className} />;

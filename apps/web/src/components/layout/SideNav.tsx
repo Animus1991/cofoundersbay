@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSectionsForMode, type SidebarMode } from './nav-modes';
+import { getActiveNavHref, getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
 import { useSidebarMode } from '@/hooks/use-sidebar-mode';
@@ -21,7 +21,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
+import { CfbGlyph, NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
@@ -130,6 +130,11 @@ export function SideNav() {
     () => getSectionsForMode(mode, effectiveRole),
     [mode, effectiveRole],
   );
+  const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);
+  // The most specific entry only, as MobileNav does: a prefix test lit
+  // "Admin console" (/admin) on every admin page, beside the page's own
+  // entry, and General (/settings) beside every settings page.
+  const activeHref = getActiveNavHref(pathname, sections);
 
   // Hide sidebar on auth pages
   const isAuthPage =
@@ -207,7 +212,7 @@ export function SideNav() {
 
         {/* ── Navigation ── */}
         <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
-          {sections.map(({ section, links }) => (
+          {sections.map(({ section, links }, sectionIndex) => (
             <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
               {/* nav-section-label, not plain text-xs: these uppercase headings
                   take the display steps' -2% per pass while the links under them
@@ -226,9 +231,8 @@ export function SideNav() {
                 <div className="mx-auto my-1.5 h-px w-6 bg-border/50" />
               )}
               <ul className={cn('space-y-0.5', showLabels ? 'px-2' : 'flex w-full flex-col items-center px-0')}>
-                {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
-                  const active =
-                    pathname === href || (href !== '/' && pathname?.startsWith(href));
+                {links.map(({ href, label, icon: Icon, badge: badgeType }, linkIndex) => {
+                  const active = href === activeHref;
                   const badge = badgeFor(href, badgeType);
 
                   const navHint = NAV_LINK_DESCRIPTIONS[href];
@@ -271,6 +275,7 @@ export function SideNav() {
                       <span className="relative flex-shrink-0">
                         <NavIcon
                           href={href}
+                          name={glyphs[sectionIndex]?.[linkIndex] ?? null}
                           fallback={FallbackIcon}
                           className={cn(
                             chromeIcon,
@@ -291,7 +296,9 @@ export function SideNav() {
                       {/* Label + badge (expanded) */}
                       {showLabels && (
                         <>
-                          <BilingualText en={label} el={labelEl} stacked className="min-w-0 flex-1" />
+                          {/* Wraps rather than truncates: a cut label ("Αποθηκευμένες
+                              αναζ…") is a name the reader has to hover to finish. */}
+                          <BilingualText en={label} el={labelEl} stacked wrap className="min-w-0 flex-1" />
                           {badge > 0 && (
                             <span
                               aria-hidden="true"

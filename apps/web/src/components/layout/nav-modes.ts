@@ -65,6 +65,11 @@ import {
   Rss,
   ArrowLeftRight,
   Save,
+  Clock,
+  Inbox,
+  UserPen,
+  BellRing,
+  Download,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -167,7 +172,7 @@ export const mentorWorkSections: NavSection[] = [
   {
     section: 'Profile',
     links: [
-      { href: '/mentor/availability', label: 'Availability', icon: Calendar },
+      { href: '/mentor/availability', label: 'Availability', icon: Clock },
       { href: '/mentor/profile', label: 'Mentor Profile', icon: BadgeCheck },
     ],
   },
@@ -229,7 +234,7 @@ export const providerWorkSections: NavSection[] = [
     section: 'Services',
     links: [
       { href: '/provider/services', label: 'My Services', icon: Store },
-      { href: '/provider/inquiries', label: 'Inquiries', icon: MessageCircle },
+      { href: '/provider/inquiries', label: 'Inquiries', icon: Inbox },
       { href: '/provider/projects', label: 'Projects', icon: FolderKanban },
     ],
   },
@@ -256,7 +261,7 @@ export const orgWorkSections: NavSection[] = [
   {
     section: 'Dashboard',
     links: [
-      { href: '/org/dashboard', label: 'Overview', icon: LayoutDashboard },
+      { href: '/dashboard/incubator', label: 'Overview', icon: LayoutDashboard },
       { href: '/org/analytics', label: 'Analytics', icon: PieChart },
     ],
   },
@@ -441,7 +446,7 @@ export const exploreSections: NavSection[] = [
     section: 'Learn',
     links: [
       { href: '/learning', label: 'Learning Hub', icon: BookOpen },
-      { href: '/expert-reviews', label: 'Expert Reviews', icon: Award },
+      { href: '/expert-reviews', label: 'Expert Reviews', icon: ClipboardCheck },
       { href: '/coaching', label: 'Coaching', icon: BrainCircuit },
       { href: '/help', label: 'Help & Support', icon: HelpCircle },
     ],
@@ -457,7 +462,7 @@ export const accountSections: NavSection[] = [
     section: 'Profile',
     links: [
       { href: '/profile', label: 'My Profile', icon: User },
-      { href: '/profile/edit', label: 'Edit Profile', icon: SlidersHorizontal },
+      { href: '/profile/edit', label: 'Edit Profile', icon: UserPen },
       { href: '/reputation', label: 'Reputation', icon: Shield },
       { href: '/achievements', label: 'Achievements', icon: Trophy },
     ],
@@ -475,9 +480,9 @@ export const accountSections: NavSection[] = [
     links: [
       { href: '/settings', label: 'General', icon: Settings },
       { href: '/settings/ai', label: 'AI Preferences', icon: Sparkles },
-      { href: '/settings/notifications', label: 'Notification Prefs', icon: Bell },
+      { href: '/settings/notifications', label: 'Notification Prefs', icon: BellRing },
       { href: '/settings/billing', label: 'Billing', icon: DollarSign },
-      { href: '/settings/data-export', label: 'Data Export', icon: Boxes },
+      { href: '/settings/data-export', label: 'Data Export', icon: Download },
     ],
   },
   {

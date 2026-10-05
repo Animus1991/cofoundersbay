@@ -19,7 +19,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { getNavLabelEl, getNavSectionEl } from '@/lib/i18n/strings-nav';
 import { cn, initialsOf } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
-import { NavIcon } from '@/components/icons/CfbGlyph';
+import { NavIcon, sectionNavGlyphs } from '@/components/icons/CfbGlyph';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { useI18n } from '@/components/common/I18nProvider';
@@ -69,6 +69,7 @@ export function MobileNav() {
     () => getSectionsForMode(mode, primaryRole ?? user?.role),
     [mode, primaryRole, user?.role],
   );
+  const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);
   const activeHref = getActiveNavHref(pathname, sections);
 
   const handleLogout = () => {
@@ -168,7 +169,7 @@ export function MobileNav() {
           </div>
 
           <nav className="px-2 py-3" aria-label={t('Primary mobile navigation')}>
-            {sections.map(({ section, links }) => (
+            {sections.map(({ section, links }, sectionIndex) => (
               <div key={section} className="mb-3">
                 <p className="px-3 pb-1 text-xs text-muted-foreground">
                   <BilingualText
@@ -180,7 +181,7 @@ export function MobileNav() {
                   />
                 </p>
                 <ul className="space-y-0.5">
-                  {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
+                  {links.map(({ href, label, icon: Icon, badge: badgeType }, linkIndex) => {
                     const active = activeHref === href;
                     const badge = badgeFor(href, badgeType);
 
@@ -200,7 +201,12 @@ export function MobileNav() {
                               : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                           )}
                         >
-                          <NavIcon href={href} fallback={FallbackIcon} className="icon-sm shrink-0" />
+                          <NavIcon
+                            href={href}
+                            name={glyphs[sectionIndex]?.[linkIndex] ?? null}
+                            fallback={FallbackIcon}
+                            className="icon-sm shrink-0"
+                          />
                           <BilingualText
                             en={label}
                             el={getNavLabelEl(href)}
