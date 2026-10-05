@@ -100,7 +100,7 @@ export function AppShellFrame({
                 'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
                 // Phone clearance covers the bottom nav and the page-tools button
                 // above it. From `sm` there is no bottom nav.
-                'pb-[calc(8.75rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                'pb-[calc(10rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
                 contentClassName,
               )}
             >
