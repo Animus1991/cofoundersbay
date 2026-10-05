@@ -1925,3 +1925,64 @@ Vitest 783/783 (99 αρχεία), typecheck web 0. Οι μετρήσεις brows
 ### 34.8 Τι δεν αποδεικνύει αυτό το τμήμα
 
 Δεν ξαναέτρεξαν typecheck, vitest ή το sweep. Τα 143/143 και τα 783/783 είναι τα νούμερα των §32.5 και §33.5 στο ίδιο tip, όχι νέα εκτέλεση αυτής της ώρας. Η απογραφή 160 / 262 / 1320 / 572 / 54 έγινε με ανάγνωση του δέντρου στο `0b4a7818`. Το live preview επιβεβαιώνει το `/demo` → `/dashboard/founder` σε αυτόν τον κώδικα.
+
+## 35. Έλεγχος 2026-10-05 — fast-forward στο `86e44463`, και τι μένει αφού μπήκαν τα κύματα 5–6c
+
+### 35.1 Git
+
+`git fetch origin --prune` στις 2026-10-05, από το `aff511cf`. Το `origin/claude/project-audit-upgrade-y2ebnr` (`86e44463`) είναι αυστηρός απόγονος. Έγινε `git merge --ff-only`. Μετά, κάθε remote head έχει **0** commits έξω από το HEAD:
+
+| remote | SHA | commits έξω από το HEAD |
+|---|---|---|
+| `claude/project-audit-upgrade-y2ebnr` | `86e44463` | 0 |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` | `aff511cf` πριν το ff | 0 |
+| `cursor/phone-component-sizes-53e0` | `477ca958` | 0 |
+| `integration/ai-platform-upgrade` | `0e792ce7` | 0 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe32` | 0 |
+| `main` | `91d6ea3a` | 0 · το `86e44463` είναι 406 commits μπροστά· οι σημειώσεις αυτού του ελέγχου κάθονται από πάνω |
+
+Τα 20 commits είναι τα `18f3aff0` … `86e44463`. Ανάμεσά τους το merge `ce5310be` που ξαναπαίρνει τις σημειώσεις του §34. Δεν υπάρχει δεύτερο tip. Το April `main` δεν ενώθηκε.
+
+### 35.2 Ξαναμέτρηση στο `86e44463`
+
+| αντικείμενο | §34 | τώρα | διαφορά |
+|---|---:|---:|---|
+| `page.tsx` | 160 | **160** | καμία· ο κατάλογος του §30.6 ισχύει |
+| `components/**/*.tsx` | 262 | **264** | + `KeyboardShortcutsDialog.tsx`, + `dialog.returnFocus.test.tsx` |
+| `<Button>` | 1320 | **1323** | +3 |
+| native `<button>` | 572 | **581** | +9, μέσα στα κύματα πληκτρολογίου και role chrome |
+| αρχεία με `Dialog` ή `Sheet` | 54 | **57** | το νέο shortcuts dialog, ένα dialog στο `/discover`, και το τεστ επιστροφής focus |
+
+Η σύμβαση κουμπιού του §30.3 δεν άλλαξε. Νέο dialog περνά από `DialogContent` ή `SheetContent`, ώστε να πιάνει το `use-return-focus.ts`. Παράκαμψη αυτών των δύο αφήνει το focus στη θέση που το άφησε το Radix, δηλαδή μόνο σε `DialogTrigger`.
+
+### 35.3 Τι μπήκε στον κώδικα από το §34.7
+
+Αυτό καταγράφει τι υπάρχει στο δέντρο. Δεν είναι νέα εκτέλεση των sweeps σε αυτή την ώρα.
+
+| βήμα §34.7 | τι υπάρχει στο `86e44463` |
+|---|---|
+| 1. Οι 17 δυναμικές | `scripts/platform-sweep-dynamic.txt` έχει ένα demo id για καθεμία (`/projects/1`, `/research/board-gtm`, `/matches/user-elena`, `/profiles/user-elena`, `/p/preview-demo-user`, `/events/ev-office-hours`, `/groups/grp-athens-founders`, `/programs/prog-seed-autumn-2026`, `/data-room/dr-harbor-seed`, `/startups/deal-harbor`, `/pitch/demo`, `/share/data-room-seed`, `/org/aegean-lab`, `/org/aegean-lab/admin`, `/org/cohorts/cohort-autumn-2026`, `/admin/user-detail/preview-demo-user`, `/t/aegean-lab`). Η εντολή είναι `node scripts/platform-sweep.mjs scripts/platform-sweep-dynamic.txt 390` |
+| 2. Dialogs | `use-return-focus.ts` στο Dialog, στο Sheet, στο `useModalA11y` και στο chat popup. Unit test: `dialog.returnFocus.test.tsx`. Browser probe: `.probes/dialog_sweep.mjs` σε 40 routes (`dialog-routes.txt`) ελέγχει όνομα, ταίριασμα, κλείσιμο ≥44px στο τηλέφωνο, Escape και επιστροφή focus. Δεν πατά destructive ούτε submit |
+| 3. Ρόλοι | Το demo διαβάζει το `cfb_primary_role` και δεν το πατάει πια. `role_routes.mjs` γράφει τα routes του sidebar ανά ρόλο· `role_audit.sh` τρέχει bilingual fit και dialog sweep ανά ρόλο. Τα role pages διαβάζουν enum ως λέξεις (`StatusText`) |
+| 4. Persistence έξω από demo | **ανοιχτό.** Τα tests και τα sweeps μένουν σε demo cookies. Το `AGENTS.md` το λέει ρητά |
+| 5. `space-y-6` ως lint | **ανοιχτό.** Δεν υπάρχει τεστ που να αποτυγχάνει σε άλλο ρυθμό |
+
+Επιπλέον, μέσα στα ίδια 20 commits: κάθε label φόρμας ονομάζει το control (`18f3aff0`), οι επιφάνειες που ανοίγουν με κλικ πιάνουν και πληκτρολόγιο (`cb331d4d`), το `/fundraising` δεν διαβάζει overlay πριν το hydration (`5739215c`), το `/auth/verify-email` χρησιμοποιεί τους κοινούς helpers αντί για raw fetch (`d1a31bcd`). Το `AGENTS.md` καταγράφει μέτρηση bilingual fit της 2026-10-05: 13→4 escapes και 64→22 clips στα 1440px σε 160 routes. Αυτή η σημείωση δεν την ξανάτρεξε.
+
+### 35.4 Πλάνο που μένει — κάθε σελίδα, component, modal, button
+
+Ο κατάλογος σελίδων μένει ο §30.6. Ο κατάλογος components μένει ο §30.5, συν το `KeyboardShortcutsDialog`. Ο κατάλογος modals μένει ο §30.4, συν το shortcuts dialog και το dialog του `/discover`. Η σύμβαση button μένει ο §30.3.
+
+| σε τι εφαρμόζεται | επόμενο | αποδοχή |
+|---|---|---|
+| και οι 160 σελίδες | ένα φρέσκο sweep στα 390 και στα 1440, στατική λίστα και `platform-sweep-dynamic.txt` | HTTP 200, 0 overflow, 0 ανώνυμα, 0 κενά icons. Το 143/143 του §33.5 είναι το προηγούμενο tip |
+| και οι 160, δίγλωσσες ετικέτες | τα 4 escapes και τα 22 clips που καταγράφει το `AGENTS.md` | 0 escapes, 0 clips εκτός chrome. Δεν μικραίνει η γραμματοσειρά και δεν κόβεται η γλώσσα του αναγνώστη |
+| κάθε αρχείο με Dialog/Sheet, 57 | τρέξιμο του `dialog_sweep.mjs` στα 40 routes του `dialog-routes.txt`, στα 390 και στα 1440, και ανά ρόλο μέσω `role_audit.sh` | όνομα, Escape, επιστροφή focus, κλείσιμο ≥44px στο τηλέφωνο |
+| κάθε `<Button>` και native `<button>` | καμία νέα κλίμακα. Όσα γεννιούνται μέσα σε dialog τα βλέπει μόνο το dialog sweep | το floor 44px κάτω από 640px μένει· το desktop μένει 82% |
+| admin, tenant, org, provider, investor, mentor | το `role_audit.sh` με το αντίστοιχο `ROLE` | το sidebar του ρόλου δεν μετρά το chrome του founder |
+| κάθε εγγραφή | persistence έξω από demo, με αποτυχία που φαίνεται ως αποτυχία | το toast δεν μετρά ως απόδειξη· το `prisma db push` μένει προϋπόθεση για τα schema-only μοντέλα |
+| κάθε νέα σελίδα | lint στο πρώτο `space-y-6` | άλλο root rhythm αποτυγχάνει· τα tabs μένουν `space-y-4` |
+
+### 35.5 Τι δεν αποδεικνύει αυτό το τμήμα
+
+Δεν ξαναέτρεξαν typecheck, vitest, contrast, το static sweep, το dynamic sweep, το dialog sweep ή το bilingual fit. Οι αριθμοί 4 escapes και 22 clips είναι η καταγραφή του `AGENTS.md`, όχι μέτρηση αυτής της ώρας. Η απογραφή 160 / 264 / 1323 / 581 / 57 έγινε με ανάγνωση του δέντρου στο `86e44463`. Το live preview επιβεβαιώνει το `/demo` → `/dashboard/founder` σε αυτόν τον κώδικα.
