@@ -36,7 +36,7 @@ html {
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
     select,
     textarea {
-      font-size: 17px !important;
+      font-size: 16.66px !important;
     }
   }
 
@@ -1754,14 +1754,12 @@ html {
       display: none;
     }
 
-    /* One language in the bottom nav, at 13px. The old 11px second line was
-       the only way both languages fit a five-column tab; the primary line is
-       already the reader's language, and 13px is the largest size at which
-       «Εξερεύνηση» still wraps inside the cell instead of leaving it. */
+    /* One language in the bottom nav. 13px fit «Εξερεύνηση» on a 360px tab;
+       12.74px is that size minus 2%, with the same one-line fit. */
     [data-mobile-tabs],
     [data-mobile-tabs] .text-2xs,
     [data-mobile-tabs] .bilingual-secondary {
-      font-size: 13px;
+      font-size: 12.74px;
       line-height: 1.25;
     }
 
@@ -3120,7 +3118,9 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 14 · meta 15 · body 16 · figure 17 · section 18 · title 20
+     caption 13.72 · meta 14.7 · body 15.68 · figure 16.66 · section 17.64 · title 19.6
+
+   Each step is 2% under the first phone pass (14 / 15 / 16 / 17 / 18 / 20).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3128,20 +3128,20 @@ textarea[class~="border-input"]:focus,
    those selectors outrank a plain class. */
 @media (max-width: 639.98px) {
   body {
-    font-size: 17px;
+    font-size: 16.66px;
     line-height: 1.5;
     letter-spacing: 0;
   }
 
-  .text-2xs { font-size: 14px; line-height: 1.35; }
-  .text-xs { font-size: 15px; line-height: 1.4; }
-  .text-sm { font-size: 16px; line-height: 1.45; }
-  .text-base { font-size: 17px; line-height: 1.5; }
-  .text-lg { font-size: 18px; line-height: 1.4; }
+  .text-2xs { font-size: 13.72px; line-height: 1.35; }
+  .text-xs { font-size: 14.7px; line-height: 1.4; }
+  .text-sm { font-size: 15.68px; line-height: 1.45; }
+  .text-base { font-size: 16.66px; line-height: 1.5; }
+  .text-lg { font-size: 17.64px; line-height: 1.4; }
 
   .bilingual-secondary,
   .bilingual-separator {
-    font-size: 14px;
+    font-size: 13.72px;
     line-height: 1.35;
   }
 
@@ -3169,7 +3169,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat-meta,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
-    font-size: 14px;
+    font-size: 13.72px;
     line-height: 1.35;
   }
 
@@ -3184,7 +3184,7 @@ textarea[class~="border-input"]:focus,
   #main-content .type-ui.text-sm,
   #main-content .type-ui.text-base,
   #main-content .type-ui.sm\:text-sm {
-    font-size: 15px;
+    font-size: 14.7px;
     line-height: 1.4;
   }
 
@@ -3202,7 +3202,7 @@ textarea[class~="border-input"]:focus,
   #main-content [data-rail-content] h3.page-section,
   #main-content [data-rail-content] h3.founder-dash-section,
   h3.page-section.page-section--compact {
-    font-size: 16px;
+    font-size: 15.68px;
     line-height: 1.45;
   }
 
@@ -3210,7 +3210,7 @@ textarea[class~="border-input"]:focus,
   #main-content p.founder-dash-figure,
   p.page-figure,
   p.founder-dash-figure {
-    font-size: 17px;
+    font-size: 16.66px;
     line-height: 1.35;
   }
 
@@ -3222,7 +3222,7 @@ textarea[class~="border-input"]:focus,
   #main-content h3.founder-dash-section,
   h3.page-section,
   h3.founder-dash-section {
-    font-size: 18px;
+    font-size: 17.64px;
     line-height: 1.35;
   }
 
@@ -3254,7 +3254,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 20px;
+    font-size: 19.6px;
     line-height: 1.3;
   }
 
@@ -3276,7 +3276,7 @@ textarea[class~="border-input"]:focus,
 
   [role='dialog'],
   [role='alertdialog'] {
-    font-size: 17px;
+    font-size: 16.66px;
     line-height: 1.5;
   }
 }

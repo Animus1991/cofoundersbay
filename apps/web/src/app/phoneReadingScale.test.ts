@@ -48,15 +48,15 @@ function fontSize(selector: string): string {
 
 describe('phone reading scale', () => {
   it('raises every reading step and leaves the query phone-only', () => {
-    expect(fontSize('.text-2xs')).toBe('14px');
-    expect(fontSize('.text-xs')).toBe('15px');
-    expect(fontSize('.text-sm')).toBe('16px');
-    expect(fontSize('.text-base')).toBe('17px');
-    expect(fontSize('body')).toBe('17px');
-    expect(fontSize('#main-content .text-sm')).toBe('16px');
-    expect(fontSize('#main-content .text-lg')).toBe('18px');
-    expect(fontSize('#main-content h1.page-title')).toBe('20px');
-    expect(fontSize('#main-content p.page-stat-label')).toBe('14px');
+    expect(fontSize('.text-2xs')).toBe('13.72px');
+    expect(fontSize('.text-xs')).toBe('14.7px');
+    expect(fontSize('.text-sm')).toBe('15.68px');
+    expect(fontSize('.text-base')).toBe('16.66px');
+    expect(fontSize('body')).toBe('16.66px');
+    expect(fontSize('#main-content .text-sm')).toBe('15.68px');
+    expect(fontSize('#main-content .text-lg')).toBe('17.64px');
+    expect(fontSize('#main-content h1.page-title')).toBe('19.6px');
+    expect(fontSize('#main-content p.page-stat-label')).toBe('13.72px');
     expect(BLOCK).not.toMatch(/min-width/);
     expect(BLOCK).not.toMatch(/12\.2412px/);
   });

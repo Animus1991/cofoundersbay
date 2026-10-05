@@ -18,19 +18,18 @@ const PRIMARY_TABS = [
   { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
-const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[13px] font-medium leading-[1.25] tracking-tight focus-ring';
+const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.74px] font-medium leading-[1.25] tracking-tight focus-ring';
 
 function TabLabel({ en, el }: { en: string; el: string }) {
-  // One language, wrapping, at the nav's 13px. Both languages stacked at the
-  // caption size were 11px so «Εξερεύνηση» would fit; the accessible name on
-  // the link still carries the pair.
+  // One language, wrapping, at 12.74px (13px minus 2%). The accessible name
+  // on the link still carries both languages.
   return (
     <BilingualText
       en={en}
       el={el}
       stacked
       wrap
-      className="w-full text-center text-[13px] leading-[1.25] tracking-tight"
+      className="w-full text-center text-[12.74px] leading-[1.25] tracking-tight"
       primaryClassName="break-words"
     />
   );
