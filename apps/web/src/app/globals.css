@@ -1849,6 +1849,16 @@ html {
     color: inherit;
   }
 
+  /* White text on a coloured or photographic hero (tenant landing, Alliance
+     theme): the muted grey second language measured ~1.6:1 on the blue and
+     disappeared. It follows the white at reduced opacity - still quieter
+     than the first language, still legible. */
+  .text-white .bilingual-secondary,
+  .text-white .bilingual-separator {
+    color: inherit;
+    opacity: 0.8;
+  }
+
   /* The same argument, one level up: a call site may put the muted token on a
      wrapper *around* a bilingual label, which colours both languages and not
      just the second. The Readiness CTA "Άνοιγμα Builder" does exactly that for

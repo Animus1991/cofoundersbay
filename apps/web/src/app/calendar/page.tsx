@@ -162,7 +162,7 @@ function fromSession(sess: MentorshipSessionItem): CalendarEvent {
   return {
     id: `session-${sess.id}`,
     title: sess.title ?? 'Mentoring session',
-    titleEl: sess.title ?? 'Συνεδρία mentoring',
+    titleEl: sess.title ?? 'Συνεδρία καθοδήγησης',
     type: 'session',
     date: sess.scheduledAt,
     time: hhmm(sess.scheduledAt),

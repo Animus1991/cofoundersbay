@@ -99,33 +99,62 @@ const EMPTY_ROLE_STATE: DashboardContextResponse = {
   tenants: [],
 };
 
-/**
- * Fixed role state for the preview demo. Defined once at module scope so its
- * identity is stable across calls — see the bail-out in refreshRoles below.
- */
-const PREVIEW_DEMO_ROLE_STATE: RoleContextState = {
-  primaryRole: 'existing_founder',
-  allRoles: [
-    {
-      id: 'preview-founder',
-      roleType: 'existing_founder',
-      scope: 'global',
-      isPrimary: true,
-      isVerified: true,
-    },
-  ],
-  permissions: ['*'],
-  dashboard: {
-    defaultRoute: '/dashboard/founder',
-    dashboardWidgets: [],
-    sidebarItems: [],
-    features: [],
-  },
-  organizations: [],
-  tenants: [],
-  isLoading: false,
-  error: null,
+const ROLE_DASHBOARD: Record<UserRoleType, string> = {
+  aspiring_founder: '/dashboard/founder',
+  existing_founder: '/dashboard/founder',
+  cofounder_candidate: '/dashboard/founder',
+  technical_talent: '/dashboard/founder',
+  business_operator: '/dashboard/founder',
+  mentor: '/dashboard/mentor',
+  advisor: '/dashboard/mentor',
+  coach: '/dashboard/mentor',
+  course_creator: '/dashboard/mentor',
+  angel_investor: '/dashboard/investor',
+  vc_scout: '/dashboard/investor',
+  vc_analyst: '/dashboard/investor',
+  syndicate_manager: '/dashboard/investor',
+  incubator_admin: '/dashboard/incubator',
+  accelerator_admin: '/dashboard/incubator',
+  university_admin: '/dashboard/incubator',
+  venture_studio_admin: '/dashboard/incubator',
+  service_provider: '/dashboard/provider',
+  legal_partner: '/dashboard/provider',
+  finance_advisor: '/dashboard/provider',
+  recruiter: '/dashboard/provider',
+  platform_admin: '/admin/dashboard',
 };
+
+const previewRoleStates = new Map<UserRoleType, RoleContextState>();
+
+/**
+ * Role state for the preview demo. One founder by default, as before; when the
+ * `cfb_primary_role` cookie names a known role (the same cookie the middleware
+ * reads to route /dashboard), the demo takes that role, so a mentor's,
+ * investor's or provider's navigation can be previewed and audited - the demo
+ * used to be a founder whatever the cookie said. One object per role, built
+ * once, so the bail-out in refreshRoles below keeps working.
+ */
+function previewDemoRoleState(): RoleContextState {
+  const fromCookie = typeof document !== 'undefined'
+    ? /(?:^|;\s*)cfb_primary_role=([a-z_]+)/.exec(document.cookie)?.[1]
+    : undefined;
+  const role: UserRoleType = fromCookie && fromCookie in ROLE_DASHBOARD ? (fromCookie as UserRoleType) : 'existing_founder';
+  let state = previewRoleStates.get(role);
+  if (!state) {
+    state = {
+      primaryRole: role,
+      allRoles: [{ id: `preview-${role}`, roleType: role, scope: 'global', isPrimary: true, isVerified: true }],
+      permissions: ['*'],
+      dashboard: { defaultRoute: ROLE_DASHBOARD[role], dashboardWidgets: [], sidebarItems: [], features: [] },
+      organizations: [],
+      tenants: [],
+      isLoading: false,
+      error: null,
+    };
+    previewRoleStates.set(role, state);
+  }
+  return state;
+}
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -153,9 +182,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       // data, but it used to build a fresh object (with fresh nested arrays) on
       // every call, which React can never treat as equal — so each call re-rendered
       // every useRole() consumer, SideNav included, to arrive at identical values.
-      setState((prev) =>
-        prev === PREVIEW_DEMO_ROLE_STATE ? prev : PREVIEW_DEMO_ROLE_STATE,
-      );
+      const preview = previewDemoRoleState();
+      setState((prev) => (prev === preview ? prev : preview));
       return;
     }
 

@@ -10,7 +10,8 @@
  * design, not an English-only page.
  *
  * Run from the repo root against a running dev server (it signs in as a
- * platform_admin in demo mode, so every role surface renders):
+ * platform_admin in demo mode, so every role surface renders; set ROLE=mentor,
+ * angel_investor, service_provider, existing_founder ... to sweep as that role):
  *
  *   node scripts/platform-sweep.mjs [routes.txt] [viewportWidth=1440]
  *
@@ -41,7 +42,7 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: W, height: 900 } });
 await ctx.addCookies([
   { name: 'cfb_session', value: 'probe', domain: 'localhost', path: '/' },
-  { name: 'cfb_primary_role', value: 'platform_admin', domain: 'localhost', path: '/' },
+  { name: 'cfb_primary_role', value: process.env.ROLE ?? 'platform_admin', domain: 'localhost', path: '/' },
 ]);
 await ctx.addInitScript(() => {
   localStorage.setItem('user', JSON.stringify({ id: 'u_1', email: 'a@b.test', role: 'admin' }));

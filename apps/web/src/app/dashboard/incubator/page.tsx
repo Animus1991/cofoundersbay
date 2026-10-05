@@ -236,7 +236,7 @@ export default function IncubatorDashboard() {
             labelEl="Μέντορες"
             value={mentorData ? mentors.length : '—'}
             caption={menteeSlots ? `${menteesTaken} of ${menteeSlots} mentee places taken` : 'Your mentor pool'}
-            captionEl={menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις mentees` : 'Η ομάδα μεντόρων σας'}
+            captionEl={menteeSlots ? `${menteesTaken} από ${menteeSlots} θέσεις καθοδηγούμενων` : 'Η ομάδα μεντόρων σας'}
             href="/org/mentors"
           />
           <MetricTile

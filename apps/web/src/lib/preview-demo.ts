@@ -34,7 +34,12 @@ export function applyPreviewDemoSession(
   if (typeof document === 'undefined') return;
 
   setCookie('cfb_session', 'preview-demo');
-  setCookie('cfb_primary_role', 'existing_founder');
+  // Founder by default; a role already chosen for the demo (the cookie the
+  // middleware routes /dashboard by, and RoleContext's preview state reads)
+  // is kept. Overwriting it on every mount pinned the demo to one role.
+  if (!/(?:^|;\s*)cfb_primary_role=[a-z_]+/.test(document.cookie)) {
+    setCookie('cfb_primary_role', 'existing_founder');
+  }
   setCookie('cfb_preview_demo', '1');
 
   const serializedUser = JSON.stringify(user);

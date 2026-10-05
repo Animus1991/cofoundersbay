@@ -259,7 +259,7 @@ export default function MentorDashboard() {
           <MetricTile
             icon={Users}
             label="Active mentees"
-            labelEl="Ενεργοί mentees"
+            labelEl="Ενεργοί καθοδηγούμενοι"
             value={mentorStats.activeMentees}
             caption={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} completed before` : 'In progress now'}
             captionEl={mentorStats.completedMentorships ? `${mentorStats.completedMentorships} ολοκληρωμένες πριν` : 'Σε εξέλιξη τώρα'}
@@ -300,7 +300,7 @@ export default function MentorDashboard() {
             {pendingRequests.length > 0 && (
               <SectionCard
                 title={`Mentorship requests (${pendingRequests.length})`}
-                titleEl={`Αιτήματα mentoring (${pendingRequests.length})`}
+                titleEl={`Αιτήματα καθοδήγησης (${pendingRequests.length})`}
                 icon={Zap}
                 action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
               >
@@ -317,7 +317,7 @@ export default function MentorDashboard() {
               {upcomingSessions.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
-            <SectionCard title="Your mentees" titleEl="Οι mentees σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>
+            <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>
               {mentees.map((mentee) => (
                 <MenteeRowItem key={mentee.id} mentee={mentee} />
               ))}

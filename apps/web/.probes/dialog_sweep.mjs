@@ -21,7 +21,7 @@ const b = await chromium.launch();
 const ctx = await b.newContext({ viewport: { width: W, height: 844 } });
 await ctx.addCookies([
   { name: 'cfb_session', value: 'probe', domain: 'localhost', path: '/' },
-  { name: 'cfb_primary_role', value: 'platform_admin', domain: 'localhost', path: '/' },
+  { name: 'cfb_primary_role', value: process.env.ROLE ?? 'platform_admin', domain: 'localhost', path: '/' },
 ]);
 await ctx.addInitScript(() => {
   localStorage.setItem('user', JSON.stringify({ id: 'u_1', email: 'a@b.test', role: 'admin' }));

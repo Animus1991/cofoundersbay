@@ -35,7 +35,7 @@ import { qk } from '@/lib/query-keys';
 import { usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 
 /**
@@ -344,7 +344,7 @@ export default function OrgMentorsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            aria-label="Search mentors. Αναζήτηση μεντόρων"
+            aria-label={bilingualAria('Search mentors', 'Αναζήτηση μεντόρων')}
             placeholder={bilingualInline('Search mentors by name or expertise…', 'Αναζήτηση μεντόρων με όνομα ή εξειδίκευση…')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

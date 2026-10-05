@@ -6,12 +6,12 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/': {
     title: 'Αρχική',
     description:
-      'Το landing του CoFounderBay — εύρεση συνιδρυτών, mentors και επενδυτών.',
+      'Το landing του CoFounderBay — εύρεση συνιδρυτών, μεντόρων και επενδυτών.',
     section: 'Δημόσιο',
   },
   '/pricing': {
     title: 'Τιμολόγηση',
-    description: 'Σχέδια για founders, mentors, οργανισμούς και επιχειρήσεις.',
+    description: 'Σχέδια για founders, μέντορες, οργανισμούς και επιχειρήσεις.',
     section: 'Δημόσιο',
   },
   '/login': {
@@ -22,7 +22,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   },
   '/register': {
     title: 'Δημιουργία λογαριασμού',
-    description: 'Εγγραφή ως founder, mentor, επενδυτής ή οργανισμός.',
+    description: 'Εγγραφή ως founder, μέντορας, επενδυτής ή οργανισμός.',
     section: 'Αυθεντικοποίηση',
   },
   '/onboarding': {
@@ -120,7 +120,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/discover': {
     title: 'Εξερεύνηση',
     description:
-      'Ανακάλυψη founders, mentors, επενδυτών και μελών ομάδας με φίλτρα ρόλου, δεξιοτήτων και τοποθεσίας.',
+      'Ανακάλυψη founders, μεντόρων, επενδυτών και μελών ομάδας με φίλτρα ρόλου, δεξιοτήτων και τοποθεσίας.',
     section: 'Εξερεύνηση',
   },
   '/recommendations': {
@@ -160,25 +160,25 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
 
   // ── Mentor ──
   '/dashboard/mentor': {
-    title: 'Πίνακας ελέγχου mentor',
+    title: 'Πίνακας ελέγχου μέντορα',
     description:
-      'Συνεδρίες, αιτήματα, αποδοχές και επισκόπηση mentees.',
+      'Συνεδρίες, αιτήματα, αποδοχές και επισκόπηση καθοδηγούμενων.',
     section: 'Εργασία',
   },
   '/mentor/sessions': {
     title: 'Οι συνεδρίες μου',
-    description: 'Προγραμματισμένες και προηγούμενες συνεδρίες mentoring.',
+    description: 'Προγραμματισμένες και προηγούμενες συνεδρίες καθοδήγησης.',
     section: 'Εργασία',
   },
   '/mentor/requests': {
-    title: 'Αιτήματα mentees',
-    description: 'Αποδοχή ή απόρριψη νέων αιτημάτων mentoring.',
+    title: 'Αιτήματα καθοδηγούμενων',
+    description: 'Αποδοχή ή απόρριψη νέων αιτημάτων καθοδήγησης.',
     section: 'Εργασία',
   },
   '/mentoring': {
-    title: 'Εύρεση mentors',
+    title: 'Εύρεση μεντόρων',
     description:
-      'Κατάλογος mentors — φιλτράρισμα κατά εξειδίκευση και διαθεσιμότητα.',
+      'Κατάλογος μεντόρων — φιλτράρισμα κατά εξειδίκευση και διαθεσιμότητα.',
     section: 'Εξερεύνηση',
   },
 
@@ -242,7 +242,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/org/cohorts': {
     title: 'Cohorts',
     description:
-      'Διαχείριση cohorts προγράμματος, κάλυψης mentors και προόδου συμμετεχόντων.',
+      'Διαχείριση cohorts προγράμματος, κάλυψης μεντόρων και προόδου συμμετεχόντων.',
     section: 'Εργασία',
   },
   '/org/startups': {
@@ -257,9 +257,9 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Εργασία',
   },
   '/org/mentors': {
-    title: 'Δεξαμενή mentors',
+    title: 'Δεξαμενή μεντόρων',
     description:
-      'Mentors διαθέσιμοι για τα cohorts σας. Πρόσκληση μέσω email ή onboarding από τον κατάλογο.',
+      'Μέντορες διαθέσιμοι για τα cohorts σας. Πρόσκληση μέσω email ή onboarding από τον κατάλογο.',
     section: 'Εργασία',
   },
   '/org/events': {
@@ -315,7 +315,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
   '/tenant/programs': {
     title: 'Προγράμματα tenant',
     description:
-      'Χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, cohorts και δομημένο mentoring.',
+      'Χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, cohorts και δομημένη καθοδήγηση.',
     section: 'Tenant',
   },
   '/tenant/automation': {
@@ -398,9 +398,9 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Διαχείριση',
   },
   '/admin/mentorship-management': {
-    title: 'Διαχείριση mentoring',
+    title: 'Διαχείριση καθοδήγησης',
     description:
-      'Έγκριση mentors, αξιολόγηση προσόντων και παρακολούθηση ποιότητας συνεδριών.',
+      'Έγκριση μεντόρων, αξιολόγηση προσόντων και παρακολούθηση ποιότητας συνεδριών.',
     section: 'Διαχείριση',
   },
   '/admin/system-settings': {
@@ -654,7 +654,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
 
   // ── Mentor sub-pages ──
   '/mentor/profile-setup': {
-    title: 'Ρύθμιση mentor',
+    title: 'Ρύθμιση προφίλ μέντορα',
     description:
       'Περιγραφή προσφοράς, τιμών και διαθεσιμότητας για founders.',
     section: 'Εργασία',
@@ -739,7 +739,7 @@ export const PAGE_META_EL_PATTERNS: Array<{
     pattern: /^\/org\/cohorts\/[^/]+$/,
     meta: {
       title: 'Cohort',
-      description: 'Συμμετέχοντες, κάλυψη mentor και πρόσφατες αντιστοιχίσεις αυτού του cohort.',
+      description: 'Συμμετέχοντες, κάλυψη μεντόρων και πρόσφατες αντιστοιχίσεις αυτού του cohort.',
       section: 'Εργασία',
     },
   },

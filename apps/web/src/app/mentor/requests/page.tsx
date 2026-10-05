@@ -210,7 +210,7 @@ export default function MentorRequestsPage() {
     {
       id: 'requests',
       labelEn: 'Mentorship requests',
-      labelEl: 'Αιτήματα mentoring',
+      labelEl: 'Αιτήματα καθοδήγησης',
       rows: isLoading ? undefined : requests.map((r) => `${r.requester?.displayName || 'Unknown'}${r.requester?.headline ? ` · ${r.requester.headline}` : ''} · ${r.status}${r.focusAreas?.length ? ` · ${r.focusAreas.join(', ')}` : ''}`),
     },
   ]);
@@ -341,7 +341,7 @@ export default function MentorRequestsPage() {
                   <UserPlus className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No pending requests" el="Δεν υπάρχουν αιτήματα σε αναμονή" /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="New mentorship requests will appear here." el="Τα νέα αιτήματα mentoring θα εμφανίζονται εδώ." wrap />
+                    <BilingualText en="New mentorship requests will appear here." el="Τα νέα αιτήματα καθοδήγησης θα εμφανίζονται εδώ." wrap />
                   </p>
                 </CardContent>
               </Card>

@@ -80,12 +80,12 @@ export default function MentorshipManagementPage() {
   return (
     <AppShell
       title="Mentorship management"
-      titleEl="Διαχείριση mentoring"
+      titleEl="Διαχείριση καθοδήγησης"
       description="The mentor directory: who is available, who is booked, and how their sessions are rated."
       descriptionEl="Ο κατάλογος μεντόρων: ποιος είναι διαθέσιμος, ποιος έχει κρατήσεις και πώς αξιολογούνται οι συνεδρίες."
       showHelp
     >
-      <HelpCallout id="admin-mentorship" title="Mentorship oversight" titleEl="Εποπτεία mentoring">
+      <HelpCallout id="admin-mentorship" title="Mentorship oversight" titleEl="Εποπτεία καθοδήγησης">
         <p>
           A mentor with no sessions has not been booked yet - worth a nudge or a featured slot. Ratings are averaged
           over reviews, so a mentor with many reviews weighs more than one with a single rating.

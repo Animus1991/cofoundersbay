@@ -65,6 +65,22 @@ describe('the Greek glossary', () => {
     expect(offenders((k, v) => /tenant/i.test(k) && /ενοικιαστ|μισθωτ/i.test(v))).toEqual([]);
   });
 
+  it('names mentoring in Greek: μέντορας, καθοδήγηση, καθοδηγούμενοι', () => {
+    // The mentor dashboard read «Πίνακας ελέγχου mentor», «Αιτήματα mentees»
+    // and «Αιτήματα mentoring» beside «μέντορες» and «καθοδηγούμενοι» on the
+    // next page. Checked in both catalogues and in the page-title catalogue
+    // and page registry, where those three came from.
+    const LOANWORD = /(?<![\p{L}/{])(?:mentors?|mentees?|mentoring|mentorship)(?![\p{L}])/iu;
+    const fromCatalogues = offenders((_, v) => LOANWORD.test(v));
+    const source = ['strings-pages.ts', '../page-registry.ts']
+      .map((f) => readFileSync(join(__dirname, f), 'utf8'))
+      .join('\n');
+    const greekSide = [...source.matchAll(/(?:title|description|helpTitleEl|titleEl|descriptionEl):\s*'([^']*)'/g)]
+      .map((m) => m[1])
+      .filter((v) => GREEK.test(v) && LOANWORD.test(v));
+    expect([...fromCatalogues, ...greekSide]).toEqual([]);
+  });
+
   it('writes Greek units after numbers, never "2w" or "5h"', () => {
     // «πριν 2w» was the report that started this pass.
     expect(offenders((_, v) => /\d\s?(?:w|d|h|mo|y|min|hrs?)\b/.test(v))).toEqual([]);
