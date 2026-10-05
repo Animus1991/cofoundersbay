@@ -18,22 +18,19 @@ const PRIMARY_TABS = [
   { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
-const tabClasses = 'relative flex min-h-[3.25rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-2xs font-medium leading-[1.15] tracking-tight focus-ring';
+const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.74px] font-medium leading-[1.25] tracking-tight focus-ring';
 
 function TabLabel({ en, el }: { en: string; el: string }) {
-  // 11px is the product floor, and it is the size at which "Εξερεύνηση" fits a
-  // five-column tab on a 360px phone (measured 64px). `text-xs` (13.26px) was
-  // 77px and truncated to "Εξερευν…". Truncation stays as a fallback for a
-  // narrower window; the full pair is still the link's accessible name.
+  // One language, wrapping, at 12.74px (13px minus 2%). The accessible name
+  // on the link still carries both languages.
   return (
     <BilingualText
       en={en}
       el={el}
       stacked
-      keepSecondaryOnMobile
-      className="w-full text-center text-2xs leading-[1.15] tracking-tight"
-      primaryClassName="truncate"
-      secondaryClassName="truncate text-2xs leading-[1.15]"
+      wrap
+      className="w-full text-center text-[12.74px] leading-[1.25] tracking-tight"
+      primaryClassName="break-words"
     />
   );
 }
