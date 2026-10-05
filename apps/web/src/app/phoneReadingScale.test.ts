@@ -54,8 +54,9 @@ describe('phone reading scale', () => {
     expect(fontSize('.text-base')).toBe('16.66px');
     expect(fontSize('body')).toBe('16.66px');
     expect(fontSize('#main-content .text-sm')).toBe('15.68px');
-    expect(fontSize('#main-content .text-lg')).toBe('17.64px');
-    expect(fontSize('#main-content h1.page-title')).toBe('19.6px');
+    expect(fontSize('.text-lg')).toBe('17.11px');
+    expect(fontSize('#main-content .text-lg')).toBe('17.11px');
+    expect(fontSize('#main-content h1.page-title')).toBe('19.01px');
     expect(fontSize('#main-content p.page-stat-label')).toBe('13.72px');
     expect(BLOCK).not.toMatch(/min-width/);
     expect(BLOCK).not.toMatch(/12\.2412px/);

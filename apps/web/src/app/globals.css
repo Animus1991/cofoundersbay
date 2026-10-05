@@ -3118,9 +3118,11 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.72 · meta 14.7 · body 15.68 · figure 16.66 · section 17.64 · title 19.6
+     caption 13.72 · meta 14.7 · body 15.68 · figure 16.66 · section 17.11 · title 19.01
 
-   Each step is 2% under the first phone pass (14 / 15 / 16 / 17 / 18 / 20).
+   Caption through figure stay 2% under the first phone pass (14 / 15 / 16 / 17).
+   Section and title, the two larger steps, are another 3% under 18 and 20
+   (17.64 × 0.97 → 17.11, 19.6 × 0.97 → 19.01).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3137,7 +3139,7 @@ textarea[class~="border-input"]:focus,
   .text-xs { font-size: 14.7px; line-height: 1.4; }
   .text-sm { font-size: 15.68px; line-height: 1.45; }
   .text-base { font-size: 16.66px; line-height: 1.5; }
-  .text-lg { font-size: 17.64px; line-height: 1.4; }
+  .text-lg { font-size: 17.11px; line-height: 1.4; }
 
   .bilingual-secondary,
   .bilingual-separator {
@@ -3222,7 +3224,7 @@ textarea[class~="border-input"]:focus,
   #main-content h3.founder-dash-section,
   h3.page-section,
   h3.founder-dash-section {
-    font-size: 17.64px;
+    font-size: 17.11px;
     line-height: 1.35;
   }
 
@@ -3254,7 +3256,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 19.6px;
+    font-size: 19.01px;
     line-height: 1.3;
   }
 
