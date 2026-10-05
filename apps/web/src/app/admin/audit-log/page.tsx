@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -105,7 +106,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
           <Badge variant="outline" className={cn('text-xs', colorClass)}>
             {log.action}
           </Badge>
-          <Badge variant="secondary" className="text-xs">{log.entityType}</Badge>
+          <Badge variant="secondary" className="text-xs"><StatusText value={log.entityType} /></Badge>
           {log.entityId && (
             <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
               #{log.entityId}

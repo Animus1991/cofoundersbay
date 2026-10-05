@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -650,7 +651,7 @@ export function CanvasCopilotPanel({
               <div key={doc.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border hover:border-border transition-colors">
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{doc.title}</p>
-                  <p className="text-2xs text-muted-foreground truncate">{doc.workspaceName} · {doc.type.replace(/_/g, ' ')}</p>
+                  <p className="text-2xs text-muted-foreground truncate">{doc.workspaceName} · <StatusText value={doc.type} /></p>
                 </div>
                 {doc.alreadyLinked ? (
                   <span className="shrink-0 text-2xs text-status-success flex items-center gap-1">

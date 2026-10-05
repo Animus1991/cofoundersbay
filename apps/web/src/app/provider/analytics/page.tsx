@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -159,7 +160,8 @@ export default function ProviderAnalyticsPage() {
         views: d.views,
         inquiries: 0,
       }));
-  const maxViews = weeklyViews.length ? Math.max(...weeklyViews.map(d => d.views)) : 1;
+  const maxViews = Math.max(1, ...weeklyViews.map(d => d.views));
+  const maxInquiries = Math.max(1, ...weeklyViews.map(d => d.inquiries));
 
   /* Live metric cards only claim what the overview actually measures; the
      demo grid keeps its six authored tiles under the sample-data notice. */
@@ -409,17 +411,21 @@ export default function ProviderAnalyticsPage() {
                   {weeklyViews.length === 0 && (
                     <p className="py-16 text-center text-sm text-muted-foreground"><BilingualText en="No profile views recorded in this period." el="Δεν καταγράφηκαν προβολές προφίλ σε αυτή την περίοδο." wrap /></p>
                   )}
-                  <div className="flex items-end gap-2 h-44">
+                  {/* Bars are proportions of a fixed plot area. They were pixel
+                      heights (views up to 140px plus inquiries) in a 176px box
+                      that also held the day label, so the tallest day grew up
+                      through the card title. */}
+                  <div className="flex h-44 items-stretch gap-2">
                     {weeklyViews.map(d => (
-                      <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
-                        <div className="w-full flex flex-col gap-0.5">
+                      <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
+                        <div className="flex w-full flex-1 flex-col justify-end gap-0.5">
                           <div
                             className="w-full rounded-t bg-primary/80 min-h-[2px] transition-all"
-                            style={{ height: `${(d.views / maxViews) * 140}px` }}
+                            style={{ height: `${(d.views / maxViews) * 78}%` }}
                           />
                           <div
                             className="w-full bg-status-accent-bg min-h-[2px]"
-                            style={{ height: `${(d.inquiries / 7) * 30}px` }}
+                            style={{ height: `${(d.inquiries / maxInquiries) * 18}%` }}
                           />
                         </div>
                         <span className="text-xs text-muted-foreground">{d.day}</span>
@@ -477,7 +483,7 @@ export default function ProviderAnalyticsPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground w-4">{i + 1}.</span>
-                        <span className="font-medium">{stage.stage}</span>
+                        <span className="font-medium"><StatusText value={stage.stage} /></span>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-muted-foreground text-xs">{stage.count.toLocaleString('en-GB')}</span>

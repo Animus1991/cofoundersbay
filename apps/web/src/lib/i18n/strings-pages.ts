@@ -349,7 +349,7 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     section: 'Tenant',
   },
   '/tenant/settings': {
-    title: 'Ρυθμίσεις tenant',
+    title: 'Ρυθμίσεις οργανισμού',
     description:
       'Γενικές ρυθμίσεις χώρου εργασίας: πολιτική συμμετοχής, ειδοποιήσεις και προτιμήσεις email.',
     section: 'Tenant',

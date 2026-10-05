@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -514,8 +515,8 @@ export default function AutomationsPage() {
                       <p className="text-xs text-muted-foreground mt-1">{rule.description}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span>Priority: {rule.priority}</span>
-                      <span>Runs: {rule.executionCount}</span>
+                      <span><BilingualText en={`Priority ${rule.priority}`} el={`Προτεραιότητα ${rule.priority}`} compact /></span>
+                      <span><BilingualText en={`Runs ${rule.executionCount}`} el={`Εκτελέσεις ${rule.executionCount}`} compact /></span>
                       {rule.failureCount > 0 && (
                         <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
                       )}
@@ -614,7 +615,7 @@ export default function AutomationsPage() {
                       {exec.id.slice(0, 8)}…
                     </span>
                     <span className="text-xs text-muted-foreground flex-1">
-                      Rule: {exec.ruleId.slice(0, 8)}… · {exec.status}
+                      Rule: {exec.ruleId.slice(0, 8)}… · <StatusText value={exec.status} />
                       {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
                     </span>
                     <span className="text-xs text-muted-foreground">

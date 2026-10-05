@@ -8,7 +8,8 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -84,6 +85,7 @@ function formatCurrency(cents: number, currency = 'USD') {
 export default function MentorEarningsPage() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
+  const { primary } = useLanguagePreference();
   const [period, setPeriod] = useState('this_month');
 
   const { data: profile } = useQuery({
@@ -298,7 +300,7 @@ export default function MentorEarningsPage() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{tx.mentee.name}</p>
                         <p className="truncate text-xs text-muted-foreground">
-                          {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {tx.date}</span>
+                          {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {formatShortDate(tx.date, primary)}</span>
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
@@ -315,7 +317,7 @@ export default function MentorEarningsPage() {
                           ) : 'Pending'}
                         </Badge>
                       </div>
-                      <p className="hidden w-24 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:block">{tx.date}</p>
+                      <p className="hidden w-24 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:block">{formatShortDate(tx.date, primary)}</p>
                     </div>
                   ))}
                 </div>

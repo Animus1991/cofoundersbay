@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -204,7 +205,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               ? <Badge className="bg-status-success-bg text-status-success text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
               : rule.status === 'paused'
               ? <Badge className="bg-status-warning-bg text-status-warning text-xs"><BilingualText en="Paused" el="Σε παύση" compact /></Badge>
-              : <Badge variant="outline" className="text-xs">{rule.status}</Badge>}
+              : <Badge variant="outline" className="text-xs"><StatusText value={rule.status} /></Badge>}
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

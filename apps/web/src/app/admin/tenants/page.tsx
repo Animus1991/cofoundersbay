@@ -164,7 +164,7 @@ export default function TenantsAdminPage() {
       case 'suspended':
         return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border"><BilingualText en="Suspended" el="Σε αναστολή" compact /></Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary"><StatusText value={status} /></Badge>;
     }
   };
 
@@ -355,7 +355,7 @@ export default function TenantsAdminPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); clear(); }}
               placeholder={bilingualInline('Search name or slug', 'Αναζήτηση ονόματος ή slug')}
-              aria-label={bilingualAria('Search tenants', 'Αναζήτηση tenants')}
+              aria-label={bilingualAria('Search tenants', 'Αναζήτηση οργανισμών')}
               className="pl-9"
             />
           </div>
@@ -627,7 +627,7 @@ function TenantEditor({
               {isNew ? 'Create Tenant' : (general.displayName || general.name)}
               {tenant && (
                 <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                  {tenant.status}
+                  <StatusText value={tenant.status} />
                 </Badge>
               )}
             </CardTitle>
@@ -640,7 +640,7 @@ function TenantEditor({
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
-            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close tenant editor">
+            <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 sm:h-9 sm:w-9" onClick={onClose} aria-label={bilingualAria('Close tenant editor', 'Κλείσιμο επεξεργασίας οργανισμού')}>
               <X className="icon-sm" />
             </Button>
           </div>

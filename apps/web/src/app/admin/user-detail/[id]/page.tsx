@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -340,8 +341,8 @@ export default function AdminUserDetailPage() {
               {against.map((r) => (
                 <div key={r.id} className="rounded-lg border border-border p-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm" className="capitalize">{r.status}</Badge>
-                    <span className="text-xs capitalize text-muted-foreground">{r.type}</span>
+                    <Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm" className="capitalize"><StatusText value={r.status} /></Badge>
+                    <span className="text-xs capitalize text-muted-foreground"><StatusText value={r.type} /></span>
                     <span className="ml-auto text-xs text-muted-foreground">
                       <RelativeTime date={r.createdAt} format={formatRelativeTime} />
                     </span>

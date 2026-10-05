@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -138,7 +139,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
         </DropdownMenu>
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <Badge variant="secondary" className="text-2xs">{deal.stage}</Badge>
+        <Badge variant="secondary" className="text-2xs"><StatusText value={deal.stage} /></Badge>
         {deal.readinessScore != null && (
           <span className="text-2xs text-muted-foreground"><BilingualText en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /></span>
         )}

@@ -792,9 +792,9 @@ export default function AdminUserManagementPage() {
             <div className="space-y-3 text-sm">
               <p className="text-muted-foreground">{detailUser.email}</p>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="capitalize">{detailUser.role}</Badge>
+                <Badge variant="outline" className="capitalize"><StatusText value={detailUser.role} /></Badge>
                 <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[detailUser.status])}>
-                  {detailUser.status}
+                  <StatusText value={detailUser.status} />
                 </Badge>
                 {detailUser.verified && <Badge><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>}
               </div>

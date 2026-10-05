@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -162,7 +163,7 @@ function DomainRow({
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
               {domain.isPrimary && <Badge variant="secondary" className="text-xs"><BilingualText en="Primary" el="Κύριος" compact /></Badge>}
-              <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
+              <Badge variant="outline" className="text-xs"><StatusText value={domain.domainType} /></Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
                 ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>

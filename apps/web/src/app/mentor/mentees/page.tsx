@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -80,7 +81,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
                 )}
               </div>
               <Badge variant="outline" className={cn('text-xs', statusColors[relationship.status])}>
-                {relationship.status}
+                <StatusText value={relationship.status} />
               </Badge>
             </div>
 

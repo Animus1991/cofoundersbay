@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -246,7 +247,7 @@ function ShortlistCard({
                   {profile?.role && (
                     <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                       <Briefcase className="icon-sm" />
-                      <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
+                      <span ><StatusText value={profile.role} /></span>
                     </div>
                   )}
                   {profile?.location && (

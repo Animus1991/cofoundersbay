@@ -849,7 +849,7 @@ export default function CohortDetailPage() {
                         {match.participant1.name} ↔ {match.participant2.name}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {match.participant1.role} • {match.participant2.role}
+                        <StatusText value={match.participant1.role} /> • <StatusText value={match.participant2.role} />
                       </p>
                       <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
                         <span>Matched: {formatDate(match.matchedDate)}</span>

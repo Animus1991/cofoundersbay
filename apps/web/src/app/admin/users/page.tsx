@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -140,15 +141,15 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}
         </div>
         <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-        <p className="mt-0.5 text-xs capitalize text-muted-foreground md:hidden">
-          {user.role} · {user.status}{user.tenant ? ` · ${user.tenant}` : ''}
+        <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
+          <StatusText value={user.role} /> · <StatusText value={user.status} />{user.tenant ? ` · ${user.tenant}` : ''}
         </p>
       </div>
       <div className="hidden md:block text-sm text-muted-foreground w-24">
-        {user.role}
+        <StatusText value={user.role} />
       </div>
       <div className="hidden lg:block text-sm text-muted-foreground w-32">
-        {user.tenant || 'Public'}
+        {user.tenant || <BilingualText en="Public" el="Δημόσιο" compact />}
       </div>
       <div className="hidden md:block text-sm text-muted-foreground w-28">
         {user.lastActive
@@ -157,7 +158,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
       </div>
       <Badge variant="outline" className={cn('text-xs flex items-center gap-1 w-24 justify-center', config.color)}>
         {config.icon}
-        {user.status}
+        <StatusText value={user.status} />
       </Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

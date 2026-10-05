@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -364,7 +365,7 @@ export default function SharePage() {
                         'text-status-warning': document.status === 'in_progress',
                       })}
                     >
-                      {document.status.replace('_', ' ')}
+                      <StatusText value={document.status} />
                     </Badge>
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-semibold">{document.title}</h1>

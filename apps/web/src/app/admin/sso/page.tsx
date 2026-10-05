@@ -77,14 +77,14 @@ export default function SSOAdminPage() {
       {/* Stats row */}
       <div className="grid grid-cols-2 kpi-odd-span-lg gap-4 lg:grid-cols-4 mb-6">
         {[
-          { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-accessible' },
-          { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-status-info' },
-          { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-status-accent' },
-          { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-status-success' },
-        ].map(({ label, value, icon: Icon, color }) => (
+          { label: 'Total Tenants', labelEl: 'Σύνολο οργανισμών', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-accessible' },
+          { label: 'Active Providers', labelEl: 'Ενεργοί πάροχοι', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-status-info' },
+          { label: 'Total Providers', labelEl: 'Σύνολο παρόχων', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-status-accent' },
+          { label: 'Events (24h)', labelEl: 'Συμβάντα (24 ώρες)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-status-success' },
+        ].map(({ label, labelEl, value, icon: Icon, color }) => (
           <Card key={label}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{label}</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">

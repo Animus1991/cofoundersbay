@@ -93,7 +93,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Tenant admin ──
   { path: '/tenant/dashboard', title: 'Tenant dashboard', description: 'White-label community overview and key metrics.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
-  { path: '/tenant/branding', title: 'Branding', description: 'Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant.', helpId: 'tenant-branding', helpTitle: 'Tenant branding', helpTitleEl: 'Επωνυμία tenant', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
+  { path: '/tenant/branding', title: 'Branding', description: 'Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant.', helpId: 'tenant-branding', helpTitle: 'Tenant branding', helpTitleEl: 'Εταιρική ταυτότητα οργανισμού', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/sso', title: 'SSO / Authentication', description: 'Configure SAML, OIDC, or Google Workspace SSO. Optional rules map IdP claims to roles.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/domains', title: 'Domain Management', description: 'Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/members', title: 'Tenant Members', description: 'Invite, role, and remove members for your workspace.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },

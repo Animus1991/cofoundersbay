@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -224,7 +225,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             </div>
 
             <div className="flex flex-wrap gap-1.5 mt-2">
-              <Badge variant="outline" className="text-2xs h-4 px-1.5">{startup.stage}</Badge>
+              <Badge variant="outline" className="text-2xs h-4 px-1.5"><StatusText value={startup.stage} /></Badge>
               <Badge variant="secondary" className="text-2xs h-4 px-1.5">{startup.businessModel}</Badge>
               {startup.tags.slice(0, 2).map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-2xs h-4 px-1.5">{tag}</Badge>

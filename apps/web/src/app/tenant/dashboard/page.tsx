@@ -1,6 +1,8 @@
 'use client';
 
 
+import { StatusText } from '@/components/common/StatusText';
+import { BilingualText } from '@/components/common/BilingualText';
 import Link from 'next/link';
 import {
   Building2,
@@ -168,7 +170,7 @@ export default function TenantDashboardPage() {
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     <span className="flex items-center gap-2">
                       <span className="font-medium">{program.title}</span>
-                      <Badge size="sm" variant={program.status === 'active' ? 'success' : 'info'}>{program.status === 'active' ? 'Running' : 'Upcoming'}</Badge>
+                      <Badge size="sm" variant={program.status === 'active' ? 'success' : 'info'}>{program.status === 'active' ? <BilingualText en="Running" el="Σε εξέλιξη" compact /> : <BilingualText en="Upcoming" el="Προσεχές" compact />}</Badge>
                     </span>
                     <span className="text-xs tabular-nums text-muted-foreground">
                       {program.participantCount}/{program.capacity ?? '—'} places · {program.applicationCount} applications
@@ -192,7 +194,7 @@ export default function TenantDashboardPage() {
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{member.name}</p>
-                  <p className="text-xs capitalize text-muted-foreground">{member.role}</p>
+                  <p className="text-xs capitalize text-muted-foreground"><StatusText value={member.role} /></p>
                 </div>
                 <span className="shrink-0 text-xs text-muted-foreground">
                   <RelativeTime date={member.joinedAt} format={formatRelativeTime} />

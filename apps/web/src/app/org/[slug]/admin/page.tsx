@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -658,12 +659,12 @@ export default function OrgAdminPage() {
                       <TableCell>
                         <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
                           {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
-                          {member.role.replace('_', ' ')}
+                          <StatusText value={member.role} />
                         </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('capitalize border', memberStatusChip(member.status))}>
-                          {member.status}
+                          <StatusText value={member.status} />
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">

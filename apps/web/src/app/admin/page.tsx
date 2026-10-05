@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { Fragment, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -277,7 +278,7 @@ function ReportCard({
                 <Link href={`/profiles/${report.reported.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {report.reported?.name || report.reported.email}
                 </Link>
-                <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
+                <Badge variant="outline" className="text-xs"><StatusText value={report.reported.role} /></Badge>
                 <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
                   {typeConf.label}
                 </Badge>
@@ -388,7 +389,7 @@ function UserRow({
         <p className="truncate text-sm text-muted-foreground">{user.email}</p>
       </div>
       <div className="hidden text-right sm:block">
-        <p className="text-sm capitalize text-foreground">{user.role}</p>
+        <p className="text-sm capitalize text-foreground"><StatusText value={user.role} /></p>
         {user.lastSeenAt && (
           <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} /></p>
         )}

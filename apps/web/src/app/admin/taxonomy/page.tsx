@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -86,7 +87,7 @@ function SkillRow({
       <span className="flex-1 font-medium truncate">{skill.name}</span>
       <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
       {skill.category && (
-        <Badge variant="outline" className="text-xs hidden md:flex">{skill.category}</Badge>
+        <Badge variant="outline" className="text-xs hidden md:flex"><StatusText value={skill.category} /></Badge>
       )}
       <Badge variant="secondary" className="text-xs">{skill.count}</Badge>
       <DropdownMenu>

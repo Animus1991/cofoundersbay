@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listPrograms, deleteProgram, type ProgramItem } from '@/lib/api';
@@ -131,7 +132,7 @@ function ProgramCard({
             <div className="flex items-center gap-2">
               <span className="font-semibold">{program.name}</span>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
-                {program.status}
+                <StatusText value={program.status} />
               </Badge>
             </div>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
@@ -139,7 +140,7 @@ function ProgramCard({
               {program.organization}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <Badge variant="secondary" className="text-xs">{program.type}</Badge>
+              <Badge variant="secondary" className="text-xs"><StatusText value={program.type} /></Badge>
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" aria-hidden="true" />
                 {program.startups} startups
@@ -526,7 +527,7 @@ export default function AdminProgramsPage() {
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
-              <dd className="capitalize">{viewing.status}</dd>
+              <dd className="capitalize"><StatusText value={viewing.status} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Dates" el="Ημερομηνίες" compact /></dt>
               <dd>{viewing.startDate} – {viewing.endDate}</dd>
               <dt className="text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></dt>

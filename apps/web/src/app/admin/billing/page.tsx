@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -65,7 +66,7 @@ function SubRow({
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-medium truncate max-w-[200px]">{ownerLabel}</span>
           <Badge variant="outline" className={cn('text-xs capitalize shrink-0', STATUS_COLORS[sub.status] ?? '')}>
-            {sub.status.replace('_', ' ')}
+            <StatusText value={sub.status} />
           </Badge>
           <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
         </div>
@@ -116,7 +117,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
-          <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}>{inv.status}</Badge>
+          <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}><StatusText value={inv.status} /></Badge>
         </div>
         <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
       </div>
@@ -474,7 +475,7 @@ export default function AdminBillingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
-                            <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
+                            <Badge variant="outline" className="text-xs"><StatusText value={plan.planType} /></Badge>
                             {!plan.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
                             {!plan.isPublic && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
                           </div>

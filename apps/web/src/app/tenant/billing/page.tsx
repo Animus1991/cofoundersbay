@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -160,7 +161,7 @@ export default function TenantBillingPage() {
                         variant="outline"
                         className={cn('text-xs capitalize', STATUS_COLORS[sub.status] ?? '')}
                       >
-                        {sub.status.replace('_', ' ')}
+                        <StatusText value={sub.status} />
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground capitalize">

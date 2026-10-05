@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -87,7 +88,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
                 </p>
               </div>
               <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
-                {session.status.replace('_', ' ')}
+                <StatusText value={session.status} />
               </Badge>
             </div>
 

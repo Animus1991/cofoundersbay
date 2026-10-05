@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -344,7 +345,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
 
             {/* Meta row */}
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="text-2xs">{startup.stage}</Badge>
+              <Badge variant="outline" className="text-2xs"><StatusText value={startup.stage} /></Badge>
               <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize}</span>
               <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
               <span className="flex items-center gap-1 text-primary-accessible font-medium">{startup.raisingAmount}</span>

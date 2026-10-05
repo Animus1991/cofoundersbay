@@ -223,7 +223,7 @@ function ApplicationCard({
 
             <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
               <span>{application.program}</span>
-              {application.stage ? <span>{application.stage}</span> : null}
+              {application.stage ? <span><StatusText value={application.stage} /></span> : null}
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" aria-hidden="true" />
                 {application.submittedAt}
@@ -475,7 +475,7 @@ export default function OrgApplicationsPage() {
           {reviewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
-              <dd className="capitalize">{reviewing.status.replace('_', ' ')}</dd>
+              <dd><StatusText value={reviewing.status} /></dd>
               {reviewing.industry ? (
                 <>
                   <dt className="text-muted-foreground"><BilingualText en="Industry" el="Κλάδος" compact /></dt>

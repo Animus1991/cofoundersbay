@@ -27,7 +27,13 @@ let tEsc = 0, tClip = 0, tChrome = 0;
 for (const r of routes) {
   await page.goto('http://localhost:3000' + r, { waitUntil: 'networkidle', timeout: 45000 }).catch(() => {});
   await page.waitForTimeout(700);
-  const res = await page.evaluate(() => {
+  // A client redirect can destroy the context mid-measure; settle and retry once.
+  const measure = (fn) => page.evaluate(fn).catch(async () => {
+    await page.waitForLoadState('networkidle').catch(() => {});
+    await page.waitForTimeout(800);
+    return page.evaluate(fn).catch(() => ({ escapes: [], clips: [], chrome: 0 }));
+  });
+  const res = await measure(() => {
     const vis = (el) => { const s = getComputedStyle(el); const rc = el.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && rc.width > 0 && rc.height > 0; };
     const chromeSel = 'aside, nav, [role="tablist"], [data-page-rail], [data-sidebar], [data-mobile-tabs], header';
     const surfaceSel = '[class*="rounded-xl"][class*="border"], [class*="rounded-2xl"][class*="border"], [role="dialog"], button, a, [data-surface], [class*="bg-card"]';

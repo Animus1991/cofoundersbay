@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -124,7 +125,7 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
                   <span className="font-semibold">{project.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
                     <StatusIcon className="mr-1 icon-sm" />
-                    {project.status.replace('_', ' ')}
+                    <StatusText value={project.status} />
                   </Badge>
                 </div>
                 {project.clientCompany && (
@@ -419,7 +420,7 @@ export default function ProviderProjectsPage() {
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
-              <dd className="capitalize">{viewing.status.replace('_', ' ')}</dd>
+              <dd><StatusText value={viewing.status} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Agreed price" el="Συμφωνημένη τιμή" compact /></dt>
               <dd>{viewing.amount || '\u2014'}</dd>
               <dt className="text-muted-foreground"><BilingualText en="Started" el="Έναρξη" compact /></dt>

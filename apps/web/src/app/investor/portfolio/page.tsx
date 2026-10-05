@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -211,7 +212,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
                     {investment.name}
                   </Link>
                   <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
-                    {investment.status.replace('_', ' ')}
+                    <StatusText value={investment.status} />
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{investment.industry} · {investment.stage}</p>

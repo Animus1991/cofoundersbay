@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -159,7 +160,7 @@ function ReportCard({
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-medium">{report.reason}</span>
                   <Badge variant="outline" className={cn('text-xs', priorityColors[report.priority])}>
-                    {report.priority}
+                    <StatusText value={report.priority} />
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -174,7 +175,7 @@ function ReportCard({
               <div className="flex shrink-0 items-center gap-2">
                 <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
                   {config.icon}
-                  {report.status}
+                  <StatusText value={report.status} />
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -632,11 +633,11 @@ export default function AdminReportsPage() {
           {viewing && (
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <dt className="text-muted-foreground"><BilingualText en="Type" el="Τύπος" compact /></dt>
-              <dd className="capitalize">{viewing.type}</dd>
+              <dd className="capitalize"><StatusText value={viewing.type} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></dt>
-              <dd className="capitalize">{viewing.status}</dd>
+              <dd className="capitalize"><StatusText value={viewing.status} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Priority" el="Προτεραιότητα" compact /></dt>
-              <dd className="capitalize">{viewing.priority}</dd>
+              <dd className="capitalize"><StatusText value={viewing.priority} /></dd>
               <dt className="text-muted-foreground"><BilingualText en="Filed" el="Υποβλήθηκε" compact /></dt>
               <dd>{new Date(viewing.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })} UTC</dd>
               {viewing.description && (
