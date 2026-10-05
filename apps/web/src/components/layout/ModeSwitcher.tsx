@@ -25,7 +25,8 @@ import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
  *   the Greek names could only be shown hyphenated («Εξερεύ-νηση»,
  *   «Λογαρια-σμός»). A column fits any language, and opening or collapsing
  *   the drawer no longer moves the glyphs from a column into a row.
- * - `row`: the phone sheet, 352px wide, where three across fits. Text only,
+ * - `row`: the phone sheet (331-352px), where three across fits at the
+ *   phone scale's caption step. Text only,
  *   no tooltip: the sheet focuses its first control on open, and a tooltip
  *   opened by that focus covered the next label.
  *
@@ -87,7 +88,7 @@ export function ModeSwitcher({ currentMode, onModeChange, variant }: ModeSwitche
                   'flex min-w-0 items-center transition-colors duration-150',
                   variant === 'rail' && 'h-9 w-9 justify-center rounded-lg lg:h-[36px] lg:w-[36px]',
                   variant === 'list' && 'min-h-[28px] w-full gap-2 rounded-[10px] px-[6px] text-left text-sm',
-                  variant === 'row' && 'min-h-11 w-full justify-center rounded-[10px] px-1 text-center text-sm',
+                  variant === 'row' && 'min-h-11 w-full justify-center rounded-[10px] px-1 text-center',
                   variant === 'rail'
                     ? isActive
                       ? 'bg-primary/8 text-foreground'
@@ -116,7 +117,10 @@ export function ModeSwitcher({ currentMode, onModeChange, variant }: ModeSwitche
                   </span>
                 )}
                 {variant === 'row' && (
-                  <span lang={greek ? 'el' : 'en'} className="min-w-0 leading-tight [hyphens:manual]">
+                  // The phone reading scale puts text-sm at 15.68px, where
+                  // «Λογαριασμός» needs 103px of a 91-99px cell; its caption
+                  // step (13.31px) fits from 360px. A tablet keeps text-sm.
+                  <span lang={greek ? 'el' : 'en'} className="min-w-0 text-2xs leading-tight sm:text-sm [hyphens:manual]">
                     {greek ? MODE_LABEL_EL_ROW[mode.id] : mode.shortLabel}
                   </span>
                 )}

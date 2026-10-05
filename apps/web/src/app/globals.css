@@ -2952,8 +2952,10 @@ h3.page-section.page-section--compact,
 }
 /* Decorative glyphs go; the icon of an icon-only control stays (it is the
    control). "Icon-only" = no child other than the icon and a
-   screen-reader-only name. */
-[data-surface="overlay"] svg.cfb-glyph:not(:is(button, a, [role="button"], [role="menuitem"]):not(:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"]))) svg) {
+   screen-reader-only name. Inside [data-keep-icon] the icon is the way
+   through a list: the phone's navigation sheet lost all of its link glyphs
+   to this rule while the same links on desktop kept theirs. */
+[data-surface="overlay"] svg.cfb-glyph:not(:is(button, a, [role="button"], [role="menuitem"]):not(:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"]))) svg):not([data-keep-icon] svg) {
   display: none;
 }
 

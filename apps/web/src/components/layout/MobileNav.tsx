@@ -168,7 +168,7 @@ export function MobileNav() {
             <LanguagePanel />
           </div>
 
-          <nav className="px-2 py-3" aria-label={t('Primary mobile navigation')}>
+          <nav className="px-2 py-3" data-keep-icon="" aria-label={t('Primary mobile navigation')}>
             {sections.map(({ section, links }, sectionIndex) => (
               <div key={section} className="mb-3">
                 <p className="px-3 pb-1 text-xs text-muted-foreground">
