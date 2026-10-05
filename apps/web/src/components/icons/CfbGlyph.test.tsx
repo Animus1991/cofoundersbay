@@ -39,6 +39,10 @@ describe('CoFounderBay original glyph family', () => {
     expect(glyphForHref('/ai')).toBe('spark');
     expect(glyphForHref('/messages?tab=ai')).toBe('messages');
     expect(glyphForHref('/unknown-surface')).toBe('default');
+    // Search and the Explore mode sit in the same sidebar; one mark for both
+    // made the footer's Search button read as a second way into Explore.
+    expect(glyphForHref('/search')).toBe('search');
+    expect(glyphForHref('/discover')).toBe('discover');
     expect(glyphForMode('work')).toBe('builder');
     expect(glyphForMode('explore')).toBe('discover');
     expect(glyphForMode('account')).toBe('sliders');

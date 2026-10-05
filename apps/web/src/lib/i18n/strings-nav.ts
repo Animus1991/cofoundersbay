@@ -10,6 +10,22 @@ export const SIDEBAR_MODE_EL: Record<'work' | 'explore' | 'account', string> = {
   account: 'Λογαριασμός',
 };
 
+/** What each mode holds, under its name in the switcher's tooltip. */
+export const SIDEBAR_MODE_HINT: Record<'work' | 'explore' | 'account', { en: string; el: string }> = {
+  work: {
+    en: "Your role's dashboard and everyday tools",
+    el: 'Ο πίνακας ελέγχου και τα καθημερινά εργαλεία του ρόλου σας',
+  },
+  explore: {
+    en: 'People, communities, opportunities and learning',
+    el: 'Άνθρωποι, κοινότητες, ευκαιρίες και μάθηση',
+  },
+  account: {
+    en: 'Your profile, activity, settings and invitations',
+    el: 'Το προφίλ, η δραστηριότητα, οι ρυθμίσεις και οι προσκλήσεις σας',
+  },
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Section titles (keyed by English section name from nav-modes)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,7 +146,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/provider/projects': 'Έργα πελατών',
   '/provider/reviews': 'Αξιολογήσεις',
   '/provider/services': 'Οι υπηρεσίες μου',
-  '/readiness': 'Δείκτης ετοιμότητας',
+  '/readiness': 'Ετοιμότητα',
   '/recommendations': 'Για εσάς',
   '/referrals': 'Παραπομπές',
   '/reputation': 'Φήμη',

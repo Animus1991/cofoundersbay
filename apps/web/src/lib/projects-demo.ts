@@ -197,7 +197,7 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     description:
       'Alex Demo leads this project: a first path into founder networks.\n\nFirst path: founder networks in Athens and EU time zones. Waiting on a warm intro.',
     descriptionEl:
-      'Ο Alex Demo ηγείται αυτού του έργου: μια πρώτη διαδρομή μέσα από δίκτυα ιδρυτών.\n\nΠρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ώρας ΕΕ. Αναμονή ζεστής σύστασης.',
+      'Ο Alex Demo ηγείται αυτού του έργου: μια πρώτη διαδρομή μέσα από δίκτυα ιδρυτών.\n\nΠρώτη διαδρομή: δίκτυα ιδρυτών στην Αθήνα και ζώνες ώρας ΕΕ. Αναμονή ζεστής γνωριμίας.',
     status: 'idea',
     stage: 'Concept',
     industry: 'Other',
@@ -215,7 +215,7 @@ export const DEMO_PROJECTS_SEED: DemoProject[] = [
     tags: ['Athens', 'Networks', 'Matches'],
     progress: 10,
     milestones: [
-      { id: 'a1', title: 'Warm intro from Athens founder networks', titleEl: 'Ζεστή σύσταση από δίκτυα ιδρυτών στην Αθήνα', status: 'in_progress', date: '2026-10-01T17:00:00.000Z' },
+      { id: 'a1', title: 'Warm intro from Athens founder networks', titleEl: 'Ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα', status: 'in_progress', date: '2026-10-01T17:00:00.000Z' },
     ],
     updates: [
       {

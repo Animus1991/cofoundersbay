@@ -27,7 +27,7 @@ const METRIC_GLYPH: Record<string, CfbGlyphName> = {
   'New Connections': 'people',
   'Messages Sent': 'messages',
   'Engagement Rate': 'spark',
-  'Search Appearances': 'discover',
+  'Search Appearances': 'search',
   'Activity Score': 'chart',
 };
 

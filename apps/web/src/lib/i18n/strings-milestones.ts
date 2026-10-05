@@ -204,8 +204,8 @@ export const PREVIEW_MILESTONE_EL: Record<string, { title: string; description?:
     description: 'Πρώτη μετατροπή από το GTM: συμπληρωμένος Πυρήνας ιδέας και πίνακας έρευνας που μοιράζεται.',
   },
   'Warm intro from Athens founder networks': {
-    title: 'Ζεστή σύσταση από δίκτυα ιδρυτών στην Αθήνα',
-    description: 'Αναμονή ζεστής σύστασης από δίκτυα ιδρυτών στην Αθήνα.',
+    title: 'Ζεστή γνωριμία μέσω δικτύων ιδρυτών στην Αθήνα',
+    description: 'Αναμονή ζεστής γνωριμίας μέσω δικτύων ιδρυτών στην Αθήνα.',
   },
   'Idea Core v1 in Builder': {
     title: 'Πυρήνας ιδέας v1 στον Builder',

@@ -161,7 +161,7 @@ export function MobileNav() {
             </OptimizedLink>
           )}
 
-          <ModeSwitcher currentMode={mode} onModeChange={setMode} expanded />
+          <ModeSwitcher currentMode={mode} onModeChange={setMode} variant="row" />
 
           <div className="border-b border-border px-3 py-3">
             <LanguagePanel />

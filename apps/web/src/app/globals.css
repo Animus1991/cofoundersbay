@@ -2952,7 +2952,7 @@ h3.page-section.page-section--compact,
 /* Decorative glyphs go; the icon of an icon-only control stays (it is the
    control). "Icon-only" = no child other than the icon and a
    screen-reader-only name. */
-[data-surface="overlay"] svg.cfb-glyph:not(:is(button, a, [role="button"], [role="menuitem"]):not(:has(> :not(svg):not(.sr-only):not(.hidden))) svg) {
+[data-surface="overlay"] svg.cfb-glyph:not(:is(button, a, [role="button"], [role="menuitem"]):not(:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"]))) svg) {
   display: none;
 }
 
@@ -3019,7 +3019,12 @@ a[class~="inline-flex"].bg-destructive {
    non-svg child as a label blanked 364 icon-only buttons
    (copy, delete, more options, help) whose only other child was their
    screen-reader name. :has() cannot nest: one inside another invalidates
-   the whole selector list and every rule here silently stops applying. */
+   the whole selector list and every rule here silently stops applying.
+   An absolutely placed child is a count badge or a status dot laid over
+   the icon, not a label: counting it as one blanked the sidebar's bell,
+   leaving its unread count floating over an empty button. A button
+   marked data-keep-icon (the sidebar's mode switch, whose glyphs line up
+   with the nav links') keeps its icon beside its label. */
 #main-content [data-page-header] > svg.cfb-glyph,
 #main-content [data-surface="card"] [data-glyph-well],
 #main-content [data-surface="card"] .icon-well,
@@ -3028,12 +3033,12 @@ a[class~="inline-flex"].bg-destructive {
 }
 #main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph:not([data-keep-icon] > *),
 #main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not([data-keep-icon] > *),
-#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x),
-#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
-#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+#main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x),
+#main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
 #main-content [role="tab"] svg.cfb-glyph,
 #main-content [role="tab"] svg.lucide {
   display: none;
@@ -3049,17 +3054,17 @@ a[class~="inline-flex"].bg-destructive {
 
 /* Labeled action buttons on every page (header Invite / New Document, asChild
    links, dialogs). Icon-only controls have only an svg child and are skipped. */
-button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
-button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) .cfb-glyph,
-button:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
-button:has(> :not(svg):not(.sr-only):not(.hidden)) > .cfb-glyph,
-a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.cfb-glyph,
-a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
-a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden)) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
-#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.cfb-glyph,
-#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden)) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x) {
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) .cfb-glyph,
+button:not([data-keep-icon]):has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
+button:not([data-keep-icon]):has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > .cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
+#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph,
+#main-content a[class~="border"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.lucide:not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x) {
   display: none;
 }
 

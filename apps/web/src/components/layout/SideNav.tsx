@@ -203,7 +203,7 @@ export function SideNav() {
         </div>
 
         {/* ── Mode Switcher ── */}
-        <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={showLabels} />
+        <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} variant={showLabels ? 'list' : 'rail'} />
 
         {/* ── Navigation ── */}
         <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
@@ -348,7 +348,7 @@ export function SideNav() {
               onClick={() => router.push('/search')}
               aria-label={bilingualAria('Search', 'Αναζήτηση')}
             >
-              <CfbGlyph name="discover" className={chromeIcon} />
+              <CfbGlyph name="search" className={chromeIcon} />
             </Button>
             <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
           </div>

@@ -16,6 +16,7 @@ export const CFB_GLYPH_NAMES = [
   'messages',
   'matches',
   'discover',
+  'search',
   'people',
   'mentor',
   'chart',
@@ -67,7 +68,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   matches: 'matches',
   recommendations: 'spark',
   discover: 'discover',
-  search: 'discover',
+  search: 'search',
   members: 'people',
   mentoring: 'mentor',
   investors: 'growth',
@@ -220,6 +221,15 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="12" cy="12" r="8" />
       <path d="M12 6.5c-2.6 1.6-4 3.7-4 5.5s1.4 3.9 4 5.5c2.6-1.6 4-3.7 4-5.5S14.6 8.1 12 6.5Z" />
       <circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // A lens on its handle. Search used to borrow Discover's compass, so the
+  // sidebar's Search button and the Explore mode above it wore one mark.
+  search: (
+    <>
+      <circle cx="10.5" cy="10.5" r="6" />
+      <path d="m15 15 4.6 4.6" />
+      <path d="M8 9.2a2.9 2.9 0 0 1 1.9-1.75" />
     </>
   ),
   people: (

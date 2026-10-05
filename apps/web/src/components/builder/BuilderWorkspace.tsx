@@ -1025,7 +1025,7 @@ export function BuilderWorkspace({
           <div className={cn('flex flex-col gap-2 rounded-xl border px-3.5 py-2.5 sm:flex-row sm:items-center', STATUS.warning.border, STATUS.warning.bg)}>
             <div className="flex min-w-0 flex-1 items-start gap-2.5">
               <CfbGlyph name="award" className={cn('icon-sm mt-0.5 shrink-0', STATUS.warning.icon)} aria-hidden="true" />
-              <p className="min-w-0 text-xs leading-snug">
+              <p className="min-w-0 max-w-[75ch] text-xs leading-snug">
                 <span className="font-semibold text-foreground">
                   <BilingualText
                     en={`An expert can review your ${inProgressDocs} drafts now.`}

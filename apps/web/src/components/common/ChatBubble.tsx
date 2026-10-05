@@ -20,7 +20,7 @@ export function ChatBubble() {
   // Read with the other contexts, above the early return below: a hook
   // called after `if (hidden) return null` runs on some renders and not
   // others, which is exactly the order change React refuses.
-  const { pinned: railPinned, hasRail } = usePageRail();
+  const { hasRail } = usePageRail();
   const pathname = usePathname();
   const unreadMessages = useMessagingUnreadCount();
   const { isOpen, isMinimized, open, restore } = usePopupChat();
@@ -52,6 +52,13 @@ export function ChatBubble() {
 
   if (hidden) return null;
 
+  // Docked: on a page with a tools rail, the bubble lives at the foot of the
+  // rail's strip, which is always empty there - floating beside the strip it
+  // covered the right edge of the page (a card's Message button, the last
+  // column of percentages). Without a rail it floats in the corner as before.
+  const docked = hasRail;
+  const size = docked ? 40 : 52;
+
   const unreadEn = `${unreadMessages} unread message${unreadMessages === 1 ? '' : 's'}`;
   const unreadEl = `${unreadMessages} ${unreadMessages === 1 ? 'αδιάβαστο μήνυμα' : 'αδιάβαστα μηνύματα'}`;
   const openLabel = unreadMessages > 0
@@ -65,10 +72,10 @@ export function ChatBubble() {
   return (
     <div
       className={cn(
-        'pointer-events-none fixed bottom-6 z-50 hidden transition-[right] duration-200 ease-out lg:block',
-        // Clear of the page rail: the strip on a page that has one, the whole
-        // panel while it is pinned. Without this the bubble sat behind it.
-        !hasRail ? 'right-6' : railPinned ? 'right-[23.252rem]' : 'right-[4.75rem]',
+        'pointer-events-none fixed z-50 hidden transition-[right] duration-200 ease-out lg:block',
+        // In the strip's column (3.25rem wide), pinned or not: the panel opens
+        // to the left of the strip, so the strip's foot is free either way.
+        docked ? 'bottom-4 right-[calc((3.25rem-40px)/2)]' : 'bottom-6 right-6',
       )}
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
@@ -97,13 +104,13 @@ export function ChatBubble() {
           isDragging && 'scale-95 cursor-grabbing',
         )}
         style={{
-          width: '52px',
-          height: '52px',
+          width: `${size}px`,
+          height: `${size}px`,
           ...dragHandleProps.style,
           cursor: isDragging ? 'grabbing' : undefined,
         }}
       >
-        <LogoIcon size={49} mono className="pointer-events-none text-primary-foreground -translate-y-[2px]" />
+        <LogoIcon size={docked ? 36 : 49} mono className="pointer-events-none text-primary-foreground -translate-y-[2px]" />
         {unreadMessages > 0 && (
           <span
             aria-hidden="true"

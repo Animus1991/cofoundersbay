@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { sidebarModes, type SidebarMode } from './nav-modes';
-import { SIDEBAR_MODE_EL } from '@/lib/i18n/strings-nav';
+import { SIDEBAR_MODE_EL, SIDEBAR_MODE_HINT } from '@/lib/i18n/strings-nav';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import {
@@ -14,92 +14,132 @@ import {
 import { NavIcon, glyphForMode } from '@/components/icons/CfbGlyph';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
-/** Soft hyphens so the 3-up rail can break long Greek words without an ellipsis. */
 /*
- * Greek display labels, with soft hyphens at the syllable boundary.
+ * One switch, three shapes.
  *
- * Measured in the browser rather than guessed: the cell is 58.8px. Mode
- * labels sit on the caption step (12.61px) so they join the chrome
- * cluster instead of sitting below every other nav string. "Εξερεύνηση"
- * and "Λογαριασμός" still need two hyphenated lines; "Εργασία" now wraps
- * too. One line would take a ~6px font. Do not grow the 15rem drawer.
+ * - `rail`: the collapsed sidebar. Glyphs stacked, names in the tooltip.
+ * - `list`: the open drawer. The same glyphs in the same column, each with
+ *   its name beside it, on a track that reads as a switch rather than as
+ *   three more links. The drawer is 196.8px on desktop, and "Λογαριασμός"
+ *   alone is 81px at the caption step: three across, each cell had 55px, so
+ *   the Greek names could only be shown hyphenated («Εξερεύ-νηση»,
+ *   «Λογαρια-σμός»). A column fits any language, and opening or collapsing
+ *   the drawer no longer moves the glyphs from a column into a row.
+ * - `row`: the phone sheet, 352px wide, where three across fits. Text only,
+ *   no tooltip: the sheet focuses its first control on open, and a tooltip
+ *   opened by that focus covered the next label.
  *
- * Do not "fix" this into an ellipsis or a nowrap; the numbers above say why.
+ * Icons sit 16px from the drawer's edge in `list`, the same as every nav
+ * link's, so the glyphs line up in one column down the sidebar.
  */
-const MODE_LABEL_EL_DISPLAY: Record<'work' | 'explore' | 'account', string> = {
-  work: 'Εργα\u00ADσία',
-  explore: 'Εξερεύ\u00ADνηση',
-  account: 'Λογαρια\u00ADσμός',
+
+/** Soft hyphens: the row's fallback on the narrowest phones only. */
+const MODE_LABEL_EL_ROW: Record<SidebarMode, string> = {
+  work: 'Εργα­σία',
+  explore: 'Εξερεύ­νηση',
+  account: 'Λογαρια­σμός',
 };
+
+export type ModeSwitcherVariant = 'rail' | 'list' | 'row';
 
 interface ModeSwitcherProps {
   currentMode: SidebarMode;
   onModeChange: (mode: SidebarMode) => void;
-  expanded: boolean;
+  variant: ModeSwitcherVariant;
 }
 
-export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitcherProps) {
+export function ModeSwitcher({ currentMode, onModeChange, variant }: ModeSwitcherProps) {
   const { primary } = useLanguagePreference();
+  const greek = primary === 'el';
 
   return (
     <TooltipProvider delayDuration={300}>
       <div
         className={cn(
-          'min-w-0 shrink-0 border-b border-border',
-          // Compact 3-up when the drawer is open. Two Greek labels are wider
-          // than the 58.8px cell and wrap to two hyphenated lines (see
-          // MODE_LABEL_EL_DISPLAY); the tooltip carries both languages.
-          expanded
-            ? 'grid grid-cols-3 gap-0.5 px-1 py-1.5'
-            : 'flex flex-col items-center gap-0.5 px-0 py-1.5',
+          'min-w-0 shrink-0',
+          variant === 'rail' && 'border-b border-border px-0 py-1.5',
+          variant === 'list' && 'px-[8px] pb-[4px] pt-[8px]',
+          variant === 'row' && 'border-b border-border px-3 py-2.5',
         )}
       >
-        {sidebarModes.map((mode) => {
-          const Icon = mode.icon;
-          const isActive = currentMode === mode.id;
-          const labelEl = SIDEBAR_MODE_EL[mode.id];
-          const displayEl = MODE_LABEL_EL_DISPLAY[mode.id] ?? labelEl;
+        <div
+          role="group"
+          aria-label={bilingualAria('Sidebar section', 'Ενότητα πλαϊνής στήλης')}
+          className={cn(
+            variant === 'rail' && 'flex flex-col items-center gap-0.5',
+            variant === 'list' && 'flex flex-col gap-[2px] rounded-xl bg-muted/55 p-[2px]',
+            variant === 'row' && 'grid grid-cols-3 gap-[2px] rounded-xl bg-muted/55 p-[2px]',
+          )}
+        >
+          {sidebarModes.map((mode) => {
+            const Icon = mode.icon;
+            const isActive = currentMode === mode.id;
+            const labelEl = SIDEBAR_MODE_EL[mode.id];
+            const hint = SIDEBAR_MODE_HINT[mode.id];
 
-          const button = (
-            <button
-              onClick={() => onModeChange(mode.id)}
-              className={cn(
-                'flex min-w-0 items-center rounded-lg transition-colors duration-150',
-                expanded
-                  ? 'w-full min-h-[2.75rem] flex-col justify-center gap-0.5 px-0.5 py-1 text-center'
-                  : 'h-9 w-9 justify-center lg:h-[36px] lg:w-[36px]',
-                isActive
-                  ? 'bg-primary/8 text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-              )}
-              aria-pressed={isActive}
-              aria-label={bilingualAria(mode.shortLabel, labelEl)}
-            >
-              <NavIcon
-                name={glyphForMode(mode.id)}
-                fallback={Icon}
-                className={cn(expanded ? 'icon-sm' : 'icon-md', 'shrink-0')}
-              />
-              {expanded && (
-                <span
-                  lang={primary === 'el' ? 'el' : 'en'}
-                  className="type-caption w-full px-0.5 text-center font-medium leading-[1.2] [hyphens:auto]"
-                >
-                  {primary === 'el' ? displayEl : mode.shortLabel}
-                </span>
-              )}
-            </button>
-          );
+            const button = (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => onModeChange(mode.id)}
+                data-keep-icon={variant === 'list' ? '' : undefined}
+                className={cn(
+                  'flex min-w-0 items-center transition-colors duration-150',
+                  variant === 'rail' && 'h-9 w-9 justify-center rounded-lg lg:h-[36px] lg:w-[36px]',
+                  variant === 'list' && 'min-h-[28px] w-full gap-2 rounded-[10px] px-[6px] text-left text-sm',
+                  variant === 'row' && 'min-h-11 w-full justify-center rounded-[10px] px-1 text-center text-sm',
+                  variant === 'rail'
+                    ? isActive
+                      ? 'bg-primary/8 text-foreground'
+                      : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    : isActive
+                      ? 'bg-card font-medium text-foreground shadow-[0_1px_2px_hsl(var(--foreground)/0.08),0_0_0_1px_hsl(var(--border)/0.7)]'
+                      : 'text-muted-foreground hover:bg-card/60 hover:text-foreground',
+                )}
+                aria-pressed={isActive}
+                aria-label={bilingualAria(mode.shortLabel, labelEl)}
+              >
+                {variant !== 'row' && (
+                  <NavIcon
+                    name={glyphForMode(mode.id)}
+                    fallback={Icon}
+                    className={cn(
+                      variant === 'rail' ? 'icon-md' : 'icon-sm',
+                      'shrink-0',
+                      variant === 'list' && !isActive && 'text-muted-foreground/70',
+                    )}
+                  />
+                )}
+                {variant === 'list' && (
+                  <span lang={greek ? 'el' : 'en'} className="min-w-0 truncate">
+                    {greek ? labelEl : mode.shortLabel}
+                  </span>
+                )}
+                {variant === 'row' && (
+                  <span lang={greek ? 'el' : 'en'} className="min-w-0 leading-tight [hyphens:manual]">
+                    {greek ? MODE_LABEL_EL_ROW[mode.id] : mode.shortLabel}
+                  </span>
+                )}
+              </button>
+            );
 
-          return (
-            <Tooltip key={mode.id}>
-              <TooltipTrigger asChild>{button}</TooltipTrigger>
-              <TooltipContent side="right" className="text-xs">
-                <BilingualText en={mode.shortLabel} el={labelEl} />
-              </TooltipContent>
-            </Tooltip>
-          );
-        })}
+            if (variant === 'row') return button;
+
+            return (
+              <Tooltip key={mode.id}>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[240px] text-xs">
+                  <p className="font-medium text-foreground">
+                    <BilingualText en={mode.shortLabel} el={labelEl} />
+                  </p>
+                  <p className="text-muted-foreground">
+                    <BilingualText en={hint.en} el={hint.el} />
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
       </div>
     </TooltipProvider>
   );
