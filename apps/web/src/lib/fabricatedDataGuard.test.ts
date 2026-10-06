@@ -32,6 +32,7 @@ const ALLOWED: Record<string, string> = {
   'hooks/useRealtimeMessages.ts': 'optimistic message id',
   'lib/copilot-engine.ts': 'id for an assistant card',
   'lib/copilot-reads.ts': 'id for an assistant card',
+  'lib/demo/commitments-world.ts': 'token for a demo public card link',
   'lib/feed-demo.ts': 'local post id',
   'lib/preview-api.ts': 'demo comment id',
 };

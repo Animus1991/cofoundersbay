@@ -33,6 +33,7 @@ import { ExpertReviewsModule } from './expert-reviews/expert-reviews.module';
 import { SecurityModule } from './security/security.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { OpportunitiesModule } from './opportunities/opportunities.module';
+import { CommitmentsModule } from './commitments/commitments.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { AdminModule } from './admin/admin.module';
@@ -110,6 +111,7 @@ function findEnvFiles(): string[] {
     SecurityModule,
     MonitoringModule,
     OpportunitiesModule,
+    CommitmentsModule,
     LearningModule,
     MarketplaceModule,
     AdminModule,

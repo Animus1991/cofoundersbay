@@ -4,6 +4,7 @@ import { mergeNodeMetadata } from './canvas/canvas-geometry';
 import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
+import { previewCommitmentsApi } from './demo/commitments-world';
 import { ORG, ORG_MENTORS, ORG_SLUG } from './demo/org-world';
 import {
   harborApplicationDrafts,
@@ -2542,6 +2543,10 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // The organisation, its programs and its tenant: one world, one module.
   const orgAnswer = previewOrgApi(pathname, path, method, previewIsoInDays);
   if (orgAnswer !== undefined) return orgAnswer;
+  // Need cards and the commitment ladder: the demo world applies the same
+  // shared rules as the API, and throws its refusals in the API's shape.
+  const commitmentsAnswer = previewCommitmentsApi(pathname, path, method, body, previewNowMs());
+  if (commitmentsAnswer !== undefined) return commitmentsAnswer;
   if (pathname === `/api/org/${ORG_SLUG}/opportunities`) {
     const opportunities = PREVIEW_OPPORTUNITIES.filter((o) => o.company === ORG.name);
     return { opportunities, total: opportunities.length };

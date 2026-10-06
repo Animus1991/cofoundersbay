@@ -236,6 +236,7 @@ enum NotificationType {
   expert_review_submitted
   coaching_session_reminder
   fundraising_update
+  commitment_update
 }
 
 enum ConnectionStatus {
@@ -624,6 +625,12 @@ model User {
   // Behavioral AI Optimizer
   behavioralState             UserBehavioralState?        @relation("UserBehavioralState")
   nudgeLogs                   NudgeLog[]                  @relation("UserNudgeLogs")
+
+  // Commitments: need cards and the ladder from interest to agreed terms
+  commitmentCards             CommitmentCard[]            @relation("CommitmentCardsOwned")
+  commitmentThreads           CommitmentThread[]          @relation("CommitmentThreadsAsCandidate")
+  commitmentMessages          CommitmentMessage[]         @relation("CommitmentMessagesAuthored")
+  commitmentTerms             CommitmentTerms[]           @relation("CommitmentTermsProposed")
 
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
@@ -1217,6 +1224,139 @@ model Opportunity {
   @@index([type, isActive])
   @@index([createdById])
   @@index([createdAt])
+}
+
+// ── Commitments ─────────────────────────────────────────────────────────────
+// A need card says what already exists, the goal it is for and the person who
+// is missing, and what is offered (role, equity, hours, scope). Only
+// commitments that bind people use the ladder: a co-founder seat, an equity
+// role, an investor introduction. Interest leads to a protected conversation
+// (no contact details), each side confirms separately, then terms are
+// versioned (three revisions) and frozen while the deal room is open.
+// Provisioned with `prisma db push`, like the other schema-only models.
+
+enum CommitmentKind {
+  cofounder
+  equity_role
+  investor_intro
+}
+
+enum CommitmentOutcome {
+  open
+  in_discussion
+  agreed
+  closed
+}
+
+enum CommitmentStep {
+  interest
+  conversation
+  terms
+  agreed
+  closed
+}
+
+model CommitmentCard {
+  id           String             @id @default(uuid())
+  ownerId      String
+  owner        User               @relation("CommitmentCardsOwned", fields: [ownerId], references: [id], onDelete: Cascade)
+  kind         CommitmentKind
+  title        String
+  exists       String             @db.Text
+  goal         String             @db.Text
+  missing      String             @db.Text
+  offerRole    String
+  offerEquity  String?
+  offerHours   Int
+  offerScope   String
+  category     String
+  place        String?
+  isRemote     Boolean            @default(false)
+  stage        String
+  commitment   String
+  // A project lives in the browser until a projects API exists, so this is
+  // its id as the web app knows it, not a foreign key.
+  projectRef   String?
+  // Snapshot taken from the owner's own records when the card is published.
+  evidence     Json?
+  version      Int                @default(1)
+  // [{ version, offer, at }]: the offer as it was before each new version.
+  history      Json?
+  status       CommitmentOutcome  @default(open)
+  closedReason String?
+  settledAt    DateTime?
+  // An open card with no discussion closes as `expired` after this.
+  expiresAt    DateTime?
+  shareToken   String?            @unique
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  threads      CommitmentThread[]
+
+  @@index([ownerId])
+  @@index([status, kind])
+  @@index([projectRef])
+  @@index([category])
+  @@index([stage])
+}
+
+model CommitmentThread {
+  id                   String              @id @default(uuid())
+  cardId               String
+  card                 CommitmentCard      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  candidateId          String
+  candidate            User                @relation("CommitmentThreadsAsCandidate", fields: [candidateId], references: [id], onDelete: Cascade)
+  step                 CommitmentStep      @default(interest)
+  note                 String?             @db.Text
+  cardVersion          Int                 @default(1)
+  ownerConfirmedAt     DateTime?
+  candidateConfirmedAt DateTime?
+  revisions            Int                 @default(0)
+  dealRoomActive       Boolean             @default(false)
+  agreedAt             DateTime?
+  closedById           String?
+  closedReason         String?
+  closedAt             DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  messages             CommitmentMessage[]
+  terms                CommitmentTerms[]
+
+  @@unique([cardId, candidateId])
+  @@index([candidateId])
+  @@index([step])
+}
+
+model CommitmentMessage {
+  id        String           @id @default(uuid())
+  threadId  String
+  thread    CommitmentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User             @relation("CommitmentMessagesAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String           @db.Text
+  createdAt DateTime         @default(now())
+
+  @@index([threadId, createdAt])
+}
+
+model CommitmentTerms {
+  id                  String           @id @default(uuid())
+  threadId            String
+  thread              CommitmentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  version             Int
+  proposedById        String
+  proposedBy          User             @relation("CommitmentTermsProposed", fields: [proposedById], references: [id], onDelete: Cascade)
+  role                String
+  equityPct           Float?
+  vestingMonths       Int?
+  cliffMonths         Int?
+  hoursPerWeek        Int?
+  scope               String
+  note                String?          @db.Text
+  ownerAcceptedAt     DateTime?
+  candidateAcceptedAt DateTime?
+  createdAt           DateTime         @default(now())
+
+  @@unique([threadId, version])
 }
 
 // Learning resources (articles, videos, courses, etc.)

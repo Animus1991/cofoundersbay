@@ -104,7 +104,8 @@ export type InvalidationTopic =
   | 'programs'
   | 'invites'
   | 'endorsements'
-  | 'mentorships';
+  | 'mentorships'
+  | 'commitments';
 
 export type ActionDeclaration = {
   id: string;

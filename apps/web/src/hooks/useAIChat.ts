@@ -110,6 +110,8 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   endorsements: [qk('endorsements')],
   // Mentorship relationships and the mentor directory's counts both move.
   mentorships: [qk('mentorships'), qk('mentors')],
+  // Cards, the ladder threads and a card's public link: one resource.
+  commitments: [qk('commitments')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

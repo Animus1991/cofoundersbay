@@ -4,3 +4,4 @@ export * from './matching';
 export * from './actions';
 export * from './canvas';
 
+export * from './commitments';

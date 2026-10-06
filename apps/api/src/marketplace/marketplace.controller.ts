@@ -63,7 +63,7 @@ export class MarketplaceController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(@Request() req: any, @Body() dto: CreateMarketplaceServiceDto) {
-    const service = await this.marketplaceService.create(req.user.userId, dto);
+    const service = await this.marketplaceService.create(req.user.id, dto);
     return { service };
   }
 
@@ -75,7 +75,7 @@ export class MarketplaceController {
     @Body() dto: UpdateMarketplaceServiceDto,
   ) {
     const isAdmin = req.user.role === 'admin';
-    const service = await this.marketplaceService.update(id, req.user.userId, dto, isAdmin);
+    const service = await this.marketplaceService.update(id, req.user.id, dto, isAdmin);
     return { service };
   }
 
@@ -83,6 +83,6 @@ export class MarketplaceController {
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string, @Request() req: any) {
     const isAdmin = req.user.role === 'admin';
-    return this.marketplaceService.delete(id, req.user.userId, isAdmin);
+    return this.marketplaceService.delete(id, req.user.id, isAdmin);
   }
 }

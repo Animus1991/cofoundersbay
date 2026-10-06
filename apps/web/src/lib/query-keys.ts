@@ -31,6 +31,8 @@ export const QUERY_ROOTS = [
   'automation',
   'billing',
   'builder',
+  // Need cards, the commitment ladder and public cards (one resource).
+  'commitments',
   'connection-status',
   'connections',
   'conversations',

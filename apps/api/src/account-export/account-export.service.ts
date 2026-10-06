@@ -128,6 +128,15 @@ export class AccountExportService {
         read('activity', 'savedProfiles', () => this.prisma.savedProfile.findMany({ where: { savedById: userId }, select: { userId: true, note: true, createdAt: true }, take: LIMIT })),
         read('activity', 'notifications', () => this.prisma.notification.findMany({ where: { userId }, select: { type: true, title: true, body: true, link: true, createdAt: true, readAt: true }, orderBy: { createdAt: 'desc' }, take: LIMIT })),
       ]);
+      // Commitments: the cards they wrote (never the share token, which is a
+      // credential for the public link), the ladders they took part in from
+      // either side, and only the messages and terms they wrote themselves.
+      const [needCards, commitmentThreads, commitmentMessages, commitmentTerms] = await Promise.all([
+        read('activity', 'needCards', () => this.prisma.commitmentCard.findMany({ where: { ownerId: userId }, select: { id: true, kind: true, title: true, exists: true, goal: true, missing: true, offerRole: true, offerEquity: true, offerHours: true, offerScope: true, category: true, place: true, isRemote: true, stage: true, commitment: true, projectRef: true, version: true, history: true, status: true, closedReason: true, settledAt: true, expiresAt: true, createdAt: true, updatedAt: true }, take: LIMIT })),
+        read('activity', 'commitmentThreads', () => this.prisma.commitmentThread.findMany({ where: { OR: [{ candidateId: userId }, { card: { ownerId: userId } }] }, select: { id: true, cardId: true, candidateId: true, step: true, note: true, cardVersion: true, ownerConfirmedAt: true, candidateConfirmedAt: true, revisions: true, dealRoomActive: true, agreedAt: true, closedReason: true, closedAt: true, createdAt: true }, take: LIMIT })),
+        read('activity', 'commitmentMessagesSent', () => this.prisma.commitmentMessage.findMany({ where: { authorId: userId }, select: { id: true, threadId: true, body: true, createdAt: true }, orderBy: { createdAt: 'asc' }, take: LIMIT })),
+        read('activity', 'commitmentTermsProposed', () => this.prisma.commitmentTerms.findMany({ where: { proposedById: userId }, select: { threadId: true, version: true, role: true, equityPct: true, vestingMonths: true, cliffMonths: true, hoursPerWeek: true, scope: true, note: true, createdAt: true }, take: LIMIT })),
+      ]);
       data.activity = {
         eventRsvps: capped(rsvps),
         groupMemberships: capped(groups),
@@ -136,6 +145,10 @@ export class AccountExportService {
         endorsementsReceived: capped(endorsementsReceived),
         savedProfiles: capped(saved),
         notifications: capped(notifications),
+        needCards: capped(needCards),
+        commitmentThreads: capped(commitmentThreads),
+        commitmentMessagesSent: capped(commitmentMessages),
+        commitmentTermsProposed: capped(commitmentTerms),
       };
     }
 

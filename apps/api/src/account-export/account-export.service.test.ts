@@ -26,6 +26,10 @@ function prismaStub(overrides: Record<string, Record<string, unknown>> = {}) {
     savedProfile: { findMany: empty() },
     notification: { findMany: empty() },
     milestone: { findMany: empty() },
+    commitmentCard: { findMany: empty() },
+    commitmentThread: { findMany: empty() },
+    commitmentMessage: { findMany: empty() },
+    commitmentTerms: { findMany: empty() },
   };
   for (const [model, methods] of Object.entries(overrides)) base[model] = { ...base[model], ...methods };
   return base;
@@ -87,5 +91,16 @@ describe('AccountExportService.build', () => {
     expect(out.unavailable).toEqual([{ section: 'activity', part: 'savedProfiles', reason: 'The table `public.SavedProfile` does not exist' }]);
     expect((out.data.activity as { savedProfiles: unknown }).savedProfiles).toBeNull();
     expect((out.data.activity as { notifications: unknown }).notifications).toEqual({ items: [], truncated: false });
+  });
+
+  it('exports the commitments the reader took part in, never a share token or another person’s words', async () => {
+    const prisma = prismaStub();
+    await new AccountExportService(prisma as never).build('u1', ['activity']);
+    const cardQuery = (prisma.commitmentCard.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(cardQuery.where).toEqual({ ownerId: 'u1' });
+    expect(cardQuery.select.shareToken).toBeUndefined();
+    expect((prisma.commitmentThread.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where).toEqual({ OR: [{ candidateId: 'u1' }, { card: { ownerId: 'u1' } }] });
+    expect((prisma.commitmentMessage.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where).toEqual({ authorId: 'u1' });
+    expect((prisma.commitmentTerms.findMany as ReturnType<typeof vi.fn>).mock.calls[0][0].where).toEqual({ proposedById: 'u1' });
   });
 });

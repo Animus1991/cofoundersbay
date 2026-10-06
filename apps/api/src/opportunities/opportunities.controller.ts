@@ -42,7 +42,7 @@ export class OpportunitiesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(@Request() req: any, @Body() dto: CreateOpportunityDto) {
-    const opportunity = await this.opportunitiesService.create(req.user.userId, dto);
+    const opportunity = await this.opportunitiesService.create(req.user.id, dto);
     return { opportunity };
   }
 
@@ -54,7 +54,7 @@ export class OpportunitiesController {
     @Body() dto: UpdateOpportunityDto,
   ) {
     const isAdmin = req.user.role === 'admin';
-    const opportunity = await this.opportunitiesService.update(id, req.user.userId, dto, isAdmin);
+    const opportunity = await this.opportunitiesService.update(id, req.user.id, dto, isAdmin);
     return { opportunity };
   }
 
@@ -62,6 +62,6 @@ export class OpportunitiesController {
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string, @Request() req: any) {
     const isAdmin = req.user.role === 'admin';
-    return this.opportunitiesService.delete(id, req.user.userId, isAdmin);
+    return this.opportunitiesService.delete(id, req.user.id, isAdmin);
   }
 }

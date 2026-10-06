@@ -129,6 +129,16 @@ const STATUS_EL: Record<string, string> = {
   advisory: 'συμβουλευτική',
   contract: 'σύμβαση',
   flexible: 'ευέλικτη',
+  // Commitments: card kinds, outcomes, ladder steps and close reasons
+  'equity role': 'ρόλος με equity',
+  'investor intro': 'σύσταση σε επενδυτή',
+  'in discussion': 'σε συζήτηση',
+  agreed: 'συμφωνήθηκε',
+  interest: 'ενδιαφέρον',
+  conversation: 'συζήτηση',
+  terms: 'όροι',
+  filled: 'καλύφθηκε',
+  expired: 'έληξε',
 };
 
 /** "in_progress" → "In progress": an enum value read as a word, not a token. */

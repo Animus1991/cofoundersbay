@@ -52,7 +52,7 @@ export class LearningController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(@Request() req: any, @Body() dto: CreateLearningResourceDto) {
-    const resource = await this.learningService.create(req.user.userId, dto);
+    const resource = await this.learningService.create(req.user.id, dto);
     return { resource };
   }
 
@@ -64,7 +64,7 @@ export class LearningController {
     @Body() dto: UpdateLearningResourceDto,
   ) {
     const isAdmin = req.user.role === 'admin';
-    const resource = await this.learningService.update(id, req.user.userId, dto, isAdmin);
+    const resource = await this.learningService.update(id, req.user.id, dto, isAdmin);
     return { resource };
   }
 
@@ -72,6 +72,6 @@ export class LearningController {
   @UseGuards(JwtAuthGuard)
   async delete(@Param('id') id: string, @Request() req: any) {
     const isAdmin = req.user.role === 'admin';
-    return this.learningService.delete(id, req.user.userId, isAdmin);
+    return this.learningService.delete(id, req.user.id, isAdmin);
   }
 }
