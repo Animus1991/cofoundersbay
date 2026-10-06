@@ -1819,6 +1819,71 @@ function previewIsoInDays(days: number, hour = 14): string {
   return d.toISOString();
 }
 
+type PreviewBooking = {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  startAt: string;
+  endAt: string;
+  timezone: string | null;
+  meetingType: 'video' | 'in_person' | 'chat';
+  meetingUrl: string | null;
+  notes: string | null;
+  status: 'requested' | 'confirmed' | 'cancelled' | 'completed';
+  priceCents: number | null;
+  currency: string | null;
+  mentor: { id: string; displayName: string; avatarUrl: string | null };
+  mentee: { id: string; displayName: string; avatarUrl: string | null };
+};
+
+function previewBookingPerson(id: string, fallbackName: string) {
+  const u = PREVIEW_ADMIN_USERS.find((x) => x.id === id);
+  const p = PEOPLE.find((x) => x.userId === id);
+  return { id, displayName: u?.name ?? p?.displayName ?? fallbackName, avatarUrl: null };
+}
+
+const previewBookingSeed = (
+  id: string,
+  mentorId: string,
+  menteeId: string,
+  menteeName: string,
+  status: PreviewBooking['status'],
+  days: number,
+  hour: number,
+) => ({
+  id,
+  mentorId,
+  menteeId,
+  startAt: previewIsoInDays(days, hour),
+  endAt: previewIsoInDays(days, hour + 1),
+  timezone: 'Europe/Athens',
+  meetingType: 'video' as const,
+  meetingUrl: status === 'confirmed' ? `https://meet.example.com/${id}` : null,
+  notes: null,
+  status,
+  priceCents: null,
+  currency: null,
+  mentor: previewBookingPerson(mentorId, 'Mentor'),
+  mentee: previewBookingPerson(menteeId, menteeName),
+});
+
+/**
+ * The demo's bookings: the store /mentoring's "Book session" writes and every
+ * session list now reads beside the mentorship sessions. One the reader
+ * mentors (Sofia, who already has a relationship), one from a founder with no
+ * relationship yet (Giorgos), and one where the reader is the mentee (Sarah).
+ * Seeded lazily: the people table it resolves names from is declared later.
+ */
+let previewBookings: PreviewBooking[] | null = null;
+function previewBookingsState(): PreviewBooking[] {
+  previewBookings ??= [
+    previewBookingSeed('preview-book-sofia', ME_ID, 'user-sofia', 'Sofia Alexiou', 'confirmed', 3, 11),
+    previewBookingSeed('preview-book-giorgos', ME_ID, 'user-giorgos', 'Giorgos Vlachos', 'requested', 5, 10),
+    previewBookingSeed('preview-book-sarah', 'user-sarah', ME_ID, 'Alex Demo', 'confirmed', 4, 15),
+  ];
+  return previewBookings;
+}
+
 /** The demo mentor's weekly hours: the Tuesday and Thursday slots /mentor/* books into. */
 let previewAvailability: { id: string; mentorId: string; weekday: number; startTime: string; endTime: string; timezone: string | null }[] = [
   { id: 'avail-1', mentorId: 'preview-demo-user', weekday: 2, startTime: '10:00', endTime: '13:00', timezone: 'Europe/Athens' },
@@ -4504,6 +4569,51 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (/^\/api\/mentorship\/requests\/[^/]+\/respond$/.test(pathname) && method === 'POST') {
     const sent = (body ?? {}) as { accept?: boolean };
     return { request: { id: pathname.split('/')[4], status: sent.accept ? 'accepted' : 'declined' } };
+  }
+
+  // Session bookings: the other mentoring store. `scope` picks whose side;
+  // POST starts as requested; PATCH carries the mentor's answer, as the API does.
+  if (pathname === '/api/mentor/bookings') {
+    if (method === 'POST') {
+      const sent = (body ?? {}) as { mentorId?: string; startAt?: string; endAt?: string; timezone?: string; meetingType?: PreviewBooking['meetingType']; notes?: string };
+      const created: PreviewBooking = {
+        id: `preview-book-${Date.now().toString(36)}`,
+        mentorId: sent.mentorId ?? 'user-sarah',
+        menteeId: ME_ID,
+        startAt: sent.startAt ?? previewIsoInDays(7, 11),
+        endAt: sent.endAt ?? previewIsoInDays(7, 12),
+        timezone: sent.timezone ?? null,
+        meetingType: sent.meetingType ?? 'video',
+        meetingUrl: null,
+        notes: sent.notes ?? null,
+        status: 'requested',
+        priceCents: null,
+        currency: null,
+        mentor: previewBookingPerson(sent.mentorId ?? 'user-sarah', 'Mentor'),
+        mentee: previewBookingPerson(ME_ID, 'Alex Demo'),
+      };
+      previewBookings = [...previewBookingsState(), created];
+      return { booking: created };
+    }
+    const scope = new URLSearchParams(path.split('?')[1] ?? '').get('scope');
+    const rows = previewBookingsState().filter((b) =>
+      scope === 'mentor' ? b.mentorId === ME_ID : scope === 'mentee' ? b.menteeId === ME_ID : true,
+    );
+    return { bookings: rows };
+  }
+  const bookingMatch = pathname.match(/^\/api\/mentor\/bookings\/([^/]+)$/);
+  if (bookingMatch && (method === 'PATCH' || method === 'PUT')) {
+    const sent = (body ?? {}) as { status?: PreviewBooking['status']; meetingUrl?: string | null; notes?: string | null };
+    const found = previewBookingsState().find((b) => b.id === bookingMatch[1]);
+    if (!found) return { booking: null };
+    const next: PreviewBooking = {
+      ...found,
+      status: sent.status ?? found.status,
+      meetingUrl: sent.meetingUrl !== undefined ? sent.meetingUrl : found.meetingUrl ?? (sent.status === 'confirmed' ? `https://meet.example.com/${found.id}` : null),
+      notes: sent.notes !== undefined ? sent.notes : found.notes,
+    };
+    previewBookings = previewBookingsState().map((b) => (b.id === found.id ? next : b));
+    return { booking: next };
   }
 
   // The reader's weekly hours as a mentor. PUT replaces them, as the API does,

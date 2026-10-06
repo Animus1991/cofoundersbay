@@ -32,7 +32,9 @@ import {
   getMyMentorships,
   getMyReceivedMentorRequests,
   getUpcomingMentorshipSessions,
+  listMentorBookings,
 } from '@/lib/api';
+import { fromBooking } from '@/lib/mentoring/sessions';
 import { mentorDemoMonthEarnings, mentorDemoRating } from '@/lib/demo/mentor-world';
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
@@ -163,6 +165,14 @@ export default function MentorDashboard() {
     enabled,
     retry: 0,
   });
+  // Founders' direct bookings (the /mentoring store) count on the mentor's
+  // calendar too - before this read they were invisible here.
+  const { data: bookingData } = useQuery({
+    queryKey: qk('mentorships', 'bookings', 'mentor'),
+    queryFn: () => listMentorBookings('mentor'),
+    enabled,
+    retry: 0,
+  });
 
   const relationships = relData?.relationships ?? [];
   const activeRelationships = relationships.filter((r) => r.status === 'active');
@@ -178,6 +188,20 @@ export default function MentorDashboard() {
       duration: x.duration,
       meetingUrl: x.meetingUrl,
     }));
+  const requestedBookings = (bookingData?.bookings ?? []).filter((b) => b.status === 'requested');
+  const upcomingBookings = (bookingData?.bookings ?? [])
+    .filter((b) => b.status === 'requested' || b.status === 'confirmed')
+    .map((b) => {
+      const u = fromBooking(b, null);
+      return {
+        id: b.id,
+        menteeName: u.counterpart.displayName,
+        scheduledAt: u.startAt,
+        duration: u.durationMin ?? 0,
+        meetingUrl: u.meetingUrl,
+      };
+    });
+  const upcomingAll = [...upcomingSessions, ...upcomingBookings].sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
   const mentees = activeRelationships.map((r) => ({
     id: r.menteeId,
     name: r.mentee?.displayName ?? 'Mentee',
@@ -196,13 +220,13 @@ export default function MentorDashboard() {
     activeMentees: stats?.activeMentees ?? activeRelationships.length,
     totalSessions: stats?.totalSessions ?? relationships.reduce((sum, r) => sum + r.totalSessions, 0),
     completedMentorships: stats?.completedMentorships ?? relationships.filter((r) => r.status === 'completed').length,
-    upcomingSessions: upcomingSessions.length,
+    upcomingSessions: upcomingAll.length,
     avgRating: averageRating == null ? '\u2014' : averageRating.toFixed(1),
     hoursThisMonth: month ? Math.round((month.minutes / 60) * 10) / 10 : null,
     earningsThisMonth: month ? `$${month.amount.toLocaleString('en-US')}` : null,
   };
 
-  const nextSession = upcomingSessions[0];
+  const nextSession = upcomingAll[0];
   const nextSessionMinsAway = nextSession
     ? Math.round((new Date(nextSession.scheduledAt).getTime() - Date.now()) / 60000)
     : null;
@@ -294,6 +318,21 @@ export default function MentorDashboard() {
           />
         </div>
 
+        {/* A booking waits on the mentor, not the founder: surface it as a
+            warning line rather than letting it pass for a scheduled session. */}
+        {requestedBookings.length > 0 && (
+          <Link
+            href="/mentor/sessions"
+            className="flex items-center gap-2 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 text-sm font-medium text-status-warning transition-colors hover:border-status-warning"
+          >
+            <Calendar className="icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText
+              en={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'booking' : 'bookings'} await your confirmation`}
+              el={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'κράτηση περιμένει' : 'κρατήσεις περιμένουν'} επιβεβαίωση`}
+            />
+          </Link>
+        )}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Requests lead when there are any: they wait on this mentor. */}
@@ -311,10 +350,10 @@ export default function MentorDashboard() {
             )}
 
             <SectionCard title="Upcoming sessions" titleEl="Επόμενες συνεδρίες" icon={Calendar} action={{ href: '/mentor/sessions', label: 'View all', labelEl: 'Όλες' }}>
-              {upcomingSessions.map((session, i) => (
+              {upcomingAll.map((session, i) => (
                 <SessionRowItem key={session.id} session={session} next={i === 0} />
               ))}
-              {upcomingSessions.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
+              {upcomingAll.length === 0 && <EmptyLine en="No upcoming sessions scheduled." el="Δεν υπάρχουν προγραμματισμένες συνεδρίες." />}
             </SectionCard>
 
             <SectionCard title="Your mentees" titleEl="Οι καθοδηγούμενοί σας" icon={UserCheck} action={{ href: '/mentor/mentees', label: 'View all', labelEl: 'Όλοι' }}>

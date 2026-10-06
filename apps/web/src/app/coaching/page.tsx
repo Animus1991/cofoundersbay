@@ -3,6 +3,10 @@
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { useToast } from '@/components/ui/toast';
+import { BookingCard } from '@/components/mentoring/BookingCard';
+import { fromBooking, isUpcoming, type UnifiedSession } from '@/lib/mentoring/sessions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -16,7 +20,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction } from '@/components/layout/RailParts';
-import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +34,8 @@ import {
   getMyMentorships,
   getMentorshipSessions,
   discoverMentors,
+  listMentorBookings,
+  updateMentorBooking,
   updateMentorshipSession,
   type MentorshipRelationshipItem,
   type MentorshipSessionItem,
@@ -676,6 +682,36 @@ export default function CoachingPage() {
     retry: 0,
   });
 
+  /*
+   * Sessions booked directly on /mentoring live in the booking store, not a
+   * relationship. Until this read they were invisible on the founder's own
+   * coaching page.
+   */
+  const queryClient = useQueryClient();
+  const { success: toastSuccess, error: toastError } = useToast();
+  const userId = useStoredUser()?.id ?? null;
+  const { data: bookingData, isLoading: bookingsLoading } = useQuery({
+    queryKey: qk('mentorships', 'bookings', 'mentee'),
+    queryFn: () => listMentorBookings('mentee'),
+    staleTime: 30_000,
+    retry: 0,
+  });
+  const [bookingActing, setBookingActing] = useState(false);
+  const cancelBooking = async (id: string) => {
+    setBookingActing(true);
+    try {
+      await updateMentorBooking(id, { status: 'cancelled' });
+      toastSuccess('Booking cancelled');
+      await queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
+    } catch (e) {
+      toastError('Could not cancel the booking', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The booking is still live.' };
+    } finally {
+      setBookingActing(false);
+    }
+  };
+  const bookingRows = (bookingData?.bookings ?? []).map((b) => fromBooking(b, userId));
+
   const relationships = useMemo(
     () => relationshipData?.relationships ?? [],
     [relationshipData],
@@ -742,6 +778,36 @@ export default function CoachingPage() {
     : coaches;
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
+
+  // Bookings merge into the same upcoming/completed groupings the page
+  // already draws, earliest first.
+  const upcomingBookings = bookingRows.filter(isUpcoming);
+  const completedBookings = bookingRows.filter((u) => u.status === 'completed');
+  type Row = { kind: 'session'; s: CoachingSession; at: string } | { kind: 'booking'; u: UnifiedSession; at: string };
+  const upcomingMerged: Row[] = [
+    ...upcoming.map((s) => ({ kind: 'session' as const, s, at: s.scheduledAt })),
+    ...upcomingBookings.map((u) => ({ kind: 'booking' as const, u, at: u.startAt })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  const completedMerged: Row[] = [
+    ...completed.map((s) => ({ kind: 'session' as const, s, at: s.scheduledAt })),
+    ...completedBookings.map((u) => ({ kind: 'booking' as const, u, at: u.startAt })),
+  ].sort((a, b) => b.at.localeCompare(a.at));
+
+  const renderRow = (row: Row) =>
+    row.kind === 'session' ? (
+      <SessionCard key={`session:${row.s.id}`} session={row.s} />
+    ) : row.u.booking ? (
+      <BookingCard
+        key={row.u.key}
+        booking={row.u.booking}
+        userId={userId}
+        showSource
+        isActing={bookingActing}
+        onConfirm={() => void cancelBooking(row.u.id)}
+        onDecline={() => void cancelBooking(row.u.id)}
+        onCancel={() => void cancelBooking(row.u.id)}
+      />
+    ) : null;
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);
   const completedActions = totalActionItems.filter((a) => a.done).length;
 
@@ -755,7 +821,7 @@ export default function CoachingPage() {
    */
   const railStats = [
     { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+    { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcomingMerged.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
     { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
     { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
   ];
@@ -765,7 +831,10 @@ export default function CoachingPage() {
       id: 'sessions',
       labelEn: 'Coaching sessions',
       labelEl: 'Συνεδρίες coaching',
-      rows: sessionsLoading ? undefined : sessions.map((s) => `${s.scheduledAt.slice(0, 10)} · ${s.title} · with ${s.coachName} · ${s.status} · ${s.durationMinutes} min`),
+      rows: sessionsLoading || bookingsLoading ? undefined : [
+        ...sessions.map((s) => `${s.scheduledAt.slice(0, 10)} · ${s.title} · with ${s.coachName} · ${s.status} · ${s.durationMinutes} min`),
+        ...bookingRows.map((u) => `${u.startAt.slice(0, 10)} · ${u.counterpart.displayName} · ${u.status} · ${u.durationMin != null ? `${u.durationMin} min` : '—'} · booking`),
+      ],
       sample: liveSessions.length === 0 && showDemoData,
     },
     {
@@ -793,6 +862,14 @@ export default function CoachingPage() {
       setSpecialtyFilter(v === 'any' ? null : (v as SessionType));
       if (v !== 'any') setActiveTab('find');
     }),
+    {
+      id: 'cancel_booking',
+      labelEn: 'Cancel booking',
+      labelEl: 'Ακύρωση κράτησης',
+      writes: true,
+      options: rowOptions(upcomingBookings, (u) => u.id, (u) => `${u.counterpart.displayName} · ${u.startAt.slice(0, 16).replace('T', ' ')}`),
+      run: (v) => (v && bookingData?.bookings?.some((b) => b.id === v) ? cancelBooking(v) : ROW_GONE),
+    },
   ]);
 
   const rail: PageRailSection[] = [
@@ -903,25 +980,34 @@ export default function CoachingPage() {
       <div className="space-y-6 pb-10">
 
         {/* Upcoming session banner */}
-        {upcoming.length > 0 && (
+        {upcomingMerged.length > 0 && (() => {
+          const next = upcomingMerged[0];
+          const nextBooking = next.kind === 'booking' ? next.u : null;
+          const nextTitle = next.kind === 'session' ? next.s.title : nextBooking?.title ?? null;
+          const nextName = next.kind === 'session' ? next.s.coachName : nextBooking?.counterpart?.displayName ?? '';
+          const nextUrl = next.kind === 'session' ? next.s.meetingUrl : nextBooking?.meetingUrl ?? undefined;
+          const nextId = next.kind === 'session' ? next.s.id : nextBooking?.id ?? '';
+          return (
           <div className="rounded-xl border border-status-info-border bg-status-info-bg p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-status-info mb-1"><BilingualText en="Next Session" el="Επόμενη συνεδρία" compact /></p>
-                <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {nextTitle ?? <BilingualText en="Mentoring session" el="Συνεδρία καθοδήγησης" compact />}
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  with {upcoming[0].coachName} · <LocalWhen iso={upcoming[0].scheduledAt} variant="banner" />
+                  with {nextName} · <LocalWhen iso={next.at} variant="banner" />
                 </p>
               </div>
-              {upcoming[0].meetingUrl && (
-                isDemoSessionId(upcoming[0].id) ? (
+              {nextUrl && (
+                isDemoSessionId(nextId) ? (
                   <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
                     <Video className="icon-sm" aria-hidden="true" />
                     <BilingualText en="Join" el="Σύνδεση" compact wrap />
                   </Button>
                 ) : (
                   <Button size="sm" className="shrink-0 gap-1.5" asChild>
-                    <a href={upcoming[0].meetingUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={nextUrl} target="_blank" rel="noopener noreferrer">
                       <Video className="icon-sm" aria-hidden="true" />
                       <BilingualText en="Join" el="Σύνδεση" compact wrap />
                     </a>
@@ -930,7 +1016,8 @@ export default function CoachingPage() {
               )}
             </div>
           </div>
-        )}
+          );
+        })()}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Wraps rather than clips: four tabs and a primary action do not
@@ -952,7 +1039,7 @@ export default function CoachingPage() {
 
           {/* My Sessions */}
           <TabsContent value="sessions" className="mt-4 space-y-3">
-            {sessions.length === 0 ? (
+            {sessions.length === 0 && bookingRows.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
                   <BrainCircuit className="h-7 w-7 text-primary-accessible" />
@@ -965,16 +1052,16 @@ export default function CoachingPage() {
               </div>
             ) : (
               <>
-                {upcoming.length > 0 && (
+                {upcomingMerged.length > 0 && (
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
-                    <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} session={s} />)}</div>
+                    <div className="space-y-3">{upcomingMerged.map(renderRow)}</div>
                   </div>
                 )}
-                {completed.length > 0 && (
+                {completedMerged.length > 0 && (
                   <div className="mt-4">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
-                    <div className="space-y-3">{completed.map((s) => <SessionCard key={s.id} session={s} />)}</div>
+                    <div className="space-y-3">{completedMerged.map(renderRow)}</div>
                   </div>
                 )}
               </>

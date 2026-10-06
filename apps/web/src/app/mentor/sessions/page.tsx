@@ -27,13 +27,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
+import { BookingCard } from '@/components/mentoring/BookingCard';
+import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions, type UnifiedSession } from '@/lib/mentoring/sessions';
 import {
   getMentorshipSessions,
   getMyMentorships,
   getUpcomingMentorshipSessions,
+  listMentorBookings,
+  updateMentorBooking,
   updateMentorshipSession,
+  type MentorBookingItem,
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -81,15 +87,20 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
-              <div>
+              <div className="min-w-0">
                 <p className="font-medium">{session.title || 'Mentorship Session'}</p>
                 <p className="text-sm text-muted-foreground">
                   {formattedTime}
                 </p>
               </div>
-              <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
-                <StatusText value={session.status} />
-              </Badge>
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
+                  <StatusText value={session.status} />
+                </Badge>
+                <Badge variant="secondary" className="text-2xs">
+                  <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+                </Badge>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
@@ -148,6 +159,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
 export default function MentorSessionsPage() {
   const [activeTab, setActiveTab] = useState('upcoming');
   const { hasSession, mounted } = useSession();
+  const viewerId = useStoredUser()?.id ?? null;
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: qk('mentorships', 'sessions-upcoming'),
@@ -171,6 +183,15 @@ export default function MentorSessionsPage() {
     })),
   });
   const history = historyQueries.flatMap((q) => q.data?.sessions ?? []);
+  // Bookings are the same sessions booked directly on /mentoring; until this
+  // read they were invisible to the mentor they were sent to.
+  const { data: bookingData, isLoading: bookingsLoading } = useQuery({
+    queryKey: qk('mentorships', 'bookings', 'mentor'),
+    queryFn: () => listMentorBookings('mentor'),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const { success, error: toastError } = useToast();
@@ -181,6 +202,7 @@ export default function MentorSessionsPage() {
   const refresh = () => {
     void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions-upcoming') });
     void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'sessions') });
+    void queryClient.invalidateQueries({ queryKey: qk('mentorships', 'bookings') });
   };
 
   // /mentor/sessions?new=1&mentee=<id> - how the mentees page asks for a new
@@ -210,6 +232,29 @@ export default function MentorSessionsPage() {
       return { error: e instanceof Error && e.message ? e.message : 'The session is still booked.' };
     }
   };
+  const [bookingActing, setBookingActing] = useState(false);
+  const setBookingStatus = async (b: MentorBookingItem, status: 'confirmed' | 'cancelled'): Promise<PageControlRunResult> => {
+    if (status === 'cancelled') {
+      const ok = await confirm({
+        title: <BilingualText en="Cancel this booking?" el="Ακύρωση αυτής της κράτησης;" />,
+        description: <BilingualText en="The founder sees it as cancelled." el="Ο ιδρυτής τη βλέπει ως ακυρωμένη." />,
+        confirmLabel: <BilingualText en="Cancel booking" el="Ακύρωση κράτησης" compact />,
+      });
+      if (!ok) return CANCELLED;
+    }
+    setBookingActing(true);
+    try {
+      await updateMentorBooking(b.id, { status });
+      success(status === 'confirmed' ? 'Booking confirmed' : 'Booking cancelled');
+      refresh();
+    } catch (e) {
+      toastError(status === 'confirmed' ? 'Could not confirm the booking' : 'Could not cancel the booking', e instanceof Error ? e.message : undefined);
+      return { error: e instanceof Error && e.message ? e.message : 'The booking did not change.' };
+    } finally {
+      setBookingActing(false);
+    }
+  };
+
   const actions: SessionActions = { onReschedule: setRescheduling, onCancel: (s) => void cancelSession(s), onNotes: setNotesFor };
   const dialogs = (
     <>
@@ -235,20 +280,58 @@ export default function MentorSessionsPage() {
   const byId = new Map<string, MentorshipSessionItem>();
   for (const x of [...(data?.sessions ?? []), ...history]) byId.set(x.id, x);
   const sessions = [...byId.values()];
-  const upcomingSessions = sessions.filter((s) => s.status === 'scheduled').sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
-  const pastSessions = sessions.filter((s) => s.status !== 'scheduled').sort((a, b) => b.scheduledAt.localeCompare(a.scheduledAt));
+
+  const relationships = relData?.relationships ?? [];
+  const relById = new Map(relationships.map((r) => [r.id, r]));
+  const bookings = bookingData?.bookings ?? [];
+
+  // One list over both stores; mergeSessions orders upcoming asc, past desc.
+  const unified = mergeSessions([
+    ...sessions
+      .filter((s) => relById.has(s.relationshipId))
+      .map((s) => fromMentorshipSession(s, relById.get(s.relationshipId)!, viewerId)),
+    ...bookings.map((b) => fromBooking(b, viewerId)),
+  ]);
+  const upcomingRows = unified.filter(isUpcoming);
+  const pastRows = unified.filter((u) => !isUpcoming(u));
+  const requestedBookings = bookings.filter((b) => b.status === 'requested');
+  const cancellableBookings = bookings.filter((b) => isUpcoming(fromBooking(b, viewerId)));
+
+  const renderRow = (u: UnifiedSession) =>
+    u.source === 'mentorship' && u.session ? (
+      <SessionCard key={u.key} session={u.session} {...actions} />
+    ) : u.booking ? (
+      <BookingCard
+        key={u.key}
+        booking={u.booking}
+        userId={viewerId}
+        showSource
+        isActing={bookingActing}
+        onConfirm={() => void setBookingStatus(u.booking!, 'confirmed')}
+        onDecline={() => void setBookingStatus(u.booking!, 'cancelled')}
+        onCancel={() => void setBookingStatus(u.booking!, 'cancelled')}
+      />
+    ) : null;
 
   // Offered to the assistant, above the loading and error returns: the tab,
   // Schedule, and each session's reschedule, notes and cancel (which asks).
   const when = (s: MentorshipSessionItem) => `${s.title || 'Session'} · ${s.scheduledAt.slice(0, 16).replace('T', ' ')}`;
+  const whenBooking = (b: MentorBookingItem) => `${b.mentee?.displayName ?? 'Mentee'} · ${b.startAt.slice(0, 16).replace('T', ' ')}`;
   const sessionById = (id?: string) => sessions.find((s) => s.id === id);
+  const bookingById = (id?: string) => bookings.find((b) => b.id === id);
   usePageList([
     {
       id: 'sessions',
       labelEn: 'Mentoring sessions',
       labelEl: 'Συνεδρίες καθοδήγησης',
-      rows: isLoading ? undefined : (activeTab === 'past' ? pastSessions : upcomingSessions).map((s) => `${when(s)} · ${s.duration} min${s.meetingType ? ` · ${s.meetingType.replace('_', ' ')}` : ''} · ${s.status}`),
-      total: sessions.length,
+      rows: isLoading || bookingsLoading ? undefined : (activeTab === 'past' ? pastRows : upcomingRows).map((u) =>
+        u.source === 'booking' && u.booking
+          ? `${whenBooking(u.booking)} · ${u.durationMin != null ? `${u.durationMin} min` : '—'}${u.meetingType ? ` · ${u.meetingType.replace('_', ' ')}` : ''} · ${u.status} · booking`
+          : u.session
+            ? `${when(u.session)} · ${u.session.duration} min${u.session.meetingType ? ` · ${u.session.meetingType.replace('_', ' ')}` : ''} · ${u.status}`
+            : u.id,
+      ),
+      total: unified.length,
     },
   ]);
   usePageControls([
@@ -257,9 +340,11 @@ export default function MentorSessionsPage() {
       { value: 'past', en: 'Past', el: 'Παρελθούσες' },
     ], activeTab, setActiveTab),
     { id: 'schedule_session', labelEn: 'Open the schedule session form', labelEl: 'Άνοιγμα φόρμας νέας συνεδρίας', writes: false, run: () => setScheduleOpen(true) },
-    { id: 'reschedule_session', labelEn: 'Reschedule session', labelEl: 'Αλλαγή ώρας συνεδρίας', writes: false, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setRescheduling(s); } },
+    { id: 'reschedule_session', labelEn: 'Reschedule session', labelEl: 'Αλλαγή ώρας συνεδρίας', writes: false, options: rowOptions(sessions.filter((s) => s.status === 'scheduled'), (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setRescheduling(s); } },
     { id: 'session_notes', labelEn: 'Open session notes', labelEl: 'Άνοιγμα σημειώσεων συνεδρίας', writes: false, options: rowOptions(sessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); if (s) setNotesFor(s); } },
-    { id: 'cancel_session', labelEn: 'Cancel session', labelEl: 'Ακύρωση συνεδρίας', writes: true, options: rowOptions(upcomingSessions, (s) => s.id, when), run: (v) => { const s = sessionById(v); return s ? cancelSession(s) : ROW_GONE; } },
+    { id: 'cancel_session', labelEn: 'Cancel session', labelEl: 'Ακύρωση συνεδρίας', writes: true, options: rowOptions(sessions.filter((s) => s.status === 'scheduled'), (s) => s.id, when), run: (v) => { const s = sessionById(v); return s ? cancelSession(s) : ROW_GONE; } },
+    { id: 'confirm_booking', labelEn: 'Confirm booking', labelEl: 'Επιβεβαίωση κράτησης', writes: true, options: rowOptions(requestedBookings, (b) => b.id, whenBooking), run: (v) => { const b = bookingById(v); return b ? setBookingStatus(b, 'confirmed') : ROW_GONE; } },
+    { id: 'cancel_booking', labelEn: 'Cancel booking', labelEl: 'Ακύρωση κράτησης', writes: true, options: rowOptions(cancellableBookings, (b) => b.id, whenBooking), run: (v) => { const b = bookingById(v); return b ? setBookingStatus(b, 'cancelled') : ROW_GONE; } },
   ]);
 
   if (!mounted) {
@@ -294,7 +379,11 @@ export default function MentorSessionsPage() {
     );
   }
 
-  const totalDuration = sessions.reduce((acc, s) => acc + (s.duration || 0), 0);
+  const totalDuration = sessions.reduce((acc, s) => acc + (s.duration || 0), 0)
+    + bookings.reduce((acc, b) => {
+        const end = new Date(b.endAt).getTime() - new Date(b.startAt).getTime();
+        return acc + (Number.isFinite(end) && end > 0 ? Math.round(end / 60000) : 0);
+      }, 0);
 
   return (
     <AppShell showHelp
@@ -322,7 +411,7 @@ export default function MentorSessionsPage() {
                 <Calendar className="icon-md text-status-info" />
               </div>
               <div>
-                <p className="page-stat text-xl font-bold">{upcomingSessions.length}</p>
+                <p className="page-stat text-xl font-bold">{upcomingRows.length}</p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
               </div>
             </CardContent>
@@ -334,7 +423,7 @@ export default function MentorSessionsPage() {
               </div>
               <div>
                 <p className="page-stat text-xl font-bold">
-                  {sessions.filter((s) => s.status === 'completed').length}
+                  {sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length}
                 </p>
                 <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
               </div>
@@ -358,9 +447,9 @@ export default function MentorSessionsPage() {
           <TabsList>
             <TabsTrigger value="upcoming" className="gap-2">
               Upcoming
-              {upcomingSessions.length > 0 && (
+              {upcomingRows.length > 0 && (
                 <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {upcomingSessions.length}
+                  {upcomingRows.length}
                 </Badge>
               )}
             </TabsTrigger>
@@ -368,21 +457,19 @@ export default function MentorSessionsPage() {
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-3 mt-4">
-            {isLoading ? (
+            {isLoading || bookingsLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
-            ) : upcomingSessions.length > 0 ? (
-              upcomingSessions.map((session) => (
-                <SessionCard key={session.id} session={session} {...actions} />
-              ))
+            ) : upcomingRows.length > 0 ? (
+              upcomingRows.map(renderRow)
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No upcoming sessions" el="Δεν υπάρχουν επερχόμενες συνεδρίες" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Schedule a session with one of your mentees" el="Προγραμματίστε συνεδρία με έναν μαθητευόμενο" wrap />
+                    <BilingualText en="Mentorship sessions and session bookings both appear here — schedule one, or answer a founder's booking." el="Οι συνεδρίες καθοδήγησης και οι κρατήσεις εμφανίζονται εδώ — προγραμματίστε μία ή απαντήστε σε κράτηση ιδρυτή." wrap />
                   </p>
                   <Button className="mt-4" onClick={() => setScheduleOpen(true)}>
                     <Plus className="mr-2 icon-sm" aria-hidden="true" />
@@ -394,14 +481,12 @@ export default function MentorSessionsPage() {
           </TabsContent>
 
           <TabsContent value="past" className="space-y-3 mt-4">
-            {isLoading ? (
+            {isLoading || bookingsLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="icon-xl animate-spin text-muted-foreground" />
               </div>
-            ) : pastSessions.length > 0 ? (
-              pastSessions.map((session) => (
-                <SessionCard key={session.id} session={session} {...actions} />
-              ))
+            ) : pastRows.length > 0 ? (
+              pastRows.map(renderRow)
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">

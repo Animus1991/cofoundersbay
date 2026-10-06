@@ -1,20 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   GraduationCap,
   Calendar,
   Clock,
-  Video,
   Users,
-  CheckCircle,
-  XCircle,
   Loader2,
   Plus,
-  ExternalLink,
   BookOpen,
   Star,
   MapPin,
@@ -22,17 +18,16 @@ import {
   Search,
   Award,
   TrendingUp,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-  FileText,
   BadgeCheck,
   Globe,
   X,
   MessageCircle,
   CalendarDays,
 } from 'lucide-react';
-import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, summarizeMeetingNotes, type MentorBookingItem, type SearchHit, type MeetingNotesSummary } from '@/lib/api';
+import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem, type SearchHit } from '@/lib/api';
+import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
+import { StatusText } from '@/components/common/StatusText';
+import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions } from '@/lib/mentoring/sessions';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -70,14 +65,6 @@ import {
 import { cn, initialsOf } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
-
-const STATUS_COLORS: Record<string, string> = {
-  requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
-  confirmed: 'bg-status-success-bg text-status-success border-status-success-border',
-  completed: 'bg-primary/15 text-primary-accessible border-primary/30',
-  cancelled: 'bg-destructive/15 text-destructive-accessible border-destructive/30',
-  declined: 'bg-muted text-muted-foreground border-border',
-};
 
 interface Mentor {
   id: string;
@@ -130,20 +117,6 @@ const PRICE_OPTIONS = [
   { value: 'Free', en: 'Free', el: 'Δωρεάν' },
   { value: 'Paid', en: 'Paid', el: 'Επί πληρωμή' },
 ] as const satisfies ReadonlyArray<{ value: PriceFilter; en: string; el: string }>;
-
-const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
-  video: { en: 'Video call', el: 'Βιντεοκλήση' },
-  chat: { en: 'Chat', el: 'Συνομιλία' },
-  in_person: { en: 'In person', el: 'Δια ζώσης' },
-};
-
-const BOOKING_STATUS_LABEL: Record<string, { en: string; el: string }> = {
-  requested: { en: 'Requested', el: 'Ζητήθηκε' },
-  confirmed: { en: 'Confirmed', el: 'Επιβεβαιώθηκε' },
-  completed: { en: 'Completed', el: 'Ολοκληρώθηκε' },
-  cancelled: { en: 'Cancelled', el: 'Ακυρώθηκε' },
-  declined: { en: 'Declined', el: 'Απορρίφθηκε' },
-};
 
 const EXPERTISE_FILTERS = [
   'All',
@@ -413,226 +386,6 @@ function BookingModal({
   );
 }
 
-function BookingCard({
-  booking,
-  userId,
-  onConfirm,
-  onDecline,
-  onCancel,
-  isActing,
-}: {
-  booking: MentorBookingItem;
-  userId: string | null;
-  onConfirm: () => void;
-  onDecline: () => void;
-  onCancel: () => void;
-  isActing: boolean;
-}) {
-  const isMentor = booking.mentorId === userId;
-  const other = isMentor ? booking.mentee : booking.mentor;
-  const otherUserId = isMentor ? booking.menteeId : booking.mentorId;
-  const start = new Date(booking.startAt);
-  const end = new Date(booking.endAt);
-  const isPast = end < new Date();
-
-  const [showNotes, setShowNotes] = useState(false);
-  const [sessionNotes, setSessionNotes] = useState('');
-  const [aiSummary, setAISummary] = useState<MeetingNotesSummary | null>(null);
-  const [summarizing, setSummarizing] = useState(false);
-  const { success: _ns, error: notifyError } = useToast();
-
-  const handleSummarize = async () => {
-    if (!sessionNotes.trim()) return;
-    setSummarizing(true);
-    try {
-      const { summary } = await summarizeMeetingNotes(sessionNotes);
-      setAISummary(summary);
-    } catch {
-      notifyError(bilingualInline('AI unavailable', 'Η τεχνητή νοημοσύνη δεν είναι διαθέσιμη'), bilingualInline('Could not generate a summary right now.', 'Δεν ήταν δυνατή η δημιουργία περίληψης αυτή τη στιγμή.'));
-    } finally {
-      setSummarizing(false);
-    }
-  };
-
-  return (
-    <Card className="card-interactive">
-      <CardContent className="p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Link href={`/profiles/${otherUserId}`} aria-label={bilingualInline(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
-              <AvatarImage src={other.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {initialsOf(other.displayName)}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <Link
-                href={`/profiles/${otherUserId}`}
-                className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
-              >
-                {other.displayName}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                {isMentor
-                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
-                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
-              </span>
-              <Badge
-                variant="outline"
-                className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
-              >
-                {BOOKING_STATUS_LABEL[booking.status]
-                  ? <BilingualText en={BOOKING_STATUS_LABEL[booking.status].en} el={BOOKING_STATUS_LABEL[booking.status].el} compact />
-                  : booking.status}
-              </Badge>
-            </div>
-
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
-                <LocalTime value={start} />
-                {' – '}
-                <LocalTime value={end} />
-              </span>
-              <span className="flex items-center gap-1">
-                <Video className="icon-sm" aria-hidden="true" />
-                {MEETING_TYPE_LABEL[booking.meetingType]
-                  ? <BilingualText en={MEETING_TYPE_LABEL[booking.meetingType].en} el={MEETING_TYPE_LABEL[booking.meetingType].el} compact />
-                  : booking.meetingType}
-              </span>
-            </div>
-
-            {booking.notes && (
-              <p className="mt-2 text-xs text-muted-foreground italic line-clamp-2">
-                &ldquo;{booking.notes}&rdquo;
-              </p>
-            )}
-
-            {isPast && (booking.status === 'completed' || booking.status === 'confirmed') && (
-              <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowNotes(!showNotes)}
-                  aria-expanded={showNotes}
-                  className="flex items-center gap-1.5 text-xs font-medium text-primary-accessible hover:text-primary/80 transition-colors"
-                >
-                  <FileText className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Session notes & AI summary" el="Σημειώσεις συνεδρίας & περίληψη AI" compact />
-                  {showNotes ? <ChevronUp className="icon-sm" aria-hidden="true" /> : <ChevronDown className="icon-sm" aria-hidden="true" />}
-                </button>
-                {showNotes && (
-                  <div className="mt-2 space-y-2">
-                    <Textarea
-                      placeholder={bilingualInline('Add your session notes, key points, decisions…', 'Προσθέστε σημειώσεις, βασικά σημεία, αποφάσεις…')}
-                      aria-label={bilingualInline('Session notes', 'Σημειώσεις συνεδρίας')}
-                      value={sessionNotes}
-                      onChange={(e) => setSessionNotes(e.target.value)}
-                      rows={3}
-                      className="text-sm"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-2 text-primary-accessible border-primary/30 hover:bg-primary/5"
-                      onClick={handleSummarize}
-                      disabled={summarizing || !sessionNotes.trim()}
-                    >
-                      {summarizing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Sparkles className="icon-sm" aria-hidden="true" />}
-                      {summarizing
-                        ? <BilingualText en="Summarising…" el="Δημιουργία περίληψης…" compact />
-                        : <BilingualText en="Summarise with AI" el="Περίληψη με AI" compact />}
-                    </Button>
-                    {aiSummary && (
-                      <div className="rounded-lg border border-primary/15 bg-primary/5 p-3 space-y-2">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="icon-sm text-primary-accessible" />
-                          <span className="text-xs font-semibold text-primary-accessible"><BilingualText en="AI summary" el="Περίληψη AI" compact /></span>
-                        </div>
-                        <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
-                        {aiSummary.actionItems.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Action items" el="Ενέργειες" compact /></p>
-                            <ul className="space-y-0.5">
-                              {aiSummary.actionItems.map((item, i) => (
-                                <li key={i} className="flex items-start gap-1 text-xs text-foreground">
-                                  <CheckCircle className="icon-sm text-primary-accessible mt-0.5 shrink-0" />
-                                  {item}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        {aiSummary.followUps.length > 0 && (
-                          <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Follow-ups" el="Επόμενα βήματα" compact /></p>
-                            <ul className="space-y-0.5">
-                              {aiSummary.followUps.map((f, i) => (
-                                <li key={i} className="text-xs text-muted-foreground">• {f}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {booking.meetingUrl && booking.status === 'confirmed' && (
-              <a
-                href={booking.meetingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-primary-accessible hover:underline"
-              >
-                <ExternalLink className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Join meeting" el="Συμμετοχή στη συνάντηση" compact />
-              </a>
-            )}
-          </div>
-
-          {!isPast && (
-            <div className="flex shrink-0 gap-2">
-              {isMentor && booking.status === 'requested' && (
-                <>
-                  <Button size="sm" className="gap-1" onClick={onConfirm} disabled={isActing}>
-                    {isActing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <CheckCircle className="icon-sm" aria-hidden="true" />}
-                    <BilingualText en="Confirm" el="Επιβεβαίωση" compact />
-                  </Button>
-                  <Button aria-label={bilingualInline('Decline', 'Απόρριψη')} size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
-                    className="text-muted-foreground hover:text-destructive-accessible">
-                    <XCircle className="icon-sm" aria-hidden="true" />
-                  </Button>
-                </>
-              )}
-              {!isMentor && booking.status === 'requested' && (
-                <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive-accessible">
-                  <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
-                </Button>
-              )}
-              {booking.status === 'confirmed' && (
-                <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive-accessible">
-                  <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function BookingSkeleton() {
   return (
     <Card>
@@ -642,6 +395,72 @@ function BookingSkeleton() {
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-3 w-60" />
           <Skeleton className="h-3 w-32" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * A mentorship session shown read-only on this tab: its actions (reschedule,
+ * notes, cancel) live on /coaching for the mentee side and /mentor/sessions
+ * for the mentor side, so the row links there instead of copying them.
+ */
+function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelationshipItem; session: MentorshipSessionItem; userId: string | null }) {
+  const u = fromMentorshipSession(session, rel, userId);
+  const start = new Date(u.startAt);
+  const end = u.endAt ? new Date(u.endAt) : null;
+  const other = u.counterpart;
+  const home = rel.mentorId === userId ? '/mentor/sessions' : '/coaching';
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <Link href={`/profiles/${other.id}`} aria-label={bilingualInline(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
+            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
+              <AvatarImage src={other.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
+                {initialsOf(other.displayName)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                {other.displayName}
+              </Link>
+              <span className="text-xs text-muted-foreground">
+                {rel.mentorId === userId
+                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+              </span>
+              <Badge variant="outline" className="text-xs">
+                <StatusText value={u.status} />
+              </Badge>
+              <Badge variant="secondary" className="text-2xs">
+                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+              </Badge>
+            </div>
+            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Calendar className="icon-sm" aria-hidden="true" />
+                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="icon-sm" aria-hidden="true" />
+                <LocalTime value={start} />
+                {end ? <> {' – '} <LocalTime value={end} /> </> : null}
+              </span>
+              {u.title && <span className="text-muted-foreground">{u.title}</span>}
+            </div>
+          </div>
+          <Button size="sm" variant="outline" className="shrink-0" asChild>
+            <Link href={home}>
+              {rel.mentorId === userId
+                ? <BilingualText en="Open in Mentor sessions" el="Άνοιγμα στις συνεδρίες μέντορα" compact />
+                : <BilingualText en="Open in Coaching" el="Άνοιγμα στο Coaching" compact />}
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -711,6 +530,42 @@ export default function MentoringPage() {
     staleTime: 30_000,
   });
 
+  /*
+   * The other session store: mentorship sessions hang off relationships on
+   * both sides of the reader. They render beside bookings as read-only rows -
+   * their actions live on /coaching and /mentor/sessions.
+   */
+  const { data: menteeRelData } = useQuery({
+    queryKey: qk('mentorships', 'mentee'),
+    queryFn: () => getMyMentorships('mentee'),
+    enabled: mainTab === 'sessions',
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const { data: mentorRelData } = useQuery({
+    queryKey: qk('mentorships', 'mentor'),
+    queryFn: () => getMyMentorships('mentor'),
+    enabled: mainTab === 'sessions',
+    staleTime: 60_000,
+    retry: 0,
+  });
+  const mentoringRelationships = useMemo(() => {
+    const byId = new Map<string, MentorshipRelationshipItem>();
+    for (const r of menteeRelData?.relationships ?? []) byId.set(r.id, r);
+    for (const r of mentorRelData?.relationships ?? []) byId.set(r.id, r);
+    return [...byId.values()];
+  }, [menteeRelData, mentorRelData]);
+  const relById = useMemo(() => new Map(mentoringRelationships.map((r) => [r.id, r])), [mentoringRelationships]);
+  const mentorshipSessionQueries = useQueries({
+    queries: mentoringRelationships.map((r) => ({
+      queryKey: qk('mentorships', 'sessions', r.id),
+      queryFn: () => getMentorshipSessions(r.id),
+      enabled: mainTab === 'sessions',
+      staleTime: 60_000,
+      retry: 0,
+    })),
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ bookingId, status }: { bookingId: string; status: MentorBookingItem['status'] }) =>
       updateMentorBooking(bookingId, { status }),
@@ -745,16 +600,35 @@ export default function MentoringPage() {
   const allBookings = data?.bookings ?? [];
   const now = new Date();
 
-  const filteredBookings = allBookings.filter((b) => {
-    const end = new Date(b.endAt);
-    if (sessionsTab === 'upcoming') return end >= now && b.status !== 'cancelled';
-    if (sessionsTab === 'past') return end < now || b.status === 'completed';
-    return true;
-  });
+  /*
+   * Both stores, one list. Bookings keep their BookingCard actions;
+   * mentorship sessions render read-only and link to the page that owns
+   * them.
+   */
+  const mentorshipSessionsLoading = mentorshipSessionQueries.some((q) => q.isLoading);
+  const unifiedSessions = useMemo(() => mergeSessions([
+    ...allBookings.map((b) => fromBooking(b, userId)),
+    ...mentorshipSessionQueries
+      .flatMap((q) => q.data?.sessions ?? [])
+      .filter((s) => relById.has(s.relationshipId))
+      .map((s) => fromMentorshipSession(s, relById.get(s.relationshipId)!, userId)),
+    // The query array is new each render; its data is what matters.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ]), [allBookings, relById, userId, mentorshipSessionQueries.map((q) => q.dataUpdatedAt).join(',')]);
 
-  const upcomingCount = allBookings.filter(
-    (b) => new Date(b.endAt) >= now && b.status !== 'cancelled',
-  ).length;
+  const upcomingSessions = unifiedSessions.filter(
+    (u) => isUpcoming(u) && (!u.endAt || new Date(u.endAt) >= now),
+  );
+  const pastSessions = unifiedSessions.filter(
+    (u) => !isUpcoming(u) || (u.endAt != null && new Date(u.endAt) < now),
+  );
+  const filteredSessions =
+    sessionsTab === 'upcoming' ? upcomingSessions
+    : sessionsTab === 'past' ? pastSessions
+    : unifiedSessions;
+
+  const upcomingCount = upcomingSessions.length;
+  const sessionsLoading = isLoading || mentorshipSessionsLoading;
 
   const handleBookMentor = (mentor: Mentor) => {
     setSelectedMentor(mentor);
@@ -809,11 +683,9 @@ export default function MentoringPage() {
       id: 'sessions',
       labelEn: 'My sessions',
       labelEl: 'Οι συνεδρίες μου',
-      rows: isLoading ? undefined : filteredBookings.map((b) => {
-        const mine = b.mentorId === userId;
-        const other = mine ? b.mentee : b.mentor;
-        return `${other?.displayName ?? 'Unknown'} (${mine ? 'mentee' : 'mentor'}) · ${b.startAt.slice(0, 16).replace('T', ' ')} UTC · ${b.meetingType} · ${b.status}`;
-      }),
+      rows: sessionsLoading ? undefined : filteredSessions.map((u) =>
+        `${u.counterpart.displayName} (${u.mentorId === userId ? 'mentee' : 'mentor'}) · ${u.startAt.slice(0, 16).replace('T', ' ')} UTC · ${u.meetingType ?? 'session'} · ${u.status} · ${u.source}`,
+      ),
     },
   ]);
 
@@ -1016,9 +888,9 @@ export default function MentoringPage() {
 
             {(['upcoming', 'past', 'all'] as const).map((t) => (
               <TabsContent key={t} value={t} className="mt-4 space-y-3">
-                {isLoading ? (
+                {sessionsLoading ? (
                   Array.from({ length: 3 }).map((_, i) => <BookingSkeleton key={i} />)
-                ) : filteredBookings.length === 0 ? (
+                ) : filteredSessions.length === 0 ? (
                   <EmptyState
                     illustration="calendar"
                     title={t === 'upcoming'
@@ -1042,17 +914,20 @@ export default function MentoringPage() {
                     }
                   />
                 ) : (
-                  filteredBookings.map((b) => (
+                  filteredSessions.map((u) => u.source === 'booking' && u.booking ? (
                     <BookingCard
-                      key={b.id}
-                      booking={b}
+                      key={u.key}
+                      booking={u.booking}
                       userId={userId}
+                      showSource
                       isActing={updateMutation.isPending}
-                      onConfirm={() => updateMutation.mutate({ bookingId: b.id, status: 'confirmed' })}
-                      onDecline={() => updateMutation.mutate({ bookingId: b.id, status: 'cancelled' })}
-                      onCancel={() => updateMutation.mutate({ bookingId: b.id, status: 'cancelled' })}
+                      onConfirm={() => updateMutation.mutate({ bookingId: u.id, status: 'confirmed' })}
+                      onDecline={() => updateMutation.mutate({ bookingId: u.id, status: 'cancelled' })}
+                      onCancel={() => updateMutation.mutate({ bookingId: u.id, status: 'cancelled' })}
                     />
-                  ))
+                  ) : u.session && u.relationship ? (
+                    <MentorshipSessionRow key={u.key} rel={u.relationship} session={u.session} userId={userId} />
+                  ) : null)
                 )}
               </TabsContent>
             ))}

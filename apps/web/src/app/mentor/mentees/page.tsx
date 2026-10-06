@@ -27,11 +27,13 @@ import { useRouter } from 'next/navigation';
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import {
   getMyMentorships,
+  listMentorBookings,
   type MentorshipRelationshipItem,
 } from '@/lib/api';
+import { isUpcoming, fromBooking } from '@/lib/mentoring/sessions';
 import { BilingualText } from '@/components/common/BilingualText';
 
-function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem }) {
+function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: MentorshipRelationshipItem; upcomingBookings?: number }) {
   const mentee = relationship.mentee;
   const displayName = mentee?.displayName || 'Unknown';
   const initials = displayName
@@ -112,6 +114,16 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
               <span className="flex items-center gap-1">
                 Started {startedAtFormatted}
               </span>
+              {upcomingBookings > 0 && (
+                <span className="flex items-center gap-1 text-status-warning">
+                  <Calendar className="icon-sm" aria-hidden="true" />
+                  <BilingualText
+                    en={`${upcomingBookings} ${upcomingBookings === 1 ? 'booking' : 'bookings'}`}
+                    el={`${upcomingBookings} ${upcomingBookings === 1 ? 'κράτηση' : 'κρατήσεις'}`}
+                    compact
+                  />
+                </span>
+              )}
             </div>
 
             <div className="flex gap-2 mt-3">
@@ -143,11 +155,32 @@ export default function MenteesPage() {
     queryFn: () => getMyMentorships('mentor'),
     enabled: hasSession && mounted,
   });
+  // Direct bookings (the /mentoring store) tell the mentor who else has
+  // booked time - including people with no relationship yet.
+  const { data: bookingData } = useQuery({
+    queryKey: qk('mentorships', 'bookings', 'mentor'),
+    queryFn: () => listMentorBookings('mentor'),
+    enabled: hasSession && mounted,
+    staleTime: 30_000,
+    retry: 0,
+  });
 
   const relationships = data?.relationships || [];
   const activeRelationships = relationships.filter((r) => r.status === 'active');
   const completedRelationships = relationships.filter((r) => r.status === 'completed');
   const pausedRelationships = relationships.filter((r) => r.status === 'paused');
+
+  const menteeIds = new Set(relationships.map((r) => r.menteeId));
+  const upcomingBookingsByMentee = new Map<string, number>();
+  const orphanBookers = new Set<string>();
+  for (const b of bookingData?.bookings ?? []) {
+    if (!isUpcoming(fromBooking(b, null))) continue;
+    if (menteeIds.has(b.menteeId)) {
+      upcomingBookingsByMentee.set(b.menteeId, (upcomingBookingsByMentee.get(b.menteeId) ?? 0) + 1);
+    } else {
+      orphanBookers.add(b.menteeId);
+    }
+  }
 
   // Offered to the assistant, above the loading and error returns: each
   // card's Message and Schedule, which are links to the same places.
@@ -212,6 +245,21 @@ export default function MenteesPage() {
       }
     >
       <div className="space-y-6">
+        {/* A booking can arrive before a mentorship exists: name the gap and
+            send the mentor to the page that answers it. */}
+        {orphanBookers.size > 0 && (
+          <Link
+            href="/mentor/sessions"
+            className="flex items-center gap-2 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 text-sm font-medium text-status-warning transition-colors hover:border-status-warning"
+          >
+            <Calendar className="icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText
+              en={`${orphanBookers.size} ${orphanBookers.size === 1 ? 'person' : 'people'} booked a session without a mentorship yet`}
+              el={`${orphanBookers.size} ${orphanBookers.size === 1 ? 'άτομο έκλεισε' : 'άτομα έκλεισαν'} συνεδρία χωρίς σχέση καθοδήγησης ακόμη`}
+            />
+          </Link>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
@@ -258,7 +306,7 @@ export default function MenteesPage() {
             </div>
           ) : activeRelationships.length > 0 ? (
             activeRelationships.map((relationship) => (
-              <MenteeCard key={relationship.id} relationship={relationship} />
+              <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))
           ) : (
             <Card>
@@ -281,7 +329,7 @@ export default function MenteesPage() {
           <div className="space-y-3">
             <h2 className="text-lg font-semibold">Paused ({pausedRelationships.length})</h2>
             {pausedRelationships.map((relationship) => (
-              <MenteeCard key={relationship.id} relationship={relationship} />
+              <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}
           </div>
         )}
@@ -291,7 +339,7 @@ export default function MenteesPage() {
           <div className="space-y-3">
             <h2 className="text-lg font-semibold">Completed ({completedRelationships.length})</h2>
             {completedRelationships.map((relationship) => (
-              <MenteeCard key={relationship.id} relationship={relationship} />
+              <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}
           </div>
         )}
