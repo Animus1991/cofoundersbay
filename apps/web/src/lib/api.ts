@@ -1,4 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
+import type { PublicStats } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -540,6 +541,37 @@ export async function getPublicProfile(userId: string, token?: string | null): P
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
   return apiRequest<PublicProfile>(`/api/profiles/${userId}`, { headers }, { retryOn401: false });
+}
+
+export type { PublicStats };
+
+const publicCount = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.floor(value) : null;
+
+/**
+ * The landing page's measured counts. Returns null when any count is missing
+ * or malformed: the page renders nothing numeric rather than a partial or
+ * fabricated figure.
+ */
+export async function getPublicStats(): Promise<PublicStats | null> {
+  const raw = await apiRequest<unknown>('/api/public/stats', undefined, { retryOn401: false });
+  const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const members = publicCount(o.members);
+  const mentors = publicCount(o.mentors);
+  const connections = publicCount(o.connections);
+  const events = publicCount(o.events);
+  const organizations = publicCount(o.organizations);
+  if (members === null || mentors === null || connections === null || events === null || organizations === null) {
+    return null;
+  }
+  return {
+    members,
+    mentors,
+    connections,
+    events,
+    organizations,
+    measuredAt: typeof o.measuredAt === 'string' ? o.measuredAt : new Date(0).toISOString(),
+  };
 }
 
 export async function listSkills(category?: string): Promise<Skill[]> {

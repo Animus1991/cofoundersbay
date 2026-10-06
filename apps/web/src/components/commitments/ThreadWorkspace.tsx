@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Lock } from 'lucide-react';
+import { Flag, Lock } from 'lucide-react';
 import {
   canReviseTerms,
   contactKinds,
@@ -23,6 +23,7 @@ import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
@@ -434,6 +435,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
   const { success } = useToast();
   const confirm = useConfirm();
   const [error, setError] = useState<Pair | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const query = useQuery({
     queryKey: qk('commitments', 'thread', threadId),
     queryFn: () => getCommitmentThread(threadId),
@@ -608,6 +610,10 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
           {thread.counterpart.headline ? <p className="truncate text-xs text-muted-foreground">{thread.counterpart.headline}</p> : null}
         </div>
         <StepChip step={thread.step} />
+        <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground" onClick={() => setReportOpen(true)}>
+          <Flag className="icon-sm" aria-hidden />
+          <BilingualText en={CMT.report_block.en} el={CMT.report_block.el} compact />
+        </Button>
       </header>
 
       <CommitmentLadder step={thread.step} myConfirmed={thread.myConfirmed} />
@@ -734,6 +740,16 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
           </Button>
         </div>
       ) : null}
+
+      <ReportBlockModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        userId={thread.counterpart.id}
+        userName={thread.counterpart.displayName}
+        mode="both"
+        context={{ surface: 'commitment_thread', threadId: thread.id, cardId: thread.cardId }}
+        onBlocked={() => void run(() => closeCommitmentThread(threadId))}
+      />
     </div>
   );
 }

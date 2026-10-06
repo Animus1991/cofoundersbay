@@ -32,6 +32,9 @@ import { Badge } from '@/components/ui/badge';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { NeedCard } from '@/components/commitments/NeedCard';
+import { LiveStatsGrid, LiveStatsStrip } from '@/components/landing/LiveStats';
+import { ORG_FOUNDERS } from '@/lib/demo/org-world';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; desc: string }> = [
   {
@@ -148,13 +151,65 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
   },
 ];
 
-const PLATFORM_STATS: Array<{ value: string; label: string; sub?: string }> = [
-  { value: '12,400+', label: 'Registered Members',    sub: 'founders, mentors & investors' },
-  { value: '3,200+',  label: 'Successful Connections', sub: 'meaningful introductions made' },
-  { value: '820+',    label: 'Mentors Available',      sub: 'across 40+ industries'          },
-  { value: '95%',     label: 'Profile Match Accuracy', sub: 'reported by users'              },
-  { value: '240+',    label: 'Events Hosted',          sub: 'online & in-person'             },
-  { value: '60+',     label: 'Partner Organizations',  sub: 'incubators & accelerators'      },
+/**
+ * The example need card in "One card, three sentences", from the demo world:
+ * Harbor is Elena Papadopoulos's startup in Aegean Venture Lab's graduated
+ * cohort. Never a real company.
+ */
+const SAMPLE_NEED_CARD = {
+  kind: 'cofounder',
+  title: 'Commercial co-founder for Harbor',
+  exists: 'Harbor runs a working founder workspace (graph, readiness, builder) with $375K of a $750K seed committed.',
+  goal: 'Reach twenty paying founder teams in Athens and close the seed by spring.',
+  missing: 'A commercial co-founder who has sold software to founders, studios or programmes.',
+  offer: {
+    role: 'Co-founder, commercial',
+    equity: '8–12%',
+    hoursPerWeek: 40,
+    scope: 'Own sales, partnerships with programmes and the first commercial hire.',
+  },
+  category: 'B2B SaaS',
+  place: 'Athens, Greece',
+  isRemote: false,
+  stage: 'building',
+  commitment: 'full_time',
+  outcome: 'open' as const,
+  owner: {
+    displayName: ORG_FOUNDERS['user-elena']?.name ?? 'Elena Papadopoulos',
+    headline: ORG_FOUNDERS['user-elena']?.headline ?? 'Founder at Harbor',
+  },
+};
+
+const CARD_STEPS: Array<{ icon: LucideIcon; en: string; el: string; noteEn: string; noteEl: string }> = [
+  {
+    icon: Target,
+    en: 'Say what is missing',
+    el: 'Δηλώστε τι λείπει',
+    noteEn: 'What exists, the outcome, who is missing — three sentences.',
+    noteEl: 'Τι υπάρχει, το αποτέλεσμα, ποιος λείπει — τρεις προτάσεις.',
+  },
+  {
+    icon: MessageCircle,
+    en: 'A protected first conversation',
+    el: 'Προστατευμένη πρώτη συζήτηση',
+    noteEn: 'No phone or email until both sides confirm.',
+    noteEl: 'Χωρίς τηλέφωνο ή email έως ότου επιβεβαιώσουν και οι δύο.',
+  },
+  {
+    icon: CheckCircle,
+    en: 'Terms in versions, then agreement',
+    el: 'Όροι σε εκδόσεις, μετά συμφωνία',
+    noteEn: 'Each draft is a version; agreement opens the deal room.',
+    noteEl: 'Κάθε πρόχειρο είναι μια έκδοση· η συμφωνία ανοίγει την αίθουσα.',
+  },
+];
+
+const AFTER_AGREEMENT: Array<{ en: string; el: string }> = [
+  { en: 'Readiness', el: 'Ετοιμότητα' },
+  { en: 'Milestones', el: 'Ορόσημα' },
+  { en: 'Pitch', el: 'Pitch' },
+  { en: 'Data room', el: 'Αίθουσα δεδομένων' },
+  { en: 'AI next step', el: 'Επόμενο βήμα με AI' },
 ];
 
 const TESTIMONIALS: Array<{
@@ -480,24 +535,7 @@ export function LandingHome() {
             </Link>
           </p>
 
-          <div
-            className="mt-16 grid w-full animate-fade-in grid-cols-3 gap-4 sm:gap-6"
-            style={{ animationDelay: '400ms' }}
-          >
-            {[
-              { value: '12,400+', label: 'Active members' },
-              { value: '3,200+',  label: 'Connections made' },
-              { value: '240+',    label: 'Events hosted' },
-            ].map(({ value, label }) => (
-              <div
-                key={label}
-                className="rounded-xl border border-border bg-card/50 p-4 text-center backdrop-blur-sm"
-              >
-                <p className="font-display text-2xl font-bold text-foreground">{value}</p>
-                <p className="mt-1 text-xs text-muted-foreground"><L en={label} /></p>
-              </div>
-            ))}
-          </div>
+          <LiveStatsStrip />
         </div>
       </section>
 
@@ -556,6 +594,63 @@ export function LandingHome() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── One card, three sentences ─────────────────────────────────────── */}
+      <section id="need-cards" className="border-t border-border px-6 py-20 sm:px-8 lg:px-12 xl:px-16">
+        <div className="mx-auto w-full">
+          <div className="mb-12 text-center animate-fade-in">
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30"><BilingualText en="Need cards" el="Κάρτες ανάγκης" compact /></Badge>
+            <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
+              <BilingualText en="One card, three sentences" el="Μία κάρτα, τρεις προτάσεις" wrap />
+            </h2>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+              <BilingualText en="What exists, the outcome, who is missing." el="Τι υπάρχει, το αποτέλεσμα, ποιος λείπει." wrap />
+            </p>
+          </div>
+          <div className="mx-auto grid w-full max-w-4xl grid-cols-1 items-start gap-8 lg:grid-cols-2">
+            <Card className="animate-fade-in">
+              <CardContent className="p-5 sm:p-6">
+                <Badge variant="secondary" className="mb-3 text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
+                <NeedCard card={SAMPLE_NEED_CARD} />
+              </CardContent>
+            </Card>
+            <div className="space-y-6">
+              <ol className="space-y-4">
+                {CARD_STEPS.map(({ icon: Icon, en, el, noteEn, noteEl }, index) => (
+                  <li key={en} className="flex items-start gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+                      <Icon className="icon-sm" aria-hidden />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground">
+                        <span className="tabular-nums text-muted-foreground">{index + 1}. </span>
+                        <BilingualText en={en} el={el} compact wrap />
+                      </p>
+                      <p className="mt-0.5 text-sm text-muted-foreground"><BilingualText en={noteEn} el={noteEl} wrap /></p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <p className="text-sm font-medium text-foreground">
+                <BilingualText en="The agreement is the threshold, not the ceiling." el="Η συμφωνία είναι το κατώφλι, όχι το ταβάνι." wrap />
+              </p>
+              <ul className="flex flex-wrap gap-1.5" aria-label="What continues inside">
+                {AFTER_AGREEMENT.map(({ en, el }) => (
+                  <li key={en} className="rounded-full border border-border px-2.5 py-1 text-2xs text-muted-foreground">
+                    <BilingualText en={en} el={el} compact />
+                  </li>
+                ))}
+              </ul>
+              <Button asChild>
+                <Link href="/register">
+                  <BilingualText en="See how it works" el="Δείτε πώς λειτουργεί" compact />
+                  <ArrowRight className="icon-sm" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -649,19 +744,7 @@ export function LandingHome() {
               <BilingualText en="Real impact, real connections, real outcomes — across the global startup community." el="Πραγματικός αντίκτυπος, πραγματικές συνδέσεις, πραγματικά αποτελέσματα — σε όλη την κοινότητα startups." wrap />
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {PLATFORM_STATS.map(({ value, label, sub }, index) => (
-              <div
-                key={label}
-                className="animate-fade-in rounded-2xl border border-border bg-card/80 p-6 text-center backdrop-blur-sm"
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <p className="font-display text-4xl font-bold text-primary-accessible">{value}</p>
-                <p className="mt-2 font-semibold text-foreground"><L en={label} /></p>
-                {sub && <p className="mt-1 text-xs text-muted-foreground"><L en={sub} /></p>}
-              </div>
-            ))}
-          </div>
+          <LiveStatsGrid />
         </div>
       </section>
 

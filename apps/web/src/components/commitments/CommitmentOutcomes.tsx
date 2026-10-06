@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { COMMITMENT_OUTCOMES, isInHistory } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { listCommitmentCards, listCommitmentThreads } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
@@ -38,7 +39,12 @@ export function CommitmentOutcomes() {
         {cardsQ.isLoading || now === null ? (
           <p className="text-sm text-muted-foreground">…</p>
         ) : cards.length === 0 ? (
-          <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap /></p>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_mine.en} el={CMT.empty_mine.el} wrap /></p>
+            <Button asChild size="sm">
+              <Link href="/commitments/new"><BilingualText en={CMT.first_card.en} el={CMT.first_card.el} compact /></Link>
+            </Button>
+          </div>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {COMMITMENT_OUTCOMES.map((o) => {

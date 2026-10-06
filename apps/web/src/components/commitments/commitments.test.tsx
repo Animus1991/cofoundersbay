@@ -17,6 +17,14 @@ import { NeedCard } from './NeedCard';
 const mocks = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }));
 vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ success: mocks.success, error: mocks.error }) }));
 
+const reportBlockProps = vi.hoisted(() => ({ last: null as Record<string, any> | null }));
+vi.mock('@/components/common/ReportBlockModal', () => ({
+  ReportBlockModal: (props: Record<string, any>) => {
+    reportBlockProps.last = props;
+    return props.open ? <div role="dialog" aria-label="report or block" /> : null;
+  },
+}));
+
 const NOW = Date.parse('2026-10-06T12:00:00Z');
 const api = (path: string, method = 'GET', body: Record<string, unknown> = {}) =>
   previewCommitmentsApi(path.split('?')[0], path, method, body, NOW) as Record<string, any>;
@@ -87,6 +95,18 @@ describe('ThreadWorkspace', () => {
     expect(screen.getByText(/CoFounderBay organises the decision/)).toBeTruthy();
     // The offer changed since Alex answered version 1.
     expect(screen.getByText(/The offer changed since you answered \(v1 → v2\)/)).toBeTruthy();
+  });
+
+  it('offers report or block on the counterpart, with the thread as context', async () => {
+    renderWithQuery(<ThreadWorkspace threadId="thr-harbor-alex" />);
+    await screen.findByText('Elena Papadopoulos');
+    fireEvent.click(screen.getByRole('button', { name: /Report or block/ }));
+    expect(reportBlockProps.last).toMatchObject({
+      open: true,
+      userId: 'user-elena',
+      mode: 'both',
+      context: { surface: 'commitment_thread', threadId: 'thr-harbor-alex', cardId: 'need-harbor' },
+    });
   });
 
   it('blocks Send while a message carries contact details and says why', async () => {

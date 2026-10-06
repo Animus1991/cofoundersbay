@@ -153,6 +153,7 @@ export const CMT = {
 
   // Stepping back
   step_back: { en: 'Step back', el: 'Αποχώρηση' },
+  report_block: { en: 'Report or block', el: 'Αναφορά ή αποκλεισμός' },
   closed_thread: { en: 'This conversation is closed.', el: 'Αυτή η συζήτηση έκλεισε.' },
 
   // Owner
@@ -180,6 +181,7 @@ export const CMT = {
   needs_you: { en: 'Needs you', el: 'Σας χρειάζονται' },
   nothing_waiting: { en: 'Nothing is waiting on you.', el: 'Τίποτα δεν περιμένει από εσάς.' },
   empty_mine: { en: 'No need cards yet. One card, three sentences: what exists, the outcome, who is missing.', el: 'Δεν υπάρχουν κάρτες ανάγκης. Μία κάρτα, τρεις προτάσεις: τι υπάρχει, το αποτέλεσμα, ποιος λείπει.' },
+  first_card: { en: 'Write your first card', el: 'Γράψτε την πρώτη κάρτα' },
   empty_responses: { en: 'You have not answered a need card yet. Browse open cards in Opportunities.', el: 'Δεν έχετε απαντήσει ακόμη σε κάρτα ανάγκης. Δείτε ανοιχτές κάρτες στις Ευκαιρίες.' },
   empty_history: { en: 'Agreed and closed commitments move here thirty days after they settle.', el: 'Οι συμφωνημένες και κλειστές δεσμεύσεις έρχονται εδώ τριάντα ημέρες αφού κλείσουν.' },
   empty_filtered: { en: 'No cards match these filters.', el: 'Καμία κάρτα δεν ταιριάζει σε αυτά τα φίλτρα.' },

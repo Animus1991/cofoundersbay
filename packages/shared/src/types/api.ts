@@ -114,3 +114,24 @@ export interface HealthCheckResponse {
   };
   responseTime?: number;
 }
+
+/**
+ * The counts shown on the public landing page, measured from the database at
+ * `measuredAt` and cached for ten minutes by the API. Every count is a
+ * non-negative integer; the landing page renders nothing numeric until they
+ * arrive.
+ */
+export interface PublicStats {
+  /** Users whose moderation status is active. */
+  members: number;
+  /** Active users in a mentor-kind role (mentor, advisor, coach, course creator). */
+  mentors: number;
+  /** Accepted connection requests. */
+  connections: number;
+  /** Events on the platform. */
+  events: number;
+  /** Active organizations. */
+  organizations: number;
+  /** ISO timestamp of the moment the counts were measured. */
+  measuredAt: string;
+}

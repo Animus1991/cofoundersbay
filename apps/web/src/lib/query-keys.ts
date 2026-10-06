@@ -71,6 +71,7 @@ export const QUERY_ROOTS = [
   'programs',
   'provider',
   'public-profile',
+  'public-stats',
   'readiness',
   'recommendations',
   'research-boards',

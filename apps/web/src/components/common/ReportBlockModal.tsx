@@ -39,6 +39,8 @@ type ReportBlockModalProps = {
   userName: string;
   mode: 'report' | 'block' | 'both';
   onBlocked?: (userId: string) => void;
+  /** Extra fields merged into the report's context (e.g. the surface it came from). */
+  context?: Record<string, unknown>;
 };
 
 const REPORT_REASONS: { value: ReportReason; label: string; icon: React.ElementType; description: string }[] = [
@@ -106,6 +108,7 @@ async function submitReport(data: {
   reason: ReportReason;
   details: string;
   blockUser: boolean;
+  context?: Record<string, unknown>;
 }): Promise<{ reportId: string }> {
   const reasonMeta = REPORT_REASONS.find((entry) => entry.value === data.reason);
   const report = await createUserReport({
@@ -119,6 +122,7 @@ async function submitReport(data: {
       category: data.reason,
       details: data.details.trim() || null,
       alsoBlocked: data.blockUser,
+      ...data.context,
     },
   });
   if (data.blockUser) {
@@ -134,6 +138,7 @@ export function ReportBlockModal({
   userName,
   mode,
   onBlocked,
+  context,
 }: ReportBlockModalProps) {
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
@@ -195,6 +200,7 @@ export function ReportBlockModal({
       reason: selectedReason,
       details,
       blockUser: alsoBlock,
+      context,
     });
   };
 

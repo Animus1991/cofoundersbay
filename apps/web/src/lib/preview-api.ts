@@ -5,7 +5,7 @@ import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
 import { previewCommitmentsApi } from './demo/commitments-world';
-import { ORG, ORG_MENTORS, ORG_SLUG } from './demo/org-world';
+import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF } from './demo/org-world';
 import {
   harborApplicationDrafts,
   isStaleHarborApplicationBlob,
@@ -2547,6 +2547,31 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // shared rules as the API, and throws its refusals in the API's shape.
   const commitmentsAnswer = previewCommitmentsApi(pathname, path, method, body, previewNowMs());
   if (commitmentsAnswer !== undefined) return commitmentsAnswer;
+  // The landing page's counts, counted from the demo world so demo mode
+  // shows the demo's real numbers rather than fabricated ones.
+  if (pathname === '/api/public/stats') {
+    const memberIds = new Set<string>([
+      ME_ID,
+      ...PEOPLE.map((p) => p.userId),
+      ...ORG_STAFF.map((p) => p.id),
+      ...ORG_MENTORS.map((p) => p.id),
+      ...ORG_INVESTORS.map((p) => p.id),
+      ...Object.keys(ORG_FOUNDERS),
+    ]);
+    const mentorIds = new Set<string>([
+      ...PEOPLE.filter((p) => p.role === 'mentor').map((p) => p.userId),
+      ...ORG_MENTORS.map((p) => p.id),
+    ]);
+    return {
+      members: memberIds.size,
+      mentors: mentorIds.size,
+      connections: CONNECTIONS.filter((c) => c.status === 'accepted').length,
+      events: PREVIEW_EVENTS.length,
+      organizations: 1,
+      measuredAt: new Date(previewNowMs()).toISOString(),
+    };
+  }
+
   if (pathname === `/api/org/${ORG_SLUG}/opportunities`) {
     const opportunities = PREVIEW_OPPORTUNITIES.filter((o) => o.company === ORG.name);
     return { opportunities, total: opportunities.length };
