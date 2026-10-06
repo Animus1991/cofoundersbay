@@ -16,6 +16,13 @@ html {
   --font-co-mark: var(--font-inter);
   --banner-network: 0px;
   --banner-demo: 0px;
+  /* The page rail's open width. One value, read by the panel and by the main
+     column's reserved margin, and stepped with the screen. 1024–1279 keeps
+     the earlier 18.5rem (~243px at the 82% desktop root): any wider and a
+     pinned rail starves the column beside it (the moderation cards on /admin
+     wrapped every line). From 1280 it is ~289px, from 1536 ~315px, room
+     for a bilingual label beside its control on one line. */
+  --page-rail-width: 18.5rem;
   /* −1% component height. font-size / line-height never read this. */
   --chrome-y: 0.99;
   /* Product chrome cluster (AI-converged). Locked founder dash pages
@@ -2318,6 +2325,52 @@ html {
 
 
 
+@media (min-width: 1280px) {
+  :root { --page-rail-width: 22rem; }
+}
+@media (min-width: 1536px) {
+  :root { --page-rail-width: 24rem; }
+}
+
+/* ── Page rail surface ─────────────────────────────────────────────────────
+   The rail is chrome, the same kind as the left sidebar, so it wears the
+   same surface: the sidebar's translucent card, and while either side floats
+   over the page (a peek, not a pin) a glass that lets the page show through
+   blurred. Inside, a section is a group on that surface - a small heading
+   and its controls - not a card on a card: a default card in the rail drops
+   its fill, frame and corners, and neighbouring cards are told apart by one
+   hairline. A card that chose its own fill (a status tint, a callout) keeps
+   it, because the selector only matches the default `bg-card`. */
+[data-page-rail] [data-rail-surface] {
+  background-color: hsl(var(--card) / 0.98);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+[data-page-rail][data-peek] [data-rail-surface],
+aside[data-peek]:not([data-page-rail]) {
+  /* 0.9 + 24px: the page reads as a presence behind the panel, never as
+     text competing with the panel's own labels (0.86 + 18px let a button
+     label behind a dense section stay legible). */
+  background-color: hsl(var(--card) / 0.9);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  backdrop-filter: blur(24px) saturate(1.2);
+}
+[data-rail-content] [data-surface="card"].bg-card {
+  background-color: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-rail-content] [data-surface="card"].bg-card ~ [data-surface="card"].bg-card {
+  border-top-color: hsl(var(--border) / 0.7);
+}
+[data-rail-content] [data-surface="card"].bg-card > .card-comfortable,
+[data-rail-content] [data-surface="card"].bg-card > [class*="p-3"],
+[data-rail-content] [data-surface="card"].bg-card > [class*="p-4"] {
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
 /* ── Page rail content ──────────────────────────────────────────────────────
    Tailwind's `sm:` and `lg:` are viewport queries, not container queries. A
    block authored for a ~1200px column keeps its `lg:grid-cols-4` when it is
@@ -2346,9 +2399,9 @@ html {
   max-width: 100%;
 }
 
-/* Page cards keep 24–28px padding. In the ~240px rail that leaves ~160px
-   for copy, so Greek labels (streak, recent activity) walk off the card.
-   Tighten padding only inside the rail. */
+/* Page cards keep 24–28px padding. In the 262–315px rail that leaves too
+   little for copy, so Greek labels (streak, recent activity) walk off the
+   card. Tighten padding only inside the rail. */
 [data-rail-content] .card-comfortable {
   padding: 14px;
 }

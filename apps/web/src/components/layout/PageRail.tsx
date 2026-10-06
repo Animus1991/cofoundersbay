@@ -247,6 +247,9 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         // (z-50 inside a non-isolated column) sat on top of the panel's header
         // and its first rows, and clicks landed on the toolbar instead.
         className="fixed bottom-0 right-0 top-0 z-40 hidden lg:flex"
+        // Glass while it floats over the page, the sidebar's surface while
+        // pinned (globals.css, "Page rail surface").
+        data-peek={peeked && !pinned ? 'true' : undefined}
         style={{ paddingTop: 'var(--top-banner-stack, 0px)' }}
         onMouseEnter={openPeek}
         onMouseLeave={closePeek}
@@ -260,13 +263,14 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
               flush with the window edge whether or not the panel is out. */}
           <div
             className={cn(
-              'h-full overflow-hidden border-l border-border bg-card transition-[width,opacity] duration-200 ease-out',
+              'h-full overflow-hidden border-l border-border transition-[width,opacity] duration-200 ease-out',
               open ? 'opacity-100' : 'w-0 opacity-0',
               // A peek floats over the page; a pin is part of the layout, so it
               // casts no shadow and needs none.
               peeked && !pinned ? 'shadow-xl' : '',
             )}
             style={{ width: open ? PAGE_RAIL_WIDTH : 0 }}
+            data-rail-surface=""
             aria-hidden={!open}
           >
             {open && (
@@ -336,7 +340,8 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
 
           {/* The strip. Always visible, one icon per family. */}
           <div
-            className="flex h-full flex-col items-center gap-1 border-l border-border bg-background py-3"
+            className="flex h-full flex-col items-center gap-1 border-l border-border py-3"
+            data-rail-surface=""
             style={{ width: PAGE_RAIL_COLLAPSED_WIDTH }}
           >
             <Tooltip>

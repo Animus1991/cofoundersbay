@@ -85,7 +85,7 @@ export function AppShellFrame({
             // reserved on a page that has one, so pinning and unpinning slides
             // the panel rather than reflowing the whole column twice.
             'transition-[margin-right] duration-200 ease-out',
-            hasRail && (railPinned ? 'lg:mr-[21.752rem]' : 'lg:mr-[3.25rem]'),
+            hasRail && (railPinned ? 'lg:mr-[calc(var(--page-rail-width)+3.25rem)]' : 'lg:mr-[3.25rem]'),
           )}
         >
           <MemoTopBar />

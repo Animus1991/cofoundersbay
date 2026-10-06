@@ -35,6 +35,8 @@ import {
   StarOff,
   Layers,
   Briefcase,
+  Handshake,
+  MessageSquare,
 } from 'lucide-react';
 import {
   listAdminReports,
@@ -77,7 +79,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { StatCard } from '@/components/common/StatCard';
+import { RailStats } from '@/components/layout/RailParts';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 
@@ -748,37 +750,36 @@ export default function AdminPage() {
       badge: openReports > 0 ? openReports : null,
       content: (
         <div className="space-y-2">
-          <StatCard
-            label="Total Users"
-            value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
-            icon={<Users className="icon-md" />}
-            trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
-          />
-          <StatCard
-            label="Active Today"
-            value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
-            icon={<Users className="icon-md" />}
-          />
-          <StatCard
-            label="Pending Reports"
-            value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-            icon={<Flag className="icon-md" aria-hidden="true" />}
-            trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
-          />
-          <StatCard
-            label="Connections"
-            value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
-            icon={<Users className="icon-md" />}
-          />
-          <StatCard
-            label="Messages"
-            value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
-            icon={<Users className="icon-md" />}
-          />
-          <StatCard
-            label="Events"
-            value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
-            icon={<Users className="icon-md" />}
+          {/* Shared rail figures: bilingual labels, one icon per kind of
+              figure, and the week's new sign-ups as a note under the total.
+              The old "↓ 2% open" under pending reports printed a count as a
+              percentage; the count is the value itself. */}
+          <RailStats
+            items={[
+              {
+                key: 'users',
+                label: 'Total users',
+                labelEl: 'Σύνολο χρηστών',
+                value: statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB'),
+                icon: Users,
+                note: stats?.newUsersThisWeek ? `+${stats.newUsersThisWeek} this week` : undefined,
+                noteEl: stats?.newUsersThisWeek ? `+${stats.newUsersThisWeek} αυτή την εβδομάδα` : undefined,
+              },
+              { key: 'active', label: 'Active today', labelEl: 'Ενεργοί σήμερα', value: statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB'), icon: Zap },
+              {
+                key: 'reports',
+                label: 'Pending reports',
+                labelEl: 'Αναφορές σε αναμονή',
+                value: statsLoading ? '…' : openReports.toString(),
+                icon: Flag,
+                tone: openReports > 0 ? 'bg-status-warning-bg text-status-warning' : undefined,
+                note: openReports > 0 ? 'awaiting review' : undefined,
+                noteEl: openReports > 0 ? 'περιμένουν έλεγχο' : undefined,
+              },
+              { key: 'connections', label: 'Connections', labelEl: 'Συνδέσεις', value: statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB'), icon: Handshake },
+              { key: 'messages', label: 'Messages', labelEl: 'Μηνύματα', value: statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB'), icon: MessageSquare },
+              { key: 'events', label: 'Events', labelEl: 'Εκδηλώσεις', value: statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB'), icon: Calendar },
+            ]}
           />
           <Link
             href="/admin/dashboard"

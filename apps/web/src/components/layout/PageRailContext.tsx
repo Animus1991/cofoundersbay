@@ -229,7 +229,11 @@ export function PageRailProvider({ children }: { children: ReactNode }) {
 
 export const usePageRail = () => useContext(PageRailContext);
 
-/** Width of the pinned rail, in the one place both the rail and the main column read it. */
-export const PAGE_RAIL_WIDTH = '18.502rem';
+/**
+ * Width of the open rail. The value lives in globals.css (`--page-rail-width`,
+ * stepped by breakpoint) so the main column's reserved margin in AppShell
+ * reads the same number without a second literal to keep in step.
+ */
+export const PAGE_RAIL_WIDTH = 'var(--page-rail-width)';
 /** Width of the collapsed icon strip. */
 export const PAGE_RAIL_COLLAPSED_WIDTH = '3.25rem';

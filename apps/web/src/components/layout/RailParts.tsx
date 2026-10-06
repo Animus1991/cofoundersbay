@@ -22,18 +22,23 @@ export type RailStat = {
   icon?: ElementType;
   /** A semantic tone class pair for the icon tile, e.g. 'bg-status-info-bg text-status-info'. */
   tone?: string;
+  /** One line of context under the label ("+3 this week"), in both languages. */
+  note?: string;
+  noteEl?: string;
 };
 
 /** Figures that describe the page's list: counts, not controls. */
 export function RailStats({ items }: { items: RailStat[] }) {
   return (
     <dl className="space-y-2">
-      {items.map(({ key, label, labelEl, value, icon: Icon, tone }) => (
+      {items.map(({ key, label, labelEl, value, icon: Icon, tone, note, noteEl }) => (
         /* Padding per side, not `p-3` + `pl-[3.75rem]`: globals.css restates
            `.p-3` in px after the utilities, so the shorthand won and the
            left inset fell back to 12px - the icon sat on top of the first
-           letters of every label ("Con|nections") on every railed page. */
-        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg border border-border py-3 pr-3', Icon ? 'pl-[3.75rem]' : 'pl-3')}>
+           letters of every label ("Con|nections") on every railed page.
+           A soft tile, not a framed box: the rail is a flat surface like the
+           left sidebar, and a frame per figure turned it back into cards. */
+        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg bg-muted/45 py-3 pr-3', Icon ? 'pl-[3.75rem]' : 'pl-3')}>
           <dt className="order-2 mt-1 text-xs leading-snug text-muted-foreground">
             {Icon ? (
               <span className={cn('absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">
@@ -43,6 +48,11 @@ export function RailStats({ items }: { items: RailStat[] }) {
             {/* Stacked: in a column this narrow an inline pair wraps and
                 leaves its "·" separator alone on a line. */}
             <BilingualText en={label} el={labelEl} stacked wrap />
+            {note ? (
+              <span className="mt-0.5 block text-2xs text-muted-foreground/90">
+                <BilingualText en={note} el={noteEl ?? note} compact wrap />
+              </span>
+            ) : null}
           </dt>
           <dd className="order-1 text-base font-semibold leading-none tabular-nums text-foreground">{value}</dd>
         </div>
