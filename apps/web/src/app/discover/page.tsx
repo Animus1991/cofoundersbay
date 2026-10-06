@@ -1,5 +1,7 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
+
 import { useState, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
@@ -500,7 +502,7 @@ export default function DiscoverPage() {
                           Capped at 100px, "Elena Papadopoulos" lost two
                           thirds of itself. */}
                       <p className="whitespace-nowrap text-xs font-medium text-foreground">{h.displayName}</p>
-                      <p className="whitespace-nowrap text-xs text-muted-foreground">{h.role}</p>
+                      <p className="whitespace-nowrap text-xs text-muted-foreground"><StatusText value={h.role} /></p>
                     </div>
                     {h.matchScore !== undefined && (
                       <span className={cn(

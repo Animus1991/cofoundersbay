@@ -1,5 +1,8 @@
 'use client';
 
+import { StatusText } from '@/components/common/StatusText';
+import { cn } from '@/lib/utils';
+
 import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -211,7 +214,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
         <div className="flex flex-wrap gap-1.5">
           {(arr as string[]).map((item) => (
-            <Badge key={item} variant="secondary" className="text-xs">{item}</Badge>
+            <Badge key={item} variant="secondary" className="text-xs"><StatusText value={item} /></Badge>
           ))}
         </div>
       </div>
@@ -223,7 +226,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     return (
       <div className="space-y-0.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className="text-sm text-foreground">{String(val)}</p>
+        {/* Enum values ("idea", "full_time") read as words; free text passes through. */}
+        <p className="text-sm text-foreground">{typeof val === 'string' ? <StatusText value={val} /> : String(val)}</p>
       </div>
     );
   };
@@ -568,9 +572,9 @@ export default function ProfilePage() {
           <div className="px-6 sm:px-8 pb-6 md:pb-8 relative">
             <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-16 md:-mt-20">
               <div className="relative inline-block self-start">
-                <Avatar className="h-32 w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-4xl font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-bold sm:text-4xl">
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
@@ -689,13 +693,21 @@ export default function ProfilePage() {
 
           {/* Intent cards — What I'm looking for */}
           {(() => {
-            const p = rolePayload as Record<string, string | undefined>;
-            const cards: { icon: React.ElementType; labelEn: string; labelEl: string; value: string | undefined }[] = [
-              { icon: Target, labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), value: p.lookingFor },
-              { icon: Rocket, labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), value: p.stage },
-              { icon: Users, labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), value: p.commitment },
-              { icon: DollarSign, labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), value: p.compensation },
-            ].filter((c) => c.value);
+            const p = rolePayload as Record<string, unknown>;
+            // A field can arrive as a list (lookingFor: ['cofounder', 'mentor']):
+            // React prints an array's items back to back, which read as
+            // "cofoundermentor". Each value is one word, read through the
+            // shared enum map. Stage and commitment are left to the founder
+            // details card below, which already shows both.
+            const words = (v: unknown): string[] =>
+              (Array.isArray(v) ? v : [v]).filter((x): x is string => typeof x === 'string' && x.trim() !== '');
+            const shownBelow = profile.role === 'founder';
+            const cards: { icon: React.ElementType; labelEn: string; labelEl: string; values: string[] }[] = [
+              { icon: Target, labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), values: words(p.lookingFor) },
+              { icon: Rocket, labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), values: shownBelow ? [] : words(p.stage) },
+              { icon: Users, labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), values: shownBelow ? [] : words(p.commitment) },
+              { icon: DollarSign, labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), values: words(p.compensation) },
+            ].filter((c) => c.values.length > 0);
             if (!cards.length) return null;
             return (
               <Card className="animate-fade-in stagger-2 shadow-sm border-border">
@@ -705,8 +717,8 @@ export default function ProfilePage() {
                     <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-5">
-                  {cards.map(({ icon: Icon, labelEn, labelEl, value }) => (
+                <CardContent className={cn('grid grid-cols-1 gap-4 pt-5', cards.length > 1 && 'sm:grid-cols-2')}>
+                  {cards.map(({ icon: Icon, labelEn, labelEl, values }) => (
                     <div key={labelEn} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="mb-2 flex items-start gap-2.5">
                         <div className="shrink-0 p-1.5 rounded-md bg-primary/10 text-primary-accessible">
@@ -722,7 +734,9 @@ export default function ProfilePage() {
                           <BilingualText en={labelEn} el={labelEl} compact wrap />
                         </span>
                       </div>
-                      <p className="text-sm font-medium text-foreground pl-1">{value}</p>
+                      <p className="flex flex-wrap gap-x-3 gap-y-1 pl-1 text-sm font-medium text-foreground">
+                        {values.map((v) => <StatusText key={v} value={v} />)}
+                      </p>
                     </div>
                   ))}
                 </CardContent>

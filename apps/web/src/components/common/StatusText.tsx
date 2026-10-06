@@ -111,6 +111,24 @@ const STATUS_EL: Record<string, string> = {
   webinar: 'διαδικτυακό σεμινάριο',
   workshop: 'εργαστήριο',
   meetup: 'συνάντηση',
+  // Startup stages (the projects catalogue's words)
+  idea: 'ιδέα',
+  validating: 'επικύρωση',
+  validation: 'επικύρωση',
+  mvp: 'MVP',
+  building: 'κατασκευή',
+  launched: 'κυκλοφορία',
+  scaling: 'κλιμάκωση',
+  growth: 'ανάπτυξη',
+  'pre seed': 'προ-seed',
+  seed: 'seed',
+  'series a': 'σειρά A',
+  // Commitment and engagement
+  'full time': 'πλήρης απασχόληση',
+  'part time': 'μερική απασχόληση',
+  advisory: 'συμβουλευτική',
+  contract: 'σύμβαση',
+  flexible: 'ευέλικτη',
 };
 
 /** "in_progress" → "In progress": an enum value read as a word, not a token. */
