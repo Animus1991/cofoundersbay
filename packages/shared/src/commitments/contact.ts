@@ -12,10 +12,10 @@
  * Tuned for the people who use this product: Greek mobile and landline
  * numbers with or without +30/0030, Viber (the default messenger in Greece),
  * IBANs written in groups, the Greek «παπάκι» for @, and «πάρε με τηλέφωνο».
- * It is a filter against casual leakage and harvesting, not a guarantee: a
- * determined person can spell a number out in words. Funding amounts, equity
- * ranges and years are not phone numbers, which is why a run needs nine
- * digits before it counts.
+ * It is a filter against casual leakage and harvesting, not a guarantee.
+ * Funding amounts, equity ranges and years are not phone numbers, which is
+ * why a run needs nine digits before it counts - whether the digits are
+ * typed or spelled out («six nine eight one…», «έξι εννιά οκτώ…»).
  */
 
 export type ContactKind = 'email' | 'payment' | 'link' | 'phone' | 'handle' | 'messenger';
@@ -44,6 +44,14 @@ function passesLuhn(raw: string): boolean {
 
 const TLDS = 'com|net|org|io|co|ai|app|dev|me|eu|gr|cy|uk|de|fr|it|es|xyz|link|ly|gg|to|tv|info|biz|page|site|online|store';
 
+// Single digits as words, accented and unaccented; «oh» for zero the way
+// numbers are dictated in English. Each is matched only as a whole word.
+const DIGIT_WORD =
+  'zero|one|two|three|four|five|six|seven|eight|nine|oh|' +
+  'μηδέν|μηδεν|ένα|ενα|ένας|ενας|μία|μια|δύο|δυο|τρία|τρεις|τρια|' +
+  'τέσσερα|τεσσερα|τέσσερις|τεσσερις|πέντε|πεντε|έξι|εξι|' +
+  'επτά|επτα|εφτά|εφτα|οκτώ|οκτω|οχτώ|οχτω|εννέα|εννεα|εννιά|εννια';
+
 // Order matters: an earlier rule claims its span, so an email is not also
 // reported as a link and an IBAN is not also reported as a phone number.
 const RULES: Rule[] = [
@@ -65,6 +73,17 @@ const RULES: Rule[] = [
   // Nine digits or more, allowing the separators people type. Greek numbers
   // are ten digits (69..., 21...), twelve with +30.
   { kind: 'phone', pattern: /(?:\+|\b00)?\d[\d\s().-]{6,}\d/g, accept: (m) => digitsIn(m) >= 9 },
+  // The same run spelled out, word by word, in either language. A phone
+  // dictated aloud («six nine eight one two…», «έξι εννιά οκτώ ένα δύο…»)
+  // is nine or more consecutive digit words; ordinary prose never runs
+  // that many together, so no phone-shaped context is required.
+  {
+    kind: 'phone',
+    pattern: new RegExp(
+      `(?<![\\p{L}])(?:${DIGIT_WORD})(?:[\\s,.;·-]+(?:${DIGIT_WORD})){8,}(?![\\p{L}])`,
+      'giu',
+    ),
+  },
   { kind: 'phone', pattern: /(?:(?<![\p{L}])τηλ\.?|τηλέφωνο|τηλεφωνο|(?<![\p{L}])κιν\.?|κινητό|κινητο|\btel\.?|\bphone|\bmobile)\s*[:：]?\s*\+?\d[\d\s.-]{3,}/giu },
   { kind: 'handle', pattern: /(?:^|(?<=[\s(]))@[A-Za-z0-9_][A-Za-z0-9_.]{1,29}/g },
   // Naming the app is an invitation to leave: these are almost never used

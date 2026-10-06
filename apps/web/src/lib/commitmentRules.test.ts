@@ -48,6 +48,9 @@ describe('contact details in a protected conversation', () => {
     ['IBAN GR16 0110 1250 0000 0001 2300 695', 'payment'],
     ['send it via revolut', 'payment'],
     ['card 4111 1111 1111 1111', 'payment'],
+    ['call me at six nine eight one two three four five six seven', 'phone'],
+    ['reach me on six-nine-eight, one-two-three, four-five-six-seven', 'phone'],
+    ['το κινητό μου είναι έξι εννιά οκτώ ένα δύο τρία τέσσερα πέντε έξι επτά', 'phone'],
   ])('finds %s', (text, kind) => {
     expect(contactKinds(text)).toContain(kind);
   });
@@ -61,6 +64,10 @@ describe('contact details in a protected conversation', () => {
     'Node.js and Next.js on the server, 99.9% uptime.',
     'Let us meet at 5pm on the platform call.',
     'Θέλουμε 8–12% equity και 30 ώρες την εβδομάδα.',
+    'One or two founders, maybe three advisors and five angels.',
+    'Nine out of ten startups here need a technical partner.',
+    'Τρεις συνιδρυτές, δύο μέντορες και μία επένδυση το 2026.',
+    'Η οκτώ χρόνια πορεία της μία ομάδας στα πέντε προϊόντα.',
   ])('leaves alone: %s', (text) => {
     expect(contactKinds(text)).toEqual([]);
   });
