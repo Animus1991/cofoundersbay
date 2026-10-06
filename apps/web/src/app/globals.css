@@ -36,7 +36,7 @@ html {
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
     select,
     textarea {
-      font-size: 16.66px !important;
+      font-size: 16.16px !important;
     }
   }
 
@@ -3120,12 +3120,13 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.31 · meta 14.7 · body 15.68 · lead 15.21 · figure 16.66 · section 15.29 · title 16.99
+     caption 13.31 · meta 14.7 · body 15.21 · lead 14.75 · figure 16.66 · section 15.29 · title 16.48
 
-   Meta, body, and figure stay 2% under the first phone pass (15 / 16 / 17).
-   Titles, section subtitles, the page lead, and captions are another 3%
-   under the previous phone sizes (17.52 × 0.97 → 16.99, 15.76 × 0.97 → 15.29,
-   15.68 × 0.97 → 15.21, 13.72 × 0.97 → 13.31).
+   Captions, meta, figure, and section subtitles stay put. Page titles, the
+   line under the title, body copy (text-sm on every page), and fields such
+   as Ask AI are another 3% under the previous phone sizes
+   (16.99 × 0.97 → 16.48, 15.21 × 0.97 → 14.75, 15.68 × 0.97 → 15.21,
+   16.66 × 0.97 → 16.16). Fields stay at 16.16px, above the iOS zoom floor.
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3140,7 +3141,7 @@ textarea[class~="border-input"]:focus,
 
   .text-2xs { font-size: 13.31px; line-height: 1.35; }
   .text-xs { font-size: 14.7px; line-height: 1.4; }
-  .text-sm { font-size: 15.68px; line-height: 1.45; }
+  .text-sm { font-size: 15.21px; line-height: 1.45; }
   .text-base { font-size: 16.66px; line-height: 1.5; }
   .text-lg { font-size: 15.29px; line-height: 1.4; }
 
@@ -3207,7 +3208,7 @@ textarea[class~="border-input"]:focus,
   #main-content [data-rail-content] h3.page-section,
   #main-content [data-rail-content] h3.founder-dash-section,
   h3.page-section.page-section--compact {
-    font-size: 15.68px;
+    font-size: 15.21px;
     line-height: 1.45;
   }
 
@@ -3231,11 +3232,11 @@ textarea[class~="border-input"]:focus,
     line-height: 1.35;
   }
 
-  /* The line under the page title. It shares text-sm with body copy, so the
-     subtitle has its own step, 3% under that body size. */
+  /* The line under the page title, on every page. 3% under the previous
+     phone lead, and still under the body copy. */
   #main-content p.page-lead,
   p.page-lead {
-    font-size: 15.21px;
+    font-size: 14.75px;
     line-height: 1.45;
   }
 
@@ -3267,7 +3268,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 16.99px;
+    font-size: 16.48px;
     line-height: 1.3;
   }
 

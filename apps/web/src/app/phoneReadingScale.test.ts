@@ -50,14 +50,14 @@ describe('phone reading scale', () => {
   it('raises every reading step and leaves the query phone-only', () => {
     expect(fontSize('.text-2xs')).toBe('13.31px');
     expect(fontSize('.text-xs')).toBe('14.7px');
-    expect(fontSize('.text-sm')).toBe('15.68px');
+    expect(fontSize('.text-sm')).toBe('15.21px');
     expect(fontSize('.text-base')).toBe('16.66px');
     expect(fontSize('body')).toBe('16.66px');
-    expect(fontSize('#main-content .text-sm')).toBe('15.68px');
-    expect(fontSize('p.page-lead')).toBe('15.21px');
+    expect(fontSize('#main-content .text-sm')).toBe('15.21px');
+    expect(fontSize('p.page-lead')).toBe('14.75px');
     expect(fontSize('.text-lg')).toBe('15.29px');
     expect(fontSize('#main-content .text-lg')).toBe('15.29px');
-    expect(fontSize('#main-content h1.page-title')).toBe('16.99px');
+    expect(fontSize('#main-content h1.page-title')).toBe('16.48px');
     expect(fontSize('#main-content p.page-stat-label')).toBe('13.31px');
     expect(BLOCK).not.toMatch(/min-width/);
     expect(BLOCK).not.toMatch(/12\.2412px/);
