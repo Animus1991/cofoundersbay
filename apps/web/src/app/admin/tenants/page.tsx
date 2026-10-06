@@ -1,5 +1,7 @@
 'use client';
 
+import { RailStats } from '@/components/layout/RailParts';
+
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
@@ -223,17 +225,16 @@ export default function TenantsAdminPage() {
       labelEl: 'Σύνολα οργανισμών',
       badge: suspendedCount || null,
       content: (
-        <ul className="space-y-2">
-          {totals.map(({ id, en, el, value, icon: Icon, tone }) => (
-            <li key={id} className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <Icon className={cn('icon-md shrink-0', tone)} aria-hidden="true" />
-              <span className="min-w-0 flex-1 text-sm text-muted-foreground">
-                <BilingualText en={en} el={el} compact wrap />
-              </span>
-              <span className="page-stat font-bold tabular-nums">{isLoading ? '—' : value}</span>
-            </li>
-          ))}
-        </ul>
+        <RailStats
+          items={totals.map(({ id, en, el, value, icon, tone }) => ({
+            key: id,
+            label: en,
+            labelEl: el,
+            value: isLoading ? '—' : value,
+            icon,
+            tone: `bg-muted ${tone}`,
+          }))}
+        />
       ),
     },
     {

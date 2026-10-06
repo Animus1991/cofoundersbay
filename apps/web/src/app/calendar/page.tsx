@@ -1,5 +1,7 @@
 'use client';
 
+import { RailStats } from '@/components/layout/RailParts';
+
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -467,22 +469,14 @@ export default function CalendarPage() {
       labelEn: 'Month stats',
       labelEl: 'Στατιστικά μήνα',
       content: (
-        <div className="space-y-2">
-          {[
-            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-accessible' },
-            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-status-danger' },
-            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-status-info' },
-            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-status-warning' },
-          ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
-            <div key={labelEn} className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <div className="rounded-lg bg-secondary p-2"><Icon className={cn('icon-sm', color)} aria-hidden="true" /></div>
-              <div>
-                <p className="text-lg font-bold leading-none tabular-nums">{value}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <RailStats
+          items={[
+            { key: 'month', label: 'This month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, tone: 'bg-primary/10 text-primary-accessible' },
+            { key: 'deadlines', label: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, tone: 'bg-status-danger-bg text-status-danger' },
+            { key: 'sessions', label: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'milestones', label: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
       ),
     },
     {
