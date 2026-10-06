@@ -95,8 +95,12 @@ export function Logo({
     return <LogoIcon size={config.icon} mono={inverted} className={cn(iconClassName, className)} />;
   }
 
+  // `data-logotype`: WCAG 1.4.3 exempts text that is part of a logo, and the
+  // brand's "Bay" wears the exact accent on purpose (53f8bdb). The axe scans
+  // exclude this one attribute rather than the colour-contrast rule.
   const wordmark = (
     <span
+      data-logotype=""
       className={cn(
         'font-display font-semibold select-none',
         config.text,

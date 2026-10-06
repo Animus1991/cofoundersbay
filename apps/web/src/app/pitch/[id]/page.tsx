@@ -589,7 +589,7 @@ export default function PitchDeckPage() {
 
         {/* Main slide area */}
         <main className="flex-1 flex flex-col">
-          <div className="rounded-2xl border bg-card shadow-lg flex-1 min-h-[520px] relative overflow-hidden">
+          <div className="rounded-2xl border bg-card shadow-lg flex-1 min-h-[360px] sm:min-h-[520px] relative overflow-hidden">
             <SlideRenderer slide={slides[currentSlide]} />
           </div>
 

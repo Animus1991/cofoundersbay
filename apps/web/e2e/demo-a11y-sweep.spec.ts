@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { LOGOTYPE } from './axe-scope';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 /**
@@ -110,7 +111,7 @@ for (const route of ROUTES) {
     expect(page.url(), `${route} redirected to ${page.url()}`).toContain(route.split('/')[1]);
     expect((await page.locator('main').first().innerText()).trim().length, `${route} rendered an empty main`).toBeGreaterThan(40);
 
-    const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+    const results = await new AxeBuilder({ page }).withTags(TAGS).exclude(LOGOTYPE).analyze();
     // Only real page-level horizontal scroll counts. Elements inside their own
     // scroll container (tab strips, chip rows) are by design wider than the screen.
     const overflow = await page.evaluate(() => {

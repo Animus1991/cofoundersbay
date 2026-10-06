@@ -134,7 +134,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">{initials}</AvatarFallback>
+              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
@@ -256,7 +256,7 @@ function JobCard({ job }: { job: JobPostingView }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-accessible font-bold text-sm">
+              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-bold text-sm">
                 {initialsOf(job.creator.displayName)}
               </AvatarFallback>
             </Avatar>
@@ -346,7 +346,7 @@ function ProposalCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs font-bold">
+              <AvatarFallback className="bg-primary/15 text-foreground text-xs font-bold">
                 {proposal.fromInitials}
               </AvatarFallback>
             </Avatar>

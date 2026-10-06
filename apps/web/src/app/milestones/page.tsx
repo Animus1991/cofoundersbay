@@ -800,7 +800,7 @@ export default function MilestonesPage() {
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
                     'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
-                    statusFilter === tab.value ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
+                    statusFilter === tab.value ? 'bg-primary/10 text-primary-accessible' : 'bg-muted text-muted-foreground',
                   )}>
                     {tab.count}
                   </span>

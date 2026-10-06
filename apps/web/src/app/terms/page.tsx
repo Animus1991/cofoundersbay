@@ -146,11 +146,11 @@ export default function TermsPage() {
             {/* "CoFounderBay" alone on a phone, so the bar keeps one line. */}
             <span className="text-sm font-medium"><span className="hidden sm:inline">Back to </span>CoFounderBay</span>
           </Link>
-          <div className="flex items-center gap-1 sm:gap-3">
-            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+          <div className="flex min-w-0 items-center gap-0.5 sm:gap-3">
+            <Button variant="ghost" size="sm" className="min-w-0 whitespace-nowrap px-2 text-xs sm:px-3" asChild>
               <Link href="/privacy"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></Link>
             </Button>
-            <Button variant="ghost" size="sm" className="whitespace-nowrap text-xs" asChild>
+            <Button variant="ghost" size="sm" className="min-w-0 whitespace-nowrap px-2 text-xs sm:px-3" asChild>
               <Link href="/help"><BilingualText en="Help Center" el="Κέντρο βοήθειας" compact /></Link>
             </Button>
           </div>

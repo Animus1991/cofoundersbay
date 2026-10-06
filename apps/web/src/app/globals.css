@@ -82,7 +82,13 @@ html {
     --primary: 250 74% 82.6%;
     --primary-foreground: 250 30% 9.5%;
     --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
-    --primary-accessible: 250 40.7% 55%;
+    /* 50%, not 55%: the accent's text tone also sits on the accent's own
+       tints (bg-primary/10..20 draw from --primary-mid), on 38 avatars,
+       badges and active chips. 55% measured 3.7-4.4:1 there under axe; 50%
+       holds >=4.67:1 up to /20 and 6.6:1 on cards, and reads as the same
+       lilac. A tint nested in a tint (a count inside an active chip) keeps
+       the inner one at /10. */
+    --primary-accessible: 250 40.7% 50%;
     --ink:              232 20% 10%;
 
     /* Secondary / muted sit a couple of points off the card, not a new colour. */
@@ -90,7 +96,10 @@ html {
     --secondary-foreground: 232 8% 24%;
 
     --muted:            232 7% 94.8%;
-    --muted-foreground: 232 6% 45%;  /* ~5.2 on card — helper, not a second shout */
+    /* 42%, not 45%: helper text also sits on tinted surfaces (a highlighted
+       plan, a selected role card on bg-primary/10), where 45% measured
+       4.38-4.42:1 and 43% 4.49:1 under axe. ~5.8 on card, >=4.6 there. */
+    --muted-foreground: 232 6% 42%;
 
     /* Accent is the hover surface (shadcn's meaning: every `hover:bg-accent`
        row, menu item and toolbar button). It followed primary, so hovering a
@@ -228,7 +237,7 @@ html {
     --popover-foreground: 210 20% 98%;
     --primary: 199 36% 40%;
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 199 28% 62%;
+    --primary-accessible: 199 28% 64%;
     --secondary: 215 20% 22.6%;
     --secondary-foreground: 210 12% 94%;
     --muted: 215 20% 22%;
@@ -369,7 +378,7 @@ html {
     --primary: 250 74% 82.6%;
     --primary-foreground: 250 30% 9.5%;
     --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
-    --primary-accessible: 250 40.7% 55%;
+    --primary-accessible: 250 40.7% 50%;
     --accent: 232 10% 94.2%;
     --accent-foreground: 232 10% 21%;
     --ring: 250 40.7% 55%;
@@ -387,7 +396,7 @@ html {
     --primary: 190 74% 58.7%;
     --primary-foreground: 190 30% 9.5%;
     --primary-mid: 190 45.9% 38%;             /* tints only (/5../40) */
-    --primary-accessible: 190 40.7% 36.5%;
+    --primary-accessible: 190 40.7% 31.5%;
     --accent: 232 10% 94.2%;
     --accent-foreground: 232 10% 21%;
     --ring: 190 40.7% 36.5%;
@@ -405,7 +414,7 @@ html {
     --primary: 32 74% 67%;
     --primary-foreground: 32 30% 9.5%;
     --primary-mid: 32 45.9% 41%;              /* tints only (/5../40) */
-    --primary-accessible: 32 40.7% 39.25%;
+    --primary-accessible: 32 40.7% 34.25%;
     --accent: 232 10% 94.2%;
     --accent-foreground: 232 10% 21%;
     --ring: 32 40.7% 39.25%;
@@ -423,7 +432,7 @@ html {
     --primary: 262 74% 81.8%;
     --primary-foreground: 262 30% 9.5%;
     --primary-mid: 262 45.9% 57.75%;          /* tints only (/5../40) */
-    --primary-accessible: 262 40.7% 54.5%;
+    --primary-accessible: 262 40.7% 49.5%;
     --accent: 232 10% 94.2%;
     --accent-foreground: 232 10% 21%;
     --ring: 262 40.7% 54.5%;
@@ -447,7 +456,7 @@ html {
     --primary: 212 71.4% 72.5%;           /* Cursor "Upgrade" #7bafe9, a touch lighter */
     --primary-foreground: 0 0% 9.4%;      /* its label, #181818 */
     --primary-mid: 212 44.3% 48.25%;          /* tints only (/5../40) */
-    --primary-accessible: 212 39.3% 45.5%;
+    --primary-accessible: 212 39.3% 39.5%;
     --accent: 210 10% 94%;
     --accent-foreground: 220 15% 10%;
     --ring: 212 39.3% 45.5%;
@@ -456,7 +465,7 @@ html {
     --primary: 158 72% 55%;               /* #34e8bb nudged a touch golden-pastel */
     --primary-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
     --primary-mid: 165 49.4% 34.25%;          /* tints only (/5../40) */
-    --primary-accessible: 165 43.8% 31.5%;
+    --primary-accessible: 165 43.8% 27.5%;
     --accent: 43 24.1% 82.9%;                  /* Windsurf active nav #ded8c9 */
     --accent-foreground: 30 8% 11%;
     --ring: 165 43.8% 31.5%;
@@ -465,7 +474,7 @@ html {
     --primary: 28 76% 67.5%;              /* #f09f6d nudged golden-pastel, a touch deeper */
     --primary-foreground: 20 30% 9%;
     --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
-    --primary-accessible: 23 44.8% 41.5%;
+    --primary-accessible: 23 44.8% 36%;
     --accent: 30 22% 92.6%;
     --accent-foreground: 24 10% 12%;
     --ring: 23 44.8% 41.5%;
@@ -2039,6 +2048,7 @@ html {
     .pr-0 { padding-right: 0; }
     .pr-0\.5 { padding-right: 2px; }
     .pr-1 { padding-right: 4px; }
+    .pr-1\.5 { padding-right: 6px; }
     .pr-2 { padding-right: 8px; }
     .pr-3 { padding-right: 12px; }
     .pr-4 { padding-right: 16px; }
@@ -2050,6 +2060,7 @@ html {
     .pr-14 { padding-right: 56px; }
     .pr-16 { padding-right: 64px; }
     .pr-20 { padding-right: 80px; }
+    .pr-24 { padding-right: 96px; }
     .pr-40 { padding-right: 160px; }
     .pr-44 { padding-right: 176px; }
 

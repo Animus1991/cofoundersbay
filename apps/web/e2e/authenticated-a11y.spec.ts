@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { LOGOTYPE } from './axe-scope';
 
 /**
  * Accessibility coverage for the authenticated half of the app.
@@ -138,6 +139,7 @@ test.describe('authenticated routes', () => {
         .poll(async () => {
           await waitForStableDom(page, 400, 5_000);
           const results = await new AxeBuilder({ page })
+            .exclude(LOGOTYPE)
             .withTags(TAGS)
             // Radix mounts a Tabs/DropdownMenu panel only while it is open, so
             // inactive triggers' `aria-controls` point at ids that do not exist

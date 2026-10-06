@@ -120,6 +120,35 @@ for key in blocks:
         m2.update(blocks[key])
         contexts[key] = m2
 
+def blend(fg_rgb, bg_rgb, alpha):
+    return tuple(f * alpha + b * (1 - alpha) for f, b in zip(fg_rgb, bg_rgb))
+
+# Text that sits on the accent's own faint tints. Tailwind draws bg-primary/N
+# below 50% from --primary-mid (tailwind.config.ts), so an active chip,
+# avatar or badge is primary-accessible on mid/10..20 over the page or a card,
+# and helper text often sits on a /5 wash. 38 call sites use the /20 pair.
+TINT_PAIRS = [
+    ('primary-accessible', 0.10, 'accent text on accent tint /10'),
+    ('primary-accessible', 0.20, 'accent text on accent tint /20'),
+    ('muted-foreground', 0.05, 'helper text on accent wash /5'),
+    ('muted-foreground', 0.10, 'helper text on accent tint /10'),
+]
+
+for key in contexts:
+    v = contexts[key]
+    tint = v.get('primary-mid') or v.get('primary')
+    for fg, alpha, label in TINT_PAIRS:
+        if fg not in v or tint is None:
+            continue
+        for base in ('background', 'card'):
+            if base not in v:
+                continue
+            bg = blend(tint, v[base], alpha)
+            r = ratio(v[fg], bg)
+            if r < AA_TEXT:
+                fails.append((key, f'{label} on {base}', round(r, 2), hexs(v[fg]), hexs(bg)))
+            print(f'{key:<26}{(label + " on " + base)[:33]:<34}{r:>7.2f}  {"PASS" if r >= AA_TEXT else "** FAIL **"}')
+
 for key in contexts:
     v = contexts[key]
     for fg, bg, label in PAIRS:

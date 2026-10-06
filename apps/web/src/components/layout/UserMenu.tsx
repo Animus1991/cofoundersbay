@@ -105,7 +105,7 @@ export function UserMenu({
       >
         <Avatar className="h-7 w-7">
           <AvatarImage src={user?.avatarUrl ?? undefined} alt="" />
-          <AvatarFallback className="bg-primary/20 text-xs font-bold text-primary-accessible">
+          <AvatarFallback className="bg-primary/15 text-xs font-bold text-foreground">
             {initials}
           </AvatarFallback>
         </Avatar>

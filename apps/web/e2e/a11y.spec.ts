@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { LOGOTYPE } from './axe-scope';
 
 /**
  * Routes reachable without a session. Everything else is behind the auth
@@ -24,7 +25,7 @@ const PUBLIC_ROUTES = [
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function scan(page: Page) {
-  return new AxeBuilder({ page }).withTags(TAGS).analyze();
+  return new AxeBuilder({ page }).withTags(TAGS).exclude(LOGOTYPE).analyze();
 }
 
 for (const route of PUBLIC_ROUTES) {
