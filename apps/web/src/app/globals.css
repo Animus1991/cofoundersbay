@@ -1780,21 +1780,23 @@ html {
     }
 
     /* Call sites pin h-7 / h-8 / h-9 / h-10 (28 / 32 / 36 / 40px) for the
-       desktop ladder. Those utilities are not breakpoint-scoped, so a phone
-       inherited them and the 44px touch height on Button never applied.
-       Restore the floor here only — h-7 joins the list because the canvas
-       toolbars and panel controls it covers stay reachable on phones, and
-       28px is a fingertip miss away from the one next to it. From 640px
-       the utilities mean what they say again. Square controls grow on both
-       axes; a full-width button only grows in height. */
-    :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .min-h-7, .min-h-8, .min-h-9, .min-h-10) {
+       desktop ladder, and Button's own sizes are h-11 (44px) until `md`.
+       Those utilities are not breakpoint-scoped, so a phone inherited them.
+       The phone floor is 41.8px — 5% under 44px — so a control stays
+       reachable without the extra height. h-11 and h-12 join the list
+       because that is the height the eye meets on a phone. From 640px the
+       utilities mean what they say again. Square controls shrink on both
+       axes; a full-width button only shrinks in height. Fields stay 44px. */
+    :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .h-11, .h-12, .min-h-7, .min-h-8, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .min-h-\[44px\]) {
       height: auto;
-      min-height: 44px;
+      min-height: 41.8px;
     }
-    :is(button, a, [role='button']):is(.w-7, .w-8, .w-9),
-    :is(button, a, [role='button']).h-10.w-10 {
-      width: 44px;
-      min-width: 44px;
+    :is(button, a, [role='button']):is(.w-7, .w-8, .w-9, .w-10, .w-11, .min-w-\[44px\]),
+    :is(button, a, [role='button']).h-10.w-10,
+    :is(button, a, [role='button']).h-11.w-11,
+    :is(button, a, [role='button']).h-12.w-12 {
+      width: 41.8px;
+      min-width: 41.8px;
     }
 
     /* What a fingertip still missed at 390px (measured on 15 pages, 60
@@ -1806,8 +1808,8 @@ html {
       min-height: 44px;
     }
     .tap-target-phone {
-      min-height: 44px;
-      min-width: 44px;
+      min-height: 41.8px;
+      min-width: 41.8px;
     }
     [role='switch'] {
       position: relative;
