@@ -1,6 +1,5 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
