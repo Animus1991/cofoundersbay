@@ -39,6 +39,7 @@ import {
   MoreVertical,
   Download,
   Share2,
+  ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -643,13 +644,13 @@ export default function CohortDetailPage() {
 
           {/* Recent Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>
                   <BilingualText en="Recent Matches" el="Πρόσφατες αντιστοιχίσεις" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-1 flex-col">
                 <div className="space-y-4">
                   {matches.slice(0, 3).map((match) => (
                     <div key={match.id} className="flex items-center gap-3 p-3 border rounded-lg">
@@ -678,16 +679,24 @@ export default function CohortDetailPage() {
                     </div>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('matches')}
+                  className="mt-auto flex items-center justify-center gap-1.5 border-t pt-3 text-sm font-medium text-primary-accessible hover:underline focus-ring rounded-b-lg"
+                >
+                  <BilingualText en="All matches" el="Όλες οι αντιστοιχίσεις" compact />
+                  <ChevronRight className="icon-xs" aria-hidden="true" />
+                </button>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex flex-col">
               <CardHeader>
                 <CardTitle>
                   <BilingualText en="Upcoming Sessions" el="Επερχόμενες συνεδρίες" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-1 flex-col">
                 <div className="space-y-4">
                   {sessions
                     .filter((s) => s.status === 'scheduled')
@@ -712,6 +721,14 @@ export default function CohortDetailPage() {
                       </div>
                     ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('mentoring')}
+                  className="mt-auto flex items-center justify-center gap-1.5 border-t pt-3 text-sm font-medium text-primary-accessible hover:underline focus-ring rounded-b-lg"
+                >
+                  <BilingualText en="All sessions" el="Όλες οι συνεδρίες" compact />
+                  <ChevronRight className="icon-xs" aria-hidden="true" />
+                </button>
               </CardContent>
             </Card>
           </div>

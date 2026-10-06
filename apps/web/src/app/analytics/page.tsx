@@ -117,7 +117,9 @@ function MetricCard({
   // Views card is taller than the rest by its sparkline.
   const body = (
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
-      <CardContent className="p-4">
+      {/* Stretched by the sparkline card's row, a plain tile centres its
+          figure instead of leaving a dead band at the bottom. */}
+      <CardContent className="flex h-full flex-col justify-center p-4">
         <div className="mb-3 flex items-start justify-between gap-3">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
