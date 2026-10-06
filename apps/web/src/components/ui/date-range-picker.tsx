@@ -191,7 +191,7 @@ export function DateRangePicker({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 bg-popover border border-border rounded-xl shadow-xl flex flex-col sm:flex-row overflow-hidden">
+        <div className="absolute z-50 mt-1 bg-popover border border-border rounded-xl shadow-flyout flex flex-col sm:flex-row overflow-hidden">
           {/* Presets sidebar */}
           {presets.length > 0 && (
             <div className="border-b sm:border-b-0 sm:border-r border-border p-2 flex flex-row sm:flex-col gap-1 overflow-x-auto sm:overflow-x-visible sm:min-w-[130px]">

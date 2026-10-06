@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, getMyMentorships, getMentorshipSessions, type MentorBookingItem, type MentorshipRelationshipItem, type MentorshipSessionItem, type SearchHit } from '@/lib/api';
 import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { StatusText } from '@/components/common/StatusText';
 import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions } from '@/lib/mentoring/sessions';
 import { AppShell } from '@/components/layout/AppShell';
@@ -415,52 +416,54 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
   return (
     <Card>
       <CardContent className="p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Link href={`/profiles/${other.id}`} aria-label={bilingualInline(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
-              <AvatarImage src={other.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {initialsOf(other.displayName)}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+        <div className="flex gap-3 sm:gap-4">
+          <SessionDateTile date={start} />
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
-                {other.displayName}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                {rel.mentorId === userId
-                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
-                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
-              </span>
-              <Badge variant="outline" className="text-xs">
-                <StatusText value={u.status} />
-              </Badge>
-              <Badge variant="secondary" className="text-2xs">
-                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
-              </Badge>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2">
+                  <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-medium text-foreground transition-colors hover:text-primary-accessible">
+                    {other.displayName}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    {rel.mentorId === userId
+                      ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                      : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  <LocalTime value={start} />
+                  {end ? <> {' – '} <LocalTime value={end} /> </> : null}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                <Badge variant="outline" className="text-xs">
+                  <StatusText value={u.status} />
+                </Badge>
+                <Badge variant="secondary" className="text-2xs">
+                  <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+                </Badge>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" aria-hidden="true" />
-                <LocalTime value={start} />
-                {end ? <> {' – '} <LocalTime value={end} /> </> : null}
-              </span>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+              {u.durationMin != null && (
+                <span className="flex items-center gap-1">
+                  <Clock className="icon-sm" aria-hidden="true" />
+                  {u.durationMin} min
+                </span>
+              )}
               {u.title && <span className="text-muted-foreground">{u.title}</span>}
             </div>
+            <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
+              <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+                <Link href={home}>
+                  {rel.mentorId === userId
+                    ? <BilingualText en="Open in Mentor sessions" el="Άνοιγμα στις συνεδρίες μέντορα" compact />
+                    : <BilingualText en="Open in Coaching" el="Άνοιγμα στο Coaching" compact />}
+                </Link>
+              </Button>
+            </div>
           </div>
-          <Button size="sm" variant="outline" className="shrink-0" asChild>
-            <Link href={home}>
-              {rel.mentorId === userId
-                ? <BilingualText en="Open in Mentor sessions" el="Άνοιγμα στις συνεδρίες μέντορα" compact />
-                : <BilingualText en="Open in Coaching" el="Άνοιγμα στο Coaching" compact />}
-            </Link>
-          </Button>
         </div>
       </CardContent>
     </Card>

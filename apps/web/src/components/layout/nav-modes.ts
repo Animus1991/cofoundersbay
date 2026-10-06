@@ -8,7 +8,6 @@ import {
   GraduationCap,
   Users,
   UserCheck,
-  Heart,
   Bell,
   Flag,
   Bookmark,
@@ -402,11 +401,9 @@ export const exploreSections: NavSection[] = [
   {
     section: 'Discover',
     links: [
-      { href: '/matches', label: 'Matches', icon: Heart },
-      { href: '/ai', label: 'Ask AI', icon: BrainCircuit },
-      { href: '/recommendations', label: 'For You', icon: Sparkles },
       { href: '/discover', label: 'Explore', icon: Compass },
       { href: '/search', label: 'Search', icon: Search },
+      { href: '/ai', label: 'Ask AI', icon: BrainCircuit },
     ],
   },
   {
@@ -576,10 +573,23 @@ export function getActiveNavHref(pathname: string | null, sections: NavSection[]
  * The mode whose list holds this page, preferring the one already showing.
  * A page in no list (a profile, a deal, a board) keeps the reader's mode.
  */
+/**
+ * Pages reached from a mode's content but not listed in its sidebar (the
+ * full Matches and For You views open from Discover's tab headers) still
+ * belong to that mode's story.
+ */
+const ORPHAN_MODE: Record<string, SidebarMode> = {
+  '/matches': 'explore',
+  '/recommendations': 'explore',
+};
+
 export function modeForPath(pathname: string | null, current: SidebarMode, role?: string): SidebarMode {
   if (!pathname || getActiveNavHref(pathname, getSectionsForMode(current, role))) return current;
   for (const candidate of ['work', 'explore', 'account'] as const) {
     if (candidate !== current && getActiveNavHref(pathname, getSectionsForMode(candidate, role))) return candidate;
+  }
+  for (const [prefix, mode] of Object.entries(ORPHAN_MODE)) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) return mode;
   }
   return current;
 }

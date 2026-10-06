@@ -572,9 +572,9 @@ export default function ProfilePage() {
           <div className="px-6 sm:px-8 pb-6 md:pb-8 relative">
             <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-16 md:-mt-20">
               <div className="relative inline-block self-start">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
+                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 ring-4 ring-background">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-bold sm:text-4xl">
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-bold">
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>

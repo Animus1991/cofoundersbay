@@ -8,7 +8,6 @@ import {
   GraduationCap,
   Users,
   UserCheck,
-  Heart,
   Bell,
   Flag,
   Bookmark,
@@ -126,8 +125,6 @@ export const navSections: NavSection[] = [
   {
     section: 'Discovery',
     links: [
-      { href: '/matches', label: 'Matches', icon: Heart },
-      { href: '/recommendations', label: 'For You', icon: Sparkles },
       { href: '/discover', label: 'Explore', icon: Compass },
       { href: '/members', label: 'Members', icon: Users },
       { href: '/mentoring', label: 'Mentors', icon: GraduationCap },

@@ -281,7 +281,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
               open ? 'opacity-100' : 'w-0 opacity-0',
               // A peek floats over the page; a pin is part of the layout, so it
               // casts no shadow and needs none.
-              peeked && !pinned ? 'shadow-xl' : '',
+              peeked && !pinned ? 'shadow-modal' : '',
             )}
             style={{ width: open ? PAGE_RAIL_WIDTH : 0 }}
             data-rail-surface=""

@@ -268,7 +268,7 @@ export default function PricingPage() {
               <Card
                 key={plan.id}
                 className={cn(
-                  'relative flex flex-col transition-all duration-300 hover:shadow-lg',
+                  'relative flex flex-col border border-border transition-colors duration-300 hover:border-foreground/20',
                   plan.popular && 'border-primary ring-1 ring-primary/20'
                 )}
               >
@@ -293,7 +293,7 @@ export default function PricingPage() {
                       <div className="text-3xl font-bold text-foreground"><BilingualText en="Custom" el="Κατά περίπτωση" compact /></div>
                     ) : (
                       <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-bold text-foreground">${price}</span>
+                        <span className="text-3xl font-bold text-foreground">${price}</span>
                         <span className="text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
                       </div>
                     )}

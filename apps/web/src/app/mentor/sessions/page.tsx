@@ -31,6 +31,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BookingCard } from '@/components/mentoring/BookingCard';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions, type UnifiedSession } from '@/lib/mentoring/sessions';
 import {
   getMentorshipSessions,
@@ -79,12 +80,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
     <Card className="transition-all hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-3 sm:gap-4">
-          <div className="flex min-w-[3.5rem] flex-col items-center justify-center self-start rounded-lg bg-primary/5 p-2">
-            <span className="text-xs text-muted-foreground uppercase">
-              {scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short' })}
-            </span>
-            <span className="text-xl font-bold">{scheduledDate.getDate()}</span>
-          </div>
+          <SessionDateTile date={scheduledDate} />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -123,7 +119,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
             )}
 
             {session.status === 'scheduled' && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
                 {session.meetingUrl && (
                   <Button size="sm" variant="default" className="h-7 text-xs" asChild>
                     <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
@@ -143,7 +139,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
             )}
 
             {session.status === 'completed' && (
-              <div className="flex gap-2 mt-3">
+              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onNotes(session)}>
                   <BilingualText en="View Notes" el="Προβολή σημειώσεων" compact />
                 </Button>

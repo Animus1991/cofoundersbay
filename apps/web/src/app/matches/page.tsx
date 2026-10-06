@@ -128,7 +128,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-4xl font-bold tabular-nums text-primary-accessible">{score}%</p>
+            <p className="text-2xl font-bold tabular-nums text-primary-accessible">{score}%</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
@@ -421,7 +421,7 @@ function MatchPreviewPanel({
       <div aria-hidden="true" className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
-      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border bg-card shadow-modal animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold"><BilingualText en="Profile Preview" el="Προεπισκόπηση προφίλ" compact /></p>
@@ -1366,7 +1366,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 shadow-modal animate-in slide-in-from-bottom duration-200 lg:bottom-6">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"

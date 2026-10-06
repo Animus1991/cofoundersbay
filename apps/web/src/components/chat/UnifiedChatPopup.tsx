@@ -608,7 +608,7 @@ export function UnifiedChatPopup() {
     <div
       ref={popupRef}
       tabIndex={-1}
-      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200 focus:outline-none bottom-6 right-6"
+      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-modal animate-in fade-in slide-in-from-bottom-4 duration-200 focus:outline-none bottom-6 right-6"
       role="dialog"
       aria-label={bilingualAria('Chat', 'Συνομιλία')}
       style={{

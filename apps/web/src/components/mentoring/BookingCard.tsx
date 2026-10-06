@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Calendar,
   CheckCircle,
   ChevronDown,
   ChevronUp,
@@ -18,15 +17,15 @@ import {
 import { summarizeMeetingNotes, type MeetingNotesSummary, type MentorBookingItem } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { bilingualInline } from '@/lib/i18n/format';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
+import { SessionDateTile } from './SessionDateTile';
 
 export const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
   video: { en: 'Video call', el: 'Βιντεοκλήση' },
@@ -42,6 +41,11 @@ const STATUS_COLORS: Record<string, string> = {
   declined: 'bg-muted text-muted-foreground border-border',
 };
 
+/**
+ * A booking row wears the session anatomy: the same date tile, the same
+ * header (counterpart · role · status · source), the same action row - so a
+ * session is one thing whichever store it came from.
+ */
 export function BookingCard({
   booking,
   userId,
@@ -89,40 +93,44 @@ export function BookingCard({
   return (
     <Card className="card-interactive">
       <CardContent className="p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          <Link href={`/profiles/${otherUserId}`} aria-label={bilingualInline(`Open ${other.displayName}'s profile`, `Άνοιγμα προφίλ: ${other.displayName}`)}>
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
-              <AvatarImage src={other.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
-                {initialsOf(other.displayName)}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+        <div className="flex gap-3 sm:gap-4">
+          <SessionDateTile date={start} />
 
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <Link
-                href={`/profiles/${otherUserId}`}
-                className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
-              >
-                {other.displayName}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                {isMentor
-                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
-                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
-              </span>
-              <Badge
-                variant="outline"
-                className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
-              >
-                <StatusText value={booking.status} />
-              </Badge>
-              {showSource && (
-                <Badge variant="secondary" className="text-2xs">
-                  <BilingualText en="Booking" el="Κράτηση" compact />
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2">
+                  <Link
+                    href={`/profiles/${otherUserId}`}
+                    className="inline-flex tap-target-y items-center font-medium text-foreground transition-colors hover:text-primary-accessible"
+                  >
+                    {other.displayName}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    {isMentor
+                      ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                      : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  <LocalTime value={start} />
+                  {' – '}
+                  <LocalTime value={end} />
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
+                <Badge
+                  variant="outline"
+                  className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
+                >
+                  <StatusText value={booking.status} />
                 </Badge>
-              )}
+                {showSource && (
+                  <Badge variant="secondary" className="text-2xs">
+                    <BilingualText en="Booking" el="Κράτηση" compact />
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {isMentor && booking.status === 'requested' && (
@@ -131,16 +139,10 @@ export function BookingCard({
               </p>
             )}
 
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
-                <LocalTime value={start} />
-                {' – '}
-                <LocalTime value={end} />
+                <Clock className="icon-sm" aria-hidden="true" />
+                {Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} min
               </span>
               <span className="flex items-center gap-1">
                 <Video className="icon-sm" aria-hidden="true" />
@@ -238,36 +240,45 @@ export function BookingCard({
                 <BilingualText en="Join meeting" el="Συμμετοχή στη συνάντηση" compact />
               </a>
             )}
-          </div>
 
-          {!isPast && (
-            <div className="flex shrink-0 gap-2">
-              {isMentor && booking.status === 'requested' && (
-                <>
-                  <Button size="sm" className="gap-1" onClick={onConfirm} disabled={isActing}>
-                    {isActing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <CheckCircle className="icon-sm" aria-hidden="true" />}
-                    <BilingualText en="Confirm" el="Επιβεβαίωση" compact />
+            {/* Action row: right on desktop, wraps below the content on phones. */}
+            {!isPast && (booking.status === 'requested' || booking.status === 'confirmed') && (
+              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
+                {isMentor && booking.status === 'requested' && (
+                  <>
+                    <Button size="sm" className="h-7 gap-1 text-xs" onClick={onConfirm} disabled={isActing}>
+                      {isActing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <CheckCircle className="icon-sm" aria-hidden="true" />}
+                      <BilingualText en="Confirm" el="Επιβεβαίωση" compact />
+                    </Button>
+                    {/* Decline is not self-explanatory as a bare icon: a
+                        bilingual accessible name always, a visible label from
+                        sm up where there is room for it. */}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive-accessible"
+                      onClick={onDecline}
+                      disabled={isActing}
+                      aria-label={bilingualInline('Decline', 'Απόρριψη')}
+                    >
+                      <XCircle className="icon-sm" aria-hidden="true" />
+                      <span className="hidden sm:inline"><BilingualText en="Decline" el="Απόρριψη" compact /></span>
+                    </Button>
+                  </>
+                )}
+                {!isMentor && booking.status === 'requested' && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
+                    <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
                   </Button>
-                  <Button aria-label={bilingualInline('Decline', 'Απόρριψη')} size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
-                    className="text-muted-foreground hover:text-destructive-accessible">
-                    <XCircle className="icon-sm" aria-hidden="true" />
+                )}
+                {booking.status === 'confirmed' && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
+                    <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />
                   </Button>
-                </>
-              )}
-              {!isMentor && booking.status === 'requested' && (
-                <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive-accessible">
-                  <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
-                </Button>
-              )}
-              {booking.status === 'confirmed' && (
-                <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive-accessible">
-                  <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />
-                </Button>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -2954,7 +2954,7 @@ h3.page-section.page-section--compact,
 }
 @media (min-width: 1024px) {
   #main-content .score-emblem-figure {
-    font-size: 32px;
+    font-size: 1.5rem;
     line-height: 1;
   }
 }

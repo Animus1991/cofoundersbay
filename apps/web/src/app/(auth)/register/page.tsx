@@ -181,7 +181,7 @@ export default function RegisterPage() {
               : <Logo size="sm" />}
           </Link>
 
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+          <h1 className="font-display text-3xl font-semibold text-foreground">
             <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
           </h1>
           <p className="mt-2 text-muted-foreground">

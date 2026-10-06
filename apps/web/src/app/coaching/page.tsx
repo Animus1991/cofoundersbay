@@ -6,6 +6,7 @@ import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/rea
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useToast } from '@/components/ui/toast';
 import { BookingCard } from '@/components/mentoring/BookingCard';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { fromBooking, isUpcoming, type UnifiedSession } from '@/lib/mentoring/sessions';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -285,13 +286,8 @@ function SessionCard({ session }: { session: CoachingSession }) {
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
       <div className="p-4">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-10 w-10 shrink-0">
-            {session.coachAvatar && <AvatarImage src={session.coachAvatar} />}
-            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
-              {initialsOf(session.coachName)}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-start gap-3 sm:gap-4">
+          <SessionDateTile date={new Date(session.scheduledAt)} />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -360,8 +356,8 @@ function SessionCard({ session }: { session: CoachingSession }) {
         </div>
 
         {/* Actions row */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex gap-2">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2 sm:ml-auto sm:justify-end">
             {session.status === 'scheduled' && session.meetingUrl && (
               isSample ? (
                 <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>

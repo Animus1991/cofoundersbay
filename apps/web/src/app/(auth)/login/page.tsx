@@ -119,7 +119,7 @@ function LoginPageContent() {
             )}
           </Link>
 
-          <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground">
+          <h1 className="font-display text-3xl font-semibold text-foreground">
             {activeTenant ? (
               <BilingualText
                 en={`Welcome to ${activeTenant.displayName ?? activeTenant.name}`}

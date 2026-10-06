@@ -648,7 +648,7 @@ export default function ProfileEditPage() {
                       }}
                     >
                       <div className="relative group cursor-pointer">
-                        <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
+                        <Avatar className="h-28 w-28 ring-4 ring-background">
                           <AvatarImage src={form.avatarUrl || undefined} />
                           <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-semibold">
                             {form.displayName[0]?.toUpperCase() || '?'}

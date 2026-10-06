@@ -193,7 +193,7 @@ export function SideNav() {
           // Peeking floats the full drawer over the page; the page keeps its
           // margin, so nothing underneath moves. Only after mount: a peek
           // class on the first client paint would not have been on the server.
-          mounted && peeking && 'w-[15rem] shadow-xl lg:w-[15rem]',
+          mounted && peeking && 'w-[15rem] shadow-modal lg:w-[15rem]',
         )}
         onPointerEnter={startPeek}
         onPointerLeave={endPeek}

@@ -408,7 +408,6 @@ export default function DiscoverPage() {
       labelEl: 'Πού να πάτε μετά',
       content: (
         <div className="space-y-1">
-          <RailAction icon={TrendingUp} en={discoverEn('view_matches')} el={discoverEl('view_matches')} onClick={() => router.push('/matches')} />
           <RailAction icon={Bookmark} en="Open shortlist" el="Άνοιγμα λίστας" onClick={() => router.push('/shortlist')} />
           <RailAction icon={Search} en={discoverEn('saved_searches_link')} el={discoverEl('saved_searches_link')} onClick={() => router.push('/saved-searches')} />
           <RailAction icon={Users} en="Open connections" el="Άνοιγμα συνδέσεων" onClick={() => router.push('/connections')} />
@@ -568,14 +567,29 @@ export default function DiscoverPage() {
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions" className="space-y-6 mt-6">
-          <div className="min-w-0">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                <Sparkles className="icon-md shrink-0 text-primary-accessible" />
-                Suggested for you
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Based on your profile and preferences
-              </p>
+          <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+                  Suggested for you
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Based on your profile and preferences
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  <BilingualText
+                    en="Score breakdown and feedback live in the full view"
+                    el="Αναλυτική βαθμολογία και σχόλια στην πλήρη προβολή"
+                    compact
+                  />
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
+                <Link href="/recommendations">
+                  <BilingualText en="Open full view" el="Πλήρης προβολή" compact />
+                  <ArrowRight className="icon-sm" aria-hidden="true" />
+                </Link>
+              </Button>
           </div>
 
           {!suggestionsLoaded && (
@@ -634,14 +648,29 @@ export default function DiscoverPage() {
 
         {/* Top Matches Tab */}
         <TabsContent value="matches" className="space-y-6 mt-6">
-          <div className="min-w-0">
-              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
-                Your Top Matches
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                People with the highest compatibility
-              </p>
+          <div className="flex min-w-0 items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                  <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
+                  Your Top Matches
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  People with the highest compatibility
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  <BilingualText
+                    en="The full list and each score's reasoning live in the full view"
+                    el="Η πλήρης λίστα και η αιτιολόγηση κάθε βαθμού στην πλήρη προβολή"
+                    compact
+                  />
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="shrink-0 gap-1.5" asChild>
+                <Link href="/matches">
+                  <BilingualText en="Open full view" el="Πλήρης προβολή" compact />
+                  <ArrowRight className="icon-sm" aria-hidden="true" />
+                </Link>
+              </Button>
           </div>
 
           {!suggestionsLoaded && (

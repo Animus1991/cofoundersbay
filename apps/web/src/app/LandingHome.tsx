@@ -715,7 +715,7 @@ export function LandingHome() {
             {FEATURES.map(({ icon: Icon, title, desc }, index) => (
               <div
                 key={title}
-                className="group flex animate-fade-in gap-4 rounded-2xl border border-border bg-card/70 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-glow-sm"
+                className="group flex animate-fade-in gap-4 rounded-2xl border border-border bg-card/70 p-5 transition-all duration-300 hover:border-primary/30"
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
@@ -764,7 +764,7 @@ export function LandingHome() {
             {TESTIMONIALS.map(({ name, role, company, avatar, quote, rating, tag }, index) => (
               <div
                 key={name}
-                className="animate-fade-in flex flex-col gap-4 rounded-2xl border border-border bg-card/80 p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-md"
+                className="animate-fade-in flex flex-col gap-4 rounded-2xl border border-border bg-card/80 p-6 transition-all duration-300 hover:border-primary/20"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
                 <div className="flex items-center justify-between">

@@ -51,7 +51,7 @@ export default function AllianceThemePage() {
               <Sparkles className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en="Alliance theme preview · sample content" el="Προεπισκόπηση θέματος Alliance · δείγμα περιεχομένου" wrap /></span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
+            <h1 className="text-4xl font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
               <BilingualText en="Connect. Collaborate. Succeed." el="Συνδεθείτε. Συνεργαστείτε. Πετύχετε." compact wrap />
             </h1>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
@@ -81,7 +81,7 @@ export default function AllianceThemePage() {
                 className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-center"
               >
                 <stat.icon className="h-8 w-8 mx-auto mb-3 text-blue-100" />
-                <div className="text-3xl font-bold mb-1">{stat.label}</div>
+                <div className="text-2xl font-bold mb-1">{stat.label}</div>
                 <div className="text-sm text-blue-100">{stat.desc}</div>
               </div>
             ))}
@@ -116,7 +116,7 @@ export default function AllianceThemePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {SPECIMEN.map((person) => (
-              <Card key={person.name} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
+              <Card key={person.name} className="overflow-hidden hover:border-foreground/20 transition-colors duration-300 border-border">
                 <div className={cn('h-32 bg-gradient-to-br relative', person.banner)}>
                   <div className="absolute inset-0 bg-black/20"></div>
                   <div className="absolute top-4 right-4">
@@ -189,7 +189,7 @@ export default function AllianceThemePage() {
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-lg">
+            <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
                 <div className="space-y-3">
@@ -214,7 +214,7 @@ export default function AllianceThemePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+            <Card className="border-white/20 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
                 <Sparkles className="icon-xl mb-3" />
                 <h3 className="font-semibold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
@@ -227,7 +227,7 @@ export default function AllianceThemePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg">
+            <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
                 <div className="space-y-3">
