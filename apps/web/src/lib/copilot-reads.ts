@@ -70,6 +70,7 @@ import {
 } from '@/lib/api';
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
+import { waitsOnMe } from '@/lib/commitments-next';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -547,12 +548,7 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     const actions = [openArea(t, '/commitments', t('Open commitments'), t('Need cards, responses and what waits on you.'))];
     const OUTCOME: Record<string, string> = { open: 'open', in_discussion: 'in discussion', agreed: 'agreed', closed: 'closed' };
     const STEP: Record<string, string> = { interest: 'interest', conversation: 'conversation', terms: 'terms', agreed: 'agreed', closed: 'closed' };
-    const waiting = asList<CommitmentThreadSummary>(threads).filter(
-      (th) =>
-        (th.step === 'interest' && th.role === 'owner') ||
-        (th.step === 'conversation' && !th.myConfirmed) ||
-        (th.step === 'terms' && (th.latestTermsVersion === 0 || !th.myAcceptedLatest)),
-    );
+    const waiting = asList<CommitmentThreadSummary>(threads).filter(waitsOnMe);
     const responses = asList<CommitmentThreadSummary>(threads).filter((th) => th.role === 'candidate' && th.step !== 'closed').slice(0, LIMIT);
 
     if (mine.length === 0 && responses.length === 0) {

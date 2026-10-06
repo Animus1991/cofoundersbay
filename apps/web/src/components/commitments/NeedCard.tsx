@@ -29,10 +29,10 @@ export type NeedCardView = {
   owner?: { displayName: string; headline: string | null };
 };
 
-function Sentence({ label, text, compact }: { label: { en: string; el: string }; text: string; compact?: boolean }) {
+function Sentence({ label, text }: { label: { en: string; el: string }; text: string }) {
   if (!text) return null;
   return (
-    <div className={cn('grid grid-cols-1 gap-0.5 sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:gap-3', compact && 'sm:grid-cols-1 sm:gap-0.5')}>
+    <div className="space-y-0.5">
       <dt className="text-xs font-medium text-muted-foreground">
         <BilingualText en={label.en} el={label.el} compact wrap />
       </dt>
@@ -103,7 +103,7 @@ export function NeedCard({
 
       <dl className="space-y-2.5">
         {compact ? (
-          <Sentence label={CMT.missing} text={card.missing} compact />
+          <Sentence label={CMT.missing} text={card.missing} />
         ) : (
           <>
             <Sentence label={CMT.exists} text={card.exists} />

@@ -408,7 +408,7 @@ function PostingGuide() {
                   <Input id="card-place" {...text('place')} maxLength={80} placeholder="Athens, Greece" />
                 </Field>
                 <div className="flex items-center gap-3 self-end pb-2">
-                  <Switch id="card-remote" checked={form.isRemote} onCheckedChange={(v) => set('isRemote')(Boolean(v))} />
+                  <Switch id="card-remote" aria-label={bilingualAria(CMT.remote.en, CMT.remote.el)} checked={form.isRemote} onCheckedChange={(v) => set('isRemote')(Boolean(v))} />
                   <Label htmlFor="card-remote"><BilingualText en={CMT.remote.en} el={CMT.remote.el} compact /></Label>
                 </div>
               </CardContent>

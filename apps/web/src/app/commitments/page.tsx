@@ -47,6 +47,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { publicCardUrl } from '@/lib/commitments-links';
+import { nextAction } from '@/lib/commitments-next';
 
 type Tab = 'mine' | 'responses' | 'history';
 type OutcomeFilter = 'all' | CommitmentOutcome;
@@ -63,16 +64,6 @@ const OUTCOME_COPY: Record<CommitmentOutcome, { en: string; el: string }> = {
 function settledAt(thread: CommitmentThreadSummary): string | null {
   if (thread.step === 'agreed') return thread.agreedAt;
   if (thread.step === 'closed') return thread.closedAt;
-  return null;
-}
-
-/** What the reader has to do next on a thread, or null when it is the other side's turn. */
-export function nextAction(thread: CommitmentThreadSummary): { en: string; el: string } | null {
-  const name = thread.counterpart.displayName;
-  if (thread.step === 'interest' && thread.role === 'owner') return { en: `${CMT.next_accept.en} ${name}`, el: `${CMT.next_accept.el} ${name}` };
-  if (thread.step === 'conversation' && !thread.myConfirmed) return { en: `${CMT.next_confirm.en} ${name}`, el: `${CMT.next_confirm.el} ${name}` };
-  if (thread.step === 'terms' && thread.latestTermsVersion === 0) return { en: `${CMT.next_propose.en} ${name}`, el: `${CMT.next_propose.el} ${name}` };
-  if (thread.step === 'terms' && !thread.myAcceptedLatest) return { en: `${CMT.next_accept_terms.en} ${name}`, el: `${CMT.next_accept_terms.el} ${name}` };
   return null;
 }
 

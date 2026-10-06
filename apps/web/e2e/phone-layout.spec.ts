@@ -31,6 +31,10 @@ const ROUTES = [
   '/mentor/earnings',
   '/provider/inquiries',
   '/data-room/dr_1',
+  // The ladder's five rungs and the terms grid are the widest rows here.
+  '/commitments',
+  '/commitments/new',
+  '/commitments/need-harbor',
 ];
 
 async function signIn(page: Page) {

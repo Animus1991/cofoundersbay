@@ -7,6 +7,7 @@ import { COMMITMENT_OUTCOMES, isInHistory } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { listCommitmentCards, listCommitmentThreads } from '@/lib/commitments-api';
+import { waitsOnMe } from '@/lib/commitments-next';
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { qk } from '@/lib/query-keys';
 import { OutcomeChip } from './OutcomeChip';
@@ -25,12 +26,7 @@ export function CommitmentOutcomes() {
   const cardsQ = useQuery({ queryKey: qk('commitments', 'cards', 'mine'), queryFn: () => listCommitmentCards({ mine: true }) });
   const threadsQ = useQuery({ queryKey: qk('commitments', 'threads', 'all'), queryFn: () => listCommitmentThreads('all') });
   const cards = (cardsQ.data ?? []).filter((c) => c.isMine && (now === null || !isInHistory(c.settledAt, now)));
-  const waiting = (threadsQ.data ?? []).filter(
-    (t) =>
-      (t.step === 'interest' && t.role === 'owner') ||
-      (t.step === 'conversation' && !t.myConfirmed) ||
-      (t.step === 'terms' && (t.latestTermsVersion === 0 || !t.myAcceptedLatest)),
-  ).length;
+  const waiting = (threadsQ.data ?? []).filter(waitsOnMe).length;
 
   return (
     <Card data-commitment-outcomes="">

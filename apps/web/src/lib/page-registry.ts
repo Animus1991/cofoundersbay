@@ -264,6 +264,32 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
 const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & { path?: string } }> = [
   {
+    // /commitments/new is an exact registry entry and matches before this.
+    pattern: /^\/commitments\/[^/]+$/,
+    meta: {
+      title: 'Need card',
+      titleEl: 'Κάρτα ανάγκης',
+      description: 'What exists, the outcome, who is missing and what is offered, with each response on its ladder.',
+      descriptionEl: 'Τι υπάρχει, το αποτέλεσμα, ποιος λείπει και τι προσφέρεται, με κάθε απάντηση στην κλίμακά της.',
+      helpId: 'commitments',
+      helpTitle: 'How commitments work',
+      helpTitleEl: 'Πώς λειτουργούν οι δεσμεύσεις',
+      section: 'Work',
+      status: 'complete',
+    },
+  },
+  {
+    pattern: /^\/c\/[^/]+$/,
+    meta: {
+      title: 'Need card',
+      titleEl: 'Κάρτα ανάγκης',
+      description: 'A need card shared by its author: no email or phone, and a way to join and respond.',
+      descriptionEl: 'Κάρτα ανάγκης που μοιράστηκε ο συντάκτης της: χωρίς email ή τηλέφωνο, με τρόπο εγγραφής και απάντησης.',
+      section: 'Public',
+      status: 'complete',
+    },
+  },
+  {
     pattern: /^\/matches\/[^/]+$/,
     meta: {
       title: 'Match detail',

@@ -204,8 +204,8 @@ export const CMT = {
   guide_title: { en: 'Write a need card', el: 'Νέα κάρτα ανάγκης' },
   guide_edit_title: { en: 'Edit need card', el: 'Επεξεργασία κάρτας ανάγκης' },
   guide_intro: {
-    en: 'Three sentences and an offer. People decide from what exists and what is offered, so say both plainly.',
-    el: 'Τρεις προτάσεις και μια προσφορά. Οι άνθρωποι αποφασίζουν από ό,τι υπάρχει και ό,τι προσφέρεται, οπότε πείτε και τα δύο απλά.',
+    en: 'People decide from what exists and what is offered, so say both plainly.',
+    el: 'Οι άνθρωποι αποφασίζουν από ό,τι υπάρχει και ό,τι προσφέρεται, οπότε πείτε και τα δύο απλά.',
   },
   from_project: { en: 'Start from a project', el: 'Ξεκινήστε από ένα έργο' },
   from_project_none: { en: 'No project', el: 'Χωρίς έργο' },
@@ -246,14 +246,16 @@ export function kindCopy(kind: string): BilingualPair {
 
 /** «2 milestones completed» / «Email verified», for an evidence chip. */
 export function evidenceCopy(item: { id: string; count?: number; value?: boolean }): BilingualPair | null {
-  const n = typeof item.count === 'number' ? `${item.count} ` : '';
+  const count = typeof item.count === 'number' ? item.count : null;
+  const n = count === null ? '' : `${count} `;
+  const one = count === 1;
   switch (item.id) {
     case 'milestones_completed':
-      return { en: `${n}${CMT.ev_milestones.en}`, el: `${n}${CMT.ev_milestones.el}` };
+      return one ? { en: '1 milestone completed', el: '1 ορόσημο ολοκληρωμένο' } : { en: `${n}${CMT.ev_milestones.en}`, el: `${n}${CMT.ev_milestones.el}` };
     case 'builder_documents':
-      return { en: `${n}${CMT.ev_documents.en}`, el: `${n}${CMT.ev_documents.el}` };
+      return one ? { en: '1 Builder document finished', el: '1 έγγραφο Builder ολοκληρωμένο' } : { en: `${n}${CMT.ev_documents.en}`, el: `${n}${CMT.ev_documents.el}` };
     case 'endorsements':
-      return { en: `${n}${CMT.ev_endorsements.en}`, el: `${n}${CMT.ev_endorsements.el}` };
+      return one ? { en: '1 endorsement', el: '1 σύσταση' } : { en: `${n}${CMT.ev_endorsements.en}`, el: `${n}${CMT.ev_endorsements.el}` };
     case 'email_verified':
       return item.value ? CMT.ev_email : null;
     default:

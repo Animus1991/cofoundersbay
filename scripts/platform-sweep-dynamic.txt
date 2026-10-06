@@ -15,3 +15,6 @@
 /org/cohorts/cohort-autumn-2026
 /admin/user-detail/preview-demo-user
 /t/aegean-lab
+/commitments/need-harbor
+/commitments/need-athens-intros
+/c/harbor-commercial-demo

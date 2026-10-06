@@ -14,6 +14,8 @@ const PUBLIC_ROUTES = [
   { path: '/register', name: 'register' },
   { path: '/terms', name: 'terms' },
   { path: '/privacy', name: 'privacy' },
+  // A need card shared on LinkedIn, opened without an account.
+  { path: '/c/e2e-public-card', name: 'public need card' },
 ];
 
 /**

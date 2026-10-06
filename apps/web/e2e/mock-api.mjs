@@ -47,6 +47,29 @@ const ROUTES = {
   'GET /api/auth/2fa/status': { enabled: false, backupCodesRemaining: 0 },
   'GET /api/auth/linked-accounts': { accounts: [] },
 
+  // A shared need card, opened by someone without an account (/c/[token]).
+  'GET /api/commitments/public/e2e-public-card': {
+    card: {
+      id: 'need-e2e',
+      kind: 'cofounder',
+      title: 'Technical co-founder for a developer-tools startup',
+      exists: 'A paid beta used by eleven engineering teams, with two design partners renewing.',
+      goal: 'Reach forty paying teams and a seed round within the next twelve months.',
+      missing: 'A technical co-founder who has run developer infrastructure in production.',
+      offer: { role: 'CTO and co-founder', equity: '10–15%', hoursPerWeek: 40, scope: 'Own the platform and the first engineering hires.' },
+      category: 'Developer Tools',
+      place: 'Athens, Greece',
+      isRemote: false,
+      stage: 'building',
+      commitment: 'full_time',
+      evidence: [{ id: 'milestones_completed', count: 4 }, { id: 'email_verified', value: true }],
+      version: 1,
+      outcome: 'open',
+      settledAt: null,
+      owner: { displayName: 'Alex Rivera', headline: 'Building developer tools', avatarUrl: null },
+    },
+  },
+
   'GET /api/dashboard/stats': {
     activeProfiles: 1240,
     matchesThisWeek: 18,

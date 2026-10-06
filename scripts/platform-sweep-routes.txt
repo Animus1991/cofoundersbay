@@ -34,6 +34,8 @@
 /builder/pitch-deck
 /calendar
 /coaching
+/commitments
+/commitments/new
 /compare
 /connections
 /dashboard

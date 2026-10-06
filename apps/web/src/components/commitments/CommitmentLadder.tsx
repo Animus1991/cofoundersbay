@@ -15,7 +15,7 @@ const RUNGS = [CMT.rung_interest, CMT.rung_conversation, CMT.rung_confirmation, 
 export function CommitmentLadder({ step, myConfirmed, className }: { step: CommitmentStep; myConfirmed: boolean; className?: string }) {
   const current = ladderRung(step, myConfirmed);
   return (
-    <ol aria-label={`${CMT.ladder.en} · ${CMT.ladder.el}`} className={cn('grid grid-cols-5 gap-1', className)}>
+    <ol aria-label={`${CMT.ladder.en} · ${CMT.ladder.el}`} className={cn('relative grid grid-cols-5 gap-1', className)}>
       {RUNGS.map((rung, index) => {
         const done = current > index || step === 'agreed';
         const here = current === index && step !== 'agreed';
@@ -32,7 +32,9 @@ export function CommitmentLadder({ step, myConfirmed, className }: { step: Commi
             >
               {done ? <Check className="h-3.5 w-3.5" aria-hidden /> : index + 1}
             </span>
-            <span className={cn('w-full text-2xs leading-tight', here ? 'font-medium text-foreground' : 'text-muted-foreground')}>
+            {/* Five bilingual labels do not fit a phone's width: there only the
+                current rung is named, and the others stay for screen readers. */}
+            <span className={cn('w-full text-2xs leading-tight', here ? 'font-medium text-foreground' : 'sr-only text-muted-foreground sm:not-sr-only')}>
               <BilingualText en={rung.en} el={rung.el} compact wrap />
             </span>
           </li>
