@@ -2781,13 +2781,14 @@ export default function ResearchBoardPage() {
         )}
 
         {/* MiniMap — compact on phones, above the draw strip; from sm it sits
-            at bottom-10, and from lg it rises above the 52px chat bubble so
-            the Co mark does not cover the map. z-[45] keeps it above the
-            inspector at the seam. */}
+            at bottom-10, and from lg it keeps that height but steps left of
+            the 52px chat bubble (right-6 + bubble + 0.75rem gap) so the Co
+            mark does not cover the map. z-[45] keeps it above the inspector
+            at the seam. */}
         {showMiniMap && board ? (
           <div
             data-canvas-chrome
-            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4 lg:bottom-[calc(2.5rem+52px)]"
+            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4 lg:right-[calc(2.25rem+52px)]"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <BoardMiniMap
@@ -2806,13 +2807,12 @@ export default function ResearchBoardPage() {
           className={cn(
             'pointer-events-auto absolute top-4 right-4 z-40 flex w-[220px] cursor-default flex-col overflow-hidden',
             // Stop above the MiniMap: compact 78px frame, desktop 122px frame,
-            // plus a 0.5rem seam. From lg the map itself sits above the chat
-            // bubble, so the inspector follows it up. When the map is off,
-            // 99px still holds the inspector off the chat bubble.
+            // plus a 0.5rem seam. When the map is off, 99px still holds the
+            // inspector off the chat bubble.
             // Phones do not keep a 220px column over the notes. The same panel
             // opens from the layers button as a sheet above the draw strip.
             showMiniMap
-              ? 'bottom-[calc(6rem+78px)] sm:bottom-[calc(3rem+122px)] lg:bottom-[calc(3rem+174px)]'
+              ? 'bottom-[calc(6rem+78px)] sm:bottom-[calc(3rem+122px)]'
               : 'bottom-[99px]',
             'max-sm:bottom-[6.5rem] max-sm:left-2 max-sm:right-2 max-sm:top-auto max-sm:z-50 max-sm:w-auto max-sm:max-h-[46dvh]',
           )}

@@ -462,7 +462,7 @@ export function BoardTemplatesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-3 py-2 sm:grid-cols-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-3 py-2">
           {BOARD_TEMPLATES.map((template) => (
             <ResearchTemplateTile
               key={template.id}

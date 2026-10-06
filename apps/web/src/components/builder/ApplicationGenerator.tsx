@@ -331,7 +331,7 @@ export function ApplicationGenerator({
   return (
     <>
       {pageRail ? <PageRail sections={[...rail, ...(extraSections ?? [])]} /> : null}
-    <div className="mx-auto w-full max-w-5xl space-y-6">
+    <div className="w-full space-y-6">
       <BuilderStageHeader
         glyph="applications"
         titleEn={builderEn('app_title')}

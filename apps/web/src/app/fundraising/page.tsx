@@ -277,7 +277,7 @@ function RoundCard({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
-              <h2 className="page-section font-semibold tracking-tight">
+              <h2 className="page-section page-section--row font-semibold tracking-tight">
                 {round.nameEl
                   ? <BilingualText en={round.name} el={round.nameEl} />
                   : round.name}

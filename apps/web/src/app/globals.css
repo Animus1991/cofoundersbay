@@ -2572,6 +2572,16 @@ h3.page-section.page-section--compact,
   }
 }
 
+/* Row titles on a wide column step down to the `lg` rung so a list reads
+   as a list, not as page headings. Class-only so the fundraising round
+   name (an h2) and milestone row titles (h3) match alike. */
+@media (min-width: 1024px) {
+  .page-section.page-section--row {
+    font-size: 1.125rem;
+    line-height: 1.6rem;
+  }
+}
+
 /* ── Product type standard ───────────────────────────────────────────────
    One ladder for every page in the shell and its page-tools rail: the
    sizes tuned on Overview, Readiness and Analytics. Each step is ~1.08 ×

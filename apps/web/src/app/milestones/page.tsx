@@ -176,7 +176,7 @@ function MilestoneCard({
             <div className="flex items-start justify-between gap-2">
               <h3
                 className={cn(
-                  'page-section font-semibold leading-snug',
+                  'page-section page-section--row font-semibold leading-snug',
                   item.status === 'completed' ? 'text-muted-foreground' : 'text-foreground',
                 )}
               >

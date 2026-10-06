@@ -93,7 +93,7 @@ const RESEARCH_TOUR: TourStep[] = [
 ];
 
 // Sized by the column, not the viewport: pinning the page tools narrows the column and breakpoints cannot see it.
-const BOARD_GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-4';
+const BOARD_GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-5';
 
 const BOARD_COLORS: { nameKey: 'color_default' | 'color_blue' | 'color_green' | 'color_purple' | 'color_orange' | 'color_pink' | 'color_cyan'; value: string | null }[] = [
   { nameKey: 'color_default', value: null },
