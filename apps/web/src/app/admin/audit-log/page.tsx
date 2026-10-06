@@ -224,7 +224,7 @@ export default function AdminAuditLogPage() {
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">

@@ -101,7 +101,7 @@ export default function ProgramDetailPage() {
   if (isLoading) {
     return (
       <AppShell title="Program" titleEl="Πρόγραμμα">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 w-full" />
         </div>

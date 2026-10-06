@@ -980,7 +980,7 @@ export default function MatchesPage() {
         </Button>
       }
     >
-      <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
+      <div className="min-w-0 space-y-6 overflow-x-clip pb-10">
         <FirstRunTour tourId="matches" steps={MATCHES_TOUR} ready={hasToken && !isLoading && visible.length > 0} />
 
         {/* ── Not authenticated ── */}

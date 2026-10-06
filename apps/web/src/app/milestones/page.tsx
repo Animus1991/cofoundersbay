@@ -777,7 +777,7 @@ export default function MilestonesPage() {
         </Button>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* Status tabs. The priority select and the view toggle shared this
             row and made it wrap; they are in the rail now. Linked pages live
             in the rail too — Ask AI is the header control. */}

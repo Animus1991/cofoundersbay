@@ -156,7 +156,9 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
           ? <RelativeTime date={user.lastActive} format={formatRelativeTime} />
           : '—'}
       </div>
-      <Badge variant="outline" className={cn('text-xs flex items-center gap-1 w-24 justify-center', config.color)}>
+      {/* Natural width: a fixed 96px cut "Suspended · Σε αναστολή". Below md
+          the meta line under the email already says the status. */}
+      <Badge variant="outline" className={cn('hidden md:flex text-xs items-center gap-1 min-w-24 justify-center whitespace-nowrap', config.color)}>
         {config.icon}
         <StatusText value={user.status} />
       </Badge>

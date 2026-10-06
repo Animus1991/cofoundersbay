@@ -474,7 +474,7 @@ export default function AdminFeatureFlagsPage() {
         </div>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[

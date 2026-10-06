@@ -224,7 +224,7 @@ export default function MentorReviewsPage() {
                   <p className="page-stat text-xl font-bold tabular-nums">{stats?.activeMentees ?? '\u2014'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground"><BilingualText en="Mentorships completed" el="Ολοκληρωμένες καθοδηγήσεις" compact /></p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="Mentorships completed" el="Ολοκληρωμένες καθοδηγήσεις" compact wrap /></p>
                   <p className="page-stat text-xl font-bold tabular-nums">{stats?.completedMentorships ?? '\u2014'}</p>
                 </div>
                 <div>

@@ -137,7 +137,7 @@ export default function StartupDealPage() {
   if (isLoading) {
     return (
       <AppShell title="Startup" titleEl="Startup">
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 w-full" />
         </div>

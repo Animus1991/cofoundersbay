@@ -613,7 +613,7 @@ export default function ProjectsPage() {
       contentClassName="builder-copy overflow-x-clip"
       actions={createCta}
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabId)} className="space-y-4">
           <TabsList className="rounded-xl">
             {([

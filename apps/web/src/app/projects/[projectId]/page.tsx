@@ -205,7 +205,7 @@ export default function ProjectDetailPage() {
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-start gap-3">
           <Button
             variant="ghost"

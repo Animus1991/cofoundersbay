@@ -413,7 +413,7 @@ export default function GroupDetailPage() {
   return (
     <AppShell>
       {/* Cover / Header */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <button
           onClick={() => router.push('/groups')}
           type="button"

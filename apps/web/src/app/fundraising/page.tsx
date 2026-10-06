@@ -118,10 +118,13 @@ function leadAskPrompt(lead: InvestorLead, harborLive: boolean) {
 }
 
 function LeadName({ lead, className }: { lead: InvestorLead; className?: string }) {
+  // A kanban card truncates by design; a pipeline row wraps, or a long
+  // Greek half ran 33px past the row on a phone.
+  const truncating = className?.includes('truncate') ?? false;
   return (
     <p className={className}>
       {lead.nameEl
-        ? <BilingualText en={lead.name} el={lead.nameEl} compact />
+        ? <BilingualText en={lead.name} el={lead.nameEl} compact wrap={!truncating} />
         : lead.name}
     </p>
   );
@@ -897,7 +900,7 @@ export default function FundraisingPage() {
         </Button>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} />
         ) : (

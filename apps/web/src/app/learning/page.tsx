@@ -287,7 +287,7 @@ function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (c
         <BilingualText en={learningEn(path.titleKey)} el={learningEl(path.titleKey)} compact />
       </h3>
       <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">
-        <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} compact />
+        <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} wrap />
       </p>
       <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
         <span className="flex items-center gap-0.5">

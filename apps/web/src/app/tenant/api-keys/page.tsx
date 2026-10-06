@@ -132,7 +132,7 @@ export default function TenantApiKeysPage() {
         />
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {showDemoData && (
           <SampleDataNotice
             surface="API keys"
