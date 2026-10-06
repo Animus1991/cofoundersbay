@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -19,10 +19,14 @@ describe('desktop padding restatement', () => {
     expect(start).toBeGreaterThan(0);
     const block = css.slice(start, start + 20000);
     const restated = new Set([...block.matchAll(/^\s*\.(p[trbl]-[\d\\.]+)\s*\{/gm)].map((m) => m[1].replace(/\\/g, '')));
-    const src = execSync(
-      String.raw`grep -rhoE "(^|[ \"'\x60])p[trbl]-[0-9]+(\.5)?\b" src --include=*.tsx --include=*.ts || true`,
-      { encoding: 'utf8' },
-    );
+    // A shell grep would not run on Windows; walk the tree in-process instead.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+        d.isDirectory() ? walk(join(dir, d.name)) : /\.tsx?$/.test(d.name) ? [join(dir, d.name)] : [],
+      );
+    const src = walk('src')
+      .flatMap((f) => readFileSync(f, 'utf8').match(/(^|[ "'`])p[trbl]-[0-9]+(\.5)?\b/gm) ?? [])
+      .join('\n');
     const used = new Set(src.split(/\s+/).map((t) => t.replace(/^["'`]/, '')).filter((t) => /^p[trbl]-\d+(\.5)?$/.test(t)));
     expect([...used].filter((u) => !restated.has(u)).sort()).toEqual([]);
   });

@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -57,7 +57,12 @@ function firstStacks(file: string): { tag: string; spacing: string | null }[] {
 }
 
 describe('page rhythm', () => {
-  const pages = execSync("grep -rl '<AppShell' src/app --include=page.tsx", { encoding: 'utf8' }).trim().split('\n');
+  // A shell grep would not run on Windows; walk the tree in-process instead.
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+      d.isDirectory() ? walk(join(dir, d.name)) : d.name === 'page.tsx' ? [join(dir, d.name)] : [],
+    );
+  const pages = walk('src/app').filter((f) => readFileSync(f, 'utf8').includes('<AppShell'));
 
   it('finds the pages it judges', () => {
     expect(pages.length).toBeGreaterThan(100);
