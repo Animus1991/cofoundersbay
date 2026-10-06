@@ -2136,3 +2136,50 @@ Hover peek, κουμπί καρφιτσώματος, sheet κάτω από `lg` 
 | sweep 160 routes (στατικά + δυναμικά) @1440 / @390 | 0 σφάλματα · 0 οριζόντιο scroll (μετά τη διόρθωση του `/privacy`) · 0 ανώνυμα · 0 κενά εικονίδια |
 | clock-probe +50 ημέρες | 143 routes, 0 που πετούν |
 | e2e `test:a11y` | **277 passed, 0 failed**, 21 skipped (ήταν 204 failed στο συγχωνευμένο δέντρο) |
+
+## 38. Έλεγχος 2026-10-06 — fast-forward στο `075f0288`, καμία παράλειψη
+
+### 38.1 Git
+
+`git ls-remote --heads origin` και `git fetch` στις 2026-10-06, από το `ffd15fc9`. Το `origin/claude/project-audit-upgrade-y2ebnr` (`075f0288`) είναι αυστηρός απόγονος: 10 commits έξω από το HEAD, 0 commits του HEAD έξω από αυτό. Έγινε `git merge --ff-only`. Μετά, κάθε remote head έχει **0** commits έξω από το HEAD:
+
+| remote | SHA | commits έξω από το HEAD |
+|---|---|---|
+| `claude/project-audit-upgrade-y2ebnr` | `075f0288` | 0 |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` | `ffd15fc9` πριν το ff | 0 |
+| `cursor/phone-component-sizes-53e0` | `477ca958` | 0 |
+| `integration/ai-platform-upgrade` | `0e792ce7` | 0 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe32` | 0 |
+| `main` | `91d6ea3a` | 0 · το `075f0288` είναι 424 commits μπροστά· οι σημειώσεις αυτού του ελέγχου κάθονται από πάνω |
+
+Τα 10 commits είναι τα `0a411c6a` … `075f0288` (§36 και §37: εικονίδια μενού, chrome κινητού, rail, λέξεις στα `/profile` και `/discover`, ρυθμός `space-y-6`, bilingual fit, σουίτα προσβασιμότητας). Ανάμεσά τους τα merges `bebb51e2` και `a3db6323`, που ξαναπαίρνουν την κλίμακα κινητού. Δεν υπάρχει δεύτερο tip. Το April `main` δεν ενώθηκε.
+
+### 38.2 Ξαναμέτρηση στο `075f0288`
+
+Ίδια τομή με το §35 (`<Button`, `<button`, αρχεία `.tsx`).
+
+| αντικείμενο | §35 (`86e44463`) | τώρα | διαφορά |
+|---|---:|---:|---|
+| `page.tsx` | 160 | **160** | καμία· ο κατάλογος του §30.6 ισχύει |
+| `components/**/*.tsx` | 264 | **264** | καμία· τα νέα αρχεία είναι `.ts` (φρουροί), όχι components |
+| `<Button>` | 1323 | **1323** | καμία |
+| native `<button>` | 581 | **581** | καμία |
+| αρχεία με `DialogContent` ή `SheetContent` | 59 | **59** | καμία από το `86e44463`. Η τομή «λέξη Dialog ή Sheet» του §35 έδινε 57· αυτή η τομή μετρά όσα ζωγραφίζουν dialog |
+
+Κάλυψη σελίδων, χωρίς παράλειψη: `scripts/platform-sweep-routes.txt` έχει 143 στατικές διαδρομές και δεν λείπει καμία στατική `page.tsx`. Οι 17 δυναμικές (`[id]`, `[slug]`, `[userId]`, `[groupId]`, `[projectId]`, `[boardId]`, `[username]`, `[token]`) είναι ακριβώς οι 17 γραμμές του `scripts/platform-sweep-dynamic.txt`. 143 + 17 = 160.
+
+Η σύμβαση κουμπιού μένει ο §30.3. Η σύμβαση modal μένει ο §30.4. Νέο dialog περνά από `DialogContent` ή `SheetContent`.
+
+### 38.3 Τι έκλεισε από το §35.4 και τι μένει
+
+Το `pageRhythm.test.ts` (`f93e6b05`) κλείνει το lint του `space-y-6`: η πρώτη στοίβα κάτω από το `AppShell` είναι `space-y-6`, τα `Tabs` μένουν `space-y-4`. Το bilingual fit και το dialog sweep που ζητούσε το §35.4 καταγράφονται στο §37.5, στο ίδιο tip. Το persistence έξω από το demo μένει ανοιχτό: τα tests και τα sweeps μένουν σε demo cookies.
+
+Μένει, για απόφαση και όχι ως παράλειψη καταλόγου:
+
+1. Η ιεραρχία γραμμάτων στο τηλέφωνο (§37.8): `text-lg` 15.29px, τίτλος 16.48px, `text-base` 16.66px. Το βάρος κρατά την ιεραρχία. Ήταν ρητή επιλογή και δεν άλλαξε σε αυτόν τον έλεγχο.
+2. Το glyph `default` κρατά ακόμη τη σκηνή του σήματος (§36.7).
+3. Persistence έξω από demo.
+
+### 38.4 Τι δεν αποδεικνύει αυτό το τμήμα
+
+Δεν ξαναέτρεξαν typecheck, vitest, contrast, το static sweep, το dynamic sweep, το dialog sweep ή το bilingual fit σε αυτή την ώρα. Αυτά τα νούμερα είναι το §37.9, γραμμένο πάνω στο ίδιο `075f0288`. Αυτή η ώρα ξαναμέτρησε το git, την απογραφή, την κάλυψη των 160 σελίδων και το `/demo`. Το `/demo` θέτει `cfb_session=preview-demo`, `cfb_preview_demo=1`, `cfb_primary_role=existing_founder`, απαντά 307 προς `/dashboard/founder`, και με αυτά τα cookies το `/dashboard/founder` απαντά 200.
