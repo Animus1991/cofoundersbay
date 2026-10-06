@@ -25,6 +25,10 @@ const PUBLIC_PATHS = new Set([
 
 const PUBLIC_PREFIXES = [
   '/p/',         // public user profile pages /p/[username]
+  '/c/',         // public need cards /c/[token], shared by their author
+  // Share links are for stakeholders without an account (ArtifactShareLink);
+  // behind the sign-in redirect they could never be opened by them.
+  '/share/',
   '/profiles/',
   '/t/',         // tenant public landing pages /t/[slug]
   '/themes/',    // static theme previews

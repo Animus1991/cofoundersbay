@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { rememberReturnTo } from '@/lib/return-to';
 import { register as registerApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,6 +105,9 @@ export default function RegisterPage() {
       if (typeof window !== 'undefined') {
         // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
+        // A public need card sends people here with `redirect`: onboarding
+        // first, then back to that card.
+        rememberReturnTo(new URLSearchParams(window.location.search).get('redirect'));
       }
       router.push('/onboarding');
     } catch (err) {

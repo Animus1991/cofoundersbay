@@ -32,6 +32,8 @@ import {
   listOpportunities, type OpportunityItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import { NeedCardsSection } from '@/components/commitments/NeedCardsSection';
+import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
@@ -778,6 +780,7 @@ export default function OpportunitiesPage() {
         {/* Listings tab */}
         {activeTab === 'listings' && (
           <div className="space-y-6">
+            <NeedCardsSection type={oppTypeFilter} remoteOnly={remoteOnly} search={search} />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
@@ -961,6 +964,8 @@ export default function OpportunitiesPage() {
             )}
           </div>
         )}
+        {/* Equity roles, investments and proposals appear on this page. */}
+        <NonGuaranteeNote />
         </div>
       </AppShell>
     </>

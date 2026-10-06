@@ -48,5 +48,7 @@
   "/tenant/billing": "billing: seats, the payment portal and the billing contact stay with the person; the assistant does not act on payment",
   "/tenant/sso": "identity-provider configuration: security settings the assistant does not change",
   "/admin/sso": "identity-provider configuration across tenants: security settings the assistant does not change",
-  "/admin/system-settings": "platform-wide settings, saved by a platform admin; the assistant does not change them"
+  "/admin/system-settings": "platform-wide settings, saved by a platform admin; the assistant does not change them",
+  "/commitments/new": "a form: draft_need_card fills its fields from the conversation and the person reads the quality checks and presses Publish; publishing is never the assistant’s write",
+  "/c/[token]": "public need card for people without an account, read before sign-in; the assistant is a signed-in feature"
 }

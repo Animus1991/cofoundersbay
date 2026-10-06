@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { takeReturnTo } from '@/lib/return-to';
 import { User, Briefcase, Zap, ArrowRight, Check, Loader2, Bot, Rocket, HelpCircle } from 'lucide-react';
 import { createProfile, listSkills, type Skill } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -270,7 +271,7 @@ export function ConversationalOnboarding() {
       });
       await addBotMessage(say(BOT_QUESTIONS.done), 500);
       setStep('done');
-      setTimeout(() => router.push('/'), 1500);
+      setTimeout(() => router.push(takeReturnTo('/')), 1500);
     } catch {
       await addBotMessage(say({ en: 'Something went wrong saving your profile. Check your connection and try again.', el: 'Κάτι πήγε στραβά στην αποθήκευση του προφίλ. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.' }), 500);
       setSubmitting(false);
@@ -522,7 +523,7 @@ export function ConversationalOnboarding() {
           )}
 
           {step === 'done' && (
-            <Button className="w-full gap-2" onClick={() => router.push('/')} data-testid="onboarding-explore-button">
+            <Button className="w-full gap-2" onClick={() => router.push(takeReturnTo('/'))} data-testid="onboarding-explore-button">
               <ArrowRight className="icon-sm" />
               <BilingualText en="Explore CoFounderBay" el="Εξερευνήστε το CoFounderBay" compact />
             </Button>

@@ -1,5 +1,10 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import type { CommitmentOutcome } from '@cofounderbay/shared';
+import { OutcomeChip } from '@/components/commitments/OutcomeChip';
+import { listCommitmentCards } from '@/lib/commitments-api';
+import { qk } from '@/lib/query-keys';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -104,12 +109,15 @@ function StageBadge({ status }: { status: ProjectStatus }) {
 function ProjectCard({
   project,
   viewMode,
+  outcome,
   onStar,
   onMessage,
   onShare,
 }: {
   project: DemoProject;
   viewMode: 'grid' | 'list';
+  /** The outcome of the project's need card, when it has one. */
+  outcome?: { outcome: CommitmentOutcome; reason: string | null };
   onStar: (id: string) => void;
   onMessage: (project: DemoProject) => void;
   onShare: (project: DemoProject) => void;
@@ -125,6 +133,7 @@ function ProjectCard({
                   {project.name}
                 </Link>
                 <StageBadge status={project.status} />
+                {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
                 {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
               </div>
               <ProjectBlurb project={project} clamp="line-clamp-1" />
@@ -174,7 +183,10 @@ function ProjectCard({
                 </Link>
               {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
             </div>
-            <StageBadge status={project.status} />
+            <div className="flex flex-wrap items-center gap-1.5">
+              <StageBadge status={project.status} />
+              {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -325,6 +337,26 @@ export default function ProjectsPage() {
   const { open: openAskAi } = usePopupChat();
   const { success } = useToast();
   const [projects, setProjects] = useState(listDemoProjects);
+  // Each project's need card outcome, beside its stage: open, in discussion,
+  // agreed or closed. One read for every project on the page.
+  const projectRefs = useMemo(() => projects.map((p) => p.id), [projects]);
+  const needsQ = useQuery({
+    queryKey: qk('commitments', 'cards', 'projects', projectRefs.join(',')),
+    queryFn: () => listCommitmentCards({ projectRefs }),
+    enabled: projectRefs.length > 0,
+  });
+  const needOutcomes = useMemo(() => {
+    const map = new Map<string, { outcome: CommitmentOutcome; reason: string | null }>();
+    for (const card of needsQ.data ?? []) {
+      if (!card.projectRef) continue;
+      const current = map.get(card.projectRef);
+      // A live card speaks for the project over a closed one.
+      if (!current || (current.outcome === 'closed' && card.outcome !== 'closed')) {
+        map.set(card.projectRef, { outcome: card.outcome, reason: card.closedReason });
+      }
+    }
+    return map;
+  }, [needsQ.data]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -427,6 +459,7 @@ export default function ProjectsPage() {
             key={project.id}
             project={project}
             viewMode={viewMode}
+            outcome={needOutcomes.get(project.id)}
             onStar={handleStar}
             onMessage={(p) => openAskAi(p.founder.id, 'messages')}
             onShare={handleShare}

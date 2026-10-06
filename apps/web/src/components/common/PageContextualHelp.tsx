@@ -682,6 +682,47 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  commitments: {
+    en: (
+      <>
+        <p>
+          A <strong>need card</strong> says three things in one sentence each — what already exists, the outcome it is
+          for, and who is missing — and what is offered: role, equity, hours a week and scope. Category, place, stage and
+          commitment are the filters people search by.
+        </p>
+        <p>
+          Only commitments that bind people use the ladder: a co-founder seat, a role with equity, an investor
+          introduction. Interest opens a <strong>protected conversation</strong> with no contact details; each of you
+          confirms separately; then terms are versioned, with three revisions after the first proposal. Agreed terms
+          open the deal room and stay frozen while it is open. Mentoring and simple intros keep ordinary messages.
+        </p>
+        <p>
+          A public link shares the card without your email or phone. The platform organises the decision; it does not
+          promise funding or income.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Μια <strong>κάρτα ανάγκης</strong> λέει τρία πράγματα, μία πρόταση το καθένα — τι υπάρχει ήδη, το αποτέλεσμα
+          που επιδιώκεται και ποιος λείπει — και τι προσφέρεται: ρόλος, equity, ώρες την εβδομάδα και εύρος. Κατηγορία,
+          τόπος, στάδιο και δέσμευση είναι τα φίλτρα αναζήτησης.
+        </p>
+        <p>
+          Την κλίμακα τη χρησιμοποιούν μόνο οι δεσμεύσεις που δεσμεύουν ανθρώπους: θέση συνιδρυτή, ρόλος με equity,
+          σύσταση σε επενδυτή. Το ενδιαφέρον ανοίγει μια <strong>προστατευμένη συζήτηση</strong> χωρίς στοιχεία
+          επικοινωνίας· ο καθένας επιβεβαιώνει χωριστά· μετά οι όροι γράφονται σε εκδόσεις, με τρεις αναθεωρήσεις μετά την
+          πρώτη πρόταση. Οι συμφωνημένοι όροι ανοίγουν την αίθουσα συμφωνίας και μένουν παγωμένοι όσο είναι ανοιχτή. Το
+          mentoring και οι απλές συστάσεις κρατούν τα συνηθισμένα μηνύματα.
+        </p>
+        <p>
+          Ο δημόσιος σύνδεσμος μοιράζεται την κάρτα χωρίς email ή τηλέφωνο. Η πλατφόρμα οργανώνει την απόφαση· δεν
+          υπόσχεται χρηματοδότηση ή εισόδημα.
+        </p>
+      </>
+    ),
+  },
   opportunities: {
     en: (
       <>

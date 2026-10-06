@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { takeReturnTo } from '@/lib/return-to';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -259,7 +260,7 @@ export default function EnhancedOnboardingPage() {
     mutationFn: createProfile,
     onSuccess: () => {
       success('Profile created successfully!', 'Welcome to CoFounderBay');
-      router.push('/dashboard');
+      router.push(takeReturnTo('/dashboard'));
     },
     onError: (err: Error) => {
       showError('Failed to create profile', err.message || 'Please try again');

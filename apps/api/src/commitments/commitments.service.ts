@@ -219,6 +219,9 @@ export class CommitmentsService {
       projectRef: card.projectRef ?? null,
       evidence: Array.isArray(card.evidence) ? card.evidence : [],
       version: card.version,
+      // The offer as it stood before each new version, so a candidate who
+      // answered an earlier one can see what changed.
+      history: Array.isArray(card.history) ? card.history : [],
       outcome: card.status,
       closedReason: card.closedReason ?? null,
       settledAt: iso(card.settledAt),
@@ -488,13 +491,17 @@ export class CommitmentsService {
   async reopenCard(viewer: Viewer, id: string) {
     const card = await this.ownCard(viewer, id);
     if (card.status !== 'closed') throw new ConflictException('The card is not closed');
+    // The expiry is kept unless it has passed, so closing and reopening a
+    // card puts back exactly what closing changed: the outcome (recomputed
+    // from untouched threads), the reason and the settled date.
+    const stillRunning = card.expiresAt && card.expiresAt.getTime() > Date.now();
     await this.prisma.commitmentCard.update({
       where: { id },
       data: {
         status: 'open',
         closedReason: null,
         settledAt: null,
-        expiresAt: new Date(Date.now() + OPEN_CARD_DAYS * DAY_MS),
+        expiresAt: stillRunning ? card.expiresAt : new Date(Date.now() + OPEN_CARD_DAYS * DAY_MS),
       },
     });
     await this.refreshCardStatus(id);

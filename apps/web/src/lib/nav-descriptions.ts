@@ -13,6 +13,7 @@ export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
   '/research': 'Visual research and strategy canvases',
   '/milestones': 'Goals, owners, and due dates',
   '/projects': 'Side projects and startup initiatives',
+  '/commitments': 'Need cards and the ladder to agreed terms',
   '/fundraising': 'Investor pipeline and data room',
   '/ai': 'Your assistant: matches, research, fundraising. Changes wait for your confirmation',
   '/messages': 'Direct messages and intro requests',

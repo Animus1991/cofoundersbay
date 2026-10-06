@@ -129,6 +129,7 @@ export const CMT = {
   changed: { en: 'changed', el: 'άλλαξε' },
   accepted_by_you: { en: 'You accepted', el: 'Το αποδεχτήκατε' },
   accepted_by_them: { en: 'They accepted', el: 'Το αποδέχτηκαν' },
+  not_accepted_by_you: { en: 'Not accepted by you yet', el: 'Δεν το έχετε αποδεχτεί ακόμη' },
   awaiting_them: { en: 'Waiting for them', el: 'Αναμονή της άλλης πλευράς' },
   accept_version: { en: 'Accept version', el: 'Αποδοχή έκδοσης' },
   propose: { en: 'Propose terms', el: 'Πρόταση όρων' },

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { safeInternalPath } from '@/lib/return-to';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -70,7 +71,7 @@ function LoginPageContent() {
 
   const handleSSOLogin = () => {
     if (!ssoDiscovery?.provider?.id) return;
-    const returnUrl = searchParams?.get('redirect') || searchParams?.get('returnUrl') || '/';
+    const returnUrl = safeInternalPath(searchParams?.get('redirect') || searchParams?.get('returnUrl')) ?? '/';
     window.location.href = getSSOLoginUrl(ssoDiscovery.provider.id, returnUrl);
   };
 
@@ -87,7 +88,7 @@ function LoginPageContent() {
         // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
       }
-      const redirectTo = searchParams?.get('redirect') || searchParams?.get('returnUrl') || '/';
+      const redirectTo = safeInternalPath(searchParams?.get('redirect') || searchParams?.get('returnUrl')) ?? '/';
       router.push(redirectTo);
     } catch (err) {
       submittingRef.current = false;

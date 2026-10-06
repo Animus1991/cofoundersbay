@@ -23,6 +23,14 @@ import { apiRequest } from '@/lib/api';
 
 export type CardEvidence = { id: string; count?: number; value?: boolean };
 
+/** The offer as it stood before a new version of the card. */
+export type CardVersionEntry = {
+  version: number;
+  at: string | null;
+  changed: string[];
+  offer: { role: string; equity: string | null; hoursPerWeek: number | null; scope: string; commitment: string };
+};
+
 export type CommitmentPerson = {
   id: string;
   displayName: string;
@@ -47,6 +55,7 @@ export type CommitmentCard = {
   projectRef: string | null;
   evidence: CardEvidence[];
   version: number;
+  history: CardVersionEntry[];
   outcome: CommitmentOutcome;
   closedReason: string | null;
   settledAt: string | null;
@@ -172,6 +181,16 @@ export function toCommitmentCard(raw: unknown): CommitmentCard {
       .filter((e) => typeof e.id === 'string')
       .map((e) => ({ id: e.id as string, ...(typeof e.count === 'number' ? { count: e.count } : {}), ...(typeof e.value === 'boolean' ? { value: e.value } : {}) })),
     version: num(c.version, 1),
+    history: (Array.isArray(c.history) ? c.history : []).map((h) => {
+      const r = rec(h);
+      const o = rec(r.offer);
+      return {
+        version: num(r.version, 1),
+        at: strOrNull(r.at),
+        changed: Array.isArray(r.changed) ? r.changed.filter((x): x is string => typeof x === 'string') : [],
+        offer: { role: str(o.role), equity: strOrNull(o.equity), hoursPerWeek: numOrNull(o.hoursPerWeek), scope: str(o.scope), commitment: str(o.commitment) },
+      };
+    }),
     outcome: outcomeOf(c.outcome),
     closedReason: strOrNull(c.closedReason),
     settledAt: strOrNull(c.settledAt),

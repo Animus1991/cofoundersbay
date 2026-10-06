@@ -483,6 +483,7 @@ function cardShape(world: World, card: Card) {
     projectRef: card.projectRef,
     evidence: card.evidence,
     version: card.version,
+    history: card.history,
     outcome: card.status,
     closedReason: card.closedReason,
     settledAt: card.settledAt,
@@ -768,7 +769,8 @@ function route(world: World, pathname: string, path: string, method: string, bod
     if (parts[2] === 'reopen' && method === 'POST') {
       own();
       if (card.status !== 'closed') throw new DemoRefusal(409, 'The card is not closed');
-      Object.assign(card, { status: 'open', closedReason: null, settledAt: null, expiresAt: new Date(nowMs + 90 * DAY).toISOString() });
+      const stillRunning = card.expiresAt && Date.parse(card.expiresAt) > nowMs;
+      Object.assign(card, { status: 'open', closedReason: null, settledAt: null, expiresAt: stillRunning ? card.expiresAt : new Date(nowMs + 90 * DAY).toISOString() });
       refresh(world, card.id, nowIso);
       return { card: cardShape(world, card) };
     }

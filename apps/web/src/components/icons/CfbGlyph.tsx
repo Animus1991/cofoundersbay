@@ -40,6 +40,7 @@ export const CFB_GLYPH_NAMES = [
   'deck',
   'growth',
   'feed',
+  'pact',
   'more',
   'default',
 ] as const;
@@ -77,6 +78,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   mentoring: 'mentor',
   investors: 'growth',
   opportunities: 'target',
+  commitments: 'pact',
   groups: 'community',
   events: 'calendar',
   programs: 'award',
@@ -278,6 +280,15 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <path d="M5.5 6.2h13A2.3 2.3 0 0 1 20.8 8.5v6.2A2.3 2.3 0 0 1 18.5 17H12l-4.2 3v-3H5.5A2.3 2.3 0 0 1 3.2 14.7V8.5A2.3 2.3 0 0 1 5.5 6.2Z" />
       <circle cx="9" cy="11.4" r="1" fill="currentColor" stroke="none" />
       <circle cx="15" cy="11.4" r="1" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Two links of a chain, joined: a commitment two people make. Drawn apart
+  // from Matches (two overlapping circles) so the nav never shows one mark twice.
+  pact: (
+    <>
+      <rect x="2.9" y="9" width="11" height="6.6" rx="3.3" transform="rotate(-32 8.4 12.3)" />
+      <rect x="9.6" y="8.4" width="11" height="6.6" rx="3.3" transform="rotate(-32 15.1 11.7)" />
+      <circle cx="11.8" cy="12" r="1.05" fill="currentColor" stroke="none" />
     </>
   ),
   // Two circles that overlap: what two people share. It used to be the

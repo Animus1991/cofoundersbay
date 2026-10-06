@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { AppShell } from '@/components/layout/AppShell';
 import { RoleBadge } from '@/components/common/RoleBadge';
+import { ProjectNeedCard } from '@/components/commitments/ProjectNeedCard';
+import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
@@ -267,6 +269,8 @@ export default function ProjectDetailPage() {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6">
+                {/* What the project needs and offers for it, as a need card. */}
+                <ProjectNeedCard projectId={project.id} owned={owned} />
                 <Card className="rounded-xl">
                   <CardHeader>
                     <CardTitle><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
@@ -352,6 +356,7 @@ export default function ProjectDetailPage() {
                         </div>
                       </div>
                     ))}
+                    {project.rolesNeeded.some((role) => role.equity) ? <NonGuaranteeNote /> : null}
                   </CardContent>
                 </Card>
                 )}

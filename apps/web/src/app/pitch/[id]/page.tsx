@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -425,6 +426,7 @@ function AskSlide({ slide }: { slide: SlideBase }) {
           </div>
         ))}
       </div>
+      <NonGuaranteeNote className="mt-6" />
     </div>
   );
 }

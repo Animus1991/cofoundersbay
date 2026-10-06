@@ -131,6 +131,7 @@ export const founderWorkSections: NavSection[] = [
       { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
+      { href: '/commitments', label: 'Commitments', icon: Handshake },
     ],
   },
   {

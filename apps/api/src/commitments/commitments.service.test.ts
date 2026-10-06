@@ -139,7 +139,9 @@ describe('CommitmentsService', () => {
       const closed = await service.closeCard(ELENA, card.id, 'filled');
       expect(closed).toMatchObject({ outcome: 'closed', closedReason: 'filled', previousOutcome: 'in_discussion' });
       expect(fake.db.threads[0].step).toBe('conversation');
+      const expiresBefore = fake.db.cards[0].expiresAt;
       const { card: reopened } = await service.reopenCard(ELENA, card.id);
+      expect(fake.db.cards[0].expiresAt).toBe(expiresBefore);
       expect(reopened.outcome).toBe('in_discussion');
       expect(reopened.closedReason).toBeNull();
       expect(reopened.settledAt).toBeNull();

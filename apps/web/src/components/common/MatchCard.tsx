@@ -14,6 +14,8 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 import { pressableProps } from '@/lib/pressable';
+import type { CommitmentStep } from '@cofounderbay/shared';
+import { StepChip } from '@/components/commitments/OutcomeChip';
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
   text: string;
@@ -43,6 +45,8 @@ type MatchCardProps = {
   isSelected?: boolean;
   onSelect?: () => void;
   className?: string;
+  /** Where a commitment with this person stands, beside the score: a link to its board. */
+  commitment?: { step: CommitmentStep; href: string } | null;
 };
 
 // ── Score tier helpers ────────────────────────────────────────────────────────
@@ -136,6 +140,7 @@ function MatchCardInner({
   isSelected,
   onSelect,
   className,
+  commitment,
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [showReasons, setShowReasons] = useState(false);
@@ -190,8 +195,13 @@ function MatchCardInner({
       )}
 
       {/* Score badge top-right */}
-      <div className="absolute right-3 top-3 z-10">
+      <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-1">
         <ScoreBadge score={compatibilityScore} />
+        {commitment ? (
+          <Link href={commitment.href} onClick={(e) => e.stopPropagation()} className="rounded-full" aria-label={bilingualAria(`Commitment with ${displayName}`, `Δέσμευση με ${displayName}`)}>
+            <StepChip step={commitment.step} />
+          </Link>
+        ) : null}
       </div>
 
       <CardContent className="pl-5 pr-4 py-5">

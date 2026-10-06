@@ -23,6 +23,9 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { MatchCard } from '@/components/common/MatchCard';
+import type { CommitmentStep } from '@cofounderbay/shared';
+import { StepChip } from '@/components/commitments/OutcomeChip';
+import { listCommitmentThreads } from '@/lib/commitments-api';
 import { SkillChip } from '@/components/common/SkillChip';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -266,10 +269,12 @@ function MatchListRow({
   onPass,
   onSave,
   onBreakdown,
+  commitment,
 }: {
   hit: SearchHit;
   matchReasons: MatchReason[];
   isSaved: boolean;
+  commitment?: { step: CommitmentStep; href: string } | null;
   onConnect: () => void;
   onMessage: () => void;
   onPass: () => void;
@@ -314,6 +319,9 @@ function MatchListRow({
                   <Badge variant="outline" className={cn('text-2xs h-5 border', colors.chip)}>
                     {tier.charAt(0).toUpperCase() + tier.slice(1)} · {score}%
                   </Badge>
+                  {commitment ? (
+                    <Link href={commitment.href} className="rounded-full"><StepChip step={commitment.step} /></Link>
+                  ) : null}
                   {hit.location && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="icon-sm" />{hit.location}
@@ -547,6 +555,22 @@ export default function MatchesPage() {
 
   const hasToken = useIsAuthenticated();
 
+  // Where a commitment with each person stands, shown beside their score:
+  // the latest live thread from either side wins over a closed one.
+  const { data: commitmentThreads } = useQuery({
+    queryKey: qk('commitments', 'threads', 'all'),
+    queryFn: () => listCommitmentThreads('all'),
+    staleTime: 60_000,
+  });
+  const commitmentWith = useMemo(() => {
+    const map = new Map<string, { step: CommitmentStep; href: string }>();
+    for (const t of commitmentThreads ?? []) {
+      const current = map.get(t.counterpart.id);
+      if (current && current.step !== 'closed') continue;
+      map.set(t.counterpart.id, { step: t.step, href: `/commitments/${encodeURIComponent(t.cardId)}?thread=${encodeURIComponent(t.id)}` });
+    }
+    return map;
+  }, [commitmentThreads]);
   const { data: shortlistIdsData } = useQuery({
     queryKey: qk('shortlist', 'ids'),
     queryFn: getShortlistIds,
@@ -1261,6 +1285,7 @@ export default function MatchesPage() {
                         compatibilityScore={score}
                         matchReasons={matchReasons}
                         isBookmarked={savedIds.has(hit.userId)}
+                        commitment={commitmentWith.get(hit.userId) ?? null}
                         onLike={() => handleConnect(profile)}
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
                         onMessage={() => handleMessage(profile)}
@@ -1294,6 +1319,7 @@ export default function MatchesPage() {
                         hit={hit}
                         matchReasons={matchReasons}
                         isSaved={savedIds.has(hit.userId)}
+                        commitment={commitmentWith.get(hit.userId) ?? null}
                         onConnect={() => handleConnect(profile)}
                         onMessage={() => handleMessage(profile)}
                         onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}

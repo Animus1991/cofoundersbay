@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { AppShell } from '@/components/layout/AppShell';
+import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -960,6 +961,8 @@ export default function FundraisingPage() {
         </Tabs>
 
         {/* Resources moved to the page rail ('resources' section). */}
+        {/* Round size, committed amounts and check sizes appear above. */}
+        <NonGuaranteeNote />
       </div>
 
       {addOpen && (
