@@ -12,6 +12,7 @@ import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 // No member counts here: the platform does not publish one, so a figure
 // would be invented. Each point describes something the product does.
@@ -108,7 +109,7 @@ function LoginPageContent() {
   return (
     <div className="flex min-h-screen">
       {/* Left — form */}
-      <main id="main-content" className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-16 xl:px-24">
+      <MainLandmark className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-16 xl:px-24">
         <div className="mx-auto w-full max-w-xl animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             {activeTenant?.logoUrl ? (
@@ -251,7 +252,7 @@ function LoginPageContent() {
             </Link>
           </p>
         </div>
-      </main>
+      </MainLandmark>
 
       {/* Right — hero panel */}
       <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 xl:px-20 relative overflow-hidden">

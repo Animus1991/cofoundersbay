@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { LayoutDashboard, ShieldAlert, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 export const metadata = {
   title: 'No access to this page',
@@ -18,7 +19,7 @@ export const metadata = {
  */
 export default function UnauthorizedPage() {
   return (
-    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+    <MainLandmark className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <Logo size="sm" />
       <ShieldAlert className="mt-8 icon-xl text-status-warning" aria-hidden="true" />
       <h1 className="mt-3 text-xl font-semibold text-foreground">
@@ -49,6 +50,6 @@ export default function UnauthorizedPage() {
           </Link>
         </Button>
       </div>
-    </main>
+    </MainLandmark>
   );
 }

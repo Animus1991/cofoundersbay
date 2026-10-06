@@ -31,6 +31,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { BilingualText } from '@/components/common/BilingualText';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; desc: string }> = [
   {
@@ -416,7 +417,7 @@ export function LandingHome() {
       style={{ paddingTop: 'calc(var(--banner-network, 0px) + var(--banner-demo, 0px))' }}
     >
       <LandingNav />
-      <main id="main-content">
+      <MainLandmark>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="relative flex min-h-screen items-center overflow-hidden pt-[52px]">
@@ -804,7 +805,7 @@ export function LandingHome() {
         </div>
       </section>
 
-      </main>
+      </MainLandmark>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-border bg-secondary/10 px-6 py-12 sm:px-8 lg:px-12 xl:px-16">

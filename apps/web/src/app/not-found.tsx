@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Home, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 export const metadata = {
   title: 'Page not found',
@@ -10,7 +11,7 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+    <MainLandmark className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <Logo size="sm" />
       <p className="mt-8 text-6xl font-bold tracking-tight text-foreground">404</p>
       <h1 className="mt-3 text-xl font-semibold text-foreground">Page not found</h1>
@@ -31,6 +32,6 @@ export default function NotFound() {
           </Link>
         </Button>
       </div>
-    </main>
+    </MainLandmark>
   );
 }

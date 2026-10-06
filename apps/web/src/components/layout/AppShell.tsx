@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, createContext, useContext, memo, useState } from 'react';
+import { ReactNode, createContext, useContext, memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
@@ -29,6 +29,64 @@ const MemoMobileBottomNav = memo(MobileBottomNav);
  */
 const InAppShellFrame = createContext(false);
 
+/** useLayoutEffect on the client, useEffect during SSR (which warns otherwise). */
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+/**
+ * The <main> elements of every mounted AppShellFrame and standalone-page
+ * MainLandmark, oldest first. Only the last entry carries id="main-content"
+ * at any moment; see the effect in useLandmarkMain.
+ */
+const mountedMains: HTMLElement[] = [];
+
+/**
+ * Keeps `main#main-content` unique while route transitions hold two page
+ * landmarks in the DOM at once (axe caught the pair once on /discover). The
+ * newest commit strips every earlier landmark's id and claims it, in a layout
+ * effect so the duplication never reaches the screen or the accessibility
+ * tree; when the newest landmark unmounts, the previous one claims the id
+ * back. The JSX keeps the id for SSR - the type scale keys off it and the
+ * skip link resolves it without waiting for hydration.
+ */
+function useLandmarkMain(ref: { current: HTMLElement | null }) {
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    mountedMains.push(el);
+    for (const other of document.querySelectorAll<HTMLElement>('main#main-content')) {
+      if (other !== el) other.removeAttribute('id');
+    }
+    el.setAttribute('id', 'main-content');
+    return () => {
+      const i = mountedMains.indexOf(el);
+      if (i >= 0) mountedMains.splice(i, 1);
+      const previous = mountedMains[mountedMains.length - 1];
+      if (previous?.isConnected) previous.setAttribute('id', 'main-content');
+    };
+  }, []);
+}
+
+/**
+ * The one <main> landmark of a standalone page (login, landing, public cards,
+ * error pages) that renders no AppShellFrame. Same contract as the frame's
+ * landmark: the id, the skip-link tabIndex, and the overlap dedupe.
+ */
+export function MainLandmark({
+  children,
+  className,
+  ...props
+}: { children: ReactNode } & Omit<React.ComponentPropsWithoutRef<'main'>, 'id' | 'tabIndex'>) {
+  const ref = useRef<HTMLElement>(null);
+  useLandmarkMain(ref);
+  // tabIndex keeps this the skip-link target: focusable without painting an
+  // outline ring.
+  return (
+    <main ref={ref} id="main-content" tabIndex={-1} className={cn('focus:outline-none', className)} {...props}>
+      {children}
+    </main>
+  );
+}
+
 
 export type AppShellFrameProps = {
   children: ReactNode;
@@ -55,6 +113,8 @@ export function AppShellFrame({
 }: AppShellFrameProps) {
   const { expanded, mounted } = useSidebar();
   const { pinned: railPinned, hasRail } = usePageRail();
+  const mainRef = useRef<HTMLElement>(null);
+  useLandmarkMain(mainRef);
 
   return (
     <InAppShellFrame.Provider value={true}>
@@ -92,6 +152,7 @@ export function AppShellFrame({
 
           {fullHeight ? (
             <main
+              ref={mainRef}
               id="main-content"
               // tabIndex keeps this the skip-link target: focusable without
               // painting an outline ring.
@@ -108,6 +169,7 @@ export function AppShellFrame({
             </main>
           ) : (
             <main
+              ref={mainRef}
               id="main-content"
               tabIndex={-1}
               // No width cap. The column is already offset by the sidebar's own

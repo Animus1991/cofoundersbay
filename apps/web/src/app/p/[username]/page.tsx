@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -188,7 +189,7 @@ export default function PublicProfilePage() {
         </div>
       </header>
 
-      <main id="main-content" className="max-w-5xl mx-auto px-4 py-8">
+      <MainLandmark className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
@@ -550,7 +551,7 @@ export default function PublicProfilePage() {
             </Card>
           </div>
         </div>
-      </main>
+      </MainLandmark>
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 py-8">

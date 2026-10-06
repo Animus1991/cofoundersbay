@@ -13,6 +13,7 @@ import { getPublicCommitmentCard } from '@/lib/commitments-api';
 import { joinToRespondHref, signInToRespondHref } from '@/lib/commitments-links';
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { qk } from '@/lib/query-keys';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 /**
  * A need card as its author shared it, for people without an account.
@@ -45,7 +46,7 @@ export default function PublicNeedCardPage() {
           </Link>
         </Button>
       </header>
-      <main id="main-content" className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16">
+      <MainLandmark className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16">
         {query.isLoading ? (
           <div className="space-y-3" aria-busy="true">
             <Skeleton className="h-8 w-2/3" />
@@ -95,7 +96,7 @@ export default function PublicNeedCardPage() {
             </p>
           </>
         )}
-      </main>
+      </MainLandmark>
     </div>
   );
 }

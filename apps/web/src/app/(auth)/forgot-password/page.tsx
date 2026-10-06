@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
 import { forgotPassword } from '@/lib/api';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main id="main-content" className="flex min-h-screen items-center justify-center bg-background px-4">
+    <MainLandmark className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8 animate-fade-in">
         <div className="space-y-2">
           <Link href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
@@ -88,6 +89,6 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
       </div>
-    </main>
+    </MainLandmark>
   );
 }
