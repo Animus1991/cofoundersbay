@@ -26,6 +26,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_groups: { en: 'What communities am I in?', el: 'Σε ποιες κοινότητες είμαι;' },
   get_endorsements: { en: 'Do I have endorsements waiting?', el: 'Έχω συστάσεις σε αναμονή;' },
   get_opportunities: { en: 'Show me open opportunities', el: 'Δείξε μου ανοιχτές ευκαιρίες' },
+  get_commitments: { en: 'Where do my commitments stand?', el: 'Πού βρίσκονται οι δεσμεύσεις μου;' },
   get_mentorship_sessions: { en: 'When is my next mentoring session?', el: 'Πότε είναι η επόμενη συνεδρία καθοδήγησής μου;' },
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
@@ -82,6 +83,9 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   draft_event: { en: 'Draft an event “Founder breakfast”', el: 'Ετοίμασε εκδήλωση «Πρωινό ιδρυτών»' },
   draft_project: { en: 'Draft a project “Helios”', el: 'Ετοίμασε project «Ήλιος»' },
   draft_profile: { en: 'Draft my headline “Founder at Harbor”', el: 'Ετοίμασε τον τίτλο μου «Founder at Harbor»' },
+  draft_need_card: { en: 'Write a need card “Technical co-founder for Harbor”', el: 'Φτιάξε κάρτα ανάγκης «Τεχνικός συνιδρυτής για το Harbor»' },
+  express_interest: { en: 'Send interest in Christina’s head-of-growth card', el: 'Στείλε ενδιαφέρον στην κάρτα της Χριστίνας για head of growth' },
+  close_need_card: { en: 'Close my Athens intros card as filled', el: 'Κλείσε την κάρτα για τις γνωριμίες στην Αθήνα ως καλυμμένη' },
 };
 
 function reversalLabel(spec: ActionDeclaration): { en: string; el: string } | null {

@@ -69,6 +69,7 @@ import {
   type ShortlistItem,
 } from '@/lib/api';
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
+import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -538,6 +539,49 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${t('Open opportunities:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_commitments(_args, { t }) {
+    const [cards, threads] = await Promise.all([listCommitmentCards({ mine: true }), listCommitmentThreads('all')]);
+    const mine = asList<CommitmentCard>(cards).filter((card) => card.isMine && card.outcome !== 'closed').slice(0, LIMIT);
+    const actions = [openArea(t, '/commitments', t('Open commitments'), t('Need cards, responses and what waits on you.'))];
+    const OUTCOME: Record<string, string> = { open: 'open', in_discussion: 'in discussion', agreed: 'agreed', closed: 'closed' };
+    const STEP: Record<string, string> = { interest: 'interest', conversation: 'conversation', terms: 'terms', agreed: 'agreed', closed: 'closed' };
+    const waiting = asList<CommitmentThreadSummary>(threads).filter(
+      (th) =>
+        (th.step === 'interest' && th.role === 'owner') ||
+        (th.step === 'conversation' && !th.myConfirmed) ||
+        (th.step === 'terms' && (th.latestTermsVersion === 0 || !th.myAcceptedLatest)),
+    );
+    const responses = asList<CommitmentThreadSummary>(threads).filter((th) => th.role === 'candidate' && th.step !== 'closed').slice(0, LIMIT);
+
+    if (mine.length === 0 && responses.length === 0) {
+      return {
+        section: t('You have no need cards or open responses yet. A need card is three sentences and an offer.'),
+        citations: [],
+        actions: [openArea(t, '/commitments/new', t('Write a need card'), t('About two minutes.')), ...actions],
+      };
+    }
+
+    const citations: CopilotCitation[] = [];
+    const parts: string[] = [];
+    if (mine.length) {
+      const lines = mine.map((card) => {
+        citations.push({ type: 'opportunity', id: card.id, label: card.title, href: `/commitments/${card.id}` });
+        const count = asList<CommitmentThreadSummary>(threads).filter((th) => th.cardId === card.id && th.role === 'owner' && th.step !== 'closed').length;
+        return `• **${card.title}** — ${t(OUTCOME[card.outcome] ?? card.outcome)} · ${t('{count} responses', { count })}`;
+      });
+      parts.push(`${t('Your need cards:')}\n${lines.join('\n')}`);
+    }
+    if (responses.length) {
+      const lines = responses.map((th) => {
+        citations.push({ type: 'opportunity', id: th.cardId, label: th.cardTitle, href: `/commitments/${th.cardId}?thread=${th.id}` });
+        return `• **${th.cardTitle}** — ${th.counterpart.displayName} · ${t(STEP[th.step] ?? th.step)}`;
+      });
+      parts.push(`${t('Your responses:')}\n${lines.join('\n')}`);
+    }
+    parts.push(waiting.length ? t('{count} steps wait on you.', { count: waiting.length }) : t('Nothing waits on you right now.'));
+    return { section: parts.join('\n\n'), citations, actions };
   },
 
   async get_mentorship_sessions(_args, { t, locale }) {

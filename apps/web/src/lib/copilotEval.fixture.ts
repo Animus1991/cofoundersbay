@@ -1,6 +1,8 @@
 /**
- * Wave F: sixty requests a person might type, thirty tasks each asked once in
- * English and once in Greek, with what the assistant should propose.
+ * Wave F: sixty-four requests a person might type, thirty-two tasks each asked
+ * once in English and once in Greek, with what the assistant should propose.
+ * The last four (2026-10-06) are the commitment ladder's: reading where need
+ * cards stand, and drafting one.
  *
  * Written as people phrase things, not as the planner's keys: mixed tonos,
  * polite and terse forms, names inside quotes the way a phone keyboard types
@@ -38,6 +40,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'What level am I and which badges have I earned?', tool: 'get_reputation', read: true },
   { message: 'Ποια σήματα έχω κερδίσει;', tool: 'get_reputation', read: true },
   { message: 'How investor ready is my startup?', tool: 'get_readiness', read: true },
+  { message: 'Where do my commitments stand and what is waiting on me?', tool: 'get_commitments', read: true },
+  { message: 'Τι γίνεται με τις δεσμεύσεις μου;', tool: 'get_commitments', read: true },
   { message: 'Πόσο καλή είναι η ετοιμότητα της startup μου;', tool: 'get_readiness', read: true },
   { message: 'Which mentors are available for sessions?', tool: 'get_mentors', read: true },
   { message: 'Ποιοι μέντορες είναι διαθέσιμοι;', tool: 'get_mentors', read: true },
@@ -79,6 +83,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Ετοίμασε ένα ορόσημο «Πρόσληψη πρώτου μηχανικού»', tool: 'draft_milestone', args: { title: 'Πρόσληψη πρώτου μηχανικού' } },
   { message: 'Draft an event "Founder breakfast"', tool: 'draft_event', args: { title: 'Founder breakfast' } },
   { message: 'Ετοίμασε εκδήλωση «Πρωινό ιδρυτών»', tool: 'draft_event', args: { title: 'Πρωινό ιδρυτών' } },
+  { message: 'Write a need card for an angel investor in Orion Grid', tool: 'draft_need_card', args: { kind: 'investor_intro' } },
+  { message: 'Φτιάξε μου μια κάρτα ανάγκης «Τεχνικός συνιδρυτής για το Harbor»', tool: 'draft_need_card', args: { title: 'Τεχνικός συνιδρυτής για το Harbor', kind: 'cofounder' } },
   { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
   { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },
 ];
@@ -89,4 +95,5 @@ export const WRITE_TOOLS = new Set([
   'workspace_create', 'investor_track_startup', 'investor_move_stage', 'update_profile', 'respond_to_connection',
   'create_milestone', 'update_milestone_status', 'rsvp_event', 'create_event', 'canvas_command', 'join_group',
   'leave_group', 'apply_to_program', 'send_invite', 'write_endorsement', 'respond_to_mentor_request', 'run_page_command',
+  'express_interest', 'close_need_card',
 ]);

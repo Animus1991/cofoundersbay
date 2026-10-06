@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { previewCommitmentsApi, resetDemoCommitments } from '@/lib/demo/commitments-world';
 import { resetPageControlsForTests, runPageControl } from '@/lib/page-controls';
 import { ThreadWorkspace } from './ThreadWorkspace';
+import { executeAction, undoAction } from '@/lib/action-registry';
+import { takeFormDraft } from '@/lib/form-draft';
 import { NeedCard } from './NeedCard';
 
 /**
@@ -131,5 +133,43 @@ describe('NeedCard', () => {
     expect(screen.getByText(/does not promise funding/)).toBeTruthy();
     rerender(<NeedCard card={{ ...base, kind: 'cofounder', offer: { ...base.offer, equity: null } }} />);
     expect(screen.queryByText(/does not promise funding/)).toBeNull();
+  });
+});
+
+describe('the assistant’s commitment capabilities', () => {
+  it('sends interest and takes it back by the thread it created', async () => {
+    const sent = await executeAction('express_interest', { cardId: 'need-aegis-growth', note: 'Six years selling to clinics in Thessaloniki.' });
+    expect(sent.ok).toBe(true);
+    const threadId = sent.undo?.threadId as string;
+    expect(threadId).toBeTruthy();
+    expect(api(`/api/commitments/threads/${threadId}`).thread.step).toBe('interest');
+    const undone = await undoAction('express_interest', {}, sent.undo);
+    expect(undone.ok).toBe(true);
+    expect(() => api(`/api/commitments/threads/${threadId}`)).toThrow(/not found/i);
+  });
+
+  it('refuses a note with contact details and writes nothing', async () => {
+    const before = api('/api/commitments/threads').threads.length;
+    const sent = await executeAction('express_interest', { cardId: 'need-aegis-growth', note: 'viber 6944123456' });
+    expect(sent.ok).toBe(false);
+    expect(api('/api/commitments/threads').threads.length).toBe(before);
+  });
+
+  it('closes a card and reopens it to exactly the outcome it had', async () => {
+    const before = api('/api/commitments/cards/need-athens-intros').card;
+    const closed = await executeAction('close_need_card', { cardId: 'need-athens-intros', reason: 'filled' });
+    expect(closed.ok).toBe(true);
+    expect(api('/api/commitments/cards/need-athens-intros').card).toMatchObject({ outcome: 'closed', closedReason: 'filled' });
+    await undoAction('close_need_card', { cardId: 'need-athens-intros' }, closed.undo);
+    const after = api('/api/commitments/cards/need-athens-intros').card;
+    expect(after).toMatchObject({ outcome: before.outcome, closedReason: null, settledAt: before.settledAt, expiresAt: before.expiresAt });
+  });
+
+  it('drafts a need card into the guide and saves nothing', async () => {
+    const cardsBefore = api('/api/commitments/cards?mine=1').cards.length;
+    const outcome = await executeAction('draft_need_card', { kind: 'investor_intro', title: 'Lead angel for Orion Grid', offerHours: '2' });
+    expect(outcome).toEqual({ ok: true, href: '/commitments/new' });
+    expect(takeFormDraft('need_card')).toEqual({ kind: 'investor_intro', title: 'Lead angel for Orion Grid', offerHours: '2' });
+    expect(api('/api/commitments/cards?mine=1').cards.length).toBe(cardsBefore);
   });
 });

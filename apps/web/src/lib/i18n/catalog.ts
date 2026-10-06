@@ -2,6 +2,16 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open commitments": "Άνοιγμα δεσμεύσεων",
+  "Need cards, responses and what waits on you.": "Κάρτες ανάγκης, απαντήσεις και τι περιμένει από εσάς.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Δεν έχετε ακόμη κάρτες ανάγκης ή ανοιχτές απαντήσεις. Μια κάρτα ανάγκης είναι τρεις προτάσεις και μια προσφορά.",
+  "Write a need card": "Νέα κάρτα ανάγκης",
+  "About two minutes.": "Περίπου δύο λεπτά.",
+  "{count} responses": "{count} απαντήσεις",
+  "Your need cards:": "Οι κάρτες ανάγκης σας:",
+  "Your responses:": "Οι απαντήσεις σας:",
+  "{count} steps wait on you.": "{count} βήματα περιμένουν από εσάς.",
+  "Nothing waits on you right now.": "Τίποτα δεν περιμένει από εσάς αυτή τη στιγμή.",
   // chrome
   Home: 'Αρχική',
   Discover: 'Εξερεύνηση',
@@ -734,6 +744,17 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open commitments": "Abrir compromisos",
+  "Need cards, responses and what waits on you.": "Tarjetas de necesidad, respuestas y lo que espera de ti.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Aún no tienes tarjetas de necesidad ni respuestas abiertas. Una tarjeta de necesidad son tres frases y una oferta.",
+  "Write a need card": "Escribir una tarjeta de necesidad",
+  "About two minutes.": "Unos dos minutos.",
+  "in discussion": "en conversación",
+  "{count} responses": "{count} respuestas",
+  "Your need cards:": "Tus tarjetas de necesidad:",
+  "Your responses:": "Tus respuestas:",
+  "{count} steps wait on you.": "{count} pasos esperan de ti.",
+  "Nothing waits on you right now.": "Nada espera de ti ahora mismo.",
   Home: 'Inicio',
   Discover: 'Descubrir',
   Messages: 'Mensajes',
@@ -1201,6 +1222,17 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open commitments": "Ouvrir les engagements",
+  "Need cards, responses and what waits on you.": "Fiches de besoin, réponses et ce qui vous attend.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Vous n’avez encore ni fiche de besoin ni réponse ouverte. Une fiche de besoin, c’est trois phrases et une offre.",
+  "Write a need card": "Rédiger une fiche de besoin",
+  "About two minutes.": "Environ deux minutes.",
+  "in discussion": "en discussion",
+  "{count} responses": "{count} réponses",
+  "Your need cards:": "Vos fiches de besoin :",
+  "Your responses:": "Vos réponses :",
+  "{count} steps wait on you.": "{count} étapes vous attendent.",
+  "Nothing waits on you right now.": "Rien ne vous attend pour le moment.",
   Home: 'Accueil',
   Discover: 'Découvrir',
   Messages: 'Messages',
@@ -1648,6 +1680,17 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open commitments": "Zusagen öffnen",
+  "Need cards, responses and what waits on you.": "Bedarfskarten, Antworten und was auf dich wartet.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Du hast noch keine Bedarfskarten oder offenen Antworten. Eine Bedarfskarte sind drei Sätze und ein Angebot.",
+  "Write a need card": "Bedarfskarte schreiben",
+  "About two minutes.": "Etwa zwei Minuten.",
+  "in discussion": "im Gespräch",
+  "{count} responses": "{count} Antworten",
+  "Your need cards:": "Deine Bedarfskarten:",
+  "Your responses:": "Deine Antworten:",
+  "{count} steps wait on you.": "{count} Schritte warten auf dich.",
+  "Nothing waits on you right now.": "Gerade wartet nichts auf dich.",
   Home: 'Start',
   Discover: 'Entdecken',
   Messages: 'Nachrichten',
@@ -2095,6 +2138,17 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open commitments": "Apri impegni",
+  "Need cards, responses and what waits on you.": "Schede di bisogno, risposte e ciò che ti aspetta.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Non hai ancora schede di bisogno né risposte aperte. Una scheda di bisogno sono tre frasi e un’offerta.",
+  "Write a need card": "Scrivi una scheda di bisogno",
+  "About two minutes.": "Circa due minuti.",
+  "in discussion": "in discussione",
+  "{count} responses": "{count} risposte",
+  "Your need cards:": "Le tue schede di bisogno:",
+  "Your responses:": "Le tue risposte:",
+  "{count} steps wait on you.": "{count} passi ti aspettano.",
+  "Nothing waits on you right now.": "Al momento non ti aspetta nulla.",
   Home: 'Home',
   Discover: 'Scopri',
   Messages: 'Messaggi',
@@ -2532,6 +2586,17 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open commitments": "Abrir compromissos",
+  "Need cards, responses and what waits on you.": "Cartões de necessidade, respostas e o que espera por si.",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Ainda não tem cartões de necessidade nem respostas abertas. Um cartão de necessidade são três frases e uma oferta.",
+  "Write a need card": "Escrever um cartão de necessidade",
+  "About two minutes.": "Cerca de dois minutos.",
+  "in discussion": "em conversa",
+  "{count} responses": "{count} respostas",
+  "Your need cards:": "Os seus cartões de necessidade:",
+  "Your responses:": "As suas respostas:",
+  "{count} steps wait on you.": "{count} passos esperam por si.",
+  "Nothing waits on you right now.": "Nada espera por si neste momento.",
   Home: 'Início',
   Discover: 'Descobrir',
   Messages: 'Mensagens',
@@ -2966,6 +3031,17 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open commitments": "打开承诺",
+  "Need cards, responses and what waits on you.": "需求卡、回应以及等待你处理的事项。",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "你还没有需求卡或未结束的回应。需求卡就是三句话加一个报价。",
+  "Write a need card": "写一张需求卡",
+  "About two minutes.": "大约两分钟。",
+  "in discussion": "洽谈中",
+  "{count} responses": "{count} 条回应",
+  "Your need cards:": "你的需求卡：",
+  "Your responses:": "你的回应：",
+  "{count} steps wait on you.": "{count} 个步骤等待你处理。",
+  "Nothing waits on you right now.": "目前没有等待你处理的事项。",
   Home: '首页',
   Discover: '发现',
   Messages: '消息',
@@ -3420,6 +3496,17 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open commitments": "コミットメントを開く",
+  "Need cards, responses and what waits on you.": "ニーズカード、返信、あなたの対応待ちの項目。",
+  "You have no need cards or open responses yet. A need card is three sentences and an offer.": "まだニーズカードも進行中の返信もありません。ニーズカードは三つの文と一つのオファーです。",
+  "Write a need card": "ニーズカードを書く",
+  "About two minutes.": "約2分。",
+  "in discussion": "協議中",
+  "{count} responses": "{count} 件の返信",
+  "Your need cards:": "あなたのニーズカード：",
+  "Your responses:": "あなたの返信：",
+  "{count} steps wait on you.": "{count} 件のステップがあなたを待っています。",
+  "Nothing waits on you right now.": "今あなたを待っているものはありません。",
   Home: 'ホーム',
   Discover: '見つける',
   Messages: 'メッセージ',

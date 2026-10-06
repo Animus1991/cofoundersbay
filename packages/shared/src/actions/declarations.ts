@@ -176,6 +176,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_commitments',
+    kind: 'read',
+    label: { en: 'Read my commitments', el: 'Ανάγνωση των δεσμεύσεών μου' },
+    description: {
+      en: 'Read the signed-in user\u2019s need cards and commitments: each card\u2019s outcome (open, in discussion, agreed, closed), each response\u2019s step on the ladder (interest, conversation, terms, agreed) and what waits on the user next.',
+      el: 'Διαβάζει τις κάρτες ανάγκης και τις δεσμεύσεις του χρήστη: την έκβαση κάθε κάρτας (ανοιχτή, σε συζήτηση, συμφωνημένη, κλειστή), το βήμα κάθε απάντησης στην κλίμακα (ενδιαφέρον, συζήτηση, όροι, συμφωνία) και τι περιμένει στη συνέχεια από τον χρήστη.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_mentorship_sessions',
     kind: 'read',
     label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
@@ -1563,6 +1574,82 @@ export const ACTION_DECLARATIONS = [
   },
   // ── Wave D: forms as proposals. The assistant fills, the person submits ──
   {
+    id: 'express_interest',
+    kind: 'mutation',
+    label: { en: 'Answer a need card', el: 'Απάντηση σε κάρτα ανάγκης' },
+    description: {
+      en: 'Send interest in someone else\u2019s need card (a co-founder seat, a role with equity or an investor introduction), with an optional one-line note. The note may not carry contact details. Writes only after confirmation.',
+      el: 'Στέλνει ενδιαφέρον για την κάρτα ανάγκης κάποιου άλλου (θέση συνιδρυτή, ρόλος με equity ή σύσταση σε επενδυτή), με προαιρετικό σημείωμα μίας γραμμής χωρίς στοιχεία επικοινωνίας. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'cardId',
+        type: 'string',
+        required: true,
+        description: { en: 'Id of the need card, from a previous read.', el: 'Το id της κάρτας ανάγκης, από προηγούμενη ανάγνωση.' },
+      },
+      {
+        name: 'note',
+        type: 'string',
+        required: false,
+        description: { en: 'Why the user fits, in one line. No phone, email, links or handles.', el: 'Γιατί ταιριάζει ο χρήστης, σε μία γραμμή. Χωρίς τηλέφωνο, email, συνδέσμους ή λογαριασμούς.' },
+      },
+    ],
+    writes: true,
+    invalidates: ['commitments'],
+    reversal: {
+      // `DELETE /commitments/threads/:id/interest` (withdrawInterest): only
+      // the candidate, only while the step is still `interest` (409 once the
+      // author answers). The author was notified on arrival; that stays.
+      kind: 'partial',
+      explanation: {
+        en: 'Withdraws the interest while the author has not answered, so it leaves their list. They were notified when it arrived, and once they accept it can no longer be withdrawn - only stepped back from.',
+        el: 'Ανακαλεί το ενδιαφέρον όσο ο συντάκτης δεν έχει απαντήσει, ώστε να φύγει από τη λίστα του. Ειδοποιήθηκε όταν έφτασε, και μόλις το αποδεχτεί δεν ανακαλείται πια - μόνο αποχώρηση.',
+      },
+    },
+    auditSubject: { param: 'cardId', entityType: 'need_card' },
+    confirmLabel: { en: 'Send interest', el: 'Αποστολή ενδιαφέροντος' },
+  },
+  {
+    id: 'close_need_card',
+    kind: 'mutation',
+    label: { en: 'Close a need card', el: 'Κλείσιμο κάρτας ανάγκης' },
+    description: {
+      en: 'Close one of the user\u2019s own need cards as filled or withdrawn. Responses stay as they are and nobody is notified.',
+      el: 'Κλείνει μία από τις κάρτες ανάγκης του χρήστη ως καλυμμένη ή αποσυρμένη. Οι απαντήσεις μένουν ως έχουν και δεν ειδοποιείται κανείς.',
+    },
+    params: [
+      {
+        name: 'cardId',
+        type: 'string',
+        required: true,
+        description: { en: 'Id of the user\u2019s own need card.', el: 'Το id της κάρτας ανάγκης του χρήστη.' },
+      },
+      {
+        name: 'reason',
+        type: 'string',
+        required: false,
+        enumValues: ['filled', 'withdrawn'],
+        description: { en: 'filled when someone was found; withdrawn otherwise. Defaults to withdrawn.', el: 'filled όταν βρέθηκε κάποιος· withdrawn αλλιώς. Προεπιλογή: withdrawn.' },
+      },
+    ],
+    writes: true,
+    invalidates: ['commitments'],
+    reversal: {
+      // closeCard sets status, closedReason and settledAt and touches no
+      // thread or notification; reopenCard clears the reason and settled
+      // date, keeps the expiry unless it has passed, and recomputes the
+      // outcome from the same untouched threads.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. Reopening restores the card exactly as it was: the same outcome from the same responses, and nobody is notified either way.',
+        el: 'Πλήρως αναστρέψιμο. Η επανενεργοποίηση επαναφέρει την κάρτα ακριβώς όπως ήταν: την ίδια έκβαση από τις ίδιες απαντήσεις, χωρίς ειδοποίηση σε κανέναν.',
+      },
+    },
+    auditSubject: { param: 'cardId', entityType: 'need_card' },
+    confirmLabel: { en: 'Close card', el: 'Κλείσιμο κάρτας' },
+  },
+  {
     id: 'draft_milestone',
     kind: 'mutation',
     label: { en: 'Draft a milestone', el: 'Πρόχειρο ορόσημο' },
@@ -1682,6 +1769,43 @@ export const ACTION_DECLARATIONS = [
     },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Open filled form', el: 'Άνοιγμα συμπληρωμένης φόρμας' },
+  },
+  {
+    id: 'draft_need_card',
+    kind: 'mutation',
+    label: { en: 'Draft a need card', el: 'Πρόχειρη κάρτα ανάγκης' },
+    description: {
+      en: 'Open the two-minute need-card guide with its fields filled: one sentence on what already exists, one on the outcome, one on the person who is missing, and the offer (role, equity, hours a week, scope) with category, place, stage and commitment. Saves nothing; the person reads the checks and publishes.',
+      el: 'Ανοίγει τον οδηγό δύο λεπτών για κάρτα ανάγκης με τα πεδία συμπληρωμένα: μία πρόταση για ό,τι υπάρχει ήδη, μία για το αποτέλεσμα, μία για το πρόσωπο που λείπει, και η προσφορά (ρόλος, equity, ώρες την εβδομάδα, εύρος) με κατηγορία, τόπο, στάδιο και δέσμευση. Δεν αποθηκεύει τίποτα· ο χρήστης βλέπει τους ελέγχους και δημοσιεύει.',
+    },
+    params: [
+      { name: 'kind', type: 'string', required: false, enumValues: ['cofounder', 'equity_role', 'investor_intro'], description: { en: 'Kind of commitment.', el: 'Είδος δέσμευσης.' } },
+      { name: 'title', type: 'string', required: false, description: { en: 'Short title.', el: 'Σύντομος τίτλος.' } },
+      { name: 'exists', type: 'string', required: false, description: { en: 'One sentence on what already exists.', el: 'Μία πρόταση για ό,τι υπάρχει ήδη.' } },
+      { name: 'goal', type: 'string', required: false, description: { en: 'One sentence on the outcome it is for.', el: 'Μία πρόταση για το αποτέλεσμα.' } },
+      { name: 'missing', type: 'string', required: false, description: { en: 'One sentence on the person who is missing.', el: 'Μία πρόταση για το πρόσωπο που λείπει.' } },
+      { name: 'offerRole', type: 'string', required: false, description: { en: 'The role offered.', el: 'Ο ρόλος που προσφέρεται.' } },
+      { name: 'offerEquity', type: 'string', required: false, description: { en: 'The equity offered, e.g. 8–12%.', el: 'Το equity που προσφέρεται, π.χ. 8–12%.' } },
+      { name: 'offerHours', type: 'string', required: false, description: { en: 'Hours a week, as a number.', el: 'Ώρες την εβδομάδα, ως αριθμός.' } },
+      { name: 'offerScope', type: 'string', required: false, description: { en: 'The scope of the role.', el: 'Το εύρος του ρόλου.' } },
+      { name: 'category', type: 'string', required: false, description: { en: 'Category, e.g. B2B SaaS.', el: 'Κατηγορία, π.χ. B2B SaaS.' } },
+      { name: 'place', type: 'string', required: false, description: { en: 'City or region.', el: 'Πόλη ή περιοχή.' } },
+      { name: 'stage', type: 'string', required: false, enumValues: ['idea', 'validating', 'building', 'launched', 'scaling'], description: { en: 'Stage of the startup.', el: 'Στάδιο της startup.' } },
+      { name: 'commitment', type: 'string', required: false, enumValues: ['full_time', 'part_time', 'advisory', 'flexible'], description: { en: 'Time commitment.', el: 'Χρονική δέσμευση.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the fields wait in the guide until the person
+      // presses Publish, and leaving the page discards them.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The guide opens with these fields filled; you review them and publish, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Ο οδηγός ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και δημοσιεύετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled guide', el: 'Άνοιγμα συμπληρωμένου οδηγού' },
   },
   {
     id: 'canvas_command',

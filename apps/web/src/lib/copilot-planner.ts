@@ -136,6 +136,8 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   // asks with; «προσυπογραφή» is kept for anyone who learnt the older term.
   { keys: ['endorse*', 'προσυπογραφ', 'συστασ'], tool: 'get_endorsements' },
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
+  // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
+  { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
   { keys: ['session', 'συνεδρι'], tool: 'get_mentorship_sessions' },
   {
     keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
@@ -804,7 +806,12 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // read of its own area, as the writes above do.
   const draftVerb = includesAny(message, ['draft', 'prepare', 'fill in', 'fill out', 'ετοίμασε', 'ετοιμασε', 'πρόχειρ', 'προχειρ', 'συμπλήρωσε', 'συμπληρωσε']);
   const quoted = detectQuotedName(rawMessage);
-  const draftKind = !draftVerb
+  // A need card is asked for with "write" or "make" as often as "draft".
+  const needCardNoun = includesAny(message, ['need card', 'need-card', 'κάρτα ανάγκης', 'καρτα αναγκης', 'κάρτας ανάγκης', 'καρτας αναγκης']);
+  const needCardVerb = draftVerb || includesAny(message, ['write', 'create', 'make', 'new ', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε', 'νέα ', 'νεα ']);
+  const draftKind = needCardNoun && needCardVerb
+    ? 'draft_need_card'
+    : !draftVerb
     ? null
     : includesAny(message, ['milestone', 'ορόσημ', 'οροσημ'])
       ? 'draft_milestone'
@@ -818,6 +825,14 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (draftKind === 'draft_milestone') add('draft_milestone', quoted ? { title: quoted } : {});
   if (draftKind === 'draft_event') add('draft_event', quoted ? { title: quoted } : {});
   if (draftKind === 'draft_project') add('draft_project', quoted ? { name: quoted } : {});
+  if (draftKind === 'draft_need_card') {
+    const kind = includesAny(message, ['investor', 'angel', 'επενδυτ'])
+      ? 'investor_intro'
+      : includesAny(message, ['equity role', 'role with equity', 'ρόλο με equity', 'ρολο με equity'])
+        ? 'equity_role'
+        : 'cofounder';
+    add('draft_need_card', { kind, ...(quoted ? { title: quoted } : {}) });
+  }
   if (draftKind === 'draft_profile') {
     const field = includesAny(message, ['bio', 'βιογραφικ']) ? 'bio' : 'headline';
     add('draft_profile', quoted ? { [field]: quoted } : {});
@@ -827,6 +842,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ...(draftKind === 'draft_milestone' ? ['get_milestones'] : []),
     ...(draftKind === 'draft_event' ? ['get_events'] : []),
     ...(draftKind === 'draft_profile' ? ['get_profile'] : []),
+    ...(draftKind === 'draft_need_card' ? ['get_commitments'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),

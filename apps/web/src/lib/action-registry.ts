@@ -45,6 +45,12 @@ import {
 } from '@/lib/api';
 import { createWorkspace } from '@/lib/builder-api';
 import {
+  closeCommitmentCard,
+  expressCommitmentInterest,
+  reopenCommitmentCard,
+  withdrawCommitmentInterest,
+} from '@/lib/commitments-api';
+import {
   archiveWorkspace,
   createInvestorDeal,
   deleteInvestorDeal,
@@ -601,6 +607,29 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
   draft_event: async (payload) => openDraft('event', payload, ['title', 'description', 'type', 'startAt', 'endAt', 'location', 'isOnline'], 'title'),
   draft_project: async (payload) => openDraft('project', payload, ['name', 'tagline', 'description', 'industry', 'location', 'website'], 'name'),
   draft_profile: async (payload) => openDraft('profile', payload, ['headline', 'bio', 'displayName', 'location', 'websiteUrl', 'linkedinUrl'], null),
+  draft_need_card: async (payload) =>
+    openDraft(
+      'need_card',
+      payload,
+      ['kind', 'title', 'exists', 'goal', 'missing', 'offerRole', 'offerEquity', 'offerHours', 'offerScope', 'category', 'place', 'stage', 'commitment'],
+      null,
+    ),
+
+  // ── Commitments ──────────────────────────────────────────────────────────
+  // The thread id comes back so the undo withdraws exactly this interest.
+  express_interest: async (payload) => {
+    const cardId = requireString(payload, 'cardId');
+    if (!cardId) return { ok: false, error: 'Missing need card' };
+    const { threadId } = await expressCommitmentInterest(cardId, requireString(payload, 'note').trim());
+    return { ok: true, href: `/commitments/${encodeURIComponent(cardId)}`, ...(threadId ? { undo: { threadId } } : {}) };
+  },
+
+  close_need_card: async (payload) => {
+    const cardId = requireString(payload, 'cardId');
+    if (!cardId) return { ok: false, error: 'Missing need card' };
+    await closeCommitmentCard(cardId, requireString(payload, 'reason') === 'filled' ? 'filled' : 'withdrawn');
+    return { ok: true, href: `/commitments/${encodeURIComponent(cardId)}`, undo: { cardId } };
+  },
 };
 
 /** Copies the declared fields (and only those) into a draft and opens its form. */
@@ -836,6 +865,26 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!inviteId) return { ok: false, error: 'No invitation to cancel' };
     await cancelInvite(inviteId);
     return { ok: true, href: '/referrals' };
+  },
+
+  /**
+   * Withdraws the interest it sent, by the thread id the executor handed back.
+   * The author was notified on arrival (declared partial), and the API refuses
+   * once they have answered - that refusal is what the card shows.
+   */
+  express_interest: async (_payload, context) => {
+    const threadId = requireString(context, 'threadId');
+    if (!threadId) return { ok: false, error: 'No interest to withdraw' };
+    await withdrawCommitmentInterest(threadId);
+    return { ok: true, href: '/commitments' };
+  },
+
+  /** Reopens the card it closed; the threads were never touched (declared full). */
+  close_need_card: async (payload, context) => {
+    const cardId = requireString(context, 'cardId') || requireString(payload, 'cardId');
+    if (!cardId) return { ok: false, error: 'No card to reopen' };
+    await reopenCommitmentCard(cardId);
+    return { ok: true, href: `/commitments/${encodeURIComponent(cardId)}` };
   },
 
   /** Deletes the endorsement it wrote; the recipient was already notified (declared partial). */
