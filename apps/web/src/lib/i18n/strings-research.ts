@@ -426,7 +426,7 @@ export const RESEARCH_NODE_LABEL_EL: Record<string, string> = {
   persona: 'Persona',
   branding: 'Branding',
   go_to_market: 'Go-to-market',
-  funnel: 'Χωνί πωλήσεων',
+  funnel: 'Χοάνη πωλήσεων',
   org_chart: 'Οργανόγραμμα',
   meeting_notes: 'Σημειώσεις συνάντησης',
   checklist: 'Λίστα ελέγχου',

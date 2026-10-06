@@ -311,13 +311,15 @@ export function CopilotWorkspace({
             {agentList.length > 1 && (
               <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
                 <SelectTrigger
-                  className={cn(
-                    'h-8 min-h-8 w-auto gap-1 px-2 type-ui',
-                    isPage ? 'max-w-[11rem]' : 'max-w-[7.5rem]',
-                  )}
+                  className="h-8 min-h-8 w-auto gap-1 px-2 type-ui"
                   aria-label={bilingualAria('AI agent', 'Πράκτορας AI')}
                 >
-                  <SelectValue />
+                  {/* The heading beside this already names the current agent
+                      in full; the trigger is the switch, so it says what it
+                      does. Showing the name here cut "Βοηθός CoFounderBay" to
+                      "Βοηθός…" in 144px, and the API's names run longer
+                      ("Technical Strategy Advisor"). The list keeps them whole. */}
+                  <SelectValue>{sayOne('Switch assistant', 'Αλλαγή βοηθού')}</SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end">
                   {agentList.map((agent) => (
@@ -414,8 +416,8 @@ export function CopilotWorkspace({
                   ? 'Search, intro, message, or go…'
                   : 'Search, intro, or go…',
                 isPage
-                  ? 'Αναζήτηση, σύσταση, μήνυμα ή πλοήγηση…'
-                  : 'Αναζήτηση, σύσταση, πλοήγηση…',
+                  ? 'Αναζήτηση, γνωριμία, μήνυμα ή μετάβαση…'
+                  : 'Αναζήτηση, γνωριμία ή μετάβαση…',
               )}
               className="type-ui h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 focus-visible:outline-none focus-visible:ring-0"
               disabled={chat.isStreaming}
@@ -448,8 +450,8 @@ export function CopilotWorkspace({
           ) : isPage ? (
           <p className="type-support mt-1.5 text-muted-foreground">
             <BilingualText
-              en="Writes wait for your confirm."
-              el="Οι εγγραφές περιμένουν επιβεβαίωση."
+              en="Changes wait for your confirmation."
+              el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
               compact wrap
             />
           </p>

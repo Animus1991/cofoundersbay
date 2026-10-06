@@ -953,7 +953,7 @@ export default function MessagesPage() {
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
                   <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact />
+                    <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact wrap />
                   </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CATALOG } from './catalog';
@@ -51,6 +51,19 @@ describe('the Greek glossary', () => {
 
   it('keeps "pitch deck" and "data room" as founders say them', () => {
     expect(offenders((_, v) => /παρουσίαση pitch|δωμάτιο δεδομένων|αίθουσα δεδομένων/i.test(v))).toEqual([]);
+  });
+
+  it('calls a funnel «χοάνη», in the catalogues and in every source file', () => {
+    // «Χωνί προφίλ» on /analytics, «Χωνί συμφωνιών» for investors, «Χοάνη»
+    // nowhere: two words for one chart. Page copy lives in TSX and string
+    // modules too, so this one reads the source tree, not only the catalogues.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+        d.isDirectory() ? walk(join(dir, d.name)) : /\.(tsx?|json)$/.test(d.name) && !/\.test\./.test(d.name) ? [join(dir, d.name)] : [],
+      );
+    const src = join(__dirname, '..', '..');
+    const hits = walk(src).filter((f) => /[Χχ]ωνί/.test(readFileSync(f, 'utf8'))).map((f) => f.slice(src.length + 1));
+    expect([...offenders((_, v) => /[Χχ]ωνί/.test(v)), ...hits]).toEqual([]);
   });
 
   it('calls TAM «συνολικά προσβάσιμη αγορά»', () => {

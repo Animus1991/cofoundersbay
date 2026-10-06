@@ -11,7 +11,7 @@ import {
   MessageSquare, X, Send, CheckCircle2, ChevronDown,
   ChevronRight, Loader2, CornerDownRight, Pin,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
@@ -162,7 +162,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
             <Avatar className="h-6 w-6 shrink-0 mt-0.5">
               <AvatarImage src={comment.author?.avatarUrl} />
               <AvatarFallback className="text-2xs">
-                {comment.author?.displayName?.charAt(0) ?? '?'}
+                {initialsOf(comment.author?.displayName)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

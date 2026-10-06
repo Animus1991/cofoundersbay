@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getActiveNavHref, getSectionsForMode, type SidebarMode } from './nav-modes';
+import { getActiveNavHref, getSectionsForMode, modeForPath, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
 import { useSidebarMode } from '@/hooks/use-sidebar-mode';
@@ -131,10 +131,29 @@ export function SideNav() {
     [mode, effectiveRole],
   );
   const glyphs = useMemo(() => sectionNavGlyphs(sections), [sections]);
+
+  // A page reached from anywhere (a card, the assistant, a notification)
+  // shows the list it lives in: on /discover the sidebar stayed on Work with
+  // nothing lit while Explore held the page. Only a navigation, or the stored
+  // mode arriving after mount, moves it; a click on the switch sticks.
+  useEffect(() => {
+    if (!mounted) return;
+    const next = modeForPath(pathname, mode, effectiveRole);
+    if (next !== mode) setMode(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, effectiveRole, mounted]);
   // The most specific entry only, as MobileNav does: a prefix test lit
   // "Admin console" (/admin) on every admin page, beside the page's own
   // entry, and General (/settings) beside every settings page.
   const activeHref = getActiveNavHref(pathname, sections);
+
+  // The current page's entry in view. Messages sits below the fold of the
+  // founder's Work list at 900px, so the page was lit where nobody could see.
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mounted) return;
+    navRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest' });
+  }, [activeHref, mode, mounted]);
 
   // Hide sidebar on auth pages
   const isAuthPage =
@@ -211,7 +230,7 @@ export function SideNav() {
         <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} variant={showLabels ? 'list' : 'rail'} />
 
         {/* ── Navigation ── */}
-        <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
+        <nav ref={navRef} className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
           {sections.map(({ section, links }, sectionIndex) => (
             <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
               {/* nav-section-label, not plain text-xs: these uppercase headings

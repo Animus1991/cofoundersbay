@@ -244,8 +244,8 @@ function PrivacyCard() {
       </CardHeader>
       <CardContent className="space-y-1">
         {PRIVACY_ITEMS.map(({ id, icon: Icon, label, desc }) => (
-          <div key={id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
-            <div className="flex items-center gap-3">
+          <div key={id} className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
+            <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Icon className="icon-sm text-primary-accessible" />
               </div>
@@ -696,7 +696,7 @@ export default function SettingsPage() {
                       connectUrl: '/api/auth/linkedin',
                     },
                   ].map(({ key, label, icon, connected, connectUrl }) => (
-                    <div key={key} className="flex items-center justify-between rounded-xl border p-3">
+                    <div key={key} className="flex items-center justify-between gap-4 rounded-xl border p-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                           {icon}
@@ -803,7 +803,7 @@ export default function SettingsPage() {
                     return (
                       <div
                         key={category.id}
-                        className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
+                        className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
                       >
                         <div className="flex min-w-0 items-center gap-3">
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
@@ -826,7 +826,7 @@ export default function SettingsPage() {
                       </div>
                     );
                   })}
-                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
+                  <div className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                         <Mail className="icon-sm text-primary-accessible" />

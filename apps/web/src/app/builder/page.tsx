@@ -31,6 +31,7 @@ import { builderEn, builderEl, builderDocLabel } from '@/lib/i18n/strings-builde
 import type { BuilderDocumentType } from '@/lib/builder-api';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { initialsOf } from '@/lib/utils';
 
 const BUILDER_TOUR: TourStep[] = [
   {
@@ -359,7 +360,7 @@ function BuilderPageContent() {
                   {onlineCollaborators.slice(0, 3).map((c) => (
                     <Avatar key={c.odId} className="h-6 w-6 border-2 border-background">
                       <AvatarFallback className="bg-primary/20 text-xs">
-                        {c.odName.charAt(0).toUpperCase()}
+                        {initialsOf(c.odName).charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                   ))}

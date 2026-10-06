@@ -87,7 +87,7 @@ describe('copilot empty-state lockstep', () => {
     expect(WORKSPACE_SOURCE).toContain('type-identity');
     expect(WORKSPACE_SOURCE).toContain('type-support');
     expect(WORKSPACE_SOURCE).toContain('I can read');
-    expect(WORKSPACE_SOURCE).toContain('Writes wait for your confirm.');
+    expect(WORKSPACE_SOURCE).toContain('Changes wait for your confirmation.');
     expect(WORKSPACE_SOURCE).not.toContain('type-plus-1');
     expect(WORKSPACE_SOURCE).not.toContain('type-plus-once');
     expect(WORKSPACE_SOURCE).not.toContain('type-plus-2');

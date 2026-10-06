@@ -10,6 +10,7 @@ import {
   mentorWorkSections,
   orgWorkSections,
   providerWorkSections,
+  modeForPath,
   tenantWorkSections,
   type NavSection,
 } from './nav-modes';
@@ -73,5 +74,18 @@ describe('nav list icons', () => {
     // Headers, breadcrumbs and the assistant's link list still get a mark.
     expect(glyphForHref('/admin/sso')).toBe('shield');
     expect(glyphForHref('/groups/abc123')).toBe('community');
+  });
+});
+
+describe('the sidebar mode follows the page', () => {
+  it('shows the list a page lives in, and keeps the mode for pages in no list', () => {
+    expect(modeForPath('/discover', 'work', 'existing_founder')).toBe('explore');
+    expect(modeForPath('/settings/billing', 'work', 'existing_founder')).toBe('account');
+    expect(modeForPath('/dashboard/founder', 'account', 'existing_founder')).toBe('work');
+    // In the current mode's list already: no jump, even if another list has it too.
+    expect(modeForPath('/ai', 'explore', 'existing_founder')).toBe('explore');
+    expect(modeForPath('/ai', 'work', 'existing_founder')).toBe('work');
+    // In no list: the reader's choice stands.
+    expect(modeForPath('/profiles/user-elena', 'explore', 'existing_founder')).toBe('explore');
   });
 });

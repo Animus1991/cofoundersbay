@@ -25,7 +25,7 @@ import {
   History, RotateCcw, Clock, User, Loader2, ChevronRight,
   GitCommitHorizontal, AlertCircle,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
 import {
@@ -100,7 +100,7 @@ function VersionCard({
               <Avatar className="h-3.5 w-3.5">
                 <AvatarImage src={v.changedBy?.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-2xs">
-                  {(v.changedBy?.displayName ?? 'U').charAt(0)}
+                  {initialsOf(v.changedBy?.displayName ?? 'U').charAt(0)}
                 </AvatarFallback>
               </Avatar>
               {v.changedBy.displayName}

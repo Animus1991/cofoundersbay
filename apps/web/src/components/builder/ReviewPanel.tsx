@@ -29,7 +29,7 @@ import {
   GitBranch, Loader2, MessageSquare, ThumbsUp, ThumbsDown,
   RotateCcw, Star,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import {
   listProposals,
@@ -333,7 +333,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={proposal.createdBy.avatarUrl} />
                         <AvatarFallback className="text-2xs">
-                          {(proposal.createdBy?.displayName ?? 'U').charAt(0)}
+                          {initialsOf(proposal.createdBy?.displayName ?? 'U').charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-xs text-muted-foreground">

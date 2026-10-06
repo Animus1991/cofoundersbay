@@ -43,10 +43,11 @@ import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/compon
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
+import { StatusText } from '@/components/common/StatusText';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -490,7 +491,7 @@ export default function DiscoverPage() {
                   <Link key={h.id} href={`/profiles/${h.userId}`}
                     className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
-                      {h.displayName?.charAt(0) ?? '?'}
+                      {initialsOf(h.displayName)}
                     </div>
                     <div className="min-w-0">
                       {/* 100px cut "Elena Papadopoulos" by a fifth. These
@@ -502,6 +503,8 @@ export default function DiscoverPage() {
                           Capped at 100px, "Elena Papadopoulos" lost two
                           thirds of itself. */}
                       <p className="whitespace-nowrap text-xs font-medium text-foreground">{h.displayName}</p>
+                      {/* The raw role ("founder") read as a lower-case enum once the
+                          DOM pass translated it («ιδρυτής»). */}
                       <p className="whitespace-nowrap text-xs text-muted-foreground"><StatusText value={h.role} /></p>
                     </div>
                     {h.matchScore !== undefined && (

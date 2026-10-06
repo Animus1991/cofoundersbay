@@ -36,7 +36,7 @@ import {
   Plus, Archive, Trash2, GitCommit, ArrowRight, AlertTriangle,
   Minus, Edit2, Move,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -442,7 +442,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                             <div className="flex items-center gap-1">
                               <Avatar className="h-3.5 w-3.5">
                                 <AvatarImage src={snap.createdBy.avatarUrl} />
-                                <AvatarFallback className="text-2xs">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-2xs">{initialsOf(snap.createdBy.displayName).charAt(0)}</AvatarFallback>
                               </Avatar>
                               <span className="text-xs text-muted-foreground">{snap.createdBy.displayName}</span>
                             </div>

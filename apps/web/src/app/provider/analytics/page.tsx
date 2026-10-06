@@ -396,7 +396,7 @@ export default function ProviderAnalyticsPage() {
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview"><BilingualText en="Traffic" el="Κίνηση" compact /></TabsTrigger>
-            <TabsTrigger value="funnel"><BilingualText en="Conversion Funnel" el="Χωνί μετατροπής" compact /></TabsTrigger>
+            <TabsTrigger value="funnel"><BilingualText en="Conversion Funnel" el="Χοάνη μετατροπής" compact /></TabsTrigger>
             <TabsTrigger value="services"><BilingualText en="Services" el="Υπηρεσίες" compact /></TabsTrigger>
           </TabsList>
 
@@ -472,11 +472,11 @@ export default function ProviderAnalyticsPage() {
           <TabsContent value="funnel">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Client Acquisition Funnel" el="Χωνί απόκτησης πελατών" compact /></CardTitle>
+                <CardTitle className="text-base"><BilingualText en="Client Acquisition Funnel" el="Χοάνη απόκτησης πελατών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {conversions.length === 0 && (
-                  <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="The acquisition funnel is not tracked yet." el="Το χωνί απόκτησης δεν καταγράφεται ακόμα." wrap /></p>
+                  <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="The acquisition funnel is not tracked yet." el="Η χοάνη απόκτησης δεν καταγράφεται ακόμα." wrap /></p>
                 )}
                 {conversions.map((stage, i) => (
                   <div key={stage.stage} className="space-y-1">

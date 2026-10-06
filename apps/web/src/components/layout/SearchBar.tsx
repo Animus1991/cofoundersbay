@@ -32,7 +32,7 @@ export function SearchBar() {
       {/* min-w keeps this a search field rather than a three-character stub: at
           834px the bar's fixed-size right-hand controls had squeezed it to "Sea". */}
       <form onSubmit={submit} className="relative hidden w-full min-w-[11rem] max-w-md md:block">
-        <CfbGlyph name="discover" className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+        <CfbGlyph name="search" className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -50,7 +50,7 @@ export function SearchBar() {
         onClick={() => router.push('/search')}
         aria-label={t('Search')}
       >
-        <CfbGlyph name="discover" className="icon-md" />
+        <CfbGlyph name="search" className="icon-md" />
       </Button>
     </>
   );

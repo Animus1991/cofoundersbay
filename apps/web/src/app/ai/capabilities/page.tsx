@@ -59,7 +59,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   run_page_command: { en: 'Suspend Spyros Karras', el: 'Θέσε σε αναστολή τον Σπύρο Κάρρα' },
   shortlist_add: { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα' },
   shortlist_remove: { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα' },
-  send_connection: { en: 'Connect with Elena', el: 'Σύνδεση με την Elena' },
+  send_connection: { en: 'Connect with Elena', el: 'Στείλε αίτημα σύνδεσης στην Elena' },
   start_or_send_message: { en: 'Message Elena', el: 'Στείλε μήνυμα στην Elena' },
   readiness_tick_criterion: { en: 'Tick the team readiness criterion', el: 'Σημείωσε το κριτήριο ομάδας' },
   analytics_set_period: { en: 'Show my analytics for the last 30 days', el: 'Δείξε τα αναλυτικά του τελευταίου μήνα' },

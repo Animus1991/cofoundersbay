@@ -1,7 +1,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 
 function hashHue(value: string): number {
   let hash = 0;
@@ -14,8 +14,10 @@ function hashHue(value: string): number {
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
+  // A one-word thread name ("Harbor") keeps two letters; a person's name
+  // goes through the shared helper so "Dr. Sarah Kim" is SK, not DK.
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0] ?? ''}${parts[parts.length - 1][0] ?? ''}`.toUpperCase();
+  return initialsOf(name);
 }
 
 export function ThreadAvatar({

@@ -56,6 +56,7 @@ const STATUS_EL: Record<string, string> = {
   mentor: 'μέντορας',
   investor: 'επενδυτής',
   founder: 'ιδρυτής',
+  'co-founder': 'συνιδρυτής',
   organisation: 'οργανισμός',
   organization: 'οργανισμός',
   org: 'οργανισμός',

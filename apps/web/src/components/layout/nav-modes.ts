@@ -572,6 +572,18 @@ export function getActiveNavHref(pathname: string | null, sections: NavSection[]
   }, undefined);
 }
 
+/**
+ * The mode whose list holds this page, preferring the one already showing.
+ * A page in no list (a profile, a deal, a board) keeps the reader's mode.
+ */
+export function modeForPath(pathname: string | null, current: SidebarMode, role?: string): SidebarMode {
+  if (!pathname || getActiveNavHref(pathname, getSectionsForMode(current, role))) return current;
+  for (const candidate of ['work', 'explore', 'account'] as const) {
+    if (candidate !== current && getActiveNavHref(pathname, getSectionsForMode(candidate, role))) return candidate;
+  }
+  return current;
+}
+
 export function getSectionsForMode(mode: SidebarMode, role?: string): NavSection[] {
   switch (mode) {
     case 'work':

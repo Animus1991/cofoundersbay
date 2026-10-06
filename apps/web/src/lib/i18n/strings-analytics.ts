@@ -14,7 +14,7 @@ export const ANALYTICS_STRINGS: Record<string, BilingualPair> = {
   },
   vs_prev: { en: 'vs prev period', el: 'vs προηγ. περίοδο' },
   network_velocity: { en: 'Network Velocity', el: 'Ταχύτητα δικτύου' },
-  profile_funnel: { en: 'Profile Funnel', el: 'Χωνί προφίλ' },
+  profile_funnel: { en: 'Profile Funnel', el: 'Χοάνη προφίλ' },
   funnel_note: {
     en: 'Recorded counts, not attributed conversion rates.',
     el: 'Καταγεγραμμένα πλήθη, όχι τεκμηριωμένα ποσοστά μετατροπής.',

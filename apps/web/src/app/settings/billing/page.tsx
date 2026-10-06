@@ -351,7 +351,7 @@ export default function UserBillingPage() {
         {/* Billing Contact */}
         <Card className="border-border shadow-none">
           <CardHeader className="pb-3 border-b border-border">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
                 <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>

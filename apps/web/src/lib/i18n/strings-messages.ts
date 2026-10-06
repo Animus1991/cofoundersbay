@@ -115,8 +115,9 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   no_pending: { en: 'No pending requests', el: 'Δεν υπάρχουν εκκρεμή αιτήματα' },
   wants_to_connect: { en: 'wants to connect', el: 'θέλει να συνδεθεί' },
 
-  online: { en: 'Online', el: 'Συνδεδεμένος/η' },
-  offline: { en: 'Offline', el: 'Αποσυνδεδεμένος/η' },
+  // Neutral, so no slash: «Συνδεδεμένος/η» read as a form field.
+  online: { en: 'Online', el: 'Σε σύνδεση' },
+  offline: { en: 'Offline', el: 'Εκτός σύνδεσης' },
   typing: { en: 'typing…', el: 'γράφει…' },
 
   message_sent: { en: 'Message sent', el: 'Το μήνυμα στάλθηκε' },

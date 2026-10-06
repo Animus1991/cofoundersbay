@@ -46,7 +46,7 @@ import {
   X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
@@ -641,7 +641,7 @@ export function BuilderWorkspace({
                   {collaborators.slice(0, 4).map((c) => (
                     <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                       <AvatarImage src={c.user.avatarUrl} />
-                      <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="text-2xs">{initialsOf(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
@@ -783,7 +783,7 @@ export function BuilderWorkspace({
                       <Avatar className="h-7 w-7 shrink-0">
                         <AvatarImage src={collab.user.avatarUrl} />
                         <AvatarFallback className="text-xs">
-                          {(collab.user?.displayName ?? 'U').charAt(0)}
+                          {initialsOf(collab.user?.displayName ?? 'U')}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">

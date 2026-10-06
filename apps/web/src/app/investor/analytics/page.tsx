@@ -293,7 +293,7 @@ export default function InvestorAnalyticsPage() {
 
               <SectionCard
                 title="Pipeline funnel"
-                titleEl="Χωνί συμφωνιών"
+                titleEl="Χοάνη συμφωνιών"
                 icon={Filter}
                 action={{ href: '/investor/pipeline', label: 'Pipeline', labelEl: 'Pipeline' }}
               >

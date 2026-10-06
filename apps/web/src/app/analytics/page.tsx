@@ -595,6 +595,7 @@ export default function AnalyticsPage() {
       // The reader should see which window they are looking at without
       // opening anything; the list below is meaningless without it.
       badge: period,
+      badgeEl: `${period.replace('d', '')} ημ.`,
       content: (
         <div className="space-y-3">
           <p className="page-stat-label leading-relaxed text-muted-foreground">

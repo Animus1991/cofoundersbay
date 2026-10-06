@@ -413,7 +413,7 @@ export default function OrgAnalyticsPage() {
           </SectionCard>
         </div>
 
-        <SectionCard title="Application funnel" titleEl="Χωνί αιτήσεων" action={{ href: '/org/applications', label: 'Applications', labelEl: 'Αιτήσεις' }}>
+        <SectionCard title="Application funnel" titleEl="Χοάνη αιτήσεων" action={{ href: '/org/applications', label: 'Applications', labelEl: 'Αιτήσεις' }}>
           {/* Each bar is its step's share of the applications that entered;
               the right column is how many of the previous step went on. The
               steps are the statuses a participant row can have. */}

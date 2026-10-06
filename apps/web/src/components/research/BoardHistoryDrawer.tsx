@@ -28,7 +28,7 @@ import {
   History, Camera, Clock, Layers, ChevronRight,
   Loader2, RefreshCw, Eye, Download, CheckCircle2, Zap,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
@@ -346,7 +346,7 @@ export function BoardHistoryDrawer({
                                   <Avatar className="h-3.5 w-3.5">
                                     <AvatarImage src={snap.createdBy.avatarUrl} />
                                     <AvatarFallback className="text-2xs">
-                                      {snap.createdBy.displayName.charAt(0)}
+                                      {initialsOf(snap.createdBy.displayName).charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>
                                   <span className="text-xs text-muted-foreground">

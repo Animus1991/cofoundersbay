@@ -9,6 +9,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   PAGE_RAIL_COLLAPSED_WIDTH,
   PAGE_RAIL_WIDTH,
@@ -35,6 +36,13 @@ export type PageRailSection = {
    * items. Zero and null both mean "no badge"; a badge reading 0 is noise.
    */
   badge?: number | string | null;
+  /**
+   * Greek for a badge that is a word rather than a count (/analytics shows
+   * its window: "7d", «7 ημ.»). A word badge is never added to the phone
+   * button's total: that number means things waiting, and the period counted
+   * there as one.
+   */
+  badgeEl?: string | null;
 };
 
 /**
@@ -54,6 +62,12 @@ export type PageRailSection = {
  * two are separate.
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
+  const { primary } = useLanguagePreference();
+  const badgeText = (section: PageRailSection) => {
+    const badge = section.badge === 0 || section.badge == null ? null : section.badge;
+    if (badge == null) return null;
+    return { shown: primary === 'el' && section.badgeEl ? section.badgeEl : badge, en: badge, el: section.badgeEl ?? badge };
+  };
   const { pinned, peeked, open, togglePinned, setPeeked, registerRailPresence, registerRailOpener, registerRailSections } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -155,7 +169,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
 
   const totalBadge = sections.reduce((sum, section) => {
     const b = section.badge;
-    return sum + (typeof b === 'number' ? b : b ? 1 : 0);
+    return sum + (typeof b === 'number' ? b : 0);
   }, 0);
 
   return (
@@ -205,7 +219,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
             <ul className="mt-3 divide-y divide-border/60">
               {sections.map((section) => {
                 const expanded = (sheetExpanded ?? sections[0]?.id) === section.id;
-                const badge = section.badge === 0 || section.badge == null ? null : section.badge;
+                const badge = badgeText(section);
                 return (
                   <li key={section.id}>
                     <button
@@ -220,7 +234,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                         <BilingualText en={section.labelEn} el={section.labelEl} compact />
                       </span>
                       {badge != null && (
-                        <span className="rounded-full bg-primary px-1.5 text-2xs font-semibold leading-5 text-primary-foreground">{badge}</span>
+                        <span className="rounded-full bg-primary px-1.5 text-2xs font-semibold leading-5 text-primary-foreground">{badge.shown}</span>
                       )}
                       <ChevronDown className={cn('icon-sm shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-180')} aria-hidden="true" />
                     </button>
@@ -376,8 +390,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
 
             {sections.map((section) => {
               const isActive = open && section.id === active.id;
-              const badge =
-                section.badge === 0 || section.badge == null ? null : section.badge;
+              const badge = badgeText(section);
               return (
                 <Tooltip key={section.id}>
                   <TooltipTrigger asChild>
@@ -408,17 +421,17 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                       // reason to open the section at all.
                       aria-label={
                         badge != null
-                          ? bilingualAria(`${section.labelEn}, ${badge}`, `${section.labelEl}, ${badge}`)
+                          ? bilingualAria(`${section.labelEn}, ${badge.en}`, `${section.labelEl}, ${badge.el}`)
                           : bilingualAria(section.labelEn, section.labelEl)
                       }
                     >
                       <CfbGlyph name={section.glyph} className="icon-md" />
                       {badge != null && (
                         <span
-                          className="absolute -right-0.5 -top-0.5 min-w-[1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-4 text-primary-foreground"
+                          className="absolute -right-0.5 -top-0.5 min-w-[1rem] whitespace-nowrap rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-4 text-primary-foreground"
                           aria-hidden="true"
                         >
-                          {badge}
+                          {badge.shown}
                         </span>
                       )}
                     </button>
@@ -426,7 +439,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                   {!open && (
                     <TooltipContent side="left" className="text-xs">
                       <BilingualText en={section.labelEn} el={section.labelEl} />
-                      {badge != null && <span className="ml-1 opacity-70">({badge})</span>}
+                      {badge != null && <span className="ml-1 opacity-70">({badge.shown})</span>}
                     </TooltipContent>
                   )}
                 </Tooltip>

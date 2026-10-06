@@ -26,10 +26,10 @@ export const COPILOT_STARTERS: CopilotStarter[] = [
   { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
   { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις', kind: 'read', glyph: 'matches' },
   { en: 'Find a technical cofounder in Athens', el: 'Βρες τεχνικό συνιδρυτή στην Αθήνα', kind: 'read', glyph: 'people' },
-  { en: 'How is my fundraising going?', el: 'Πώς πάει ο γύρος $750K;', kind: 'read', glyph: 'wallet' },
+  { en: 'How is my fundraising going?', el: 'Πώς πάει η χρηματοδότησή μου;', kind: 'read', glyph: 'wallet' },
   { en: 'Save Elena to my shortlist', el: 'Αποθήκευσε την Elena στη λίστα', kind: 'write', glyph: 'bookmark' },
   { en: 'Remove Elena from my shortlist', el: 'Βγάλε την Elena από τη λίστα', kind: 'write', glyph: 'bookmark', popup: false },
-  { en: 'Connect with Elena', el: 'Σύνδεση με την Elena', kind: 'write', glyph: 'people' },
+  { en: 'Connect with Elena', el: 'Στείλε αίτημα σύνδεσης στην Elena', kind: 'write', glyph: 'people' },
 ];
 
 export function copilotStartersFor(surface: 'page' | 'popup'): {
