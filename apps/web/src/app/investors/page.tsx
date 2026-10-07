@@ -34,6 +34,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -345,7 +346,7 @@ function InvestorCard({
                     </Button>
                     <Button size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
                       <UserPlus className="icon-sm" aria-hidden="true" />
-                      <BilingualText en="Request intro" el="Αίτημα γνωριμίας" compact />
+                      <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                     </Button>
                   </>
                 ) : (
@@ -356,11 +357,14 @@ function InvestorCard({
                         <BilingualText en="Profile" el="Προφίλ" compact />
                       </Link>
                     </Button>
-                    {/* An intro starts as a message thread. */}
+                    {/* A warm path first: who you know who knows them (the
+                        intermediary decides whether to forward). The direct
+                        message stays beside it, named for what it is. */}
+                    <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="h-7 gap-1 text-xs" />
                     <Button size="sm" className="h-7 gap-1 text-xs" asChild>
                       <Link href={`/messages?to=${investor.userId}`}>
                         <UserPlus className="icon-sm" aria-hidden="true" />
-                        <BilingualText en="Request intro" el="Αίτημα γνωριμίας" compact />
+                        <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                       </Link>
                     </Button>
                   </>

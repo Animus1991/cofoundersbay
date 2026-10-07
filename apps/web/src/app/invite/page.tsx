@@ -191,15 +191,16 @@ export default function InvitePage() {
     <AppShell>
       <div className="w-full space-y-6 pb-10">
         {/* Stats row */}
-        <div className="grid grid-cols-2 kpi-odd-span-sm gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {statsLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
+            Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>
             ))
           ) : (
             <>
               <StatCard icon={Send} labelKey="stat_sent" value={stats?.total ?? 0} />
               <StatCard icon={UserCheck} labelKey="stat_joined" value={stats?.accepted ?? 0} descriptionKey="stat_joined_hint" accent />
+              <StatCard icon={UserCheck} labelKey="stat_active" value={stats?.active ?? 0} descriptionKey="stat_active_hint" />
               <StatCard icon={Gift} labelKey="stat_remaining" value={stats?.remaining ?? 0} descriptionKey="stat_remaining_hint" />
             </>
           )}

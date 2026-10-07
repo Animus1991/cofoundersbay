@@ -4764,7 +4764,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true };
   }
   if (pathname === '/api/invites/stats') {
-    return { stats: { total: 5, pending: 2, accepted: 2, remaining: 45 } };
+    // Ioanna verified and connected; Thanos joined and has done nothing yet.
+    return { stats: { total: 5, pending: 2, accepted: 2, active: 1, remaining: 45 } };
   }
   if (pathname === '/api/invites') {
     const invites = [

@@ -2651,6 +2651,8 @@ export type InviteStats = {
   total: number;
   pending: number;
   accepted: number;
+  /** Accepted, verified and with a first real step: what rewards count. */
+  active?: number;
   remaining: number;
 };
 

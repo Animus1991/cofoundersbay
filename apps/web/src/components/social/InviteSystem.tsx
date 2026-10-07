@@ -266,8 +266,7 @@ export function InviteSystem() {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>• Share your unique referral link</li>
                   <li>• Friends sign up using your link</li>
-                  <li>• You both get premium features</li>
-                  <li>• Earn rewards for every successful referral</li>
+                  <li>• Rewards count once the person you invited verifies their email and takes a first real step; a sign-up alone earns nothing</li>
                 </ul>
               </div>
             </CardContent>
