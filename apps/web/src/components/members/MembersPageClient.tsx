@@ -154,7 +154,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <Link
               href={`/profiles/${member.userId}`}
-              className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
+              className="font-display text-base font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
             >
               {member.displayName}
             </Link>
@@ -204,7 +204,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             {/* Contribution score */}
             <div className="w-full mb-3">
-              <div className="flex items-center justify-between text-2xs mb-1">
+              <div className="flex items-center justify-between text-xs mb-1">
                 <span className="text-muted-foreground"><BilingualText en="Profile completeness" el="Πληρότητα προφίλ" compact /></span>
                 <span className={cn('font-semibold', scoreColor(completeness))}>{completeness}%</span>
               </div>
@@ -223,6 +223,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </Button>
               <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                 <MessageCircle className="icon-sm" />
+                <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
               </Button>
             </div>
           </div>
@@ -254,7 +255,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div>
                 <Link
                   href={`/profiles/${member.userId}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                  className="font-display text-base font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {member.displayName}
                 </Link>
@@ -271,6 +272,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                 </Button>
                 <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                   <MessageCircle className="icon-sm" />
+                  <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
                 </Button>
               </div>
             </div>

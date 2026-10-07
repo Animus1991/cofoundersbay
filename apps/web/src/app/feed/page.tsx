@@ -341,7 +341,8 @@ function PostCard({
             }
             aria-pressed={post.isBookmarked}
           >
-            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm sm:mr-1', post.isBookmarked && 'fill-current')} aria-hidden="true" />
+            <span className="hidden sm:inline"><BilingualText en="Save" el="Αποθήκευση" compact /></span>
           </Button>
         </div>
 

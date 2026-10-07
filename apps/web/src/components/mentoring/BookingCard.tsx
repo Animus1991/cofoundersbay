@@ -102,7 +102,7 @@ export function BookingCard({
                 <div className="flex flex-wrap items-center gap-x-2">
                   <Link
                     href={`/profiles/${otherUserId}`}
-                    className="inline-flex tap-target-y items-center font-medium text-foreground transition-colors hover:text-primary-accessible"
+                    className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
                   >
                     {other.displayName}
                   </Link>
@@ -126,7 +126,7 @@ export function BookingCard({
                   <StatusText value={booking.status} />
                 </Badge>
                 {showSource && (
-                  <Badge variant="secondary" className="text-2xs">
+                  <Badge variant="secondary" className="text-xs">
                     <BilingualText en="Booking" el="Κράτηση" compact />
                   </Badge>
                 )}
@@ -134,7 +134,7 @@ export function BookingCard({
             </div>
 
             {isMentor && booking.status === 'requested' && (
-              <p className="mt-1 text-xs font-medium text-status-warning">
+              <p className="mt-1 text-xs text-status-warning">
                 <BilingualText en="Awaiting your confirmation" el="Περιμένει την επιβεβαίωσή σας" compact />
               </p>
             )}
@@ -201,7 +201,7 @@ export function BookingCard({
                         <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
                         {aiSummary.actionItems.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Action items" el="Ενέργειες" compact /></p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-1"><BilingualText en="Action items" el="Ενέργειες" compact /></p>
                             <ul className="space-y-0.5">
                               {aiSummary.actionItems.map((item, i) => (
                                 <li key={i} className="flex items-start gap-1 text-xs text-foreground">
@@ -214,7 +214,7 @@ export function BookingCard({
                         )}
                         {aiSummary.followUps.length > 0 && (
                           <div>
-                            <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Follow-ups" el="Επόμενα βήματα" compact /></p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-1"><BilingualText en="Follow-ups" el="Επόμενα βήματα" compact /></p>
                             <ul className="space-y-0.5">
                               {aiSummary.followUps.map((f, i) => (
                                 <li key={i} className="text-xs text-muted-foreground">• {f}</li>

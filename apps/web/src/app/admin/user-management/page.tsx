@@ -714,8 +714,9 @@ export default function AdminUserManagementPage() {
                       : '—'}
                   </span>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 gap-1 sm:w-auto sm:px-2" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
                       <Eye className="icon-sm" />
+                      <span className="hidden sm:inline text-xs"><BilingualText en="Quick view" el="Γρήγορη προβολή" compact /></span>
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

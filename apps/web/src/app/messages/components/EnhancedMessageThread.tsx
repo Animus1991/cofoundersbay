@@ -461,13 +461,14 @@ export function EnhancedMessageThread({
             onChange={handleFileSelect}
           />
           <Button aria-label="Attach file"
+            title="Attach file"
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="icon-md" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Attach image" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="ghost" size="icon" aria-label="Attach image" title="Attach image" onClick={() => fileInputRef.current?.click()}>
             <ImageIcon className="icon-md" />
           </Button>
           
@@ -493,6 +494,7 @@ export function EnhancedMessageThread({
           </div>
 
           <Button aria-label="Send message"
+            title="Send"
             onClick={handleSend}
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"

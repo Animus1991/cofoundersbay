@@ -1234,7 +1234,7 @@ export default function ProfileEditPage() {
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="page-stat text-2xl font-bold text-primary-accessible">{completionPercentage}%</span>
+                  <span className="page-stat text-2xl font-semibold text-primary-accessible">{completionPercentage}%</span>
                   <span className="text-sm text-muted-foreground pb-1"><BilingualText en="Complete" el="Ολοκληρωμένο" compact /></span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">

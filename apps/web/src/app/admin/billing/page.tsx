@@ -415,7 +415,10 @@ export default function AdminBillingPage() {
                 {subsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact /></div>
+                  <div className="py-12 text-center text-sm text-muted-foreground">
+                    <BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact />
+                    <span className="mt-1 block text-xs"><BilingualText en="Subscriptions appear here once an organization picks a plan." el="Οι συνδρομές εμφανίζονται εδώ μόλις ένας οργανισμός επιλέξει πλάνο." compact /></span>
+                  </div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {subs.map(sub => (

@@ -17,6 +17,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -77,7 +78,7 @@ function ProfileCompletenessBar({ score }: { score: number }) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-2xs text-muted-foreground font-medium">{score}%</span>
+      <span className="text-xs text-muted-foreground font-semibold">{score}%</span>
     </div>
   );
 }
@@ -212,7 +213,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                  className="text-base font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {profile.displayName}
                 </Link>
@@ -324,11 +325,12 @@ function ProfileCardInner({
                 size="icon"
                 onClick={handleBookmark}
                 className={cn(
-                  'h-10 w-10',
+                  'h-10 w-10 gap-1.5 sm:w-auto sm:px-3',
                   bookmarked ? 'text-status-warning' : 'text-muted-foreground hover:text-status-warning'
                 )}
               >
                 <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
+                <span className="hidden sm:inline"><BilingualText en={bookmarked ? 'Saved' : 'Save'} el={bookmarked ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -475,8 +477,9 @@ function ProfileCardInner({
             <UserPlus className="icon-sm" />
             Connect
           </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5" aria-label="Message">
+          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message">
             <MessageCircle className="icon-sm" />
+            <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
           </Button>
         </div>
       </CardContent>

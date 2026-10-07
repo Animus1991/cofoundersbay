@@ -98,7 +98,7 @@ function LevelRing({ progress, level, size = 140 }: { progress: number; level: n
           the copy beside it. A bilingual "84% of level · 84% του επιπέδου" was
           wider than the ring's 112px interior. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5" aria-hidden>
-        <span className="text-3xl font-bold leading-none tabular-nums">
+        <span className="text-3xl font-semibold leading-none tabular-nums">
           {level}
           <span className="text-sm font-medium text-muted-foreground"> / 10</span>
         </span>
@@ -419,13 +419,13 @@ export default function ReputationPage() {
                         <dl className="grid grid-cols-2 gap-4">
                           <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('current')}</dt>
-                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-semibold tabular-nums">
                               {streakData.currentStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.currentStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>
                           <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('longest')}</dt>
-                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-semibold tabular-nums">
                               {streakData.longestStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.longestStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>

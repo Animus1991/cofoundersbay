@@ -263,16 +263,16 @@ function ShortlistCard({
             {/* Actions — quiet but always visible: hover-only controls do not
                 exist on touch, and a saved person is not a guessing game. */}
             <div className="flex items-center gap-1 shrink-0 transition-opacity">
-              <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} aria-label={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <Edit2 className="icon-sm" />
               </button>
-              <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} aria-label={say(shortlistEn('message'), shortlistEl('message'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <MessageCircle className="icon-sm" />
               </Link>
-              <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} aria-label={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <ExternalLink className="icon-sm" />
               </Link>
-              <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
+              <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} aria-label={say(shortlistEn('remove'), shortlistEl('remove'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
                 <Trash2 className="icon-sm" />
               </button>
             </div>

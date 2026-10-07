@@ -298,8 +298,9 @@ export default function AdminTaxonomyPage() {
       actions={
         <>
           <div className="flex items-center gap-2">
-            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
+            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh" className="gap-1.5 sm:w-auto sm:px-3">
               <RefreshCw className="icon-sm" aria-hidden="true" />
+              <span className="hidden sm:inline"><BilingualText en="Refresh" el="Ανανέωση" compact /></span>
             </Button>
             <Button onClick={() => setEditTarget('new')}>
               <Plus className="mr-2 icon-sm" aria-hidden="true" />

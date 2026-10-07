@@ -677,16 +677,17 @@ function InvestorListView({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={cn('h-7 w-7 p-0', BUILDER_BTN)}
+                    className={cn('h-7 w-7 gap-1 p-0 sm:w-auto sm:px-2', BUILDER_BTN)}
                     aria-label={bilingualAria(fundraisingEn('message'), fundraisingEl('message'))}
                     onClick={() => ask(leadAskPrompt(lead, harborLive))}
                   >
                     <CfbGlyph name="messages" className="icon-sm" />
+                    <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('message')} el={fundraisingEl('message')} compact /></span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={cn('h-7 w-7 p-0', BUILDER_BTN)}
+                    className={cn('h-7 w-7 gap-1 p-0 sm:w-auto sm:px-2', BUILDER_BTN)}
                     aria-label={bilingualAria(fundraisingEn('view_details'), fundraisingEl('view_details'))}
                     onClick={() => {
                       if (lead.href) router.push(lead.href);
@@ -694,6 +695,7 @@ function InvestorListView({
                     }}
                   >
                     <CfbGlyph name="discover" className="icon-sm" />
+                    <span className="hidden sm:inline text-xs"><BilingualText en={fundraisingEn('view_details')} el={fundraisingEl('view_details')} compact /></span>
                   </Button>
                 </div>
               </div>

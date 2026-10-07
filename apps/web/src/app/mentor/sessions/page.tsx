@@ -84,7 +84,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium">{session.title || 'Mentorship Session'}</p>
+                <p className="text-base font-semibold">{session.title || 'Mentorship Session'}</p>
                 <p className="text-sm text-muted-foreground">
                   {formattedTime}
                 </p>
@@ -93,7 +93,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
                 <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
                   <StatusText value={session.status} />
                 </Badge>
-                <Badge variant="secondary" className="text-2xs">
+                <Badge variant="secondary" className="text-xs">
                   <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
                 </Badge>
               </div>

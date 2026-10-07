@@ -377,13 +377,13 @@ export default function MentorAvailabilityPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Button aria-label="Delete"
-                                size="icon"
+                              <Button aria-label="Delete · Διαγραφή"
                                 variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive-accessible"
+                                className="h-8 w-8 gap-1.5 text-muted-foreground hover:text-destructive-accessible sm:w-auto sm:px-3"
                                 onClick={() => removeSlot(slot.id)}
                               >
                                 <Trash2 className="icon-sm" />
+                                <span className="hidden sm:inline"><BilingualText en="Delete" el="Διαγραφή" compact /></span>
                               </Button>
                             </div>
                           ))}

@@ -288,9 +288,10 @@ function InvestorCard({
                   aria-pressed={saved}
                   type="button"
                   onClick={onToggleSave}
-                  className="tap-target rounded-md p-1 transition-colors hover:bg-muted"
+                  className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
                 >
                   <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
                 </button>
               </div>
             </div>

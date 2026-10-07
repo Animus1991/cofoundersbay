@@ -558,7 +558,17 @@ export default function TenantDomainsPage() {
                 {[1, 2].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
               </div>
             ) : domains.length === 0 ? (
-              <EmptyTenantDomains />
+              <EmptyTenantDomains
+                action={
+                  <Button
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => document.getElementById('add-subdomain')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  >
+                    <Globe className="icon-sm" /><BilingualText en="Add a subdomain" el="Προσθήκη υποτομέα" compact />
+                  </Button>
+                }
+              />
             ) : (
               <div className="space-y-2">
                 {domains.map(d => (
@@ -570,7 +580,7 @@ export default function TenantDomainsPage() {
         </Card>
 
         {/* Add subdomain */}
-        <Card>
+        <Card id="add-subdomain">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Globe className="icon-sm text-muted-foreground" />

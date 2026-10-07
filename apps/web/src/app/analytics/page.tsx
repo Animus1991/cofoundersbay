@@ -124,7 +124,7 @@ function MetricCard({
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
-              'page-stat-label flex items-center gap-1 font-medium tabular-nums',
+              'page-stat-label flex items-center gap-1 tabular-nums',
               metric.changeType === 'increase'
                 ? TREND.up
                 : metric.changeType === 'decrease'
@@ -229,7 +229,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           </Link>
         ))}
         {conversion !== null && (
-          <p className="page-stat-label pt-1 font-medium tabular-nums text-foreground">
+          <p className="page-stat-label pt-1 font-semibold tabular-nums text-foreground">
             {conversion}%{' '}
             <span className="font-normal text-muted-foreground">
               <BilingualText en={analyticsEn('view_to_connect')} el={analyticsEl('view_to_connect')} wrap />
@@ -333,7 +333,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="mb-1 line-clamp-2 text-sm font-medium">{item.title}</h4>
+                <h4 className="mb-1 line-clamp-2 text-sm font-semibold">{item.title}</h4>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <CfbGlyph name="profile" className="icon-sm shrink-0" />
@@ -680,7 +680,7 @@ export default function AnalyticsPage() {
                 <Link href={step.href}>
                   <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
+                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn(step.hint)} el={analyticsEl(step.hint)} wrap /></span>
                   </span>
                   <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -691,7 +691,7 @@ export default function AnalyticsPage() {
                 <Link href="/calendar">
                   <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
+                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
                   </span>
                   <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -767,7 +767,7 @@ export default function AnalyticsPage() {
               {declining.length > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-status-warning-border/50 bg-status-warning-bg/40 p-4">
                   <div className="min-w-0 space-y-1 text-sm">
-                    <p className="font-medium">
+                    <p className="font-semibold">
                       <BilingualText en={analyticsEn('declining_prefix')} el={analyticsEl('declining_prefix')} wrap />
                     </p>
                     <p className="text-muted-foreground">

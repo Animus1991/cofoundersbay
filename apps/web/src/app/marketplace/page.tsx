@@ -175,7 +175,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-11 w-11 shrink-0 rounded-lg">
               <AvatarImage src={provider.providerAvatar} />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
@@ -200,10 +200,11 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               neither), kept with our icon-size and contrast-safe tokens. */}
           <button
             onClick={() => setSaved(!saved)}
-            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center rounded-md hover:bg-muted transition-colors"
+            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
             aria-label={saved ? 'Remove bookmark' : 'Save provider'}
           >
             <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
+            <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
           </button>
         </div>
 
@@ -407,7 +408,7 @@ export default function MarketplacePage() {
             <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border p-3">
               <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
               <div>
-                <p className="text-sm font-bold">{s.value}</p>
+                <p className="text-sm font-semibold">{s.value}</p>
                 <p className="text-2xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
               </div>
             </div>

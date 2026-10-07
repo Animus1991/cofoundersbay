@@ -226,6 +226,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
             )}
           >
             <Bookmark className={cn('icon-sm', saved && 'fill-current')} aria-hidden="true" />
+            <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
           </button>
         </div>
 

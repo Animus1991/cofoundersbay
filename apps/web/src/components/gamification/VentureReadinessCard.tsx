@@ -80,9 +80,9 @@ function RadialGauge({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
-        <span className="text-base font-bold leading-none text-foreground tabular-nums">
+        <span className="text-base font-semibold leading-none text-foreground tabular-nums">
           {score}
-          <span className="text-xs font-medium text-muted-foreground">/100</span>
+          <span className="text-xs text-muted-foreground">/100</span>
         </span>
         {/* The tier label is a single Greek or English word inside the ring;
             centred and clipped rather than allowed to spill, so a longer tier
@@ -90,7 +90,7 @@ function RadialGauge({ score }: { score: number }) {
             it used to carry is now a 3.3px `gap` on the column, so the figure
             and the label are separated by the container rather than by a margin
             that the first line's own leading was already eating. */}
-        <span className={cn('max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
+        <span className={cn('max-w-full truncate px-1 text-center text-xs font-semibold', color)}>
           {tierLabel}
         </span>
       </div>

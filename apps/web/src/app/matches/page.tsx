@@ -367,15 +367,17 @@ function MatchListRow({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:w-auto sm:px-3"
               aria-label={`Pass on ${hit.displayName}`}>
               <X className="icon-sm" />
+              <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράβλεψη" compact /></span>
             </button>
             <button onClick={onSave}
-              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
+              className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full transition-colors sm:w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
               aria-pressed={isSaved}
               aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
               {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
+              <span className="hidden sm:inline text-xs"><BilingualText en={isSaved ? 'Saved' : 'Save'} el={isSaved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
             </button>
           </div>
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
@@ -1200,7 +1202,7 @@ export default function MatchesPage() {
                       { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
                       { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
                     ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
-                      <button key={mode} onClick={() => setViewMode(mode)} title={title}
+                      <button key={mode} onClick={() => setViewMode(mode)} title={title} aria-label={`${title} view`}
                         className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
                           mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>

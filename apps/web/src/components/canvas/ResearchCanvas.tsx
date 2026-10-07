@@ -1094,6 +1094,7 @@ export default function ResearchCanvas() {
             disabled={historyIndex <= 0}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Undo (Ctrl+Z)"
+            aria-label="Undo"
           >
             <Undo2 className="icon-sm" />
           </button>
@@ -1102,6 +1103,7 @@ export default function ResearchCanvas() {
             disabled={historyIndex >= history.length - 1}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Redo (Ctrl+Y)"
+            aria-label="Redo"
           >
             <Redo2 className="icon-sm" />
           </button>
@@ -1112,6 +1114,7 @@ export default function ResearchCanvas() {
             onClick={() => handleZoom(-ZOOM_STEP)}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
+            aria-label="Zoom out"
           >
             <ZoomOut className="icon-sm" />
           </button>
@@ -1122,6 +1125,7 @@ export default function ResearchCanvas() {
             onClick={() => handleZoom(ZOOM_STEP)}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
+            aria-label="Zoom in"
           >
             <ZoomIn className="icon-sm" />
           </button>
@@ -1129,6 +1133,7 @@ export default function ResearchCanvas() {
             onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset view"
+            aria-label="Reset view"
           >
             <Maximize2 className="icon-sm" />
           </button>

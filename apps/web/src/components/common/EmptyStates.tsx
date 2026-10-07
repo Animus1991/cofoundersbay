@@ -687,7 +687,7 @@ export function EmptyTenantApiKeys({ className, actionHref, onAction }: { classN
   );
 }
 
-export function EmptyTenantDomains({ className }: { className?: string }) {
+export function EmptyTenantDomains({ className, action }: { className?: string; action?: ReactNode }) {
   return (
     <ListEmptyState
       icon={Globe}
@@ -696,6 +696,7 @@ export function EmptyTenantDomains({ className }: { className?: string }) {
       title={<BilingualText en="No domains configured yet" el="Δεν έχουν ρυθμιστεί ακόμη τομείς" wrap />}
       description={<BilingualText en="Add a subdomain (your-org.cofounderbay.app) or connect a custom domain. SSL is provisioned automatically once DNS verifies." el="Προσθέστε υποτομέα (your-org.cofounderbay.app) ή συνδέστε δικό σας τομέα. Το SSL ενεργοποιείται αυτόματα μόλις επαληθευτεί το DNS." wrap />}
       size="compact"
+      action={action}
       className={className}
     />
   );
@@ -708,7 +709,7 @@ export function EmptyTenantAutomations({ className }: { className?: string }) {
       tone="info"
       variant="dashed"
       title={<BilingualText en="No automation rules yet" el="Δεν υπάρχουν ακόμη κανόνες αυτοματισμού" wrap />}
-      description={<BilingualText en="Rules trigger actions when events happen — send Slack pings on signups, auto-assign mentors on acceptance, or notify admins on flags." el="Οι κανόνες εκτελούν ενέργειες όταν συμβαίνει κάτι — ειδοποίηση Slack σε εγγραφές, αυτόματη ανάθεση μεντόρων σε αποδοχές ή ειδοποίηση διαχειριστών σε σημάνσεις." wrap />}
+      description={<BilingualText en="Rules trigger actions when events happen — send Slack pings on signups, auto-assign mentors on acceptance, or notify admins on flags. Once a platform admin adds one for your organization, it appears here with run and pause controls." el="Οι κανόνες εκτελούν ενέργειες όταν συμβαίνει κάτι — ειδοποίηση Slack σε εγγραφές, αυτόματη ανάθεση μεντόρων σε αποδοχές ή ειδοποίηση διαχειριστών σε σημάνσεις. Μόλις ένας διαχειριστής πλατφόρμας προσθέσει κανόνα για τον οργανισμό σας, εμφανίζεται εδώ με στοιχεία ελέγχου εκτέλεσης και παύσης." wrap />}
       className={className}
     />
   );

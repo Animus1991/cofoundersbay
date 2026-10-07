@@ -443,9 +443,14 @@ export default function InvestorPipelinePage() {
                     <DealCard key={deal.id} deal={deal} onMove={isLive ? (d, st) => void moveDeal(d, st) : undefined} />
                   ))}
                   {stageDeals.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-8">
-                      <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
-                    </p>
+                    <div className="py-8 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
+                      </p>
+                      <Link href="/investor/scouting" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                        <BilingualText en="Find startups in scouting" el="Βρείτε startups στο scouting" compact wrap />
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>
