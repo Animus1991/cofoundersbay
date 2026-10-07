@@ -5,7 +5,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
 import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -66,6 +66,8 @@ import { ContributionGraph } from '@/components/shared/ContributionGraph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { profileEn, profileEl } from '@/lib/i18n/strings-profile';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { profilePost, useSuggestedPost } from '@/lib/share-text';
+import { linkedInShareUrl } from '@/lib/commitments-links';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
@@ -386,6 +388,11 @@ export default function ProfilePage() {
   });
   const { data: badges } = useMyBadges();
 
+  const suggested = useSuggestedPost();
+  const [origin, setOrigin] = useState('');
+  useEffect(() => setOrigin(window.location.origin), []);
+  const publicUrl = profile && origin ? `${origin}/p/${encodeURIComponent(profile.userId)}` : '';
+
   const handleShare = () => {
     if (!profile) return;
     const url = `${window.location.origin}/profiles/${profile.userId}`;
@@ -552,6 +559,22 @@ export default function ProfilePage() {
           <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))} aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
             <Share2 className="icon-sm" />
           </Button>
+          {/* The public page (/p/…) carries the Open Graph preview LinkedIn shows;
+              the suggested post text is copied for pasting. */}
+          {profile && publicUrl ? (
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <a
+                href={linkedInShareUrl(publicUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => suggested.copy(profilePost(publicUrl, suggested.lang))}
+                aria-label={bilingualAria('Share your public profile on LinkedIn (opens a new tab)', 'Κοινοποίηση του δημόσιου προφίλ στο LinkedIn (ανοίγει νέα καρτέλα)')}
+              >
+                <Linkedin className="icon-sm" aria-hidden="true" />
+                <BilingualText en="LinkedIn" el="LinkedIn" compact />
+              </a>
+            </Button>
+          ) : null}
           <Button size="sm" className="gap-2" asChild>
             <Link href="/profile/edit">
               <Edit className="icon-sm" />

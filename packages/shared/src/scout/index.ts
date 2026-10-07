@@ -171,3 +171,28 @@ export const SCOUT_PROBLEM_COPY: Record<ScoutProblem, { en: string; el: string }
   contact: { en: 'Leave contact details out of the brief.', el: 'Χωρίς στοιχεία επικοινωνίας στο σημείωμα.' },
   promise: { en: 'Remove promised returns from the brief.', el: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' },
 };
+
+/**
+ * A scout brief started from one of the founder's own need cards: the role
+ * offered, where, how much time and at what stage, with the "who is
+ * missing" sentence as the note. Skills are left for the founder to add;
+ * nothing is saved until they press Save on /scout.
+ */
+export function briefFromNeedCard(card: {
+  offer?: { role?: string | null } | null;
+  place?: string | null;
+  isRemote?: boolean;
+  commitment?: string | null;
+  stage?: string | null;
+  missing?: string | null;
+}): { role: string; place: string; commitment: string; stage: string; note: string; remoteOk: boolean } {
+  const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n).trimEnd() : s);
+  return {
+    role: clip(String(card.offer?.role ?? '').trim(), SCOUT_LIMITS.role),
+    place: clip(String(card.place ?? '').trim(), SCOUT_LIMITS.place),
+    commitment: (CARD_COMMITMENTS as readonly string[]).includes(String(card.commitment)) ? String(card.commitment) : '',
+    stage: (CARD_STAGES as readonly string[]).includes(String(card.stage)) ? String(card.stage) : '',
+    note: clip(String(card.missing ?? '').trim(), SCOUT_LIMITS.note),
+    remoteOk: card.isRemote !== false,
+  };
+}

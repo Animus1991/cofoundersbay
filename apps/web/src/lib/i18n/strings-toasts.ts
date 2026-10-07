@@ -8,6 +8,8 @@
  * key that is missing at runtime shows English only, never a wrong string.
  */
 export const TOAST_EL: Record<string, string> = {
+  "Suggested post copied": "Το προτεινόμενο κείμενο αντιγράφηκε",
+  "Paste it into your LinkedIn post; LinkedIn shows the preview from the link.": "Επικολλήστε το στην ανάρτησή σας στο LinkedIn· το LinkedIn δείχνει την προεπισκόπηση από τον σύνδεσμο.",
   "Need card alert saved": "Η ειδοποίηση για κάρτες ανάγκης αποθηκεύτηκε",
   "You will hear about new cards that fit, at the pace you chose. Change it in Saved searches.": "Θα ενημερώνεστε για νέες κάρτες που ταιριάζουν, με τον ρυθμό που επιλέξατε. Αλλάξτε το στις Αποθηκευμένες αναζητήσεις.",
   "Could not save the alert": "Η ειδοποίηση δεν αποθηκεύτηκε",

@@ -32,6 +32,7 @@ import {
   setUpdateVisibility,
   type FounderUpdate,
 } from '@/lib/updates-api';
+import { founderUpdatePost, useSuggestedPost } from '@/lib/share-text';
 
 const TABS = [
   { value: 'following', en: 'From people you follow', el: 'Από όσους ακολουθείτε' },
@@ -42,6 +43,7 @@ function UpdatesContent() {
   const me = useStoredUser();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const suggested = useSuggestedPost();
   const confirm = useConfirm();
   const [tab, setTab] = useState<'following' | 'mine'>('following');
   const [focus, setFocus] = useState<string | null>(null);
@@ -259,7 +261,7 @@ function UpdatesContent() {
                       <>
                         <Button size="sm" variant="outline" onClick={() => copyLink(u)}><BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact /></Button>
                         <Button size="sm" variant="outline" asChild>
-                          <a href={linkedInShareUrl(publicUpdateUrl(u.publicToken))} target="_blank" rel="noopener noreferrer"><BilingualText en="Share on LinkedIn" el="Κοινοποίηση στο LinkedIn" compact /></a>
+                          <a href={linkedInShareUrl(publicUpdateUrl(u.publicToken))} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(founderUpdatePost(u, publicUpdateUrl(u.publicToken as string), suggested.lang))}><BilingualText en="Share on LinkedIn" el="Κοινοποίηση στο LinkedIn" compact /></a>
                         </Button>
                       </>
                     ) : null}
