@@ -138,6 +138,12 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
   { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
+  // Warm introductions. «Συστάσεις» alone is endorsements here, so the Greek
+  // keys carry «γνωριμ»; "introduce me" alone is a connection request.
+  {
+    keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
+    tool: 'get_intros',
+  },
   // Founder updates: named as the kind of update, or by who wrote them.
   {
     keys: ['founder update*', 'investor update*', 'updates from', 'people i follow', 'ενημερωσεις ιδρυτ', 'ενημερωση ιδρυτ', 'ενημερωσεις απο', 'οσους ακολουθω'],
@@ -244,6 +250,8 @@ export function detectAreaReads(message: string): AreaReadId[] {
     // A named window is analytics_set_period's job; a 7-day read beside it
     // would report figures for a period the reader just moved away from.
     if (tool === 'get_analytics' && detectAnalyticsPeriod(lower) !== undefined) return false;
+    // «Συστάσεις γνωριμίας» are introductions, not endorsements.
+    if (tool === 'get_endorsements' && found.includes('get_intros') && !includesWord(lower, ['endorse*', 'προσυπογραφ'])) return false;
     return true;
   });
 }
@@ -646,6 +654,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
 
   const wantsConnect =
     !asksAboutConnections &&
+    !areaReads.includes('get_intros') &&
     !namesCanvasSurface(message) &&
     includesAny(message, [
     'connect',
@@ -732,7 +741,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
 
   if (wantsNotifications) add('get_notifications');
 
-  for (const read of areaReads) add(read);
+  // "Who could introduce me to Nikos" reads the paths to that person.
+  for (const read of areaReads) add(read, read === 'get_intros' && person ? { name: person } : {});
 
   if (wantsShortlistRemove) {
     const args: Record<string, string> = {};

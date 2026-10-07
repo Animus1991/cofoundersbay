@@ -67,11 +67,14 @@ import {
   type OpportunityItem,
   type ResearchBoard,
   type ShortlistItem,
+  searchProfiles,
 } from '@/lib/api';
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
 import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-api';
+import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
+import { INTRO_RELATION_COPY, INTRO_STATUS_COPY } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -606,6 +609,53 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     if (own.length) {
       const lines = own.map((u) => `• **${u.title}** — ${t(u.visibility === 'public' ? 'public' : 'followers only')}`);
       parts.push(`${t('Your updates:')}\n${lines.join('\n')}`);
+    }
+    return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_intros(args, { t, locale }) {
+    // Greek is in the shared copy; other locales read the English through the catalogue.
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
+    const lists = await listIntros();
+    const actions = [openArea(t, '/intros', t('Open introductions'), t('Requests to forward, introductions for you, and the ones you asked for.'))];
+    const citations: CopilotCitation[] = [];
+    const parts: string[] = [];
+    const cite = (i: Intro) => citations.push({ type: 'route', id: i.id, label: i.card?.title || i.target?.displayName || '', href: `/intros?intro=${encodeURIComponent(i.id)}` });
+
+    const waiting = asList<Intro>(lists?.toForward).filter((i) => i.status === 'pending').slice(0, LIMIT);
+    if (waiting.length) {
+      waiting.forEach(cite);
+      parts.push(`${t('Waiting for you to forward:')}\n${waiting.map((i) => `• **${i.requester.displayName}** → ${i.target.displayName} — ${i.card.title}`).join('\n')}`);
+    }
+    const forMe = asList<Intro>(lists?.received).filter((i) => i.status === 'forwarded').slice(0, LIMIT);
+    if (forMe.length) {
+      forMe.forEach(cite);
+      parts.push(`${t('Introductions for you:')}\n${forMe.map((i) => `• **${i.requester.displayName}** (${t('via')} ${i.intermediary.displayName}) — ${i.card.title}`).join('\n')}`);
+    }
+    const mine = asList<Intro>(lists?.sent).slice(0, LIMIT);
+    if (mine.length) {
+      parts.push(`${t('You asked for:')}\n${mine.map((i) => `• **${i.target.displayName}** (${t('via')} ${i.intermediary.displayName}) — ${say(INTRO_STATUS_COPY[i.status])}`).join('\n')}`);
+    }
+
+    // "Who could introduce me to …": by id from a model, or by name from the rule planner.
+    let targetId = typeof args?.targetId === 'string' ? args.targetId : '';
+    if (!targetId && typeof args?.name === 'string' && args.name) {
+      const found = await searchProfiles({ q: args.name, limit: 1 }).catch(() => null);
+      targetId = found?.hits?.[0]?.userId ?? '';
+    }
+    if (targetId) {
+      const route = await getIntroPaths(targetId);
+      if (route.direct) parts.push(t('You already know them directly; no introduction is needed.'));
+      else if (!route.paths.length) parts.push(t('Nobody you know on CoFounderBay knows them yet.'));
+      else {
+        const rel = (list: readonly (keyof typeof INTRO_RELATION_COPY)[]) => list.map((r) => say(INTRO_RELATION_COPY[r])).join(', ');
+        parts.push(`${t('Who could introduce you:')}\n${route.paths.slice(0, LIMIT).map((p) => `• **${p.intermediary.displayName}** (id ${p.intermediary.id}) — ${rel(p.toRequester)} / ${rel(p.toTarget)}`).join('\n')}`);
+        if (route.cards.length) parts.push(`${t('Your open need cards:')}\n${route.cards.slice(0, LIMIT).map((c) => `• ${c.title} (id ${c.id})`).join('\n')}`);
+      }
+    }
+
+    if (!parts.length) {
+      return { section: t('No introductions yet. Ask for one from the profile of someone you want to meet.'), citations: [], actions };
     }
     return { section: parts.join('\n\n'), citations, actions };
   },

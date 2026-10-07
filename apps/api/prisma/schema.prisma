@@ -238,6 +238,7 @@ enum NotificationType {
   fundraising_update
   commitment_update
   founder_update
+  intro_request
 }
 
 enum ConnectionStatus {
@@ -7568,4 +7569,63 @@ model BehaviorPolicy {
   updatedAt       DateTime  @updatedAt
 
   @@index([active])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "Open to" — a quiet signal that feeds matching (packages/shared/src/open-to)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum OpenToVisibility {
+  nobody
+  verified
+  everyone
+}
+
+model OpenToSignal {
+  userId     String           @id
+  kinds      String[]
+  visibility OpenToVisibility @default(nobody)
+  note       String?
+  // Lapses unless renewed, so ranking never leans on forgotten intent.
+  expiresAt  DateTime
+  updatedAt  DateTime         @updatedAt
+
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Warm introductions — consent at every hop (packages/shared/src/intros)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum IntroStatus {
+  pending
+  forwarded
+  declined
+  accepted
+  not_now
+  withdrawn
+}
+
+model IntroRequest {
+  id             String      @id @default(uuid())
+  requesterId    String
+  intermediaryId String
+  targetId       String
+  // The requester's own need card; accepting expresses interest on it.
+  cardId         String
+  note           String      @db.Text
+  forwardNote    String?     @db.Text
+  status         IntroStatus @default(pending)
+  // How the path ran when it was asked: ['connection', 'mentor', 'cohort'].
+  toRequester    String[]    @default([])
+  toTarget       String[]    @default([])
+  // The ladder thread the target's acceptance opened.
+  threadId       String?
+  decidedAt      DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([requesterId, status])
+  @@index([intermediaryId, status])
+  @@index([targetId, status])
 }

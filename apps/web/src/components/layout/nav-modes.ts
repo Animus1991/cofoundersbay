@@ -19,6 +19,7 @@ import {
   BookOpen,
   Building2,
   Megaphone,
+  Waypoints,
   Target,
   Handshake,
   Award,
@@ -437,6 +438,7 @@ export const exploreSections: NavSection[] = [
     section: 'Network',
     links: [
       { href: '/connections', label: 'Connections', icon: UserCheck, badge: 'connections' },
+      { href: '/intros', label: 'Introductions', icon: Waypoints },
       { href: '/shortlist', label: 'Saved Profiles', icon: Bookmark },
       { href: '/endorsements', label: 'Endorsements', icon: Handshake },
       { href: '/compare', label: 'Compare Profiles', icon: ArrowLeftRight },

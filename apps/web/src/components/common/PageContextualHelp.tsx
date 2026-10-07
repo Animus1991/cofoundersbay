@@ -723,6 +723,44 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  intros: {
+    en: (
+      <>
+        <p>
+          On someone&apos;s profile, <strong>Ask for an introduction</strong> shows who among your connections, your
+          mentor or mentees and your cohort-mates also knows them. You choose one, say why in a sentence or two, and pick
+          the need card it is for.
+        </p>
+        <p>
+          The <strong>intermediary decides</strong>. If they forward it, the other person sees your card and their note;
+          if they do not, you are told only that it was not forwarded, and the other person never hears of it. Accepting
+          answers your need card, so the conversation continues on its ladder: protected at first, then terms.
+        </p>
+        <p>
+          You can have five requests waiting at once and withdraw one until it is answered. No email or phone in the
+          notes: the conversation stays on the platform until you both confirm.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Στο προφίλ κάποιου, το <strong>«Ζητήστε σύσταση»</strong> δείχνει ποιοι από τις συνδέσεις σας, τον μέντορα ή
+          τους καθοδηγούμενούς σας και τον κύκλο σας τον γνωρίζουν επίσης. Επιλέγετε έναν, λέτε γιατί σε μία-δύο
+          προτάσεις και διαλέγετε την κάρτα ανάγκης για την οποία είναι.
+        </p>
+        <p>
+          <strong>Ο ενδιάμεσος αποφασίζει</strong>. Αν την προωθήσει, το άλλο πρόσωπο βλέπει την κάρτα σας και τη
+          σημείωσή του· αν όχι, μαθαίνετε μόνο ότι δεν προωθήθηκε και το άλλο πρόσωπο δεν το μαθαίνει ποτέ. Η αποδοχή
+          απαντά στην κάρτα ανάγκης σας, οπότε η συζήτηση συνεχίζει στην κλίμακά της: προστατευμένη στην αρχή, μετά όροι.
+        </p>
+        <p>
+          Μπορείτε να έχετε πέντε αιτήματα σε αναμονή ταυτόχρονα και να αποσύρετε ένα μέχρι να απαντηθεί. Χωρίς email ή
+          τηλέφωνο στις σημειώσεις: η συζήτηση μένει στην πλατφόρμα μέχρι να επιβεβαιώσετε και οι δύο.
+        </p>
+      </>
+    ),
+  },
   updates: {
     en: (
       <>

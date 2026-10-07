@@ -15,6 +15,7 @@ export const NAV_LINK_DESCRIPTIONS: Record<string, string> = {
   '/projects': 'Side projects and startup initiatives',
   '/commitments': 'Need cards and the ladder to agreed terms',
   '/updates': 'Updates from founders you follow, and the ones you send',
+  '/intros': 'Warm introductions through people you both know, with consent at every hop',
   '/fundraising': 'Investor pipeline and data room',
   '/ai': 'Your assistant: matches, research, fundraising. Changes wait for your confirmation',
   '/messages': 'Direct messages and intro requests',

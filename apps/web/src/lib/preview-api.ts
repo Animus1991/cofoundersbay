@@ -8,6 +8,8 @@ import { previewCommitmentsApi } from './demo/commitments-world';
 import { previewSavedSearchesApi } from './demo/saved-searches-world';
 import { previewVerificationApi } from './demo/verification-world';
 import { previewUpdatesApi } from './demo/updates-world';
+import { previewOpenToApi } from './demo/open-to-world';
+import { previewIntrosApi } from './demo/intros-world';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2626,6 +2628,12 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // Following and founder updates, with the API's rules and refusals.
   const updatesAnswer = previewUpdatesApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (updatesAnswer !== undefined) return updatesAnswer;
+  // "Open to" and warm introductions; accepting an introduction answers the
+  // need card in the commitments world above.
+  const openToAnswer = previewOpenToApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (openToAnswer !== undefined) return openToAnswer;
+  const introsAnswer = previewIntrosApi(pathname, path, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (introsAnswer !== undefined) return introsAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {

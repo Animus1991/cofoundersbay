@@ -8,6 +8,8 @@ import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FollowButton } from '@/components/updates/FollowButton';
+import { AskIntroButton } from '@/components/intros/AskIntroDialog';
+import { OpenToLine } from '@/components/intros/OpenToLine';
 import {
   MapPin,
   Clock,
@@ -304,6 +306,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Share2 className="icon-sm" />
           </Button>
           <FollowButton userId={userId} />
+          <AskIntroButton targetId={userId} targetName={profile.displayName} />
           <Button variant="secondary" size="sm" className="gap-2" asChild>
             <Link href="/discover">
               <ArrowLeft className="icon-sm" />
@@ -333,6 +336,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <div className="flex justify-center pt-1">
                   <RoleBadge role={profile.role} />
                 </div>
+                {!isOwnProfile ? <OpenToLine userId={userId} /> : null}
               </div>
 
               <div className="w-full space-y-2 text-sm text-muted-foreground">

@@ -27,14 +27,14 @@ function judge(c: EvalCase): Verdict {
 
 const isGreek = (text: string) => /[Ͱ-Ͽ]/.test(text);
 
-describe('assistant evaluation (70 requests, EN/EL)', () => {
+describe('assistant evaluation (74 requests, EN/EL)', () => {
   const verdicts = EVAL_CASES.map(judge);
   const misses = verdicts.filter((v) => !v.ok);
   const score = (list: Verdict[]) => list.filter((v) => v.ok).length / list.length;
 
-  it('has seventy cases, thirty-five in each language', () => {
-    expect(EVAL_CASES).toHaveLength(70);
-    expect(EVAL_CASES.filter((c) => isGreek(c.message))).toHaveLength(35);
+  it('has seventy-four cases, thirty-seven in each language', () => {
+    expect(EVAL_CASES).toHaveLength(74);
+    expect(EVAL_CASES.filter((c) => isGreek(c.message))).toHaveLength(37);
   });
 
   it('plans the right capability for at least 95% of them, in each language', () => {

@@ -106,7 +106,9 @@ export type InvalidationTopic =
   | 'endorsements'
   | 'mentorships'
   | 'commitments'
-  | 'follows';
+  | 'follows'
+  | 'intros'
+  | 'open_to';
 
 export type ActionDeclaration = {
   id: string;

@@ -114,6 +114,9 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   commitments: [qk('commitments')],
   // Who the reader follows, and the updates feed that follows from it.
   follows: [qk('follows'), qk('founder-updates')],
+  // A request, a forward or an acceptance; accepting also answers a need card.
+  intros: [qk('intros'), qk('commitments')],
+  open_to: [qk('open-to'), qk('matching'), qk('recommendations')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

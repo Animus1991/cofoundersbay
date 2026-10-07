@@ -40,6 +40,7 @@ import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { VerificationCard } from '@/components/settings/VerificationCard';
+import { OpenToCard } from '@/components/settings/OpenToCard';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
@@ -872,6 +873,9 @@ export default function SettingsPage() {
 
               {/* Verification: what opens terms on the commitments ladder */}
               <VerificationCard />
+
+              {/* Open to: a quiet signal that feeds matching */}
+              <OpenToCard />
 
               {/* Privacy & Visibility */}
               <PrivacyCard />

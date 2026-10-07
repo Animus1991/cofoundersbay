@@ -42,6 +42,7 @@ export const CFB_GLYPH_NAMES = [
   'feed',
   'pact',
   'update',
+  'intro',
   'more',
   'default',
 ] as const;
@@ -86,6 +87,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   programs: 'award',
   invite: 'people',
   connections: 'people',
+  intros: 'intro',
   shortlist: 'bookmark',
   endorsements: 'award',
   compare: 'compare',
@@ -495,6 +497,18 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <path d="M8.2 10.4h4.6M8.2 13.6h7.4M8.2 16.6h5" />
       <path d="M16.4 7.6l3.4-3.4M16.8 4h3v3" />
       <circle cx="16.4" cy="7.6" r="1.05" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Three people on one line, the middle one carrying the accent: an
+  // introduction runs through someone who knows both ends.
+  intro: (
+    <>
+      <circle cx="4.8" cy="15.6" r="2.3" />
+      <circle cx="19.2" cy="15.6" r="2.3" />
+      <circle cx="12" cy="7.4" r="2.3" />
+      <path d="M6.4 13.9l3.9-4.6M13.7 9.3l3.9 4.6" />
+      <circle cx="12" cy="7.4" r="1" fill="currentColor" stroke="none" />
+      <path d="M8.2 18.8h7.6" strokeDasharray="1.6 2" />
     </>
   ),
   more: (

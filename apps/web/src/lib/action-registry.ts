@@ -68,6 +68,9 @@ import { currentRailSections, openCurrentRailSection } from '@/components/layout
 import { runPageControl } from '@/lib/page-controls';
 import { FORM_DRAFT_ROUTES, stashFormDraft, type FormDraftId } from '@/lib/form-draft';
 import { followPerson, unfollowPerson } from '@/lib/updates-api';
+import { requestIntro, withdrawIntro } from '@/lib/intros-api';
+import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
+import { isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
  * The web app's half of the capability contract.
@@ -617,6 +620,27 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     ),
   draft_founder_update: async (payload) => openDraft('founder_update', payload, ['title', 'body', 'visibility'], null),
 
+  // ── Introductions and "Open to" ──────────────────────────────────────────
+  // The intro id comes back so the undo withdraws exactly this request.
+  request_intro: async (payload) => {
+    const targetId = requireString(payload, 'targetId');
+    const intermediaryId = requireString(payload, 'intermediaryId');
+    const cardId = requireString(payload, 'cardId');
+    if (!targetId || !intermediaryId || !cardId) return { ok: false, error: 'Missing the person, the intermediary or the need card' };
+    const intro = await requestIntro({ targetId, intermediaryId, cardId, note: requireString(payload, 'note').trim() });
+    return { ok: true, href: `/intros?intro=${encodeURIComponent(intro.id)}`, ...(intro.id ? { undo: { introId: intro.id } } : {}) };
+  },
+  // What was there before travels with the outcome, so Undo restores it.
+  set_open_to: async (payload) => {
+    const kinds = requireString(payload, 'kinds').split(/[\s,]+/).filter(isOpenToKind) as OpenToKind[];
+    if (!kinds.length) return { ok: false, error: 'Choose at least one: cofounder, advisor, angel or mentor' };
+    const visibility = (['nobody', 'verified', 'everyone'] as const).find((v) => v === payload?.visibility) ?? 'nobody';
+    const before = await getMyOpenTo();
+    await setOpenTo({ kinds, visibility, note: requireString(payload, 'note').trim() || null });
+    const prev = before.signal;
+    return { ok: true, href: '/settings#open-to', undo: prev ? { kinds: prev.kinds.join(','), visibility: prev.visibility, note: prev.note ?? '' } : { cleared: true } };
+  },
+
   // ── Following ────────────────────────────────────────────────────────────
   follow_person: async (payload) => {
     const userId = requireString(payload, 'userId');
@@ -887,6 +911,27 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!threadId) return { ok: false, error: 'No interest to withdraw' };
     await withdrawCommitmentInterest(threadId);
     return { ok: true, href: '/commitments' };
+  },
+
+  /** Withdraws the request it sent while it is still pending; the intermediary was notified (declared partial). */
+  request_intro: async (_payload, context) => {
+    const introId = requireString(context, 'introId');
+    if (!introId) return { ok: false, error: 'No introduction to withdraw' };
+    await withdrawIntro(introId);
+    return { ok: true, href: '/intros?tab=sent' };
+  },
+
+  /** Puts back the previous signal (its 90 days restart), or clears it if there was none (declared partial). */
+  set_open_to: async (_payload, context) => {
+    if (context?.cleared === true) {
+      await clearOpenTo();
+      return { ok: true, href: '/settings#open-to' };
+    }
+    const kinds = requireString(context, 'kinds').split(',').filter(isOpenToKind) as OpenToKind[];
+    if (!kinds.length) return { ok: false, error: 'Nothing to put back' };
+    const visibility = (requireString(context, 'visibility') || 'nobody') as OpenToVisibility;
+    await setOpenTo({ kinds, visibility, note: requireString(context, 'note') || null });
+    return { ok: true, href: '/settings#open-to' };
   },
 
   /** Stops following; the "someone new follows you" notice already went (declared partial). */

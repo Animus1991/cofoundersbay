@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { OPEN_TO_COPY, openToBoost, openToShownTo, seekerWants } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
+import { OpenToService } from '../open-to/open-to.service';
 
 export interface MatchingCriteria {
   userId: string;
@@ -68,6 +70,7 @@ export class MatchingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cache: CacheService,
+    @Optional() @Inject(OpenToService) private readonly openTo?: Pick<OpenToService, 'activeSignals' | 'isVerified'>,
   ) {}
 
   // ── Public: generate matches ───────────────────────────────────────────────
@@ -94,6 +97,8 @@ export class MatchingService {
           this.calculateMatchScore(user, userVector, candidate, criteria, weights, outcomeMap, behavioralMap)
         )
       );
+
+      await this.applyOpenTo(user, scoredMatches);
 
       const validMatches = scoredMatches
         .filter(m => m.score > 0.25)
@@ -461,6 +466,35 @@ export class MatchingService {
       breakdown,
       profile: candidate.profile,
     };
+  }
+
+  /**
+   * "Open to" signals lift candidates who said they would do what this person
+   * is looking for — by at most `OPEN_TO_BOOST`, so a signal orders people who
+   * already fit and never rescues a poor fit. The reason is named only when
+   * the signal's own visibility lets this viewer see it; a "matching only"
+   * signal moves the ranking and says nothing.
+   */
+  private async applyOpenTo(user: any, matches: MatchScore[]): Promise<void> {
+    if (!this.openTo || !matches.length) return;
+    try {
+      const signals = await this.openTo.activeSignals(matches.map((m) => m.userId));
+      if (!signals.size) return;
+      const profile = await this.prisma.matchProfile.findUnique({ where: { userId: user.id }, select: { lookingForRoles: true } }).catch(() => null);
+      const wants = seekerWants(profile?.lookingForRoles, user.role);
+      let verified: boolean | null = null;
+      for (const match of matches) {
+        const signal = signals.get(match.userId);
+        const lift = openToBoost(signal, wants);
+        if (!signal || !lift) continue;
+        match.score = Math.min(1, match.score + lift);
+        if (signal.visibility === 'verified' && verified === null) verified = await this.openTo.isVerified(user.id);
+        const shown = openToShownTo(signal, { isOwner: false, verified: verified === true }).filter((k) => wants.includes(k));
+        for (const kind of shown) match.reasons.push(`Open to ${OPEN_TO_COPY[kind].en.toLowerCase()}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Open-to signals skipped: ${String(err)}`);
+    }
   }
 
   // ── Semantic scoring (TF-IDF style keyword overlap) ────────────────────────

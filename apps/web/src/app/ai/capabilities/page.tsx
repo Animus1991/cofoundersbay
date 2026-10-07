@@ -28,6 +28,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_opportunities: { en: 'Show me open opportunities', el: 'Δείξε μου ανοιχτές ευκαιρίες' },
   get_commitments: { en: 'Where do my commitments stand?', el: 'Πού βρίσκονται οι δεσμεύσεις μου;' },
   get_founder_updates: { en: 'Any new founder updates?', el: 'Υπάρχουν νέες ενημερώσεις ιδρυτών;' },
+  get_intros: { en: 'Who could introduce me to Nikos?', el: 'Ποιος μπορεί να με συστήσει στον Νίκο;' },
   get_mentorship_sessions: { en: 'When is my next mentoring session?', el: 'Πότε είναι η επόμενη συνεδρία καθοδήγησής μου;' },
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
@@ -87,6 +88,8 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   draft_need_card: { en: 'Write a need card “Technical co-founder for Harbor”', el: 'Φτιάξε κάρτα ανάγκης «Τεχνικός συνιδρυτής για το Harbor»' },
   express_interest: { en: 'Send interest in Christina’s head-of-growth card', el: 'Στείλε ενδιαφέρον στην κάρτα της Χριστίνας για head of growth' },
   follow_person: { en: 'Follow Elena’s updates', el: 'Ακολούθησε τις ενημερώσεις της Έλενας' },
+  request_intro: { en: 'Ask Dr. Kim to introduce me to Nikos for my Athens card', el: 'Ζήτα από την Dr. Kim να με συστήσει στον Νίκο για την κάρτα μου' },
+  set_open_to: { en: 'Mark me open to advising, visible to verified members', el: 'Δήλωσε ότι είμαι ανοιχτός σε συμβουλευτικό ρόλο, ορατό σε επαληθευμένους' },
   draft_founder_update: { en: 'Draft a founder update “September: twelve interviews”', el: 'Ετοίμασε ενημέρωση ιδρυτή «Σεπτέμβριος: δώδεκα συνεντεύξεις»' },
   close_need_card: { en: 'Close my Athens intros card as filled', el: 'Κλείσε την κάρτα για τις γνωριμίες στην Αθήνα ως καλυμμένη' },
 };

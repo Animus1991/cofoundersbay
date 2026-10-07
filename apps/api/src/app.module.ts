@@ -40,6 +40,8 @@ import { PitchModule } from './pitch/pitch.module';
 import { VerificationModule } from './verification/verification.module';
 import { ProfileImportModule } from './profile-import/profile-import.module';
 import { FounderUpdatesModule } from './founder-updates/founder-updates.module';
+import { OpenToModule } from './open-to/open-to.module';
+import { IntrosModule } from './intros/intros.module';
 import { PublicModule } from './public/public.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
@@ -125,6 +127,8 @@ function findEnvFiles(): string[] {
     VerificationModule,
     ProfileImportModule,
     FounderUpdatesModule,
+    OpenToModule,
+    IntrosModule,
     PublicModule,
     LearningModule,
     MarketplaceModule,

@@ -142,6 +142,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/projects': 'Έργα',
   '/commitments': 'Δεσμεύσεις',
   '/updates': 'Ενημερώσεις',
+  '/intros': 'Συστάσεις γνωριμίας',
   '/provider/analytics': 'Αναλυτικά παρόχου',
   '/provider/inquiries': 'Αιτήματα',
   '/provider/profile': 'Προφίλ παρόχου',
@@ -212,6 +213,8 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
     'Κάρτες ανάγκης και κλίμακα ως τους συμφωνημένους όρους',
   '/updates':
     'Ενημερώσεις ιδρυτών που ακολουθείτε και όσες στέλνετε',
+  '/intros':
+    'Ζεστές συστάσεις μέσω κοινών γνωστών, με συναίνεση σε κάθε βήμα',
   '/fundraising':
     'Pipeline επενδυτών και data room',
   '/ai':

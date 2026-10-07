@@ -198,6 +198,19 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_intros',
+    kind: 'read',
+    label: { en: 'Read introductions', el: 'Ανάγνωση συστάσεων γνωριμίας' },
+    description: {
+      en: 'Read the signed-in user\u2019s warm introductions: requests waiting for them to forward, introductions forwarded to them, and the ones they asked for, with each status. With targetId, also who could introduce them to that person (intermediary ids and how each knows both) and which of their open need cards it could be for.',
+      el: 'Διαβάζει τις συστάσεις γνωριμίας του χρήστη: αιτήματα που περιμένουν να τα προωθήσει, συστάσεις που του προωθήθηκαν και όσες ζήτησε, με την κατάσταση της καθεμίας. Με targetId, επίσης ποιος μπορεί να τον συστήσει σε αυτό το πρόσωπο (id ενδιαμέσων και πώς γνωρίζει τον καθένα) και για ποιες ανοιχτές κάρτες ανάγκης του.',
+    },
+    params: [
+      { name: 'targetId', type: 'string', required: false, description: { en: 'Optional id of the person the user wants to meet, from a prior search or recommendation.', el: 'Προαιρετικό id του προσώπου που θέλει να γνωρίσει ο χρήστης, από προηγούμενη αναζήτηση ή πρόταση.' } },
+    ],
+    writes: false,
+  },
+  {
     id: 'get_mentorship_sessions',
     kind: 'read',
     label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
@@ -1877,6 +1890,62 @@ export const ACTION_DECLARATIONS = [
     },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Open filled composer', el: 'Άνοιγμα συμπληρωμένης σύνταξης' },
+  },
+  {
+    id: 'request_intro',
+    kind: 'mutation',
+    label: { en: 'Ask for an introduction', el: 'Αίτημα σύστασης γνωριμίας' },
+    description: {
+      en: 'Ask someone the user knows to introduce them to a person that intermediary also knows, for one of the user\u2019s open need cards. Use the intermediary and card ids get_intros returned for that target. The intermediary is notified and decides whether to forward it; nothing reaches the target until they do.',
+      el: 'Ζητά από κάποιον που γνωρίζει ο χρήστης να τον συστήσει σε πρόσωπο που γνωρίζει κι εκείνος, για μία από τις ανοιχτές κάρτες ανάγκης του χρήστη. Χρησιμοποιήστε τα id ενδιαμέσου και κάρτας που επέστρεψε το get_intros. Ο ενδιάμεσος ειδοποιείται και αποφασίζει αν θα την προωθήσει.',
+    },
+    params: [
+      { name: 'targetId', type: 'string', required: true, description: { en: 'Id of the person to be introduced to.', el: 'Το id του προσώπου στο οποίο ζητείται η σύσταση.' } },
+      { name: 'intermediaryId', type: 'string', required: true, description: { en: 'Id of the person who would introduce them, from get_intros.', el: 'Το id του ενδιαμέσου, από το get_intros.' } },
+      { name: 'cardId', type: 'string', required: true, description: { en: 'Id of the user\u2019s own open need card, from get_intros.', el: 'Το id της ανοιχτής κάρτας ανάγκης του χρήστη, από το get_intros.' } },
+      { name: 'note', type: 'string', required: true, description: { en: 'One or two sentences: why this introduction, and why now. No email, phone or promised returns.', el: 'Μία-δύο προτάσεις: γιατί αυτή η σύσταση και γιατί τώρα. Χωρίς email, τηλέφωνο ή υποσχέσεις αποδόσεων.' } },
+    ],
+    writes: true,
+    invalidates: ['intros'],
+    reversal: {
+      // `DELETE /intros/:id` (IntrosService.withdraw) is allowed only to the
+      // requester and only while the status is pending; the intermediary was
+      // notified when it arrived and that notice stays.
+      kind: 'partial',
+      explanation: {
+        en: 'You can withdraw it until the intermediary answers. They were already notified that you asked.',
+        el: 'Μπορείτε να την αποσύρετε μέχρι να απαντήσει ο ενδιάμεσος. Έχει ήδη ειδοποιηθεί ότι τη ζητήσατε.',
+      },
+    },
+    auditSubject: { param: 'targetId', entityType: 'user' },
+    confirmLabel: { en: 'Send to the intermediary', el: 'Αποστολή στον ενδιάμεσο' },
+  },
+  {
+    id: 'set_open_to',
+    kind: 'mutation',
+    label: { en: 'Set what you are open to', el: 'Ορισμός του «Ανοιχτός/ή σε»' },
+    description: {
+      en: 'Save the user\u2019s quiet "Open to" signal: kinds (comma-separated: cofounder, advisor, angel, mentor), who sees it (nobody = matching only, verified, everyone) and an optional short note. It lifts them in matching for people looking for exactly that, and lasts 90 days.',
+      el: 'Αποθηκεύει το ήσυχο σήμα «Ανοιχτός/ή σε» του χρήστη: είδη (χωρισμένα με κόμμα: cofounder, advisor, angel, mentor), ποιος το βλέπει (nobody = μόνο αντιστοιχίσεις, verified, everyone) και προαιρετική σύντομη σημείωση. Τον ανεβάζει στις αντιστοιχίσεις όσων ψάχνουν ακριβώς αυτό, για 90 ημέρες.',
+    },
+    params: [
+      { name: 'kinds', type: 'string', required: true, description: { en: 'Comma-separated: cofounder, advisor, angel, mentor.', el: 'Χωρισμένα με κόμμα: cofounder, advisor, angel, mentor.' } },
+      { name: 'visibility', type: 'string', required: false, enumValues: ['nobody', 'verified', 'everyone'], description: { en: 'Who sees it. Defaults to nobody (matching only).', el: 'Ποιος το βλέπει. Προεπιλογή: nobody (μόνο αντιστοιχίσεις).' } },
+      { name: 'note', type: 'string', required: false, description: { en: 'Optional short note, no contact details.', el: 'Προαιρετική σύντομη σημείωση, χωρίς στοιχεία επικοινωνίας.' } },
+    ],
+    writes: true,
+    invalidates: ['open_to'],
+    reversal: {
+      // `PUT /open-to/me` replaces the signal and restarts its 90 days;
+      // `DELETE /open-to/me` removes it. Undo puts back what was there: no
+      // signal is restored exactly, a previous one with a fresh 90 days.
+      kind: 'partial',
+      explanation: {
+        en: 'Undo puts back your previous choice. If you had one, its 90 days start again; nobody was notified either way.',
+        el: 'Η αναίρεση επαναφέρει την προηγούμενη επιλογή σας. Αν υπήρχε, οι 90 ημέρες της ξεκινούν από την αρχή· δεν ειδοποιείται κανείς.',
+      },
+    },
+    confirmLabel: { en: 'Save', el: 'Αποθήκευση' },
   },
   {
     id: 'canvas_command',

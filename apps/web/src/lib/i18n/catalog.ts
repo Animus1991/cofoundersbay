@@ -2,6 +2,17 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open introductions": "Άνοιγμα συστάσεων",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Αιτήματα για προώθηση, συστάσεις για εσάς και όσες ζητήσατε.",
+  "Waiting for you to forward:": "Περιμένουν να τα προωθήσετε:",
+  "Introductions for you:": "Συστάσεις για εσάς:",
+  "You asked for:": "Ζητήσατε:",
+  "via": "μέσω",
+  "You already know them directly; no introduction is needed.": "Τον/τη γνωρίζετε ήδη άμεσα· δεν χρειάζεται σύσταση.",
+  "Nobody you know on CoFounderBay knows them yet.": "Κανείς από όσους γνωρίζετε στο CoFounderBay δεν τον/τη γνωρίζει ακόμη.",
+  "Who could introduce you:": "Ποιος μπορεί να σας συστήσει:",
+  "Your open need cards:": "Οι ανοιχτές κάρτες ανάγκης σας:",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Καμία σύσταση ακόμη. Ζητήστε μία από το προφίλ κάποιου που θέλετε να γνωρίσετε.",
   "Open updates": "Άνοιγμα ενημερώσεων",
   "Updates from people you follow, and your own.": "Ενημερώσεις από όσους ακολουθείτε, και οι δικές σας.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Κανείς από όσους ακολουθείτε δεν έχει γράψει ακόμη ενημέρωση, και εσείς δεν έχετε στείλει καμία. Ακολουθήστε ιδρυτές από τα προφίλ τους.",
@@ -755,6 +766,17 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open introductions": "Abrir presentaciones",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Solicitudes para reenviar, presentaciones para ti y las que pediste.",
+  "Waiting for you to forward:": "Esperan que las reenvíes:",
+  "Introductions for you:": "Presentaciones para ti:",
+  "You asked for:": "Pediste:",
+  "via": "a través de",
+  "You already know them directly; no introduction is needed.": "Ya os conocéis directamente; no hace falta una presentación.",
+  "Nobody you know on CoFounderBay knows them yet.": "Nadie que conozcas en CoFounderBay le conoce todavía.",
+  "Who could introduce you:": "Quién podría presentarte:",
+  "Your open need cards:": "Tus tarjetas de necesidad abiertas:",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Aún no hay presentaciones. Pide una desde el perfil de alguien a quien quieras conocer.",
   "Open updates": "Abrir actualizaciones",
   "Updates from people you follow, and your own.": "Actualizaciones de las personas que sigues y las tuyas.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Nadie a quien sigues ha escrito una actualización todavía, y tú no has enviado ninguna. Sigue a fundadores desde sus perfiles.",
@@ -1243,6 +1265,17 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open introductions": "Ouvrir les mises en relation",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Demandes à transmettre, mises en relation pour vous et celles que vous avez demandées.",
+  "Waiting for you to forward:": "En attente de votre transmission :",
+  "Introductions for you:": "Mises en relation pour vous :",
+  "You asked for:": "Vous avez demandé :",
+  "via": "via",
+  "You already know them directly; no introduction is needed.": "Vous vous connaissez déjà directement ; aucune mise en relation n’est nécessaire.",
+  "Nobody you know on CoFounderBay knows them yet.": "Personne que vous connaissez sur CoFounderBay ne connaît encore cette personne.",
+  "Who could introduce you:": "Qui pourrait vous présenter :",
+  "Your open need cards:": "Vos fiches de besoin ouvertes :",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Pas encore de mise en relation. Demandez-en une depuis le profil de la personne que vous voulez rencontrer.",
   "Open updates": "Ouvrir les actualités",
   "Updates from people you follow, and your own.": "Les actualités des personnes que vous suivez, et les vôtres.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Personne parmi ceux que vous suivez n’a encore publié d’actualité, et vous n’en avez envoyé aucune. Suivez des fondateurs depuis leur profil.",
@@ -1711,6 +1744,17 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open introductions": "Vorstellungen öffnen",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Anfragen zum Weiterleiten, Vorstellungen für dich und die, um die du gebeten hast.",
+  "Waiting for you to forward:": "Warten darauf, dass du sie weiterleitest:",
+  "Introductions for you:": "Vorstellungen für dich:",
+  "You asked for:": "Du hast gebeten um:",
+  "via": "über",
+  "You already know them directly; no introduction is needed.": "Ihr kennt euch bereits direkt; eine Vorstellung ist nicht nötig.",
+  "Nobody you know on CoFounderBay knows them yet.": "Niemand, den du auf CoFounderBay kennst, kennt diese Person bisher.",
+  "Who could introduce you:": "Wer dich vorstellen könnte:",
+  "Your open need cards:": "Deine offenen Bedarfskarten:",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Noch keine Vorstellungen. Bitte um eine über das Profil der Person, die du kennenlernen möchtest.",
   "Open updates": "Updates öffnen",
   "Updates from people you follow, and your own.": "Updates von Personen, denen du folgst, und deine eigenen.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Niemand, dem du folgst, hat bisher ein Update geschrieben, und du hast noch keines gesendet. Folge Gründern über ihre Profile.",
@@ -2179,6 +2223,17 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open introductions": "Apri presentazioni",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Richieste da inoltrare, presentazioni per te e quelle che hai chiesto.",
+  "Waiting for you to forward:": "In attesa che tu le inoltri:",
+  "Introductions for you:": "Presentazioni per te:",
+  "You asked for:": "Hai chiesto:",
+  "via": "tramite",
+  "You already know them directly; no introduction is needed.": "Vi conoscete già direttamente; non serve una presentazione.",
+  "Nobody you know on CoFounderBay knows them yet.": "Nessuno che conosci su CoFounderBay conosce ancora questa persona.",
+  "Who could introduce you:": "Chi potrebbe presentarti:",
+  "Your open need cards:": "Le tue schede di bisogno aperte:",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Ancora nessuna presentazione. Chiedine una dal profilo di chi vuoi conoscere.",
   "Open updates": "Apri aggiornamenti",
   "Updates from people you follow, and your own.": "Aggiornamenti dalle persone che segui e i tuoi.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Nessuna delle persone che segui ha ancora scritto un aggiornamento e tu non ne hai inviati. Segui i fondatori dai loro profili.",
@@ -2637,6 +2692,17 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open introductions": "Abrir apresentações",
+  "Requests to forward, introductions for you, and the ones you asked for.": "Pedidos para encaminhar, apresentações para si e as que pediu.",
+  "Waiting for you to forward:": "À espera que as encaminhe:",
+  "Introductions for you:": "Apresentações para si:",
+  "You asked for:": "Pediu:",
+  "via": "através de",
+  "You already know them directly; no introduction is needed.": "Já se conhecem diretamente; não é precisa apresentação.",
+  "Nobody you know on CoFounderBay knows them yet.": "Ninguém que conhece no CoFounderBay conhece ainda esta pessoa.",
+  "Who could introduce you:": "Quem o poderia apresentar:",
+  "Your open need cards:": "Os seus cartões de necessidade abertos:",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "Ainda não há apresentações. Peça uma a partir do perfil de quem quer conhecer.",
   "Open updates": "Abrir atualizações",
   "Updates from people you follow, and your own.": "Atualizações das pessoas que segue e as suas.",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Ninguém que segue escreveu ainda uma atualização, e não enviou nenhuma. Siga fundadores a partir dos seus perfis.",
@@ -3092,6 +3158,17 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open introductions": "打开引荐",
+  "Requests to forward, introductions for you, and the ones you asked for.": "待你转交的请求、给你的引荐，以及你提出的请求。",
+  "Waiting for you to forward:": "等待你转交：",
+  "Introductions for you:": "给你的引荐：",
+  "You asked for:": "你提出的请求：",
+  "via": "经由",
+  "You already know them directly; no introduction is needed.": "你们已经直接认识，无需引荐。",
+  "Nobody you know on CoFounderBay knows them yet.": "你在 CoFounderBay 认识的人中还没有人认识对方。",
+  "Who could introduce you:": "谁可以为你引荐：",
+  "Your open need cards:": "你的开放需求卡：",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "还没有引荐。可以在你想认识的人的个人资料页上发起请求。",
   "Open updates": "打开动态",
   "Updates from people you follow, and your own.": "你关注的人发布的动态，以及你自己的。",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "你关注的人还没有发布动态，你也还没有发送过。可以在创始人的个人资料中关注他们。",
@@ -3567,6 +3644,17 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open introductions": "紹介を開く",
+  "Requests to forward, introductions for you, and the ones you asked for.": "転送を待つ依頼、あなた宛ての紹介、あなたが依頼したもの。",
+  "Waiting for you to forward:": "あなたの転送待ち：",
+  "Introductions for you:": "あなた宛ての紹介：",
+  "You asked for:": "あなたの依頼：",
+  "via": "経由",
+  "You already know them directly; no introduction is needed.": "すでに直接の知り合いです。紹介は不要です。",
+  "Nobody you know on CoFounderBay knows them yet.": "CoFounderBay であなたの知り合いの中に、まだこの人を知っている人はいません。",
+  "Who could introduce you:": "紹介してくれそうな人：",
+  "Your open need cards:": "あなたの公開中のニーズカード：",
+  "No introductions yet. Ask for one from the profile of someone you want to meet.": "まだ紹介はありません。会いたい人のプロフィールから依頼してください。",
   "Open updates": "アップデートを開く",
   "Updates from people you follow, and your own.": "フォローしている人のアップデートと、あなた自身のアップデート。",
   "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "フォローしている人はまだアップデートを書いておらず、あなたもまだ送っていません。プロフィールから創業者をフォローしてください。",
