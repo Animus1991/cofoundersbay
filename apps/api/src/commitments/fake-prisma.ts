@@ -147,6 +147,7 @@ export function createFakePrisma() {
         return thread ? withThreadIncludes(thread, args) : null;
       },
       findMany: async (args: Row = {}) => db.threads.filter((t) => matchThread(t, args.where)).map((t) => withThreadIncludes(t, args)),
+      count: async ({ where }: Row = {}) => db.threads.filter((t) => matchThread(t, where)).length,
       create: async ({ data }: Row) => {
         const now = new Date();
         const thread = {

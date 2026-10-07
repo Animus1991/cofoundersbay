@@ -12,6 +12,9 @@ import {
   deriveCardOutcome,
   describeContactKinds,
   hasPromiseClaims,
+  INTEREST_BUDGET,
+  INTEREST_BUDGET_COPY,
+  interestBudgetLeft,
   isCommitmentKind,
   LADDER_TERMS_METHODS,
   NEED_CARD_LIMITS,
@@ -612,6 +615,10 @@ export class CommitmentsService {
       where: { cardId_candidateId: { cardId, candidateId: viewer.id } },
     });
     if (existing) throw new ConflictException('You have already answered this card');
+    const waiting = await this.prisma.commitmentThread.count({ where: { candidateId: viewer.id, step: 'interest' } });
+    if (waiting >= INTEREST_BUDGET) {
+      throw refusal('interest_budget', INTEREST_BUDGET_COPY.en, { messageEl: INTEREST_BUDGET_COPY.el, budget: INTEREST_BUDGET, waiting });
+    }
     const thread = await this.prisma.commitmentThread.create({
       data: { cardId, candidateId: viewer.id, note: note || null, cardVersion: card.version },
     });
@@ -623,6 +630,12 @@ export class CommitmentsService {
       this.threadLink(cardId, thread.id),
     );
     return { thread: { id: thread.id, cardId, step: thread.step } };
+  }
+
+  /** How many of the viewer's answers are waiting on authors, against the budget. */
+  async interestBudget(viewer: Viewer) {
+    const waiting = await this.prisma.commitmentThread.count({ where: { candidateId: viewer.id, step: 'interest' } });
+    return { budget: INTEREST_BUDGET, waiting, left: interestBudgetLeft(waiting) };
   }
 
   /**

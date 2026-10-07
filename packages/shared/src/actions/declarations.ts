@@ -222,6 +222,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_scout',
+    kind: 'read',
+    label: { en: 'Read the co-founder scout', el: 'Ανάγνωση του ανιχνευτή συνιδρυτών' },
+    description: {
+      en: 'Read the signed-in founder\u2019s scout brief (role, skills, place, commitment, stage) and the people it currently proposes, with each one\u2019s fit score, reasons and proposal id. The scout proposes only; it never contacts anyone.',
+      el: 'Διαβάζει το σημείωμα του ανιχνευτή (ρόλος, δεξιότητες, τόπος, δέσμευση, στάδιο) και τα πρόσωπα που προτείνει τώρα, με βαθμό ταιριάσματος, λόγους και id πρότασης. Ο ανιχνευτής μόνο προτείνει· δεν επικοινωνεί ποτέ με κανέναν.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_mentorship_sessions',
     kind: 'read',
     label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
@@ -1983,6 +1994,58 @@ export const ACTION_DECLARATIONS = [
       },
     },
     confirmLabel: { en: 'Link', el: 'Σύνδεση' },
+  },
+  {
+    id: 'run_scout',
+    kind: 'mutation',
+    label: { en: 'Run the co-founder scout', el: 'Εκτέλεση του ανιχνευτή συνιδρυτών' },
+    description: {
+      en: 'Run the founder\u2019s scout now against their saved brief. It adds up to five proposals to their own list, with reasons and a draft note; it messages, connects or notifies nobody.',
+      el: 'Τρέχει τώρα τον ανιχνευτή με το αποθηκευμένο σημείωμα. Προσθέτει έως πέντε προτάσεις στη λίστα του ιδρυτή, με λόγους και πρόχειρο σημείωμα· δεν στέλνει μήνυμα, αίτημα ή ειδοποίηση σε κανέναν.',
+    },
+    params: [],
+    writes: true,
+    invalidates: ['scout'],
+    reversal: {
+      // ScoutService.run only creates proposals on the founder's own list
+      // (ScoutProposal rows); there is no route that deletes them, and a
+      // dismissal is a different state, so nothing restores "never run".
+      kind: 'none',
+      explanation: {
+        en: 'Running only adds proposals to your own list and contacts nobody. Dismiss any you do not want; dismissed people are not proposed again.',
+        el: 'Η εκτέλεση μόνο προσθέτει προτάσεις στη δική σας λίστα και δεν επικοινωνεί με κανέναν. Απορρίψτε όσες δεν θέλετε· όσοι απορρίπτονται δεν ξαναπροτείνονται.',
+      },
+    },
+    roles: ['founder', 'admin', 'super_admin'],
+    confirmLabel: { en: 'Run the scout', el: 'Εκτέλεση' },
+  },
+  {
+    id: 'draft_scout_brief',
+    kind: 'mutation',
+    label: { en: 'Draft a scout brief', el: 'Πρόχειρο σημείωμα ανιχνευτή' },
+    description: {
+      en: 'Open the co-founder scout with its brief filled in: the role, skills (comma-separated), place, commitment and stage the founder is looking for. Saves nothing; the founder reviews it and presses Save brief.',
+      el: 'Ανοίγει τον ανιχνευτή συνιδρυτών με το σημείωμα συμπληρωμένο: ρόλος, δεξιότητες (χωρισμένες με κόμμα), τόπος, δέσμευση και στάδιο. Δεν αποθηκεύει τίποτα· ο ιδρυτής το ελέγχει και πατά Αποθήκευση.',
+    },
+    params: [
+      { name: 'role', type: 'string', required: true, description: { en: 'The role sought, e.g. Technical co-founder.', el: 'Ο ρόλος, π.χ. Τεχνικός συνιδρυτής.' } },
+      { name: 'skills', type: 'string', required: false, description: { en: 'Comma-separated skills.', el: 'Δεξιότητες χωρισμένες με κόμμα.' } },
+      { name: 'place', type: 'string', required: false, description: { en: 'City or region.', el: 'Πόλη ή περιοχή.' } },
+      { name: 'commitment', type: 'string', required: false, enumValues: ['full_time', 'part_time', 'advisory', 'flexible'], description: { en: 'Time commitment.', el: 'Χρονική δέσμευση.' } },
+      { name: 'stage', type: 'string', required: false, enumValues: ['idea', 'validating', 'building', 'launched', 'scaling'], description: { en: 'Stage of the startup.', el: 'Στάδιο της startup.' } },
+      { name: 'note', type: 'string', required: false, description: { en: 'Anything else, briefly. No contact details.', el: 'Κάτι ακόμη, σύντομα. Χωρίς στοιχεία επικοινωνίας.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The scout opens with the brief filled in; you review it and save, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Ο ανιχνευτής ανοίγει με το σημείωμα συμπληρωμένο· το ελέγχετε και αποθηκεύετε, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled brief', el: 'Άνοιγμα συμπληρωμένου σημειώματος' },
   },
   {
     id: 'canvas_command',

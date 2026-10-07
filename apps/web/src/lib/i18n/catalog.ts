@@ -2,6 +2,12 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open the scout": "Άνοιγμα ανιχνευτή",
+  "Your brief and the people it proposes. It never sends anything.": "Το σημείωμά σας και τα πρόσωπα που προτείνει. Δεν στέλνει ποτέ τίποτα.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Δεν υπάρχει ακόμη σημείωμα. Πείτε μου ποιον ψάχνετε και θα ετοιμάσω ένα.",
+  "Brief:": "Σημείωμα:",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Καμία πρόταση αυτή τη στιγμή. Ο ανιχνευτής ξανακοιτά αύριο.",
+  "The scout proposes:": "Ο ανιχνευτής προτείνει:",
   "Open profile skills": "Άνοιγμα δεξιοτήτων προφίλ",
   "Skills with the work that shows them.": "Δεξιότητες με τη δουλειά που τις δείχνει.",
   "Add skills to your profile first; then link completed work to them.": "Προσθέστε πρώτα δεξιότητες στο προφίλ σας· μετά συνδέστε ολοκληρωμένη δουλειά.",
@@ -773,6 +779,12 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open the scout": "Abrir el explorador",
+  "Your brief and the people it proposes. It never sends anything.": "Tu brief y las personas que propone. Nunca envía nada.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Aún no hay brief. Dime a quién buscas y prepararé uno.",
+  "Brief:": "Brief:",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Ninguna propuesta por ahora. El explorador vuelve a mirar mañana.",
+  "The scout proposes:": "El explorador propone:",
   "Open profile skills": "Abrir habilidades del perfil",
   "Skills with the work that shows them.": "Habilidades con el trabajo que las demuestra.",
   "Add skills to your profile first; then link completed work to them.": "Añade primero habilidades a tu perfil; luego vincula trabajo terminado.",
@@ -1279,6 +1291,12 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open the scout": "Ouvrir l’éclaireur",
+  "Your brief and the people it proposes. It never sends anything.": "Votre brief et les personnes qu’il propose. Il n’envoie jamais rien.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Pas encore de brief. Dites-moi qui vous cherchez et j’en prépare un.",
+  "Brief:": "Brief :",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Aucune proposition pour l’instant. L’éclaireur regarde à nouveau demain.",
+  "The scout proposes:": "L’éclaireur propose :",
   "Open profile skills": "Ouvrir les compétences du profil",
   "Skills with the work that shows them.": "Des compétences avec le travail qui les montre.",
   "Add skills to your profile first; then link completed work to them.": "Ajoutez d’abord des compétences à votre profil, puis liez-y du travail terminé.",
@@ -1765,6 +1783,12 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open the scout": "Scout öffnen",
+  "Your brief and the people it proposes. It never sends anything.": "Dein Briefing und die Personen, die er vorschlägt. Er sendet nie etwas.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Noch kein Briefing. Sag mir, wen du suchst, und ich entwerfe eines.",
+  "Brief:": "Briefing:",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Gerade keine Vorschläge. Der Scout sucht morgen wieder.",
+  "The scout proposes:": "Der Scout schlägt vor:",
   "Open profile skills": "Profil-Fähigkeiten öffnen",
   "Skills with the work that shows them.": "Fähigkeiten mit der Arbeit, die sie zeigt.",
   "Add skills to your profile first; then link completed work to them.": "Füge zuerst Fähigkeiten zu deinem Profil hinzu und verknüpfe dann abgeschlossene Arbeit.",
@@ -2251,6 +2275,12 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open the scout": "Apri lo scout",
+  "Your brief and the people it proposes. It never sends anything.": "Il tuo brief e le persone che propone. Non invia mai nulla.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Ancora nessun brief. Dimmi chi cerchi e ne preparo uno.",
+  "Brief:": "Brief:",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Nessuna proposta al momento. Lo scout guarda di nuovo domani.",
+  "The scout proposes:": "Lo scout propone:",
   "Open profile skills": "Apri le competenze del profilo",
   "Skills with the work that shows them.": "Competenze con il lavoro che le dimostra.",
   "Add skills to your profile first; then link completed work to them.": "Aggiungi prima le competenze al profilo, poi collega il lavoro completato.",
@@ -2727,6 +2757,12 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open the scout": "Abrir o explorador",
+  "Your brief and the people it proposes. It never sends anything.": "O seu briefing e as pessoas que propõe. Nunca envia nada.",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "Ainda não há briefing. Diga-me quem procura e eu preparo um.",
+  "Brief:": "Briefing:",
+  "Nobody proposed right now. The scout looks again tomorrow.": "Nenhuma proposta neste momento. O explorador volta a procurar amanhã.",
+  "The scout proposes:": "O explorador propõe:",
   "Open profile skills": "Abrir competências do perfil",
   "Skills with the work that shows them.": "Competências com o trabalho que as demonstra.",
   "Add skills to your profile first; then link completed work to them.": "Adicione primeiro competências ao perfil; depois ligue trabalho concluído.",
@@ -3200,6 +3236,12 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open the scout": "打开联合创始人搜寻",
+  "Your brief and the people it proposes. It never sends anything.": "你的需求简述和它推荐的人。它从不发送任何内容。",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "还没有需求简述。告诉我你在找谁，我来起草一份。",
+  "Brief:": "简述：",
+  "Nobody proposed right now. The scout looks again tomorrow.": "目前没有推荐。搜寻明天会再看一次。",
+  "The scout proposes:": "搜寻推荐：",
   "Open profile skills": "打开个人资料技能",
   "Skills with the work that shows them.": "技能及证明它们的工作。",
   "Add skills to your profile first; then link completed work to them.": "请先在个人资料中添加技能，然后关联已完成的工作。",
@@ -3693,6 +3735,12 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open the scout": "スカウトを開く",
+  "Your brief and the people it proposes. It never sends anything.": "あなたの要件と、スカウトが提案する人。何も送信しません。",
+  "No brief yet. Tell me who you are looking for and I will draft one.": "まだ要件がありません。誰を探しているか教えてくだされば下書きします。",
+  "Brief:": "要件：",
+  "Nobody proposed right now. The scout looks again tomorrow.": "現在、提案はありません。スカウトは明日また探します。",
+  "The scout proposes:": "スカウトの提案：",
   "Open profile skills": "プロフィールのスキルを開く",
   "Skills with the work that shows them.": "スキルと、それを示す仕事。",
   "Add skills to your profile first; then link completed work to them.": "まずプロフィールにスキルを追加し、完了した仕事を紐づけてください。",

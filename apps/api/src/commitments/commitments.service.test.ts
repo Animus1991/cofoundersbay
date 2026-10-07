@@ -212,6 +212,19 @@ describe('CommitmentsService', () => {
       await expect(service.withdrawInterest(MARCUS, threadId)).rejects.toBeInstanceOf(ConflictException);
     });
 
+    it('keeps at most five answers waiting on authors, and frees a place when one is accepted', async () => {
+      const cards = [];
+      for (let i = 0; i < 6; i++) cards.push(await publish());
+      for (let i = 0; i < 5; i++) await service.expressInterest(MARCUS, cards[i].id, {});
+      expect(await service.interestBudget(MARCUS)).toEqual({ budget: 5, waiting: 5, left: 0 });
+      const refused = await service.expressInterest(MARCUS, cards[5].id, {}).catch((e) => e);
+      expect(refusalDetails(refused)).toMatchObject({ reason: 'interest_budget', budget: 5, waiting: 5, messageEl: expect.stringContaining('απαντήσεις') });
+      const [first] = await fake.prisma.commitmentThread.findMany({ where: { candidateId: MARCUS.id } });
+      await service.acceptInterest(ELENA, first.id);
+      expect((await service.interestBudget(MARCUS)).left).toBe(1);
+      await expect(service.expressInterest(MARCUS, cards[5].id, {})).resolves.toBeDefined();
+    });
+
     it('refuses one’s own card, a second answer and contact details in the note', async () => {
       const card = await publish();
       await expect(service.expressInterest(ELENA, card.id, {})).rejects.toBeInstanceOf(BadRequestException);

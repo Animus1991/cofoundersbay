@@ -43,6 +43,7 @@ export const CFB_GLYPH_NAMES = [
   'pact',
   'update',
   'intro',
+  'scout',
   'more',
   'default',
 ] as const;
@@ -88,6 +89,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   invite: 'people',
   connections: 'people',
   intros: 'intro',
+  scout: 'scout',
   shortlist: 'bookmark',
   endorsements: 'award',
   compare: 'compare',
@@ -509,6 +511,15 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <path d="M6.4 13.9l3.9-4.6M13.7 9.3l3.9 4.6" />
       <circle cx="12" cy="7.4" r="1" fill="currentColor" stroke="none" />
       <path d="M8.2 18.8h7.6" strokeDasharray="1.6 2" />
+    </>
+  ),
+  // A sweep across rings with one find on it: the scout reads, and proposes.
+  scout: (
+    <>
+      <circle cx="12" cy="12" r="8.2" />
+      <circle cx="12" cy="12" r="4.4" />
+      <path d="M12 12l5.6-5.6" />
+      <circle cx="15.3" cy="15.6" r="1.15" fill="currentColor" stroke="none" />
     </>
   ),
   more: (

@@ -20,6 +20,7 @@ import {
   Building2,
   Megaphone,
   Waypoints,
+  Radar,
   Target,
   Handshake,
   Award,
@@ -133,6 +134,7 @@ export const founderWorkSections: NavSection[] = [
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
       { href: '/commitments', label: 'Commitments', icon: Handshake },
+      { href: '/scout', label: 'Co-founder scout', icon: Radar },
     ],
   },
   {

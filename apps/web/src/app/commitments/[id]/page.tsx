@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, Linkedin, Link2, Link2Off, MoreHorizontal } from 'lucide-react';
-import { acceptsInterest, contactKinds, findPromiseClaims, NEED_CARD_LIMITS } from '@cofounderbay/shared';
+import { acceptsInterest, contactKinds, findPromiseClaims, INTEREST_BUDGET_COPY, NEED_CARD_LIMITS } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction } from '@/components/layout/RailParts';
@@ -31,6 +31,7 @@ import {
   closeCommitmentCard,
   commitmentRefusal,
   expressCommitmentInterest,
+  getInterestBudget,
   getCommitmentCard,
   listCommitmentThreads,
   reopenCommitmentCard,
@@ -59,6 +60,9 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
   const [note, setNote] = useState('');
   const [error, setError] = useState<{ en: string; el: string } | null>(null);
   const [sending, setSending] = useState(false);
+  // A small budget of answers waiting on authors keeps each one considered.
+  const budget = useQuery({ queryKey: qk('commitments', 'interest-budget'), queryFn: getInterestBudget });
+  const full = budget.data ? budget.data.left <= 0 : false;
   const blocked = contactKinds(note).length > 0 || findPromiseClaims(note).length > 0;
   return (
     <form
@@ -95,7 +99,20 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
       />
       <ContactWarning text={note} promises />
       {error ? <p role="alert" className="text-sm text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
-      <Button type="submit" disabled={blocked || sending}>
+      {budget.data ? (
+        <p className="text-xs text-muted-foreground">
+          {full ? (
+            <BilingualText en={INTEREST_BUDGET_COPY.en} el={INTEREST_BUDGET_COPY.el} wrap />
+          ) : (
+            <BilingualText
+              en={`${budget.data.waiting} of ${budget.data.budget} answers waiting on authors. One frees up when it is accepted or withdrawn.`}
+              el={`${budget.data.waiting} από ${budget.data.budget} απαντήσεις περιμένουν συντάκτη. Μία ελευθερώνεται όταν γίνει δεκτή ή αποσυρθεί.`}
+              wrap
+            />
+          )}
+        </p>
+      ) : null}
+      <Button type="submit" disabled={blocked || sending || full} title={full ? `${INTEREST_BUDGET_COPY.en} · ${INTEREST_BUDGET_COPY.el}` : undefined}>
         <BilingualText en={CMT.interest_send.en} el={CMT.interest_send.el} compact />
       </Button>
     </form>

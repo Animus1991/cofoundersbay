@@ -7651,3 +7651,44 @@ model SkillEvidence {
   @@unique([userId, skillName, kind, refId])
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Co-founder scout: proposals only, it never sends (packages/shared/src/scout)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ScoutBrief {
+  userId     String    @id
+  role       String
+  skills     String[]
+  place      String?
+  remoteOk   Boolean   @default(true)
+  commitment String?
+  stage      String?
+  note       String?
+  active     Boolean   @default(true)
+  lastRunAt  DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+enum ScoutProposalStatus {
+  proposed
+  saved
+  dismissed
+}
+
+model ScoutProposal {
+  id          String              @id @default(uuid())
+  userId      String
+  candidateId String
+  score       Int
+  // [{ en, el }] reasons the founder may read
+  reasons     Json
+  draftNote   String              @db.Text
+  status      ScoutProposalStatus @default(proposed)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // A person is proposed to a founder once; a dismissal is never undone by a run.
+  @@unique([userId, candidateId])
+  @@index([userId, status])
+}

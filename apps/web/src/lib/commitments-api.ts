@@ -467,3 +467,10 @@ export function commitmentRefusal(error: unknown): { en: string; el: string; kin
   const el = str(details.messageEl) || (kinds.length ? `Αφαιρέστε ${describeContactKinds(kinds).el} και δοκιμάστε ξανά.` : 'Κάτι πήγε στραβά.');
   return { en, el, kinds, reason: strOrNull(details.reason) };
 }
+
+/** How many of the reader's answers wait on authors, against the budget (shared INTEREST_BUDGET). */
+export async function getInterestBudget(): Promise<{ budget: number; waiting: number; left: number }> {
+  const r = (await apiRequest<{ budget?: unknown; waiting?: unknown; left?: unknown }>('/api/commitments/interest-budget')) ?? {};
+  const n = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+  return { budget: n(r.budget, 5), waiting: n(r.waiting, 0), left: n(r.left, 5) };
+}

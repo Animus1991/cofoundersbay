@@ -303,6 +303,24 @@ export function acceptsInterest(outcome: CommitmentOutcome): boolean {
   return outcome === 'open' || outcome === 'in_discussion';
 }
 
+/**
+ * How many answers one person may have waiting on authors at once (threads
+ * still at `interest`). LinkedIn's Easy Apply made a hundred applications
+ * as cheap as one, and authors drowned; a small budget keeps each answer
+ * considered. An answer stops counting the moment its author accepts it,
+ * or when it is withdrawn.
+ */
+export const INTEREST_BUDGET = 5;
+
+export function interestBudgetLeft(waiting: number): number {
+  return Math.max(0, INTEREST_BUDGET - Math.max(0, waiting));
+}
+
+export const INTEREST_BUDGET_COPY = {
+  en: `You have ${INTEREST_BUDGET} answers waiting for an author. Wait until one is accepted, or withdraw one, before answering another card.`,
+  el: `Έχετε ${INTEREST_BUDGET} απαντήσεις που περιμένουν συντάκτη. Περιμένετε να γίνει δεκτή μία ή αποσύρετε μία πριν απαντήσετε σε άλλη κάρτα.`,
+} as const;
+
 /** The ladder applies only where people bind themselves. */
 export function ladderApplies(kind: string): kind is CommitmentKind {
   return isCommitmentKind(kind);

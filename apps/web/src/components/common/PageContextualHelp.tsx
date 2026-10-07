@@ -723,6 +723,44 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  scout: {
+    en: (
+      <>
+        <p>
+          Write a <strong>brief</strong>: the role, the skills, where, how much time and at what stage. The scout reads
+          the member base against it and proposes up to five people, each with the reasons it chose them and a first note
+          you could send.
+        </p>
+        <p>
+          It <strong>proposes and never sends</strong>. Nobody it proposes is messaged, connected, followed or told. What
+          happens next is your own click: open the profile, save to your shortlist, ask for an introduction, or dismiss;
+          a dismissed person is not proposed again, and people you are already connected to are left out.
+        </p>
+        <p>
+          While the brief is active it runs once a day and tells only you when it finds someone new. An &quot;Open to
+          co-founding&quot; signal counts toward the ranking, and is named only where its owner lets you see it.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Γράψτε ένα <strong>σημείωμα</strong>: τον ρόλο, τις δεξιότητες, πού, πόσο χρόνο και σε ποιο στάδιο. Ο ανιχνευτής
+          διαβάζει τα μέλη με βάση αυτό και προτείνει έως πέντε πρόσωπα, το καθένα με τους λόγους που επιλέχθηκε και ένα
+          πρώτο σημείωμα που θα μπορούσατε να στείλετε.
+        </p>
+        <p>
+          <strong>Προτείνει και δεν στέλνει ποτέ</strong>. Κανείς από όσους προτείνει δεν λαμβάνει μήνυμα, αίτημα σύνδεσης ή
+          ειδοποίηση. Το επόμενο βήμα είναι δικό σας: άνοιγμα προφίλ, αποθήκευση στη λίστα, αίτημα σύστασης ή απόρριψη·
+          όποιος απορρίπτεται δεν ξαναπροτείνεται, και όσοι είναι ήδη συνδέσεις σας εξαιρούνται.
+        </p>
+        <p>
+          Όσο το σημείωμα είναι ενεργό, τρέχει μία φορά την ημέρα και ενημερώνει μόνο εσάς όταν βρει κάποιον νέο. Το σήμα
+          «Ανοιχτός/ή σε συνίδρυση» μετρά στην κατάταξη και αναφέρεται μόνο όπου ο κάτοχός του σας επιτρέπει να το δείτε.
+        </p>
+      </>
+    ),
+  },
   intros: {
     en: (
       <>

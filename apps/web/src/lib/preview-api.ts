@@ -11,6 +11,7 @@ import { previewUpdatesApi } from './demo/updates-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
+import { previewScoutApi } from './demo/scout-world';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2638,6 +2639,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // Skills tied to the demo's own completed work.
   const evidenceAnswer = previewSkillEvidenceApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (evidenceAnswer !== undefined) return evidenceAnswer;
+  // The co-founder scout: proposals only, from the demo world's people.
+  const scoutAnswer = previewScoutApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (scoutAnswer !== undefined) return scoutAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {

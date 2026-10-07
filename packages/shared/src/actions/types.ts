@@ -109,7 +109,8 @@ export type InvalidationTopic =
   | 'follows'
   | 'intros'
   | 'open_to'
-  | 'skill_evidence';
+  | 'skill_evidence'
+  | 'scout';
 
 export type ActionDeclaration = {
   id: string;

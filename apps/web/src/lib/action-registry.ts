@@ -71,6 +71,7 @@ import { followPerson, unfollowPerson } from '@/lib/updates-api';
 import { requestIntro, withdrawIntro } from '@/lib/intros-api';
 import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
 import { linkSkillEvidence, unlinkSkillEvidence } from '@/lib/skill-evidence-api';
+import { runScout } from '@/lib/scout-api';
 import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
@@ -620,6 +621,12 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
       null,
     ),
   draft_founder_update: async (payload) => openDraft('founder_update', payload, ['title', 'body', 'visibility'], null),
+  draft_scout_brief: async (payload) => openDraft('scout_brief', payload, ['role', 'skills', 'place', 'commitment', 'stage', 'note'], 'role'),
+  // Adds proposals to the founder's own list; contacts nobody (declared none).
+  run_scout: async () => {
+    await runScout();
+    return { ok: true, href: '/scout' };
+  },
 
   // ── Introductions and "Open to" ──────────────────────────────────────────
   // The intro id comes back so the undo withdraws exactly this request.

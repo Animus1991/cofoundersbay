@@ -144,6 +144,8 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
     tool: 'get_intros',
   },
+  // The co-founder scout («ανιχνευτής συνιδρυτών»).
+  { keys: ['co-founder scout', 'cofounder scout', 'my scout', 'the scout', 'ανιχνευτ'], tool: 'get_scout' },
   // Skills and the work that shows them.
   { keys: ['skill evidence', 'evidence for my skill*', 'backs my skill*', 'evidence behind my skill*', 'τεκμηρια', 'τεκμηριο'], tool: 'get_skill_evidence' },
   // Founder updates: named as the kind of update, or by who wrote them.
@@ -841,8 +843,11 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const needCardVerb = draftVerb || includesAny(message, ['write', 'create', 'make', 'new ', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε', 'νέα ', 'νεα ']);
   // A founder update, like a need card, is asked for with "write" as often as "draft".
   const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
+  const scoutNoun = includesAny(message, ['scout brief', 'brief for the scout', 'σημείωμα ανιχνευτ', 'σημειωμα ανιχνευτ']);
   const draftKind = needCardNoun && needCardVerb
     ? 'draft_need_card'
+    : scoutNoun && needCardVerb
+    ? 'draft_scout_brief'
     : updateNoun && needCardVerb
     ? 'draft_founder_update'
     : !draftVerb
@@ -867,6 +872,9 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
         : 'cofounder';
     add('draft_need_card', { kind, ...(quoted ? { title: quoted } : {}) });
   }
+  if (draftKind === 'draft_scout_brief') {
+    add('draft_scout_brief', { role: quoted || (includesAny(message, ['technical', 'τεχνικ']) ? 'Technical co-founder' : 'Co-founder') });
+  }
   if (draftKind === 'draft_founder_update') {
     const isPublic = includesAny(message, ['public', 'linkedin', 'δημόσι', 'δημοσι']);
     add('draft_founder_update', { ...(quoted ? { title: quoted } : {}), ...(isPublic ? { visibility: 'public' } : {}) });
@@ -882,6 +890,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ...(draftKind === 'draft_profile' ? ['get_profile'] : []),
     ...(draftKind === 'draft_need_card' ? ['get_commitments'] : []),
     ...(draftKind === 'draft_founder_update' ? ['get_founder_updates'] : []),
+    ...(draftKind === 'draft_scout_brief' ? ['get_scout'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),

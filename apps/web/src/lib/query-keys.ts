@@ -81,6 +81,7 @@ export const QUERY_ROOTS = [
   'research-boards',
   'roles',
   'saved-searches',
+  'scout',
   'search',
   'search-suggestions',
   'shortlist',

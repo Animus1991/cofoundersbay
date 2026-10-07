@@ -7,6 +7,9 @@ import {
   deriveCardOutcome,
   describeContactKinds,
   hasPromiseClaims,
+  INTEREST_BUDGET,
+  INTEREST_BUDGET_COPY,
+  interestBudgetLeft,
   isCommitmentKind,
   NEED_CARD_LIMITS,
   termsChanges,
@@ -632,6 +635,11 @@ export function previewCommitmentsApi(pathname: string, path: string, method: st
 function route(world: World, pathname: string, path: string, method: string, body: Record<string, unknown>, nowMs: number, nowIso: string): unknown {
   const parts = pathname.split('/').filter(Boolean).slice(2); // after api/commitments
 
+  if (parts[0] === 'interest-budget' && method === 'GET') {
+    const waiting = world.threads.filter((t) => t.candidateId === ME && t.step === 'interest').length;
+    return { budget: INTEREST_BUDGET, waiting, left: interestBudgetLeft(waiting) };
+  }
+
   // Quiet open cards expire on read, as on the server.
   for (const card of world.cards) {
     if (card.status === 'open' && card.expiresAt && Date.parse(card.expiresAt) < nowMs) {
@@ -791,6 +799,10 @@ function route(world: World, pathname: string, path: string, method: string, bod
       contactRefusal(note);
       if (hasPromiseClaims(note)) throw new DemoRefusal(400, 'Remove promised returns from the note.', { reason: 'promise', messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
       if (world.threads.some((t) => t.cardId === card.id && t.candidateId === ME)) throw new DemoRefusal(409, 'You have already answered this card');
+      const waiting = world.threads.filter((t) => t.candidateId === ME && t.step === 'interest').length;
+      if (waiting >= INTEREST_BUDGET) {
+        throw new DemoRefusal(400, INTEREST_BUDGET_COPY.en, { reason: 'interest_budget', messageEl: INTEREST_BUDGET_COPY.el, budget: INTEREST_BUDGET, waiting });
+      }
       const thread: Thread = {
         id: newId('thr'),
         cardId: card.id,

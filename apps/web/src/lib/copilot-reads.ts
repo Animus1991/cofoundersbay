@@ -76,6 +76,7 @@ import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
+import { getScout } from '@/lib/scout-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -678,6 +679,22 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       parts.push(`${t('Completed work you can link:')}\n${candidates.slice(0, LIMIT * 2).map((c) => `• ${say(SKILL_EVIDENCE_COPY[c.kind])}: ${c.label} (${c.kind}, id ${c.refId})`).join('\n')}`);
     }
     return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
+  async get_scout(_args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
+    const state = await getScout();
+    const actions = [openArea(t, '/scout', t('Open the scout'), t('Your brief and the people it proposes. It never sends anything.'))];
+    if (!state?.brief) return { section: t('No brief yet. Tell me who you are looking for and I will draft one.'), citations: [], actions };
+    const brief = state.brief;
+    const head = `${t('Brief:')} **${brief.role}**${brief.skills?.length ? ` — ${brief.skills.join(', ')}` : ''}${brief.place ? ` · ${brief.place}` : ''}`;
+    const proposed = asList<{ id: string; status: string; score: number; reasons: Array<{ en: string; el: string }>; person: { id: string; displayName: string } }>(state.proposals)
+      .filter((p) => p.status === 'proposed')
+      .slice(0, LIMIT);
+    if (!proposed.length) return { section: `${head}\n\n${t('Nobody proposed right now. The scout looks again tomorrow.')}`, citations: [], actions };
+    const citations: CopilotCitation[] = proposed.map((p) => ({ type: 'person', id: p.person?.id ?? '', label: p.person?.displayName ?? '', href: `/profiles/${encodeURIComponent(p.person?.id ?? '')}` }));
+    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map(say).join('; ')}`);
+    return { section: `${head}\n\n${t('The scout proposes:')}\n${lines.join('\n')}`, citations, actions };
   },
 
   async get_mentorship_sessions(_args, { t, locale }) {

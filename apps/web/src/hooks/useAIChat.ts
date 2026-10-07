@@ -118,6 +118,7 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   intros: [qk('intros'), qk('commitments')],
   open_to: [qk('open-to'), qk('matching'), qk('recommendations')],
   skill_evidence: [qk('skill-evidence')],
+  scout: [qk('scout')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

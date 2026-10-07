@@ -105,6 +105,13 @@ export class CommitmentsController {
 
   // ── The ladder ────────────────────────────────────────────────────────────
 
+  /** How many of the viewer's answers wait on authors, against the budget. */
+  @Get('interest-budget')
+  @UseGuards(JwtAuthGuard)
+  interestBudget(@CurrentUser() user: { id: string }) {
+    return this.commitments.interestBudget(user);
+  }
+
   @Get('threads')
   @UseGuards(JwtAuthGuard)
   threads(@CurrentUser() user: { id: string }, @Query('as') as?: string) {

@@ -43,6 +43,7 @@ import { FounderUpdatesModule } from './founder-updates/founder-updates.module';
 import { OpenToModule } from './open-to/open-to.module';
 import { IntrosModule } from './intros/intros.module';
 import { SkillEvidenceModule } from './skill-evidence/skill-evidence.module';
+import { ScoutModule } from './scout/scout.module';
 import { PublicModule } from './public/public.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
@@ -131,6 +132,7 @@ function findEnvFiles(): string[] {
     OpenToModule,
     IntrosModule,
     SkillEvidenceModule,
+    ScoutModule,
     PublicModule,
     LearningModule,
     MarketplaceModule,
