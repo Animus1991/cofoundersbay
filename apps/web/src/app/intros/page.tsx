@@ -51,7 +51,13 @@ function IntroCard({
   highlight: boolean;
   actions?: React.ReactNode;
 }) {
-  const status = INTRO_STATUS_COPY[intro.status];
+  // The shared copy names who it waits on; when that is the reader, say so.
+  const status =
+    intro.role === 'intermediary' && intro.status === 'pending'
+      ? { en: 'Waiting for your decision', el: 'Περιμένει την απόφασή σας' }
+      : intro.role === 'target' && intro.status === 'forwarded'
+        ? { en: 'Waiting for your answer', el: 'Περιμένει την απάντησή σας' }
+        : INTRO_STATUS_COPY[intro.status];
   const toReq = relationText(intro.toRequester);
   const toTgt = relationText(intro.toTarget);
   return (

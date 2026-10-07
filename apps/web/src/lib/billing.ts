@@ -1,3 +1,4 @@
+import { PROMOTED_COPY } from '@cofounderbay/shared';
 /**
  * billing.ts — Feature gating constants and plan-to-feature mapping.
  * This is the single source of truth for what each plan includes.
@@ -17,6 +18,7 @@ export type PlanFeatureKey =
   | 'whiteLabel'
   | 'apiAccess'
   | 'prioritySupport'
+  | 'priorityDiscovery'
   | 'dedicatedSupport'
   | 'customOnboarding'
   | 'programManagement'
@@ -41,6 +43,7 @@ export const PLAN_FEATURES: Record<string, PlanFeatureSet> = {
     whiteLabel: false,
     apiAccess: false,
     prioritySupport: false,
+    priorityDiscovery: false,
     dedicatedSupport: false,
     customOnboarding: false,
     programManagement: false,
@@ -61,6 +64,7 @@ export const PLAN_FEATURES: Record<string, PlanFeatureSet> = {
     whiteLabel: false,
     apiAccess: false,
     prioritySupport: true,
+    priorityDiscovery: true,
     dedicatedSupport: false,
     customOnboarding: false,
     programManagement: false,
@@ -81,6 +85,7 @@ export const PLAN_FEATURES: Record<string, PlanFeatureSet> = {
     whiteLabel: false,
     apiAccess: false,
     prioritySupport: true,
+    priorityDiscovery: true,
     dedicatedSupport: 'email',
     customOnboarding: false,
     programManagement: true,
@@ -101,6 +106,7 @@ export const PLAN_FEATURES: Record<string, PlanFeatureSet> = {
     whiteLabel: false,
     apiAccess: true,
     prioritySupport: true,
+    priorityDiscovery: true,
     dedicatedSupport: 'email',
     customOnboarding: false,
     programManagement: true,
@@ -121,6 +127,7 @@ export const PLAN_FEATURES: Record<string, PlanFeatureSet> = {
     whiteLabel: true,
     apiAccess: true,
     prioritySupport: true,
+    priorityDiscovery: true,
     dedicatedSupport: '24/7',
     customOnboarding: true,
     programManagement: true,
@@ -144,6 +151,7 @@ export const PLAN_FEATURE_LABELS: Record<PlanFeatureKey, { en: string; el: strin
   whiteLabel: { en: 'White label', el: 'Λευκή ετικέτα' },
   apiAccess: { en: 'API access', el: 'Πρόσβαση στο API' },
   prioritySupport: { en: 'Priority support', el: 'Υποστήριξη προτεραιότητας' },
+  priorityDiscovery: { en: PROMOTED_COPY.plan.en, el: PROMOTED_COPY.plan.el },
   dedicatedSupport: { en: 'Dedicated support', el: 'Αποκλειστική υποστήριξη' },
   customOnboarding: { en: 'Custom onboarding', el: 'Εξατομικευμένη ένταξη' },
   programManagement: { en: 'Programme management', el: 'Διαχείριση προγραμμάτων' },
@@ -170,7 +178,7 @@ export const PLAN_HIGHLIGHTS: Record<'free' | 'pro' | 'team' | 'enterprise', { e
     { en: 'Unlimited messages', el: 'Απεριόριστα μηνύματα' },
     { en: 'Unlimited connections', el: 'Απεριόριστες συνδέσεις' },
     { en: 'Advanced matching filters', el: 'Προηγμένα φίλτρα αντιστοίχισης' },
-    { en: 'Priority in discovery', el: 'Προτεραιότητα στην αναζήτηση' },
+    { en: PROMOTED_COPY.plan.en, el: PROMOTED_COPY.plan.el },
     { en: 'Mentor booking', el: 'Κρατήσεις μεντόρων' },
     { en: 'Basic analytics', el: 'Βασικά στατιστικά' },
   ],

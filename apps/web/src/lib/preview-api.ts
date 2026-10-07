@@ -2817,6 +2817,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
 
     return {
       hits: directoryHits,
+      // The demo's one paid-plan member, so the labelled slot can be seen.
+      promotedUserIds: directoryHits.some((h) => h.userId === 'user-sarah') ? ['user-sarah'] : [],
       results,
       // Profile search counts profiles: /members said "8 members found" over
       // four cards, because this counted every result type (people, jobs,

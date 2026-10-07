@@ -1,6 +1,7 @@
 'use client';
 
 
+import { PROMOTED_COPY, splitPromoted } from '@cofounderbay/shared';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
@@ -107,6 +108,7 @@ export default function DiscoverPage() {
 
   const [filters, setFilters] = useState<SearchFiltersValues>(defaultFilters);
   const [hits, setHits] = useState<SearchHit[]>([]);
+  const [promotedIds, setPromotedIds] = useState<string[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -193,9 +195,11 @@ export default function DiscoverPage() {
       // read below goes through `hits.length`, so an undefined here throws
       // inside render and trips the route error boundary.
       setHits(Array.isArray(res?.hits) ? res.hits : []);
+      setPromotedIds(Array.isArray(res?.promotedUserIds) ? res.promotedUserIds.filter((id): id is string => typeof id === 'string') : []);
       setTotal(typeof res?.total === 'number' ? res.total : 0);
     } catch {
       setHits([]);
+      setPromotedIds([]);
       setTotal(0);
       showError('Search failed', 'Please try again');
     } finally {
@@ -301,18 +305,20 @@ export default function DiscoverPage() {
   };
 
   // Apply role filter to hits
-  const filteredHits = roleFilter === 'all' ? hits : hits.filter((h) =>
+  const roleHits = roleFilter === 'all' ? hits : hits.filter((h) =>
     h.role?.toLowerCase().includes(roleFilter.replace('_', ' ')) ||
     h.role?.toLowerCase() === roleFilter
   );
+  // Paid placement sits in its own labelled slot; the organic list keeps its order.
+  const { promoted: promotedHits, organic: filteredHits } = splitPromoted(roleHits, activeTab === 'search' ? promotedIds : []);
 
-  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${filteredHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
+  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${roleHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
 
 
   // Offered to the assistant: the tab, role, sort, layout and reset, and
   // each result's Connect (which opens the same request dialog), Message
   // and Save - over the people on the tab that is showing.
-  const shown = activeTab === 'search' ? filteredHits : suggestions;
+  const shown = activeTab === 'search' ? roleHits : suggestions;
   const byName = (list: SearchHit[]) => rowOptions(list, (h) => h.id, (h) => h.displayName);
   const hitById = (id?: string) => shown.find((h) => h.id === id);
   usePageList([
@@ -518,7 +524,7 @@ export default function DiscoverPage() {
             </div>
           )}
 
-          {!loading && filteredHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
+          {!loading && roleHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <p className="text-sm text-muted-foreground">No {roleFilter.replace('_', ' ')}s found. Try clearing the role filter.</p>
               <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline">Show all roles</button>
@@ -538,6 +544,34 @@ export default function DiscoverPage() {
                 </Button>
               }
             />
+          )}
+
+          {!loading && promotedHits.length > 0 && (
+            <section aria-label="Promoted · Προώθηση" className="space-y-3 rounded-xl border border-border p-3 sm:p-4">
+              <div className="flex flex-wrap items-baseline gap-2">
+                <span className="rounded-md border border-border bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
+                  <BilingualText en={PROMOTED_COPY.label.en} el={PROMOTED_COPY.label.el} compact />
+                </span>
+                <span className="min-w-0 flex-1 text-xs text-muted-foreground">
+                  <BilingualText en={PROMOTED_COPY.disclosure.en} el={PROMOTED_COPY.disclosure.el} wrap />
+                </span>
+              </div>
+              <div className={cn('grid grid-cols-1 gap-4', viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1')}>
+                {promotedHits.map((hit) => {
+                  const profile = hitToProfile(hit);
+                  return (
+                    <ProfileCard
+                      key={hit.id}
+                      profile={profile}
+                      variant={viewMode === 'list' ? 'compact' : 'default'}
+                      onConnect={() => handleConnect(profile)}
+                      onMessage={() => handleMessage(profile)}
+                      onBookmark={() => handleBookmark(profile)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
           )}
 
           {!loading && filteredHits.length > 0 && (

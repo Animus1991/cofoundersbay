@@ -656,7 +656,7 @@ export async function searchProfiles(params: {
   sortBy?: 'relevance' | 'recent' | 'active';
   limit?: number;
   offset?: number;
-}): Promise<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }> {
+}): Promise<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats; promotedUserIds?: string[] }> {
   const sp = new URLSearchParams();
   if (params.q) sp.set('q', params.q);
   if (params.roles?.length) sp.set('roles', params.roles.join(','));
@@ -670,7 +670,7 @@ export async function searchProfiles(params: {
   if (params.sortBy) sp.set('sortBy', params.sortBy);
   if (params.limit != null) sp.set('limit', String(params.limit));
   if (params.offset != null) sp.set('offset', String(params.offset));
-  return apiRequest<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats }>(`/api/search/profiles?${sp}`);
+  return apiRequest<{ hits: SearchHit[]; total: number; stats?: ProfileSearchStats; promotedUserIds?: string[] }>(`/api/search/profiles?${sp}`);
 }
 
 export async function getRecommendations(params?: { role?: string; limit?: number }): Promise<{ suggestions: SearchHit[] }> {

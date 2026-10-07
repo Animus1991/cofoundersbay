@@ -290,7 +290,7 @@ function ScoutContent() {
                 <select id="scout-commitment" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={draft.commitment} onChange={set('commitment')}>
                   <option value="">—</option>
                   {CARD_COMMITMENTS.map((c) => (
-                    <option key={c} value={c}>{primary === 'el' ? (statusEl(c) ?? c) : c.replace(/_/g, ' ')}</option>
+                    <option key={c} value={c}>{primary === 'el' ? (statusEl(c) ?? c) : `${c.charAt(0).toUpperCase()}${c.slice(1).replace(/_/g, ' ')}`}</option>
                   ))}
                 </select>
               </div>
@@ -299,7 +299,7 @@ function ScoutContent() {
                 <select id="scout-stage" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={draft.stage} onChange={set('stage')}>
                   <option value="">—</option>
                   {CARD_STAGES.map((s) => (
-                    <option key={s} value={s}>{primary === 'el' ? (statusEl(s) ?? s) : s}</option>
+                    <option key={s} value={s}>{primary === 'el' ? (statusEl(s) ?? s) : `${s.charAt(0).toUpperCase()}${s.slice(1)}`}</option>
                   ))}
                 </select>
               </div>

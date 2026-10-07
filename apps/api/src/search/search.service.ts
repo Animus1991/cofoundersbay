@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Role } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-import { computeMatchScore, type ProfileSnapshot } from '@cofounderbay/shared';
+import { computeMatchScore, planPromotes, PROMOTED_SLOTS, type ProfileSnapshot } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { MeilisearchService } from './meilisearch.service';
 
@@ -26,14 +26,39 @@ export class SearchService {
     limit?: number;
     offset?: number;
   }) {
+    let result: { hits: unknown[]; total: number; stats?: unknown } | null = null;
     if (this.meili.isEnabled()) {
       try {
-        return await this.meili.searchProfiles(params);
+        result = await this.meili.searchProfiles(params);
       } catch {
         // Meilisearch unreachable — fall through to Prisma
       }
     }
-    return this.searchProfilesFallback(params);
+    if (!result) result = await this.searchProfilesFallback(params);
+    // The labelled "Promoted" slot is offered on the first page only, from
+    // people already in it; the hits themselves are returned untouched.
+    const promotedUserIds = params.offset ? [] : await this.promotedAmong((result?.hits ?? []) as Array<{ userId?: string }>);
+    return { ...result, promotedUserIds };
+  }
+
+  /**
+   * Which of these people hold a plan that buys the promoted slot
+   * (`planPromotes`), at most `PROMOTED_SLOTS`, in result order. A lookup
+   * that fails promotes nobody: the slot is never worth an error.
+   */
+  async promotedAmong(hits: ReadonlyArray<{ userId?: string }>): Promise<string[]> {
+    const ids = hits.map((h) => h.userId).filter((id): id is string => typeof id === 'string' && !!id);
+    if (!ids.length) return [];
+    try {
+      const subs = await this.prisma.subscription.findMany({
+        where: { userId: { in: ids }, status: { in: ['active', 'trialing'] } },
+        select: { userId: true, plan: { select: { name: true, features: true } } },
+      });
+      const paying = new Set(subs.filter((s) => planPromotes(s.plan)).map((s) => s.userId));
+      return ids.filter((id) => paying.has(id)).slice(0, PROMOTED_SLOTS);
+    } catch {
+      return [];
+    }
   }
 
   private async searchProfilesFallback(params: {

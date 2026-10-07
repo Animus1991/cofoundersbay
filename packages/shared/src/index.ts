@@ -12,3 +12,4 @@ export * from './open-to';
 export * from './intros';
 export * from './evidence';
 export * from './scout';
+export * from './promotion';

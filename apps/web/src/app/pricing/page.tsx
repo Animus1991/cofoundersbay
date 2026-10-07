@@ -50,7 +50,8 @@ const FEATURES: PlanFeature[] = [
   { name: 'Connection Requests', nameEl: 'Αιτήματα σύνδεσης', free: '10/month', pro: 'Unlimited', team: 'Unlimited', enterprise: 'Unlimited' },
   { name: 'Event Access', nameEl: 'Πρόσβαση σε εκδηλώσεις', free: true, pro: true, team: true, enterprise: true },
   { name: 'Advanced Matching Filters', nameEl: 'Προηγμένα φίλτρα αντιστοίχισης', free: false, pro: true, team: true, enterprise: true },
-  { name: 'Priority in Discovery', nameEl: 'Προτεραιότητα στην αναζήτηση', free: false, pro: true, team: true, enterprise: true },
+  // Sold before it existed; it is now a labelled "Promoted" slot (shared promotion rules).
+  { name: 'Promoted placement in discovery (labelled “Promoted”)', nameEl: 'Προωθημένη θέση στην αναζήτηση (με την ένδειξη «Προώθηση»)', free: false, pro: true, team: true, enterprise: true },
   { name: 'Mentor Booking', nameEl: 'Κρατήσεις μεντόρων', free: false, pro: true, team: true, enterprise: true },
   { name: 'Analytics Dashboard', nameEl: 'Πίνακας στατιστικών', free: false, pro: 'Basic', team: 'Advanced', enterprise: 'Custom' },
   { name: 'Team Members', nameEl: 'Μέλη ομάδας', free: false, pro: false, team: 'Up to 25', enterprise: 'Unlimited' },
