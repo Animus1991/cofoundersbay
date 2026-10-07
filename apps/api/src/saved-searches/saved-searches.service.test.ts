@@ -41,7 +41,7 @@ function cardTable(cards: Card[]) {
   return {
     findMany: vi.fn(async ({ where }: { where: Row }) =>
       cards
-        .filter((c) => c.status === where.status && c.ownerId !== where.ownerId.not)
+        .filter((c) => where.status.in.includes(c.status) && c.ownerId !== where.ownerId.not)
         .filter((c) => !where.kind || where.kind.in.includes(c.kind))
         .filter((c) => !where.isRemote || c.isRemote)
         .filter((c) => !c.expiresAt || c.expiresAt > new Date('2026-10-07T00:00:00Z'))
@@ -162,7 +162,7 @@ describe('SavedSearchesService', () => {
     // What the query asks the database for: open, not mine, not expired, and only board fields back.
     const { prisma } = (service as unknown as { prisma: { commitmentCard: { findMany: ReturnType<typeof vi.fn> } } });
     const args = prisma.commitmentCard.findMany.mock.calls[0][0];
-    expect(args.where).toMatchObject({ status: 'open', ownerId: { not: 'me' }, kind: { in: ['cofounder'] } });
+    expect(args.where).toMatchObject({ status: { in: ['open', 'in_discussion'] }, ownerId: { not: 'me' }, kind: { in: ['cofounder'] } });
     expect(args.where.AND[0]).toEqual({ OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] });
     expect(Object.keys(args.select).sort()).toEqual(['id', 'isRemote', 'kind', 'place', 'stage', 'title']);
 

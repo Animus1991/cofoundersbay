@@ -174,7 +174,8 @@ export function previewSavedSearchesApi(pathname: string, method: string, body: 
 }
 
 /**
- * Other people's open need cards that fit a need-card search, from the demo
+ * Other people's need cards that still take interest (open or in discussion)
+ * and fit a need-card search, from the demo
  * commitments world: what the API's alert would count. Never the demo
  * founder's own cards.
  */
@@ -182,7 +183,7 @@ function matchingCards(search: DemoSavedSearch, now: number): Array<{ id: string
   const board = previewCommitmentsApi('/api/commitments/cards', '/api/commitments/cards', 'GET', {}, now) as { cards?: Array<Record<string, unknown>> } | undefined;
   const words = search.query.toLowerCase().split(/\s+/).filter(Boolean);
   return (board?.cards ?? [])
-    .filter((c) => c.isMine !== true && c.outcome === 'open')
+    .filter((c) => c.isMine !== true && (c.outcome === 'open' || c.outcome === 'in_discussion'))
     .filter((c) => !search.filters.kinds?.length || search.filters.kinds.includes(String(c.kind)))
     .filter((c) => !search.filters.remote?.length || c.isRemote === true)
     .filter((c) => words.every((w) => `${c.title} ${c.exists} ${c.goal} ${c.missing}`.toLowerCase().includes(w)))

@@ -9,6 +9,7 @@ import {
   type ScoutReason,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
+import { recordDemoRefusal } from './transparency-world';
 
 /**
  * The co-founder scout in the preview demo, with the API's rules.
@@ -116,6 +117,8 @@ export function previewScoutApi(pathname: string, method: string, body: Record<s
   if (parts[0] === 'brief' && method === 'PUT') {
     const read = readScoutBrief(body);
     if (!read.ok) {
+      if (read.problems.includes('contact')) recordDemoRefusal('contact_refused', 'scout_brief');
+      if (read.problems.includes('promise')) recordDemoRefusal('promise_refused', 'scout_brief');
       throw new DemoRefusal(400, read.problems.map((p) => SCOUT_PROBLEM_COPY[p].en).join(' '), {
         reason: 'scout_brief_invalid',
         problems: read.problems,

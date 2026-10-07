@@ -18,6 +18,7 @@ import {
 import { DemoRefusal } from './demo-refusal';
 import { previewCommitmentsApi } from './commitments-world';
 import { demoRoleCleared } from './verification-world';
+import { recordDemoRefusal } from './transparency-world';
 
 /**
  * Warm introductions in the preview demo, with the API's rules.
@@ -230,6 +231,8 @@ function myCards(now: number): DemoCard[] {
 }
 
 function refuse(problems: IntroProblem[]): never {
+  if (problems.includes('contact')) recordDemoRefusal('contact_refused', 'intro');
+  if (problems.includes('promise')) recordDemoRefusal('promise_refused', 'intro');
   throw new DemoRefusal(400, problems.map((p) => INTRO_PROBLEM_COPY[p].en).join(' '), {
     reason: 'intro_invalid',
     problems,

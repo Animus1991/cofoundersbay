@@ -82,7 +82,11 @@ We process your data based on legitimate interests, contractual necessity, legal
 
 **Verification and LinkedIn:**
 • Work-email codes are stored hashed and expire after 15 minutes. "Verified on LinkedIn" stores only which categories LinkedIn verified (identity, workplace), never documents.
+• Accounts whose role is investor or organisation need a work-email or LinkedIn workplace verification, or a role checked by the platform team, before they accept an introduction or answer an investor-introduction card.
 • A LinkedIn data export you choose to import is read in your browser. If you use LinkedIn's portability API instead, the selected fields wait on our server for at most 15 minutes and are deleted when your profile form reads them. Nothing reaches your profile until you press Save.
+
+**Safety rules and the transparency report:**
+• Before two people have both confirmed, messages, notes, cards and briefs that contain contact details or promised returns are refused, not rewritten. Each refusal is recorded as its kind, where it happened and when, with no account and no text, and the counts are published per half year at /transparency together with the number of reports received and decided.
 
 You can review your assistant preferences in Settings → AI preferences.`,
   },

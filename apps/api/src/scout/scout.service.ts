@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional, Inject } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import {
 
@@ -18,6 +18,7 @@ import {
 } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TransparencyService } from '../transparency/transparency.service';
 
 /**
  * The co-founder scout (rules in `@cofounderbay/shared` scout).
@@ -48,6 +49,7 @@ export class ScoutService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    @Optional() @Inject(TransparencyService) private readonly transparency?: Pick<TransparencyService, 'record'>,
   ) {}
 
   async get(userId: string) {
@@ -89,6 +91,8 @@ export class ScoutService {
   async setBrief(userId: string, body: unknown) {
     const read = readScoutBrief(body);
     if (!read.ok) {
+      if (read.problems.includes('contact')) this.transparency?.record('contact_refused', 'scout_brief');
+      if (read.problems.includes('promise')) this.transparency?.record('promise_refused', 'scout_brief');
       throw new BadRequestException({
         success: false,
         error: {

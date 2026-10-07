@@ -3,6 +3,7 @@
   "/pricing": "public marketing page, read before sign-in",
   "/privacy": "legal text, read-only",
   "/terms": "legal text, read-only",
+  "/transparency": "public read-only report; the period buttons only change which half year is shown",
   "/api-status": "a public health readout of the API; nothing to operate",
   "/unauthorized": "an access-denied notice with a link back",
   "/login": "sign-in: the person types their own credentials; the assistant never fills a password",

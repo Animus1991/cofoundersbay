@@ -906,6 +906,19 @@ model Notification {
   @@index([userId, readAt])
 }
 
+/// One refusal by a safety rule (contact details, promised returns), for the
+/// half-yearly transparency report. Deliberately no user and no text: the
+/// kind, where it happened and when. Schema-only like the other new models
+/// (`prisma db push`).
+model TransparencyEvent {
+  id        String   @id @default(uuid())
+  kind      String
+  surface   String
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
 model Report {
   id             String       @id @default(uuid())
   type           ReportType

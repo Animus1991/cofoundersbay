@@ -458,6 +458,7 @@ const LANDING_EL: Record<string, string> = {
   "Blog": "Blog",
   "Contact": "Επικοινωνία",
   "Privacy Policy": "Πολιτική απορρήτου",
+  "Transparency report": "Αναφορά διαφάνειας",
   "Terms of Service": "Όροι χρήσης",
 };
 
@@ -964,6 +965,7 @@ export function LandingHome() {
                   { href: '/blog',    label: 'Blog' },
                   { href: '/contact', label: 'Contact' },
                   { href: '/privacy', label: 'Privacy Policy' },
+                  { href: '/transparency', label: 'Transparency report' },
                   { href: '/terms',   label: 'Terms of Service' },
                 ].map(({ href, label }) => (
                   <li key={label}>

@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import {
   INTRO_LIMITS,
   INTRO_PROBLEM_COPY,
@@ -22,6 +22,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CommitmentsService } from '../commitments/commitments.service';
 import { VerificationService } from '../verification/verification.service';
+import { TransparencyService } from '../transparency/transparency.service';
 
 /**
  * Warm introductions (rules in `@cofounderbay/shared` intros).
@@ -86,7 +87,13 @@ export class IntrosService {
     private readonly notifications: NotificationsService,
     @Inject(CommitmentsService) private readonly commitments: Pick<CommitmentsService, 'expressInterest'>,
     @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'publicMethods' | 'roleCleared'>,
+    @Optional() @Inject(TransparencyService) private readonly transparency?: Pick<TransparencyService, 'record'>,
   ) {}
+
+  private countIntroRefusal(problems: readonly string[]) {
+    if (problems.includes('contact')) this.transparency?.record('contact_refused', 'intro');
+    if (problems.includes('promise')) this.transparency?.record('promise_refused', 'intro');
+  }
 
   /** The edges that touch either person: enough to find everyone who knows both. */
   async graphAround(a: string, b: string): Promise<IntroGraph> {
@@ -196,7 +203,10 @@ export class IntrosService {
 
   async request(requesterId: string, body: unknown) {
     const read = readIntroRequest(body, requesterId);
-    if (!read.ok) throw introRefusal(read.problems);
+    if (!read.ok) {
+      this.countIntroRefusal(read.problems);
+      throw introRefusal(read.problems);
+    }
     const { intermediaryId, targetId, cardId, note } = read.value;
 
     const card = await this.prisma.commitmentCard.findUnique({ where: { id: cardId }, select: { id: true, ownerId: true, title: true, status: true } });
@@ -272,7 +282,10 @@ export class IntrosService {
 
   async forward(intermediaryId: string, id: string, body: unknown) {
     const note = readForwardNote(body);
-    if (!note.ok) throw introRefusal(note.problems);
+    if (!note.ok) {
+      this.countIntroRefusal(note.problems);
+      throw introRefusal(note.problems);
+    }
     const { row } = await this.move(intermediaryId, id, 'forward', { forwardNote: note.value });
     const names = await this.people([row.requesterId, intermediaryId]);
     await this.notify(

@@ -306,7 +306,7 @@ export class SavedSearchesService {
 
   /**
    * Other people's need cards that still take interest and match the
-   * search: open, not expired, not the owner's own. Only what the board
+   * search: open or in discussion, not expired, not the owner's own. Only what the board
    * itself shows any member is returned (title, kind, place, stage).
    */
   private async findCards(row: SavedSearchRow, now: Date) {
@@ -319,7 +319,8 @@ export class SavedSearchesService {
     }
     const rows = (await this.prisma.commitmentCard.findMany({
       where: {
-        status: 'open',
+        // Cards that still take interest (`acceptsInterest`): open or in discussion.
+        status: { in: ['open', 'in_discussion'] },
         ownerId: { not: row.userId },
         ...(f.kinds?.length ? { kind: { in: f.kinds } } : {}),
         ...(f.stage?.length ? { stage: { in: f.stage } } : {}),
