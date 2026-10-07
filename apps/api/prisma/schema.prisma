@@ -6285,6 +6285,15 @@ model WorkEmailChallenge {
   createdAt DateTime @default(now())
 }
 
+/// LinkedIn data fetched through the DMA portability API, waiting for its
+/// owner to open the profile form. Only allowlisted columns; read once; 15 minutes.
+model ProfileImportDraft {
+  userId    String   @id
+  records   Json
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model FeedComment {
   id          String   @id @default(uuid())
   postId      String

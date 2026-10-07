@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac, randomInt, timingSafeEqual } from 'crypto';
+import { createHash, randomInt, timingSafeEqual } from 'crypto';
+import { readState, signState } from '../common/signed-state';
 import {
   maskEmail,
   meetsLadderPolicy,
@@ -164,22 +165,11 @@ export class VerificationService {
 
   /** A signed, short-lived `state` binding the LinkedIn round trip to this person. */
   signState(userId: string, now = Date.now()): string {
-    const payload = Buffer.from(JSON.stringify({ u: userId, e: now + 10 * 60_000 })).toString('base64url');
-    const sig = createHmac('sha256', this.stateSecret()).update(payload).digest('base64url');
-    return `${payload}.${sig}`;
+    return signState(this.stateSecret(), userId, 10 * 60_000, now);
   }
 
   readState(state: string, now = Date.now()): string | null {
-    const [payload, sig] = state.split('.');
-    if (!payload || !sig) return null;
-    const expected = createHmac('sha256', this.stateSecret()).update(payload).digest('base64url');
-    if (!sameHash(sig, expected)) return null;
-    try {
-      const { u, e } = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { u?: string; e?: number };
-      return typeof u === 'string' && typeof e === 'number' && e > now ? u : null;
-    } catch {
-      return null;
-    }
+    return readState(this.stateSecret(), state, now);
   }
 
   private callbackUrl(): string {

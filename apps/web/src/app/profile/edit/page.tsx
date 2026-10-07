@@ -2,6 +2,9 @@
 
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
+import { LinkedInImportDialog, type ImportableProfile } from '@/components/profile/LinkedInImportDialog';
+import { takeProfileImportDraft } from '@/lib/linkedin-import/api';
+import { fromLinkedInRecords, type LinkedInImport } from '@cofounderbay/shared';
 
 import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -427,6 +430,26 @@ export default function ProfileEditPage() {
     });
   }, formInitialized);
 
+  // Import from LinkedIn: the dialog fills the form; Save is still the person's.
+  const [importOpen, setImportOpen] = useState(false);
+  const [importInitial, setImportInitial] = useState<LinkedInImport | null>(null);
+  const [importedNotice, setImportedNotice] = useState(false);
+  useEffect(() => {
+    // Back from LinkedIn's DMA consent: ?import=linkedin | failed
+    const result = new URLSearchParams(window.location.search).get('import');
+    if (result === 'failed') showError('The LinkedIn import did not complete');
+    if (result !== 'linkedin') return;
+    void takeProfileImportDraft().then(({ records }) => {
+      if (!records) return;
+      setImportInitial(fromLinkedInRecords(records));
+      setImportOpen(true);
+    }, () => showError('The LinkedIn import did not complete'));
+  }, [showError]);
+  const applyImport = (fields: Partial<ImportableProfile>) => {
+    setForm((prev) => ({ ...prev, ...fields }));
+    setImportedNotice(true);
+  };
+
   // Update form field
   const updateField = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -580,6 +603,22 @@ export default function ProfileEditPage() {
         {/* Main content */}
         <div className="space-y-6">
           <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
+          {importedNotice ? (
+            <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="status">
+              <BilingualText en="Filled from LinkedIn. Review the fields, then press Save; nothing is stored until you do." el="Συμπληρώθηκε από το LinkedIn. Ελέγξτε τα πεδία και πατήστε Αποθήκευση· τίποτα δεν αποθηκεύεται πριν το κάνετε." wrap />
+              <Button type="button" variant="ghost" size="sm" onClick={() => setImportedNotice(false)}>
+                <BilingualText en="Dismiss" el="Απόκρυψη" compact />
+              </Button>
+            </div>
+          ) : null}
+          <LinkedInImportDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            current={{ displayName: form.displayName, headline: form.headline, bio: form.bio, location: form.location, websiteUrl: form.websiteUrl, skills: form.skills }}
+            skillCatalog={skillCatalog.map((s) => s.name)}
+            initial={importInitial}
+            onApply={applyImport}
+          />
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto hide-scrollbar">
               <TabsTrigger 
@@ -714,6 +753,10 @@ export default function ProfileEditPage() {
                     >
                       {aiLoading ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
                       {aiLoading ? 'Analyzing Profile...' : 'AI Suggestions'}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" className="gap-2 self-start" onClick={() => setImportOpen(true)}>
+                      <Linkedin className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Import from LinkedIn" el="Εισαγωγή από LinkedIn" compact />
                     </Button>
                   </div>
                 </CardHeader>

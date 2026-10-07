@@ -34,7 +34,7 @@ describe('VerificationCard (demo world)', () => {
     const email = await screen.findByLabelText(/Work email/);
     fireEvent.change(email, { target: { value: 'alex@gmail.com' } });
     fireEvent.click(screen.getByRole('button', { name: /^Send code/ }));
-    expect((await screen.findByRole('alert')).textContent).toMatch(/personal mail providers.*domain της εταιρείας/s);
+    expect((await screen.findByRole('alert')).textContent).toMatch(/personal mail providers[\s\S]*domain της εταιρείας/);
 
     fireEvent.change(email, { target: { value: 'alex@harbor.example' } });
     fireEvent.click(screen.getByRole('button', { name: /^Send code/ }));

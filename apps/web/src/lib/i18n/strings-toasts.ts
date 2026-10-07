@@ -329,6 +329,7 @@ export const TOAST_EL: Record<string, string> = {
   "Code sent": "Ο κωδικός στάλθηκε",
   "Work email verified": "Το εταιρικό email επαληθεύτηκε",
   "Verified on LinkedIn is not available": "Η επαλήθευση μέσω LinkedIn δεν είναι διαθέσιμη",
+  "The LinkedIn import did not complete": "Η εισαγωγή από το LinkedIn δεν ολοκληρώθηκε",
   "Pitch published": "Η παρουσίαση δημοσιεύτηκε",
   "Could not publish the pitch": "Η δημοσίευση της παρουσίασης απέτυχε",
   "Pitch withdrawn": "Η παρουσίαση αποσύρθηκε",
