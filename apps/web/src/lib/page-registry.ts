@@ -52,6 +52,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/projects/create', title: 'Create project', description: 'Name the idea, pick a stage, and list the roles you still need — then publish.', helpId: 'projects', helpTitle: 'How projects work', helpTitleEl: 'Πώς δουλεύουν τα έργα', section: 'Work', status: 'complete' },
   { path: '/commitments', title: 'Commitments', description: 'Need cards and the ladder from interest to agreed terms: a protected first conversation, separate confirmations, versioned terms.', helpId: 'commitments', helpTitle: 'How commitments work', helpTitleEl: 'Πώς λειτουργούν οι δεσμεύσεις', section: 'Work', status: 'complete' },
   { path: '/commitments/new', title: 'Write a need card', description: 'Three sentences and an offer, in about two minutes. Category, place, stage and commitment are what people filter by.', helpId: 'commitments', helpTitle: 'How commitments work', helpTitleEl: 'Πώς λειτουργούν οι δεσμεύσεις', section: 'Work', status: 'complete' },
+  { path: '/updates', title: 'Updates', description: 'Updates from founders you follow, and the ones you send to your followers or publicly, with a link made for LinkedIn.', helpId: 'updates', helpTitle: 'How updates work', helpTitleEl: 'Πώς λειτουργούν οι ενημερώσεις', section: 'Network', status: 'complete' },
   { path: '/fundraising', title: 'Fundraising', description: 'Track your funding round, manage investor conversations, and organise the documents for due diligence.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', helpTitleEl: 'Ο γύρος χρηματοδότησης εδώ', section: 'Work', audience: ['founder'], status: 'complete' },
 
   // ── Discovery ──
@@ -243,6 +244,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/projects/[projectId]', title: 'Project', titleEl: 'Έργο', description: 'A project\u2019s tasks, collaborators and files.', descriptionEl: 'Οι εργασίες, οι συνεργάτες και τα αρχεία ενός έργου.', section: 'Work', status: 'complete' },
   { path: '/commitments/[id]', title: 'Need card', titleEl: 'Κάρτα ανάγκης', description: 'One need card: what exists, the outcome, who is missing and what is offered, with each response on its ladder.', descriptionEl: 'Μία κάρτα ανάγκης: τι υπάρχει, το αποτέλεσμα, ποιος λείπει και τι προσφέρεται, με κάθε απάντηση στην κλίμακά της.', helpId: 'commitments', helpTitle: 'How commitments work', helpTitleEl: 'Πώς λειτουργούν οι δεσμεύσεις', section: 'Work', status: 'complete' },
   { path: '/c/[token]', title: 'Need card', titleEl: 'Κάρτα ανάγκης', description: 'A need card shared by its author: no email or phone, and a way to join and respond.', descriptionEl: 'Κάρτα ανάγκης που μοιράστηκε ο συντάκτης της: χωρίς email ή τηλέφωνο, με τρόπο εγγραφής και απάντησης.', section: 'Public', status: 'complete' },
+  { path: '/u/[token]', title: 'Founder update', titleEl: 'Ενημέρωση ιδρυτή', description: 'An update its author made public: the founder\u2019s name and headline, and nothing that reaches them outside the platform.', descriptionEl: 'Ενημέρωση που ο συντάκτης της έκανε δημόσια: όνομα και τίτλος του ιδρυτή, και τίποτα που τον φτάνει εκτός πλατφόρμας.', section: 'Public', status: 'complete' },
   { path: '/pitch/[id]', title: 'Pitch deck', titleEl: 'Παρουσίαση', description: 'A deck in the builder — slides, notes and sharing.', descriptionEl: 'Μια παρουσίαση στον builder — διαφάνειες, σημειώσεις και κοινοποίηση.', helpId: 'public-pitch', helpTitle: 'Reading this pitch', helpTitleEl: 'Πώς διαβάζεται αυτό το pitch', section: 'Work', status: 'complete' },
   { path: '/data-room/[id]', title: 'Data room', titleEl: 'Data room', description: 'Documents shared with investors, and who has opened what.', descriptionEl: 'Έγγραφα που μοιράζεστε με επενδυτές και ποιος άνοιξε τι.', helpId: 'data-room', helpTitle: 'How the data room works', helpTitleEl: 'Πώς δουλεύει το data room', section: 'Work', status: 'complete' },
   { path: '/share/[token]', title: 'Shared link', titleEl: 'Κοινόχρηστος σύνδεσμος', description: 'Something shared with you through a link.', descriptionEl: 'Κάτι που μοιράστηκε μαζί σας μέσω συνδέσμου.', section: 'Public', status: 'complete' },
@@ -285,6 +287,17 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
       titleEl: 'Κάρτα ανάγκης',
       description: 'A need card shared by its author: no email or phone, and a way to join and respond.',
       descriptionEl: 'Κάρτα ανάγκης που μοιράστηκε ο συντάκτης της: χωρίς email ή τηλέφωνο, με τρόπο εγγραφής και απάντησης.',
+      section: 'Public',
+      status: 'complete',
+    },
+  },
+  {
+    pattern: /^\/u\/[^/]+$/,
+    meta: {
+      title: 'Founder update',
+      titleEl: 'Ενημέρωση ιδρυτή',
+      description: 'An update its author made public: the founder\u2019s name and headline, and nothing that reaches them outside the platform.',
+      descriptionEl: 'Ενημέρωση που ο συντάκτης της έκανε δημόσια: όνομα και τίτλος του ιδρυτή, και τίποτα που τον φτάνει εκτός πλατφόρμας.',
       section: 'Public',
       status: 'complete',
     },

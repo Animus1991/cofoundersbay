@@ -47,6 +47,8 @@ export const QUERY_ROOTS = [
   'events',
   'expert-reviews',
   'feed',
+  'follows',
+  'founder-updates',
   'gamification',
   'graph',
   'groups',

@@ -282,6 +282,9 @@ const WAVE_C_WRITES = new Set<string>([
   'join_group', 'leave_group', 'apply_to_program', 'send_invite', 'respond_to_mentor_request',
   // Wave D drafts open a filled form; their card is built the same way.
   'draft_milestone', 'draft_event', 'draft_project', 'draft_profile',
+  // The planner proposed these two with no card to show for it: the rule path
+  // only rendered what is listed here.
+  'draft_need_card', 'draft_founder_update',
 ]);
 
 export function actionsFromToolCalls(
@@ -791,6 +794,25 @@ export async function runCopilotTurn(
       }
     }
 
+    if (tool.name === 'follow_person') {
+      const pool = people.length ? people : matches;
+      const target = findPerson(pool, tool.args?.name || detectPersonName(userMessage));
+      if (target) {
+        actions.push({
+          id: newId('follow'),
+          tool: 'follow_person',
+          title: t('Follow {name}', { name: target.displayName }),
+          description: t('Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.'),
+          confirmLabel: t('Follow'),
+          payload: { userId: target.userId, displayName: target.displayName },
+          status: 'pending',
+          href: personHref(target),
+        });
+      } else {
+        sections.push(t('I need a specific person before I can follow them. Name someone from Matches or Search.'));
+      }
+    }
+
     if (tool.name === 'start_or_send_message') {
       const pool = people.length ? people : matches;
       const target = findPerson(pool, tool.args?.name || detectPersonName(userMessage));
@@ -912,7 +934,8 @@ export async function runCopilotTurn(
       // A card with nothing to act on would only fail once confirmed; asking
       // first is the shorter path. Answering a request carries its decision
       // even without a name, and the executor asks if two people match.
-      if (!target && tool.name !== 'respond_to_mentor_request') {
+      // A need card's kind is enough to open the guide on the right ladder.
+      if (!target && tool.name !== 'respond_to_mentor_request' && !(tool.name === 'draft_need_card' && tool.args?.kind)) {
         sections.push(t('Name it and I will prepare it — put the name in quotes if it has several words.'));
         continue;
       }

@@ -237,6 +237,7 @@ enum NotificationType {
   coaching_session_reminder
   fundraising_update
   commitment_update
+  founder_update
 }
 
 enum ConnectionStatus {
@@ -547,6 +548,7 @@ model User {
 
   // Follow
   followers                   UserFollow[]                @relation("Followers")
+  founderUpdates              FounderUpdate[]             @relation("FounderUpdates")
   following                   UserFollow[]                @relation("Following")
 
   // Digest preference
@@ -6292,6 +6294,31 @@ model ProfileImportDraft {
   records   Json
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+enum FounderUpdateVisibility {
+  followers
+  public
+}
+
+/// A founder's periodic update to the people who follow them: what moved,
+/// a few figures, what they need. Public ones get an unguessable token for
+/// /u/[token], the page a founder shares on LinkedIn.
+model FounderUpdate {
+  id          String                  @id @default(uuid())
+  authorId    String
+  author      User                    @relation("FounderUpdates", fields: [authorId], references: [id], onDelete: Cascade)
+  title       String
+  body        String                  @db.Text
+  metrics     Json                    // [{ label, value }]
+  asks        String[]                @default([])
+  visibility  FounderUpdateVisibility @default(followers)
+  publicToken String?                 @unique
+  milestoneId String?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([authorId, createdAt])
 }
 
 model FeedComment {

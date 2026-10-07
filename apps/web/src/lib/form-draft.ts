@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * through a window event and fills itself in place.
  */
 
-export type FormDraftId = 'milestone' | 'event' | 'project' | 'profile' | 'need_card';
+export type FormDraftId = 'milestone' | 'event' | 'project' | 'profile' | 'need_card' | 'founder_update';
 export type FormDraftFields = Record<string, string | boolean>;
 
 /** Where each draft is filled in. */
@@ -29,6 +29,7 @@ export const FORM_DRAFT_ROUTES: Record<FormDraftId, string> = {
   project: '/projects/create',
   profile: '/profile/edit',
   need_card: '/commitments/new',
+  founder_update: '/updates',
 };
 
 const KEY = (id: FormDraftId) => `cfb_form_draft:${id}`;

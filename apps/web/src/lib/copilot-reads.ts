@@ -71,6 +71,7 @@ import {
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
 import { waitsOnMe } from '@/lib/commitments-next';
+import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -577,6 +578,35 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       parts.push(`${t('Your responses:')}\n${lines.join('\n')}`);
     }
     parts.push(waiting.length ? t('{count} steps wait on you.', { count: waiting.length }) : t('Nothing waits on you right now.'));
+    return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_founder_updates(_args, { t }) {
+    const [feed, mine] = await Promise.all([getUpdatesFeed(), getMyUpdates()]);
+    const theirs = asList<FounderUpdate>(feed).slice(0, LIMIT);
+    const own = asList<FounderUpdate>(mine).slice(0, 3);
+    const actions = [openArea(t, '/updates', t('Open updates'), t('Updates from people you follow, and your own.'))];
+    if (theirs.length === 0 && own.length === 0) {
+      return {
+        section: t('Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.'),
+        citations: [],
+        actions,
+      };
+    }
+    const citations: CopilotCitation[] = [];
+    const parts: string[] = [];
+    if (theirs.length) {
+      const lines = theirs.map((u) => {
+        citations.push({ type: 'update', id: u.id, label: u.title, href: `/updates?update=${encodeURIComponent(u.id)}` });
+        const figures = u.metrics.slice(0, 2).map((m) => `${m.label} ${m.value}`).join(' · ');
+        return `• **${u.title}** — ${u.author.displayName}${figures ? ` · ${figures}` : ''}`;
+      });
+      parts.push(`${t('From people you follow:')}\n${lines.join('\n')}`);
+    }
+    if (own.length) {
+      const lines = own.map((u) => `• **${u.title}** — ${t(u.visibility === 'public' ? 'public' : 'followers only')}`);
+      parts.push(`${t('Your updates:')}\n${lines.join('\n')}`);
+    }
     return { section: parts.join('\n\n'), citations, actions };
   },
 

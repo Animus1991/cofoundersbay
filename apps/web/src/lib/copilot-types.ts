@@ -72,7 +72,8 @@ export type CopilotCitation = {
     | 'opportunity'
     | 'session'
     | 'research'
-    | 'workspace';
+    | 'workspace'
+    | 'update';
   id: string;
   label: string;
   href?: string;

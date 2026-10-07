@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FollowButton } from '@/components/updates/FollowButton';
 import {
   MapPin,
   Clock,
@@ -302,6 +303,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
           >
             <Share2 className="icon-sm" />
           </Button>
+          <FollowButton userId={userId} />
           <Button variant="secondary" size="sm" className="gap-2" asChild>
             <Link href="/discover">
               <ArrowLeft className="icon-sm" />

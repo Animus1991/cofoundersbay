@@ -2,6 +2,17 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open updates": "Άνοιγμα ενημερώσεων",
+  "Updates from people you follow, and your own.": "Ενημερώσεις από όσους ακολουθείτε, και οι δικές σας.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Κανείς από όσους ακολουθείτε δεν έχει γράψει ακόμη ενημέρωση, και εσείς δεν έχετε στείλει καμία. Ακολουθήστε ιδρυτές από τα προφίλ τους.",
+  "From people you follow:": "Από όσους ακολουθείτε:",
+  "Your updates:": "Οι ενημερώσεις σας:",
+  "public": "δημόσια",
+  "followers only": "μόνο για ακολούθους",
+  "Follow {name}": "Ακολούθηση: {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "Οι ενημερώσεις του/της φτάνουν σε εσάς στις Ενημερώσεις και στις ειδοποιήσεις σας. Μαθαίνει ότι κάποιος νέος τον/την ακολουθεί, όχι ποιος.",
+  "Follow": "Ακολούθηση",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Χρειάζομαι συγκεκριμένο πρόσωπο για να το ακολουθήσω. Πείτε μου κάποιον από τις Αντιστοιχίσεις ή την Αναζήτηση.",
   "Open commitments": "Άνοιγμα δεσμεύσεων",
   "Need cards, responses and what waits on you.": "Κάρτες ανάγκης, απαντήσεις και τι περιμένει από εσάς.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Δεν έχετε ακόμη κάρτες ανάγκης ή ανοιχτές απαντήσεις. Μια κάρτα ανάγκης είναι τρεις προτάσεις και μια προσφορά.",
@@ -744,6 +755,17 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open updates": "Abrir actualizaciones",
+  "Updates from people you follow, and your own.": "Actualizaciones de las personas que sigues y las tuyas.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Nadie a quien sigues ha escrito una actualización todavía, y tú no has enviado ninguna. Sigue a fundadores desde sus perfiles.",
+  "From people you follow:": "De las personas que sigues:",
+  "Your updates:": "Tus actualizaciones:",
+  "public": "pública",
+  "followers only": "solo seguidores",
+  "Follow {name}": "Seguir a {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "Sus actualizaciones te llegan en Actualizaciones y en tus notificaciones. Se le dice que alguien nuevo le sigue, no quién.",
+  "Follow": "Seguir",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Necesito una persona concreta para poder seguirla. Nombra a alguien de Coincidencias o Búsqueda.",
   "Open commitments": "Abrir compromisos",
   "Need cards, responses and what waits on you.": "Tarjetas de necesidad, respuestas y lo que espera de ti.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Aún no tienes tarjetas de necesidad ni respuestas abiertas. Una tarjeta de necesidad son tres frases y una oferta.",
@@ -1221,6 +1243,17 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open updates": "Ouvrir les actualités",
+  "Updates from people you follow, and your own.": "Les actualités des personnes que vous suivez, et les vôtres.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Personne parmi ceux que vous suivez n’a encore publié d’actualité, et vous n’en avez envoyé aucune. Suivez des fondateurs depuis leur profil.",
+  "From people you follow:": "Des personnes que vous suivez :",
+  "Your updates:": "Vos actualités :",
+  "public": "publique",
+  "followers only": "abonnés uniquement",
+  "Follow {name}": "Suivre {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "Ses actualités vous parviennent dans Actualités et dans vos notifications. La personne apprend qu’un nouvel abonné la suit, pas qui.",
+  "Follow": "Suivre",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Il me faut une personne précise pour la suivre. Nommez quelqu’un depuis Correspondances ou Recherche.",
   "Open commitments": "Ouvrir les engagements",
   "Need cards, responses and what waits on you.": "Fiches de besoin, réponses et ce qui vous attend.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Vous n’avez encore ni fiche de besoin ni réponse ouverte. Une fiche de besoin, c’est trois phrases et une offre.",
@@ -1678,6 +1711,17 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open updates": "Updates öffnen",
+  "Updates from people you follow, and your own.": "Updates von Personen, denen du folgst, und deine eigenen.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Niemand, dem du folgst, hat bisher ein Update geschrieben, und du hast noch keines gesendet. Folge Gründern über ihre Profile.",
+  "From people you follow:": "Von Personen, denen du folgst:",
+  "Your updates:": "Deine Updates:",
+  "public": "öffentlich",
+  "followers only": "nur Follower",
+  "Follow {name}": "{name} folgen",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "Ihre Updates erreichen dich unter Updates und in deinen Benachrichtigungen. Die Person erfährt, dass ihr jemand Neues folgt, nicht wer.",
+  "Follow": "Folgen",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Ich brauche eine bestimmte Person, um ihr zu folgen. Nenne jemanden aus Matches oder Suche.",
   "Open commitments": "Zusagen öffnen",
   "Need cards, responses and what waits on you.": "Bedarfskarten, Antworten und was auf dich wartet.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Du hast noch keine Bedarfskarten oder offenen Antworten. Eine Bedarfskarte sind drei Sätze und ein Angebot.",
@@ -2135,6 +2179,17 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open updates": "Apri aggiornamenti",
+  "Updates from people you follow, and your own.": "Aggiornamenti dalle persone che segui e i tuoi.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Nessuna delle persone che segui ha ancora scritto un aggiornamento e tu non ne hai inviati. Segui i fondatori dai loro profili.",
+  "From people you follow:": "Dalle persone che segui:",
+  "Your updates:": "I tuoi aggiornamenti:",
+  "public": "pubblico",
+  "followers only": "solo follower",
+  "Follow {name}": "Segui {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "I suoi aggiornamenti ti arrivano in Aggiornamenti e nelle notifiche. Viene informato che qualcuno di nuovo lo segue, non chi.",
+  "Follow": "Segui",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Mi serve una persona precisa per poterla seguire. Indica qualcuno da Corrispondenze o Ricerca.",
   "Open commitments": "Apri impegni",
   "Need cards, responses and what waits on you.": "Schede di bisogno, risposte e ciò che ti aspetta.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Non hai ancora schede di bisogno né risposte aperte. Una scheda di bisogno sono tre frasi e un’offerta.",
@@ -2582,6 +2637,17 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open updates": "Abrir atualizações",
+  "Updates from people you follow, and your own.": "Atualizações das pessoas que segue e as suas.",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "Ninguém que segue escreveu ainda uma atualização, e não enviou nenhuma. Siga fundadores a partir dos seus perfis.",
+  "From people you follow:": "Das pessoas que segue:",
+  "Your updates:": "As suas atualizações:",
+  "public": "pública",
+  "followers only": "só seguidores",
+  "Follow {name}": "Seguir {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "As atualizações dessa pessoa chegam-lhe em Atualizações e nas notificações. É-lhe dito que alguém novo a segue, não quem.",
+  "Follow": "Seguir",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "Preciso de uma pessoa concreta para a seguir. Indique alguém de Correspondências ou Pesquisa.",
   "Open commitments": "Abrir compromissos",
   "Need cards, responses and what waits on you.": "Cartões de necessidade, respostas e o que espera por si.",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "Ainda não tem cartões de necessidade nem respostas abertas. Um cartão de necessidade são três frases e uma oferta.",
@@ -3026,6 +3092,17 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open updates": "打开动态",
+  "Updates from people you follow, and your own.": "你关注的人发布的动态，以及你自己的。",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "你关注的人还没有发布动态，你也还没有发送过。可以在创始人的个人资料中关注他们。",
+  "From people you follow:": "来自你关注的人：",
+  "Your updates:": "你的动态：",
+  "public": "公开",
+  "followers only": "仅关注者",
+  "Follow {name}": "关注 {name}",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "对方的动态会出现在“动态”和你的通知中。对方会知道有新的关注者，但不知道是谁。",
+  "Follow": "关注",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "我需要一个具体的人才能关注。请从匹配或搜索中说出一个人。",
   "Open commitments": "打开承诺",
   "Need cards, responses and what waits on you.": "需求卡、回应以及等待你处理的事项。",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "你还没有需求卡或未结束的回应。需求卡就是三句话加一个报价。",
@@ -3490,6 +3567,17 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open updates": "アップデートを開く",
+  "Updates from people you follow, and your own.": "フォローしている人のアップデートと、あなた自身のアップデート。",
+  "Nobody you follow has written an update yet, and you have not sent one. Follow founders from their profiles.": "フォローしている人はまだアップデートを書いておらず、あなたもまだ送っていません。プロフィールから創業者をフォローしてください。",
+  "From people you follow:": "フォローしている人から：",
+  "Your updates:": "あなたのアップデート：",
+  "public": "公開",
+  "followers only": "フォロワーのみ",
+  "Follow {name}": "{name} をフォロー",
+  "Their updates reach you on Updates and in your notifications. They are told someone new follows them, not who.": "その人のアップデートは「アップデート」と通知に届きます。相手には新しいフォロワーがいることだけが伝わり、誰かは伝わりません。",
+  "Follow": "フォロー",
+  "I need a specific person before I can follow them. Name someone from Matches or Search.": "フォローするには特定の人が必要です。マッチまたは検索から誰かを挙げてください。",
   "Open commitments": "コミットメントを開く",
   "Need cards, responses and what waits on you.": "ニーズカード、返信、あなたの対応待ちの項目。",
   "You have no need cards or open responses yet. A need card is three sentences and an offer.": "まだニーズカードも進行中の返信もありません。ニーズカードは三つの文と一つのオファーです。",

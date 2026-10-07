@@ -67,6 +67,7 @@ import { runCanvasCommand } from '@/lib/canvas/canvas-command-bus';
 import { currentRailSections, openCurrentRailSection } from '@/components/layout/PageRailContext';
 import { runPageControl } from '@/lib/page-controls';
 import { FORM_DRAFT_ROUTES, stashFormDraft, type FormDraftId } from '@/lib/form-draft';
+import { followPerson, unfollowPerson } from '@/lib/updates-api';
 
 /**
  * The web app's half of the capability contract.
@@ -614,6 +615,15 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
       ['kind', 'title', 'exists', 'goal', 'missing', 'offerRole', 'offerEquity', 'offerHours', 'offerScope', 'category', 'place', 'stage', 'commitment'],
       null,
     ),
+  draft_founder_update: async (payload) => openDraft('founder_update', payload, ['title', 'body', 'visibility'], null),
+
+  // ── Following ────────────────────────────────────────────────────────────
+  follow_person: async (payload) => {
+    const userId = requireString(payload, 'userId');
+    if (!userId) return { ok: false, error: 'Missing user' };
+    await followPerson(userId);
+    return { ok: true, href: '/updates' };
+  },
 
   // ── Commitments ──────────────────────────────────────────────────────────
   // The thread id comes back so the undo withdraws exactly this interest.
@@ -877,6 +887,14 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!threadId) return { ok: false, error: 'No interest to withdraw' };
     await withdrawCommitmentInterest(threadId);
     return { ok: true, href: '/commitments' };
+  },
+
+  /** Stops following; the "someone new follows you" notice already went (declared partial). */
+  follow_person: async (payload) => {
+    const userId = requireString(payload, 'userId');
+    if (!userId) return { ok: false, error: 'Missing user' };
+    await unfollowPerson(userId);
+    return { ok: true, href: '/updates' };
   },
 
   /** Reopens the card it closed; the threads were never touched (declared full). */

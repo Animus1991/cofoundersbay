@@ -18,6 +18,7 @@ import {
   TrendingUp,
   BookOpen,
   Building2,
+  Megaphone,
   Target,
   Handshake,
   Award,
@@ -137,6 +138,7 @@ export const founderWorkSections: NavSection[] = [
     section: 'Fundraise',
     links: [
       { href: '/fundraising', label: 'Fundraising', icon: DollarSign },
+      { href: '/updates', label: 'Updates', icon: Megaphone },
       { href: '/builder/applications', label: 'Applications', icon: ClipboardList },
     ],
   },
@@ -208,6 +210,7 @@ export const investorWorkSections: NavSection[] = [
     section: 'Portfolio',
     links: [
       { href: '/investor/portfolio', label: 'Portfolio', icon: Briefcase },
+      { href: '/updates', label: 'Updates', icon: Megaphone },
     ],
   },
   {

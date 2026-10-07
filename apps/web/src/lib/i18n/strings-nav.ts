@@ -141,6 +141,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/programs': 'Προγράμματα',
   '/projects': 'Έργα',
   '/commitments': 'Δεσμεύσεις',
+  '/updates': 'Ενημερώσεις',
   '/provider/analytics': 'Αναλυτικά παρόχου',
   '/provider/inquiries': 'Αιτήματα',
   '/provider/profile': 'Προφίλ παρόχου',
@@ -209,6 +210,8 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
     'Παράλληλα έργα και πρωτοβουλίες startup',
   '/commitments':
     'Κάρτες ανάγκης και κλίμακα ως τους συμφωνημένους όρους',
+  '/updates':
+    'Ενημερώσεις ιδρυτών που ακολουθείτε και όσες στέλνετε',
   '/fundraising':
     'Pipeline επενδυτών και data room',
   '/ai':

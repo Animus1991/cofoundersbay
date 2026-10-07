@@ -7,6 +7,7 @@ import { previewOrgApi } from './demo/org-api';
 import { previewCommitmentsApi } from './demo/commitments-world';
 import { previewSavedSearchesApi } from './demo/saved-searches-world';
 import { previewVerificationApi } from './demo/verification-world';
+import { previewUpdatesApi } from './demo/updates-world';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2622,6 +2623,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // Saved searches answer in the API's shapes instead of the generic fallback.
   const savedSearchAnswer = previewSavedSearchesApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (savedSearchAnswer !== undefined) return savedSearchAnswer;
+  // Following and founder updates, with the API's rules and refusals.
+  const updatesAnswer = previewUpdatesApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (updatesAnswer !== undefined) return updatesAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {

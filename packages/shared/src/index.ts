@@ -7,3 +7,4 @@ export * from './canvas';
 export * from './commitments';
 export * from './verification';
 export * from './import';
+export * from './updates';

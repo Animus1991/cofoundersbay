@@ -3,12 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import {
-  Plus, CheckCircle2, Clock, ArrowRight,
-  Edit2, Trash2,
-  RefreshCw, MoreVertical,
-  Search, LayoutGrid, LayoutList, X,
-} from 'lucide-react';
+import { Plus, CheckCircle2, Clock, ArrowRight, Edit2, Trash2, RefreshCw, MoreVertical, Search, LayoutGrid, LayoutList, X, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -228,6 +223,16 @@ function MilestoneCard({
                           <Clock className={cn('icon-sm', STATUS.info.icon)} />
                           <BilingualText en={milestoneEn('reopen')} el={milestoneEl('reopen')} compact />
                         </button>
+                      )}
+                      {item.status === 'completed' && (
+                        // Build in public: the composer opens with the milestone as its title.
+                        <Link
+                          href={`/updates?title=${encodeURIComponent(`Milestone reached: ${item.title}`)}&milestone=${encodeURIComponent(item.id)}`}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+                        >
+                          <Share2 className="icon-sm text-muted-foreground" />
+                          <BilingualText en="Share as an update" el="Κοινοποίηση ως ενημέρωση" compact />
+                        </Link>
                       )}
                       <div className="my-1 border-t border-border" />
                       <button

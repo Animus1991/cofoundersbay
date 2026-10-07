@@ -112,6 +112,8 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   mentorships: [qk('mentorships'), qk('mentors')],
   // Cards, the ladder threads and a card's public link: one resource.
   commitments: [qk('commitments')],
+  // Who the reader follows, and the updates feed that follows from it.
+  follows: [qk('follows'), qk('founder-updates')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

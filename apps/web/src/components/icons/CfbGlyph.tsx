@@ -41,6 +41,7 @@ export const CFB_GLYPH_NAMES = [
   'growth',
   'feed',
   'pact',
+  'update',
   'more',
   'default',
 ] as const;
@@ -79,6 +80,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   investors: 'growth',
   opportunities: 'target',
   commitments: 'pact',
+  updates: 'update',
   groups: 'community',
   events: 'calendar',
   programs: 'award',
@@ -482,6 +484,17 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="7.6" cy="7.3" r="1.1" fill="currentColor" stroke="none" />
       <circle cx="7.6" cy="16.7" r="1.1" fill="currentColor" stroke="none" />
       <path d="M10.6 7.3h6M10.6 16.7h4" />
+    </>
+  ),
+  // A page with a rising arrow at its corner: what a founder sends the
+  // people who follow them. Apart from Feed (posts in a column) and from
+  // Fundraising's wallet, its neighbour in the nav.
+  update: (
+    <>
+      <path d="M13.6 4H7a2.4 2.4 0 0 0-2.4 2.4v11.2A2.4 2.4 0 0 0 7 20h10a2.4 2.4 0 0 0 2.4-2.4v-6.8" />
+      <path d="M8.2 10.4h4.6M8.2 13.6h7.4M8.2 16.6h5" />
+      <path d="M16.4 7.6l3.4-3.4M16.8 4h3v3" />
+      <circle cx="16.4" cy="7.6" r="1.05" fill="currentColor" stroke="none" />
     </>
   ),
   more: (

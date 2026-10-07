@@ -187,6 +187,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_founder_updates',
+    kind: 'read',
+    label: { en: 'Read founder updates', el: 'Ανάγνωση ενημερώσεων ιδρυτών' },
+    description: {
+      en: 'Read the latest updates from the people the signed-in user follows (title, author, figures, asks) and the user\u2019s own updates with whether each is public or for followers only.',
+      el: 'Διαβάζει τις πιο πρόσφατες ενημερώσεις από όσους ακολουθεί ο χρήστης (τίτλος, συντάκτης, μεγέθη, αιτήματα) και τις δικές του ενημερώσεις, με το αν η καθεμία είναι δημόσια ή μόνο για ακολούθους.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_mentorship_sessions',
     kind: 'read',
     label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
@@ -1806,6 +1817,66 @@ export const ACTION_DECLARATIONS = [
     },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Open filled guide', el: 'Άνοιγμα συμπληρωμένου οδηγού' },
+  },
+  {
+    id: 'follow_person',
+    kind: 'mutation',
+    label: { en: 'Follow a person\u2019s updates', el: 'Παρακολούθηση ενημερώσεων ατόμου' },
+    description: {
+      en: 'Follow a founder, mentor or investor so the updates they write reach the signed-in user on /updates and in notifications. Writes only after confirmation.',
+      el: 'Ακολουθεί έναν ιδρυτή, μέντορα ή επενδυτή ώστε οι ενημερώσεις που γράφει να φτάνουν στον χρήστη στο /updates και στις ειδοποιήσεις. Γράφει μόνο μετά από επιβεβαίωση.',
+    },
+    params: [
+      {
+        name: 'userId',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'Id of the person to follow. Must come from a prior search or recommendation result.',
+          el: 'Το id του ατόμου. Πρέπει να προέρχεται από προηγούμενη αναζήτηση ή πρόταση.',
+        },
+      },
+    ],
+    writes: true,
+    invalidates: ['follows'],
+    reversal: {
+      // `DELETE /api/follows/:userId` runs `userFollow.deleteMany`, so the row
+      // is gone; but a first follow already notified the person that someone
+      // new follows them (founder-updates.service follow), and that stays.
+      kind: 'partial',
+      explanation: {
+        en: 'Unfollowing removes the follow at once. The person was already told that someone new follows them (not who), and that notice stays.',
+        el: 'Η διακοπή αφαιρεί αμέσως την παρακολούθηση. Το άτομο έχει ήδη ενημερωθεί ότι κάποιος νέος το ακολουθεί (όχι ποιος), και αυτή η ειδοποίηση μένει.',
+      },
+    },
+    auditSubject: { param: 'userId', entityType: 'user' },
+    confirmLabel: { en: 'Follow', el: 'Ακολούθηση' },
+  },
+  {
+    id: 'draft_founder_update',
+    kind: 'mutation',
+    label: { en: 'Draft a founder update', el: 'Πρόχειρη ενημέρωση ιδρυτή' },
+    description: {
+      en: 'Open the update composer on /updates with a title and body filled in, and whether it should be public (its own link, made for LinkedIn) or for followers only. Sends nothing; the founder reads it, adds figures and asks, and presses Send.',
+      el: 'Ανοίγει τη σύνταξη ενημέρωσης στο /updates με τίτλο και κείμενο συμπληρωμένα, και αν θα είναι δημόσια (δικός της σύνδεσμος, για το LinkedIn) ή μόνο για ακολούθους. Δεν στέλνει τίποτα· ο ιδρυτής τη διαβάζει, προσθέτει μεγέθη και αιτήματα και πατά Αποστολή.',
+    },
+    params: [
+      { name: 'title', type: 'string', required: false, description: { en: 'Short title, e.g. “September: two pilots live”.', el: 'Σύντομος τίτλος, π.χ. «Σεπτέμβριος: δύο πιλοτικά σε λειτουργία».' } },
+      { name: 'body', type: 'string', required: false, description: { en: 'What moved since the last update, in a few sentences. No promised returns.', el: 'Τι προχώρησε από την προηγούμενη ενημέρωση, σε λίγες προτάσεις. Χωρίς υποσχέσεις αποδόσεων.' } },
+      { name: 'visibility', type: 'string', required: false, enumValues: ['followers', 'public'], description: { en: 'followers (default) or public.', el: 'followers (προεπιλογή) ή public.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the composer waits until the founder presses Send.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is sent. The composer opens with these fields filled; you review them and send, or leave the page and nothing happens.',
+        el: 'Δεν στέλνεται τίποτα. Η σύνταξη ανοίγει με αυτά τα πεδία συμπληρωμένα· τα ελέγχετε και στέλνετε, ή φεύγετε από τη σελίδα και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled composer', el: 'Άνοιγμα συμπληρωμένης σύνταξης' },
   },
   {
     id: 'canvas_command',

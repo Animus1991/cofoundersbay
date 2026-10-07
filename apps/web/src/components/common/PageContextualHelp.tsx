@@ -723,6 +723,46 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  updates: {
+    en: (
+      <>
+        <p>
+          <strong>Following</strong> a founder sends you the updates they write: what moved this month, a few figures,
+          and up to three asks. You see them here and in your notifications. Following is one click and you can stop
+          at any time; the founder is told someone new follows, not who.
+        </p>
+        <p>
+          An update you write goes to your followers. Make it <strong>public</strong> and it gets its own link with a
+          proper preview for LinkedIn or anywhere else: your name and headline, nothing that reaches you outside the
+          platform. Switching it back to followers retires the link.
+        </p>
+        <p>
+          A completed milestone can become an update from its menu. Updates that mention money carry the same note as
+          every funding surface: the platform organises the conversation; it does not promise funding or returns, and an
+          update that does is refused.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Όταν <strong>ακολουθείτε</strong> έναν ιδρυτή, λαμβάνετε τις ενημερώσεις που γράφει: τι προχώρησε αυτόν τον
+          μήνα, μερικά νούμερα και έως τρία αιτήματα. Τις βλέπετε εδώ και στις ειδοποιήσεις σας. Η παρακολούθηση είναι
+          ένα κλικ και σταματά όποτε θέλετε· ο ιδρυτής μαθαίνει ότι κάποιος νέος τον ακολουθεί, όχι ποιος.
+        </p>
+        <p>
+          Μια ενημέρωση που γράφετε πηγαίνει σε όσους σας ακολουθούν. Αν τη κάνετε <strong>δημόσια</strong>, παίρνει δικό
+          της σύνδεσμο με σωστή προεπισκόπηση για το LinkedIn ή οπουδήποτε αλλού: το όνομα και τον τίτλο σας, τίποτα που
+          σας φτάνει εκτός πλατφόρμας. Αν την επαναφέρετε στους ακολούθους, ο σύνδεσμος αποσύρεται.
+        </p>
+        <p>
+          Ένα ολοκληρωμένο ορόσημο γίνεται ενημέρωση από το μενού του. Όσες ενημερώσεις αναφέρουν χρήματα φέρουν την ίδια
+          σημείωση με κάθε επιφάνεια χρηματοδότησης: η πλατφόρμα οργανώνει τη συζήτηση· δεν υπόσχεται χρηματοδότηση ή
+          αποδόσεις, και μια ενημέρωση που το κάνει απορρίπτεται.
+        </p>
+      </>
+    ),
+  },
   opportunities: {
     en: (
       <>

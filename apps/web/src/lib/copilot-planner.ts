@@ -138,6 +138,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
   { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
+  // Founder updates: named as the kind of update, or by who wrote them.
+  {
+    keys: ['founder update*', 'investor update*', 'updates from', 'people i follow', 'ενημερωσεις ιδρυτ', 'ενημερωση ιδρυτ', 'ενημερωσεις απο', 'οσους ακολουθω'],
+    tool: 'get_founder_updates',
+  },
   { keys: ['session', 'συνεδρι'], tool: 'get_mentorship_sessions' },
   {
     keys: ['saved profile', 'my shortlist', 'αποθηκευμενα προφιλ', 'αποθηκευμενους'],
@@ -664,6 +669,14 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'στειλε μηνυμα',
   ]);
 
+  // "Follow Elena", «ακολούθησε την Έλενα»: the verb and a person. "Follow
+  // up" is another request, and "who I follow" is a question the updates
+  // read answers.
+  const wantsFollow =
+    Boolean(person) &&
+    includesAny(message, ['follow', 'ακολούθησε', 'ακολουθησε', 'ακολούθα', 'ακολουθα']) &&
+    !includesAny(message, ['follow up', 'follow-up', 'unfollow', 'i follow', 'ακολουθώ', 'ακολουθω']);
+
   // Analytics, readiness and workspace intents. Each needs both an object and
   // a verb before it plans anything: "readiness" alone is a question about a
   // score, not a request to change one.
@@ -734,6 +747,11 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
       add('search_people', { q: person });
     }
     add('shortlist_add', args);
+  }
+
+  if (wantsFollow && person) {
+    if (!tools.some((t) => t.name === 'search_people')) add('search_people', { q: person });
+    add('follow_person', { name: person });
   }
 
   if (wantsConnect) {
@@ -809,8 +827,12 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // A need card is asked for with "write" or "make" as often as "draft".
   const needCardNoun = includesAny(message, ['need card', 'need-card', 'κάρτα ανάγκης', 'καρτα αναγκης', 'κάρτας ανάγκης', 'καρτας αναγκης']);
   const needCardVerb = draftVerb || includesAny(message, ['write', 'create', 'make', 'new ', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε', 'νέα ', 'νεα ']);
+  // A founder update, like a need card, is asked for with "write" as often as "draft".
+  const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
   const draftKind = needCardNoun && needCardVerb
     ? 'draft_need_card'
+    : updateNoun && needCardVerb
+    ? 'draft_founder_update'
     : !draftVerb
     ? null
     : includesAny(message, ['milestone', 'ορόσημ', 'οροσημ'])
@@ -833,6 +855,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
         : 'cofounder';
     add('draft_need_card', { kind, ...(quoted ? { title: quoted } : {}) });
   }
+  if (draftKind === 'draft_founder_update') {
+    const isPublic = includesAny(message, ['public', 'linkedin', 'δημόσι', 'δημοσι']);
+    add('draft_founder_update', { ...(quoted ? { title: quoted } : {}), ...(isPublic ? { visibility: 'public' } : {}) });
+  }
   if (draftKind === 'draft_profile') {
     const field = includesAny(message, ['bio', 'βιογραφικ']) ? 'bio' : 'headline';
     add('draft_profile', quoted ? { [field]: quoted } : {});
@@ -843,6 +869,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ...(draftKind === 'draft_event' ? ['get_events'] : []),
     ...(draftKind === 'draft_profile' ? ['get_profile'] : []),
     ...(draftKind === 'draft_need_card' ? ['get_commitments'] : []),
+    ...(draftKind === 'draft_founder_update' ? ['get_founder_updates'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),

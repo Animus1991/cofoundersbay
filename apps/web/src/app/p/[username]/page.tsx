@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { FollowButton } from '@/components/updates/FollowButton';
 import {
   MapPin, Globe, Linkedin, Twitter, Github, Mail,
   Calendar, Briefcase, GraduationCap, Award, Users,
@@ -258,6 +259,7 @@ export default function PublicProfilePage() {
                           <BilingualText en="Connect" el="Σύνδεση" compact />
                         </Link>
                       </Button>
+                      {profile?.userId ? <FollowButton userId={profile.userId} /> : null}
                       {/* Had no handler. */}
                       <Button
                         variant="ghost"
