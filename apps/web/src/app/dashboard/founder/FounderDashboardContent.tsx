@@ -46,6 +46,7 @@ import {
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { CommitmentOutcomes } from '@/components/commitments/CommitmentOutcomes';
+import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -1265,6 +1266,9 @@ export default function FounderDashboardContent() {
         {/* Beside readiness: whether the people the startup needs are coming -
             each need card's outcome and the steps waiting on the founder. */}
         <CommitmentOutcomes />
+
+        {/* What the October round added, each with the place to try it. */}
+        <WhatsNewPanel audience="founder" />
       </div>
     </AppShell>
   );

@@ -40,6 +40,7 @@ import {
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
+import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 
 /*
  * The organisation's home.
@@ -200,6 +201,7 @@ export default function IncubatorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
+        <WhatsNewPanel audience="org" />
 
         {isNone && (
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">

@@ -39,6 +39,7 @@ import { mentorDemoMonthEarnings, mentorDemoRating } from '@/lib/demo/mentor-wor
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
+import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 
 type MenteeRow = { id: string; name: string; startup: string | null; sessionsCompleted: number; avatarUrl: string | null };
 type SessionRow = { id: string; menteeName: string; scheduledAt: string; duration: number; meetingUrl?: string | null };
@@ -259,6 +260,7 @@ export default function MentorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
+        <WhatsNewPanel audience="mentor" />
 
         {/* Within the hour, the next session is the one thing on this page. */}
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && nextSession && (
