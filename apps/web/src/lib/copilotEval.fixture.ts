@@ -104,6 +104,12 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Ακολούθησε την Έλενα', tool: 'follow_person', args: { name: 'Elena' } },
   { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
   { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },
+  // Plain-language search: known words become the Discover filters.
+  { message: 'Find a cofounder for fintech in Thessaloniki, part-time', tool: 'search_people', args: { roles: 'founder', industries: 'Fintech', commitment: 'part-time', location: 'Thessaloniki' }, read: true },
+  { message: 'Ψάχνω συνιδρυτή SaaS στην Αθήνα, πλήρης απασχόληση', tool: 'search_people', args: { roles: 'founder', industries: 'SaaS', commitment: 'full-time', location: 'Athens' }, read: true },
+  { message: 'Show me angel investors for pre-seed in Limassol', tool: 'search_people', args: { roles: 'investor', fundingStage: 'pre-seed', location: 'Limassol' }, read: true },
+  // «τεχνικό» contains «νικο»: this searched for Nikos until names had to start a word.
+  { message: 'Ψάξε τεχνικό συνιδρυτή για fintech', tool: 'search_people', args: { q: 'technical', roles: 'founder', industries: 'Fintech' }, read: true },
 ];
 
 /** Writes the planner may propose; a question proposing one of these fails. */

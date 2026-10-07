@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { VerificationMethod } from '@cofounderbay/shared';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
@@ -8,6 +9,7 @@ import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
 import { cn, initialsOf } from '@/lib/utils';
 import { NonGuaranteeNote } from './NonGuaranteeNote';
 import { OutcomeChip } from './OutcomeChip';
+import { VerifiedBadge } from './VerifiedBadge';
 
 /** What a need card needs to render: the API's card, the public card, or the guide's live draft. */
 export type NeedCardView = {
@@ -26,7 +28,7 @@ export type NeedCardView = {
   version?: number;
   outcome?: 'open' | 'in_discussion' | 'agreed' | 'closed';
   closedReason?: string | null;
-  owner?: { displayName: string; headline: string | null };
+  owner?: { displayName: string; headline: string | null; verifiedMethods?: readonly VerificationMethod[] };
 };
 
 function Sentence({ label, text }: { label: { en: string; el: string }; text: string }) {
@@ -97,6 +99,7 @@ export function NeedCard({
               <span className="font-medium text-foreground">{card.owner.displayName}</span>
               {card.owner.headline ? ` · ${card.owner.headline}` : ''}
             </p>
+            <VerifiedBadge methods={card.owner?.verifiedMethods ?? []} />
           </div>
         ) : null}
       </header>

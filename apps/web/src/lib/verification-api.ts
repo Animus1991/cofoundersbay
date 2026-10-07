@@ -1,4 +1,4 @@
-import type { VerificationMethod, VerificationSignal } from '@cofounderbay/shared';
+import { VERIFICATION_METHODS, type VerificationMethod, type VerificationSignal } from '@cofounderbay/shared';
 import { apiRequest } from '@/lib/api';
 
 /** The signed-in person's verification, from `GET /api/verification/me`. */
@@ -18,6 +18,13 @@ export function toMyVerification(raw: unknown): MyVerification {
     linkedinAvailable: r.linkedinAvailable === true,
     pendingWorkEmail: typeof r.pendingWorkEmail === 'string' ? r.pendingWorkEmail : null,
   };
+}
+
+/** How someone else is verified: methods only, unknown values dropped. */
+export async function getVerifiedMethods(userId: string): Promise<VerificationMethod[]> {
+  const raw = await apiRequest<unknown>(`/api/verification/of/${encodeURIComponent(userId)}`, undefined, { retryOn401: false });
+  const methods = (raw as { methods?: unknown } | null)?.methods;
+  return Array.isArray(methods) ? methods.filter((m): m is VerificationMethod => (VERIFICATION_METHODS as readonly string[]).includes(m as string)) : [];
 }
 
 export async function getMyVerification(): Promise<MyVerification> {

@@ -463,6 +463,8 @@ export function resetDemoCommitments() {
 }
 
 const person = (id: string) => ({ id, displayName: PEOPLE[id]?.displayName ?? 'Member', avatarUrl: null, headline: PEOPLE[id]?.headline ?? null, role: PEOPLE[id]?.role ?? null });
+/** A card's author, with the badge the API reads live beside their name. */
+const author = (id: string) => ({ ...person(id), verifiedMethods: demoPersonMethods(id) });
 
 function cardShape(world: World, card: Card) {
   const mine = card.ownerId === ME;
@@ -491,7 +493,7 @@ function cardShape(world: World, card: Card) {
     expiresAt: card.expiresAt,
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
-    owner: person(card.ownerId),
+    owner: author(card.ownerId),
     isMine: mine,
     shareToken: mine ? card.shareToken : null,
     shared: Boolean(card.shareToken),
@@ -671,7 +673,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
         version: shape.version,
         outcome: shape.outcome,
         settledAt: shape.settledAt,
-        owner: { displayName: shape.owner.displayName, headline: shape.owner.headline, avatarUrl: null },
+        owner: { displayName: shape.owner.displayName, headline: shape.owner.headline, avatarUrl: null, verifiedMethods: shape.owner.verifiedMethods },
       },
     };
   }

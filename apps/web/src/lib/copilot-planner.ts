@@ -1,3 +1,4 @@
+import { readNaturalSearch } from '@cofounderbay/shared';
 import { resolveRouteTarget } from '@/lib/action-registry';
 import { namesCanvasSurface, planCanvasCommandArgs } from '@/lib/canvas/plan-canvas-command';
 import type { AreaReadId } from './copilot-reads';
@@ -28,7 +29,8 @@ const LOCATION_ALIASES: Array<{ keys: string[]; value: string }> = [
   { keys: ['athens', 'αθήνα', 'αθηνα', 'greece', 'ελλάδα', 'ελλαδα'], value: 'Athens' },
   { keys: ['berlin', 'berlín', 'germany'], value: 'Berlin' },
   { keys: ['london', 'uk'], value: 'London' },
-  { keys: ['cyprus', 'limassol', 'κύπρο', 'κυπρο'], value: 'Cyprus' },
+  { keys: ['limassol', 'λεμεσ'], value: 'Limassol' },
+  { keys: ['cyprus', 'κύπρο', 'κυπρο'], value: 'Cyprus' },
 ];
 
 const PERSON_ALIASES: Array<{ keys: string[]; name: string }> = [
@@ -498,8 +500,31 @@ export function detectLocation(message: string): string | undefined {
 }
 
 export function detectPersonName(message: string): string | undefined {
-  const hit = PERSON_ALIASES.find((alias) => includesAny(message, alias.keys));
+  // A name starts a word: «νίκο» is inside «τεχνικό», and "Find a technical
+  // co-founder" in Greek used to search for Nikos.
+  const words = fold(message).split(/[^\p{L}]+/u).filter(Boolean);
+  const hit = PERSON_ALIASES.find((alias) => alias.keys.some((key) => words.some((w) => w.startsWith(fold(key)))));
   return hit?.name;
+}
+
+/**
+ * The /discover reading of a request added to `search_people` arguments:
+ * "συνιδρυτή SaaS full-time" is a role, an industry and a commitment, not
+ * text every profile must contain. Words read as filters leave the text.
+ */
+function withNaturalFilters(args: Record<string, string>, rawMessage: string): Record<string, string> {
+  const natural = readNaturalSearch(rawMessage);
+  if (natural.roles.length) args.roles = natural.roles.join(',');
+  if (natural.industries.length) args.industries = natural.industries.join(',');
+  if (natural.availability.length) args.commitment = natural.availability.join(',');
+  if (natural.fundingStage.length) args.fundingStage = natural.fundingStage.join(',');
+  if (!args.location && natural.location) args.location = natural.location;
+  if (args.q && natural.understood.length) {
+    const rest = [...new Set(readNaturalSearch(args.q).rest.split(/\s+/).filter(Boolean))].join(' ');
+    if (rest) args.q = rest;
+    else delete args.q;
+  }
+  return args;
 }
 
 export function detectNavigateHref(message: string): { href: string; label: string } | undefined {
@@ -736,9 +761,11 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     else if (q) args.q = q;
     if (location) args.location = location;
     if (includesAny(message, ['technical', 'τεχνικ', 'engineer', 'developer'])) {
-      args.q = [args.q, 'technical'].filter(Boolean).join(' ');
+      // «τεχνικό» is the same request as "technical": keep one of them.
+      const words = (args.q ?? '').split(/\s+/).filter((w) => w && !fold(w).startsWith('τεχνικ') && w.toLowerCase() !== 'technical');
+      args.q = [...words, 'technical'].join(' ');
     }
-    add('search_people', args);
+    add('search_people', withNaturalFilters(args, rawMessage));
   }
 
   if (wantsMatches) add('get_recommendations');
@@ -840,7 +867,13 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   const quoted = detectQuotedName(rawMessage);
   // A need card is asked for with "write" or "make" as often as "draft".
   const needCardNoun = includesAny(message, ['need card', 'need-card', 'κάρτα ανάγκης', 'καρτα αναγκης', 'κάρτας ανάγκης', 'καρτας αναγκης']);
-  const needCardVerb = draftVerb || includesAny(message, ['write', 'create', 'make', 'new ', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε', 'νέα ', 'νεα ']);
+  // "new" asks for one only when it is not a question: "Any new founder
+  // updates?" reads the feed, "New founder update: September" drafts one.
+  const asksQuestion = /[?;\u037e]\s*$/.test(rawMessage.trim());
+  const needCardVerb =
+    draftVerb ||
+    includesAny(message, ['write', 'create', 'make', 'γράψε', 'γραψε', 'φτιάξε', 'φτιαξε', 'δημιούργησε', 'δημιουργησε']) ||
+    (!asksQuestion && includesAny(message, ['new ', 'νέα ', 'νεα ']));
   // A founder update, like a need card, is asked for with "write" as often as "draft".
   const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
   const scoutNoun = includesAny(message, ['scout brief', 'brief for the scout', 'σημείωμα ανιχνευτ', 'σημειωμα ανιχνευτ']);
@@ -904,7 +937,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (nav && !tools.some((t) => t.name === 'canvas_command')) add('navigate', { href: nav.href, label: nav.label });
 
   if (tools.length === 0) {
-    if (person || location) add('search_people', { ...(person ? { q: person } : {}), ...(location ? { location } : {}) });
+    const natural = readNaturalSearch(rawMessage);
+    // "ψάχνω συνιδρυτή SaaS στην Αθήνα" names who, not a verb the intents know.
+    const describesPeople = natural.roles.length > 0 && natural.understood.length > 1;
+    if (person || location || describesPeople) add('search_people', withNaturalFilters({ ...(person ? { q: person } : {}), ...(location ? { location } : {}) }, rawMessage));
     else add('get_graph');
   }
 

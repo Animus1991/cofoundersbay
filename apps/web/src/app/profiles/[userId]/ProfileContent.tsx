@@ -50,6 +50,7 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
@@ -330,7 +331,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               </Avatar>
 
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
+                  <PersonVerifiedBadge userId={userId} />
+                </div>
                 {profile.headline && (
                   <p className="text-sm text-muted-foreground">{profile.headline}</p>
                 )}

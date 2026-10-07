@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Role } from '@prisma/client';
 import { Prisma } from '@prisma/client';
-import { computeMatchScore, planPromotes, PROMOTED_SLOTS, type ProfileSnapshot } from '@cofounderbay/shared';
+import { computeMatchScore, placeVariants, planPromotes, PROMOTED_SLOTS, type ProfileSnapshot } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { MeilisearchService } from './meilisearch.service';
 
@@ -81,19 +81,28 @@ export class SearchService {
     if (params.roles?.length) {
       where.user = { role: { in: params.roles as Role[] } };
     }
+    const and: Prisma.ProfileWhereInput[] = [];
+
     if (params.location) {
-      where.location = { contains: params.location, mode: 'insensitive' };
+      // «Θεσσαλονίκη» and "Thessaloniki" are one place: any spelling matches.
+      const variants = placeVariants(params.location);
+      and.push({ OR: variants.map((v) => ({ location: { contains: v, mode: 'insensitive' as const } })) });
     }
     if (params.q) {
-      const q = params.q.trim();
-      if (q) {
-        where.OR = [
-          { displayName: { contains: q, mode: 'insensitive' } },
-          { headline: { contains: q, mode: 'insensitive' } },
-          { bio: { contains: q, mode: 'insensitive' } },
-          { location: { contains: q, mode: 'insensitive' } },
-          { skills: { some: { skill: { name: { contains: q, mode: 'insensitive' } } } } },
-        ];
+      // Every word must match somewhere, in any order. A phrase used to be
+      // one substring, so "technical cofounder Athens" found nobody; every
+      // profile it did find still matches each of its words.
+      const words = params.q.trim().split(/\s+/).filter(Boolean).slice(0, 8);
+      for (const word of words) {
+        and.push({
+          OR: [
+            { displayName: { contains: word, mode: 'insensitive' } },
+            { headline: { contains: word, mode: 'insensitive' } },
+            { bio: { contains: word, mode: 'insensitive' } },
+            { location: { contains: word, mode: 'insensitive' } },
+            { skills: { some: { skill: { name: { contains: word, mode: 'insensitive' } } } } },
+          ],
+        });
       }
     }
     if (params.skills?.length) {
@@ -103,8 +112,6 @@ export class SearchService {
         },
       };
     }
-
-    const and: Prisma.ProfileWhereInput[] = [];
 
     if (params.languages?.length) {
       and.push({

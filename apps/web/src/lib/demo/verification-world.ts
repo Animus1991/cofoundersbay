@@ -69,7 +69,11 @@ export function demoMeVerified(now = Date.now()): boolean {
   return meetsLadderPolicy(load(now).signals, now);
 }
 
-export function demoPersonMethods(userId: string): VerificationMethod[] {
+export function demoPersonMethods(userId: string, now = Date.now()): VerificationMethod[] {
+  // The demo founder's own badge follows Settings: remove the signal there and it goes.
+  if (userId === 'preview-demo-user' || userId === 'preview') {
+    return load(now).signals.filter((s) => !s.expiresAt || Date.parse(s.expiresAt) > now).map((s) => s.method);
+  }
   return PEOPLE_METHODS[userId] ?? [];
 }
 
@@ -84,6 +88,9 @@ export function previewVerificationApi(pathname: string, method: string, body: R
   if (!pathname.startsWith('/api/verification')) return undefined;
   const state = load(now);
   if (pathname === '/api/verification/me' && method === 'GET') return me(now);
+  if (pathname.startsWith('/api/verification/of/') && method === 'GET') {
+    return { methods: demoPersonMethods(decodeURIComponent(pathname.slice('/api/verification/of/'.length)), now) };
+  }
   if (pathname === '/api/verification/work-email/start' && method === 'POST') {
     const email = typeof body.email === 'string' ? body.email : '';
     const check = workEmailDomain(email);

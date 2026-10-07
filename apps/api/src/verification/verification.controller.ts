@@ -15,6 +15,18 @@ export class VerificationController {
     return this.verification.me(user.id);
   }
 
+  /**
+   * How someone is verified, for the badge beside their name on a profile,
+   * a need card or a public card: methods only, never the work domain, a
+   * date or whether a check is pending. Public because those pages are.
+   */
+  @Get('of/:userId')
+  @Throttle({ default: { ttl: 60_000, limit: 120 } })
+  async of(@Param('userId') userId: string) {
+    if (!userId || userId.length > 64) return { methods: [] };
+    return { methods: await this.verification.publicMethods(userId) };
+  }
+
   @Post('work-email/start')
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { ttl: 10 * 60_000, limit: 3 } })

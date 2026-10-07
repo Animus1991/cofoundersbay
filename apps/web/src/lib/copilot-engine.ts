@@ -1,4 +1,4 @@
-import { canUseAction } from '@cofounderbay/shared';
+import { canUseAction, readNaturalSearch } from '@cofounderbay/shared';
 import {
   getMeProfile,
   getNotificationUnreadCount,
@@ -664,9 +664,22 @@ export async function runCopilotTurn(
     }
 
     if (tool.name === 'search_people') {
+      // The same reading as the /discover field: known words become filters,
+      // the rest stays text, so "investor fintech Limassol" is three filters.
+      const read = readNaturalSearch(String(tool.args?.q ?? ''));
+      const list = (arg: unknown, more: readonly string[]) => {
+        const all = [...String(arg ?? '').split(','), ...more].map((v) => v.trim()).filter(Boolean);
+        return all.length ? [...new Set(all)] : undefined;
+      };
       const result = await searchProfiles({
-        q: tool.args.q,
-        location: tool.args.location,
+        q: read.understood.length ? read.rest || undefined : tool.args?.q,
+        location: tool.args?.location || read.location || undefined,
+        roles: list(tool.args?.roles, read.roles),
+        industries: list(tool.args?.industries, read.industries),
+        stage: list(undefined, read.stage),
+        commitment: list(tool.args?.commitment, read.availability),
+        investmentStages: list(tool.args?.fundingStage, read.fundingStage),
+        languages: list(undefined, read.languages),
         limit: 6,
       });
       people = result.hits ?? [];

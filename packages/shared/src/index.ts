@@ -13,3 +13,4 @@ export * from './intros';
 export * from './evidence';
 export * from './scout';
 export * from './promotion';
+export * from './search';

@@ -332,6 +332,27 @@ export class CommitmentsService {
     return out;
   }
 
+  /**
+   * The author's verification methods, read live (a signal can lapse or be
+   * removed after the card was written), for the badge beside their name.
+   * Methods only: never the work domain or a date. A failed lookup shows no
+   * badge rather than failing the read.
+   */
+  private async withOwnerVerification<T extends { owner: { id: string } }>(cards: T[]): Promise<Array<T & { owner: T['owner'] & { verifiedMethods: string[] } }>> {
+    const ids = [...new Set(cards.map((c) => c.owner.id).filter(Boolean))];
+    const methods = new Map<string, string[]>();
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          methods.set(id, await this.verification.publicMethods(id));
+        } catch {
+          methods.set(id, []);
+        }
+      }),
+    );
+    return cards.map((c) => ({ ...c, owner: { ...c.owner, verifiedMethods: methods.get(c.owner.id) ?? [] } }));
+  }
+
   // ── Cards ─────────────────────────────────────────────────────────────────
 
   async listCards(
@@ -374,7 +395,7 @@ export class CommitmentsService {
         threads: { select: { id: true, candidateId: true, step: true } },
       },
     });
-    return { cards: rows.map((row) => this.cardShape(row as CardRow, viewer.id)) };
+    return { cards: await this.withOwnerVerification(rows.map((row) => this.cardShape(row as CardRow, viewer.id))) };
   }
 
   async getCard(viewer: Viewer, id: string) {
@@ -387,7 +408,8 @@ export class CommitmentsService {
       },
     });
     if (!card) throw new NotFoundException('Need card not found');
-    return { card: this.cardShape(card as CardRow, viewer.id) };
+    const [shaped] = await this.withOwnerVerification([this.cardShape(card as CardRow, viewer.id)]);
+    return { card: shaped };
   }
 
   async createCard(viewer: Viewer, body: Record<string, unknown>) {
@@ -557,6 +579,7 @@ export class CommitmentsService {
     });
     if (!card) throw new NotFoundException('This link is not valid or was turned off');
     const owner = person(card.owner as PersonRow);
+    const [{ owner: verifiedOwner }] = await this.withOwnerVerification([{ owner }]);
     return {
       card: {
         id: card.id,
@@ -575,7 +598,8 @@ export class CommitmentsService {
         version: card.version,
         outcome: card.status,
         settledAt: iso(card.settledAt),
-        owner: { displayName: owner.displayName, headline: owner.headline, avatarUrl: owner.avatarUrl },
+        // No id: the public card never names who the author is in the database.
+        owner: { displayName: owner.displayName, headline: owner.headline, avatarUrl: owner.avatarUrl, verifiedMethods: verifiedOwner.verifiedMethods },
       },
     };
   }

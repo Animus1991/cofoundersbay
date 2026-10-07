@@ -174,11 +174,23 @@ describe('CommitmentsService', () => {
       const { token } = await service.shareCard(ELENA, card.id);
       const { card: open } = await service.getPublicCard(token);
       expect(open.title).toBe(CARD.title);
-      expect(open.owner).toEqual({ displayName: 'Elena Papadopoulos', headline: null, avatarUrl: null });
+      // The badge says how she is verified, never the domain or the date.
+      expect(open.owner).toEqual({ displayName: 'Elena Papadopoulos', headline: null, avatarUrl: null, verifiedMethods: ['work_email'] });
       const serialised = JSON.stringify(open);
       for (const leak of ['u-elena', 'projectRef', 'shareToken', token, 'elena@harbor.test']) {
         expect(serialised).not.toContain(leak);
       }
+    });
+
+    it('carries the author’s verification live, on the board and on the public card', async () => {
+      const card = await publish();
+      expect((await service.getCard(MARCUS, card.id)).card.owner.verifiedMethods).toEqual(['work_email']);
+      expect((await service.listCards(MARCUS, {})).cards[0].owner.verifiedMethods).toEqual(['work_email']);
+      // A signal that lapses after the card was written is not shown.
+      verified.delete(ELENA.id);
+      expect((await service.getCard(MARCUS, card.id)).card.owner.verifiedMethods).toEqual([]);
+      const { token } = await service.shareCard(ELENA, card.id);
+      expect((await service.getPublicCard(token)).card.owner.verifiedMethods).toEqual([]);
     });
 
     it('stops working the moment it is revoked', async () => {
