@@ -33,8 +33,8 @@ export function ProfileCompletionRing({
 }) {
   const sizeConfig = {
     sm: { container: 'h-16 w-16', radius: 28, stroke: 2, text: 'text-sm' },
-    md: { container: 'h-24 w-24', radius: 42, stroke: 3, text: 'text-lg' },
-    lg: { container: 'h-32 w-32', radius: 56, stroke: 4, text: 'text-2xl' },
+    md: { container: 'h-24 w-24', radius: 42, stroke: 6, text: 'text-lg' },
+    lg: { container: 'h-32 w-32', radius: 56, stroke: 8, text: 'text-2xl' },
   };
 
   const config = sizeConfig[size];

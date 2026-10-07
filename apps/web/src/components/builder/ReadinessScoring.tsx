@@ -434,7 +434,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cy="64"
                     r="56"
                     stroke="hsl(var(--ring-gold-track))"
-                    strokeWidth="3.5"
+                    strokeWidth="8"
                     fill="none"
                   />
                   <circle
@@ -442,7 +442,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
                     cy="64"
                     r="56"
                     stroke="hsl(var(--ring-gold))"
-                    strokeWidth="3.5"
+                    strokeWidth="8"
                     strokeLinecap="round"
                     fill="none"
                     strokeDasharray={`${(data.overallScore / 100) * 352} 352`}

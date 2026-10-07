@@ -166,24 +166,17 @@ function MedalFace({
   rarity: string;
 }) {
   const fillId = `cfb-medal-fill-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  const glowId = `cfb-medal-glow-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const ring = rarityRing(rarity);
 
   return (
     <div className="relative flex h-[4.5rem] w-[4.5rem] items-center justify-center" aria-hidden="true">
       <div
-        className="pointer-events-none absolute inset-[-6px] rounded-full opacity-70 blur-2xl"
-        style={{ backgroundColor: ring }}
+        className="pointer-events-none absolute inset-[-6px] rounded-full border opacity-60"
+        style={{ borderColor: ring }}
+        aria-hidden="true"
       />
       <svg viewBox="0 0 72 72" className="absolute inset-0 h-full w-full">
         <defs>
-          <filter id={glowId} x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="2.4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
           <radialGradient id={fillId} cx="38%" cy="30%" r="72%">
             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
             <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
@@ -198,12 +191,11 @@ function MedalFace({
           fill="none"
           stroke={ring}
           strokeWidth="3"
-          filter={`url(#${glowId})`}
         />
         <circle cx="36" cy="36" r="24.5" fill="none" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1.4" />
         <circle cx="36" cy="36" r="20" fill="none" stroke="hsl(var(--background) / 0.55)" strokeWidth="1" />
       </svg>
-      <CfbGlyph name={glyph} className="relative icon-lg text-primary-accessible drop-shadow-[0_0_10px_hsl(var(--primary)/0.55)]" />
+      <CfbGlyph name={glyph} className="relative icon-lg text-primary-accessible" />
     </div>
   );
 }

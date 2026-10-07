@@ -73,7 +73,7 @@ function eventLabel(type: string) {
 }
 
 function LevelRing({ progress, level, size = 140 }: { progress: number; level: number; size?: number }) {
-  const r = size / 2 - 10;
+  const r = size / 2 - 12;
   const circ = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, progress));
   return (
@@ -84,10 +84,10 @@ function LevelRing({ progress, level, size = 140 }: { progress: number; level: n
       aria-label={bilingualAria(`Level ${level} of 10, ${pct}% of the way to the next level`, `Επίπεδο ${level} από 10, ${pct}% της διαδρομής προς το επόμενο`)}
     >
       <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={3.5} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={8} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
-          stroke="hsl(var(--ring-gold))" strokeWidth={3.5} strokeLinecap="round"
+          stroke="hsl(var(--ring-gold))" strokeWidth={8} strokeLinecap="round"
           className="transition-[stroke-dasharray] duration-700"
           strokeDasharray={`${(pct / 100) * circ} ${circ}`}
         />

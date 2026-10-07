@@ -884,7 +884,7 @@ export function NoChatSelected({
       />
       <div className="relative flex max-w-md flex-col items-center gap-5">
         <div className="relative">
-          <div className="absolute -inset-6 rounded-full bg-primary/15 blur-2xl" />
+          <div className="absolute -inset-6 rounded-full border border-primary/15 bg-primary/[0.04]" />
           <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-primary/[0.06]">
             <CfbGlyph name="messages" className="h-10 w-10 text-primary-accessible" />
           </div>

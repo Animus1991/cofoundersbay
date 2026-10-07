@@ -62,7 +62,7 @@ function RadialGauge({ score }: { score: number }) {
          for a real gap between the two lines and still leaves 10.8px around
          them. The gauge is `shrink-0` beside a text column that stacks below
          `sm`, so the 8px costs no layout. */
-        className="relative h-[88px] w-[88px] shrink-0 after:pointer-events-none after:absolute after:inset-2 after:rounded-full after:bg-primary/20 after:blur-md after:content-['']"
+        className="relative h-[88px] w-[88px] shrink-0 after:pointer-events-none after:absolute after:inset-2 after:rounded-full after:border after:border-primary/15 after:bg-primary/[0.04] after:content-['']"
       role="img"
       aria-label={bilingualAria(
         `Venture readiness ${score} out of 100 — ${labelEn}`,

@@ -344,7 +344,6 @@ function ScoreEmblem({
   const r = 78;
   const circ = 2 * Math.PI * r;
   const status = scoreToStatus(score);
-  const stroke = SCORE_STROKE[status];
   const colors = scoreColors(status);
   const next = NEXT_TIER[status];
   const ptsToNext = next ? next.score - score : 0;
@@ -366,13 +365,11 @@ function ScoreEmblem({
             `Συνολική ετοιμότητα ${score} στα 100 — ${STATUS_LABEL[status].el}`,
           )}
         >
+        {/* Separation is a 1px tint outline, not a haze: no blurred disc, no
+            glow filter, no inset shadow — they read as a stain on the card
+            seam beside this emblem. */}
         <div
-          className="pointer-events-none absolute inset-[18px] rounded-full opacity-50 blur-3xl"
-          style={{ backgroundColor: stroke }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04] shadow-[inset_0_1px_0_hsl(var(--primary)/0.25)]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-[184px] w-[184px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 bg-primary/[0.04]"
           aria-hidden="true"
         />
         <svg
@@ -383,13 +380,6 @@ function ScoreEmblem({
           aria-hidden="true"
         >
           <defs>
-            <filter id={glowId} x="-25%" y="-25%" width="150%" height="150%">
-              <feGaussianBlur stdDeviation="3.2" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
             <radialGradient id={`${glowId}-fill`} cx="38%" cy="32%" r="70%">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.18" />
               <stop offset="100%" stopColor="hsl(var(--card))" stopOpacity="0.9" />
@@ -397,17 +387,16 @@ function ScoreEmblem({
           </defs>
           <circle cx={cx} cy={cy} r={r - 14} fill={`url(#${glowId}-fill)`} />
           <circle cx={cx} cy={cy} r={r + 6} fill="none" stroke="hsl(var(--primary) / 0.18)" strokeWidth={2} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={4.5} />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={10} />
           <circle
             cx={cx}
             cy={cy}
             r={r}
             fill="none"
             stroke="hsl(var(--ring-gold))"
-            strokeWidth={4.5}
+            strokeWidth={10}
             strokeLinecap="round"
             strokeDasharray={`${(score / 100) * circ} ${circ}`}
-            filter={`url(#${glowId})`}
           />
           <circle cx={cx} cy={cy} r={r - 18} fill="none" stroke="hsl(var(--primary) / 0.22)" strokeWidth={1.5} />
         </svg>
@@ -435,7 +424,7 @@ function ScoreEmblem({
                 `${dim.labelEn} ${dim.pct}%`,
                 `${dim.labelEl} ${dim.pct}%`,
               )}
-              className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full shadow-sm ring-2 ring-background transition-transform hover:scale-125"
+              className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background transition-transform hover:scale-125"
               style={{
                 left: x,
                 top: y,

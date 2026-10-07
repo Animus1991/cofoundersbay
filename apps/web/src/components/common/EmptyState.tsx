@@ -84,10 +84,10 @@ export function EmptyState({
         className,
       )}
     >
-      {/* Quiet identity wash */}
+      {/* Quiet identity wash — crisp tint outlines, not a blurred stain. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-10">
-        <div className="absolute -top-12 left-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
-        <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
+        <div className="absolute -top-12 left-8 h-32 w-32 rounded-full border border-primary/20 bg-primary/[0.04]" />
+        <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full border border-primary/15 bg-primary/[0.03]" />
       </div>
       <div className="relative space-y-4">
         {/* SVG Illustration */}
