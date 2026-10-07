@@ -3204,6 +3204,11 @@ textarea[class~="border-input"]:focus,
    (16.99 × 0.97 → 16.48, 15.21 × 0.97 → 14.75, 15.68 × 0.97 → 15.21,
    16.66 × 0.97 → 16.16). Fields stay at 16.16px, above the iOS zoom floor.
 
+   The dashboard is the phone standard for the same role on every page.
+   text-xl through text-7xl, including pages and dialogs outside
+   #main-content, sit on the title step (16.48). The readiness gauge sits
+   on the figure step (16.66).
+
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
    .text-* steps are raised too; the #main-content rules repeat them because
@@ -3296,6 +3301,11 @@ textarea[class~="border-input"]:focus,
     line-height: 1.35;
   }
 
+  #main-content .score-emblem-figure {
+    font-size: 16.66px;
+    line-height: 1;
+  }
+
   #main-content .text-base,
   #main-content .text-lg,
   #main-content p.page-section,
@@ -3316,6 +3326,14 @@ textarea[class~="border-input"]:focus,
     line-height: 1.45;
   }
 
+  .text-xl,
+  .text-2xl,
+  .text-3xl,
+  .text-4xl,
+  .text-5xl,
+  .text-6xl,
+  .text-7xl,
+  .text-\[2\.75rem\],
   #main-content .text-xl,
   #main-content .text-2xl,
   #main-content .text-3xl,
@@ -3371,11 +3389,10 @@ textarea[class~="border-input"]:focus,
   }
 }
 
-/* Landing intro. The shell cap folds every text-5xl inside #main-content
-   down to the page-title step, including this poster. These selectors are
-   one element more specific, so the headline, the line under it, and the
-   live counts keep a size that fits the viewport. Pixels, not rem: the
-   desktop root is 82% and would shrink a rem a second time.
+/* Landing intro. On a phone the headline, the line under it, and the live
+   counts use the dashboard steps (title 16.48, lead 14.75, stat 16.48).
+   From 640px they keep the poster sizes. Pixels, not rem: the desktop root
+   is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
    another 5% (54.72px), so the lilac stays a shape. On a phone the
    poster column is 2% narrower than the full width; from 640px it is
@@ -3389,16 +3406,16 @@ textarea[class~="border-input"]:focus,
   }
 }
 #main-content h1.landing-display {
-  font-size: 32px;
+  font-size: 16.48px;
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 #main-content p.landing-lead {
-  font-size: 17px;
+  font-size: 14.75px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 22px;
+  font-size: 16.48px;
   line-height: 1.2;
 }
 @media (min-width: 640px) {

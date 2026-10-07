@@ -59,6 +59,10 @@ describe('phone reading scale', () => {
     expect(fontSize('#main-content .text-lg')).toBe('15.29px');
     expect(fontSize('#main-content h1.page-title')).toBe('16.48px');
     expect(fontSize('#main-content p.page-stat-label')).toBe('13.31px');
+    expect(fontSize('.text-xl')).toBe('16.48px');
+    expect(fontSize('.text-4xl')).toBe('16.48px');
+    expect(fontSize('.text-7xl')).toBe('16.48px');
+    expect(fontSize('#main-content .score-emblem-figure')).toBe('16.66px');
     expect(BLOCK).not.toMatch(/min-width/);
     expect(BLOCK).not.toMatch(/12\.2412px/);
   });
