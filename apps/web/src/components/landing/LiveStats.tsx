@@ -37,11 +37,11 @@ export function LiveStatsStrip() {
     { value: number(stats.events), label: { en: 'Events hosted', el: 'Εκδηλώσεις' } },
   ];
   return (
-    <div className="mt-16 w-full animate-fade-in" style={{ animationDelay: '400ms' }}>
-      <div className="grid grid-cols-3 gap-4 sm:gap-6">
+    <div className="mt-8 w-full animate-fade-in sm:mt-16" style={{ animationDelay: '400ms' }}>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-6">
         {items.map(({ value, label }) => (
-          <div key={label.en} className="rounded-xl border border-border bg-card/50 p-4 text-center backdrop-blur-sm">
-            <p className="font-display text-2xl font-bold text-foreground">{value}</p>
+          <div key={label.en} className="rounded-xl border border-border bg-card/50 px-3 py-3 text-center backdrop-blur-sm sm:p-4">
+            <p className="landing-stat font-display font-bold text-foreground">{value}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               <BilingualText en={label.en} el={label.el} compact />
             </p>

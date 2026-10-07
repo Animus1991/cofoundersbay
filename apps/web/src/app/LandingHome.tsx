@@ -475,13 +475,15 @@ export function LandingHome() {
       <MainLandmark>
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-[52px]">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute left-1/4 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 h-96 w-96 translate-x-1/2 rounded-full bg-accent/8 blur-3xl" />
-          <div className="absolute inset-0 bg-hero-radial opacity-60" />
+      <section className="relative flex items-start overflow-hidden pt-[52px] sm:min-h-screen sm:items-center">
+        {/* blur-3xl is 64px. 10% less, then another 5% (54.72px).
+            The accent token is the page colour, so that orb never showed;
+            both washes use the lilac tint the headline sits on. */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <div className="landing-wash absolute left-[18%] top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/[0.16] sm:left-1/4 sm:h-96 sm:w-96" />
+          <div className="landing-wash absolute bottom-0 right-[12%] h-56 w-56 translate-x-1/2 rounded-full bg-primary/[0.11] sm:right-1/4 sm:h-96 sm:w-96" />
         </div>
-        <div className="relative mx-auto w-full px-6 py-24 text-center sm:px-8 lg:px-12 xl:px-16">
+        <div className="landing-intro relative mx-auto w-full px-4 py-8 text-center sm:px-8 sm:py-24 lg:px-12 xl:px-16">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="icon-sm" />
@@ -490,22 +492,18 @@ export function LandingHome() {
           </div>
 
           <h1
-            className="animate-fade-in font-display text-5xl font-semibold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl"
+            className="landing-display animate-fade-in font-display font-semibold tracking-tight text-foreground"
             style={{ animationDelay: '100ms' }}
           >
             Find your{' '}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              co-founder,
-            </span>
+            <span className="text-primary-accessible">co-founder,</span>
             <br />
             mentor, or{' '}
-            <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
-              investor
-            </span>
+            <span className="text-primary-accessible">investor</span>
           </h1>
 
           <p
-            className="mx-auto mt-6 max-w-3xl animate-fade-in text-lg text-muted-foreground md:text-xl"
+            className="landing-lead mx-auto mt-4 max-w-3xl animate-fade-in text-muted-foreground sm:mt-6"
             style={{ animationDelay: '200ms' }}
           >
             CoFounderBay connects founders, mentors, investors, and accelerators through smart
@@ -513,16 +511,16 @@ export function LandingHome() {
           </p>
 
           <div
-            className="mt-10 flex animate-fade-in flex-col items-center justify-center gap-4 sm:flex-row"
+            className="mx-auto mt-8 flex w-full max-w-sm animate-fade-in flex-col items-stretch justify-center gap-3 sm:mt-10 sm:max-w-none sm:flex-row sm:items-center"
             style={{ animationDelay: '300ms' }}
           >
-            <Button size="lg" className="gap-2 px-8 py-6 text-base" asChild>
+            <Button size="lg" className="w-full gap-2 sm:w-auto" asChild>
               <Link href="/register">
                 <BilingualText en="Get started free" el="Ξεκινήστε δωρεάν" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
-            <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
+            <Button variant="ghost" size="lg" className="w-full text-muted-foreground hover:text-foreground sm:w-auto" asChild>
               <Link href="/demo">
                 <Play className="icon-sm" />
                 <BilingualText en="Try Demo" el="Δοκιμάστε το demo" compact />
