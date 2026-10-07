@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -47,6 +48,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
+import { MainLandmark } from '@/components/layout/AppShell';
 import { bilingualInline } from '@/lib/i18n/format';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
@@ -431,6 +433,43 @@ function AskSlide({ slide }: { slide: SlideBase }) {
   );
 }
 
+/** Money, equity or percentages in free text: the slide carries the non-guarantee note. */
+const MONEY_WORDS = /[€$£%]|\b(?:raise|raising|funding|equity|valuation|investment|revenue)\b|χρηματοδότ|μετοχ|αποτίμησ|επένδυσ|έσοδ/i;
+
+/**
+ * A builder slide published as written: free text, its line breaks kept and
+ * leading bullets read as a list. The richer renderers above need structured
+ * fields the builder does not collect, so the server only uses them where the
+ * text fits honestly.
+ */
+function TextSlide({ slide }: { slide: SlideBase }) {
+  const body = typeof (slide.content as { body?: unknown }).body === 'string' ? ((slide.content as { body: string }).body) : '';
+  const rows = body.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const bullets = rows.filter((line) => /^(?:[-*•·]|\d+[.)])\s+/.test(line));
+  return (
+    <div className="flex h-full flex-col justify-center px-6 py-8 sm:px-12">
+      <h2 className="mb-6 text-2xl font-semibold sm:text-3xl">{slide.title}</h2>
+      {bullets.length === rows.length && rows.length > 1 ? (
+        <ul className="space-y-3">
+          {rows.map((line, i) => (
+            <li key={i} className="flex gap-3 text-lg text-foreground">
+              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+              <span>{line.replace(/^(?:[-*•·]|\d+[.)])\s+/, '')}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="space-y-4">
+          {rows.map((line, i) => (
+            <p key={i} className="text-lg leading-relaxed text-foreground">{line}</p>
+          ))}
+        </div>
+      )}
+      {MONEY_WORDS.test(body) ? <NonGuaranteeNote className="mt-6" /> : null}
+    </div>
+  );
+}
+
 function GenericSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
@@ -452,6 +491,7 @@ function SlideRenderer({ slide }: { slide: SlideBase }) {
     case 'business_model': return <BusinessModelSlide slide={slide} />;
     case 'team': return <TeamSlide slide={slide} />;
     case 'ask': return <AskSlide slide={slide} />;
+    case 'text': return <TextSlide slide={slide} />;
     default: return <GenericSlide slide={slide} />;
   }
 }
@@ -473,18 +513,22 @@ export default function PitchDeckPage() {
   useEffect(() => setPageUrl(window.location.href), []);
 
   // Fetch deck (falls back to demo if API unavailable)
-  const { data } = useQuery({
+  // A published deck from the API; the preview demo answers without one and
+  // shows the sample. A deck that is not public (never published, or
+  // withdrawn) is a 404, and the page says so instead of showing the sample.
+  const { data, isError, isLoading } = useQuery({
     queryKey: qk('pitch-deck', deckId),
     queryFn: () => getPublicPitchDeck(deckId),
     retry: false,
   });
 
-  const deck = data?.deck ?? DEMO_DECK;
-  const slides = [...deck.slides].sort((a, b) => a.order - b.order);
+  const deck: PublicPitchDeck | null = data?.deck ?? (isError || isLoading ? null : DEMO_DECK);
+  const slides = deck ? [...deck.slides].sort((a, b) => a.order - b.order) : [];
 
-  // Record view once on mount
+  // Record one view, once the deck is known to exist.
   const viewMutation = useMutation({ mutationFn: () => recordPitchView(deckId) });
-  useEffect(() => { viewMutation.mutate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const viewed = data?.deck?.id;
+  useEffect(() => { if (viewed) viewMutation.mutate(); }, [viewed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const contactMutation = useMutation({
     mutationFn: (data: { name: string; email: string; message?: string }) =>
@@ -511,6 +555,36 @@ export default function PitchDeckPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (!deck) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <MainLandmark className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-4 px-4 text-center">
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground" role="status">
+              <BilingualText en="Opening the pitch…" el="Άνοιγμα της παρουσίασης…" compact />
+            </p>
+          ) : (
+            <>
+              <h1 className="text-2xl font-semibold text-foreground">
+                <BilingualText en="This pitch is not public" el="Αυτή η παρουσίαση δεν είναι δημόσια" wrap />
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText
+                  en="Its founder has not published it, or has withdrawn it. Ask them for a new link."
+                  el="Ο ιδρυτής δεν τη δημοσίευσε ή την απέσυρε. Ζητήστε του νέο σύνδεσμο."
+                  wrap
+                />
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/"><BilingualText en="Go to CoFounderBay" el="Μετάβαση στο CoFounderBay" compact /></Link>
+              </Button>
+            </>
+          )}
+        </MainLandmark>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

@@ -11,6 +11,7 @@ import {
   listSavedSearches,
   updateSavedSearch,
   deleteSavedSearch,
+  runSavedSearch,
   type SavedSearch,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -361,6 +362,12 @@ export default function SavedSearchesPage() {
     if (search.filters.skills?.length) params.set('skills', search.filters.skills.join(','));
     if (search.filters.industries?.length) params.set('industries', search.filters.industries.join(','));
     if (search.filters.locations?.length) params.set('locations', search.filters.locations.join(','));
+    if (search.filters.stage?.length) params.set('stage', search.filters.stage.join(','));
+    // Records the run (last run, result count) and clears the "new" badge;
+    // the results themselves are read on /discover, so this is not awaited.
+    void runSavedSearch(search.id)
+      .then(() => queryClient.invalidateQueries({ queryKey: qk('saved-searches') }))
+      .catch(() => undefined);
     router.push(`/discover?${params.toString()}`);
   };
 

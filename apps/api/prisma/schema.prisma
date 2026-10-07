@@ -6200,6 +6200,59 @@ model FeedPost {
   @@index([isPinned, createdAt])
 }
 
+/// A reader's feed settings (`/feed` preferences panel). One row per user;
+/// absent means the defaults in `feed.service.ts`.
+model FeedPreference {
+  userId    String   @id
+  prefs     Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Posts a reader chose to hide from their own feed ("Hide" in the post menu).
+model FeedHiddenPost {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+}
+
+/// A pitch deck its owner chose to publish at /pitch/[id]. The id is the
+/// public one; the deck itself stays the builder's `pitch_deck` document.
+/// Unpublishing keeps the row (and its counts) with `isPublic` false.
+model PublicPitch {
+  id              String   @id @default(uuid())
+  documentId      String   @unique
+  ownerId         String
+  isPublic        Boolean  @default(true)
+  allowContact    Boolean  @default(true)
+  views           Int      @default(0)
+  shares          Int      @default(0)
+  contactRequests Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  contacts        PitchContactRequest[]
+
+  @@index([ownerId])
+}
+
+/// "Contact" on a public pitch: whoever writes leaves the address they want
+/// answered at; the owner is notified and replies from their own mail.
+model PitchContactRequest {
+  id        String      @id @default(uuid())
+  pitchId   String
+  pitch     PublicPitch @relation(fields: [pitchId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  message   String?     @db.Text
+  createdAt DateTime    @default(now())
+
+  @@index([pitchId, createdAt])
+}
+
 model FeedComment {
   id          String   @id @default(uuid())
   postId      String
@@ -6383,6 +6436,11 @@ model SavedSearch {
   // Usage tracking
   useCount      Int             @default(0)
   lastUsedAt    DateTime?
+  lastResultCount Int?
+  // Profiles the owner has already been shown, so an alert names only new ones
+  seenResultIds String[]        @default([])
+  // Announced by alerts since the owner last ran the search ("N new" on /saved-searches)
+  pendingNewCount Int           @default(0)
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt

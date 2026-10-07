@@ -129,7 +129,7 @@ async function performSearch(
     page: String(page),
     limit: '20',
   });
-  const payload = await apiRequest<SearchResponse & { hits?: unknown[] }>(`/api/v1/search?${params}`);
+  const payload = await apiRequest<SearchResponse & { hits?: unknown[] }>(`/api/search?${params}`);
   const raw = (payload.results?.length ? payload.results : payload.hits) ?? [];
   const results = raw.map(normalizeHit).filter((row): row is SearchResult => Boolean(row?.href));
   return {

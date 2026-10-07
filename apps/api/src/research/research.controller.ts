@@ -3,6 +3,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ResearchService } from './research.service';
 import { CanvasSynthesisService } from './canvas-synthesis.service';
+import { CanvasAssistService } from './canvas-assist.service';
+import { Throttle } from '@nestjs/throttler';
 import { GamificationEventsService } from '../gamification/gamification-events.service';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
@@ -179,6 +181,7 @@ export class ResearchController {
     private readonly config: ConfigService,
     private readonly synthesis: CanvasSynthesisService,
     private readonly gamificationEvents: GamificationEventsService,
+    private readonly assist: CanvasAssistService,
   ) {}
 
   // ─── Boards ────────────────────────────────────────────────────────────────
@@ -453,6 +456,38 @@ export class ResearchController {
     const openaiKey = this.config.get<string>('OPENAI_API_KEY') ?? null;
     const analysis = await this.research.analyzeBoard(user.id, boardId, openaiKey);
     return { analysis };
+  }
+
+  // ─── AI panel (proposals only; nothing is written to the board) ────────────
+
+  @Post('boards/:boardId/ai/extract')
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  aiExtract(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string, @Body() body: unknown) {
+    return this.assist.extract(user.id, boardId, body);
+  }
+
+  @Post('boards/:boardId/ai/connections')
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  aiConnections(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string, @Body() body: unknown) {
+    return this.assist.connections(user.id, boardId, body);
+  }
+
+  @Post('boards/:boardId/ai/synthesize')
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  aiSynthesize(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string, @Body() body: unknown) {
+    return this.assist.synthesize(user.id, boardId, body);
+  }
+
+  @Post('boards/:boardId/ai/questions')
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
+  aiQuestions(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string, @Body() body: unknown) {
+    return this.assist.questions(user.id, boardId, body);
+  }
+
+  @Post('boards/:boardId/ai/chat')
+  @Throttle({ default: { ttl: 60_000, limit: 30 } })
+  aiChat(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string, @Body() body: unknown) {
+    return this.assist.chat(user.id, boardId, body);
   }
 
   // ─── Canvas Copilot (multi-agent) ──────────────────────────────────────────

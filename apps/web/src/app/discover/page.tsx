@@ -141,7 +141,8 @@ export default function DiscoverPage() {
     const skills = pick('skills'); if (skills.length) next.skills = skills;
     const industries = pick('industries'); if (industries.length) next.industries = industries;
     const locations = pick('locations'); if (locations.length) next.location = locations[0];
-    if (q || roles.length || skills.length || industries.length || locations.length) {
+    const stage = pick('stage'); if (stage.length) next.stage = stage;
+    if (q || roles.length || skills.length || industries.length || locations.length || stage.length) {
       setFilters(next);
       setActiveTab('search');
     }

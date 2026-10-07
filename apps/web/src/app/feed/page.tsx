@@ -17,7 +17,7 @@ import { usePageRail } from '@/components/layout/PageRailContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
-import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
+import { readComposedPosts } from '@/lib/feed-demo';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import {
   getPersonalizedFeed,
+  createFeedPost,
   getFeedPreferences,
   updateFeedPreferences,
   recordFeedInteraction,
@@ -478,7 +479,7 @@ function SuggestedConnections() {
 }
 
 export default function FeedPage() {
-  const { success } = useToast();
+  const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
@@ -563,27 +564,27 @@ export default function FeedPage() {
       ? DEMO_POSTS
       : [];
 
-  const handlePost = (content: string, type: PostType) => {
-    // There is no feed module in the API — `/api/feed/*` is served by the
-    // browser's demo shim alone — so this used to toast "Post published!" over
-    // a post that went nowhere. It now goes somewhere the reader can see, for
-    // the session, the way the fundraising and readiness demos already work.
-    setComposed(addComposedPost({
-      content,
-      type: type as FeedPost['type'],
-      author: {
-        id: 'me',
-        displayName: 'You',
-        headline: undefined,
-      },
-    }));
-    success(
-      bilingualInline('Posted', 'Δημοσιεύτηκε'),
-      bilingualInline(
-        'Kept for this session — the feed has no server to store it yet.',
-        'Κρατείται για αυτή τη συνεδρία — το feed δεν έχει ακόμη διακομιστή να το αποθηκεύσει.',
-      ),
-    );
+  // The API stores the post and the feed is read again; the preview demo
+  // keeps it for the session (`lib/feed-demo.ts`) and says so.
+  const handlePost = async (content: string, type: PostType) => {
+    try {
+      const { stored } = await createFeedPost({ content, type: type as FeedPost['type'] });
+      if (stored) {
+        await queryClient.invalidateQueries({ queryKey: qk('feed') });
+        success(bilingualInline('Posted', 'Δημοσιεύτηκε'));
+        return;
+      }
+      setComposed(readComposedPosts());
+      success(
+        bilingualInline('Posted', 'Δημοσιεύτηκε'),
+        bilingualInline(
+          'Kept for this session — this is the demo, so nothing is stored.',
+          'Κρατείται για αυτή τη συνεδρία — είναι το demo, οπότε δεν αποθηκεύεται τίποτα.',
+        ),
+      );
+    } catch {
+      showError(bilingualInline('Could not post', 'Η δημοσίευση απέτυχε'));
+    }
   };
 
   // The feed answers at once and the server catches up; the promise settles

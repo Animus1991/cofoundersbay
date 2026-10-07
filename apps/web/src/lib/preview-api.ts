@@ -5,6 +5,10 @@ import { DEMO_CRITERIA } from './readiness-demo';
 import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorDemoRating } from './demo/mentor-world';
 import { previewOrgApi } from './demo/org-api';
 import { previewCommitmentsApi } from './demo/commitments-world';
+import { previewSavedSearchesApi } from './demo/saved-searches-world';
+import { addComposedPost } from './feed-demo';
+import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
+import type { FeedPost } from './api';
 import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF } from './demo/org-world';
 import {
   harborApplicationDrafts,
@@ -2612,6 +2616,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // shared rules as the API, and throws its refusals in the API's shape.
   const commitmentsAnswer = previewCommitmentsApi(pathname, path, method, body, previewNowMs());
   if (commitmentsAnswer !== undefined) return commitmentsAnswer;
+  // Saved searches answer in the API's shapes instead of the generic fallback.
+  const savedSearchAnswer = previewSavedSearchesApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (savedSearchAnswer !== undefined) return savedSearchAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {
@@ -2659,7 +2666,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true };
   }
 
-  if (pathname.startsWith('/api/search/profiles') || pathname.startsWith('/api/v1/search')) {
+  if (pathname.startsWith('/api/search/profiles') || pathname === '/api/search' || pathname.startsWith('/api/v1/search')) {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const q = params.get('q')?.toLowerCase() ?? '';
     const location = params.get('location')?.toLowerCase() ?? '';
@@ -3165,6 +3172,50 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
 
+  // Publishing a pitch in the demo: kept for the session; the public page then
+  // shows the sample deck, since the demo's slides are not on a server.
+  if (pathname.startsWith('/api/pitch/publication')) {
+    const KEY = 'cfb:demo-pitch-publication:v1';
+    const read = (): Record<string, { id: string; isPublic: boolean; allowContact: boolean; views: number; contactRequests: number }> => {
+      try {
+        return JSON.parse(window.sessionStorage.getItem(KEY) ?? '{}');
+      } catch {
+        return {};
+      }
+    };
+    const write = (state: ReturnType<typeof read>) => {
+      try {
+        window.sessionStorage.setItem(KEY, JSON.stringify(state));
+      } catch {
+        // storage blocked: the change lasts this page view
+      }
+    };
+    const state = read();
+    if (method === 'GET') {
+      const documentId = new URLSearchParams(path.split('?')[1] ?? '').get('documentId') ?? '';
+      return { pitch: state[documentId] ?? null };
+    }
+    if (method === 'POST') {
+      const documentId = typeof body.documentId === 'string' ? body.documentId : '';
+      const previous = state[documentId];
+      state[documentId] = { id: previous?.id ?? `demo-${documentId || 'deck'}`, isPublic: true, allowContact: body.allowContact !== false, views: previous?.views ?? 0, contactRequests: previous?.contactRequests ?? 0 };
+      write(state);
+      return { pitch: state[documentId] };
+    }
+    if (method === 'DELETE') {
+      const documentId = decodeURIComponent(pathname.split('/').pop() ?? '');
+      if (state[documentId]) state[documentId].isPublic = false;
+      write(state);
+      return { ok: true };
+    }
+  }
+  // The demo keeps a composed post for the session and says it did not store it.
+  if (pathname === '/api/feed/posts' && method === 'POST') {
+    const content = typeof body.content === 'string' ? body.content.trim().slice(0, 3000) : '';
+    const type = typeof body.type === 'string' ? (body.type as FeedPost['type']) : 'update';
+    const [post] = addComposedPost({ content, type, author: { id: 'me', displayName: 'You', headline: undefined } });
+    return { post, stored: false };
+  }
   if (pathname.startsWith('/api/feed/personalized')) {
     return { posts: FEED_POSTS, hasMore: false };
   }
@@ -3224,6 +3275,34 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       return { ok: false, board: null };
     }
 
+    // The AI panel in the demo: the same deterministic reading the API falls
+    // back to without a model (`@cofounderbay/shared` canvas assist rules).
+    if (segments[1] === 'ai' && method === 'POST') {
+      const boardNodes = (isGtm ? previewGtmBoardNodes : extra?.nodes ?? []).map((n) => ({
+        id: n.id,
+        title: typeof n.title === 'string' ? n.title : '',
+        content: typeof n.content === 'string' ? n.content : '',
+      }));
+      const ids = Array.isArray(body.nodeIds) ? body.nodeIds.filter((v): v is string => typeof v === 'string') : [];
+      const picked = ids.length ? boardNodes.filter((n) => ids.includes(n.id)) : boardNodes;
+      switch (segments[2]) {
+        case 'extract':
+          return { nodes: heuristicExtract(typeof body.text === 'string' ? body.text : ''), fallback: true };
+        case 'connections':
+          return { connections: heuristicConnections(picked), fallback: true };
+        case 'synthesize':
+          return { synthesis: heuristicSynthesis(picked), fallback: true };
+        case 'questions':
+          return { questions: heuristicQuestions(boardNodes, typeof body.focus === 'string' ? body.focus.trim() : ''), fallback: true };
+        case 'chat':
+          return {
+            reply: `This is the demo, so no model reads the board. It holds ${boardNodes.length} notes; open the canvas copilot with the AI service running for a real answer.`,
+            fallback: true,
+          };
+        default:
+          break;
+      }
+    }
     if (segments[1] === 'nodes' && segments[2] === 'batch' && method === 'PATCH') {
       const updates = Array.isArray(body.updates) ? body.updates : [];
       if (isGtm) {

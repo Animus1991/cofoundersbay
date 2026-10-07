@@ -8,6 +8,7 @@ import { PitchDeckBuilder, pitchDeckCompletion, type PitchDeckData } from '@/com
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
+import { PitchPublication } from '@/components/builder/PitchPublication';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
@@ -80,6 +81,13 @@ function PitchDeckPageContent() {
           ))}
         </div>
       ),
+    },
+    {
+      id: 'public',
+      glyph: 'discover',
+      labelEn: 'Public link',
+      labelEl: 'Δημόσιος σύνδεσμος',
+      content: <PitchPublication documentId={pitchDocument?.id} />,
     },
     {
       id: 'related',

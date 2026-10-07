@@ -749,6 +749,14 @@ export async function updateFeedPreferences(preferences: Partial<FeedPreferences
   });
 }
 
+/**
+ * Publishes a post. `stored` is true when the API kept it; the preview demo
+ * answers `false` and keeps the post for the browser session instead.
+ */
+export async function createFeedPost(params: { content: string; type: FeedPost['type'] }): Promise<{ post: FeedPost; stored: boolean }> {
+  return apiRequest('/api/feed/posts', { method: 'POST', body: JSON.stringify(params) });
+}
+
 export async function recordFeedInteraction(params: {
   postId: string;
   interaction: 'view' | 'like' | 'comment' | 'share' | 'bookmark' | 'hide';
@@ -5759,9 +5767,11 @@ export async function createBuilderApplication(
   workspaceId: string,
   data: { targetProgram: string; targetOrganization?: string; content?: Record<string, unknown> },
 ): Promise<{ application: BuilderApplicationItem }> {
-  return apiRequest(`/api/builder/workspaces/${workspaceId}/applications`, {
+  // The API takes the workspace in the body (`POST /builder/applications`,
+  // `CreateApplicationDto`); this helper used to post to a path that never existed.
+  return apiRequest('/api/builder/applications', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify({ workspaceId, ...data }),
   });
 }
 
@@ -5769,8 +5779,9 @@ export async function updateBuilderApplication(
   applicationId: string,
   data: Partial<BuilderApplicationItem>,
 ): Promise<{ application: BuilderApplicationItem }> {
+  // `PUT /builder/applications/:id` is the API's update; there is no PATCH.
   return apiRequest(`/api/builder/applications/${applicationId}`, {
-    method: 'PATCH',
+    method: 'PUT',
     body: JSON.stringify(data),
   });
 }
@@ -5865,6 +5876,27 @@ export async function getPublicPitchDeck(id: string): Promise<{ deck: PublicPitc
 
 export async function recordPitchView(id: string): Promise<{ ok: boolean }> {
   return apiRequest(`/api/pitch/${id}/view`, { method: 'POST' });
+}
+
+/** The owner's view of a deck's public page; `null` when it was never published. */
+export interface PitchPublication {
+  id: string;
+  isPublic: boolean;
+  allowContact: boolean;
+  views: number;
+  contactRequests: number;
+}
+
+export async function getPitchPublication(documentId: string): Promise<{ pitch: PitchPublication | null }> {
+  return apiRequest(`/api/pitch/publication?documentId=${encodeURIComponent(documentId)}`);
+}
+
+export async function publishPitch(data: { documentId: string; allowContact: boolean }): Promise<{ pitch: PitchPublication }> {
+  return apiRequest('/api/pitch/publication', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function unpublishPitch(documentId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/pitch/publication/${encodeURIComponent(documentId)}`, { method: 'DELETE' });
 }
 
 export async function submitPitchContactRequest(

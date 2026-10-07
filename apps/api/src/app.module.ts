@@ -34,6 +34,9 @@ import { SecurityModule } from './security/security.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
 import { OpportunitiesModule } from './opportunities/opportunities.module';
 import { CommitmentsModule } from './commitments/commitments.module';
+import { SavedSearchesModule } from './saved-searches/saved-searches.module';
+import { FeedModule } from './feed/feed.module';
+import { PitchModule } from './pitch/pitch.module';
 import { PublicModule } from './public/public.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
@@ -113,6 +116,9 @@ function findEnvFiles(): string[] {
     MonitoringModule,
     OpportunitiesModule,
     CommitmentsModule,
+    SavedSearchesModule,
+    FeedModule,
+    PitchModule,
     PublicModule,
     LearningModule,
     MarketplaceModule,
