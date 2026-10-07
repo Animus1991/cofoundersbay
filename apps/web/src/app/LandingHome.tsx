@@ -476,14 +476,14 @@ export function LandingHome() {
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="relative flex items-start overflow-hidden pt-[52px] sm:min-h-screen sm:items-center">
-        {/* blur-3xl is 64px. 10% less (57.6px) keeps the wash a shape.
+        {/* blur-3xl is 64px. 10% less, then another 5% (54.72px).
             The accent token is the page colour, so that orb never showed;
             both washes use the lilac tint the headline sits on. */}
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <div className="landing-wash absolute left-[18%] top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/[0.16] sm:left-1/4 sm:h-96 sm:w-96" />
           <div className="landing-wash absolute bottom-0 right-[12%] h-56 w-56 translate-x-1/2 rounded-full bg-primary/[0.11] sm:right-1/4 sm:h-96 sm:w-96" />
         </div>
-        <div className="relative mx-auto w-full px-4 py-8 text-center sm:px-8 sm:py-24 lg:px-12 xl:px-16">
+        <div className="landing-intro relative mx-auto w-full px-4 py-8 text-center sm:px-8 sm:py-24 lg:px-12 xl:px-16">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="icon-sm" />

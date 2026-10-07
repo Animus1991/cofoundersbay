@@ -3376,9 +3376,17 @@ textarea[class~="border-input"]:focus,
    one element more specific, so the headline, the line under it, and the
    live counts keep a size that fits the viewport. Pixels, not rem: the
    desktop root is 82% and would shrink a rem a second time.
-   The wash is blur-3xl (64px) minus 10%. */
+   The wash started at blur-3xl (64px), then 10% less (57.6px), then
+   another 5% (54.72px), so the lilac stays a shape. On a phone the
+   poster column is 2% narrower than the full width; from 640px it is
+   full width again. */
 .landing-wash {
-  filter: blur(57.6px);
+  filter: blur(54.72px);
+}
+@media (max-width: 639.98px) {
+  .landing-intro {
+    width: 98%;
+  }
 }
 #main-content h1.landing-display {
   font-size: 32px;
