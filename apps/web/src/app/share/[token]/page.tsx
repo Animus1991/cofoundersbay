@@ -246,7 +246,7 @@ export default function SharePage() {
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Lock className="icon-lg text-primary-accessible" />
+                <Lock className="icon-lg text-muted-foreground" />
               </div>
             </div>
             <CardTitle><BilingualText en="Password Protected" el="Προστατεύεται με κωδικό" compact /></CardTitle>
@@ -314,7 +314,7 @@ export default function SharePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <Rocket className="icon-md text-primary-accessible shrink-0" />
+              <Rocket className="icon-md text-muted-foreground shrink-0" />
               <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
             </div>
             {document && (
@@ -381,7 +381,7 @@ export default function SharePage() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Rocket className="icon-sm text-primary-accessible" />
+                        <Rocket className="icon-sm text-muted-foreground" />
                         <span className="font-medium text-sm">
                           {document.workspace.startupName ?? document.workspace.name}
                         </span>

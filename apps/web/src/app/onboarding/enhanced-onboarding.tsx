@@ -405,7 +405,7 @@ export default function EnhancedOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Sparkles className="icon-lg text-primary-accessible" />
+                <Sparkles className="icon-lg text-muted-foreground" />
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold"><BilingualText en="CoFounderBay Onboarding" el="Ένταξη στο CoFounderBay" compact /></h1>
@@ -1255,7 +1255,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Search className="icon-md text-primary-accessible" />
+          <Search className="icon-md text-muted-foreground" />
           <BilingualText en="Match Preferences" el="Προτιμήσεις αντιστοίχισης" compact />
         </CardTitle>
         <p className="text-muted-foreground"><BilingualText en="Tell us what you're looking for so we can find your best matches" el="Πείτε μας τι ψάχνετε για να βρούμε τις καλύτερες αντιστοιχίσεις" wrap /></p>

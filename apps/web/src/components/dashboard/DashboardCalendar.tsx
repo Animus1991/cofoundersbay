@@ -37,7 +37,7 @@ export function DashboardCalendar({ events = defaultEvents, className }: Dashboa
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Calendar className="icon-sm text-primary-accessible" />
+          <Calendar className="icon-sm text-muted-foreground" />
           Upcoming events
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>

@@ -79,7 +79,7 @@ export default function VerifyEmailPage() {
           {status === 'loading' && (
             <>
               <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                   <Loader2 className="icon-xl text-primary-accessible animate-spin" />
                 </div>
                 <h1 className="text-base font-semibold leading-tight sm:text-lg"><BilingualText en="Verifying your email" el="Επαλήθευση του email σας" compact /></h1>

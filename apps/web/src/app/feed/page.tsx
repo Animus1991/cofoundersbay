@@ -445,7 +445,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border">
       <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="icon-sm text-primary-accessible" />
+          <Users className="icon-sm text-muted-foreground" />
           Suggested Connections
         </h3>
       </CardHeader>

@@ -106,7 +106,7 @@ export function BuilderStageHeader({
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="flex min-w-0 flex-[1_1_20rem] items-start gap-3">
         {!hideTitle && (
-          <CfbGlyph name={glyph} className="mt-0.5 icon-sm shrink-0 text-primary-accessible" />
+          <CfbGlyph name={glyph} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
         )}
         <div className="min-w-0">
           {!hideTitle && (

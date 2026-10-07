@@ -334,7 +334,7 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
           </Link>
         </Button>
         <Button variant="outline" size="sm" className="gap-2" onClick={() => ask(askPrompt)}>
-          <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
           <BilingualText en={searchEn('ask_ai')} el={searchEl('ask_ai')} compact secondaryFrom="lg" />
         </Button>
       </div>

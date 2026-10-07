@@ -158,7 +158,7 @@ function ReferralLink({ onCopy }: { onCopy?: (copy: () => void) => void }) {
     <Card className="shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="icon-md shrink-0 text-primary-accessible" />
+          <Share2 className="icon-md shrink-0 text-muted-foreground" />
           <BilingualText en={referralsEn('link_title')} el={referralsEl('link_title')} compact wrap />
         </CardTitle>
         <CardDescription>
@@ -217,7 +217,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
     <Card className="shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="flex items-center gap-2">
-          <Award className="icon-md shrink-0 text-primary-accessible" />
+          <Award className="icon-md shrink-0 text-muted-foreground" />
           <BilingualText en={referralsEn('tier_title')} el={referralsEl('tier_title')} compact wrap />
         </CardTitle>
       </CardHeader>
@@ -467,7 +467,7 @@ export default function ReferralsPage() {
         <ol className="space-y-4">
           {(['1', '2', '3'] as const).map((n) => (
             <li key={n} className="flex min-w-0 gap-3">
-              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-accessible">
+              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
                 {n}
               </div>
               <div className="min-w-0">

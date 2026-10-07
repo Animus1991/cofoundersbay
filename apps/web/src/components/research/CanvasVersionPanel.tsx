@@ -169,7 +169,7 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="icon-sm text-primary-accessible" />
+            <GitCommit className="icon-sm text-muted-foreground" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -472,7 +472,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="icon-sm text-primary-accessible" />
+                <History className="icon-sm text-muted-foreground" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
               <DialogDescription className="sr-only">{bilingualInline('Preview of a saved canvas snapshot.', 'Προεπισκόπηση αποθηκευμένου στιγμιότυπου καμβά.')}</DialogDescription>
@@ -874,7 +874,7 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
         <SheetHeader className="px-4 pt-4 pb-3 border-b border-border">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <History className="icon-sm text-primary-accessible" />
+            <History className="icon-sm text-muted-foreground" />
             Canvas History
           </SheetTitle>
           <SheetDescription className="text-xs">

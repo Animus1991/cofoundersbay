@@ -114,7 +114,7 @@ function GroupRow({ group, xp, total, count }: { group: string; xp: number; tota
   const share = total > 0 ? Math.round((xp / total) * 100) : 0;
   return (
     <li className="flex items-center gap-3 py-2.5">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
         <Icon className="icon-sm" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
@@ -492,7 +492,7 @@ export default function ReputationPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="icon-sm text-primary-accessible" aria-hidden />
+              <Sparkles className="icon-sm text-muted-foreground" aria-hidden />
               <BilingualText en={reputationEn('tips_title')} el={reputationEl('tips_title')} />
             </CardTitle>
           </CardHeader>

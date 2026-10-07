@@ -120,7 +120,7 @@ export function EventCard({
           <div className="flex gap-4">
             {/* Date box */}
             <div className="flex-shrink-0 text-center">
-              <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
+              <div className="w-14 h-14 rounded-lg bg-muted flex flex-col items-center justify-center">
                 <span className="text-xs font-medium text-primary-accessible">
                   {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
@@ -313,7 +313,7 @@ export function EventCard({
         <div className="flex gap-4">
           {/* Date box */}
           <div className="flex-shrink-0 text-center">
-            <div className="w-16 h-16 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center">
               <span className="text-xs font-medium text-primary-accessible">
                 {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
               </span>

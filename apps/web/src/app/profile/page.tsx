@@ -268,7 +268,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     <Card className="shadow-sm border-border">
       <CardHeader className="pb-3 border-b border-border">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="icon-md text-primary-accessible" />
+          <Icon className="icon-md text-muted-foreground" />
           <BilingualText
             en={`${role.charAt(0).toUpperCase() + role.slice(1)} ${profileEn('details_suffix')}`}
             el={`${profileEl(role as 'founder' | 'mentor' | 'investor' | 'org') || role} — ${profileEl('details_suffix')}`}
@@ -683,7 +683,7 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <UserIcon className="icon-md text-primary-accessible" />
+                    <UserIcon className="icon-md text-muted-foreground" />
                     <BilingualText en={profileEn('about')} el={profileEl('about')} />
                   </CardTitle>
                   <AIInsightButton
@@ -737,7 +737,7 @@ export default function ProfilePage() {
               <Card className="animate-fade-in stagger-2 shadow-sm border-border">
                 <CardHeader className="pb-3 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary-accessible" />
+                    <Target className="icon-md text-muted-foreground" />
                     <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
                   </CardTitle>
                 </CardHeader>
@@ -781,7 +781,7 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="icon-md text-primary-accessible" />
+                    <BarChart3 className="icon-md text-muted-foreground" />
                     <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
                   </CardTitle>
                   <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible" asChild>
@@ -845,7 +845,7 @@ export default function ProfilePage() {
             <CardHeader className="pb-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FolderOpen className="icon-md text-primary-accessible" />
+                  <FolderOpen className="icon-md text-muted-foreground" />
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
                 <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
@@ -857,7 +857,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="pt-5">
               <div className="flex flex-col items-center justify-center gap-3 py-8 text-center rounded-xl bg-secondary/10 border border-dashed border-border">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-accessible">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
                   <FolderOpen className="icon-lg" />
                 </div>
                 <div>

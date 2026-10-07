@@ -1037,7 +1037,7 @@ export default function CoachingPage() {
           <TabsContent value="sessions" className="mt-4 space-y-3">
             {sessions.length === 0 && bookingRows.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <BrainCircuit className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
@@ -1151,7 +1151,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary-accessible" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
+                    <TrendingUp className="icon-sm text-muted-foreground" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">

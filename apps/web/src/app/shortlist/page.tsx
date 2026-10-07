@@ -189,7 +189,7 @@ function ShortlistCard({
             className="mt-1 shrink-0"
           >
             {isSelected
-              ? <CheckSquare className="icon-sm text-primary-accessible" />
+              ? <CheckSquare className="icon-sm text-muted-foreground" />
               : <Square className="icon-sm text-muted-foreground" />}
           </button>
         )}
@@ -648,7 +648,7 @@ export default function ShortlistPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
               <BookmarkX className="h-7 w-7 text-primary-accessible" />
             </div>
             <div>

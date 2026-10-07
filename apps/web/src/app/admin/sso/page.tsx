@@ -190,8 +190,8 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
         {tenant.logoUrl ? (
           <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
         ) : (
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Building2 className="icon-md text-primary-accessible" />
+          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+            <Building2 className="icon-md text-muted-foreground" />
           </div>
         )}
         <div>

@@ -284,7 +284,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="icon-sm text-primary-accessible" />
+                <Clock className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
               <p className="page-stat text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
@@ -294,7 +294,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="icon-sm text-primary-accessible" />
+                <Globe className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>

@@ -141,7 +141,7 @@ function ApplyModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TypeIcon className="icon-md text-primary-accessible" />
+            <TypeIcon className="icon-md text-muted-foreground" />
             <BilingualText
               en={`${programsEn('apply_to')} ${program.title}`}
               el={`${programsEl('apply_to')} ${program.title}`}
@@ -579,7 +579,7 @@ export default function ProgramsPage() {
         {featuredPrograms.length > 0 && !hasFilters && (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Zap className="icon-sm text-primary-accessible" aria-hidden="true" />
+              <Zap className="icon-sm text-muted-foreground" aria-hidden="true" />
               <BilingualText en={programsEn('featured')} el={programsEl('featured')} compact />
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">

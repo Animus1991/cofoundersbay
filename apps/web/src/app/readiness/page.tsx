@@ -493,7 +493,7 @@ function DimensionCard({
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-                  <CfbGlyph name={dim.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name={dim.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                   <BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap />
                 </h3>
                 <TooltipProvider>
@@ -653,7 +653,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     <Card className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
-          <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
           <BilingualText en={readinessEn('readiness_radar')} el={readinessEl('readiness_radar')} compact />
         </CardTitle>
       </CardHeader>
@@ -689,7 +689,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2">
-            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+            <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
             <BilingualText en={readinessEn('score_progression')} el={readinessEl('score_progression')} compact />
           </CardTitle>
           <button
@@ -992,7 +992,7 @@ export default function ReadinessPage() {
         <CardContent className="flex h-full flex-col gap-4 p-5">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-        <CfbGlyph name="award" className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground" />
         <BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} stacked wrap />
         </h3>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} wrap /></p>
@@ -1024,7 +1024,7 @@ export default function ReadinessPage() {
         <CardContent className="flex h-full flex-col gap-4 p-5">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-        <CfbGlyph name="wallet" className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name="wallet" className="icon-sm shrink-0 text-muted-foreground" />
         <BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} stacked wrap />
         </h3>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} wrap /></p>
@@ -1059,7 +1059,7 @@ export default function ReadinessPage() {
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">
-        <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+        <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
         <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
         </CardTitle>
         <AIInsightButton
@@ -1143,7 +1143,7 @@ export default function ReadinessPage() {
         <CardContent className="space-y-1">
         {demoHistory.slice().reverse().map((h, i) => (
         <div key={i} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
         {h.week}
         </div>
         <div className="flex-1">
@@ -1190,7 +1190,7 @@ export default function ReadinessPage() {
         ] as const).map((step) => (
         <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
         <Link href={step.href}>
-        <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium leading-snug"><BilingualText en={readinessEn(step.title)} el={readinessEl(step.title)} compact wrap /></span>
         <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn(step.hint)} el={readinessEl(step.hint)} compact wrap /></span>
@@ -1427,7 +1427,7 @@ export default function ReadinessPage() {
                     const investContrib = Math.round(pct * d.investorWeight / 100);
                     return (
                       <div key={d.key} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
-                        <CfbGlyph name={d.glyph} className="icon-sm flex-shrink-0 text-primary-accessible" />
+                        <CfbGlyph name={d.glyph} className="icon-sm flex-shrink-0 text-muted-foreground" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium"><BilingualText en={d.labelEn} el={d.labelEl} compact /></p>
                           <p className="text-xs text-muted-foreground">

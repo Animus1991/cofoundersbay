@@ -573,7 +573,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="icon-sm text-primary-accessible" />
+              <Globe className="icon-sm text-muted-foreground" />
               <BilingualText en="Platform Subdomain" el="Υποτομέας πλατφόρμας" compact />
             </CardTitle>
             <CardDescription className="text-xs">
@@ -620,7 +620,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary-accessible" />
+              <Shield className="icon-sm text-muted-foreground" />
               <BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact />
             </CardTitle>
             <CardDescription className="text-xs">

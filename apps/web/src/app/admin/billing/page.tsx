@@ -468,7 +468,7 @@ export default function AdminBillingPage() {
                 ) : (
                   <div className="divide-y divide-border/50">
                     {plans.map(plan => (
-                      <div key={plan.id} className="flex items-center gap-3 p-3">
+                      <div key={plan.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
                           <Crown className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
@@ -571,7 +571,7 @@ export default function AdminBillingPage() {
                 ) : (
                   <div className="divide-y divide-border/50">
                     {coupons.map(coupon => (
-                      <div key={coupon.id} className="flex items-center gap-3 p-3">
+                      <div key={coupon.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
                           <Tag className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>

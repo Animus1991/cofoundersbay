@@ -372,7 +372,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary-accessible" />
+                <Trophy className="icon-lg text-muted-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
@@ -744,7 +744,7 @@ export default function AchievementsPage() {
                             <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
                               {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
                             </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                               {user.name[0]}
                             </div>
                             <div className="flex-1 min-w-0">

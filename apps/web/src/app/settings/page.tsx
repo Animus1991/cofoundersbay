@@ -232,7 +232,7 @@ function PrivacyCard() {
     <Card className="shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Globe className="icon-md text-primary-accessible" />
+          <Globe className="icon-md text-muted-foreground" />
           {t('Privacy & Visibility')}
         </CardTitle>
         <CardDescription>
@@ -248,8 +248,8 @@ function PrivacyCard() {
         {PRIVACY_ITEMS.map(({ id, icon: Icon, label, desc }) => (
           <div key={id} className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="icon-sm text-primary-accessible" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <Icon className="icon-sm text-muted-foreground" />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{t(label)}</p>
@@ -533,7 +533,7 @@ export default function SettingsPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <CreditCard className="icon-md text-primary-accessible" />
+                    <CreditCard className="icon-md text-muted-foreground" />
                     {t('Billing')}
                   </CardTitle>
                 </CardHeader>
@@ -595,7 +595,7 @@ export default function SettingsPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <KeyRound className="icon-md text-primary-accessible" />
+                    <KeyRound className="icon-md text-muted-foreground" />
                     <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="Leave blank to keep your current password." el="Αφήστε κενό για να κρατήσετε τον τρέχοντα κωδικό." wrap /></CardDescription>
@@ -663,7 +663,7 @@ export default function SettingsPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Link2 className="icon-md text-primary-accessible" />
+                    <Link2 className="icon-md text-muted-foreground" />
                     <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
                   </CardTitle>
                   <CardDescription>
@@ -731,7 +731,7 @@ export default function SettingsPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <User className="icon-md text-primary-accessible" />
+                    <User className="icon-md text-muted-foreground" />
                     <BilingualText en="Account" el="Λογαριασμός" compact />
                   </CardTitle>
                 </CardHeader>
@@ -780,7 +780,7 @@ export default function SettingsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Bell className="icon-md text-primary-accessible" />
+                        <Bell className="icon-md text-muted-foreground" />
                         <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
                       </CardTitle>
                       <CardDescription>
@@ -808,8 +808,8 @@ export default function SettingsPage() {
                         className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                            <Icon className="icon-sm text-primary-accessible" />
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                            <Icon className="icon-sm text-muted-foreground" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-foreground">
@@ -830,8 +830,8 @@ export default function SettingsPage() {
                   })}
                   <div className="flex items-center justify-between gap-4 rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Mail className="icon-sm text-primary-accessible" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Mail className="icon-sm text-muted-foreground" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground">
@@ -855,7 +855,7 @@ export default function SettingsPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Shield className="icon-md text-primary-accessible" />
+                    <Shield className="icon-md text-muted-foreground" />
                     <BilingualText en="Security" el="Ασφάλεια" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>

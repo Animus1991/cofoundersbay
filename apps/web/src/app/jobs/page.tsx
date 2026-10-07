@@ -487,7 +487,7 @@ export default function JobsPage() {
           {featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-primary-accessible" />
+                <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>

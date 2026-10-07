@@ -993,7 +993,7 @@ export function BuilderWorkspace({
                   <ul className="space-y-2">
                     {nextMilestones.slice(0, 6).map((milestone, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs leading-snug text-foreground">
-                        <ChevronRight className="icon-sm mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />
+                        <ChevronRight className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                         <span className="min-w-0"><PreviewHint text={milestone} /></span>
                       </li>
                     ))}

@@ -197,7 +197,7 @@ export function BookingCalendar({
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Calendar className="icon-md text-primary-accessible" />
+                <Calendar className="icon-md text-muted-foreground" />
                 <BilingualText en="Select a date" el="Επιλέξτε ημερομηνία" compact />
               </CardTitle>
               <CardDescription><BilingualText en="Choose a date to see available time slots" el="Επιλέξτε ημερομηνία για να δείτε τις διαθέσιμες ώρες" wrap /></CardDescription>
@@ -266,7 +266,7 @@ export function BookingCalendar({
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="icon-md text-primary-accessible" />
+                    <Clock className="icon-md text-muted-foreground" />
                     <BilingualText en="Select a time" el="Επιλέξτε ώρα" compact />
                   </CardTitle>
                   <CardDescription>
@@ -323,13 +323,13 @@ export function BookingCalendar({
               {/* Selected datetime */}
               <div className="rounded-lg bg-secondary/40 p-4">
                 <div className="flex items-center gap-3 text-foreground">
-                  <Calendar className="icon-md text-primary-accessible" />
+                  <Calendar className="icon-md text-muted-foreground" />
                   <span className="font-medium">
                     {selectedDate?.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground mt-2">
-                  <Clock className="icon-md text-primary-accessible" />
+                  <Clock className="icon-md text-muted-foreground" />
                   <span className="font-medium">
                     {formatTime(selectedSlot.startTime)} - {formatTime(selectedSlot.endTime)}
                   </span>

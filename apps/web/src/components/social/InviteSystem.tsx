@@ -108,7 +108,7 @@ export function InviteSystem() {
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">
-              <Gift className="icon-lg text-primary-accessible" />
+              <Gift className="icon-lg text-muted-foreground" />
             </div>
             <div>
               <h2 className="text-xl font-semibold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>

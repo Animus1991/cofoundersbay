@@ -455,7 +455,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-primary-accessible" />
+                  <RoleIcon className="icon-sm text-muted-foreground" />
                   <StatusText value={profile.role} /> <BilingualText en="details" el="στοιχεία" compact />
                 </CardTitle>
               </CardHeader>

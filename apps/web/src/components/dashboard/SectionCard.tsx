@@ -38,7 +38,7 @@ export function SectionCard({
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <CardTitle className="flex min-w-0 items-center gap-2 text-base">
-            {Icon ? <Icon className="icon-sm shrink-0 text-primary-accessible" aria-hidden="true" /> : null}
+            {Icon ? <Icon className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
             <BilingualText en={title} el={titleEl} />
           </CardTitle>
           {action ? (
@@ -71,13 +71,16 @@ export function QuickLinks({ links, label, title = 'Go to', titleEl = 'Μετά�
           <BilingualText en={title} el={titleEl} />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-2 pt-0">
+      {/* Rows run to the card edge so the hover state is full-bleed; the row's
+          own horizontal padding matches .card-comfortable, so the label still
+          starts on the same inset as the title above it. */}
+      <CardContent className="px-0 py-2">
         <nav aria-label={label} className="flex flex-col">
           {links.map(({ href, icon: Icon, label: text, labelEl }) => (
             <Link
               key={href}
               href={href}
-              className="group flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted/60 focus-ring"
+              className="group flex min-h-10 items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-muted/60 focus-ring sm:px-6"
             >
               <Icon className="icon-sm shrink-0 text-muted-foreground group-hover:text-primary-accessible" aria-hidden="true" />
               <span className="min-w-0 flex-1">

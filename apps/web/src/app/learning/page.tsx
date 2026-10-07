@@ -561,7 +561,7 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="icon-sm text-primary-accessible" />
+              <Target className="icon-sm text-muted-foreground" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <BilingualText en={learningEn('paths')} el={learningEl('paths')} compact />
               </h2>
@@ -593,7 +593,7 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="icon-sm text-primary-accessible" />
+            <Sparkles className="icon-sm text-muted-foreground" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={learningEn('recommended')} el={learningEl('recommended')} compact />
             </h2>
@@ -663,7 +663,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-primary-accessible" />
+                <TrendingUp className="icon-sm text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   <BilingualText en={learningEn('featured')} el={learningEl('featured')} compact />
                 </h2>

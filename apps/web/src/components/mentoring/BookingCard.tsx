@@ -195,7 +195,7 @@ export function BookingCard({
                     {aiSummary && (
                       <div className="rounded-lg border border-primary/15 bg-primary/5 p-3 space-y-2">
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="icon-sm text-primary-accessible" />
+                          <Sparkles className="icon-sm text-muted-foreground" />
                           <span className="text-xs font-semibold text-primary-accessible"><BilingualText en="AI summary" el="Περίληψη AI" compact /></span>
                         </div>
                         <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>

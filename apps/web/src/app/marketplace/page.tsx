@@ -538,7 +538,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="icon-sm text-primary-accessible" />
+                      <TrendingUp className="icon-sm text-muted-foreground" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground"><BilingualText en="Featured Providers" el="Προτεινόμενοι πάροχοι" compact /></h2>
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

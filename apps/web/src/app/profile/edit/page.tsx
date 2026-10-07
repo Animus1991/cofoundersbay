@@ -657,7 +657,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="icon-md text-primary-accessible" />
+                    <Camera className="icon-md text-muted-foreground" />
                     <BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="A friendly face helps others recognize you and builds trust" el="Ένα φιλικό πρόσωπο βοηθά τους άλλους να σας αναγνωρίζουν και χτίζει εμπιστοσύνη" wrap /></CardDescription>
@@ -738,7 +738,7 @@ export default function ProfileEditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="icon-md text-primary-accessible" />
+                        <User className="icon-md text-muted-foreground" />
                         <BilingualText en="Personal Identity" el="Προσωπικά στοιχεία" compact />
                       </CardTitle>
                       <CardDescription><BilingualText en="How you'll appear across the platform" el="Πώς θα εμφανίζεστε σε όλη την πλατφόρμα" wrap /></CardDescription>
@@ -803,7 +803,7 @@ export default function ProfileEditPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="icon-sm text-primary-accessible" />
+                            <Sparkles className="icon-sm text-muted-foreground" />
                           </div>
                           <span className="font-semibold text-foreground"><BilingualText en="AI Review" el="Αξιολόγηση AI" compact /></span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
@@ -869,7 +869,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="icon-md text-primary-accessible" />
+                    <MapPin className="icon-md text-muted-foreground" />
                     <BilingualText en="Location & Timezone" el="Τοποθεσία & ζώνη ώρας" compact />
                   </CardTitle>
                 </CardHeader>
@@ -899,7 +899,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary-accessible" />
+                    <Target className="icon-md text-muted-foreground" />
                     <BilingualText en="Skills & Expertise" el="Δεξιότητες & εξειδίκευση" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="What are your core strengths and areas of focus?" el="Ποια είναι τα βασικά σας δυνατά σημεία και πεδία εστίασης;" wrap /></CardDescription>
@@ -941,7 +941,7 @@ export default function ProfileEditPage() {
               <Card className="border-primary/15 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="icon-md text-primary-accessible" />
+                    <Briefcase className="icon-md text-muted-foreground" />
                     <BilingualText en="Your Primary Role" el="Ο κύριος ρόλος σας" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="Select how you primarily participate in the ecosystem" el="Επιλέξτε πώς συμμετέχετε κυρίως στο οικοσύστημα" wrap /></CardDescription>
@@ -1150,7 +1150,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border">
                 <CardHeader className="pb-4 border-b border-border">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="icon-md text-primary-accessible" />
+                    <Globe className="icon-md text-muted-foreground" />
                     <BilingualText en="Web & Social Links" el="Ιστότοπος & κοινωνικά δίκτυα" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="Connect your other profiles so people can learn more about you" el="Συνδέστε τα άλλα προφίλ σας ώστε να σας γνωρίσουν καλύτερα" wrap /></CardDescription>
@@ -1209,7 +1209,7 @@ export default function ProfileEditPage() {
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               <Card className="shadow-sm border-border text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
+                  <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center text-muted-foreground mb-4">
                     <LayoutDashboard className="icon-xl" />
                   </div>
                   <h3 className="text-xl font-semibold"><BilingualText en="Portfolio Builder Coming Soon" el="Η δημιουργία portfolio έρχεται σύντομα" compact /></h3>

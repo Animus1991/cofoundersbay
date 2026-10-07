@@ -161,7 +161,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact && 'page-section--compact', titleClassName)}>
-            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+            <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
             <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>

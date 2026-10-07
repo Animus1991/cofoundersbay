@@ -210,7 +210,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+              <Sparkles className="icon-md shrink-0 text-muted-foreground" />
               <BilingualText en={inviteEn('form_title')} el={inviteEl('form_title')} compact wrap />
             </CardTitle>
             <CardDescription>

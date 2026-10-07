@@ -457,7 +457,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
             {/* Seven stages do not fit one row on a phone: a 4-column grid

@@ -744,7 +744,7 @@ export function ChatWindow({
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-xl border-l-2 border-primary/60 bg-muted/60 px-3 py-2">
-            <Reply className="mt-0.5 icon-sm shrink-0 text-primary-accessible" />
+            <Reply className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-foreground/70">
                 {replyTo.senderId === currentUserId ? t(messagesEn('you'), messagesEl('you')) : conversation.recipientName}

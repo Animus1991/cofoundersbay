@@ -196,7 +196,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
+              <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
               <BilingualText en="Delivery" el="Παράδοση" compact />
             </CardTitle>
           </CardHeader>
@@ -269,7 +269,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="icon-md text-primary-accessible" aria-hidden="true" />
+              <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
               <BilingualText en="What you are notified about" el="Για τι ειδοποιείστε" compact />
             </CardTitle>
             <CardDescription>
@@ -292,8 +292,8 @@ export default function NotificationPreferencesPage() {
                 <section key={category.id} className="border-b border-border last:border-b-0" aria-labelledby={`cat-${category.id}`}>
                   <div className="flex flex-col gap-3 bg-muted/20 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="icon-sm text-primary-accessible" aria-hidden="true" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Icon className="icon-sm text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
                         <h3 id={`cat-${category.id}`} className="text-sm font-semibold text-foreground">
@@ -341,7 +341,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-primary-accessible" aria-hidden="true" />
+              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
               <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
             </CardTitle>
             <CardDescription>

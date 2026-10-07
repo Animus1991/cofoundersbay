@@ -1136,7 +1136,7 @@ export function PitchDeckBuilder({
                 <Card className="min-w-0">
                   <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
                     <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
-                      <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" aria-hidden="true" />
+                      <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_next_write')} el={builderEl('pitch_next_write')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{emptySlides.length}</span>
                     </CardTitle>

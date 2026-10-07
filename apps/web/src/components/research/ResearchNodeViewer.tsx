@@ -462,7 +462,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
           if (!href || !match) return null;
           return (
             <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
-              <LinkIcon className="icon-sm text-primary-accessible shrink-0" />
+              <LinkIcon className="icon-sm text-muted-foreground shrink-0" />
               <span className="text-primary-accessible font-medium">
                 <BilingualText en={researchEn(match.label)} el={researchEl(match.label)} compact />
               </span>
@@ -481,7 +481,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (
           <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
-            <Link2 className="icon-sm text-primary-accessible shrink-0" />
+            <Link2 className="icon-sm text-muted-foreground shrink-0" />
             {node.builderDocumentId ? (
               <>
                 <span className="text-primary-accessible font-medium">Linked to Builder document</span>

@@ -105,7 +105,7 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
 
       <div className="flex items-start gap-3 pr-6">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background">
-          <CfbGlyph name={glyph} className="icon-sm text-primary-accessible" />
+          <CfbGlyph name={glyph} className="icon-sm text-muted-foreground" />
         </div>
         <div className="flex-1 space-y-1.5">
           <p className="text-sm font-semibold leading-snug text-foreground">{action.title}</p>

@@ -290,7 +290,7 @@ export default function MentorEarningsPage() {
                     // Amount and status stack on the right; the date joins the
                     // topic line below sm. Five columns in one row drew the
                     // name, amount and duration on top of each other at 390px.
-                    <div key={tx.id} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30 sm:gap-4">
+                    <div key={tx.id} className="flex items-center gap-3 px-4 sm:px-6 py-3 transition-colors hover:bg-muted/30 sm:gap-4">
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
                         <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">

@@ -140,7 +140,7 @@ export default function MentorProfilePage() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="icon-sm text-primary-accessible" />
+                  <BadgeCheck className="icon-sm text-muted-foreground" />
                   <Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

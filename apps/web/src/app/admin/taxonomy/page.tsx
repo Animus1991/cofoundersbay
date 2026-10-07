@@ -347,7 +347,7 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary-accessible" />
+                <Folder className="icon-md text-muted-foreground" />
                 <CardTitle className="text-lg"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
@@ -360,7 +360,7 @@ export default function AdminTaxonomyPage() {
           </CardHeader>
           <CardContent className="p-0">
             {/* Filters */}
-            <div className="px-4 pb-3 flex gap-3 flex-wrap">
+            <div className="px-4 sm:px-6 pb-3 flex gap-3 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
@@ -378,7 +378,7 @@ export default function AdminTaxonomyPage() {
               </div>
               <select
                 aria-label={bilingualAria("Filter skills by category", "Φιλτράρισμα δεξιοτήτων ανά κατηγορία")}
-                className="h-9 rounded-xl border border-input bg-background px-3 text-sm"
+                className="h-9 rounded-xl border border-input bg-background px-4 sm:px-6 text-sm"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -415,7 +415,7 @@ export default function AdminTaxonomyPage() {
                   {/* Grouped by category */}
                   {!categoryFilter && !search && Object.entries(groupedByCategory).map(([cat, items]) => (
                     <div key={cat}>
-                      <div className="px-4 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <div className="px-4 sm:px-6 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {cat} ({items.length})
                       </div>
                       {items.map((skill) => (
@@ -430,7 +430,7 @@ export default function AdminTaxonomyPage() {
                   {/* Uncategorized */}
                   {!categoryFilter && !search && uncategorized.length > 0 && (
                     <div>
-                      <div className="px-4 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <div className="px-4 sm:px-6 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         Uncategorized ({uncategorized.length})
                       </div>
                       {uncategorized.map((skill) => (

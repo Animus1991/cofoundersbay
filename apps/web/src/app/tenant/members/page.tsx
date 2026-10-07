@@ -230,7 +230,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-primary-accessible" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+            <Send className="icon-md text-muted-foreground" /> <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Invite people to the workspace and assign each a role." el="Προσκαλέστε άτομα στον χώρο εργασίας και ορίστε ρόλο σε καθέναν." /></DialogDescription>
         </DialogHeader>

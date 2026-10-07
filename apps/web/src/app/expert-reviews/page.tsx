@@ -824,7 +824,7 @@ export default function ExpertReviewsPage() {
             )}
             {myReviews.length === 0 && (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
@@ -896,7 +896,7 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="icon-sm text-primary-accessible" />
+                        <BarChart3 className="icon-sm text-muted-foreground" />
                         <BilingualText
                           en={`${REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores`}
                           el={`${REVIEW_TYPE_CONFIG[r.reviewType].labelEl} — Αναλυτικές βαθμολογίες`}

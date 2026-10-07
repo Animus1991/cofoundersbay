@@ -20,7 +20,7 @@ export function FormDraftNotice({ filled, onDismiss }: { filled: readonly string
       role="status"
       className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm"
     >
-      <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />
+      <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <p className="min-w-0 flex-1 leading-snug">
         <BilingualText
           en={`The assistant filled in ${n} ${n === 1 ? 'field' : 'fields'} from your conversation. Review them and change anything, then submit - nothing is saved until you do.`}

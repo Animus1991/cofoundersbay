@@ -63,7 +63,7 @@ function FormSection({ icon: Icon, title, titleEl, children }: { icon: typeof Ca
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Icon className="icon-sm text-primary-accessible" aria-hidden="true" />
+          <Icon className="icon-sm text-muted-foreground" aria-hidden="true" />
           <BilingualText en={title} el={titleEl} />
         </CardTitle>
       </CardHeader>

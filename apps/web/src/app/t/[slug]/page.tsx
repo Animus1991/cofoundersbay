@@ -148,8 +148,8 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
         <section className="bg-muted/30 border-b border-border">
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
-                <Building2 className="icon-md text-primary-accessible" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted mt-1">
+                <Building2 className="icon-md text-muted-foreground" />
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-3"><BilingualText en={`About ${tenantName}`} el={`Σχετικά με ${tenantName}`} wrap /></h2>
@@ -172,7 +172,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
           ].map((f) => (
             <Card key={f.title} className="text-center border-border hover:border-primary/30 transition-colors">
               <CardContent className="pt-6 pb-6">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
                   <f.icon className="h-6 w-6 text-primary-accessible" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1"><BilingualText en={f.title} el={f.titleEl} wrap /></h3>

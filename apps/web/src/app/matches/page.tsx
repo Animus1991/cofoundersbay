@@ -120,7 +120,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="icon-md text-primary-accessible" />
+            <BarChart3 className="icon-md text-muted-foreground" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Compatibility score, dimensions and reasons for this match." el="Βαθμός συμβατότητας, διαστάσεις και λόγοι για αυτή την αντιστοίχιση." /></DialogDescription>
@@ -181,7 +181,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="icon-sm text-primary-accessible mt-0.5 flex-shrink-0" />
+                <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -971,7 +971,7 @@ export default function MatchesPage() {
         <div className="space-y-2">
           <Button asChild variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 whitespace-normal px-3 py-3 text-left">
             <Link href="/discover">
-              <CfbGlyph name="discover" className="icon-sm shrink-0 text-primary-accessible" />
+              <CfbGlyph name="discover" className="icon-sm shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium leading-snug">
                   <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} wrap />

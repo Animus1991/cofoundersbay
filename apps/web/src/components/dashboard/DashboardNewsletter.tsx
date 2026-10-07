@@ -36,7 +36,7 @@ export function DashboardNewsletter({
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Mail className="icon-sm text-primary-accessible" />
+          <Mail className="icon-sm text-muted-foreground" />
           Announcements & newsletter
         </CardTitle>
       </CardHeader>

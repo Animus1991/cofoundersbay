@@ -214,7 +214,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
         >
           <CardContent className="p-0">
             {!query && recentSearches.length > 0 && (
-              <div className="p-3 border-b">
+              <div className="px-4 py-3 sm:px-6 border-b">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-semibold flex items-center gap-2">
                     <Clock className="icon-sm" />
@@ -245,7 +245,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
             )}
 
             {debouncedQuery && suggestions.length > 0 && (
-              <div className="p-3 border-b">
+              <div className="px-4 py-3 sm:px-6 border-b">
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                   <TrendingUp className="icon-sm" />
                   Suggestions
@@ -284,7 +284,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
                 {results.map((result: SearchResult) => (
                   <div
                     key={result.id}
-                    className="p-3 hover:bg-secondary/40 cursor-pointer transition-colors"
+                    className="px-4 py-3 sm:px-6 hover:bg-secondary/40 cursor-pointer transition-colors"
                     onClick={() => handleSelect(result)}
                     {...pressableProps({ role: 'link', label: result.title })}
                   >

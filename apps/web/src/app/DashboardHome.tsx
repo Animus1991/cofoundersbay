@@ -162,11 +162,11 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
       href={`/groups/${group.id}`}
       className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/50"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />
         ) : (
-          <CfbGlyph name="community" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="community" className="icon-sm text-muted-foreground" />
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -391,7 +391,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+                    <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('next_actions')} el={dashboardEl('next_actions')} compact />
                   </h2>
                   {totalActions > 0 && (
@@ -476,7 +476,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
+                    <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
@@ -668,7 +668,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+                      <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
                       <BilingualText en="Milestone progress" el="Πρόοδος οροσήμων" compact />
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">Details</Link>

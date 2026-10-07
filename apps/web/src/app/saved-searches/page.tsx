@@ -175,7 +175,7 @@ function SearchCard({
                 aria-label={bilingualAria(savedSearchesEn('toggle_alerts'), savedSearchesEl('toggle_alerts'))}
               />
               {search.alertsEnabled ? (
-                <Bell className="icon-sm text-primary-accessible" />
+                <Bell className="icon-sm text-muted-foreground" />
               ) : (
                 <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
               )}

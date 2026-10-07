@@ -323,7 +323,7 @@ function RoundCard({
           ].map((s) => (
             <div key={s.label} className="rounded-xl bg-background/60 p-3">
               <div className="mb-1 flex items-center gap-1.5">
-                <CfbGlyph name={s.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <CfbGlyph name={s.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                 <p className="min-w-0 text-2xs leading-snug text-muted-foreground">
                   <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact wrap />
                 </p>

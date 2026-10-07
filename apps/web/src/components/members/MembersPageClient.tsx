@@ -584,7 +584,7 @@ export function MembersPageClient() {
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-primary-accessible" />
+              <Sparkles className="icon-sm text-muted-foreground" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><BilingualText en="Featured Members" el="Προτεινόμενα μέλη" compact /></h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -600,7 +600,7 @@ export function MembersPageClient() {
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
                     <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
+                  <BadgeCheck className="icon-sm text-muted-foreground shrink-0" />
                 </div>
               ))}
             </div>

@@ -277,7 +277,7 @@ export function SearchFilters({
             <SheetContent side="right" className="w-full overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="icon-md text-primary-accessible" />
+                <Filter className="icon-md text-muted-foreground" />
                 Search Filters
               </SheetTitle>
               <SheetDescription className="sr-only"><BilingualText en="Refine search results by role, skills and other criteria." el="Περιορίστε τα αποτελέσματα αναζήτησης με ρόλο, δεξιότητες και άλλα κριτήρια." /></SheetDescription>

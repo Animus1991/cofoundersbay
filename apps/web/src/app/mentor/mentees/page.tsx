@@ -265,7 +265,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="icon-md text-primary-accessible" />
+                <Users className="icon-md text-muted-foreground" />
               </div>
               <div>
                 <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>

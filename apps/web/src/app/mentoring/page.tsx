@@ -157,7 +157,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
-              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {mentor.isFeatured && (
                 <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
                   <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
@@ -219,7 +219,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="icon-sm text-primary-accessible" aria-hidden="true" />{mentor.hourlyRate}
+                <DollarSign className="icon-sm text-muted-foreground" aria-hidden="true" />{mentor.hourlyRate}
                 <BilingualText en="/hr" el="/ώρα" compact />
               </span>
             ) : (
@@ -813,7 +813,7 @@ export default function MentoringPage() {
               {featuredMentors.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Award className="icon-sm text-primary-accessible" aria-hidden="true" />
+                    <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       <BilingualText en="Featured mentors" el="Προτεινόμενοι μέντορες" compact />
                     </h2>

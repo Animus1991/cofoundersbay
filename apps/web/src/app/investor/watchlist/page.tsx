@@ -290,7 +290,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
                   title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
                 >
                   {alertsEnabled ? (
-                    <Bell className="icon-sm text-primary-accessible" />
+                    <Bell className="icon-sm text-muted-foreground" />
                   ) : (
                     <BellOff className="icon-sm text-muted-foreground" />
                   )}

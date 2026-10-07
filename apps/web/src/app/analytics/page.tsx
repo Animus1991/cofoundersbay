@@ -209,7 +209,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="people" className="icon-sm shrink-0 text-primary-accessible" />
+          <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
@@ -266,7 +266,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
             is metadata about the rows, not a peer of the heading. */}
         <div className="mb-4 min-w-0">
           <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-            <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
+            <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
             <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
           </h3>
           <Badge variant="secondary" className="mt-1.5 max-w-full">
@@ -317,7 +317,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" />
+          <CfbGlyph name="chart" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('top_content')} el={analyticsEl('top_content')} compact />
         </CardTitle>
       </CardHeader>
@@ -377,7 +377,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="award" className="icon-sm text-muted-foreground" />
           <BilingualText en={analyticsEn('achievements')} el={analyticsEl('achievements')} wrap />
         </CardTitle>
       </CardHeader>
@@ -678,7 +678,7 @@ export default function AnalyticsPage() {
             ] as const).map((step) => (
               <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
                 <Link href={step.href}>
-                  <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn(step.hint)} el={analyticsEl(step.hint)} wrap /></span>
@@ -689,7 +689,7 @@ export default function AnalyticsPage() {
             ))}
               <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
                 <Link href="/calendar">
-                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
@@ -797,7 +797,7 @@ export default function AnalyticsPage() {
                 <Card className="min-w-0">
                   <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="flex items-center gap-2 font-semibold">
-                      <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
+                      <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
                       <BilingualText en={analyticsEn('weekly_summary')} el={analyticsEl('weekly_summary')} compact />
                     </CardTitle>
                   </CardHeader>

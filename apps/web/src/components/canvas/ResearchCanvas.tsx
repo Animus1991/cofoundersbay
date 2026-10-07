@@ -1057,7 +1057,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Layers className="icon-md text-primary-accessible" />
+            <Layers className="icon-md text-muted-foreground" />
             Research Canvas
           </h1>
           <span className="text-xs text-muted-foreground">
@@ -1259,7 +1259,7 @@ export default function ResearchCanvas() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 flex-none">
-                  {node.pinned && <Pin className="icon-sm text-primary-accessible" />}
+                  {node.pinned && <Pin className="icon-sm text-muted-foreground" />}
                   {node.starred && <Star className="icon-sm text-status-warning" fill="currentColor" />}
                   {node.locked && <Lock className="icon-sm text-muted-foreground" />}
                 </div>
@@ -1471,7 +1471,7 @@ export default function ResearchCanvas() {
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="icon-md text-primary-accessible" />
+                  <Keyboard className="icon-md text-muted-foreground" />
                   Keyboard Shortcuts
                 </h2>
                 <button aria-label="Close shortcuts"

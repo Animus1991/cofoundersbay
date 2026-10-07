@@ -2356,7 +2356,7 @@ export default function ResearchBoardPage() {
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2 min-w-0">
             <Link href="/research" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label={bilingualAria(researchEn('canvas_back'), researchEl('canvas_back'))}>
-              <CfbGlyph name="research" className="icon-md text-primary-accessible shrink-0" />
+              <CfbGlyph name="research" className="icon-md text-muted-foreground shrink-0" />
               <span className="hidden text-sm font-semibold text-foreground sm:inline">
                 <BilingualText en={researchEn('canvas_title')} el={researchEl('canvas_title')} compact />
               </span>
@@ -3120,7 +3120,7 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Grid3X3 className="icon-sm text-primary-accessible" /> <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
+                <Grid3X3 className="icon-sm text-muted-foreground" /> <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </button>
               <button
                 onClick={() => {
@@ -3170,7 +3170,7 @@ export default function ResearchBoardPage() {
           >
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h2 id="shortcuts-dialog-title" className="text-lg font-semibold flex items-center gap-2">
-                <Keyboard className="icon-md text-primary-accessible" />
+                <Keyboard className="icon-md text-muted-foreground" />
                 Keyboard Shortcuts
               </h2>
               <Button aria-label="Close shortcuts" variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
