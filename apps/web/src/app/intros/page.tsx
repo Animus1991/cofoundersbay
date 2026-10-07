@@ -146,8 +146,12 @@ function IntrosContent() {
     void queryClient.invalidateQueries({ queryKey: qk('intros') });
     void queryClient.invalidateQueries({ queryKey: qk('commitments') });
   };
+  // Why the last step was refused, when it is something the reader can fix
+  // (verifying a workplace); shown in the page, not only in a toast.
+  const [refusal, setRefusal] = useState<{ en: string; el: string } | null>(null);
   const failed = (err: unknown) => {
     const r = commitmentRefusal(err);
+    if (r.reason === 'role_verification_required') setRefusal({ en: r.en, el: r.el });
     showError('Could not update the introduction', r.en);
   };
   const act = useMutation({
@@ -332,6 +336,14 @@ function IntrosContent() {
                     ))}
               </TabsContent>
               <TabsContent value="received" className="space-y-4">
+                {refusal ? (
+                  <div role="alert" className="space-y-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-foreground">
+                    <p><BilingualText en={refusal.en} el={refusal.el} wrap /></p>
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+                    </Button>
+                  </div>
+                ) : null}
                 {received.length === 0
                   ? empty('No introductions for you yet. They reach you only after someone you know forwards them.', 'Καμία σύσταση για εσάς ακόμη. Φτάνουν μόνο αφού τις προωθήσει κάποιος που γνωρίζετε.')
                   : received.map((i) => (

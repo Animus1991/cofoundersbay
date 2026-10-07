@@ -1,6 +1,6 @@
 import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { maskEmail, meetsLadderPolicy, methodsFromLinkedInReport, workEmailDomain } from '@cofounderbay/shared';
+import { maskEmail, meetsLadderPolicy, meetsRolePolicy, methodsFromLinkedInReport, workEmailDomain } from '@cofounderbay/shared';
 import { LINKEDIN_VERIFICATION_REPORT, VerificationService } from './verification.service';
 
 describe('shared verification rules', () => {
@@ -18,6 +18,19 @@ describe('shared verification rules', () => {
     expect(meetsLadderPolicy([{ method: 'work_email', expiresAt: '2027-01-01T00:00:00Z' }], now)).toBe(true);
     expect(meetsLadderPolicy([{ method: 'work_email', expiresAt: '2026-01-01T00:00:00Z' }], now)).toBe(false);
     expect(meetsLadderPolicy([{ method: 'admin' }], now)).toBe(true);
+  });
+
+  it('asks investor and organisation roles for a workplace signal, and nobody else', () => {
+    const now = Date.parse('2026-10-07T12:00:00Z');
+    expect(meetsRolePolicy('founder', [], now)).toBe(true);
+    expect(meetsRolePolicy('mentor', [], now)).toBe(true);
+    expect(meetsRolePolicy('investor', [], now)).toBe(false);
+    // Identity proves a person, not the fund they claim.
+    expect(meetsRolePolicy('investor', [{ method: 'linkedin_identity' }], now)).toBe(false);
+    expect(meetsRolePolicy('investor', [{ method: 'linkedin_workplace' }], now)).toBe(true);
+    expect(meetsRolePolicy('org', [{ method: 'work_email', expiresAt: '2027-01-01T00:00:00Z' }], now)).toBe(true);
+    expect(meetsRolePolicy('org', [{ method: 'work_email', expiresAt: '2026-01-01T00:00:00Z' }], now)).toBe(false);
+    expect(meetsRolePolicy('investor', [{ method: 'admin' }], now)).toBe(true);
   });
 
   it('reads LinkedIn’s verificationReport categories', () => {

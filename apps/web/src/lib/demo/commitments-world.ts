@@ -20,9 +20,11 @@ import {
   type TermsFields,
   LADDER_TERMS_METHODS,
   VERIFICATION_REQUIRED_COPY,
+  ROLE_VERIFICATION_COPY,
+  ROLE_VERIFICATION_METHODS,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
-import { demoMeVerified, demoPersonMethods } from './verification-world';
+import { demoMeVerified, demoPersonMethods, demoRoleCleared } from './verification-world';
 
 export { DemoRefusal };
 
@@ -800,6 +802,9 @@ function route(world: World, pathname: string, path: string, method: string, bod
       const note = text(body.note, NEED_CARD_LIMITS.note);
       contactRefusal(note);
       if (hasPromiseClaims(note)) throw new DemoRefusal(400, 'Remove promised returns from the note.', { reason: 'promise', messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+      if (card.kind === 'investor_intro' && !demoRoleCleared(nowMs)) {
+        throw new DemoRefusal(400, ROLE_VERIFICATION_COPY.en, { reason: 'role_verification_required', messageEl: ROLE_VERIFICATION_COPY.el, methods: [...ROLE_VERIFICATION_METHODS] });
+      }
       if (world.threads.some((t) => t.cardId === card.id && t.candidateId === ME)) throw new DemoRefusal(409, 'You have already answered this card');
       const waiting = world.threads.filter((t) => t.candidateId === ME && t.step === 'interest').length;
       if (waiting >= INTEREST_BUDGET) {

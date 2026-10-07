@@ -1,5 +1,5 @@
 import { DemoRefusal } from './demo-refusal';
-import { maskEmail, meetsLadderPolicy, workEmailDomain, type VerificationMethod, type VerificationSignal } from '@cofounderbay/shared';
+import { maskEmail, meetsLadderPolicy, meetsRolePolicy, workEmailDomain, type VerificationMethod, type VerificationSignal } from '@cofounderbay/shared';
 
 /**
  * Verification in the preview demo.
@@ -67,6 +67,25 @@ export function resetDemoVerification() {
 
 export function demoMeVerified(now = Date.now()): boolean {
   return meetsLadderPolicy(load(now).signals, now);
+}
+
+/**
+ * The demo reader's account role as the API's enum has it, from the role the
+ * demo was opened as (`cfb_primary_role`): investor and organisation roles
+ * take the stricter workplace rule, everyone else the ordinary one.
+ */
+export function demoBaseRole(): 'founder' | 'mentor' | 'investor' | 'org' {
+  const cookie = typeof document !== 'undefined' ? document.cookie : '';
+  const role = /(?:^|;\s*)cfb_primary_role=([a-z_]+)/.exec(cookie)?.[1] ?? '';
+  if (role === 'angel_investor' || role === 'investor' || role === 'vc_partner') return 'investor';
+  if (role === 'incubator_admin' || role === 'org_admin' || role === 'accelerator_admin') return 'org';
+  if (role === 'mentor') return 'mentor';
+  return 'founder';
+}
+
+/** `meetsRolePolicy` for the demo reader, with the demo's own signals. */
+export function demoRoleCleared(now = Date.now()): boolean {
+  return meetsRolePolicy(demoBaseRole(), load(now).signals, now);
 }
 
 export function demoPersonMethods(userId: string, now = Date.now()): VerificationMethod[] {

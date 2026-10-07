@@ -58,7 +58,7 @@ const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
 function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => void }) {
   const { success } = useToast();
   const [note, setNote] = useState('');
-  const [error, setError] = useState<{ en: string; el: string } | null>(null);
+  const [error, setError] = useState<{ en: string; el: string; reason?: string | null } | null>(null);
   const [sending, setSending] = useState(false);
   // A small budget of answers waiting on authors keeps each one considered.
   const budget = useQuery({ queryKey: qk('commitments', 'interest-budget'), queryFn: getInterestBudget });
@@ -99,6 +99,11 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
       />
       <ContactWarning text={note} promises />
       {error ? <p role="alert" className="text-sm text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
+      {error?.reason === 'role_verification_required' || error?.reason === 'verification_required' ? (
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+        </Button>
+      ) : null}
       {budget.data ? (
         <p className="text-xs text-muted-foreground">
           {full ? (

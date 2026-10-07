@@ -16,6 +16,7 @@ import {
   type IntroProblem,
   type IntroRole,
   type IntroStatus,
+  ROLE_VERIFICATION_COPY,
 } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -84,7 +85,7 @@ export class IntrosService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     @Inject(CommitmentsService) private readonly commitments: Pick<CommitmentsService, 'expressInterest'>,
-    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'publicMethods'>,
+    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'publicMethods' | 'roleCleared'>,
   ) {}
 
   /** The edges that touch either person: enough to find everyone who knows both. */
@@ -296,6 +297,11 @@ export class IntrosService {
     const before = await this.load(id);
     if (this.roleOf(before, targetId) !== 'target' || !introTransition(before.status, 'target', 'accept')) {
       throw new ForbiddenException('That step is not yours to take now');
+    }
+    // An investor or organisation account verifies its workplace before it
+    // takes up an introduction (the founder is told nothing either way).
+    if (process.env.COMMITMENT_VERIFICATION !== 'off' && !(await this.verification.roleCleared(targetId))) {
+      throw refusal('role_verification_required', ROLE_VERIFICATION_COPY.en, ROLE_VERIFICATION_COPY.el);
     }
     const names = await this.people([before.intermediaryId]);
     const { thread } = await this.commitments.expressInterest({ id: targetId }, before.cardId, {

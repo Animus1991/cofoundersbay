@@ -13,9 +13,11 @@ import {
   type IntroProblem,
   type IntroRole,
   type IntroStatus,
+  ROLE_VERIFICATION_COPY,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
 import { previewCommitmentsApi } from './commitments-world';
+import { demoRoleCleared } from './verification-world';
 
 /**
  * Warm introductions in the preview demo, with the API's rules.
@@ -320,6 +322,9 @@ export function previewIntrosApi(pathname: string, path: string, method: string,
   if (parts[1] === 'not-now' && method === 'POST') return step('not_now');
   if (parts[1] === 'accept' && method === 'POST') {
     if (!introTransition(row.status, role, 'accept')) throw new DemoRefusal(403, 'That step is not yours to take now');
+    if (!demoRoleCleared(now)) {
+      throw new DemoRefusal(400, ROLE_VERIFICATION_COPY.en, { reason: 'role_verification_required', messageEl: ROLE_VERIFICATION_COPY.el });
+    }
     const answer = previewCommitmentsApi(
       `/api/commitments/cards/${encodeURIComponent(row.cardId)}/interest`,
       `/api/commitments/cards/${encodeURIComponent(row.cardId)}/interest`,

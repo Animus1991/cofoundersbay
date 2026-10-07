@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, Linkedin, Mail } from 'lucide-react';
-import { VERIFICATION_COPY, VERIFICATION_REQUIRED_COPY, type VerificationMethod } from '@cofounderbay/shared';
+import { ROLE_VERIFICATION_COPY, VERIFICATION_COPY, VERIFICATION_REQUIRED_COPY, type VerificationMethod } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -101,8 +101,9 @@ export function VerificationCard() {
           <BadgeCheck className="icon-md text-primary-accessible" />
           <BilingualText en="Verification" el="Επαλήθευση" compact />
         </CardTitle>
-        <CardDescription>
-          <BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap />
+        <CardDescription className="space-y-1">
+          <span className="block"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></span>
+          <span className="block"><BilingualText en={ROLE_VERIFICATION_COPY.en} el={ROLE_VERIFICATION_COPY.el} wrap /></span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 pt-5">

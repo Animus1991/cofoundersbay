@@ -25,6 +25,8 @@ import {
   type CommitmentStep,
   type NeedCardInput,
   type TermsFields,
+  ROLE_VERIFICATION_COPY,
+  ROLE_VERIFICATION_METHODS,
 } from '@cofounderbay/shared';
 import { VerificationService } from '../verification/verification.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -191,6 +193,18 @@ function incompleteRefusal(assessment: ReturnType<typeof assessNeedCard>) {
  * `COMMITMENT_VERIFICATION=off` lifts the gate (local development, a pilot
  * before any verification method is configured).
  */
+/**
+ * An investor or organisation account answering an investor-introduction
+ * card first verifies its workplace (`meetsRolePolicy`); identity alone
+ * proves a person, not the fund.
+ */
+function roleRefusal() {
+  return refusal('role_verification_required', ROLE_VERIFICATION_COPY.en, {
+    messageEl: ROLE_VERIFICATION_COPY.el,
+    methods: [...ROLE_VERIFICATION_METHODS],
+  });
+}
+
 function verificationRefusal() {
   return refusal('verification_required', VERIFICATION_REQUIRED_COPY.en, {
     messageEl: VERIFICATION_REQUIRED_COPY.el,
@@ -204,7 +218,7 @@ export class CommitmentsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     // A Pick type emits no runtime metadata, so the token is named explicitly.
-    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'isVerified' | 'publicMethods'>,
+    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'isVerified' | 'publicMethods' | 'roleCleared'>,
   ) {}
 
   private async requireVerified(viewer: Viewer) {
@@ -635,6 +649,9 @@ export class CommitmentsService {
     const kinds = contactKinds(note);
     if (kinds.length) throw contactRefusal(kinds);
     if (hasPromiseClaims(note)) throw refusal('promise', 'Remove promised returns from the note.', { messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+    if (card.kind === 'investor_intro' && process.env.COMMITMENT_VERIFICATION !== 'off' && !(await this.verification.roleCleared(viewer.id))) {
+      throw roleRefusal();
+    }
     const existing = await this.prisma.commitmentThread.findUnique({
       where: { cardId_candidateId: { cardId, candidateId: viewer.id } },
     });

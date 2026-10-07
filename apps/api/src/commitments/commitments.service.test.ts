@@ -45,6 +45,7 @@ describe('CommitmentsService', () => {
   let fake: ReturnType<typeof createFakePrisma>;
   let service: CommitmentsService;
   let verified: Set<string>;
+  let roleBlocked: Set<string>;
 
   beforeEach(() => {
     fake = createFakePrisma();
@@ -52,9 +53,11 @@ describe('CommitmentsService', () => {
     fake.addUser(MARCUS.id, 'Marcus Chen');
     fake.addUser(SOFIA.id, 'Sofia Alexiou');
     verified = new Set([ELENA.id, MARCUS.id, SOFIA.id]);
+    roleBlocked = new Set();
     service = new CommitmentsService(fake.prisma as never, fake.notifications as never, {
       isVerified: async (id: string) => verified.has(id),
       publicMethods: async (id: string) => (verified.has(id) ? ['work_email'] : []),
+      roleCleared: async (id: string) => !roleBlocked.has(id),
     });
   });
 
@@ -425,6 +428,28 @@ describe('CommitmentsService', () => {
       } finally {
         delete process.env.COMMITMENT_VERIFICATION;
       }
+    });
+  });
+
+  describe('role verification for investor-introduction cards', () => {
+    const INTRO_CARD = { ...CARD, kind: 'investor_intro', title: 'An introduction to a pre-seed fund for Harbor' };
+
+    it('asks an investor or organisation account without a workplace signal to verify before answering', async () => {
+      const { card } = await service.createCard(ELENA, INTRO_CARD);
+      roleBlocked.add(MARCUS.id);
+      await expect(service.expressInterest(MARCUS, card.id, { note: 'I back B2B SaaS at pre-seed.' })).rejects.toMatchObject({
+        response: { error: { details: { reason: 'role_verification_required', methods: ['work_email', 'linkedin_workplace', 'admin'] } } },
+      });
+      roleBlocked.delete(MARCUS.id);
+      const { thread } = await service.expressInterest(MARCUS, card.id, { note: 'I back B2B SaaS at pre-seed.' });
+      expect(thread.step).toBe('interest');
+    });
+
+    it('leaves co-founder and equity-role cards to the ordinary progressive rule', async () => {
+      const card = await publish();
+      roleBlocked.add(MARCUS.id);
+      const { thread } = await service.expressInterest(MARCUS, card.id, { note: 'I shipped a real-time trading platform.' });
+      expect(thread.step).toBe('interest');
     });
   });
 });
