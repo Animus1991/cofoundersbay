@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { EndorsementBasisLine } from '@/components/endorsements/EndorsementBasisLine';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { FollowButton } from '@/components/updates/FollowButton';
@@ -64,6 +65,7 @@ function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
         </Avatar>
         <div>
           <p className="font-medium text-sm text-foreground">{endorsement.fromUser.displayName}</p>
+          <EndorsementBasisLine basis={endorsement.basis} />
           {endorsement.relationship && (
             <p className="text-xs text-muted-foreground">{endorsement.relationship}</p>
           )}

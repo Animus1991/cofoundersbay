@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { FollowButton } from '@/components/updates/FollowButton';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { OpenToLine } from '@/components/intros/OpenToLine';
+import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import {
   MapPin,
   Clock,
@@ -428,6 +429,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               </CardContent>
             </Card>
           ) : null}
+          {viewerId ? <SkillEvidencePanel userId={userId} /> : null}
         </div>
 
         {/* Details */}

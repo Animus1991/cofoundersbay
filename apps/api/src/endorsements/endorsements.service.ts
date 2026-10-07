@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { endorsementBasis, type EndorsementBasis } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -24,6 +25,12 @@ export type EndorsementDto = {
   relationship: string | null;
   isPublic: boolean;
   isApproved: boolean;
+  /**
+   * What the platform can see of the relationship it speaks to: agreed terms
+   * on a commitment ladder, a completed mentoring session, a shared cohort.
+   * Empty for an endorsement written without one; those keep working.
+   */
+  basis: EndorsementBasis[];
   createdAt: string;
 };
 
@@ -33,6 +40,9 @@ const profileSelect = {
     profile: { select: { displayName: true, avatarUrl: true, headline: true } },
   },
 } as const;
+
+const basisOf = (row: { basis?: string[] | null }): EndorsementBasis[] =>
+  (row.basis ?? []).filter((b): b is EndorsementBasis => b === 'agreement' || b === 'mentoring' || b === 'cohort');
 
 @Injectable()
 export class EndorsementsService {
@@ -84,6 +94,7 @@ export class EndorsementsService {
       relationship: e.relationship,
       isPublic: e.isPublic,
       isApproved: e.isApproved,
+      basis: basisOf(e),
       createdAt: e.createdAt.toISOString(),
     }));
   }
@@ -117,6 +128,7 @@ export class EndorsementsService {
       relationship: e.relationship,
       isPublic: e.isPublic,
       isApproved: e.isApproved,
+      basis: basisOf(e),
       createdAt: e.createdAt.toISOString(),
     }));
   }
@@ -158,6 +170,7 @@ export class EndorsementsService {
       relationship: e.relationship,
       isPublic: e.isPublic,
       isApproved: e.isApproved,
+      basis: basisOf(e),
       createdAt: e.createdAt.toISOString(),
     }));
   }
@@ -197,6 +210,7 @@ export class EndorsementsService {
         relationship: data.relationship?.trim() || null,
         isPublic: true,
         isApproved: false, // Requires recipient approval
+        basis: await this.basisBetween(fromUserId, toUserId),
       },
       include: {
         fromUser: {
@@ -233,6 +247,7 @@ export class EndorsementsService {
       relationship: endorsement.relationship,
       isPublic: endorsement.isPublic,
       isApproved: endorsement.isApproved,
+      basis: basisOf(endorsement),
       createdAt: endorsement.createdAt.toISOString(),
     };
   }
@@ -248,9 +263,11 @@ export class EndorsementsService {
       throw new ForbiddenException('Only the recipient can approve endorsements');
     }
 
+    // The basis is checked again when it goes public: a session or an
+    // agreement may have happened since it was written.
     await this.prisma.endorsement.update({
       where: { id: endorsementId },
-      data: { isApproved: true },
+      data: { isApproved: true, basis: await this.basisBetween(endorsement.fromUserId, endorsement.toUserId) },
     });
 
     return { ok: true };
@@ -291,6 +308,31 @@ export class EndorsementsService {
     });
 
     return { ok: true };
+  }
+
+  /**
+   * The relationship two people have on the platform, as `endorsementBasis`
+   * reads it. A lookup that fails leaves the endorsement unlabelled rather
+   * than failing it: the label is a claim we only make when we can see it.
+   */
+  async basisBetween(a: string, b: string): Promise<EndorsementBasis[]> {
+    try {
+      const [agreedThreads, completedSessions, aCohorts] = await Promise.all([
+        this.prisma.commitmentThread.count({
+          where: { agreedAt: { not: null }, OR: [{ candidateId: a, card: { ownerId: b } }, { candidateId: b, card: { ownerId: a } }] },
+        }),
+        this.prisma.mentorshipSession.count({
+          where: { status: 'completed', OR: [{ mentorId: a, menteeId: b }, { mentorId: b, menteeId: a }] },
+        }),
+        this.prisma.cohortMember.findMany({ where: { userId: a }, select: { cohortId: true } }),
+      ]);
+      const sharedCohorts = aCohorts.length
+        ? await this.prisma.cohortMember.count({ where: { userId: b, cohortId: { in: aCohorts.map((c) => c.cohortId) } } })
+        : 0;
+      return endorsementBasis({ agreedThreads, completedSessions, sharedCohorts });
+    } catch {
+      return [];
+    }
   }
 
   async getEndorsementStats(userId: string): Promise<{

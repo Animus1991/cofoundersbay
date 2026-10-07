@@ -2572,6 +2572,8 @@ model Endorsement {
   relationship String? // e.g., "Co-founder", "Mentor", "Colleague"
   isPublic    Boolean  @default(true)
   isApproved  Boolean  @default(false) // recipient must approve before public display
+  // Verified relationship behind it: 'agreement' | 'mentoring' | 'cohort' (shared evidence rules).
+  basis       String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -7628,4 +7630,24 @@ model IntroRequest {
   @@index([requesterId, status])
   @@index([intermediaryId, status])
   @@index([targetId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skills tied to evidence (packages/shared/src/evidence)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SkillEvidence {
+  id        String   @id @default(uuid())
+  userId    String
+  skillName String
+  // 'milestone' | 'builder_document' | 'agreement'
+  kind      String
+  // The milestone, builder document or commitment thread it points to.
+  refId     String
+  // The title as it was when linked, so a renamed item still reads sensibly.
+  label     String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, skillName, kind, refId])
+  @@index([userId])
 }

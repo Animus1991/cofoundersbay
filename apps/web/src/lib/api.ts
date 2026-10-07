@@ -2706,6 +2706,8 @@ export type EndorsementItem = {
   relationship: string | null;
   isPublic: boolean;
   isApproved: boolean;
+  /** The relationship the platform can see behind it ('agreement' | 'mentoring' | 'cohort'); absent on older payloads. */
+  basis?: string[];
   createdAt: string;
 };
 

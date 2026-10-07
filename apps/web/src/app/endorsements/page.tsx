@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { EndorsementBasisLine } from '@/components/endorsements/EndorsementBasisLine';
+import { isEndorsementBasis, type EndorsementBasis } from '@cofounderbay/shared';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -55,6 +57,8 @@ type Endorsement = {
   skill?: string;
   content: string;
   relationship?: string;
+  /** What the platform can see behind it: agreed terms, a mentoring session, a shared cohort. */
+  basis?: EndorsementBasis[];
   isApproved: boolean;
   /** ISO timestamp, or null for a sample before the page knows today's date. */
   createdAt: string | null;
@@ -91,7 +95,7 @@ const SAMPLE_RECEIVED: SampleEndorsement[] = [
   },
   {
     id: 'sample-end-3', fromUserId: 'user-sarah', fromUserName: 'Dr. Sarah Kim', fromUserRole: 'Startup mentor',
-    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Product strategy', relationship: 'Mentor',
+    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Product strategy', relationship: 'Mentor', basis: ['mentoring'],
     content: 'Alex takes feedback on Monday and ships the change by Friday. Over six sessions the onboarding went from nine steps to three.',
     isApproved: true, ageDays: 12,
   },
@@ -182,6 +186,7 @@ function EndorsementCard({
                   <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${endorsement.relationship}`} compact />
                 </p>
               )}
+              <EndorsementBasisLine basis={endorsement.basis} />
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -383,6 +388,7 @@ function mapApiItem(item: EndorsementItem): Endorsement {
     skill: item.skill ?? undefined,
     content: item.content,
     relationship: item.relationship ?? undefined,
+    basis: (item.basis ?? []).filter(isEndorsementBasis),
     isApproved: item.isApproved,
     createdAt: item.createdAt,
   };

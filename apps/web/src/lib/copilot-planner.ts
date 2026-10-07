@@ -144,6 +144,8 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
     tool: 'get_intros',
   },
+  // Skills and the work that shows them.
+  { keys: ['skill evidence', 'evidence for my skill*', 'backs my skill*', 'evidence behind my skill*', 'τεκμηρια', 'τεκμηριο'], tool: 'get_skill_evidence' },
   // Founder updates: named as the kind of update, or by who wrote them.
   {
     keys: ['founder update*', 'investor update*', 'updates from', 'people i follow', 'ενημερωσεις ιδρυτ', 'ενημερωση ιδρυτ', 'ενημερωσεις απο', 'οσους ακολουθω'],

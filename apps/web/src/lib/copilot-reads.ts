@@ -74,7 +74,8 @@ import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type C
 import { waitsOnMe } from '@/lib/commitments-next';
 import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-api';
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
-import { INTRO_RELATION_COPY, INTRO_STATUS_COPY } from '@cofounderbay/shared';
+import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
+import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -658,6 +659,25 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       return { section: t('No introductions yet. Ask for one from the profile of someone you want to meet.'), citations: [], actions };
     }
     return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_skill_evidence(_args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
+    const me = await getMeProfile().catch(() => null);
+    const userId = me?.profile?.userId ?? '';
+    const [skills, candidates] = await Promise.all([userId ? getSkillEvidence(userId) : Promise.resolve([]), getEvidenceCandidates().catch(() => [])]);
+    const actions = [openArea(t, '/profile', t('Open profile skills'), t('Skills with the work that shows them.'))];
+    if (!skills.length) return { section: t('Add skills to your profile first; then link completed work to them.'), citations: [], actions };
+    const lines = skills.slice(0, LIMIT * 2).map((s) => {
+      const ev = s.evidence.length ? s.evidence.map((e) => `${say(SKILL_EVIDENCE_COPY[e.kind])}: ${e.label}`).join('; ') : t('no evidence linked yet');
+      const ends = s.endorsements ? ` · ${t('{count} endorsements, {verified} from work done together', { count: s.endorsements, verified: s.verifiedEndorsements })}` : '';
+      return `• **${s.name}** — ${ev}${ends}`;
+    });
+    const parts = [`${t('Your skills and their evidence:')}\n${lines.join('\n')}`];
+    if (candidates.length) {
+      parts.push(`${t('Completed work you can link:')}\n${candidates.slice(0, LIMIT * 2).map((c) => `• ${say(SKILL_EVIDENCE_COPY[c.kind])}: ${c.label} (${c.kind}, id ${c.refId})`).join('\n')}`);
+    }
+    return { section: parts.join('\n\n'), citations: [], actions };
   },
 
   async get_mentorship_sessions(_args, { t, locale }) {

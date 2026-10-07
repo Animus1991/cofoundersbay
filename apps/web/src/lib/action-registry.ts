@@ -70,7 +70,8 @@ import { FORM_DRAFT_ROUTES, stashFormDraft, type FormDraftId } from '@/lib/form-
 import { followPerson, unfollowPerson } from '@/lib/updates-api';
 import { requestIntro, withdrawIntro } from '@/lib/intros-api';
 import { clearOpenTo, getMyOpenTo, setOpenTo } from '@/lib/open-to-api';
-import { isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
+import { linkSkillEvidence, unlinkSkillEvidence } from '@/lib/skill-evidence-api';
+import { isLinkableEvidenceKind, isOpenToKind, type OpenToKind, type OpenToVisibility } from '@cofounderbay/shared';
 
 /**
  * The web app's half of the capability contract.
@@ -641,6 +642,16 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     return { ok: true, href: '/settings#open-to', undo: prev ? { kinds: prev.kinds.join(','), visibility: prev.visibility, note: prev.note ?? '' } : { cleared: true } };
   },
 
+  // The new row's id comes back so the undo removes exactly this link.
+  link_skill_evidence: async (payload) => {
+    const skillName = requireString(payload, 'skillName').trim();
+    const kind = payload?.kind;
+    const refId = requireString(payload, 'refId');
+    if (!skillName || !isLinkableEvidenceKind(kind) || !refId) return { ok: false, error: 'Missing the skill or the item' };
+    const linked = await linkSkillEvidence({ skillName, kind, refId });
+    return { ok: true, href: '/profile', ...(linked.id ? { undo: { evidenceId: linked.id } } : {}) };
+  },
+
   // ── Following ────────────────────────────────────────────────────────────
   follow_person: async (payload) => {
     const userId = requireString(payload, 'userId');
@@ -911,6 +922,14 @@ const UNDOS: Record<UndoableActionId, Undo> = {
     if (!threadId) return { ok: false, error: 'No interest to withdraw' };
     await withdrawCommitmentInterest(threadId);
     return { ok: true, href: '/commitments' };
+  },
+
+  /** Removes the link it made; nothing else changed (declared full). */
+  link_skill_evidence: async (_payload, context) => {
+    const evidenceId = requireString(context, 'evidenceId');
+    if (!evidenceId) return { ok: false, error: 'No link to remove' };
+    await unlinkSkillEvidence(evidenceId);
+    return { ok: true, href: '/profile' };
   },
 
   /** Withdraws the request it sent while it is still pending; the intermediary was notified (declared partial). */

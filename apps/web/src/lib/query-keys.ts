@@ -84,6 +84,7 @@ export const QUERY_ROOTS = [
   'search',
   'search-suggestions',
   'shortlist',
+  'skill-evidence',
   'skills',
   'sso',
   'tenant',

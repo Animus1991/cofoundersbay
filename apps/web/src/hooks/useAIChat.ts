@@ -117,6 +117,7 @@ const TOPIC_KEYS: Record<InvalidationTopic, readonly (readonly unknown[])[]> = {
   // A request, a forward or an acceptance; accepting also answers a need card.
   intros: [qk('intros'), qk('commitments')],
   open_to: [qk('open-to'), qk('matching'), qk('recommendations')],
+  skill_evidence: [qk('skill-evidence')],
 };
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {

@@ -1,5 +1,6 @@
 'use client';
 
+import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import { StatusText } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
@@ -810,6 +811,9 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Skills tied to the work that shows them */}
+          {meId ? <SkillEvidencePanel userId={meId} editable /> : null}
 
           {/* Portfolio placeholder. It used to stretch to the right column's
               height, which drew a 550px dashed box around one line of text;

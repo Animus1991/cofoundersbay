@@ -10,6 +10,7 @@ import { previewVerificationApi } from './demo/verification-world';
 import { previewUpdatesApi } from './demo/updates-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
+import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2634,6 +2635,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (openToAnswer !== undefined) return openToAnswer;
   const introsAnswer = previewIntrosApi(pathname, path, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (introsAnswer !== undefined) return introsAnswer;
+  // Skills tied to the demo's own completed work.
+  const evidenceAnswer = previewSkillEvidenceApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (evidenceAnswer !== undefined) return evidenceAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {

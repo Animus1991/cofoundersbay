@@ -2,6 +2,13 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Open profile skills": "Άνοιγμα δεξιοτήτων προφίλ",
+  "Skills with the work that shows them.": "Δεξιότητες με τη δουλειά που τις δείχνει.",
+  "Add skills to your profile first; then link completed work to them.": "Προσθέστε πρώτα δεξιότητες στο προφίλ σας· μετά συνδέστε ολοκληρωμένη δουλειά.",
+  "no evidence linked yet": "δεν έχει συνδεθεί τεκμήριο ακόμη",
+  "{count} endorsements, {verified} from work done together": "{count} συστάσεις, {verified} από κοινή δουλειά",
+  "Your skills and their evidence:": "Οι δεξιότητές σας και τα τεκμήριά τους:",
+  "Completed work you can link:": "Ολοκληρωμένη δουλειά που μπορείτε να συνδέσετε:",
   "Open introductions": "Άνοιγμα συστάσεων",
   "Requests to forward, introductions for you, and the ones you asked for.": "Αιτήματα για προώθηση, συστάσεις για εσάς και όσες ζητήσατε.",
   "Waiting for you to forward:": "Περιμένουν να τα προωθήσετε:",
@@ -766,6 +773,13 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Open profile skills": "Abrir habilidades del perfil",
+  "Skills with the work that shows them.": "Habilidades con el trabajo que las demuestra.",
+  "Add skills to your profile first; then link completed work to them.": "Añade primero habilidades a tu perfil; luego vincula trabajo terminado.",
+  "no evidence linked yet": "aún sin evidencia vinculada",
+  "{count} endorsements, {verified} from work done together": "{count} recomendaciones, {verified} de trabajo hecho juntos",
+  "Your skills and their evidence:": "Tus habilidades y su evidencia:",
+  "Completed work you can link:": "Trabajo terminado que puedes vincular:",
   "Open introductions": "Abrir presentaciones",
   "Requests to forward, introductions for you, and the ones you asked for.": "Solicitudes para reenviar, presentaciones para ti y las que pediste.",
   "Waiting for you to forward:": "Esperan que las reenvíes:",
@@ -1265,6 +1279,13 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Open profile skills": "Ouvrir les compétences du profil",
+  "Skills with the work that shows them.": "Des compétences avec le travail qui les montre.",
+  "Add skills to your profile first; then link completed work to them.": "Ajoutez d’abord des compétences à votre profil, puis liez-y du travail terminé.",
+  "no evidence linked yet": "aucune preuve liée pour l’instant",
+  "{count} endorsements, {verified} from work done together": "{count} recommandations, {verified} issues d’un travail commun",
+  "Your skills and their evidence:": "Vos compétences et leurs preuves :",
+  "Completed work you can link:": "Travail terminé que vous pouvez lier :",
   "Open introductions": "Ouvrir les mises en relation",
   "Requests to forward, introductions for you, and the ones you asked for.": "Demandes à transmettre, mises en relation pour vous et celles que vous avez demandées.",
   "Waiting for you to forward:": "En attente de votre transmission :",
@@ -1744,6 +1765,13 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Open profile skills": "Profil-Fähigkeiten öffnen",
+  "Skills with the work that shows them.": "Fähigkeiten mit der Arbeit, die sie zeigt.",
+  "Add skills to your profile first; then link completed work to them.": "Füge zuerst Fähigkeiten zu deinem Profil hinzu und verknüpfe dann abgeschlossene Arbeit.",
+  "no evidence linked yet": "noch kein Nachweis verknüpft",
+  "{count} endorsements, {verified} from work done together": "{count} Empfehlungen, {verified} aus gemeinsamer Arbeit",
+  "Your skills and their evidence:": "Deine Fähigkeiten und ihre Nachweise:",
+  "Completed work you can link:": "Abgeschlossene Arbeit, die du verknüpfen kannst:",
   "Open introductions": "Vorstellungen öffnen",
   "Requests to forward, introductions for you, and the ones you asked for.": "Anfragen zum Weiterleiten, Vorstellungen für dich und die, um die du gebeten hast.",
   "Waiting for you to forward:": "Warten darauf, dass du sie weiterleitest:",
@@ -2223,6 +2251,13 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Open profile skills": "Apri le competenze del profilo",
+  "Skills with the work that shows them.": "Competenze con il lavoro che le dimostra.",
+  "Add skills to your profile first; then link completed work to them.": "Aggiungi prima le competenze al profilo, poi collega il lavoro completato.",
+  "no evidence linked yet": "ancora nessuna prova collegata",
+  "{count} endorsements, {verified} from work done together": "{count} referenze, {verified} da lavoro svolto insieme",
+  "Your skills and their evidence:": "Le tue competenze e le loro prove:",
+  "Completed work you can link:": "Lavoro completato che puoi collegare:",
   "Open introductions": "Apri presentazioni",
   "Requests to forward, introductions for you, and the ones you asked for.": "Richieste da inoltrare, presentazioni per te e quelle che hai chiesto.",
   "Waiting for you to forward:": "In attesa che tu le inoltri:",
@@ -2692,6 +2727,13 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Open profile skills": "Abrir competências do perfil",
+  "Skills with the work that shows them.": "Competências com o trabalho que as demonstra.",
+  "Add skills to your profile first; then link completed work to them.": "Adicione primeiro competências ao perfil; depois ligue trabalho concluído.",
+  "no evidence linked yet": "ainda sem evidência ligada",
+  "{count} endorsements, {verified} from work done together": "{count} recomendações, {verified} de trabalho feito em conjunto",
+  "Your skills and their evidence:": "As suas competências e as respetivas evidências:",
+  "Completed work you can link:": "Trabalho concluído que pode ligar:",
   "Open introductions": "Abrir apresentações",
   "Requests to forward, introductions for you, and the ones you asked for.": "Pedidos para encaminhar, apresentações para si e as que pediu.",
   "Waiting for you to forward:": "À espera que as encaminhe:",
@@ -3158,6 +3200,13 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Open profile skills": "打开个人资料技能",
+  "Skills with the work that shows them.": "技能及证明它们的工作。",
+  "Add skills to your profile first; then link completed work to them.": "请先在个人资料中添加技能，然后关联已完成的工作。",
+  "no evidence linked yet": "尚未关联证据",
+  "{count} endorsements, {verified} from work done together": "{count} 条推荐，其中 {verified} 条来自共同完成的工作",
+  "Your skills and their evidence:": "你的技能及其证据：",
+  "Completed work you can link:": "可以关联的已完成工作：",
   "Open introductions": "打开引荐",
   "Requests to forward, introductions for you, and the ones you asked for.": "待你转交的请求、给你的引荐，以及你提出的请求。",
   "Waiting for you to forward:": "等待你转交：",
@@ -3644,6 +3693,13 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Open profile skills": "プロフィールのスキルを開く",
+  "Skills with the work that shows them.": "スキルと、それを示す仕事。",
+  "Add skills to your profile first; then link completed work to them.": "まずプロフィールにスキルを追加し、完了した仕事を紐づけてください。",
+  "no evidence linked yet": "まだ証拠は紐づいていません",
+  "{count} endorsements, {verified} from work done together": "推薦 {count} 件、うち {verified} 件は共同作業から",
+  "Your skills and their evidence:": "あなたのスキルとその証拠：",
+  "Completed work you can link:": "紐づけられる完了済みの仕事：",
   "Open introductions": "紹介を開く",
   "Requests to forward, introductions for you, and the ones you asked for.": "転送を待つ依頼、あなた宛ての紹介、あなたが依頼したもの。",
   "Waiting for you to forward:": "あなたの転送待ち：",

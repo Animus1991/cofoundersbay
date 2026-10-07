@@ -37,6 +37,7 @@ describe('EndorsementsService.getGivenEndorsements', () => {
         relationship: 'Peer founder',
         isPublic: true,
         isApproved: false,
+        basis: [],
         createdAt: '2026-09-01T10:00:00.000Z',
       },
     ]);

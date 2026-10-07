@@ -211,6 +211,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_skill_evidence',
+    kind: 'read',
+    label: { en: 'Read skills and their evidence', el: 'Ανάγνωση δεξιοτήτων και τεκμηρίων' },
+    description: {
+      en: 'Read the signed-in user\u2019s skills with the evidence behind each (completed milestones, builder documents, agreed commitments, and how many endorsements name it, how many from work done together), plus the completed items they could still link, with their kind and id.',
+      el: 'Διαβάζει τις δεξιότητες του χρήστη με τα τεκμήρια της καθεμίας (ολοκληρωμένα ορόσημα, έγγραφα του builder, συμφωνημένες δεσμεύσεις, και πόσες συστάσεις την αναφέρουν, πόσες από κοινή δουλειά), καθώς και τα ολοκληρωμένα στοιχεία που μπορεί ακόμη να συνδέσει, με είδος και id.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_mentorship_sessions',
     kind: 'read',
     label: { en: 'Read your mentoring sessions', el: 'Ανάγνωση των συνεδριών mentoring' },
@@ -1946,6 +1957,32 @@ export const ACTION_DECLARATIONS = [
       },
     },
     confirmLabel: { en: 'Save', el: 'Αποθήκευση' },
+  },
+  {
+    id: 'link_skill_evidence',
+    kind: 'mutation',
+    label: { en: 'Link evidence to a skill', el: 'Σύνδεση τεκμηρίου με δεξιότητα' },
+    description: {
+      en: 'Link one of the user\u2019s own completed items (a milestone, a builder document or an agreed commitment, by the kind and id get_skill_evidence returned) to a skill on their profile, so the profile shows where the skill was applied.',
+      el: 'Συνδέει ένα από τα ολοκληρωμένα στοιχεία του χρήστη (ορόσημο, έγγραφο του builder ή συμφωνημένη δέσμευση, με το είδος και το id που επέστρεψε το get_skill_evidence) με μια δεξιότητα του προφίλ του, ώστε το προφίλ να δείχνει πού εφαρμόστηκε.',
+    },
+    params: [
+      { name: 'skillName', type: 'string', required: true, description: { en: 'The skill, as it reads on the profile.', el: 'Η δεξιότητα, όπως γράφεται στο προφίλ.' } },
+      { name: 'kind', type: 'string', required: true, enumValues: ['milestone', 'builder_document', 'agreement'], description: { en: 'What the evidence is.', el: 'Τι είναι το τεκμήριο.' } },
+      { name: 'refId', type: 'string', required: true, description: { en: 'Id of the item, from get_skill_evidence.', el: 'Το id του στοιχείου, από το get_skill_evidence.' } },
+    ],
+    writes: true,
+    invalidates: ['skill_evidence'],
+    reversal: {
+      // `DELETE /skill-evidence/:id` removes exactly the row the link created
+      // (SkillEvidenceService.unlink, owner only); nobody is notified.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. Removing it deletes only this link, and nobody is notified either way.',
+        el: 'Πλήρως αναστρέψιμο. Η αφαίρεση διαγράφει μόνο αυτή τη σύνδεση και δεν ειδοποιείται κανείς.',
+      },
+    },
+    confirmLabel: { en: 'Link', el: 'Σύνδεση' },
   },
   {
     id: 'canvas_command',

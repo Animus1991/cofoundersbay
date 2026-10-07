@@ -1,10 +1,10 @@
 /**
- * Wave F: seventy-four requests a person might type, thirty-seven tasks each asked
+ * Wave F: seventy-six requests a person might type, thirty-eight tasks each asked
  * once in English and once in Greek, with what the assistant should propose.
  * Four (2026-10-06) are the commitment ladder's: reading where need cards
  * stand, and drafting one. Six (2026-10-07) are founder updates: reading
  * them, drafting one, and following a person. Four (2026-10-07) ask about
- * warm introductions, by name and in general.
+ * warm introductions, by name and in general; two ask what backs one's skills.
  *
  * Written as people phrase things, not as the planner's keys: mixed tonos,
  * polite and terse forms, names inside quotes the way a phone keyboard types
@@ -96,6 +96,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Ποιος μπορεί να με συστήσει στον Νίκο;', tool: 'get_intros', args: { name: 'Nikos' }, read: true },
   { message: 'Show my warm introductions', tool: 'get_intros', read: true },
   { message: 'Δείξε μου τις συστάσεις γνωριμίας', tool: 'get_intros', read: true },
+  { message: 'What evidence backs my skills?', tool: 'get_skill_evidence', read: true },
+  { message: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;', tool: 'get_skill_evidence', read: true },
   { message: 'Ακολούθησε την Έλενα', tool: 'follow_person', args: { name: 'Elena' } },
   { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
   { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },
@@ -107,5 +109,5 @@ export const WRITE_TOOLS = new Set([
   'workspace_create', 'investor_track_startup', 'investor_move_stage', 'update_profile', 'respond_to_connection',
   'create_milestone', 'update_milestone_status', 'rsvp_event', 'create_event', 'canvas_command', 'join_group',
   'leave_group', 'apply_to_program', 'send_invite', 'write_endorsement', 'respond_to_mentor_request', 'run_page_command',
-  'express_interest', 'close_need_card', 'follow_person', 'request_intro', 'set_open_to',
+  'express_interest', 'close_need_card', 'follow_person', 'request_intro', 'set_open_to', 'link_skill_evidence',
 ]);
