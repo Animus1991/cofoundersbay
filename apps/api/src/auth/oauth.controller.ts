@@ -15,7 +15,7 @@ import { OAuthService } from './oauth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { GoogleProfile } from './strategies/google.strategy';
-import { LinkedInProfile } from './strategies/linkedin.strategy';
+import { LINKEDIN_SCOPES, LinkedInProfile } from './strategies/linkedin.strategy';
 import { setAuthCookies } from './cookie.utils';
 
 @Controller('auth')
@@ -95,7 +95,7 @@ export class OAuthController {
   async linkedinAuth(@Res() res: Response) {
     if (!this.isConfigured('linkedin')) return this.oauthNotConfiguredRedirect(res, 'LinkedIn');
     const { default: passport } = await import('passport');
-    return passport.authenticate('linkedin', { scope: ['r_emailaddress', 'r_liteprofile'] })(res.req, res, () => {});
+    return passport.authenticate('linkedin', { scope: [...LINKEDIN_SCOPES] })(res.req, res, () => {});
   }
 
   @Get('linkedin/callback')

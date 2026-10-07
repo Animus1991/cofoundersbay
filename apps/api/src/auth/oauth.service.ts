@@ -87,6 +87,11 @@ export class OAuthService {
       });
 
       if (user) {
+        // An address LinkedIn has not verified proves nothing about who owns
+        // the existing account, so it never links one.
+        if (!profile.emailVerified) {
+          throw new UnauthorizedException('Verify this email address on LinkedIn, or sign in with your password and link LinkedIn from Settings');
+        }
         // Link LinkedIn account to existing user
         user = await this.prisma.user.update({
           where: { id: user.id },
@@ -101,7 +106,7 @@ export class OAuthService {
             email: profile.email,
             slug: linkedinSlug,
             linkedinId: profile.id,
-            emailVerified: true, // LinkedIn verifies email
+            emailVerified: profile.emailVerified, // LinkedIn's own email_verified claim
             profile: {
               create: {
                 displayName: profile.displayName || `${profile.firstName} ${profile.lastName}`.trim() || 'User',
