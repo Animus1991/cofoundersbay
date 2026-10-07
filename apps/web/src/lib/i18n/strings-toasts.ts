@@ -8,6 +8,9 @@
  * key that is missing at runtime shows English only, never a wrong string.
  */
 export const TOAST_EL: Record<string, string> = {
+  "Need card alert saved": "Η ειδοποίηση για κάρτες ανάγκης αποθηκεύτηκε",
+  "You will hear about new cards that fit, at the pace you chose. Change it in Saved searches.": "Θα ενημερώνεστε για νέες κάρτες που ταιριάζουν, με τον ρυθμό που επιλέξατε. Αλλάξτε το στις Αποθηκευμένες αναζητήσεις.",
+  "Could not save the alert": "Η ειδοποίηση δεν αποθηκεύτηκε",
   "Interest sent": "Το ενδιαφέρον στάλθηκε",
   "The author sees your profile and your note.": "Ο συντάκτης βλέπει το προφίλ και το σημείωμά σας.",
   "Interest withdrawn": "Το ενδιαφέρον ανακλήθηκε",

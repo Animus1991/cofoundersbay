@@ -11,6 +11,7 @@ import { listCommitmentCards } from '@/lib/commitments-api';
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { qk } from '@/lib/query-keys';
 import { NeedCard } from './NeedCard';
+import { NeedCardAlertDialog } from './NeedCardAlertDialog';
 
 /** Which card kinds an opportunity type filter covers; `null` hides the section. */
 export function kindsForOpportunityType(type: string): CommitmentKind[] | null {
@@ -29,7 +30,23 @@ export function kindsForOpportunityType(type: string): CommitmentKind[] | null {
  * appear, plus agreed ones for thirty days; nothing here invites contact
  * outside the ladder.
  */
-export function NeedCardsSection({ type, remoteOnly, search }: { type: string; remoteOnly: boolean; search: string }) {
+export function NeedCardsSection({
+  type,
+  remoteOnly,
+  search,
+  alertOpen,
+  onAlertOpenChange,
+}: {
+  type: string;
+  remoteOnly: boolean;
+  search: string;
+  /** The "alert me" dialog, owned by the page so its assistant command can open it. */
+  alertOpen?: boolean;
+  onAlertOpenChange?: (open: boolean) => void;
+}) {
+  const [ownAlertOpen, setOwnAlertOpen] = useState(false);
+  const isAlertOpen = alertOpen ?? ownAlertOpen;
+  const setAlertOpen = onAlertOpenChange ?? setOwnAlertOpen;
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => setNow(Date.now()), []);
   const kinds = kindsForOpportunityType(type);
@@ -56,10 +73,16 @@ export function NeedCardsSection({ type, remoteOnly, search }: { type: string; r
           </h2>
           <p className="text-xs text-muted-foreground"><BilingualText en={CMT.needs_cards_hint.en} el={CMT.needs_cards_hint.el} wrap /></p>
         </div>
-        <Button size="sm" variant="outline" asChild>
-          <Link href="/commitments/new"><BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact /></Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="ghost" onClick={() => setAlertOpen(true)}>
+            <BilingualText en="Alert me about new cards" el="Ειδοποίησέ με για νέες κάρτες" compact />
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/commitments/new"><BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact /></Link>
+          </Button>
+        </div>
       </div>
+      <NeedCardAlertDialog open={isAlertOpen} onOpenChange={setAlertOpen} kinds={kinds} remoteOnly={remoteOnly} search={search} />
       {query.isLoading ? null : cards.length === 0 ? (
         <p className="text-sm text-muted-foreground"><BilingualText en={CMT.empty_filtered.en} el={CMT.empty_filtered.el} wrap /></p>
       ) : (

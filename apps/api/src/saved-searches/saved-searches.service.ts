@@ -1,24 +1,34 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { SavedSearch as SavedSearchRow, SavedSearchType } from '@prisma/client';
+import { COMMITMENT_KINDS, placeVariants } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { SearchService } from '../search/search.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 /**
- * Saved searches over the people directory, with alerts.
+ * Saved searches over the people directory and over need cards, with alerts.
  *
  * `/discover` saves its current filters here and `/saved-searches` lists,
  * renames, re-runs and alerts on them. Until this module the web client
  * called five routes the API never had, so the feature worked only in the
- * preview demo. An alert names only profiles the owner has not been shown:
+ * preview demo. An alert names only results the owner has not been shown:
  * every run, by hand or by the scheduler, records what it returned.
+ *
+ * A search with `scope: 'need_cards'` (saved from the need cards in
+ * Opportunities) looks through other people's open need cards instead of
+ * profiles, so a founder hears about a new co-founder or equity-role card
+ * that fits without checking the board. Its row is `searchType: opportunity`.
  */
 
 export const ALERT_FREQUENCIES = ['instant', 'daily', 'weekly'] as const;
 export type AlertFrequency = (typeof ALERT_FREQUENCIES)[number];
 const FILTER_KEYS = ['roles', 'skills', 'industries', 'locations', 'stage'] as const;
-type FilterKey = (typeof FILTER_KEYS)[number];
+/** A need-card search's filters: the board's kind, stage, category, commitment, place and remote. */
+const CARD_FILTER_KEYS = ['kinds', 'stage', 'categories', 'commitments', 'places', 'remote'] as const;
+type FilterKey = (typeof FILTER_KEYS)[number] | (typeof CARD_FILTER_KEYS)[number];
 export type SavedSearchFilters = Partial<Record<FilterKey, string[]>>;
+export const SAVED_SEARCH_SCOPES = ['people', 'need_cards'] as const;
+export type SavedSearchScope = (typeof SAVED_SEARCH_SCOPES)[number];
 
 export const SAVED_SEARCH_LIMITS = { perUser: 50, name: 80, query: 200, filterItems: 20, filterItem: 60, seenIds: 500, runResults: 50 } as const;
 
@@ -30,6 +40,7 @@ const ALERT_INTERVAL_MS: Record<AlertFrequency, number> = {
 };
 
 export interface SavedSearchInput {
+  scope: SavedSearchScope;
   name: string;
   query: string;
   filters: SavedSearchFilters;
@@ -68,12 +79,22 @@ export function readSavedSearchInput(body: unknown): SavedSearchInput {
   const query = typeof b.query === 'string' ? b.query.trim() : '';
   if (query.length > SAVED_SEARCH_LIMITS.query) throw new BadRequestException(`The query is at most ${SAVED_SEARCH_LIMITS.query} characters`);
   const rawFilters = (b.filters && typeof b.filters === 'object' ? b.filters : {}) as Record<string, unknown>;
+  const scope: SavedSearchScope = b.scope === 'need_cards' ? 'need_cards' : 'people';
   const filters: SavedSearchFilters = {};
-  for (const key of FILTER_KEYS) {
+  for (const key of scope === 'need_cards' ? CARD_FILTER_KEYS : FILTER_KEYS) {
     const list = cleanList(rawFilters[key], key);
     if (list) filters[key] = list;
   }
+  if (filters.kinds) {
+    filters.kinds = filters.kinds.filter((k) => (COMMITMENT_KINDS as readonly string[]).includes(k));
+    if (!filters.kinds.length) delete filters.kinds;
+  }
+  if (filters.remote) {
+    if (filters.remote.includes('true')) filters.remote = ['true'];
+    else delete filters.remote;
+  }
   return {
+    scope,
     name: readName(b.name),
     query,
     filters,
@@ -97,10 +118,20 @@ export function alertIsDue(row: Pick<SavedSearchRow, 'alertEnabled' | 'alertFreq
   return now - row.lastAlertAt.getTime() >= ALERT_INTERVAL_MS[frequency];
 }
 
+export function scopeOf(row: Pick<SavedSearchRow, 'searchType'>): SavedSearchScope {
+  return row.searchType === 'opportunity' ? 'need_cards' : 'people';
+}
+
 /** Profiles in this run that the owner has not been shown and that are not the owner. */
 export function newResultIds(hits: Array<{ userId?: string | null }>, seen: readonly string[], ownerId: string): string[] {
   const known = new Set(seen);
   return [...new Set(hits.map((h) => h.userId).filter((id): id is string => !!id && id !== ownerId && !known.has(id)))];
+}
+
+/** Ids in this run the owner has not been shown. */
+export function newIds(ids: readonly string[], seen: readonly string[]): string[] {
+  const known = new Set(seen);
+  return [...new Set(ids.filter((id) => !!id && !known.has(id)))];
 }
 
 /** Keeps the newest ids first and bounds the list, so a long-lived search stays small. */
@@ -112,6 +143,7 @@ export function toClientSavedSearch(row: SavedSearchRow) {
   const filters = (row.filters && typeof row.filters === 'object' ? row.filters : {}) as SavedSearchFilters;
   return {
     id: row.id,
+    scope: scopeOf(row),
     name: row.name,
     query: row.query ?? '',
     filters,
@@ -148,7 +180,7 @@ export class SavedSearchesService {
       data: {
         userId,
         name: input.name,
-        searchType: searchTypeFor(input.filters),
+        searchType: input.scope === 'need_cards' ? 'opportunity' : searchTypeFor(input.filters),
         query: input.query || null,
         filters: input.filters,
         alertEnabled: input.alertsEnabled,
@@ -204,13 +236,16 @@ export class SavedSearchesService {
         const { fresh } = await this.runRow(row, { mode: 'alert', at: new Date(now) });
         if (fresh.length === 0) continue;
         notified += 1;
+        const cards = scopeOf(row) === 'need_cards';
         await this.notifications.createNotification({
           userId: row.userId,
           type: 'match_suggestion',
-          title: fresh.length === 1 ? `1 new profile for “${row.name}”` : `${fresh.length} new profiles for “${row.name}”`,
-          body: 'Your saved search found people you have not seen yet.',
+          title: cards
+            ? fresh.length === 1 ? `1 new need card for “${row.name}”` : `${fresh.length} new need cards for “${row.name}”`
+            : fresh.length === 1 ? `1 new profile for “${row.name}”` : `${fresh.length} new profiles for “${row.name}”`,
+          body: cards ? 'Your saved search found need cards you have not seen yet.' : 'Your saved search found people you have not seen yet.',
           link: '/saved-searches',
-          meta: { savedSearchId: row.id, userIds: fresh.slice(0, 20) },
+          meta: cards ? { savedSearchId: row.id, cardIds: fresh.slice(0, 20) } : { savedSearchId: row.id, userIds: fresh.slice(0, 20) },
         });
       } catch (err) {
         this.logger.warn(`Saved search alert ${row.id} failed: ${String(err)}`);
@@ -232,6 +267,12 @@ export class SavedSearchesService {
    * `baseline` (right after saving) records nothing else.
    */
   private async runRow(row: SavedSearchRow, options: { mode: 'manual' | 'alert' | 'baseline'; at?: Date }) {
+    if (scopeOf(row) === 'need_cards') {
+      const cards = await this.findCards(row, options.at ?? new Date());
+      const fresh = newIds(cards.map((c) => c.id), row.seenResultIds ?? []);
+      await this.record(row, options, cards.length, fresh);
+      return { hits: cards, total: cards.length, fresh };
+    }
     const filters = toClientSavedSearch(row).filters;
     const result = (await this.search.searchProfiles({
       q: row.query || undefined,
@@ -246,6 +287,11 @@ export class SavedSearchesService {
     const hits = (result?.hits ?? []).filter((h) => h?.userId !== row.userId);
     const total = typeof result?.total === 'number' ? result.total : hits.length;
     const fresh = newResultIds(hits, row.seenResultIds ?? [], row.userId);
+    await this.record(row, options, total, fresh);
+    return { hits, total, fresh };
+  }
+
+  private async record(row: SavedSearchRow, options: { mode: 'manual' | 'alert' | 'baseline'; at?: Date }, total: number, fresh: string[]) {
     await this.prisma.savedSearch.update({
       where: { id: row.id },
       data: {
@@ -256,6 +302,35 @@ export class SavedSearchesService {
         ...(options.mode === 'alert' ? { lastAlertAt: options.at ?? new Date(), pendingNewCount: { increment: fresh.length } } : {}),
       },
     });
-    return { hits, total, fresh };
+  }
+
+  /**
+   * Other people's need cards that still take interest and match the
+   * search: open, not expired, not the owner's own. Only what the board
+   * itself shows any member is returned (title, kind, place, stage).
+   */
+  private async findCards(row: SavedSearchRow, now: Date) {
+    const f = toClientSavedSearch(row).filters;
+    const and: Record<string, unknown>[] = [{ OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] }];
+    if (f.categories?.length) and.push({ OR: f.categories.map((c) => ({ category: { equals: c, mode: 'insensitive' } })) });
+    if (f.places?.length) and.push({ OR: f.places.flatMap((p) => placeVariants(p)).map((v) => ({ place: { contains: v, mode: 'insensitive' } })) });
+    for (const word of (row.query ?? '').trim().split(/\s+/).filter(Boolean).slice(0, 8)) {
+      and.push({ OR: ['title', 'exists', 'goal', 'missing', 'offerRole'].map((field) => ({ [field]: { contains: word, mode: 'insensitive' } })) });
+    }
+    const rows = (await this.prisma.commitmentCard.findMany({
+      where: {
+        status: 'open',
+        ownerId: { not: row.userId },
+        ...(f.kinds?.length ? { kind: { in: f.kinds } } : {}),
+        ...(f.stage?.length ? { stage: { in: f.stage } } : {}),
+        ...(f.commitments?.length ? { commitment: { in: f.commitments } } : {}),
+        ...(f.remote?.length ? { isRemote: true } : {}),
+        AND: and,
+      } as never,
+      orderBy: { createdAt: 'desc' },
+      take: SAVED_SEARCH_LIMITS.runResults,
+      select: { id: true, title: true, kind: true, place: true, stage: true, isRemote: true },
+    })) as Array<{ id: string; title: string; kind: string; place: string | null; stage: string; isRemote: boolean }>;
+    return rows;
   }
 }

@@ -5796,10 +5796,18 @@ export interface SavedSearchFilters {
   industries?: string[];
   locations?: string[];
   stage?: string[];
+  /** Need-card searches: card kinds, categories, commitments, places, `['true']` for remote. */
+  kinds?: string[];
+  categories?: string[];
+  commitments?: string[];
+  places?: string[];
+  remote?: string[];
 }
 
 export interface SavedSearch {
   id: string;
+  /** People in the directory, or other members' need cards. Absent means people. */
+  scope?: 'people' | 'need_cards';
   name: string;
   query: string;
   filters: SavedSearchFilters;
