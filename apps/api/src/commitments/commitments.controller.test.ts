@@ -9,6 +9,7 @@ import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
 import { ResponseInterceptor } from '../common/interceptors/response.interceptor';
 import { CommitmentsController } from './commitments.controller';
 import { CommitmentsService } from './commitments.service';
+import { VerificationService } from '../verification/verification.service';
 import { createFakePrisma } from './fake-prisma';
 
 /**
@@ -41,6 +42,7 @@ const authGuard = {
     CommitmentsService,
     { provide: PrismaService, useValue: fake.prisma },
     { provide: NotificationsService, useValue: fake.notifications },
+    { provide: VerificationService, useValue: { isVerified: async () => true, publicMethods: async () => [] } },
   ],
 })
 class CommitmentsTestModule {}

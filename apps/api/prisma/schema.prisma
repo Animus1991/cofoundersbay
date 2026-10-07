@@ -6253,6 +6253,38 @@ model PitchContactRequest {
   @@index([pitchId, createdAt])
 }
 
+enum VerificationMethod {
+  work_email
+  linkedin_identity
+  linkedin_workplace
+  admin
+}
+
+/// One way a person has proved who they are (`packages/shared/src/verification`).
+/// Removing a signal deletes its row; a work email lapses after a year.
+model UserVerification {
+  id         String             @id @default(uuid())
+  userId     String
+  method     VerificationMethod
+  detail     String?            // the work domain for work_email
+  verifiedAt DateTime           @default(now())
+  expiresAt  DateTime?
+
+  @@unique([userId, method])
+  @@index([userId])
+}
+
+/// A pending work-email code. One per person; the code is stored hashed.
+model WorkEmailChallenge {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  email     String
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model FeedComment {
   id          String   @id @default(uuid())
   postId      String

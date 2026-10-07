@@ -37,6 +37,7 @@ import { CommitmentsModule } from './commitments/commitments.module';
 import { SavedSearchesModule } from './saved-searches/saved-searches.module';
 import { FeedModule } from './feed/feed.module';
 import { PitchModule } from './pitch/pitch.module';
+import { VerificationModule } from './verification/verification.module';
 import { PublicModule } from './public/public.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
@@ -119,6 +120,7 @@ function findEnvFiles(): string[] {
     SavedSearchesModule,
     FeedModule,
     PitchModule,
+    VerificationModule,
     PublicModule,
     LearningModule,
     MarketplaceModule,

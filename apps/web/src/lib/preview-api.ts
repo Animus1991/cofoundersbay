@@ -6,6 +6,7 @@ import { MENTOR_DEMO_ALUMNUS, MENTOR_DEMO_EARNINGS, MENTOR_DEMO_MENTEES, mentorD
 import { previewOrgApi } from './demo/org-api';
 import { previewCommitmentsApi } from './demo/commitments-world';
 import { previewSavedSearchesApi } from './demo/saved-searches-world';
+import { previewVerificationApi } from './demo/verification-world';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2616,6 +2617,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // shared rules as the API, and throws its refusals in the API's shape.
   const commitmentsAnswer = previewCommitmentsApi(pathname, path, method, body, previewNowMs());
   if (commitmentsAnswer !== undefined) return commitmentsAnswer;
+  const verificationAnswer = previewVerificationApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (verificationAnswer !== undefined) return verificationAnswer;
   // Saved searches answer in the API's shapes instead of the generic fallback.
   const savedSearchAnswer = previewSavedSearchesApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (savedSearchAnswer !== undefined) return savedSearchAnswer;

@@ -5,3 +5,4 @@ export * from './actions';
 export * from './canvas';
 
 export * from './commitments';
+export * from './verification';

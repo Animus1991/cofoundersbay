@@ -44,13 +44,18 @@ function refusalDetails(error: unknown) {
 describe('CommitmentsService', () => {
   let fake: ReturnType<typeof createFakePrisma>;
   let service: CommitmentsService;
+  let verified: Set<string>;
 
   beforeEach(() => {
     fake = createFakePrisma();
     fake.addUser(ELENA.id, 'Elena Papadopoulos', { email: 'elena@harbor.test', emailVerified: true, milestonesCompleted: 3, endorsements: 2 });
     fake.addUser(MARCUS.id, 'Marcus Chen');
     fake.addUser(SOFIA.id, 'Sofia Alexiou');
-    service = new CommitmentsService(fake.prisma as never, fake.notifications as never);
+    verified = new Set([ELENA.id, MARCUS.id, SOFIA.id]);
+    service = new CommitmentsService(fake.prisma as never, fake.notifications as never, {
+      isVerified: async (id: string) => verified.has(id),
+      publicMethods: async (id: string) => (verified.has(id) ? ['work_email'] : []),
+    });
   });
 
   async function publish() {
@@ -366,6 +371,35 @@ describe('CommitmentsService', () => {
       expect(asMarcus).toMatchObject({ myThreadId: threadId, myThreadStep: 'conversation', isMine: false });
       const { card: asElena } = await service.getCard(ELENA, card.id);
       expect(asElena).toMatchObject({ isMine: true, interestCount: 1, myThreadId: null });
+    });
+  });
+  describe('verification gate', () => {
+    it('lets an unverified person show interest and talk, but not propose or accept terms, and says why in both languages', async () => {
+      verified.delete(MARCUS.id);
+      const { threadId } = await toConversation();
+      await service.sendMessage(MARCUS, threadId, { body: 'Happy to start with a pilot.' });
+      await service.confirm(ELENA, threadId);
+      await service.confirm(MARCUS, threadId);
+      const refused = await service.proposeTerms(MARCUS, threadId, TERMS).catch((e) => e);
+      expect(refused).toBeInstanceOf(BadRequestException);
+      expect(refused.getResponse().error.details).toMatchObject({ reason: 'verification_required', messageEl: expect.stringContaining('Επαληθευτείτε') });
+      await service.proposeTerms(ELENA, threadId, TERMS);
+      await expect(service.acceptTerms(MARCUS, threadId, 1)).rejects.toBeInstanceOf(BadRequestException);
+      const { thread } = await service.getThread(MARCUS, threadId);
+      expect(thread.verification).toEqual({ meVerified: false, counterpartMethods: ['work_email'] });
+      verified.add(MARCUS.id);
+      expect(await service.acceptTerms(MARCUS, threadId, 1)).toMatchObject({ agreed: true });
+    });
+
+    it('is lifted by COMMITMENT_VERIFICATION=off', async () => {
+      verified.delete(MARCUS.id);
+      const { threadId } = await toTerms();
+      process.env.COMMITMENT_VERIFICATION = 'off';
+      try {
+        expect(await service.proposeTerms(MARCUS, threadId, TERMS)).toMatchObject({ version: 1 });
+      } finally {
+        delete process.env.COMMITMENT_VERIFICATION;
+      }
     });
   });
 });

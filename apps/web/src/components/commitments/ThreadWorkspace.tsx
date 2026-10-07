@@ -10,6 +10,7 @@ import {
   revisionsLeft,
   termsChanges,
   validateTerms,
+  VERIFICATION_REQUIRED_COPY,
   type TermsFields,
   type TermsProblem,
 } from '@cofounderbay/shared';
@@ -42,6 +43,7 @@ import {
   type CommitmentTermsVersion,
 } from '@/lib/commitments-api';
 import { CMT } from '@/lib/i18n/strings-commitments';
+import { VerifiedBadge } from './VerifiedBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { CommitmentLadder } from './CommitmentLadder';
 import { ContactWarning } from './ContactWarning';
@@ -284,7 +286,7 @@ function TermsSpace({
   const substantive = latest ? termsChanges(latest, fields).length > 0 : true;
   const contactText = [draft.role, draft.scope, draft.note].join('\n');
   const formOpen = gate.ok && (editing || thread.terms.length === 0);
-  const canSubmit = !busy && problems.length === 0 && contactKinds(contactText).length === 0 && (substantive || (latest ? (latest.note ?? '') !== draft.note.trim() : true));
+  const canSubmit = !busy && thread.verification.meVerified && problems.length === 0 && contactKinds(contactText).length === 0 && (substantive || (latest ? (latest.note ?? '') !== draft.note.trim() : true));
 
   const set = (key: keyof TermsDraft) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setDraft((d) => ({ ...d, [key]: e.target.value }));
 
@@ -307,13 +309,26 @@ function TermsSpace({
         )}
       </div>
       <p className="text-xs text-muted-foreground"><BilingualText en={CMT.terms_hint.en} el={CMT.terms_hint.el} wrap /></p>
+      {!thread.verification.meVerified && thread.step === 'terms' ? (
+        <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="note">
+          <p className="text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
+          <Button asChild size="sm" variant="outline" className="mt-2">
+            <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+          </Button>
+        </div>
+      ) : null}
 
       {latest ? (
         <div className="rounded-xl border border-border p-3">
           <VersionCard version={latest} highlight />
           {thread.step === 'terms' && !latest.acceptedByMe ? (
             <div className="pt-3">
-              <Button size="sm" onClick={() => onAccept(latest.version)} disabled={busy}>
+              <Button
+                size="sm"
+                onClick={() => onAccept(latest.version)}
+                disabled={busy || !thread.verification.meVerified}
+                title={thread.verification.meVerified ? undefined : `${VERIFICATION_REQUIRED_COPY.en} · ${VERIFICATION_REQUIRED_COPY.el}`}
+              >
                 <BilingualText en={`${CMT.accept_version.en} ${latest.version}`} el={`${CMT.accept_version.el} ${latest.version}`} compact />
               </Button>
             </div>
@@ -540,8 +555,8 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       labelEn: 'Accept the latest terms',
       labelEl: 'Αποδοχή των τελευταίων όρων',
       writes: true,
-      unavailableEn: missing ?? (step !== 'terms' ? 'There are no open terms.' : !latest ? 'No terms have been proposed yet.' : latest.acceptedByMe ? 'You already accepted this version.' : undefined),
-      unavailableEl: missingEl ?? (step !== 'terms' ? 'Δεν υπάρχουν ανοιχτοί όροι.' : !latest ? 'Δεν έχουν προταθεί όροι ακόμη.' : latest.acceptedByMe ? 'Έχετε ήδη αποδεχτεί αυτή την έκδοση.' : undefined),
+      unavailableEn: missing ?? (step !== 'terms' ? 'There are no open terms.' : !latest ? 'No terms have been proposed yet.' : latest.acceptedByMe ? 'You already accepted this version.' : thread && !thread.verification.meVerified ? VERIFICATION_REQUIRED_COPY.en : undefined),
+      unavailableEl: missingEl ?? (step !== 'terms' ? 'Δεν υπάρχουν ανοιχτοί όροι.' : !latest ? 'Δεν έχουν προταθεί όροι ακόμη.' : latest.acceptedByMe ? 'Έχετε ήδη αποδεχτεί αυτή την έκδοση.' : thread && !thread.verification.meVerified ? VERIFICATION_REQUIRED_COPY.el : undefined),
       run: () => run(() => acceptCommitmentTerms(threadId, latest?.version ?? 0), 'Terms accepted'),
     },
     {
@@ -606,7 +621,10 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
           <AvatarFallback className="bg-primary/15 text-xs text-foreground">{initialsOf(thread.counterpart.displayName)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">{thread.counterpart.displayName}</p>
+          <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span className="truncate">{thread.counterpart.displayName}</span>
+            <VerifiedBadge methods={thread.verification.counterpartMethods} />
+          </p>
           {thread.counterpart.headline ? <p className="truncate text-xs text-muted-foreground">{thread.counterpart.headline}</p> : null}
         </div>
         <StepChip step={thread.step} />

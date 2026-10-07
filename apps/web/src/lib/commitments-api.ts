@@ -8,6 +8,8 @@ import {
   type ContactKind,
   type NeedCardInput,
   type TermsFields,
+  VERIFICATION_METHODS,
+  type VerificationMethod,
 } from '@cofounderbay/shared';
 import { apiRequest } from '@/lib/api';
 
@@ -117,6 +119,8 @@ export type CommitmentThread = {
   card: CommitmentCard;
   role: 'owner' | 'candidate';
   counterpart: CommitmentPerson;
+  /** Terms need the reader verified; the other side's methods show as a badge. */
+  verification: { meVerified: boolean; counterpartMethods: VerificationMethod[] };
   step: CommitmentStep;
   note: string | null;
   answeredVersion: number;
@@ -284,6 +288,13 @@ export function toCommitmentThread(raw: unknown): CommitmentThread {
     card: toCommitmentCard(t.card),
     role: t.role === 'owner' ? 'owner' : 'candidate',
     counterpart: toCommitmentPerson(t.counterpart),
+    // A server that does not send it does not gate on it either.
+    verification: {
+      meVerified: rec(t.verification).meVerified !== false,
+      counterpartMethods: (Array.isArray(rec(t.verification).counterpartMethods) ? (rec(t.verification).counterpartMethods as unknown[]) : []).filter(
+        (m): m is VerificationMethod => (VERIFICATION_METHODS as readonly unknown[]).includes(m),
+      ),
+    },
     step: stepOf(t.step),
     note: strOrNull(t.note),
     answeredVersion: num(t.answeredVersion, 1),

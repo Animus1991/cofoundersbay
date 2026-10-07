@@ -84,6 +84,7 @@ export const QUERY_ROOTS = [
   'sso',
   'tenant',
   'user-search-invite',
+  'verification',
   'weekly-digest',
   'workspaces',
 ] as const;

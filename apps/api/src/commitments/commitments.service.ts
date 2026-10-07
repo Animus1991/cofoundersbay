@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import {
   acceptsInterest,
@@ -19,14 +13,17 @@ import {
   describeContactKinds,
   hasPromiseClaims,
   isCommitmentKind,
+  LADDER_TERMS_METHODS,
   NEED_CARD_LIMITS,
   termsChanges,
   validateTerms,
+  VERIFICATION_REQUIRED_COPY,
   type CommitmentOutcome,
   type CommitmentStep,
   type NeedCardInput,
   type TermsFields,
 } from '@cofounderbay/shared';
+import { VerificationService } from '../verification/verification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -185,12 +182,32 @@ function incompleteRefusal(assessment: ReturnType<typeof assessNeedCard>) {
   });
 }
 
+/**
+ * Proposing or accepting terms is the first step that needs someone to have
+ * proved who they are; interest and the protected conversation do not.
+ * `COMMITMENT_VERIFICATION=off` lifts the gate (local development, a pilot
+ * before any verification method is configured).
+ */
+function verificationRefusal() {
+  return refusal('verification_required', VERIFICATION_REQUIRED_COPY.en, {
+    messageEl: VERIFICATION_REQUIRED_COPY.el,
+    methods: [...LADDER_TERMS_METHODS],
+  });
+}
+
 @Injectable()
 export class CommitmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    // A Pick type emits no runtime metadata, so the token is named explicitly.
+    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'isVerified' | 'publicMethods'>,
   ) {}
+
+  private async requireVerified(viewer: Viewer) {
+    if (process.env.COMMITMENT_VERIFICATION === 'off') return;
+    if (!(await this.verification.isVerified(viewer.id))) throw verificationRefusal();
+  }
 
   // ── Shapes ────────────────────────────────────────────────────────────────
 
@@ -704,6 +721,11 @@ export class CommitmentsService {
     if (!row) throw new NotFoundException('Conversation not found');
     const bothConfirmed = Boolean(row.ownerConfirmedAt && row.candidateConfirmedAt);
     const latest = row.terms[row.terms.length - 1];
+    const otherId = isOwner ? row.candidateId : row.card.ownerId;
+    const [meVerified, otherMethods] = await Promise.all([
+      process.env.COMMITMENT_VERIFICATION === 'off' ? Promise.resolve(true) : this.verification.isVerified(viewer.id),
+      this.verification.publicMethods(otherId),
+    ]);
     return {
       thread: {
         id: row.id,
@@ -711,6 +733,8 @@ export class CommitmentsService {
         card: this.cardShape({ ...(row.card as unknown as CardRow), threads: [] }, viewer.id),
         role: isOwner ? 'owner' : 'candidate',
         counterpart: person((isOwner ? row.candidate : row.card.owner) as PersonRow),
+        // Terms need the reader verified; the other side's methods show as a badge.
+        verification: { meVerified, counterpartMethods: otherMethods },
         step: row.step,
         note: row.note ?? null,
         answeredVersion: row.cardVersion,
@@ -815,6 +839,7 @@ export class CommitmentsService {
    */
   async proposeTerms(viewer: Viewer, threadId: string, body: Record<string, unknown>) {
     const { thread, isOwner, otherId } = await this.participantThread(viewer, threadId);
+    await this.requireVerified(viewer);
     const latest = await this.prisma.commitmentTerms.findFirst({ where: { threadId }, orderBy: { version: 'desc' } });
     const versions = latest?.version ?? 0;
     const gate = canReviseTerms({ revisions: thread.revisions, dealRoomActive: thread.dealRoomActive, step: thread.step as CommitmentStep, versions });
@@ -863,6 +888,7 @@ export class CommitmentsService {
   /** Accepts the latest version. When both have, the commitment is agreed and the deal room opens. */
   async acceptTerms(viewer: Viewer, threadId: string, version: number) {
     const { thread, isOwner, otherId } = await this.participantThread(viewer, threadId);
+    await this.requireVerified(viewer);
     if (thread.step !== 'terms') throw new ConflictException('There are no open terms to accept');
     const latest = await this.prisma.commitmentTerms.findFirst({ where: { threadId }, orderBy: { version: 'desc' } });
     if (!latest) throw new ConflictException('No terms have been proposed yet');

@@ -15,7 +15,13 @@ import {
   type CommitmentStep,
   type NeedCardInput,
   type TermsFields,
+  LADDER_TERMS_METHODS,
+  VERIFICATION_REQUIRED_COPY,
 } from '@cofounderbay/shared';
+import { DemoRefusal } from './demo-refusal';
+import { demoMeVerified, demoPersonMethods } from './verification-world';
+
+export { DemoRefusal };
 
 /**
  * The preview demo's commitments: the same ladder as the API, in the browser.
@@ -114,18 +120,10 @@ type Terms = TermsFields & {
 
 type World = { cards: Card[]; threads: Thread[]; messages: Message[]; terms: Terms[] };
 
-/** A refusal shaped like the API's: status, message and `details`. */
-export class DemoRefusal extends Error {
-  status: number;
-  code: string;
-  details?: Record<string, unknown>;
-  constructor(status: number, message: string, details?: Record<string, unknown>) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = status === 409 ? 'CONFLICT' : status === 403 ? 'FORBIDDEN' : status === 404 ? 'NOT_FOUND' : 'VALIDATION_ERROR';
-    this.details = details;
-  }
+/** The API's gate on terms: the reader must be verified (see `verification-world`). */
+function requireDemoVerified() {
+  if (demoMeVerified()) return;
+  throw new DemoRefusal(400, VERIFICATION_REQUIRED_COPY.en, { reason: 'verification_required', messageEl: VERIFICATION_REQUIRED_COPY.el, methods: [...LADDER_TERMS_METHODS] });
 }
 
 function seed(now: number): World {
@@ -580,6 +578,7 @@ function threadShape(world: World, thread: Thread, card: Card, isOwner: boolean)
     card: cardShape(world, card),
     role: isOwner ? 'owner' : 'candidate',
     counterpart: person(isOwner ? thread.candidateId : card.ownerId),
+    verification: { meVerified: demoMeVerified(), counterpartMethods: demoPersonMethods(isOwner ? thread.candidateId : card.ownerId) },
     step: thread.step,
     note: thread.note,
     answeredVersion: thread.cardVersion,
@@ -909,6 +908,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
       return { ok: true };
     }
     if (parts[2] === 'terms' && parts.length === 3 && method === 'POST') {
+      requireDemoVerified();
       const rows = world.terms.filter((t) => t.threadId === thread.id).sort((a, b) => b.version - a.version);
       const latest = rows[0];
       const gate = canReviseTerms({ revisions: thread.revisions, dealRoomActive: thread.dealRoomActive, step: thread.step, versions: latest?.version ?? 0 });
@@ -957,6 +957,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
       return { version: created.version, substantive: true, revisionsUsed: thread.revisions, changed };
     }
     if (parts[2] === 'terms' && parts[4] === 'accept' && method === 'POST') {
+      requireDemoVerified();
       if (thread.step !== 'terms') throw new DemoRefusal(409, 'There are no open terms to accept');
       const version = Number(parts[3]);
       if (!Number.isInteger(version)) throw new DemoRefusal(400, 'Validation failed (numeric string is expected)');
