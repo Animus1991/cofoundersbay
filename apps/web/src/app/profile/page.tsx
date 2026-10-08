@@ -1,6 +1,8 @@
 'use client';
 
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
+import { AvatarVerifiedMark, OwnOpenToPill, VerificationPanel, useMyTrust } from '@/components/profile/ProfileTrust';
+import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
 import { StatusText } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
@@ -25,8 +27,6 @@ import {
   Languages,
   CheckCircle,
   AlertCircle,
-  Shield,
-  Mail,
   Target,
   Rocket,
   Users,
@@ -38,7 +38,6 @@ import {
   FolderOpen,
   Plus,
   BarChart3,
-  BadgeCheck,
   Calendar,
   MessageSquare,
   User,
@@ -157,46 +156,6 @@ function ProfileCompletionPanel({ profile }: { profile: NonNullable<ProfileData>
           </Button>
         )}
     </div>
-  );
-}
-
-function VerificationPanel({ email }: { email?: string | null }) {
-  const items = [
-    { labelEn: profileEn('email_verified'), labelEl: profileEl('email_verified'), verified: !!email, icon: Mail },
-    { labelEn: profileEn('linkedin_connected'), labelEl: profileEl('linkedin_connected'), verified: false, icon: Linkedin },
-    { labelEn: profileEn('github_connected'), labelEl: profileEl('github_connected'), verified: false, icon: Github },
-    { labelEn: profileEn('identity_verified'), labelEl: profileEl('identity_verified'), verified: false, icon: Shield },
-  ];
-  return (
-      <div className="space-y-2.5">
-        {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
-          /* The status sits under the label, not beside it. On one line, in a
-             320px rail, the label yielded (`min-w-0`) to a `shrink-0` status
-             that is itself bilingual — "Not connected · Μη συνδεδεμένο" is
-             about 170px — and "LinkedIn connected · LinkedIn συνδεδεμένο" was
-             left 17px to render 119px of text, losing 86% of itself. Stacked,
-             both read in full at any width this card ever takes. */
-          <div key={labelEn} className="flex items-start gap-2.5 text-xs">
-            <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-status-success-bg' : 'bg-secondary/60'}`}>
-              <Icon className={`icon-sm ${verified ? 'text-status-success' : 'text-muted-foreground'}`} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className={`block leading-snug ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
-                <BilingualText en={labelEn} el={labelEl} compact wrap />
-              </span>
-              {/* No /60 on the muted token: an alpha modifier on a text colour
-                  composites toward the surface, and muted-foreground at 0.6
-                  measures 3.27:1 on the card — under AA. */}
-              {!verified && (
-                <span className="mt-0.5 block text-2xs leading-snug text-muted-foreground">
-                  <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} compact wrap />
-                </span>
-              )}
-            </div>
-            {verified && <CheckCircle className="mt-0.5 shrink-0 icon-sm text-status-success" />}
-          </div>
-        ))}
-      </div>
   );
 }
 
@@ -328,6 +287,8 @@ export default function ProfilePage() {
   // unreachable because the offer had no handler behind it.
   const [showAllSkills, setShowAllSkills] = React.useState(false);
 
+  // Verification and "Open to" as Settings holds them (shared cache keys).
+  const trust = useMyTrust();
   const { data: meData, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
@@ -532,7 +493,7 @@ export default function ProfilePage() {
       glyph: 'shield',
       labelEn: profileEn('verification'),
       labelEl: profileEl('verification'),
-      content: <VerificationPanel email={profile.email} />,
+      content: <VerificationPanel email={profile.email} verification={trust.verification} />,
     },
     {
       id: 'account',
@@ -602,17 +563,18 @@ export default function ProfilePage() {
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
-                  <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title={bilingualAria(profileEn('verified_member'), profileEl('verified_member'))}>
-                  <BadgeCheck className="icon-lg text-status-info" />
-                </div>
+                <AvatarVerifiedMark methods={trust.methods} />
               </div>
 
               <div className="flex-1 space-y-3 pt-2 md:pt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight flex items-center gap-2">
-                      {profile.displayName}
-                    </h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight">
+                        {profile.displayName}
+                      </h2>
+                      <VerifiedBadge methods={trust.methods} />
+                    </div>
                     {profile.headline ? (
                       <p className="text-base md:text-lg text-muted-foreground font-medium">
                         {profile.headline}
@@ -624,12 +586,9 @@ export default function ProfilePage() {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
-                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-status-success-bg text-status-success hover:bg-status-success-bg border-status-success-border">
-                      <div className="w-2 h-2 rounded-full bg-status-success-mark animate-pulse"></div>
-                      <BilingualText en={profileEn('open_to_work')} el={profileEl('open_to_work')} />
-                    </Badge>
+                    <OwnOpenToPill openTo={trust.openTo} />
                   </div>
                 </div>
 

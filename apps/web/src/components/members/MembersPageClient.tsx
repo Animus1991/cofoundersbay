@@ -19,7 +19,6 @@ import {
   TrendingUp,
   Sparkles,
   Activity,
-  BadgeCheck,
   Circle,
   Award,
   Compass,
@@ -37,6 +36,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
@@ -602,7 +602,7 @@ export function MembersPageClient() {
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
                     <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-muted-foreground shrink-0" />
+                  <PersonVerifiedBadge userId={member.userId} />
                 </div>
               ))}
             </div>

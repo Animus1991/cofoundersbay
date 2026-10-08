@@ -40,6 +40,7 @@ import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { VerificationCard } from '@/components/settings/VerificationCard';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
@@ -271,6 +272,8 @@ function PrivacyCard() {
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
+  // `/settings#verification`, `#open-to`, `#language`: the cards mount after load.
+  useScrollToHash();
   const { success, error: showError } = useToast();
   const { t, locale } = useI18n();
   const { displayMode, setDisplayMode } = useLanguagePreference();
