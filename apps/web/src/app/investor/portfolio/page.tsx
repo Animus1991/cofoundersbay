@@ -105,11 +105,7 @@ function toInvestment(deal: InvestorDeal): Investment {
     logoUrl: deal.logoUrl ?? undefined,
     industry: deal.industry ?? '\u2014',
     investedAt: deal.investedAt
-      ? new Date(deal.investedAt).toLocaleDateString('en-GB', {
-          month: 'short',
-          year: 'numeric',
-          timeZone: 'UTC',
-        })
+      ? formatDate(deal.investedAt, 'en', { month: '2-digit', year: 'numeric' })
       : '\u2014',
     amount: money(deal.investedCents, deal.currency),
     currentValue: money(deal.currentValueCents, deal.currency),

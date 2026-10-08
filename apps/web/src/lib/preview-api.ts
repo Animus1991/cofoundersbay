@@ -1522,7 +1522,7 @@ const PREVIEW_EVENTS: PreviewEvent[] = [
     description: 'A working session on interview design, signal vs. noise in early feedback, and deciding what not to build.',
     eventType: 'workshop', mode: 'hybrid',
     startAt: '2026-09-17T09:00:00.000Z', endAt: '2026-09-17T12:00:00.000Z',
-    timezone: 'Europe/Athens', location: 'Impact Hub, Athens', isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/discovery',
+    timezone: 'Europe/Athens', location: 'Aegean Venture Lab, Athens', isOnline: true, meetingUrl: 'https://meet.cofounderbay.com/discovery',
     capacity: 40, coverImageUrl: null, attendeesCount: 32,
     host: PREVIEW_EVENT_HOSTS.sarah, viewerRsvp: null,
   },

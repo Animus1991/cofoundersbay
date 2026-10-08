@@ -126,11 +126,10 @@ export default function TenantDashboardPage() {
     id: event.id,
     name: event.title,
     // UTC on both sides of hydration, as every other date here is.
-    date: new Date(event.startAt).toLocaleDateString('en-GB', {
+    date: fmtDate(event.startAt, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
-      timeZone: 'UTC',
     }),
     type: event.eventType === 'workshop' ? 'Session' : 'Event',
   }));
