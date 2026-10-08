@@ -153,7 +153,7 @@ export default function AdminAnalyticsPage() {
           { label: 'Tenants', value: METRICS.totalTenants ?? dash, icon: Users },
         ].map(({ label, value, icon: Icon }) => (
           <Card key={label}>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Icon className="icon-sm" />
                 <span className="text-sm">{label}</span>

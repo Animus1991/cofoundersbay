@@ -495,6 +495,9 @@ export default function AutomationsPage() {
               <Card className="p-8 text-center">
                 <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact wrap /></p>
+                <Button size="sm" className="mt-3 gap-1" onClick={() => setShowCreate(true)}>
+                  <Plus className="icon-sm" /><BilingualText en="New Rule" el="Νέος κανόνας" compact />
+                </Button>
               </Card>
             )}
             {rules.map(rule => (

@@ -335,7 +335,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
                     <ListChecks className="icon-sm" aria-hidden="true" />{' '}
                     <BilingualText en="Action items" el="Ενέργειες" compact />
                   </span>
-                  <span className="font-medium text-foreground">{completedActions}/{totalActions}</span>
+                  <span className="font-semibold text-foreground">{completedActions}/{totalActions}</span>
                 </div>
                 <Progress value={(completedActions / totalActions) * 100} className="h-1.5" />
               </div>
@@ -885,7 +885,7 @@ export default function CoachingPage() {
                 <Icon className="icon-sm" />
               </div>
               <div className="min-w-0">
-                <p className="text-base font-bold leading-none text-foreground">{value}</p>
+                <p className="text-base font-semibold leading-none text-foreground">{value}</p>
                 <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                   <BilingualText en={labelEn} el={labelEl} compact wrap />
                 </p>
@@ -1037,11 +1037,11 @@ export default function CoachingPage() {
           <TabsContent value="sessions" className="mt-4 space-y-3">
             {sessions.length === 0 && bookingRows.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <BrainCircuit className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
+                  <p className="font-semibold text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
                   <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." /></p>
                 </div>
                 <Button size="sm" onClick={() => setActiveTab('find')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Button>
@@ -1108,7 +1108,7 @@ export default function CoachingPage() {
 
             <div className="rounded-xl border border-dashed border-border bg-card/50 p-6 text-center">
               <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
+              <p className="text-sm font-semibold text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
               <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
               {/* Mentor signup is the real version of this — the form exists
                   and is wired. */}
@@ -1151,7 +1151,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary-accessible" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
+                    <TrendingUp className="icon-sm text-muted-foreground" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -1188,7 +1188,7 @@ export default function CoachingPage() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-sm font-bold text-foreground">
+                        <span className="text-sm font-semibold text-foreground">
                           {totalActionItems.length ? Math.round((completedActions / totalActionItems.length) * 100) : 0}%
                         </span>
                       </div>
@@ -1196,7 +1196,7 @@ export default function CoachingPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-status-success font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact wrap /></p>
+                      <p className="text-xs text-status-success"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact wrap /></p>
                     </div>
                   </div>
                 </CardContent>

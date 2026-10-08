@@ -79,7 +79,7 @@ export function NeedCard({
     <article data-need-card="" className={cn('space-y-4', className)}>
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
+          <span className="chip rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={kind.en} el={kind.el} compact />
           </span>
           {card.outcome ? <OutcomeChip outcome={card.outcome} reason={card.closedReason} /> : null}
@@ -126,13 +126,13 @@ export function NeedCard({
       </section>
 
       <ul aria-label={`${CMT.filters.en} · ${CMT.filters.el}`} className="flex flex-wrap gap-1.5">
-        {card.category ? <li className="rounded-full border border-border px-2 py-0.5 text-2xs text-foreground">{card.category}</li> : null}
+        {card.category ? <li className="chip rounded-full border border-border px-2 py-0.5 text-2xs text-foreground">{card.category}</li> : null}
         {card.isRemote ? (
-          <li className="rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><BilingualText en={CMT.remote.en} el={CMT.remote.el} compact /></li>
+          <li className="chip rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><BilingualText en={CMT.remote.en} el={CMT.remote.el} compact /></li>
         ) : null}
-        {card.place ? <li className="rounded-full border border-border px-2 py-0.5 text-2xs text-foreground">{card.place}</li> : null}
-        {card.stage ? <li className="rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><StatusText value={card.stage} /></li> : null}
-        {card.commitment ? <li className="rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><StatusText value={card.commitment} /></li> : null}
+        {card.place ? <li className="chip rounded-full border border-border px-2 py-0.5 text-2xs text-foreground">{card.place}</li> : null}
+        {card.stage ? <li className="chip rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><StatusText value={card.stage} /></li> : null}
+        {card.commitment ? <li className="chip rounded-full border border-border px-2 py-0.5 text-2xs text-foreground"><StatusText value={card.commitment} /></li> : null}
       </ul>
 
       {!compact && evidence.length ? (
@@ -140,7 +140,7 @@ export function NeedCard({
           <p className="text-xs font-medium text-muted-foreground"><BilingualText en={CMT.evidence.en} el={CMT.evidence.el} compact /></p>
           <ul className="flex flex-wrap gap-1.5">
             {evidence.map((pair) => (
-              <li key={pair.en} className="rounded-full bg-status-success-bg px-2 py-0.5 text-2xs text-status-success">
+              <li key={pair.en} className="chip rounded-full bg-status-success-bg px-2 py-0.5 text-2xs text-status-success">
                 <BilingualText en={pair.en} el={pair.el} compact />
               </li>
             ))}

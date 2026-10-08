@@ -96,7 +96,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Link href={`/p/${mentor.userId}`}>
             <Avatar className="icon-md">
@@ -313,25 +313,25 @@ export default function OrgMentorsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Mentors" el="Σύνολο μεντόρων" compact /></p>
               <p className="page-stat text-xl font-bold">{mentors.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργοί" compact /></p>
               <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></p>
               <p className="page-stat text-xl font-bold">{currentMentees}/{totalCapacity}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
               <p className="page-stat text-xl font-bold">
                 {mentors.some((m) => m.totalSessions == null) ? '\u2014' : mentors.reduce((acc, m) => acc + (m.totalSessions ?? 0), 0)}

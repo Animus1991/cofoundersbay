@@ -159,7 +159,7 @@ function ApplicationCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="icon-md rounded-lg">
             <AvatarImage src={application.logoUrl} />
@@ -406,7 +406,7 @@ export default function OrgApplicationsPage() {
             { label: 'Rejected', labelEl: 'Απορριφθείσες', value: statusCounts.rejected, tone: STATUS.danger.icon },
           ].map((kpi) => (
             <Card key={kpi.label}>
-              <CardContent className="p-4">
+              <CardContent>
                 <p className="text-sm text-muted-foreground"><BilingualText en={kpi.label} el={kpi.labelEl} compact wrap /></p>
                 <p className={cn('page-stat text-xl font-semibold tabular-nums sm:text-2xl', kpi.tone)}>{kpi.value}</p>
               </CardContent>

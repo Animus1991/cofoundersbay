@@ -12,7 +12,7 @@ interface FilterBarProps {
 export function FilterBar({ children, className }: FilterBarProps) {
   return (
     <Card className={cn('transition-all', className)}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto">
             {children}

@@ -45,7 +45,7 @@ export function DashboardJobs({ jobs, className }: DashboardJobsProps) {
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Briefcase className="icon-sm text-primary-accessible" />
+          <Briefcase className="icon-sm text-muted-foreground" />
           Current job offers
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>

@@ -223,7 +223,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="icon-sm text-primary-accessible" />
+                  <Star className="icon-sm text-muted-foreground" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -363,8 +363,8 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                          <Icon className="icon-md text-primary-accessible" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                          <Icon className="icon-md text-muted-foreground" />
                         </div>
                         <span className="font-medium">{item.action}</span>
                       </div>

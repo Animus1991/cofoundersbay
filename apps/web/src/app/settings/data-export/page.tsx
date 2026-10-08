@@ -142,7 +142,7 @@ export default function DataExportPage() {
         <Card className="border-primary/15 bg-primary/5">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="icon-md mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />
+              <Shield className="icon-md mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
               <div>
                 <p className="mb-1 text-sm font-medium text-foreground"><BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact /></p>
                 <p className="text-xs leading-relaxed text-muted-foreground">

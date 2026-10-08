@@ -112,7 +112,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
             >
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="flex items-start gap-3">
                   <div className="cursor-move mt-2">
                     <GripVertical className="icon-md text-muted-foreground" />

@@ -172,7 +172,7 @@ export default function SecurityMonitoringPage() {
           { label: 'Actioned', labelEl: 'Με ενέργεια', value: isLive ? (abuseStats?.actionedFlags ?? 0) : '—', icon: Lock },
         ].map(({ label, labelEl, value, icon: Icon }) => (
           <Card key={label}>
-            <CardContent className="flex items-center gap-3 p-4">
+            <CardContent className="flex items-center gap-3">
               <Icon className="icon-md text-muted-foreground" aria-hidden="true" />
               <div>
                 <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>

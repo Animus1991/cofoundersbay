@@ -68,7 +68,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
     <Card className={cn('', className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <BarChart3 className="icon-sm text-primary-accessible" />
+          <BarChart3 className="icon-sm text-muted-foreground" />
           Active poll
         </CardTitle>
       </CardHeader>

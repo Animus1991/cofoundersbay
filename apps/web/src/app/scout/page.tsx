@@ -41,7 +41,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
   const { success, error: showError } = useToast();
   return (
     <Card>
-      <CardContent className="space-y-3 p-4 sm:p-5">
+      <CardContent className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <Link href={`/profiles/${encodeURIComponent(p.person.id)}`} className="text-base font-semibold text-foreground hover:text-primary-accessible">
@@ -329,7 +329,7 @@ function ScoutContent() {
               <Skeleton className="h-40 w-full rounded-2xl" />
             ) : !proposed.length ? (
               <Card>
-                <CardContent className="p-6 text-sm text-muted-foreground">
+                <CardContent className="text-sm text-muted-foreground">
                   <BilingualText
                     en={brief ? 'Nobody new to propose. The scout looks again tomorrow, or run it after changing the brief.' : 'Write a brief and the scout proposes people for it, with its reasons.'}
                     el={brief ? 'Κανείς νέος για πρόταση. Ο ανιχνευτής ξανακοιτά αύριο, ή τρέξτε τον αφού αλλάξετε το σημείωμα.' : 'Γράψτε ένα σημείωμα και ο ανιχνευτής θα προτείνει πρόσωπα, με τους λόγους του.'}
@@ -354,7 +354,7 @@ function ScoutContent() {
           </TabsContent>
           <TabsContent value="saved" className="space-y-4">
             {!saved.length ? (
-              <Card><CardContent className="p-6 text-sm text-muted-foreground"><BilingualText en="People you save from the scout appear here and on your shortlist." el="Όσους αποθηκεύετε από τον ανιχνευτή εμφανίζονται εδώ και στη λίστα σας." wrap /></CardContent></Card>
+              <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="People you save from the scout appear here and on your shortlist." el="Όσους αποθηκεύετε από τον ανιχνευτή εμφανίζονται εδώ και στη λίστα σας." wrap /></CardContent></Card>
             ) : (
               saved.map((p) => (
                 <ProposalCard key={p.id} p={p} actions={<Button asChild size="sm" variant="ghost"><Link href="/shortlist"><BilingualText en="On your shortlist" el="Στη λίστα σας" compact /></Link></Button>} />

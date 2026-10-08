@@ -183,7 +183,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
-      <CardContent className="p-5 flex flex-col flex-1 gap-3">
+      <CardContent className="flex flex-col flex-1 gap-3">
         {/* Type icon + title */}
         <div className="flex items-start gap-3">
           <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.color)}>
@@ -226,6 +226,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
             )}
           >
             <Bookmark className={cn('icon-sm', saved && 'fill-current')} aria-hidden="true" />
+            <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
           </button>
         </div>
 
@@ -561,7 +562,7 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="icon-sm text-primary-accessible" />
+              <Target className="icon-sm text-muted-foreground" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 <BilingualText en={learningEn('paths')} el={learningEl('paths')} compact />
               </h2>
@@ -593,7 +594,7 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="icon-sm text-primary-accessible" />
+            <Sparkles className="icon-sm text-muted-foreground" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               <BilingualText en={learningEn('recommended')} el={learningEl('recommended')} compact />
             </h2>
@@ -663,7 +664,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-primary-accessible" />
+                <TrendingUp className="icon-sm text-muted-foreground" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   <BilingualText en={learningEn('featured')} el={learningEl('featured')} compact />
                 </h2>

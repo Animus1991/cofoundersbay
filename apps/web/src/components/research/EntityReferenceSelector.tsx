@@ -134,8 +134,8 @@ export function EntityReferenceSelector({
                     'text-left'
                   )}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="icon-md text-primary-accessible" />
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                    <Icon className="icon-md text-muted-foreground" />
                   </div>
                   <div>
                     <div className="font-medium">{entityType.label}</div>
@@ -161,7 +161,7 @@ export function EntityReferenceSelector({
             <div className="max-h-[300px] overflow-y-auto space-y-2">
               {isLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="icon-lg animate-spin text-primary-accessible" />
+                  <Loader2 className="icon-lg animate-spin text-muted-foreground" />
                 </div>
               )}
 
@@ -196,8 +196,8 @@ export function EntityReferenceSelector({
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon className="icon-md text-primary-accessible" />
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <Icon className="icon-md text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">

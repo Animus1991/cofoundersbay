@@ -531,7 +531,7 @@ export default function DiscoverPage() {
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
               <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
-                <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
+                <BadgeCheck className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="text-sm font-semibold text-foreground">
                   <BilingualText en="Featured profiles" el="Προτεινόμενα προφίλ" compact />
                 </span>
@@ -543,7 +543,7 @@ export default function DiscoverPage() {
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profiles/${h.userId}`}
                     className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                       {initialsOf(h.displayName)}
                     </div>
                     <div className="min-w-0">
@@ -653,7 +653,7 @@ export default function DiscoverPage() {
           <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+                  <Sparkles className="icon-md shrink-0 text-muted-foreground" />
                   Suggested for you
                 </h2>
                 <p className="text-sm text-muted-foreground">
@@ -734,7 +734,7 @@ export default function DiscoverPage() {
           <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
+                  <TrendingUp className="icon-md shrink-0 text-muted-foreground" />
                   Your Top Matches
                 </h2>
                 <p className="text-sm text-muted-foreground">

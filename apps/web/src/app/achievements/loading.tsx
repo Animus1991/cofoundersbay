@@ -9,7 +9,7 @@ export default function AchievementsLoading() {
       <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-5">
+            <CardContent>
               <div className="flex items-start gap-4">
                 <Skeleton className="h-14 w-14 rounded-xl" />
                 <div className="flex-1 space-y-2">

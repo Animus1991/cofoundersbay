@@ -132,7 +132,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-4 sm:p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
@@ -169,7 +169,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         {opportunity.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opportunity.tags.map((tag: string) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
+              <span key={tag} className="chip rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -254,7 +254,7 @@ function JobCard({ job }: { job: JobPostingView }) {
   const { ask } = usePopupChat();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-4 sm:p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
@@ -344,7 +344,7 @@ function ProposalCard({
 
   return (
     <Card className={cn('transition-all', !isPending && 'surface-inactive')}>
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
@@ -821,7 +821,7 @@ export default function OpportunitiesPage() {
               </CardContent></Card>
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}><CardContent className="flex gap-4 p-5">
+                <Card key={i}><CardContent className="flex gap-4">
                   <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-48" />
@@ -893,7 +893,7 @@ export default function OpportunitiesPage() {
             ) : jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
-                  <CardContent className="flex gap-4 p-5">
+                  <CardContent className="flex gap-4">
                     <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />

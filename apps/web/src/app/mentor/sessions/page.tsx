@@ -78,13 +78,13 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3 sm:gap-4">
           <SessionDateTile date={scheduledDate} />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium">{session.title || 'Mentorship Session'}</p>
+                <h3 className="text-base font-semibold">{session.title || 'Mentorship Session'}</h3>
                 <p className="text-sm text-muted-foreground">
                   {formattedTime}
                 </p>
@@ -93,7 +93,7 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
                 <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
                   <StatusText value={session.status} />
                 </Badge>
-                <Badge variant="secondary" className="text-2xs">
+                <Badge variant="secondary" className="text-xs">
                   <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
                 </Badge>
               </div>
@@ -402,7 +402,7 @@ export default function MentorSessionsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-info-bg p-2">
                 <Calendar className="icon-md text-status-info" />
               </div>
@@ -413,7 +413,7 @@ export default function MentorSessionsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-success-bg p-2">
                 <CheckCircle2 className="icon-md text-status-success" />
               </div>
@@ -426,9 +426,9 @@ export default function MentorSessionsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Clock className="icon-md text-primary-accessible" />
+                <Clock className="icon-md text-muted-foreground" />
               </div>
               <div>
                 <p className="page-stat text-xl font-bold">{totalDuration} min</p>

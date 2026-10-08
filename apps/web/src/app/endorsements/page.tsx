@@ -167,7 +167,7 @@ function EndorsementCard({
       // Waiting on the reader: a warning edge, not an amber-filled card.
       waitingOnMe && 'border-l-2 border-l-status-warning',
     )}>
-      <CardContent className="p-5">
+      <CardContent>
         <div className="mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
           <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
             <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open ${user.name}'s profile`, `Άνοιγμα προφίλ: ${user.name}`)}>

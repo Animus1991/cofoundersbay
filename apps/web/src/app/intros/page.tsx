@@ -62,7 +62,7 @@ function IntroCard({
   const toTgt = relationText(intro.toTarget);
   return (
     <Card id={`intro-${intro.id}`} className={highlight ? 'scroll-mt-20 border-primary/40' : 'scroll-mt-20'}>
-      <CardContent className="space-y-3 p-4 sm:p-5">
+      <CardContent className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <p className="min-w-0 text-sm text-foreground">
             <span className="font-medium">{intro.role === 'requester' ? <BilingualText en="You" el="Εσείς" compact /> : intro.requester.displayName}</span>
@@ -272,7 +272,7 @@ function IntrosContent() {
 
   const empty = (en: string, el: string, cta?: React.ReactNode) => (
     <Card>
-      <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
+      <CardContent className="space-y-3 text-sm text-muted-foreground">
         <BilingualText en={en} el={el} wrap />
         {cta}
       </CardContent>

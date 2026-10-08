@@ -233,7 +233,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
         <SheetContent className="w-full sm:max-w-lg flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <ClipboardCheck className="icon-sm text-primary-accessible" />
+              <ClipboardCheck className="icon-sm text-muted-foreground" />
               Change Proposals
               {openCount > 0 && (
                 <Badge variant="secondary" className="ml-1 bg-status-warning-bg text-status-warning">

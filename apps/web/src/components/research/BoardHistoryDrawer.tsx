@@ -118,7 +118,7 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <History className="icon-sm text-primary-accessible" />
+            <History className="icon-sm text-muted-foreground" />
             {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>
@@ -241,7 +241,7 @@ export function BoardHistoryDrawer({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <History className="icon-sm text-primary-accessible" />
+              <History className="icon-sm text-muted-foreground" />
               Canvas History
             </SheetTitle>
             <SheetDescription>

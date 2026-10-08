@@ -8,7 +8,7 @@ export default function ProgramsLoading() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="shadow-sm border-border">
-            <CardContent className="flex items-center gap-2.5 p-3">
+            <CardContent className="flex items-center gap-2.5">
               <Skeleton className="h-8 w-8 rounded-md shrink-0" />
               <div className="space-y-1.5">
                 <Skeleton className="h-4 w-8" />
@@ -47,7 +47,7 @@ export default function ProgramsLoading() {
                 <Skeleton className="h-5 w-14 rounded-full" />
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 space-y-3">
+            <CardContent className="pb-4 space-y-3">
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-5/6" />
               <div className="flex flex-wrap gap-2">

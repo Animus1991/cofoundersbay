@@ -128,7 +128,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="icon-sm text-primary-accessible" />
+          <Settings className="icon-sm text-muted-foreground" />
           <BilingualText en="Automation Settings" el="Ρυθμίσεις αυτοματισμών" compact />
         </CardTitle>
         <CardDescription className="text-xs">
@@ -409,7 +409,7 @@ export default function TenantAutomationPage() {
             { label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
             <Card key={s.label} className="border-border">
-              <CardContent className="py-3 px-4">
+              <CardContent className="py-3">
                 <p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
                 <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
               </CardContent>

@@ -234,7 +234,7 @@ function UpdatesContent() {
               <Skeleton className="h-40 w-full rounded-2xl" />
             ) : feedRows.length === 0 ? (
               <Card>
-                <CardContent className="space-y-3 p-6 text-sm text-muted-foreground">
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <BilingualText en="No updates yet from the people you follow. Follow founders, mentors or investors from their profiles." el="Καμία ενημέρωση ακόμη από όσους ακολουθείτε. Ακολουθήστε ιδρυτές, μέντορες ή επενδυτές από τα προφίλ τους." wrap />
                   <Button asChild size="sm" variant="outline"><Link href="/discover"><BilingualText en="Find people" el="Βρείτε ανθρώπους" compact /></Link></Button>
                 </CardContent>
@@ -246,7 +246,7 @@ function UpdatesContent() {
           <TabsContent value="mine" className="space-y-4">
             <div className="empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
             <Card>
-              <CardContent className="p-4 sm:p-5">
+              <CardContent>
                 <UpdateComposer initial={prefill} busy={send.isPending} onSend={async (d) => !!(await send.mutateAsync(d).catch(() => null))} />
               </CardContent>
             </Card>

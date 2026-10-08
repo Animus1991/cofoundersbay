@@ -373,8 +373,8 @@ export default function HelpPage() {
 
         {/* Search Hero */}
         <div className="rounded-xl border border-border bg-primary/[0.03] p-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <HelpCircle className="icon-lg text-primary-accessible" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+            <HelpCircle className="icon-lg text-muted-foreground" />
           </div>
           <h2 className="text-xl font-semibold text-foreground mb-1"><BilingualText en="How can we help you?" el="Πώς μπορούμε να βοηθήσουμε;" compact wrap /></h2>
           <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Search our knowledge base or browse topics below" el="Αναζητήστε στη βάση γνώσεων ή δείτε τα θέματα παρακάτω" wrap /></p>
@@ -483,7 +483,7 @@ export default function HelpPage() {
               <Card key={category.id} className="shadow-sm border-border">
                 <CardHeader className="border-b border-border py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                       <category.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -512,9 +512,9 @@ export default function HelpPage() {
 
         {/* Contact Support */}
         <Card className="shadow-sm border-primary/15 bg-primary/[0.03]">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="icon-lg text-primary-accessible" />
+          <CardContent className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+              <Mail className="icon-lg text-muted-foreground" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1"><BilingualText en="Still need help?" el="Χρειάζεστε ακόμα βοήθεια;" compact /></h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">

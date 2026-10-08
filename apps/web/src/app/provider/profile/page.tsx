@@ -132,7 +132,7 @@ export default function ProviderProfilePage() {
       <div className="space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/15 bg-primary/[0.03]">
-          <CardContent className="p-5">
+          <CardContent>
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />
@@ -143,7 +143,7 @@ export default function ProviderProfilePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
-                  <BadgeCheck className="icon-sm text-primary-accessible" />
+                  <BadgeCheck className="icon-sm text-muted-foreground" />
                   <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

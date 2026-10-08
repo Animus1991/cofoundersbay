@@ -125,7 +125,7 @@ function ProjectCard({
   if (viewMode === 'list') {
     return (
       <Card className="rounded-xl border-border transition-colors hover:border-primary/30">
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex items-center gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">

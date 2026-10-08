@@ -329,7 +329,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="icon-md text-primary-accessible" />
+                <Sparkles className="icon-md text-muted-foreground" />
                 <BilingualText en="Model Configuration" el="Ρύθμιση μοντέλου" compact />
               </CardTitle>
               <CardDescription>
@@ -459,7 +459,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="icon-md text-primary-accessible" />
+                <MessageSquare className="icon-md text-muted-foreground" />
                 <BilingualText en="Response Style" el="Ύφος απάντησης" compact />
               </CardTitle>
               <CardDescription>
@@ -590,7 +590,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CfbGlyph name="spark" className="icon-md text-primary-accessible" />
+                <CfbGlyph name="spark" className="icon-md text-muted-foreground" />
                 <BilingualText en="Available AI Agents" el="Διαθέσιμοι πράκτορες AI" compact />
               </CardTitle>
               <CardDescription>
@@ -611,7 +611,7 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3 rounded-lg border border-border p-3 bg-card"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                       <CfbGlyph name="spark" className="icon-sm" />
                     </div>
                     <div className="min-w-0">

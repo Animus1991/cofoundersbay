@@ -86,7 +86,7 @@ function ResponseRow({ thread, now }: { thread: CommitmentThreadSummary; now: nu
   const kind = kindCopy(thread.cardKind);
   return (
     <Card>
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-muted px-2 py-0.5 text-2xs font-medium text-muted-foreground">
             <BilingualText en={kind.en} el={kind.el} compact />
@@ -434,7 +434,7 @@ export default function CommitmentsPage() {
           ) : (
             shownCards.map((card) => (
               <Card key={card.id}>
-                <CardContent className="p-4">
+                <CardContent>
                   <NeedCard
                     card={card}
                     compact
@@ -524,7 +524,7 @@ export default function CommitmentsPage() {
             <>
               {historyCards.map((card) => (
                 <Card key={card.id}>
-                  <CardContent className="flex flex-wrap items-center gap-3 p-4">
+                  <CardContent className="flex flex-wrap items-center gap-3">
                     <OutcomeChip outcome={card.outcome} reason={card.closedReason} />
                     <Link href={`/commitments/${encodeURIComponent(card.id)}`} className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:underline">
                       {card.title}
@@ -534,7 +534,7 @@ export default function CommitmentsPage() {
               ))}
               {historyResponses.map((thread) => (
                 <Card key={thread.id}>
-                  <CardContent className="flex flex-wrap items-center gap-3 p-4">
+                  <CardContent className="flex flex-wrap items-center gap-3">
                     <StepChip step={thread.step} />
                     <Link href={threadHref(thread)} className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:underline">
                       {thread.cardTitle}

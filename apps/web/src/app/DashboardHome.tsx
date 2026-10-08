@@ -162,11 +162,11 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
       href={`/groups/${group.id}`}
       className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/50"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />
         ) : (
-          <CfbGlyph name="community" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="community" className="icon-sm text-muted-foreground" />
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -388,10 +388,10 @@ export function DashboardHome() {
           <div className="space-y-6 lg:col-span-4">
             {/* Priority Actions */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+                    <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('next_actions')} el={dashboardEl('next_actions')} compact />
                   </h2>
                   {totalActions > 0 && (
@@ -445,7 +445,7 @@ export function DashboardHome() {
 
             {/* Recent Activity */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
@@ -473,10 +473,10 @@ export function DashboardHome() {
           {/* Center Column: Top Matches */}
           <div className="space-y-6 lg:col-span-5">
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
+                    <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
@@ -525,7 +525,7 @@ export function DashboardHome() {
             {/* Mentor Suggestions */}
             {mentorSuggestions.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="mentor" className="icon-sm text-status-success" />
@@ -547,7 +547,7 @@ export function DashboardHome() {
             {/* My Communities */}
             {myGroups.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="community" className="icon-sm text-status-info" />
@@ -569,7 +569,7 @@ export function DashboardHome() {
             {/* Upcoming Events */}
             {upcomingEvents.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="calendar" className="icon-sm text-status-accent" />
@@ -604,7 +604,7 @@ export function DashboardHome() {
             {/* Profile Progress */}
             {profileCompletion < 100 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <h2 className="mb-3 text-sm font-semibold text-foreground">
                     <BilingualText en={dashboardEn('your_progress')} el={dashboardEl('your_progress')} compact />
                   </h2>
@@ -631,7 +631,7 @@ export function DashboardHome() {
 
             {/* Ecosystem Stats */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
                   <CfbGlyph name="chart" className="icon-sm text-status-success" />
                   <BilingualText en="Ecosystem pulse" el="Σφυγμός οικοσυστήματος" compact />
@@ -665,10 +665,10 @@ export function DashboardHome() {
             {/* Milestone Summary */}
             {milestoneSummary?.counts && milestoneSummary.total > 0 && (
               <Card className="border-primary/15 bg-primary/[0.03]">
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+                      <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
                       <BilingualText en="Milestone progress" el="Πρόοδος οροσήμων" compact />
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">Details</Link>
@@ -712,7 +712,7 @@ export function DashboardHome() {
             {/* Active Milestones */}
             {activeMilestonesList.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="flag" className="icon-sm text-status-warning" />
@@ -743,7 +743,7 @@ export function DashboardHome() {
 
             {/* Quick Links */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <h2 className="mb-3 text-sm font-semibold text-foreground">
                   <BilingualText en={dashboardEn('quick_links')} el={dashboardEl('quick_links')} compact />
                 </h2>

@@ -523,19 +523,19 @@ export default function TenantDomainsPage() {
         {/* Status overview */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="border-border">
-            <CardContent className="py-3 px-4">
+            <CardContent className="py-3">
               <p className="text-xs text-muted-foreground"><BilingualText en="Total Domains" el="Σύνολο τομέων" compact wrap /></p>
               <p className="page-stat text-2xl font-bold mt-0.5">{domains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border">
-            <CardContent className="py-3 px-4">
+            <CardContent className="py-3">
               <p className="text-xs text-muted-foreground"><BilingualText en="Active" el="Ενεργός" compact /></p>
               <p className="page-stat text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border">
-            <CardContent className="py-3 px-4">
+            <CardContent className="py-3">
               <p className="text-xs text-muted-foreground"><BilingualText en="Primary Domain" el="Κύριος τομέας" compact wrap /></p>
               <p className="text-sm font-medium mt-0.5 truncate">
                 {primaryDomain?.domainName ?? <span className="text-muted-foreground">—</span>}
@@ -558,7 +558,17 @@ export default function TenantDomainsPage() {
                 {[1, 2].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
               </div>
             ) : domains.length === 0 ? (
-              <EmptyTenantDomains />
+              <EmptyTenantDomains
+                action={
+                  <Button
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => document.getElementById('add-subdomain')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                  >
+                    <Globe className="icon-sm" /><BilingualText en="Add a subdomain" el="Προσθήκη υποτομέα" compact />
+                  </Button>
+                }
+              />
             ) : (
               <div className="space-y-2">
                 {domains.map(d => (
@@ -570,10 +580,10 @@ export default function TenantDomainsPage() {
         </Card>
 
         {/* Add subdomain */}
-        <Card>
+        <Card id="add-subdomain">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="icon-sm text-primary-accessible" />
+              <Globe className="icon-sm text-muted-foreground" />
               <BilingualText en="Platform Subdomain" el="Υποτομέας πλατφόρμας" compact />
             </CardTitle>
             <CardDescription className="text-xs">
@@ -620,7 +630,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary-accessible" />
+              <Shield className="icon-sm text-muted-foreground" />
               <BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact />
             </CardTitle>
             <CardDescription className="text-xs">

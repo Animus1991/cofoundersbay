@@ -382,7 +382,7 @@ export function ApplicationGenerator({
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <CfbGlyph name={currentApp.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <CfbGlyph name={currentApp.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                 <div>
                   <CardTitle>
                     {currentApp.name}{' '}

@@ -82,7 +82,7 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
       <CardHeader className="pb-2">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex min-w-0 items-center gap-2 font-semibold">
-            <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
+            <CfbGlyph name="chart" className="icon-sm shrink-0 text-muted-foreground" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
           <div className="flex shrink-0 flex-wrap gap-1">
             <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={() => exportData('json')} disabled={!chartData.length}>
@@ -144,7 +144,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
       {isSample && <SampleNotice />}
       <Card>
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
+          <CfbGlyph name="chart" className="icon-sm text-muted-foreground" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {barData.length ? <ResponsiveContainer width="100%" height={180}>
@@ -163,7 +163,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
       </Card>
       <Card>
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="compare" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
+          <CfbGlyph name="compare" className="icon-sm text-muted-foreground" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {pieData.length ? <ResponsiveContainer width="100%" height={180}>

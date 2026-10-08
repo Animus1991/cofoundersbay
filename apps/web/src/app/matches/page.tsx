@@ -120,7 +120,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="icon-md text-primary-accessible" />
+            <BarChart3 className="icon-md text-muted-foreground" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="Compatibility score, dimensions and reasons for this match." el="Βαθμός συμβατότητας, διαστάσεις και λόγοι για αυτή την αντιστοίχιση." /></DialogDescription>
@@ -181,7 +181,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="icon-sm text-primary-accessible mt-0.5 flex-shrink-0" />
+                <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -289,7 +289,7 @@ function MatchListRow({
 
   return (
     <Card className="shadow-sm border-border hover:border-primary/30 transition-all group">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
           {/* Score ring + avatar */}
           <div className="relative shrink-0">
@@ -367,15 +367,17 @@ function MatchListRow({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              className="flex h-10 w-10 items-center justify-center gap-1.5 rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible sm:w-auto sm:px-3"
               aria-label={`Pass on ${hit.displayName}`}>
               <X className="icon-sm" />
+              <span className="hidden sm:inline text-xs"><BilingualText en="Pass" el="Παράβλεψη" compact /></span>
             </button>
             <button onClick={onSave}
-              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
+              className={cn('flex h-10 w-10 items-center justify-center gap-1.5 rounded-full transition-colors sm:w-auto sm:px-3', isSaved ? STATUS.warning.icon : 'border border-border text-muted-foreground hover:text-status-warning')}
               aria-pressed={isSaved}
               aria-label={isSaved ? `${hit.displayName} is on your shortlist` : `Save ${hit.displayName} to your shortlist`}>
               {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
+              <span className="hidden sm:inline text-xs"><BilingualText en={isSaved ? 'Saved' : 'Save'} el={isSaved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
             </button>
           </div>
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
@@ -855,7 +857,7 @@ export default function MatchesPage() {
 
           {/* Role filter */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
           <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
           </p>
@@ -877,7 +879,7 @@ export default function MatchesPage() {
 
           {/* Location */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-1.5">
+          <CardContent className="space-y-1.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
           <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
           </p>
@@ -897,7 +899,7 @@ export default function MatchesPage() {
 
           {/* Availability */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
           </p>
@@ -940,7 +942,7 @@ export default function MatchesPage() {
         <div className="space-y-2.5">
           {/* Sort */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
           </p>
@@ -971,7 +973,7 @@ export default function MatchesPage() {
         <div className="space-y-2">
           <Button asChild variant="outline" className="h-auto min-h-14 w-full justify-start gap-3 whitespace-normal px-3 py-3 text-left">
             <Link href="/discover">
-              <CfbGlyph name="discover" className="icon-sm shrink-0 text-primary-accessible" />
+              <CfbGlyph name="discover" className="icon-sm shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium leading-snug">
                   <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} wrap />
@@ -1060,7 +1062,7 @@ export default function MatchesPage() {
                 : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
               return (
               <Card key={labelEn} className="min-w-0 shadow-sm border-border">
-                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
+                <CardContent className="flex items-center gap-2 sm:gap-3">
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
                     <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>
@@ -1200,7 +1202,7 @@ export default function MatchesPage() {
                       { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
                       { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
                     ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
-                      <button key={mode} onClick={() => setViewMode(mode)} title={title}
+                      <button key={mode} onClick={() => setViewMode(mode)} title={title} aria-label={`${title} view`}
                         className={cn('h-9 items-center justify-center rounded-xl px-2 transition-all',
                           mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>

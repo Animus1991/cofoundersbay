@@ -309,7 +309,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="icon-md text-primary-accessible" />
+                    <Target className="icon-md text-muted-foreground" />
                     <BilingualText en="Looking For" el="Αναζητά" compact />
                   </CardTitle>
                 </CardHeader>

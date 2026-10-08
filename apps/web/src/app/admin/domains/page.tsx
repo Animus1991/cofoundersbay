@@ -382,9 +382,9 @@ export default function DomainsAdminPage() {
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <p className="text-sm text-muted-foreground px-4 py-3"><BilingualText en="Loading..." el="Φόρτωση…" compact /></p>
+              <p className="text-sm text-muted-foreground px-4 sm:px-6 py-3"><BilingualText en="Loading..." el="Φόρτωση…" compact /></p>
             ) : tenants.length === 0 ? (
-              <p className="text-sm text-muted-foreground px-4 py-3"><BilingualText en="No tenants found." el="Δεν βρέθηκαν οργανισμοί." compact /></p>
+              <p className="text-sm text-muted-foreground px-4 sm:px-6 py-3"><BilingualText en="No tenants found." el="Δεν βρέθηκαν οργανισμοί." compact /></p>
             ) : (
               <div className="divide-y divide-border/50">
                 {tenants.map((t) => (
@@ -393,13 +393,13 @@ export default function DomainsAdminPage() {
                     type="button"
                     onClick={() => setSelectedTenantId(t.id)}
                     aria-pressed={selectedTenantId === t.id}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-ring ${
+                    className={`w-full text-left px-4 sm:px-6 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-ring ${
                       selectedTenantId === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
                     }`}
                   >
                     {t.logoUrl
                       ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-accessible" /></div>}
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-muted-foreground" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>

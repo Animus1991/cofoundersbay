@@ -51,7 +51,7 @@ export function FeedPostComposer({ onPost }: Props) {
 
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarFallback>ME</AvatarFallback>

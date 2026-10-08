@@ -47,7 +47,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
 }) {
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-4">
         <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', color)}>
           <Icon className="icon-md text-ink" />
         </div>
@@ -171,7 +171,7 @@ function UserClassifyTab() {
           <CardContent className="p-0">
             <div className="divide-y divide-border">
               {logs.map((log) => (
-                <div key={log.id} className="flex items-center gap-3 px-4 py-2 text-xs">
+                <div key={log.id} className="flex items-center gap-3 px-4 sm:px-6 py-2 text-xs">
                   <span className="font-mono text-muted-foreground">{log.nudgeKey}</span>
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
                   {log.converted && <Badge className="bg-status-success-mark text-xs text-ink">converted</Badge>}
@@ -199,7 +199,7 @@ export function BehaviorAdminPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="icon-md text-primary-accessible" /> <BilingualText en="Behavioral AI Optimizer" el="Βελτιστοποιητής συμπεριφοράς AI" compact />
+            <Brain className="icon-md text-muted-foreground" /> <BilingualText en="Behavioral AI Optimizer" el="Βελτιστοποιητής συμπεριφοράς AI" compact />
           </h2>
           <p className="text-sm text-muted-foreground">
             <BilingualText en="Platform-wide nudge performance, user state classification, and fatigue signals." el="Απόδοση υπενθυμίσεων, κατάταξη κατάστασης χρηστών και σήματα κόπωσης σε όλη την πλατφόρμα." wrap />

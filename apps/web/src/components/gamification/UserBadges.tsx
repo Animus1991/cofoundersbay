@@ -233,7 +233,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="icon-md text-primary-accessible" />
+                <Trophy className="icon-md text-muted-foreground" />
                 <BilingualText en="Achievements & Badges" el="Επιτεύγματα & διακρίσεις" compact />
               </CardTitle>
               <CardDescription>
@@ -316,7 +316,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="icon-sm text-primary-accessible" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-muted-foreground" />}
                       {badge.tier === 'gold' && <Sparkles className="icon-sm text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>

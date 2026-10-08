@@ -145,7 +145,7 @@ const NotificationRow = memo(function NotificationRow({
           onClick={() => onSelect?.(item.id)}
           className="mt-1 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors"
         >
-          {selected ? <SquareCheck className="icon-sm text-primary-accessible" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
+          {selected ? <SquareCheck className="icon-sm text-muted-foreground" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
         </button>
       )}
 

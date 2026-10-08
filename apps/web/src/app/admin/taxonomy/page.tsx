@@ -60,7 +60,7 @@ function slugify(str: string) {
 
 function SkillRowSkeleton() {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 border-b last:border-b-0">
+    <div className="flex items-center gap-3 px-4 sm:px-6 py-2 border-b last:border-b-0">
       <div className="w-6" />
       <Skeleton className="icon-sm rounded" />
       <Skeleton className="h-4 flex-1 max-w-[160px]" />
@@ -81,10 +81,11 @@ function SkillRow({
   onDelete: (skill: AdminSkillItem) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
+    <div className="flex items-center gap-3 px-4 sm:px-6 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
       <div className="w-6" />
       <Hash className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
       <span className="flex-1 font-medium truncate">{skill.name}</span>
+      <div className="ml-auto flex items-center gap-3">
       <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
       {skill.category && (
         <Badge variant="outline" className="text-xs hidden md:flex"><StatusText value={skill.category} /></Badge>
@@ -107,6 +108,7 @@ function SkillRow({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </div>
   );
 }
@@ -298,8 +300,9 @@ export default function AdminTaxonomyPage() {
       actions={
         <>
           <div className="flex items-center gap-2">
-            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
+            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh" className="gap-1.5 sm:w-auto sm:px-3">
               <RefreshCw className="icon-sm" aria-hidden="true" />
+              <span className="hidden sm:inline"><BilingualText en="Refresh" el="Ανανέωση" compact /></span>
             </Button>
             <Button onClick={() => setEditTarget('new')}>
               <Plus className="mr-2 icon-sm" aria-hidden="true" />
@@ -313,19 +316,19 @@ export default function AdminTaxonomyPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Skills" el="Σύνολο δεξιοτήτων" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="page-stat text-xl font-bold">{total}</p>}
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Categories" el="Κατηγορίες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="page-stat text-xl font-bold">{categories.length}</p>}
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Technical Skills" el="Τεχνικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
                 <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
@@ -333,7 +336,7 @@ export default function AdminTaxonomyPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Business Skills" el="Επιχειρηματικές δεξιότητες" compact /></p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
                 <p className="page-stat text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
@@ -347,7 +350,7 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary-accessible" />
+                <Folder className="icon-md text-muted-foreground" />
                 <CardTitle className="text-lg"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
@@ -360,7 +363,7 @@ export default function AdminTaxonomyPage() {
           </CardHeader>
           <CardContent className="p-0">
             {/* Filters */}
-            <div className="px-4 pb-3 flex gap-3 flex-wrap">
+            <div className="px-4 sm:px-6 pb-3 flex gap-3 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
@@ -378,7 +381,7 @@ export default function AdminTaxonomyPage() {
               </div>
               <select
                 aria-label={bilingualAria("Filter skills by category", "Φιλτράρισμα δεξιοτήτων ανά κατηγορία")}
-                className="h-9 rounded-xl border border-input bg-background px-3 text-sm"
+                className="ml-auto h-9 rounded-xl border border-input bg-background px-4 sm:px-6 text-sm"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -415,8 +418,8 @@ export default function AdminTaxonomyPage() {
                   {/* Grouped by category */}
                   {!categoryFilter && !search && Object.entries(groupedByCategory).map(([cat, items]) => (
                     <div key={cat}>
-                      <div className="px-4 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        {cat} ({items.length})
+                      <div className="px-4 sm:px-6 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        <span>{cat} ({items.length})</span>
                       </div>
                       {items.map((skill) => (
                         <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />
@@ -430,8 +433,8 @@ export default function AdminTaxonomyPage() {
                   {/* Uncategorized */}
                   {!categoryFilter && !search && uncategorized.length > 0 && (
                     <div>
-                      <div className="px-4 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Uncategorized ({uncategorized.length})
+                      <div className="px-4 sm:px-6 py-1.5 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        <span>Uncategorized ({uncategorized.length})</span>
                       </div>
                       {uncategorized.map((skill) => (
                         <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />

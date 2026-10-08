@@ -141,7 +141,7 @@ export default function TenantApiKeysPage() {
           />
         )}
         <Card className="border-status-warning-border bg-status-warning-bg">
-          <CardContent className="p-4 flex items-center gap-3">
+          <CardContent className="flex items-center gap-3">
             <Shield className="icon-md text-status-warning shrink-0" aria-hidden="true" />
             <p className="text-sm">
               <BilingualText

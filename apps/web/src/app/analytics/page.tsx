@@ -119,12 +119,12 @@ function MetricCard({
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       {/* Stretched by the sparkline card's row, a plain tile centres its
           figure instead of leaving a dead band at the bottom. */}
-      <CardContent className="flex h-full flex-col justify-center p-4">
+      <CardContent className="flex h-full flex-col justify-center">
         <div className="mb-3 flex items-start justify-between gap-3">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
-              'page-stat-label flex items-center gap-1 font-medium tabular-nums',
+              'page-stat-label flex items-center gap-1 tabular-nums',
               metric.changeType === 'increase'
                 ? TREND.up
                 : metric.changeType === 'decrease'
@@ -209,11 +209,11 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="people" className="icon-sm shrink-0 text-primary-accessible" />
+          <CfbGlyph name="people" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3.5 p-3 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="space-y-3.5 pt-0 sm:pt-0">
         <p className="page-stat-label text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
@@ -229,7 +229,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           </Link>
         ))}
         {conversion !== null && (
-          <p className="page-stat-label pt-1 font-medium tabular-nums text-foreground">
+          <p className="page-stat-label pt-1 font-semibold tabular-nums text-foreground">
             {conversion}%{' '}
             <span className="font-normal text-muted-foreground">
               <BilingualText en={analyticsEn('view_to_connect')} el={analyticsEl('view_to_connect')} wrap />
@@ -261,12 +261,12 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
   }));
   return (
     <Card className="flex min-w-0 flex-col border-primary/15 bg-primary/[0.03]">
-      <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
+      <CardContent className="flex flex-1 flex-col">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}
         <div className="mb-4 min-w-0">
           <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-            <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
+            <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" />
             <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact wrap />
           </h3>
           <Badge variant="secondary" className="mt-1.5 max-w-full">
@@ -317,11 +317,11 @@ function TopContentList({ content }: { content: TopContent[] }) {
     <Card className="min-w-0">
       <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" />
+          <CfbGlyph name="chart" className="icon-sm shrink-0 text-muted-foreground" />
           <BilingualText en={analyticsEn('top_content')} el={analyticsEl('top_content')} compact />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="pt-0 sm:pt-0">
         <div className="space-y-3.5">
           {content.map((item, index) => (
             <Link
@@ -333,7 +333,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">
-                <h4 className="mb-1 line-clamp-2 text-sm font-medium">{item.title}</h4>
+                <h4 className="mb-1 line-clamp-2 text-sm font-semibold">{item.title}</h4>
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <CfbGlyph name="profile" className="icon-sm shrink-0" />
@@ -377,7 +377,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-semibold">
-          <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="award" className="icon-sm text-muted-foreground" />
           <BilingualText en={analyticsEn('achievements')} el={analyticsEl('achievements')} wrap />
         </CardTitle>
       </CardHeader>
@@ -428,7 +428,7 @@ function AnalyticsSkeleton() {
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="min-w-0">
-            <CardContent className="p-4">
+            <CardContent>
               <Skeleton className="mb-3 h-8 w-8" />
               <Skeleton className="mb-2 h-6 w-16" />
               <Skeleton className="h-3 w-24" />
@@ -678,9 +678,9 @@ export default function AnalyticsPage() {
             ] as const).map((step) => (
               <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
                 <Link href={step.href}>
-                  <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
+                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn(step.title)} el={analyticsEl(step.title)} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={analyticsEn(step.hint)} el={analyticsEl(step.hint)} wrap /></span>
                   </span>
                   <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -689,9 +689,9 @@ export default function AnalyticsPage() {
             ))}
               <Button asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
                 <Link href="/calendar">
-                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
+                    <span className="block text-sm font-semibold leading-snug"><BilingualText en={analyticsEn('plan_peak_hour')} el={analyticsEl('plan_peak_hour')} wrap /></span>
                     <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en="Block time around your peak hour." el="Κλείστε χρόνο γύρω από την ώρα αιχμής." wrap /></span>
                   </span>
                   <ArrowRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -767,7 +767,7 @@ export default function AnalyticsPage() {
               {declining.length > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-status-warning-border/50 bg-status-warning-bg/40 p-4">
                   <div className="min-w-0 space-y-1 text-sm">
-                    <p className="font-medium">
+                    <p className="font-semibold">
                       <BilingualText en={analyticsEn('declining_prefix')} el={analyticsEl('declining_prefix')} wrap />
                     </p>
                     <p className="text-muted-foreground">
@@ -797,11 +797,11 @@ export default function AnalyticsPage() {
                 <Card className="min-w-0">
                   <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="flex items-center gap-2 font-semibold">
-                      <CfbGlyph name="calendar" className="icon-sm shrink-0 text-primary-accessible" />
+                      <CfbGlyph name="calendar" className="icon-sm shrink-0 text-muted-foreground" />
                       <BilingualText en={analyticsEn('weekly_summary')} el={analyticsEl('weekly_summary')} compact />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                  <CardContent className="pt-0 sm:pt-0">
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                       <div className="min-w-0 space-y-1.5">
                         <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact wrap /></p>

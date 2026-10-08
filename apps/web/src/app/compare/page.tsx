@@ -203,7 +203,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="icon-md text-primary-accessible" />
+          <Zap className="icon-md text-muted-foreground" />
           <BilingualText en="Skills Comparison" el="Σύγκριση δεξιοτήτων" compact />
         </CardTitle>
       </CardHeader>

@@ -532,7 +532,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           {data.features.length > 0 && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <Card>
-                <CardContent className="p-4 text-center">
+                <CardContent className="text-center">
                   <div className={cn(BUILDER_STAT, STATUS.danger.text)}>
                     {data.features.filter(f => f.priority === 'must-have').length}
                   </div>
@@ -542,7 +542,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
+                <CardContent className="text-center">
                   <div className={cn(BUILDER_STAT, STATUS.warning.text)}>
                     {data.features.filter(f => f.priority === 'should-have').length}
                   </div>
@@ -552,7 +552,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
+                <CardContent className="text-center">
                   <div className={cn(BUILDER_STAT, STATUS.info.text)}>
                     {data.features.filter(f => f.priority === 'could-have').length}
                   </div>
@@ -562,7 +562,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                 </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-4 text-center">
+                <CardContent className="text-center">
                   <div className={cn(BUILDER_STAT, 'text-muted-foreground')}>
                     {data.features.filter(f => f.priority === 'wont-have').length}
                   </div>
@@ -597,7 +597,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   {data.sprints.map((sprint, index) => (
                     <Card key={sprint.id} className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-accessible font-bold">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted text-muted-foreground font-bold">
                           {index + 1}
                         </div>
                         <div className="flex-1 space-y-3">

@@ -163,11 +163,11 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
   return (
     <Card className={cn('transition-all hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold text-sm">
               {startup.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -184,8 +184,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
                   <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -232,7 +233,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-muted-foreground">
+            <div className="flex flex-wrap gap-4 mt-2.5 text-sm text-muted-foreground">
               <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
               <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize} founders</span>
               <span className="flex items-center gap-1 font-medium text-primary-accessible"><DollarSign className="icon-sm" />Raising {startup.raisingAmount}</span>
@@ -243,15 +244,15 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
             <div className="flex items-center gap-4 mt-3">
               <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
+                <div className="flex items-center justify-between text-2xs mb-1">
                   <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
                   <span className="font-medium">{startup.readinessScore}%</span>
                 </div>
                 <Progress value={startup.readinessScore} className="h-1.5" />
               </div>
               <div className="text-right shrink-0">
-                <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
-                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
+                <p className="text-2xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
+                <p className={cn('text-sm font-semibold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
                   {startup.matchScore}%
                 </p>
               </div>
@@ -403,20 +404,20 @@ export default function InvestorScoutingPage() {
         {featured.length > 0 && (
           <Card className="border-primary/15 bg-primary/[0.03]">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {featured.map(s => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border bg-background">
                   <Avatar className="h-10 w-10 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-bold">{s.name[0]}</AvatarFallback>
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">{s.name[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{s.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{s.tagline}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-primary-accessible font-bold">{s.matchScore}% match</p>
+                    <p className="text-xs text-primary-accessible font-semibold">{s.matchScore}% match</p>
                     <p className="text-xs text-muted-foreground">{s.raisingAmount}</p>
                   </div>
                 </div>

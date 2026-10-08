@@ -266,7 +266,7 @@ export default function PrivacyPage() {
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
             <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
@@ -294,7 +294,7 @@ export default function PrivacyPage() {
               // Four across, a side icon left ~88px for the text and the Greek
               // ran out of its tile; the icon sits above the text there.
               <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 lg:flex-col lg:gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
                   <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
                 <div className="min-w-0">
@@ -333,7 +333,7 @@ export default function PrivacyPage() {
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                     <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>

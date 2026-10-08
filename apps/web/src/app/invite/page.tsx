@@ -54,7 +54,7 @@ function StatCard({
 }) {
   return (
     <Card className={cn('', accent && 'border-primary/15 bg-primary/5')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
@@ -195,7 +195,7 @@ export default function InvitePage() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {statsLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>
+              <Card key={i}><CardContent><Skeleton className="h-12 w-full" /></CardContent></Card>
             ))
           ) : (
             <>
@@ -215,7 +215,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+              <Sparkles className="icon-md shrink-0 text-muted-foreground" />
               <BilingualText en={inviteEn('form_title')} el={inviteEl('form_title')} compact wrap />
             </CardTitle>
             <CardDescription>
@@ -292,7 +292,7 @@ export default function InvitePage() {
               <BilingualText en={inviteEn('history_title')} el={inviteEl('history_title')} compact wrap />
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
+          <CardContent className="pb-4 pt-0">
             {invitesLoading ? (
               <div className="space-y-1">
                 {Array.from({ length: 3 }).map((_, i) => (

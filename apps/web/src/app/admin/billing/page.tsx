@@ -415,7 +415,10 @@ export default function AdminBillingPage() {
                 {subsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact /></div>
+                  <div className="py-12 text-center text-sm text-muted-foreground">
+                    <BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact />
+                    <span className="mt-1 block text-xs"><BilingualText en="Subscriptions appear here once an organization picks a plan." el="Οι συνδρομές εμφανίζονται εδώ μόλις ένας οργανισμός επιλέξει πλάνο." compact /></span>
+                  </div>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {subs.map(sub => (
@@ -468,7 +471,7 @@ export default function AdminBillingPage() {
                 ) : (
                   <div className="divide-y divide-border/50">
                     {plans.map(plan => (
-                      <div key={plan.id} className="flex items-center gap-3 p-3">
+                      <div key={plan.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
                           <Crown className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
@@ -571,7 +574,7 @@ export default function AdminBillingPage() {
                 ) : (
                   <div className="divide-y divide-border/50">
                     {coupons.map(coupon => (
-                      <div key={coupon.id} className="flex items-center gap-3 p-3">
+                      <div key={coupon.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
                         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
                           <Tag className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>

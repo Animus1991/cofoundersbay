@@ -301,7 +301,7 @@ export default function StartupDealPage() {
 
         <aside className="space-y-4">
           <Card>
-            <CardContent className="space-y-2 p-5 text-sm">
+            <CardContent className="space-y-2 text-sm">
               {deal.industry && <Badge variant="secondary">{deal.industry}</Badge>}
               {deal.companyStage && <p><span className="text-muted-foreground">Stage:</span> {deal.companyStage}</p>}
               {deal.location && (
@@ -325,7 +325,7 @@ export default function StartupDealPage() {
           </Card>
           {deal.founder && (
             <Card>
-              <CardContent className="p-5 text-sm">
+              <CardContent className="text-sm">
                 <p className="text-xs text-muted-foreground"><BilingualText en="Founder" el="Ιδρυτής" compact /></p>
                 <Link href={`/profiles/${deal.founder.id}`} className="font-medium hover:text-primary-accessible">
                   {deal.founder?.displayName ?? '—'}

@@ -9,7 +9,7 @@ export default function RecommendationsLoading() {
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-5">
+            <CardContent>
               <div className="flex items-start gap-4">
                 <Skeleton className="h-16 w-16 rounded-full" />
                 <div className="flex-1 space-y-3">

@@ -306,7 +306,7 @@ export function PdfAnnotationViewer({
           <div className="w-64 flex-none border-l border-border bg-card overflow-y-auto">
             <div className="p-3 border-b border-border">
               <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <MessageSquare className="icon-sm text-primary-accessible" />
+                <MessageSquare className="icon-sm text-muted-foreground" />
                 Annotations
                 <span className="text-2xs text-muted-foreground ml-auto">{annotations.length}</span>
               </h3>

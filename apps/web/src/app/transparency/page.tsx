@@ -125,7 +125,7 @@ export default function TransparencyPage() {
                   const copy = TRANSPARENCY_COPY[kind];
                   return (
                     <Card key={kind}>
-                      <CardContent className="space-y-3 p-5">
+                      <CardContent className="space-y-3">
                         <p className="text-sm font-medium text-foreground"><BilingualText en={copy.en} el={copy.el} compact /></p>
                         <p className="page-stat text-3xl font-bold tabular-nums text-foreground">{nf(bucket.total)}</p>
                         <p className="text-xs text-muted-foreground"><BilingualText en={copy.hintEn} el={copy.hintEl} wrap /></p>
@@ -152,7 +152,7 @@ export default function TransparencyPage() {
                 <BilingualText en="Reports and blocks" el="Αναφορές και αποκλεισμοί" compact />
               </h2>
               <Card>
-                <CardContent className="p-5">
+                <CardContent>
                   <dl className="grid grid-cols-2 gap-4 sm:grid-cols-5">
                     {[
                       { en: 'Reports received', el: 'Αναφορές που λάβαμε', value: data.reports.received },

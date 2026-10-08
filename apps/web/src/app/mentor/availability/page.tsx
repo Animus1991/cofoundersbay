@@ -264,7 +264,7 @@ export default function MentorAvailabilityPage() {
         {/* Status Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium"><BilingualText en="Accepting Requests" el="Δέχεται αιτήματα" compact /></span>
                 <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests. Δέχεται αιτήματα" />
@@ -282,9 +282,9 @@ export default function MentorAvailabilityPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="icon-sm text-primary-accessible" />
+                <Clock className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
               <p className="page-stat text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
@@ -292,9 +292,9 @@ export default function MentorAvailabilityPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="icon-sm text-primary-accessible" />
+                <Globe className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>
@@ -336,7 +336,7 @@ export default function MentorAvailabilityPage() {
                 const daySlots = slots.filter(s => s.weekday === day.key);
                 return (
                   <Card key={day.key}>
-                    <CardContent className="p-4">
+                    <CardContent>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-semibold w-24">{day.label}</span>
@@ -377,13 +377,13 @@ export default function MentorAvailabilityPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Button aria-label="Delete"
-                                size="icon"
+                              <Button aria-label="Delete · Διαγραφή"
                                 variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive-accessible"
+                                className="h-8 w-8 gap-1.5 text-muted-foreground hover:text-destructive-accessible sm:w-auto sm:px-3"
                                 onClick={() => removeSlot(slot.id)}
                               >
                                 <Trash2 className="icon-sm" />
+                                <span className="hidden sm:inline"><BilingualText en="Delete" el="Διαγραφή" compact /></span>
                               </Button>
                             </div>
                           ))}

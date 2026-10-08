@@ -481,7 +481,7 @@ function Board() {
     >
       <div className="space-y-6">
         <Card>
-          <CardContent className="p-5">
+          <CardContent>
             <NeedCard card={card} headingLevel={2} />
             {card.projectRef ? (
               <p className="pt-4 text-sm">
@@ -531,7 +531,7 @@ function Board() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="p-5">
+            <CardContent>
               {activeThreadId ? (
                 <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} />
               ) : acceptsInterest(card.outcome) ? (

@@ -149,7 +149,7 @@ function ReportCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <div className="p-2 rounded-lg bg-secondary h-fit">
             {typeIcons[report.type]}

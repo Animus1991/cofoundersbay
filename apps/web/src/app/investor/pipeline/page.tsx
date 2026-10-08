@@ -394,7 +394,7 @@ export default function InvestorPipelinePage() {
             { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
           ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="page-stat font-bold tabular-nums">{value}</p>
@@ -443,9 +443,14 @@ export default function InvestorPipelinePage() {
                     <DealCard key={deal.id} deal={deal} onMove={isLive ? (d, st) => void moveDeal(d, st) : undefined} />
                   ))}
                   {stageDeals.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-8">
-                      <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
-                    </p>
+                    <div className="py-8 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText en="No deals in this stage" el="Καμία ευκαιρία σε αυτό το στάδιο" compact wrap />
+                      </p>
+                      <Link href="/investor/scouting" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                        <BilingualText en="Find startups in scouting" el="Βρείτε startups στο scouting" compact wrap />
+                      </Link>
+                    </div>
                   )}
                 </div>
               </div>
@@ -457,7 +462,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
             {/* Seven stages do not fit one row on a phone: a 4-column grid

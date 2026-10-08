@@ -781,8 +781,8 @@ export function UnifiedChatPopup() {
                   </div>
                 ) : msgMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="icon-md text-primary-accessible" />
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <MessageCircle className="icon-md text-muted-foreground" />
                     </div>
                     <p className="text-sm font-medium">
                       <BilingualText en={messagesEn('say_hello')} el={messagesEl('say_hello')} compact />
@@ -903,8 +903,8 @@ export function UnifiedChatPopup() {
               <div className="flex-1 overflow-y-auto px-2 pb-2">
                 {filteredConvos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="icon-md text-primary-accessible" />
+                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                      <MessageCircle className="icon-md text-muted-foreground" />
                     </div>
                     <p className="text-sm font-medium">
                       {searchQuery

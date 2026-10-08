@@ -156,7 +156,7 @@ function EmailTemplatesTab() {
           <CardContent className="p-0">
             {listLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 border-b border-border px-4 py-3">
+                <div key={i} className="flex items-center gap-3 border-b border-border px-4 sm:px-6 py-3">
                   <Skeleton className="icon-sm rounded" />
                   <Skeleton className="h-4 flex-1" />
                 </div>
@@ -166,7 +166,7 @@ function EmailTemplatesTab() {
                 <button
                   key={tpl.id}
                   onClick={() => setSelectedId(tpl.id)}
-                  className={`flex w-full items-center justify-between gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
+                  className={`flex w-full items-center justify-between gap-3 border-b border-border px-4 sm:px-6 py-3 text-left transition-colors hover:bg-secondary/50 ${
                     selectedId === tpl.id ? 'bg-secondary' : ''
                   }`}
                 >
@@ -1303,8 +1303,8 @@ export default function AdminPage() {
               ) : (
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border p-4">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="icon-sm text-primary-accessible" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                      <Shield className="icon-sm text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

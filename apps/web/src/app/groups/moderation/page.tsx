@@ -95,7 +95,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
 
   return (
     <Card className="transition-all hover:border-primary/20">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -207,7 +207,7 @@ export default function GroupsModerationPage() {
         {/* Alert Banner */}
         {highPriority > 0 && (
           <Card className="border-status-danger-border/40 bg-status-danger-bg">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <AlertTriangle className={cn('icon-md shrink-0', STATUS.danger.icon)} />
               <p className="text-sm">
                 <BilingualText
@@ -229,7 +229,7 @@ export default function GroupsModerationPage() {
             { label: 'Total Reports', labelEl: 'Σύνολο αναφορών', value: reports.length, color: 'text-foreground' },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="p-4">
+              <CardContent>
                 <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className={cn('page-stat text-2xl font-bold', stat.color)}>{stat.value}</p>
               </CardContent>

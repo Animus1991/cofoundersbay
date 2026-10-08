@@ -609,7 +609,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="icon-sm text-primary-accessible" />
+                    <CalendarDays className="icon-sm text-muted-foreground" />
                     <BilingualText
                       en={selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                       el={selectedDate.toLocaleDateString('el-GR', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -637,7 +637,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary-accessible" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
+                    <Sparkles className="icon-sm text-muted-foreground" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

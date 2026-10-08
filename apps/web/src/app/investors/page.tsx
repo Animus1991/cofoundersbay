@@ -233,7 +233,7 @@ function InvestorCard({
 
   return (
     <Card className="group transition-all hover:border-primary/30">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Avatar className="h-11 w-11 shrink-0">
             <AvatarImage src={investor.avatarUrl} alt="" />
@@ -288,9 +288,10 @@ function InvestorCard({
                   aria-pressed={saved}
                   type="button"
                   onClick={onToggleSave}
-                  className="tap-target rounded-md p-1 transition-colors hover:bg-muted"
+                  className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
                 >
                   <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
                 </button>
               </div>
             </div>
@@ -629,7 +630,7 @@ export default function InvestorsPage() {
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
-                  <CardContent className="flex gap-4 p-5">
+                  <CardContent className="flex gap-4">
                     <Skeleton className="h-11 w-11 shrink-0 rounded-lg" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />

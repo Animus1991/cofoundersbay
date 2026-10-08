@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 function PostSkeleton() {
   return (
     <Card>
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex items-center gap-3">
           <Skeleton className="h-10 w-10 rounded-full shrink-0" />
           <div className="space-y-1.5 flex-1">
@@ -31,7 +31,7 @@ export default function FeedLoading() {
       <div className="space-y-4">
         {/* Create post skeleton */}
         <Card>
-          <CardContent className="p-4">
+          <CardContent>
             <div className="flex items-center gap-3">
               <Skeleton className="h-9 w-9 rounded-full shrink-0" />
               <Skeleton className="h-10 flex-1 rounded-lg" />
@@ -48,7 +48,7 @@ export default function FeedLoading() {
       {/* Right sidebar */}
       <div className="hidden lg:flex flex-col gap-4">
         <Card>
-          <CardContent className="p-4 space-y-3">
+          <CardContent className="space-y-3">
             <Skeleton className="h-5 w-32" />
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export default function FeedLoading() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 space-y-2">
+          <CardContent className="space-y-2">
             <Skeleton className="h-5 w-28" />
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-8 w-full rounded-lg" />

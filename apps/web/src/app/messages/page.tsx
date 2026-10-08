@@ -873,7 +873,7 @@ export default function MessagesPage() {
           ]).map((step) => (
             <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
               <Link href={step.href}>
-                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium leading-snug">
                     <BilingualText en={step.en} el={step.el} wrap />
@@ -901,7 +901,7 @@ export default function MessagesPage() {
           ]).map((step) => (
             <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
               <Link href={step.href}>
-                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium leading-snug">
                     <BilingualText en={step.en} el={step.el} wrap />

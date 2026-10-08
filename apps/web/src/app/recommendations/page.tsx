@@ -129,7 +129,7 @@ function BreakdownModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="icon-sm text-primary-accessible" />
+            <Star className="icon-sm text-muted-foreground" />
             Match Score Breakdown
           </DialogTitle>
           <DialogDescription className="sr-only"><BilingualText en="How the overall score breaks down by dimension." el="Πώς αναλύεται ο συνολικός βαθμός ανά διάσταση." /></DialogDescription>
@@ -291,7 +291,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
       reasons={reasons}
     />
     <Card className="group hover:border-primary/30 transition-colors">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
@@ -416,7 +416,7 @@ function Skeleton3() {
     <div className="space-y-3">
       {[0, 1, 2].map((i) => (
         <Card key={i}>
-          <CardContent className="p-4">
+          <CardContent>
             <div className="flex gap-4">
               <Skeleton className="h-14 w-14 rounded-full shrink-0" />
               <div className="flex-1 space-y-2">
@@ -616,9 +616,9 @@ export default function RecommendationsPage() {
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
           <Card className="border-primary/15 bg-primary/[0.03]">
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="icon-sm text-primary-accessible" />
+                <Sparkles className="icon-sm text-muted-foreground" />
                 <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
                   {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : 'Today'}

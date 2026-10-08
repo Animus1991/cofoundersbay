@@ -431,7 +431,7 @@ export function CanvasCommentPins({
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="icon-sm text-primary-accessible" />
+                <Pin className="icon-sm text-muted-foreground" />
                 Add Pin Comment
               </div>
               <Button aria-label="Cancel comment"

@@ -98,7 +98,7 @@ function LevelRing({ progress, level, size = 140 }: { progress: number; level: n
           the copy beside it. A bilingual "84% of level · 84% του επιπέδου" was
           wider than the ring's 112px interior. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5" aria-hidden>
-        <span className="text-3xl font-bold leading-none tabular-nums">
+        <span className="text-3xl font-semibold leading-none tabular-nums">
           {level}
           <span className="text-sm font-medium text-muted-foreground"> / 10</span>
         </span>
@@ -114,7 +114,7 @@ function GroupRow({ group, xp, total, count }: { group: string; xp: number; tota
   const share = total > 0 ? Math.round((xp / total) * 100) : 0;
   return (
     <li className="flex items-center gap-3 py-2.5">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
         <Icon className="icon-sm" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
@@ -134,7 +134,7 @@ function BadgeCard({ badge, primary }: { badge: Badge; primary: 'en' | 'el' }) {
   const isNew = !badge.seenAt;
   return (
     <Card className={cn('relative overflow-hidden transition-colors hover:border-primary/30', isNew && 'ring-1 ring-primary/40')}>
-      <CardContent className="flex gap-3 p-4">
+      <CardContent className="flex gap-3">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
           <Trophy className="icon-md" aria-hidden />
         </span>
@@ -288,7 +288,7 @@ export default function ReputationPage() {
 
         {failed ? (
           <Card>
-            <CardContent className="p-6">
+            <CardContent>
               <EmptyState
                 title={<BilingualText en={reputationEn('error_title')} el={reputationEl('error_title')} />}
                 description={<BilingualText en={reputationEn('error_desc')} el={reputationEl('error_desc')} />}
@@ -305,7 +305,7 @@ export default function ReputationPage() {
           <>
             {/* Level card */}
             <Card className="border-border bg-primary/[0.03]">
-              <CardContent className="p-4 md:p-6">
+              <CardContent>
                 {loading || !xp.data ? (
                   <div className="flex flex-col items-center gap-6 md:flex-row" aria-busy="true">
                     <div className="h-[140px] w-[140px] shrink-0 animate-pulse rounded-full bg-muted/40" />
@@ -419,13 +419,13 @@ export default function ReputationPage() {
                         <dl className="grid grid-cols-2 gap-4">
                           <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('current')}</dt>
-                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-semibold tabular-nums">
                               {streakData.currentStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.currentStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>
                           <div className="rounded-xl border border-border p-3">
                             <dt className="text-xs text-muted-foreground">{t('longest')}</dt>
-                            <dd className="page-stat mt-1 text-2xl font-bold tabular-nums">
+                            <dd className="page-stat mt-1 text-2xl font-semibold tabular-nums">
                               {streakData.longestStreak} <span className="text-sm font-normal text-muted-foreground">{t(streakData.longestStreak === 1 ? 'day_one' : 'days')}</span>
                             </dd>
                           </div>
@@ -455,7 +455,7 @@ export default function ReputationPage() {
                   )}
                 </div>
                 {badgeList.length === 0 ? (
-                  <Card><CardContent className="p-6">
+                  <Card><CardContent>
                     <EmptyState
                       size="sm"
                       title={<BilingualText en={reputationEn('no_badges_title')} el={reputationEl('no_badges_title')} />}
@@ -492,7 +492,7 @@ export default function ReputationPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="icon-sm text-primary-accessible" aria-hidden />
+              <Sparkles className="icon-sm text-muted-foreground" aria-hidden />
               <BilingualText en={reputationEn('tips_title')} el={reputationEl('tips_title')} />
             </CardTitle>
           </CardHeader>

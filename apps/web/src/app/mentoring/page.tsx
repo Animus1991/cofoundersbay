@@ -139,7 +139,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
-      <CardContent className="p-5 space-y-3">
+      <CardContent className="space-y-3">
         {/* Header row */}
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
@@ -157,9 +157,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
-              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {mentor.isFeatured && (
-                <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
+                <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0.5">
                   <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
                   <BilingualText en="Featured" el="Προτεινόμενος" compact />
                 </Badge>
@@ -173,7 +173,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               {mentor.rating > 0 && (
                 <span className="flex items-center gap-0.5">
                   <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
-                  <span className="font-medium text-foreground">{mentor.rating.toFixed(1)}</span>
+                  <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
                   {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
                 </span>
               )}
@@ -190,14 +190,14 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           {matchPct != null && (
             <div className="shrink-0 flex flex-col items-center gap-0.5">
               <div className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
+                'flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ring-2',
                 matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
                 : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-status-success'
                 : 'bg-muted text-muted-foreground ring-border',
               )}>
                 {matchPct}%
               </div>
-              <span className="text-2xs text-muted-foreground"><BilingualText en="match" el="ταίριασμα" compact /></span>
+              <span className="text-xs text-muted-foreground"><BilingualText en="match" el="ταίριασμα" compact /></span>
             </div>
           )}
         </div>
@@ -207,10 +207,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         {/* Expertise tags */}
         <div className="flex flex-wrap gap-1">
           {mentor.expertise.slice(0, 4).map((skill) => (
-            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">{skill}</span>
+            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground">{skill}</span>
           ))}
           {mentor.expertise.length > 4 && (
-            <span className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">+{mentor.expertise.length - 4}</span>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">+{mentor.expertise.length - 4}</span>
           )}
         </div>
 
@@ -219,16 +219,16 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="icon-sm text-primary-accessible" aria-hidden="true" />{mentor.hourlyRate}
+                <DollarSign className="icon-sm text-muted-foreground" aria-hidden="true" />{mentor.hourlyRate}
                 <BilingualText en="/hr" el="/ώρα" compact />
               </span>
             ) : (
-              <Badge variant="outline" className="text-2xs border-status-success-border text-status-success bg-status-success-bg">
+              <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
                 <BilingualText en="Free" el="Δωρεάν" compact />
               </Badge>
             )}
             {availCfg && (
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', availCfg.bg, availCfg.color)}>
                 <BilingualText en={availCfg.en} el={availCfg.el} compact />
               </span>
             )}
@@ -390,7 +390,7 @@ function BookingModal({
 function BookingSkeleton() {
   return (
     <Card>
-      <CardContent className="flex items-start gap-4 p-4">
+      <CardContent className="flex items-start gap-4">
         <Skeleton className="h-12 w-12 rounded-full shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-40" />
@@ -415,14 +415,14 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
   const home = rel.mentorId === userId ? '/mentor/sessions' : '/coaching';
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3 sm:gap-4">
           <SessionDateTile date={start} />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2">
-                  <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-medium text-foreground transition-colors hover:text-primary-accessible">
+                  <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                     {other.displayName}
                   </Link>
                   <span className="text-xs text-muted-foreground">
@@ -440,7 +440,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
                 <Badge variant="outline" className="text-xs">
                   <StatusText value={u.status} />
                 </Badge>
-                <Badge variant="secondary" className="text-2xs">
+                <Badge variant="secondary" className="text-xs">
                   <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
                 </Badge>
               </div>
@@ -473,7 +473,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
 function MentorSkeleton() {
   return (
     <Card>
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="space-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="h-16 w-16 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">
@@ -813,7 +813,7 @@ export default function MentoringPage() {
               {featuredMentors.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Award className="icon-sm text-primary-accessible" aria-hidden="true" />
+                    <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       <BilingualText en="Featured mentors" el="Προτεινόμενοι μέντορες" compact />
                     </h2>

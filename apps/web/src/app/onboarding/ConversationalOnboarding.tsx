@@ -97,8 +97,8 @@ const BOT_QUESTIONS: Record<Step, { en: string; el: string }> = {
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-2">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="icon-sm text-primary-accessible" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+        <Bot className="icon-sm text-muted-foreground" />
       </div>
       <div className="rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <div className="flex gap-1 items-center h-4">
@@ -114,8 +114,8 @@ function TypingIndicator() {
 function BotBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-end gap-2 animate-fade-in">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="icon-sm text-primary-accessible" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+        <Bot className="icon-sm text-muted-foreground" />
       </div>
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <p className="text-sm text-foreground leading-relaxed">{children}</p>
@@ -381,7 +381,7 @@ export function ConversationalOnboarding() {
               className="flex items-start gap-2 rounded-xl bg-primary/5 px-3 py-2 text-xs leading-snug text-muted-foreground"
               data-testid="onboarding-why-hint"
             >
-              <HelpCircle className="mt-0.5 icon-sm shrink-0 text-primary-accessible" aria-hidden="true" />
+              <HelpCircle className="mt-0.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
               <span>
                 <span className="font-medium text-foreground">
                   <BilingualText en="Why we ask:" el="Γιατί το ρωτάμε:" compact />
@@ -407,7 +407,7 @@ export function ConversationalOnboarding() {
                       : 'border-border hover:border-primary/50 hover:bg-secondary/50',
                   )}
                 >
-                  <Icon className="icon-md text-primary-accessible shrink-0" />
+                  <Icon className="icon-md text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en={desc} el={descEl} wrap /></p>
