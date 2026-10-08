@@ -229,7 +229,7 @@ const faqCategories: FAQCategory[] = [
     id: 'billing',
     title: 'Billing & Subscriptions',
     icon: CreditCard,
-    description: 'Managing your subscription.',
+    description: 'Payment, upgrades, cancelling and refunds.',
     faqs: [
       {
         question: 'What payment methods do you accept?',

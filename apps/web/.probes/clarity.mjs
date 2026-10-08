@@ -188,17 +188,33 @@ for (const route of routes) {
       const again = leaves.filter((el) => !h.contains(el) && !el.contains(h) && norm(el.innerText) === t && !el.closest('h1,h2,h3,' + CONTROL));
       if (again.length) dupes.push(`"${t.slice(0, 40)}" x${again.length + 1}`);
     }
+    // Echoes: a heading whose next line says the same thing again ("Billing"
+    // over "Manage your billing"). English halves only, so the two languages
+    // of one line are not compared with each other.
+    const STOP = new Set(['the','a','an','and','or','of','to','your','you','for','in','on','with','manage','view','see','all','here','this','is','are','be','by','from','at','as','it','its','our']);
+    const wordsOf = (t) => (t ?? '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w));
+    const enOf = (el) => (el.querySelector('[lang="en"]')?.textContent ?? el.textContent ?? '');
+    const echoes = [];
+    for (const h of [...main.querySelectorAll('h1,h2,h3,h4')].filter(shown)) {
+      const next = h.nextElementSibling ?? h.parentElement?.nextElementSibling;
+      if (!next || !next.matches('p') || !shown(next)) continue;
+      const hw = new Set(wordsOf(enOf(h)));
+      const nw = wordsOf(enOf(next));
+      if (hw.size < 1 || nw.length < 1 || nw.length > 8) continue;
+      const shared = nw.filter((w) => hw.has(w) || hw.has(w.replace(/s$/, '')) || hw.has(w + 's')).length;
+      if (shared / nw.length >= 0.5) echoes.push(`"${enOf(h).trim().slice(0, 30)}" / "${enOf(next).trim().slice(0, 50)}"`);
+    }
     const words = (main.innerText ?? '').split(/\s+/).filter(Boolean).length;
     // The skip link's target: one main#main-content per page.
     const landmark = document.querySelectorAll('main#main-content').length === 1;
-    return { cards: cards.length, shadows, tints, frames, offAxis, centered, glyphs, dupes, words, landmark };
+    return { cards: cards.length, shadows, tints, frames, offAxis, centered, glyphs, dupes, echoes, words, landmark };
   });
   const row = { route, status, ...m };
   rows.push(row);
-  console.log(`${route} | ${status} | ${m.landmark ? '' : 'NO-MAIN | '}cards ${m.cards} | shadows ${m.shadows.length} | tints ${m.tints.length} | frames ${m.frames.length} | offAxis ${m.offAxis.length} | centered ${m.centered.length} | glyphs ${m.glyphs.length} | dupes ${m.dupes.length} | words ${m.words}`);
+  console.log(`${route} | ${status} | ${m.landmark ? '' : 'NO-MAIN | '}cards ${m.cards} | shadows ${m.shadows.length} | tints ${m.tints.length} | frames ${m.frames.length} | offAxis ${m.offAxis.length} | centered ${m.centered.length} | glyphs ${m.glyphs.length} | dupes ${m.dupes.length} | echoes ${m.echoes.length} | words ${m.words}`);
 }
 const sum = (k) => rows.reduce((n, r) => n + (Array.isArray(r[k]) ? r[k].length : 0), 0);
 console.log('\n=== TOTALS ===');
-console.log(`routes ${rows.length} | without main#main-content ${rows.filter((r) => !r.landmark).length} | cards ${rows.reduce((n, r) => n + (r.cards ?? 0), 0)} | shadows ${sum('shadows')} | tints ${sum('tints')} | frames ${sum('frames')} | offAxis ${sum('offAxis')} | centered ${sum('centered')} | glyphs ${sum('glyphs')} | dupes ${sum('dupes')} | words ${rows.reduce((n, r) => n + (r.words ?? 0), 0)}`);
+console.log(`routes ${rows.length} | without main#main-content ${rows.filter((r) => !r.landmark).length} | cards ${rows.reduce((n, r) => n + (r.cards ?? 0), 0)} | shadows ${sum('shadows')} | tints ${sum('tints')} | frames ${sum('frames')} | offAxis ${sum('offAxis')} | centered ${sum('centered')} | glyphs ${sum('glyphs')} | dupes ${sum('dupes')} | echoes ${sum('echoes')} | words ${rows.reduce((n, r) => n + (r.words ?? 0), 0)}`);
 if (OUT) writeFileSync(OUT, JSON.stringify(rows, null, 1));
 await b.close();

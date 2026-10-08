@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getMe } from '@/lib/api';
 import { isPreviewDemo, PREVIEW_DEMO_USER } from '@/lib/preview-demo';
+import { MainLandmark } from '@/components/layout/AppShell';
 
 export default function OAuthCallbackPage() {
   const router = useRouter();
@@ -66,7 +67,7 @@ export default function OAuthCallbackPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <MainLandmark className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardContent className="pt-8 pb-8 text-center space-y-3">
           {status === 'loading' && (
@@ -106,6 +107,6 @@ export default function OAuthCallbackPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </MainLandmark>
   );
 }
