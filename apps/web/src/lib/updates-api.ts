@@ -69,6 +69,16 @@ export async function getMyUpdates(): Promise<FounderUpdate[]> {
   return list(await apiRequest('/api/updates/mine'));
 }
 
+/**
+ * One person's updates as the reader may read them (profile Activity), and
+ * whether the reader follows them: `null` on one's own profile.
+ */
+export async function getUpdatesBy(userId: string): Promise<{ updates: FounderUpdate[]; following: boolean | null }> {
+  const raw = await apiRequest(`/api/updates/by/${encodeURIComponent(userId)}`);
+  const following = rec(raw).following;
+  return { updates: list(raw), following: typeof following === 'boolean' ? following : null };
+}
+
 export async function getUpdatesFeed(): Promise<FounderUpdate[]> {
   return list(await apiRequest('/api/updates/feed'));
 }

@@ -326,6 +326,8 @@ export function toCommitmentThread(raw: unknown): CommitmentThread {
 
 export type CardFilters = {
   mine?: boolean;
+  /** One member's cards (their profile's Activity). */
+  owner?: string;
   kind?: string;
   stage?: string;
   category?: string;
@@ -340,6 +342,7 @@ export type CardFilters = {
 export async function listCommitmentCards(filters: CardFilters = {}): Promise<CommitmentCard[]> {
   const sp = new URLSearchParams();
   if (filters.mine) sp.set('mine', '1');
+  else if (filters.owner) sp.set('owner', filters.owner);
   for (const key of ['kind', 'stage', 'category', 'commitment', 'place', 'outcome', 'q'] as const) {
     const value = filters[key];
     if (value) sp.set(key, value);

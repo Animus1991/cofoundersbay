@@ -144,6 +144,22 @@ export class FounderUpdatesService {
     return { updates: rows.map((r) => this.shape(r, viewerId)) };
   }
 
+  /**
+   * One person's updates as this viewer may read them, for the Activity
+   * section of a profile: the author reads every one; a follower reads what
+   * went to followers and what is public; anyone else reads the public ones.
+   * `following` tells the page whether follower-only updates may exist.
+   */
+  async byAuthor(viewerId: string, authorId: string) {
+    const own = viewerId === authorId;
+    const follows = own
+      ? null
+      : await this.prisma.userFollow.findUnique({ where: { followerId_followingId: { followerId: viewerId, followingId: authorId } } });
+    const where: Prisma.FounderUpdateWhereInput = own || follows ? { authorId } : { authorId, visibility: 'public' };
+    const rows = await this.prisma.founderUpdate.findMany({ where, include: { author: { select: personSelect } }, orderBy: { createdAt: 'desc' }, take: 20 });
+    return { updates: rows.map((r) => this.shape(r, viewerId)), following: own ? null : Boolean(follows) };
+  }
+
   async get(viewerId: string, id: string) {
     const row = await this.prisma.founderUpdate.findUnique({ where: { id }, include: { author: { select: personSelect } } });
     if (!row) throw new NotFoundException('Update not found');

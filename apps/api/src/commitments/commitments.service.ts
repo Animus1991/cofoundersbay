@@ -382,6 +382,8 @@ export class CommitmentsService {
     viewer: Viewer,
     filters: {
       mine?: boolean;
+      /** One member's cards, for the Activity section of their profile. */
+      owner?: string;
       kind?: string;
       stage?: string;
       category?: string;
@@ -396,6 +398,7 @@ export class CommitmentsService {
     await this.expireQuietCards();
     const where: Record<string, unknown> = {};
     if (filters.mine) where.ownerId = viewer.id;
+    else if (filters.owner) where.ownerId = filters.owner;
     if (filters.kind && (COMMITMENT_KINDS as readonly string[]).includes(filters.kind)) where.kind = filters.kind;
     if (filters.stage) where.stage = filters.stage;
     if (filters.commitment) where.commitment = filters.commitment;

@@ -24,6 +24,7 @@ export class CommitmentsController {
   list(
     @CurrentUser() user: { id: string },
     @Query('mine') mine?: string,
+    @Query('owner') owner?: string,
     @Query('kind') kind?: string,
     @Query('stage') stage?: string,
     @Query('category') category?: string,
@@ -36,6 +37,7 @@ export class CommitmentsController {
   ) {
     return this.commitments.listCards(user, {
       mine: mine === '1' || mine === 'true',
+      owner: owner?.trim() || undefined,
       kind,
       stage,
       category,

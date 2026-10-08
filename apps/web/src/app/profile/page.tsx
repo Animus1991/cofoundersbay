@@ -3,6 +3,8 @@
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import { AvatarVerifiedMark, OwnOpenToPill, VerificationPanel, useMyTrust } from '@/components/profile/ProfileTrust';
 import { VerifiedBadge } from '@/components/commitments/VerifiedBadge';
+import { ProfileHero } from '@/components/profile/ProfileHero';
+import { ProfileActivity, ProfileExperience, SimilarProfiles } from '@/components/profile/ProfileSections';
 import { StatusText } from '@/components/common/StatusText';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +56,6 @@ import { useMyBadges } from '@/hooks/useGamification';
 import { formatDate } from '@/lib/i18n/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -496,6 +497,24 @@ export default function ProfilePage() {
       content: <VerificationPanel email={profile.email} verification={trust.verification} />,
     },
     {
+      id: 'similar',
+      glyph: 'people',
+      labelEn: 'Similar profiles',
+      labelEl: 'Παρόμοια προφίλ',
+      content: (
+        <SimilarProfiles
+          person={{
+            userId: profile.userId,
+            role: profile.role,
+            skills: (profile.skills ?? []).map((s) => s.skillName),
+            industries: Array.isArray(rolePayload.industries) ? (rolePayload.industries as string[]) : [],
+            location: profile.location,
+          }}
+          viewerId={profile.userId}
+        />
+      ),
+    },
+    {
       id: 'account',
       glyph: 'sliders',
       labelEn: 'Account',
@@ -511,123 +530,78 @@ export default function ProfilePage() {
   return (
     <AppShell
       rail={rail}
-      actions={
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
-            <Share2 className="icon-sm" />
-            <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))} aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
-            <Share2 className="icon-sm" />
-          </Button>
-          {/* The public page (/p/…) carries the Open Graph preview LinkedIn shows;
-              the suggested post text is copied for pasting. */}
-          {profile && publicUrl ? (
-            <Button variant="outline" size="sm" className="gap-2" asChild>
-              <a
-                href={linkedInShareUrl(publicUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => suggested.copy(profilePost(publicUrl, suggested.lang))}
-                aria-label={bilingualAria('Share your public profile on LinkedIn (opens a new tab)', 'Κοινοποίηση του δημόσιου προφίλ στο LinkedIn (ανοίγει νέα καρτέλα)')}
-              >
-                <Linkedin className="icon-sm" aria-hidden="true" />
-                <BilingualText en="LinkedIn" el="LinkedIn" compact />
-              </a>
-            </Button>
-          ) : null}
-          <Button size="sm" className="gap-2" asChild>
-            <Link href="/profile/edit">
-              <Edit className="icon-sm" />
-              <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
-            </Link>
-          </Button>
-        </div>
-      }
     >
       <div className="space-y-6 pb-10">
-        {/* Cover Photo & Basic Identity Header */}
-        <div className="relative rounded-2xl overflow-hidden border bg-card shadow-sm animate-fade-in">
-          {/* Cover Photo */}
-          {/* The cover was 256px of empty band at md — a quarter of the
-              viewport before the reader met a name. It holds no image, so it
-              only needs to be tall enough for the avatar to overlap it. */}
-          <div className="h-24 bg-primary/[0.05] w-full relative sm:h-28 md:h-32" />
-          
-          <div className="px-6 sm:px-8 pb-6 md:pb-8 relative">
-            <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-16 md:-mt-20">
-              <div className="relative inline-block self-start">
-                <Avatar className="h-24 w-24 sm:h-32 sm:w-32 md:h-40 md:w-40 ring-4 ring-background">
-                  <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-bold">
-                    {profile.displayName?.[0]?.toUpperCase() ?? '?'}
-                  </AvatarFallback>
-                </Avatar>
-                <AvatarVerifiedMark methods={trust.methods} />
-              </div>
-
-              <div className="flex-1 space-y-3 pt-2 md:pt-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl md:text-2xl font-semibold text-foreground tracking-tight">
-                        {profile.displayName}
-                      </h2>
-                      <VerifiedBadge methods={trust.methods} />
-                    </div>
-                    {profile.headline ? (
-                      <p className="text-base md:text-lg text-muted-foreground font-medium">
-                        {profile.headline}
-                      </p>
-                    ) : (
-                      <p className="text-base text-muted-foreground italic opacity-70">
-                        <BilingualText en={profileEn('no_headline_set')} el={profileEl('no_headline_set')} />
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="flex min-w-0 flex-wrap items-center gap-3">
-                    <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
-                    <OwnOpenToPill openTo={trust.openTo} />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium pt-1">
-                  {profile.location && (
-                    <div className="flex items-center gap-1.5">
-                      <MapPin className="icon-sm" aria-hidden="true" />
-                      {profile.location}
-                    </div>
-                  )}
-                  {profile.timezone && (
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="icon-sm" aria-hidden="true" />
-                      {profile.timezone}
-                    </div>
-                  )}
-                  {profile.languages?.length ? (
-                    <div className="flex items-center gap-1.5">
-                      <Languages className="icon-sm" aria-hidden="true" />
-                      {profile.languages.join(', ')}
-                    </div>
-                  ) : null}
-                  {/* It printed the current year for everyone ("Joined 2026"
-                      on a 2024 account); the profile carries its own date. */}
-                  {profile.createdAt && (
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="icon-sm" aria-hidden="true" />
-                      <BilingualText
-                        en={`Joined ${formatDate(profile.createdAt, 'en', { month: 'short', year: 'numeric' })}`}
-                        el={`Μέλος από ${formatDate(profile.createdAt, 'el', { month: 'short', year: 'numeric' })}`}
-                        compact
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* The top card: who, how verified, what they do, where, what they
+            are open to, and the actions on one's own profile, in one place
+            (ProfileHero, shared with everyone else's profile). */}
+        <ProfileHero
+          name={profile.displayName}
+          avatarUrl={profile.avatarUrl}
+          avatarMark={<AvatarVerifiedMark methods={trust.methods} />}
+          nameBadge={<VerifiedBadge methods={trust.methods} />}
+          headline={
+            profile.headline ? (
+              profile.headline
+            ) : (
+              <span className="italic">
+                <BilingualText en={profileEn('no_headline_set')} el={profileEl('no_headline_set')} />
+              </span>
+            )
+          }
+          meta={[
+            profile.location ? <><MapPin className="icon-sm" aria-hidden="true" />{profile.location}</> : null,
+            profile.timezone ? <><Clock className="icon-sm" aria-hidden="true" />{profile.timezone}</> : null,
+            profile.languages?.length ? <><Languages className="icon-sm" aria-hidden="true" />{profile.languages.join(', ')}</> : null,
+            // It printed the current year for everyone ("Joined 2026" on a 2024
+            // account); the profile carries its own date.
+            profile.createdAt ? (
+              <>
+                <Calendar className="icon-sm" aria-hidden="true" />
+                <BilingualText
+                  en={`Joined ${formatDate(profile.createdAt, 'en', { month: 'short', year: 'numeric' })}`}
+                  el={`Μέλος από ${formatDate(profile.createdAt, 'el', { month: 'short', year: 'numeric' })}`}
+                  compact
+                />
+              </>
+            ) : null,
+          ]}
+          openTo={<OwnOpenToPill openTo={trust.openTo} />}
+          aside={<RoleBadge role={profile.role} className="text-sm px-3 py-1" />}
+          actions={
+            <>
+              <Button size="sm" className="gap-2" asChild>
+                <Link href="/profile/edit">
+                  <Edit className="icon-sm" />
+                  <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
+                <Share2 className="icon-sm" />
+                <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))} aria-label={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
+                <Share2 className="icon-sm" />
+              </Button>
+              {/* The public page (/p/…) carries the Open Graph preview LinkedIn
+                  shows; the suggested post text is copied for pasting. */}
+              {publicUrl ? (
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <a
+                    href={linkedInShareUrl(publicUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => suggested.copy(profilePost(publicUrl, suggested.lang))}
+                    aria-label={bilingualAria('Share your public profile on LinkedIn (opens a new tab)', 'Κοινοποίηση του δημόσιου προφίλ στο LinkedIn (ανοίγει νέα καρτέλα)')}
+                  >
+                    <Linkedin className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="LinkedIn" el="LinkedIn" compact />
+                  </a>
+                </Button>
+              ) : null}
+            </>
+          }
+        />
 
         {/* One reading column. Completion, activity, verification and the
             settings link lived in a hand-built 320px column beside this one,
@@ -673,6 +647,10 @@ export default function ProfilePage() {
                 )}
               </CardContent>
             </Card>
+
+          {/* What this person has published, and the roles they have held. */}
+          <ProfileActivity userId={profile.userId} own />
+          <ProfileExperience payload={rolePayload} own />
 
           {/* Intent cards — What I'm looking for */}
           {(() => {
@@ -728,7 +706,7 @@ export default function ProfilePage() {
           })()}
 
           {/* Role-specific details */}
-          {Object.keys(rolePayload).length > 0 && (
+          {Object.keys(rolePayload).some((k) => k !== 'experience' && k !== 'education') && (
             <div className="animate-fade-in stagger-2">
               <RoleDetails role={profile.role} payload={rolePayload} />
             </div>
@@ -751,26 +729,19 @@ export default function ProfilePage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-5">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => {
-                    const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
-                    const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
-                    return (
-                      <div key={s.skillId} className="space-y-1.5 bg-secondary/20 p-3 rounded-lg border border-border">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-semibold text-foreground">{s.skillName}</span>
-                          <Badge variant="secondary" size="sm" className="capitalize bg-background">{lvl}</Badge>
-                        </div>
-                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-primary transition-all duration-1000 ease-out"
-                            style={{ width: `${Math.max(pct, 20)}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* A level shows only when the person declared one. The bars
+                    used to invent both a level and a percentage from the
+                    skill's place in the list. */}
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => (
+                    <li key={s.skillId ?? s.skillName ?? i} className="flex min-w-0 items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+                      <span className="min-w-0 truncate text-sm font-medium text-foreground">{s.skillName}</span>
+                      {s.level ? (
+                        <Badge variant="secondary" size="sm" className="shrink-0 bg-background"><StatusText value={s.level} /></Badge>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
                 {profile.skills.length > 6 && (
                   <div className="mt-4 pt-4 border-t border-border text-center">
                     {/* It offered to show all of them and did nothing; the six

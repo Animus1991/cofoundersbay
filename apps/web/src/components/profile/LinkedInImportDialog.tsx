@@ -2,7 +2,17 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { experienceSummary, hasLinkedInData, type LinkedInImport } from '@cofounderbay/shared';
+import {
+  educationFromLinkedIn,
+  experienceFromLinkedIn,
+  experienceSummary,
+  hasLinkedInData,
+  readEducation,
+  readExperience,
+  type EducationEntry,
+  type ExperienceEntry,
+  type LinkedInImport,
+} from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,7 +29,13 @@ export interface ImportableProfile {
   location: string;
   websiteUrl: string;
   skills: string[];
+  /** Structured roles for the profile's Experience section. */
+  experience?: ExperienceEntry[];
+  education?: EducationEntry[];
 }
+
+const sameRole = (a: ExperienceEntry, b: ExperienceEntry) => a.title.toLowerCase() === b.title.toLowerCase() && a.company.toLowerCase() === b.company.toLowerCase();
+const sameSchool = (a: EducationEntry, b: EducationEntry) => a.school.toLowerCase() === b.school.toLowerCase() && a.degree.toLowerCase() === b.degree.toLowerCase();
 
 type FieldKey = 'displayName' | 'headline' | 'bio' | 'location' | 'websiteUrl' | 'skills';
 const LABELS: Record<FieldKey, { en: string; el: string }> = {
@@ -61,6 +77,10 @@ export function LinkedInImportDialog({
   const [problem, setProblem] = useState<string | null>(null);
   const [chosen, setChosen] = useState<Record<FieldKey, boolean>>({ displayName: true, headline: true, bio: true, location: true, websiteUrl: true, skills: true });
   const [withExperience, setWithExperience] = useState(false);
+  // Positions fill the Experience section and schools the Education section
+  // unless unticked; adding them to About as text stays a separate choice.
+  const [withRoles, setWithRoles] = useState(true);
+  const [withSchools, setWithSchools] = useState(true);
   useEffect(() => {
     if (initial) setImp(initial);
   }, [initial]);
@@ -104,6 +124,11 @@ export function LinkedInImportDialog({
     }
   };
 
+  const roles = useMemo(() => (imp ? experienceFromLinkedIn(imp) : []), [imp]);
+  const schools = useMemo(() => (imp ? educationFromLinkedIn(imp) : []), [imp]);
+  const newRoles = roles.filter((r) => !(current.experience ?? []).some((c) => sameRole(c, r)));
+  const newSchools = schools.filter((r) => !(current.education ?? []).some((c) => sameSchool(c, r)));
+
   const apply = () => {
     const fields: Partial<ImportableProfile> = {};
     for (const k of rows) {
@@ -111,6 +136,8 @@ export function LinkedInImportDialog({
       if (k === 'skills') fields.skills = [...current.skills, ...matchedSkills].slice(0, 15);
       else fields[k] = values[k] as string;
     }
+    if (withRoles && newRoles.length) fields.experience = readExperience([...(current.experience ?? []), ...newRoles]);
+    if (withSchools && newSchools.length) fields.education = readEducation([...(current.education ?? []), ...newSchools]);
     onApply(fields);
     onOpenChange(false);
   };
@@ -200,6 +227,30 @@ export function LinkedInImportDialog({
                 />
               </p>
             ) : null}
+            {newRoles.length ? (
+              <div className="flex items-start gap-3">
+                <Checkbox id="import-roles" checked={withRoles} onCheckedChange={(v) => setWithRoles(v === true)} className="mt-0.5" />
+                <label htmlFor="import-roles" className="text-sm text-foreground">
+                  <BilingualText
+                    en={`Add ${newRoles.length} position${newRoles.length === 1 ? '' : 's'} to Experience`}
+                    el={`Προσθήκη ${newRoles.length} ${newRoles.length === 1 ? 'θέσης' : 'θέσεων'} στην «Εμπειρία»`}
+                    wrap
+                  />
+                </label>
+              </div>
+            ) : null}
+            {newSchools.length ? (
+              <div className="flex items-start gap-3">
+                <Checkbox id="import-schools" checked={withSchools} onCheckedChange={(v) => setWithSchools(v === true)} className="mt-0.5" />
+                <label htmlFor="import-schools" className="text-sm text-foreground">
+                  <BilingualText
+                    en={`Add ${newSchools.length} school${newSchools.length === 1 ? '' : 's'} to Education`}
+                    el={`Προσθήκη ${newSchools.length} ${newSchools.length === 1 ? 'σχολής' : 'σχολών'} στην «Εκπαίδευση»`}
+                    wrap
+                  />
+                </label>
+              </div>
+            ) : null}
             {imp.positions.length ? (
               <div className="flex items-start gap-3">
                 <Checkbox id="import-experience" checked={withExperience} onCheckedChange={(v) => setWithExperience(v === true)} className="mt-0.5" />
@@ -217,7 +268,7 @@ export function LinkedInImportDialog({
               <BilingualText en="Choose another file" el="Άλλο αρχείο" compact />
             </Button>
           ) : null}
-          <Button onClick={apply} disabled={!imp || rows.every((k) => !chosen[k])}>
+          <Button onClick={apply} disabled={!imp || (rows.every((k) => !chosen[k]) && !(withRoles && newRoles.length) && !(withSchools && newSchools.length))}>
             <BilingualText en="Fill the form" el="Συμπλήρωση φόρμας" compact />
           </Button>
         </DialogFooter>

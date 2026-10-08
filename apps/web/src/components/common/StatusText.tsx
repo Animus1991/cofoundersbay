@@ -8,6 +8,11 @@ import { BilingualText } from '@/components/common/BilingualText';
  * English shown is the value as the page already displayed it.
  */
 const STATUS_EL: Record<string, string> = {
+  // Skill levels a person declares on their profile.
+  beginner: 'αρχάριο επίπεδο',
+  intermediate: 'μέσο επίπεδο',
+  advanced: 'προχωρημένο επίπεδο',
+  expert: 'επίπεδο ειδικού',
   active: 'ενεργό',
   inactive: 'ανενεργό',
   pending: 'σε αναμονή',

@@ -1026,6 +1026,43 @@ function previewBuilderWorkspace() {
   };
 }
 
+/**
+ * The demo people's roles and schools, for the profile's Experience and
+ * Education sections. Companies are the demo world's own (Harbor, Taverna OS,
+ * Orion Grid, Aegean Lab, Meridian); schools are invented.
+ */
+const DEMO_HISTORY: Record<string, { experience: Array<{ title: string; company: string; start: string; end: string }>; education: Array<{ school: string; degree: string; start: string; end: string }> }> = {
+  'user-elena': {
+    experience: [
+      { title: 'Founder & CEO', company: 'Harbor', start: '2024', end: '' },
+      { title: 'Head of Product', company: 'Aegean Lab', start: '2020', end: '2024' },
+      { title: 'Product manager', company: 'Meltemi', start: '2017', end: '2020' },
+    ],
+    education: [{ school: 'Pnyx School of Business', degree: 'MSc Management', start: '2015', end: '2017' }],
+  },
+  'user-marcus': {
+    experience: [
+      { title: 'Technical co-founder', company: 'Taverna OS', start: '2023', end: '' },
+      { title: 'Senior engineer', company: 'Orion Grid', start: '2019', end: '2023' },
+    ],
+    education: [{ school: 'Spree Institute of Computing', degree: 'BSc Computer Science', start: '2013', end: '2017' }],
+  },
+  'user-sarah': {
+    experience: [
+      { title: 'Startup mentor', company: 'Aegean Lab', start: '2021', end: '' },
+      { title: 'Founder (three companies)', company: 'Independent', start: '2010', end: '2021' },
+    ],
+    education: [],
+  },
+  'user-nikos': {
+    experience: [
+      { title: 'Angel investor', company: 'Independent', start: '2018', end: '' },
+      { title: 'Partner', company: 'Meridian Deep Tech Fund', start: '2013', end: '2018' },
+    ],
+    education: [],
+  },
+};
+
 const PEOPLE = [
   {
     id: 'hit-elena',
@@ -1324,7 +1361,16 @@ const ME_PROFILE = {
     timezone: 'Europe/Athens',
     languages: ['English', 'Greek'],
     avatarUrl: null,
-    rolePayload: { stage: 'idea', lookingFor: ['cofounder', 'mentor'] },
+    rolePayload: {
+      stage: 'idea',
+      lookingFor: ['cofounder', 'mentor'],
+      // Roles and schools for the profile's Experience section; fictional names only.
+      experience: [
+        { title: 'Founder', company: 'Alex Demo Studio', start: '2025', end: '' },
+        { title: 'Product designer', company: 'Aegean Lab', start: '2021', end: '2025' },
+      ],
+      education: [{ school: 'Pnyx School of Business', degree: 'MSc Innovation', start: '2019', end: '2021' }],
+    },
     visibilityRules: null,
     role: 'founder',
     email: 'demo@cofounderbay.com',
@@ -3753,6 +3799,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
         lookingFor: person.lookingFor ? [person.lookingFor] : [],
         availability: person.availability,
         industries: person.industries,
+        ...(DEMO_HISTORY[person.userId] ?? {}),
       },
       visibilityRules: null,
       role: person.role,
