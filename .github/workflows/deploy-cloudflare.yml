@@ -43,6 +43,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The web app imports @cofounderbay/shared through its built `dist`,
+      # which is gitignored: without this step the typecheck below cannot
+      # resolve the package (141 TS2307/TS7006 errors on a clean checkout).
+      - name: Build shared package
+        run: pnpm --filter @cofounderbay/shared run build
+
       - name: Typecheck
         run: pnpm --filter @cofounderbay/web exec tsc --noEmit -p tsconfig.json
 
