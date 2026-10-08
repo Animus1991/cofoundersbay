@@ -53,6 +53,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -131,7 +132,8 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
     : null;
 
   return (
-    <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
+    // The id is the assistant's citation target (`/opportunities#opportunity-…`).
+    <Card id={`opportunity-${opportunity.id}`} className="card-interactive hover-lift group scroll-mt-24 transition-all duration-300 hover:border-primary/30">
       <CardContent className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -524,6 +526,8 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function OpportunitiesPage() {
+  // The assistant cites a listing as /opportunities#opportunity-<id>; its card mounts after the data.
+  useScrollToHash();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { ask } = usePopupChat();

@@ -409,6 +409,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant="outline"
                     size="sm"
                     label="AI Match Analysis"
+                    labelEl="Ανάλυση αντιστοίχισης με AI"
                   />
                 ) : null}
                 <Button

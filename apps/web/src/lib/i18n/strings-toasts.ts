@@ -450,6 +450,8 @@ export const TOAST_EL: Record<string, string> = {
   "Upload failed. Please try again.": "Η μεταφόρτωση απέτυχε. Δοκιμάστε ξανά.",
   "Upload failed:": "Η μεταφόρτωση απέτυχε:",
   "Upload queued": "Η μεταφόρτωση μπήκε στην ουρά",
+  "Marked ready": "Σημειώθηκε ως έτοιμο",
+  "The document is marked ready in this browser.": "Το έγγραφο σημειώθηκε ως έτοιμο σε αυτόν τον browser.",
   "User banned": "Ο χρήστης αποκλείστηκε",
   "User blocked": "Ο χρήστης μπλοκαρίστηκε",
   "Validation accepted": "Η επικύρωση έγινε δεκτή",

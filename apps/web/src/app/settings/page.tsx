@@ -40,6 +40,7 @@ import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { VerificationCard } from '@/components/settings/VerificationCard';
+import { openCookieChoices } from '@/lib/cookie-consent';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
@@ -238,8 +239,8 @@ function PrivacyCard() {
         </CardTitle>
         <CardDescription>
           <BilingualText
-            en="What others can see today. These cannot be changed yet: visibility is not stored per member."
-            el="Τι βλέπουν οι άλλοι σήμερα. Δεν αλλάζουν ακόμη: η ορατότητα δεν αποθηκεύεται ανά μέλος."
+            en="What others can see today. These switches cannot be changed here yet: hiding an item must hold in search, matches and the directory too, not only on your profile page."
+            el="Τι βλέπουν οι άλλοι σήμερα. Οι διακόπτες δεν αλλάζουν ακόμη εδώ: η απόκρυψη πρέπει να ισχύει και στην αναζήτηση, στις αντιστοιχίσεις και στον κατάλογο, όχι μόνο στη σελίδα του προφίλ σας."
             compact
             wrap
           />
@@ -265,6 +266,17 @@ function PrivacyCard() {
             />
           </div>
         ))}
+        <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground"><BilingualText en="Cookie choices" el="Επιλογές cookies" compact /></p>
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en="Essential cookies are always on; product analytics only if you allow them." el="Τα απαραίτητα cookies είναι πάντα ενεργά· τα αναλυτικά στοιχεία μόνο αν τα επιτρέψετε." wrap />
+            </p>
+          </div>
+          <Button variant="outline" size="sm" className="shrink-0" onClick={openCookieChoices}>
+            <BilingualText en="Change" el="Αλλαγή" compact />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -911,11 +923,16 @@ export default function SettingsPage() {
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and all associated data. This cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και όλων των δεδομένων του. Δεν αναιρείται." wrap /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap /></p>
                 </div>
-                <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => success('Contact support', 'Email support@cofounderbay.com to request account deletion.')}
-                >
-                  <Trash2 className="icon-sm" /><BilingualText en="Delete" el="Διαγραφή" compact />
+                {/* There is no self-serve deletion endpoint yet, so this was a
+                    destructive-looking button that only showed a toast. It now
+                    opens the request it always meant: an email to privacy,
+                    which section 7 of the privacy policy answers within 30 days. */}
+                <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
+                  <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
+                    <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
+                  </a>
                 </Button>
               </div>
             </CardContent>

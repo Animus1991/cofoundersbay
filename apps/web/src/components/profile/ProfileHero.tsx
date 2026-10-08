@@ -53,7 +53,7 @@ export function ProfileHero({
   const Heading = headingLevel;
   const facts = (meta ?? []).filter(Boolean);
   return (
-    <section aria-label={`${name} · Προφίλ`} className={cn('relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm', className)}>
+    <section aria-label={`${name} · Profile · Προφίλ`} className={cn('relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm', className)}>
       <div className="h-20 w-full bg-primary/[0.05] sm:h-24 md:h-28" aria-hidden="true" />
       <div className="relative px-5 pb-5 sm:px-6 sm:pb-6">
         <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 md:-mt-16">
