@@ -297,7 +297,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       {/* Key Metrics Dashboard */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card className="min-w-0">
-          <CardContent className="p-3">
+          <CardContent>
             <div className="flex items-center gap-2 mb-2">
               <TrendingDown className="icon-sm text-status-danger" />
               <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
@@ -310,7 +310,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent>
             <div className="flex items-center gap-2 mb-2">
               <CfbGlyph name="wallet" className="icon-sm text-status-info" />
               <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
@@ -328,7 +328,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent>
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="icon-sm text-status-success" />
               <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>
@@ -341,7 +341,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
+          <CardContent>
             <div className="flex items-center gap-2 mb-2">
               <CfbGlyph name="chart" className="icon-sm text-status-accent" />
               <span className={cn(BUILDER_STAT_LABEL, 'mt-0')}>

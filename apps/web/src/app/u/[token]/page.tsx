@@ -43,7 +43,7 @@ export default function PublicUpdatePage() {
           </div>
         ) : !update ? (
           <Card>
-            <CardContent className="space-y-3 p-6 text-center">
+            <CardContent className="space-y-3 text-center">
               <h1 className="text-lg font-semibold text-foreground"><BilingualText en="This update is not public" el="Αυτή η ενημέρωση δεν είναι δημόσια" wrap /></h1>
               <p className="text-sm text-muted-foreground"><BilingualText en="Its author made it private or deleted it." el="Ο συντάκτης την έκανε ιδιωτική ή τη διέγραψε." wrap /></p>
               <Button size="sm" variant="outline" asChild>
@@ -56,7 +56,7 @@ export default function PublicUpdatePage() {
             <h1 className="sr-only">{update.title}</h1>
             <UpdateCard update={update} />
             <Card>
-              <CardContent className="space-y-3 p-5">
+              <CardContent className="space-y-3">
                 <p className="text-sm text-foreground">
                   <BilingualText en={`Follow ${update.author.displayName} on CoFounderBay to get the next update.`} el={`Ακολουθήστε τον/την ${update.author.displayName} στο CoFounderBay για την επόμενη ενημέρωση.`} wrap />
                 </p>

@@ -187,7 +187,7 @@ function ResultCard({ result }: { result: SearchResult }) {
       className="block rounded-xl focus-visible:outline-none"
     >
       <Card className="group hover:border-primary/50 transition-all duration-150">
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex items-start gap-4">
             {result.imageUrl ? (
               <Avatar className="h-10 w-10 shrink-0">
@@ -661,7 +661,7 @@ export default function SearchPage() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Link href="/discover" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
-                  <CardContent className="p-4 flex items-center gap-3">
+                  <CardContent className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-info-bg">
                       <Users className="icon-md text-status-info" />
                     </div>
@@ -684,7 +684,7 @@ export default function SearchPage() {
               </Link>
               <Link href="/mentoring" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
-                  <CardContent className="p-4 flex items-center gap-3">
+                  <CardContent className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-accent-bg">
                       <GraduationCap className="icon-md text-status-accent" />
                     </div>
@@ -707,7 +707,7 @@ export default function SearchPage() {
               </Link>
               <Link href="/jobs" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
-                  <CardContent className="p-4 flex items-center gap-3">
+                  <CardContent className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-success-bg">
                       <Briefcase className="icon-md text-status-success" />
                     </div>
@@ -730,7 +730,7 @@ export default function SearchPage() {
               </Link>
               <Link href="/events" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
-                  <CardContent className="p-4 flex items-center gap-3">
+                  <CardContent className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-warning-bg">
                       <Calendar className="icon-md text-status-warning" />
                     </div>

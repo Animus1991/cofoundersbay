@@ -126,7 +126,7 @@ function ProgramCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">

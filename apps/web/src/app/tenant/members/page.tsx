@@ -138,7 +138,7 @@ type MemberActions = {
 function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberActions) {
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
           <div className="relative shrink-0">
             <Avatar className="h-12 w-12">
@@ -446,7 +446,7 @@ export default function TenantMembersPage() {
             { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
           ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-4 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
                   <Icon className={cn('icon-sm', color)} />
                 </div>

@@ -60,7 +60,7 @@ function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: Ment
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Link href={`/p/${relationship.menteeId}`}>
             <Avatar className="h-10 w-10">
@@ -263,7 +263,7 @@ export default function MenteesPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
                 <Users className="icon-md text-muted-foreground" />
               </div>
@@ -274,7 +274,7 @@ export default function MenteesPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-success-bg p-2">
                 <Target className="icon-md text-status-success" />
               </div>
@@ -285,7 +285,7 @@ export default function MenteesPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-info-bg p-2">
                 <TrendingUp className="icon-md text-status-info" />
               </div>

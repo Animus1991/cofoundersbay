@@ -264,7 +264,7 @@ export default function MentorAvailabilityPage() {
         {/* Status Cards */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium"><BilingualText en="Accepting Requests" el="Δέχεται αιτήματα" compact /></span>
                 <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting Requests. Δέχεται αιτήματα" />
@@ -282,7 +282,7 @@ export default function MentorAvailabilityPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
@@ -292,7 +292,7 @@ export default function MentorAvailabilityPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-2 mb-1">
                 <Globe className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></span>
@@ -336,7 +336,7 @@ export default function MentorAvailabilityPage() {
                 const daySlots = slots.filter(s => s.weekday === day.key);
                 return (
                   <Card key={day.key}>
-                    <CardContent className="p-4">
+                    <CardContent>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <span className="text-sm font-semibold w-24">{day.label}</span>

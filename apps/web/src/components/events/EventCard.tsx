@@ -116,7 +116,7 @@ export function EventCard({
   if (variant === 'compact') {
     return (
       <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex gap-4">
             {/* Date box */}
             <div className="flex-shrink-0 text-center">
@@ -330,12 +330,14 @@ export function EventCard({
             {/* Wraps rather than squeezing: in a narrow card the type badge used
                 to take the title's width and cut it to two words. */}
             <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
-              <Link
-                href={`/events/${event.id}`}
-                className="min-w-0 flex-1 basis-32 font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
-              >
-                {event.title}
-              </Link>
+              <h3 className="min-w-0 flex-1 basis-32">
+                <Link
+                  href={`/events/${event.id}`}
+                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
+                >
+                  {event.title}
+                </Link>
+              </h3>
               <Badge variant="outline" className="flex-shrink-0 gap-1">
                 <EventTypeIcon type={event.type} />
                 <EventTypeLabel type={event.type} />

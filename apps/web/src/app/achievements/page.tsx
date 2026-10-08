@@ -276,7 +276,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         achievement.unlocked && 'hover:border-primary/30'
       )}
     >
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           {/* The badge is the achievement, not decoration beside it. */}
           <div
@@ -367,7 +367,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
   return (
     <Card className="bg-primary/[0.03] shadow-sm border-border animate-fade-in">
-      <CardContent className="p-4 md:p-6">
+      <CardContent>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -442,7 +442,7 @@ function AchievementsSkeleton() {
       <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-5">
+            <CardContent>
               <div className="flex items-start gap-4">
                 <Skeleton className="h-14 w-14 rounded-xl" />
                 <div className="flex-1 space-y-2">
@@ -732,7 +732,7 @@ export default function AchievementsPage() {
                           <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-1 px-2">
+                      <CardContent className="space-y-1">
                         {LEADERBOARD.map((user) => (
                           <div
                             key={user.rank}

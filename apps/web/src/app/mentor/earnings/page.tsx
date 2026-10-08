@@ -303,7 +303,7 @@ export default function MentorEarningsPage() {
                           {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {formatShortDate(tx.date, primary)}</span>
                         </p>
                       </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1">
+                      <div className="ml-auto flex shrink-0 flex-col items-end gap-1">
                         <p className="text-sm font-semibold tabular-nums">{formatCurrency(tx.amount)}</p>
                         <Badge
                           variant={tx.status === 'paid' ? 'secondary' : 'outline'}

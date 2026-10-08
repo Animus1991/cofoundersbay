@@ -322,7 +322,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         {/* Identity card */}
         <div className="space-y-4">
           <Card className="animate-fade-in">
-            <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
+            <CardContent className="flex flex-col items-center gap-4 text-center">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-xl font-bold">

@@ -1112,7 +1112,7 @@ export function PitchDeckBuilder({
                       <BilingualText en={builderEn('pitch_missing')} el={builderEl('pitch_missing')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{missingTemplates.length}</span>
                     </CardTitle>
-                    <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={addRemainingSlides}>
+                    <Button type="button" variant="outline" size="sm" className={cn('ml-auto', BUILDER_BTN)} onClick={addRemainingSlides}>
                       <BilingualText en={builderEn('pitch_add_remaining')} el={builderEl('pitch_add_remaining')} compact />
                     </Button>
                   </CardHeader>
@@ -1122,7 +1122,7 @@ export function PitchDeckBuilder({
                         key={template.type}
                         type="button"
                         onClick={() => addSlide(template.type)}
-                        className="tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
+                        className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
                         aria-label={bilingualAria(`Add ${builderEn(template.titleKey)}`, `Προσθήκη: ${builderEl(template.titleKey)}`)}
                       >
                         <Plus className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -1141,7 +1141,7 @@ export function PitchDeckBuilder({
                       <span className="font-normal tabular-nums text-muted-foreground">{emptySlides.length}</span>
                     </CardTitle>
                     {canFillFromArtefacts && (
-                      <Button type="button" variant="outline" size="sm" className={BUILDER_BTN} onClick={fillFromArtefacts}>
+                      <Button type="button" variant="outline" size="sm" className={cn('ml-auto', BUILDER_BTN)} onClick={fillFromArtefacts}>
                         <BilingualText en={builderEn('pitch_fill_core')} el={builderEl('pitch_fill_core')} compact />
                       </Button>
                     )}
@@ -1154,7 +1154,7 @@ export function PitchDeckBuilder({
                           key={slide.id}
                           type="button"
                           onClick={() => setCurrentSlideIndex(index)}
-                          className="tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
+                          className="chip tap-target-phone inline-flex min-h-8 items-center gap-1.5 rounded-md bg-secondary/40 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-secondary focus-ring"
                         >
                           <span className="font-mono text-2xs text-muted-foreground">{index + 1}</span>
                           <span className="min-w-0">{renderSlideTitle(slide)}</span>
@@ -1175,13 +1175,13 @@ export function PitchDeckBuilder({
                     <BilingualText en={builderEn('pitch_slides')} el={builderEl('pitch_slides')} compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto p-2 lg:max-h-[400px]">
+                <CardContent className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto lg:max-h-[400px]">
                   {data.slides.map((slide, index) => (
                     <button
                       type="button"
                       key={slide.id}
                       className={cn(
-                        'group flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl p-2 text-left transition-colors',
+                        'group flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl py-2 pr-2 text-left transition-colors',
                         index === currentSlideIndex
                           ? 'bg-muted/50 text-foreground'
                           : 'hover:bg-muted/40',
@@ -1202,10 +1202,10 @@ export function PitchDeckBuilder({
                   ))}
                 </CardContent>
                 {/* Every type, one click away, without a twelve-row column under the list. */}
-                <div className="border-t border-border p-2">
+                <div className="border-t border-border px-4 py-2 sm:px-6">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-auto min-h-10 w-full justify-between gap-2 rounded-xl px-2 text-left">
+                      <Button variant="ghost" size="sm" className="h-auto min-h-10 w-full justify-between gap-2 rounded-xl px-0 text-left">
                         <span className="flex min-w-0 items-center gap-2">
                           <Plus className="icon-sm shrink-0" aria-hidden="true" />
                           <span className="min-w-0 text-xs leading-snug">
@@ -1253,18 +1253,8 @@ export function PitchDeckBuilder({
             <div className="order-1 min-w-0 lg:order-2 lg:col-span-3">
               {currentSlide ? (
                 <Card className="min-w-0">
-                  <CardHeader className="flex flex-col gap-3 space-y-0 p-3 sm:p-6">
+                  <CardHeader className="flex flex-col gap-3 space-y-0">
                     <div className="flex min-w-0 items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10 shrink-0 rounded-xl"
-                        onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
-                        disabled={currentSlideIndex === 0}
-                        aria-label={bilingualAria(builderEn('pitch_prev'), builderEl('pitch_prev'))}
-                      >
-                        <ChevronLeft className="icon-sm" />
-                      </Button>
                       <div className="min-w-0 flex-1">
                         <CardTitle className="flex items-center gap-2">
                           <span className="font-mono text-xs text-muted-foreground">
@@ -1278,6 +1268,16 @@ export function PitchDeckBuilder({
                           />
                         </CardTitle>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="ml-auto h-10 w-10 shrink-0 rounded-xl"
+                        onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
+                        disabled={currentSlideIndex === 0}
+                        aria-label={bilingualAria(builderEn('pitch_prev'), builderEl('pitch_prev'))}
+                      >
+                        <ChevronLeft className="icon-sm" />
+                      </Button>
                       <Button
                         variant="outline"
                         size="icon"
@@ -1357,7 +1357,7 @@ export function PitchDeckBuilder({
                       </DropdownMenu>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 p-3 sm:p-6">
+                  <CardContent className="space-y-4">
                     {viewMode === 'edit' ? (
                       <>
                         <div>

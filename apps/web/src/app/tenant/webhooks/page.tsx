@@ -85,7 +85,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
 
   return (
     <Card className={cn('transition-all', !active && 'surface-inactive')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function TenantWebhooksPage() {
             { label: 'Total Deliveries', labelEl: 'Σύνολο παραδόσεων', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
             { label: 'Avg Success Rate', labelEl: 'Μέση επιτυχία', value: `${avgSuccess}%` },
           ].map(s => (
-            <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
+            <Card key={s.label}><CardContent><p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p><p className="page-stat text-xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 

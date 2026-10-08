@@ -226,7 +226,7 @@ export function ScheduleCallModal({
 
             {/* Calendar Integration Notice */}
             <Card className="bg-muted/50">
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <Calendar className="icon-md text-muted-foreground shrink-0" />
                 <div className="text-sm">
                   <p className="font-medium text-foreground"><BilingualText en="Connect your calendar" el="Συνδέστε το ημερολόγιό σας" compact /></p>
@@ -371,7 +371,7 @@ export function ScheduleCallModal({
               </p>
             </div>
             <Card className="bg-muted/50">
-              <CardContent className="p-4 text-left space-y-2">
+              <CardContent className="text-left space-y-2">
                 <div className="flex items-center gap-2 text-sm">
                   {callType === 'video' ? <Video className="icon-sm" /> : <Phone className="icon-sm" />}
                   <span>{callType === 'video' ? 'Video Call' : 'Phone Call'}</span>

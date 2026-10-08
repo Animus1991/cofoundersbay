@@ -163,7 +163,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
   return (
     <Card className={cn('transition-all hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl} />

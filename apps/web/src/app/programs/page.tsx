@@ -237,7 +237,7 @@ function ProgramCard({
 
   return (
     <Card className={cn('transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
@@ -354,7 +354,7 @@ function ProgramCard({
 
 function ProgramSkeleton() {
   return (
-    <Card><CardContent className="p-5">
+    <Card><CardContent>
       <div className="flex gap-4">
         <Skeleton className="h-14 w-14 rounded-xl flex-shrink-0" />
         <div className="flex-1 space-y-2">

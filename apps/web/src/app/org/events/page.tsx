@@ -194,7 +194,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -392,7 +392,7 @@ export default function OrgEventsPage() {
             { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="p-4 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                   <p className="page-stat text-xl font-bold">{stat.value}</p>

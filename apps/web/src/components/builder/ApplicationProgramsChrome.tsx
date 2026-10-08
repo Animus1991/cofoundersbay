@@ -196,7 +196,7 @@ export function ApplicationProgramsChrome({
           ] as const
         ).map((item) => (
           <Card key={item.label} className="rounded-xl">
-            <CardContent className="flex items-center gap-3 p-4">
+            <CardContent className="flex items-center gap-3">
               <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
               <div className="min-w-0">
                 <p className={cn(BUILDER_STAT_LABEL, 'text-muted-foreground')}>

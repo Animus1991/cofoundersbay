@@ -128,7 +128,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   if (isLoading && !vrs) {
     return (
       <Card className={className}>
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="space-y-3">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-20 w-full" />
         </CardContent>

@@ -611,7 +611,7 @@ export function LandingHome() {
           </div>
           <div className="mx-auto grid w-full max-w-4xl grid-cols-1 items-start gap-8 lg:grid-cols-2">
             <Card className="animate-fade-in">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent>
                 <Badge variant="secondary" className="mb-3 text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
                 <NeedCard card={SAMPLE_NEED_CARD} />
               </CardContent>

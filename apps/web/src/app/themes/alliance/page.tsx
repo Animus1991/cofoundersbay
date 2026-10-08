@@ -123,7 +123,7 @@ export default function AllianceThemePage() {
                     <Badge className="bg-white/90 text-slate-900 hover:bg-white"><BilingualText en="Featured" el="Προβεβλημένο" compact /></Badge>
                   </div>
                 </div>
-                <CardContent className="p-6">
+                <CardContent>
                   {/* Wraps on a phone: name, role and Connect in one row pushed
                       Connect 80px past the card edge at 390px. */}
                   <div className="mb-4 flex flex-wrap items-start gap-x-4 gap-y-2">
@@ -169,7 +169,7 @@ export default function AllianceThemePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                  <div className="flex items-center justify-end gap-2 mt-4 pt-4 border-t">
                     <Button tabIndex={-1} aria-hidden="true" variant="ghost" size="sm" className="flex-1">
                       <Heart className="icon-sm mr-2" />
                       <BilingualText en="Like" el="Μου αρέσει" compact />
@@ -190,7 +190,7 @@ export default function AllianceThemePage() {
 
           <div className="space-y-6">
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <h3 className="font-semibold text-lg mb-4"><BilingualText en="Trending Topics" el="Δημοφιλή θέματα" compact /></h3>
                 <div className="space-y-3">
                   {[
@@ -215,7 +215,7 @@ export default function AllianceThemePage() {
             </Card>
 
             <Card className="border-white/20 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
-              <CardContent className="p-6">
+              <CardContent>
                 <Sparkles className="icon-xl mb-3" />
                 <h3 className="font-semibold text-lg mb-2"><BilingualText en="Upgrade to Pro" el="Αναβάθμιση σε Pro" compact /></h3>
                 <p className="text-sm text-blue-100 mb-4">
@@ -228,7 +228,7 @@ export default function AllianceThemePage() {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent>
                 <h3 className="font-semibold text-lg mb-4"><BilingualText en="Upcoming Events" el="Προσεχείς εκδηλώσεις" compact /></h3>
                 <div className="space-y-3">
                   {[

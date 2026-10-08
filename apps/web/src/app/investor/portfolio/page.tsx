@@ -196,7 +196,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-12 w-12 rounded-lg">
             <AvatarImage src={investment.logoUrl} />
@@ -412,7 +412,7 @@ export default function InvestorPortfolioPage() {
             { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-status-info' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-4 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="page-stat text-xl font-bold tabular-nums">{value}</p>

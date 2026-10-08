@@ -400,7 +400,7 @@ export default function AdminUserManagementPage() {
             { label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended, icon: Ban, className: 'text-status-danger' },
           ].map(({ label, labelEl, value, icon: Icon, className }) => (
             <Card key={label}>
-              <CardContent className="flex items-center justify-between p-4">
+              <CardContent className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
                   <p className={cn('page-stat text-2xl font-bold', className)}>{value}</p>

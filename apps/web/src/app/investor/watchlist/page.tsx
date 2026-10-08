@@ -258,7 +258,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl ?? undefined} />
@@ -559,7 +559,7 @@ export default function InvestorWatchlistPage() {
             })(), icon: Star },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="p-4 flex items-center justify-between">
+              <CardContent className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
                   <p className="page-stat text-xl font-bold">{stat.value}</p>
@@ -633,7 +633,7 @@ export default function InvestorWatchlistPage() {
               const cfg = ACTIVITY_TYPE_CONFIG[item.type];
               return (
                 <Card key={item.id} className="transition-all hover:border-primary/20">
-                  <CardContent className="p-4">
+                  <CardContent>
                     <div className="flex items-start gap-3">
                       <Avatar className="h-9 w-9 rounded-lg shrink-0">
                         <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">

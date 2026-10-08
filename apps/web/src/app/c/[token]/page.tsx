@@ -54,7 +54,7 @@ export default function PublicNeedCardPage() {
           </div>
         ) : !card || !card.id ? (
           <Card>
-            <CardContent className="space-y-3 p-6 text-center">
+            <CardContent className="space-y-3 text-center">
               <h1 className="text-lg font-semibold text-foreground"><BilingualText en="Need card" el="Κάρτα ανάγκης" compact /></h1>
               <p className="text-sm text-muted-foreground"><BilingualText en={CMT.public_missing.en} el={CMT.public_missing.el} wrap /></p>
               <Button size="sm" variant="outline" asChild>
@@ -65,12 +65,12 @@ export default function PublicNeedCardPage() {
         ) : (
           <>
             <Card>
-              <CardContent className="p-5 sm:p-6">
+              <CardContent>
                 <NeedCard card={card} headingLevel={1} />
               </CardContent>
             </Card>
             <Card className="border-primary/15 bg-primary/[0.03]">
-              <CardContent className="space-y-3 p-5">
+              <CardContent className="space-y-3">
                 <p className="text-sm text-foreground">
                   <BilingualText en={`${CMT.public_by.en} ${card.owner.displayName}.`} el={`${CMT.public_by.el} ${card.owner.displayName}.`} wrap />
                 </p>

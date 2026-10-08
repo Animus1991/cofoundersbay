@@ -109,7 +109,7 @@ function MetricCard({
 
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between mb-2">
           <p className="text-xs text-muted-foreground">{label}</p>
           <div className="rounded-md bg-primary/10 p-1.5">

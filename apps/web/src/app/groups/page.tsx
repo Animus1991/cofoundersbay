@@ -123,7 +123,7 @@ function GroupCard({
           </div>
         </div>
       )}
-      <CardContent className="p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">

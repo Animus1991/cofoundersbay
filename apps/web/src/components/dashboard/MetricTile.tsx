@@ -45,7 +45,7 @@ export type MetricTileProps = {
 export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName }: MetricTileProps) {
   const content = (
     <Card className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
-      <CardContent className="flex h-full flex-col p-4 sm:p-5">
+      <CardContent className="flex h-full flex-col">
         <div className="flex w-full items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className={cn('page-stat-label leading-snug text-muted-foreground', labelClassName)}>

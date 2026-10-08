@@ -231,7 +231,7 @@ export default function EventDetailPage() {
             <img src={event.coverImageUrl} alt="" className="aspect-[3/1] w-full rounded-2xl object-cover" />
           )}
           <Card>
-            <CardContent className="space-y-3 p-5">
+            <CardContent className="space-y-3">
               <p className="flex items-start gap-2 text-sm">
                 <Clock className="mt-0.5 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 <span>
@@ -269,7 +269,7 @@ export default function EventDetailPage() {
           </Card>
           {event.description && (
             <Card>
-              <CardContent className="p-5">
+              <CardContent>
                 <p className="whitespace-pre-line text-sm leading-relaxed">{event.description}</p>
               </CardContent>
             </Card>
@@ -278,7 +278,7 @@ export default function EventDetailPage() {
 
         <aside className="space-y-4">
           <Card>
-            <CardContent className="space-y-3 p-5">
+            <CardContent className="space-y-3">
               <p className="text-sm font-semibold">
                 <BilingualText en="Your RSVP" el="Η απάντησή σας" compact />
               </p>
@@ -310,7 +310,7 @@ export default function EventDetailPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3 p-5">
+            <CardContent className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={event.host?.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback>{event.host?.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>

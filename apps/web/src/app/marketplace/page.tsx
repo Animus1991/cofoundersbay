@@ -169,7 +169,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
       featured && 'border-primary/15 bg-primary/[0.03]',
       !provider.isAvailable && 'surface-inactive',
     )}>
-      <CardContent className="flex flex-1 flex-col gap-4 p-5">
+      <CardContent className="flex flex-1 flex-col gap-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -480,7 +480,7 @@ export default function MarketplacePage() {
         )}
         {/* Banner CTA for providers */}
         <Card className="border-primary/15 bg-primary/[0.03]">
-          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></p>
               <p className="text-sm text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
@@ -526,7 +526,7 @@ export default function MarketplacePage() {
             {isLoading && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Card key={i}><CardContent className="p-5 space-y-3">
+                  <Card key={i}><CardContent className="space-y-3">
                     <div className="flex gap-3"><Skeleton className="h-11 w-11 rounded-lg" /><div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>
                     <Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-2/3" />
                   </CardContent></Card>

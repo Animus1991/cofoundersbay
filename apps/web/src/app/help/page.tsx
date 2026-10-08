@@ -512,7 +512,7 @@ export default function HelpPage() {
 
         {/* Contact Support */}
         <Card className="shadow-sm border-primary/15 bg-primary/[0.03]">
-          <CardContent className="p-6 text-center">
+          <CardContent className="text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
               <Mail className="icon-lg text-muted-foreground" />
             </div>

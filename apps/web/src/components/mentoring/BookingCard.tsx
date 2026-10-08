@@ -92,7 +92,7 @@ export function BookingCard({
 
   return (
     <Card className="card-interactive">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3 sm:gap-4">
           <SessionDateTile date={start} />
 
@@ -100,12 +100,14 @@ export function BookingCard({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2">
-                  <Link
-                    href={`/profiles/${otherUserId}`}
-                    className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
-                  >
-                    {other.displayName}
-                  </Link>
+                  <h3 className="min-w-0">
+                    <Link
+                      href={`/profiles/${otherUserId}`}
+                      className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
+                    >
+                      {other.displayName}
+                    </Link>
+                  </h3>
                   <span className="text-xs text-muted-foreground">
                     {isMentor
                       ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />

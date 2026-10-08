@@ -119,7 +119,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
   const statusColors = STATUS[COHORT_STATUS_TONE[cohort.status]];
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -358,7 +358,7 @@ export default function OrgCohortsPage() {
             { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
           ].map(({ label, labelEl, value, icon: Icon, tone }) => (
             <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
                 <div>
                   <p className="page-stat font-bold tabular-nums">{value}</p>

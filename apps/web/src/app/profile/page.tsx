@@ -880,7 +880,7 @@ export default function ProfilePage() {
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
             <Card className="animate-fade-in bg-primary/5 border-primary/15">
-              <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
+              <CardContent className="flex flex-col items-center gap-4 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
                   <Activity className="icon-xl text-primary-accessible" />
                 </div>

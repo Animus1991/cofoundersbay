@@ -89,7 +89,7 @@ export function NeedCardsSection({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {cards.map((card) => (
             <Card key={card.id}>
-              <CardContent className="p-4">
+              <CardContent>
                 <NeedCard
                   card={card}
                   compact

@@ -47,7 +47,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
 }) {
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-4">
         <div className={cn('flex h-10 w-10 items-center justify-center rounded-full', color)}>
           <Icon className="icon-md text-ink" />
         </div>

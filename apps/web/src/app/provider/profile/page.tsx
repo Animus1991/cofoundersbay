@@ -132,7 +132,7 @@ export default function ProviderProfilePage() {
       <div className="space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/15 bg-primary/[0.03]">
-          <CardContent className="p-5">
+          <CardContent>
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />

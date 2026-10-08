@@ -9,7 +9,7 @@ export default function AnalyticsLoading() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="rounded-xl">
-            <CardContent className="p-5">
+            <CardContent>
               <Skeleton className="h-10 w-10 mb-3" />
               <Skeleton className="h-8 w-24 mb-2" />
               <Skeleton className="h-4 w-32" />

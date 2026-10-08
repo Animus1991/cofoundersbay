@@ -44,7 +44,7 @@ type Review = {
 function ReviewCard({ review }: { review: Review }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-10 w-10">
             <AvatarImage src={review.clientAvatar} />
@@ -241,7 +241,7 @@ export default function ProviderReviewsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold">{avgRating.toFixed(1)}</p>
@@ -277,7 +277,7 @@ export default function ProviderReviewsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Total Reviews" el="Σύνολο αξιολογήσεων" compact /></p>

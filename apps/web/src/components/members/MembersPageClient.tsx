@@ -136,7 +136,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
   if (isGridView) {
     return (
       <Card className="card-interactive hover-lift group transition-all duration-300">
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="space-y-4">
           <div className="flex flex-col items-center text-center">
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
@@ -234,7 +234,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
@@ -328,7 +328,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
   if (viewMode === 'grid') {
     return (
       <Card>
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="space-y-4">
           <div className="flex flex-col items-center">
             <Skeleton className="h-24 w-24 rounded-full mb-3" />
             <Skeleton className="h-5 w-32 mb-2" />
@@ -346,7 +346,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
 
   return (
     <Card>
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Skeleton className="h-12 w-12 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">

@@ -1027,7 +1027,7 @@ function BoardCard({
   if (viewMode === 'list') {
     return (
       <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
-        <CardContent className="flex items-center gap-4 p-4">
+        <CardContent className="flex items-center gap-4">
           <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={glyph} className="icon-sm" />
           </div>
@@ -1052,7 +1052,7 @@ function BoardCard({
 
   return (
     <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
-      <CardContent className="flex h-full flex-col gap-3 p-5">
+      <CardContent className="flex h-full flex-col gap-3">
         <div className="flex items-start gap-3">
           <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={glyph} className="icon-sm" />

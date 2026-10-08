@@ -289,7 +289,7 @@ function MatchListRow({
 
   return (
     <Card className="shadow-sm border-border hover:border-primary/30 transition-all group">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
           {/* Score ring + avatar */}
           <div className="relative shrink-0">
@@ -857,7 +857,7 @@ export default function MatchesPage() {
 
           {/* Role filter */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
           <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
           </p>
@@ -879,7 +879,7 @@ export default function MatchesPage() {
 
           {/* Location */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-1.5">
+          <CardContent className="space-y-1.5">
           <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
           <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
           </p>
@@ -899,7 +899,7 @@ export default function MatchesPage() {
 
           {/* Availability */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact wrap />
           </p>
@@ -942,7 +942,7 @@ export default function MatchesPage() {
         <div className="space-y-2.5">
           {/* Sort */}
           <Card className="shadow-sm border-border">
-          <CardContent className="p-3 space-y-0.5">
+          <CardContent className="space-y-0.5">
           <p className="px-1 pb-1.5 text-2xs font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
           <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact wrap />
           </p>
@@ -1062,7 +1062,7 @@ export default function MatchesPage() {
                 : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
               return (
               <Card key={labelEn} className="min-w-0 shadow-sm border-border">
-                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
+                <CardContent className="flex items-center gap-2 sm:gap-3">
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
                     <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>

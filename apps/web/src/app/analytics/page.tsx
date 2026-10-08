@@ -119,7 +119,7 @@ function MetricCard({
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       {/* Stretched by the sparkline card's row, a plain tile centres its
           figure instead of leaving a dead band at the bottom. */}
-      <CardContent className="flex h-full flex-col justify-center p-4">
+      <CardContent className="flex h-full flex-col justify-center">
         <div className="mb-3 flex items-start justify-between gap-3">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
@@ -213,7 +213,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3.5 p-3 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="space-y-3.5 pt-0 sm:pt-0">
         <p className="page-stat-label text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
@@ -261,7 +261,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
   }));
   return (
     <Card className="flex min-w-0 flex-col border-primary/15 bg-primary/[0.03]">
-      <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
+      <CardContent className="flex flex-1 flex-col">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}
         <div className="mb-4 min-w-0">
@@ -321,7 +321,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
           <BilingualText en={analyticsEn('top_content')} el={analyticsEl('top_content')} compact />
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="pt-0 sm:pt-0">
         <div className="space-y-3.5">
           {content.map((item, index) => (
             <Link
@@ -428,7 +428,7 @@ function AnalyticsSkeleton() {
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="min-w-0">
-            <CardContent className="p-4">
+            <CardContent>
               <Skeleton className="mb-3 h-8 w-8" />
               <Skeleton className="mb-2 h-6 w-16" />
               <Skeleton className="h-3 w-24" />
@@ -801,7 +801,7 @@ export default function AnalyticsPage() {
                       <BilingualText en={analyticsEn('weekly_summary')} el={analyticsEl('weekly_summary')} compact />
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                  <CardContent className="pt-0 sm:pt-0">
                     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                       <div className="min-w-0 space-y-1.5">
                         <p className="page-stat-label leading-snug text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact wrap /></p>

@@ -483,7 +483,7 @@ function DimensionCard({
           at the foot of it. The grid matches these cards' heights; without it
           the shorter of a pair ended on empty space instead of its own
           content. */}
-      <CardContent className="h-full p-4 sm:p-5">
+      <CardContent className="h-full">
         {/* One column: the dimension glyph sits on the title row only.
             A side well beside the body left an empty tab under the icon,
             so criteria, “+N more”, and the recommendation started to the
@@ -528,7 +528,7 @@ function DimensionCard({
               <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              {done}/{dim.criteria.length}{' '}
+              <span className="tabular-nums">{done}/{dim.criteria.length}</span>{' '}
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
@@ -544,7 +544,7 @@ function DimensionCard({
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
-                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm transition-colors',
+                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg py-2.5 text-left text-sm transition-colors',
                     canToggle ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
@@ -562,7 +562,7 @@ function DimensionCard({
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="flex min-h-11 w-full items-center rounded-lg px-2.5 py-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
+                  className="flex min-h-11 w-full items-center rounded-lg py-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
                 >
                   <span className="min-w-0 flex-1">
                     {expanded
@@ -726,10 +726,10 @@ function ReadinessSkeleton() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-96" />
       </div>
-      <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
+      <Card><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[...Array(6)].map((_, i) => (
-          <Card key={i}><CardContent className="p-5"><Skeleton className="h-32 w-full" /></CardContent></Card>
+          <Card key={i}><CardContent><Skeleton className="h-32 w-full" /></CardContent></Card>
         ))}
       </div>
     </div>
@@ -927,7 +927,7 @@ export default function ReadinessPage() {
   if (!isDemo && !workspaceId) {
     return (
       <AppShell actions={reassessAction} showHelp>
-        <Card><CardContent className="space-y-4 p-6">
+        <Card><CardContent className="space-y-4">
           <p><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
@@ -946,7 +946,7 @@ export default function ReadinessPage() {
   if (isError && !isDemo || !apiData) {
     return (
       <AppShell actions={reassessAction} showHelp>
-        <Card><CardContent className="space-y-4 p-6">
+        <Card><CardContent className="space-y-4">
           <p role="alert"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
           <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Retry" el="Επανάληψη" /></Button>
         </CardContent></Card>
@@ -989,7 +989,7 @@ export default function ReadinessPage() {
         {/* `h-full`: the grid stretches the Card, but this column was only as
         tall as its own content, so the `mt-auto` on the button below had
         nothing to push against and left 85px of empty card under it. */}
-        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <CardContent className="flex h-full flex-col gap-4">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
         <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground" />
@@ -1021,7 +1021,7 @@ export default function ReadinessPage() {
         {/* `h-full`: the grid stretches the Card, but this column was only as
         tall as its own content, so the `mt-auto` on the button below had
         nothing to push against and left 85px of empty card under it. */}
-        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <CardContent className="flex h-full flex-col gap-4">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
         <CfbGlyph name="wallet" className="icon-sm shrink-0 text-muted-foreground" />
@@ -1170,7 +1170,7 @@ export default function ReadinessPage() {
         ))}
         </CardContent>
         </Card>
-        </> : <Card><CardContent className="p-4 text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
+        </> : <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
       </div>,
     },
     {
@@ -1234,7 +1234,7 @@ export default function ReadinessPage() {
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
           <Card className="min-w-0 overflow-hidden border-0 bg-primary/[0.03] lg:col-span-1">
-            <CardContent className="flex h-full flex-col items-center gap-5 p-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
+            <CardContent className="flex h-full flex-col items-center gap-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
               <ScoreEmblem
                 score={overallScore}
                 dimensions={dimensions.map((d) => ({

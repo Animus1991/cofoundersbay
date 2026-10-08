@@ -77,7 +77,7 @@ function ConnectionCard({
 
   return (
     <Card className="card-interactive">
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-4">
         <Link href={`/profiles/${other.id}`}>
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
@@ -166,7 +166,7 @@ function IntroRequestCard({
   const sender = connection.requester;
   return (
     <Card className="card-interactive border-primary/20 bg-primary/5">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${sender.id}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
@@ -229,7 +229,7 @@ function IntroRequestCard({
 function ConnectionSkeleton() {
   return (
     <Card>
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-4">
         <Skeleton className="h-12 w-12 rounded-full shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-32" />

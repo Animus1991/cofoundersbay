@@ -134,7 +134,7 @@ function BadgeCard({ badge, primary }: { badge: Badge; primary: 'en' | 'el' }) {
   const isNew = !badge.seenAt;
   return (
     <Card className={cn('relative overflow-hidden transition-colors hover:border-primary/30', isNew && 'ring-1 ring-primary/40')}>
-      <CardContent className="flex gap-3 p-4">
+      <CardContent className="flex gap-3">
         <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
           <Trophy className="icon-md" aria-hidden />
         </span>
@@ -288,7 +288,7 @@ export default function ReputationPage() {
 
         {failed ? (
           <Card>
-            <CardContent className="p-6">
+            <CardContent>
               <EmptyState
                 title={<BilingualText en={reputationEn('error_title')} el={reputationEl('error_title')} />}
                 description={<BilingualText en={reputationEn('error_desc')} el={reputationEl('error_desc')} />}
@@ -305,7 +305,7 @@ export default function ReputationPage() {
           <>
             {/* Level card */}
             <Card className="border-border bg-primary/[0.03]">
-              <CardContent className="p-4 md:p-6">
+              <CardContent>
                 {loading || !xp.data ? (
                   <div className="flex flex-col items-center gap-6 md:flex-row" aria-busy="true">
                     <div className="h-[140px] w-[140px] shrink-0 animate-pulse rounded-full bg-muted/40" />
@@ -455,7 +455,7 @@ export default function ReputationPage() {
                   )}
                 </div>
                 {badgeList.length === 0 ? (
-                  <Card><CardContent className="p-6">
+                  <Card><CardContent>
                     <EmptyState
                       size="sm"
                       title={<BilingualText en={reputationEn('no_badges_title')} el={reputationEl('no_badges_title')} />}

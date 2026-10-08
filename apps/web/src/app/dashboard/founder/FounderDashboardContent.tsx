@@ -975,7 +975,7 @@ export default function FounderDashboardContent() {
         <div className="space-y-3">
           {/* No card title: the rail section above it is already called "Quick actions". */}
           <Card>
-            <CardContent className="p-2">
+            <CardContent>
               {/* List, not a 3×3 app-icon grid: the nine destinations stay,
                   the bordered tiles were the noisiest block on the rail.
                   Ask AI is visually first so the control surface is obvious. */}

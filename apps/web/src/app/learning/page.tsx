@@ -183,7 +183,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
-      <CardContent className="p-5 flex flex-col flex-1 gap-3">
+      <CardContent className="flex flex-col flex-1 gap-3">
         {/* Type icon + title */}
         <div className="flex items-start gap-3">
           <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.color)}>

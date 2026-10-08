@@ -63,7 +63,7 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
   };
   return (
     <Card className="border-primary/15 bg-primary/[0.03]" aria-labelledby="whats-new-heading">
-      <CardContent className="space-y-4 p-5">
+      <CardContent className="space-y-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 id="whats-new-heading" className="text-base font-semibold text-foreground">

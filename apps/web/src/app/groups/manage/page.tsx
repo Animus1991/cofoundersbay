@@ -86,7 +86,7 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
 
   return (
     <Card className={cn('transition-all hover:border-primary/30', !group.isActive && 'surface-inactive')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-10 w-10 rounded-xl shrink-0">
@@ -290,7 +290,7 @@ export default function ManageGroupsPage() {
             { label: 'Pending Requests', labelEl: 'Εκκρεμή αιτήματα', value: pendingTotal },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="p-4">
+              <CardContent>
                 <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>

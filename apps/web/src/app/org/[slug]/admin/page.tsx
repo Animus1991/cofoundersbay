@@ -211,7 +211,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
 }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>

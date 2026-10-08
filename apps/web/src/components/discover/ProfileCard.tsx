@@ -150,7 +150,7 @@ function ProfileCardInner({
   if (variant === 'compact') {
     return (
       <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex items-center gap-3">
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-10 w-10">
@@ -271,13 +271,13 @@ function ProfileCardInner({
           {(profile.lookingFor || profile.availability) && (
             <div className="mt-3 flex flex-wrap gap-2">
               {profile.lookingFor && (
-                <div className="rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
+                <div className="chip rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
                   <span className="text-muted-foreground">Looking for: </span>
                   <span className="font-medium text-foreground">{profile.lookingFor}</span>
                 </div>
               )}
               {profile.availability && (
-                <div className="rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
+                <div className="chip rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
                   <span className="text-muted-foreground">Availability: </span>
                   <span className="font-medium text-foreground">{profile.availability}</span>
                 </div>
@@ -494,7 +494,7 @@ export function ProfileCardSkeleton({ variant = 'default' }: { variant?: 'defaul
   if (variant === 'compact') {
     return (
       <Card>
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-secondary animate-pulse" />
             <div className="flex-1 space-y-2">

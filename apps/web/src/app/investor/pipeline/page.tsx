@@ -394,7 +394,7 @@ export default function InvestorPipelinePage() {
             { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
           ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="page-stat font-bold tabular-nums">{value}</p>

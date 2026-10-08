@@ -272,7 +272,7 @@ function RoundCard({
 
   return (
     <Card className="rounded-xl">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -387,7 +387,7 @@ function PipelineView({
               <div className="space-y-2">
                 {items.map((lead) => (
                   <Card key={lead.id} className="rounded-xl transition-colors hover:border-primary/30">
-                    <CardContent className="space-y-1.5 p-3">
+                    <CardContent className="space-y-1.5">
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-7 w-7 shrink-0 rounded-xl">
                           <AvatarFallback className="rounded-xl bg-primary/10 text-xs font-bold text-primary-accessible">
@@ -466,7 +466,7 @@ function DataRoomView({
   return (
     <div className="space-y-4">
       <Card className="rounded-xl">
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="page-stat-label font-semibold"><BilingualText en={fundraisingEn('dr_health')} el={fundraisingEl('dr_health')} compact /></p>
@@ -531,7 +531,7 @@ function DataRoomView({
               : doc.name;
             return (
               <Card key={doc.id} className="rounded-xl transition-colors hover:border-primary/20">
-                <CardContent className="flex items-center gap-3 p-3.5">
+                <CardContent className="flex items-center gap-3">
                   <div className="shrink-0 text-muted-foreground">
                     <CfbGlyph name="book" className="icon-sm" />
                   </div>
@@ -624,7 +624,7 @@ function InvestorListView({
                 every line of investor text lost 33-67% of its characters. Wrapping
                 the controls onto their own line gives the name, firm and note the
                 full width back; nothing is hidden or removed. */}
-            <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
+            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
               <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                 <Avatar className="h-10 w-10 shrink-0 rounded-xl">
                   <AvatarFallback className="rounded-xl bg-primary/10 font-bold text-primary-accessible">{lead.name[0]}</AvatarFallback>

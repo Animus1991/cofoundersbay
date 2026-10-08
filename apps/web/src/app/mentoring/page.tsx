@@ -139,7 +139,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
-      <CardContent className="p-5 space-y-3">
+      <CardContent className="space-y-3">
         {/* Header row */}
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
@@ -390,7 +390,7 @@ function BookingModal({
 function BookingSkeleton() {
   return (
     <Card>
-      <CardContent className="flex items-start gap-4 p-4">
+      <CardContent className="flex items-start gap-4">
         <Skeleton className="h-12 w-12 rounded-full shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-40" />
@@ -415,7 +415,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
   const home = rel.mentorId === userId ? '/mentor/sessions' : '/coaching';
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3 sm:gap-4">
           <SessionDateTile date={start} />
           <div className="flex-1 min-w-0">
@@ -473,7 +473,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
 function MentorSkeleton() {
   return (
     <Card>
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="space-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="h-16 w-16 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">

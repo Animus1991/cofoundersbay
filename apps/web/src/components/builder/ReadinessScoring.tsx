@@ -423,7 +423,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
 
       {/* Overall Score */}
       <Card className={cn("border-2", readinessClasses(data.overallStatus).border)}>
-        <CardContent className="p-6">
+        <CardContent>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Score Circle */}
             <div className="flex flex-col items-center justify-center">

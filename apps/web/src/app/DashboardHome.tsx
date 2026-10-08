@@ -388,7 +388,7 @@ export function DashboardHome() {
           <div className="space-y-6 lg:col-span-4">
             {/* Priority Actions */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
@@ -445,7 +445,7 @@ export function DashboardHome() {
 
             {/* Recent Activity */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
@@ -473,7 +473,7 @@ export function DashboardHome() {
           {/* Center Column: Top Matches */}
           <div className="space-y-6 lg:col-span-5">
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
@@ -525,7 +525,7 @@ export function DashboardHome() {
             {/* Mentor Suggestions */}
             {mentorSuggestions.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="mentor" className="icon-sm text-status-success" />
@@ -547,7 +547,7 @@ export function DashboardHome() {
             {/* My Communities */}
             {myGroups.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="community" className="icon-sm text-status-info" />
@@ -569,7 +569,7 @@ export function DashboardHome() {
             {/* Upcoming Events */}
             {upcomingEvents.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="calendar" className="icon-sm text-status-accent" />
@@ -604,7 +604,7 @@ export function DashboardHome() {
             {/* Profile Progress */}
             {profileCompletion < 100 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <h2 className="mb-3 text-sm font-semibold text-foreground">
                     <BilingualText en={dashboardEn('your_progress')} el={dashboardEl('your_progress')} compact />
                   </h2>
@@ -631,7 +631,7 @@ export function DashboardHome() {
 
             {/* Ecosystem Stats */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
                   <CfbGlyph name="chart" className="icon-sm text-status-success" />
                   <BilingualText en="Ecosystem pulse" el="Σφυγμός οικοσυστήματος" compact />
@@ -665,7 +665,7 @@ export function DashboardHome() {
             {/* Milestone Summary */}
             {milestoneSummary?.counts && milestoneSummary.total > 0 && (
               <Card className="border-primary/15 bg-primary/[0.03]">
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
@@ -712,7 +712,7 @@ export function DashboardHome() {
             {/* Active Milestones */}
             {activeMilestonesList.length > 0 && (
               <Card>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                       <CfbGlyph name="flag" className="icon-sm text-status-warning" />
@@ -743,7 +743,7 @@ export function DashboardHome() {
 
             {/* Quick Links */}
             <Card>
-              <CardContent className="p-4">
+              <CardContent>
                 <h2 className="mb-3 text-sm font-semibold text-foreground">
                   <BilingualText en={dashboardEn('quick_links')} el={dashboardEl('quick_links')} compact />
                 </h2>

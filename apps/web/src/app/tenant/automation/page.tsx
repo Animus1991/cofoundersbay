@@ -409,7 +409,7 @@ export default function TenantAutomationPage() {
             { label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
             <Card key={s.label} className="border-border">
-              <CardContent className="py-3 px-4">
+              <CardContent className="py-3">
                 <p className="text-xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
                 <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
               </CardContent>
