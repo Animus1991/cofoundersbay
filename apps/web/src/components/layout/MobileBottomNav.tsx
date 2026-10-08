@@ -18,7 +18,7 @@ const PRIMARY_TABS = [
   { icon: User, label: 'Profile', labelEl: 'Προφίλ', path: '/profile', match: ['/profile'] },
 ] as const;
 
-const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.74px] font-medium leading-[1.25] tracking-tight focus-ring';
+const tabClasses = 'relative flex min-h-[3.75rem] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-0.5 py-1 text-[12.485px] font-medium leading-[1.25] tracking-tight focus-ring';
 
 /*
  * A soft hyphen where a Greek tab name can outgrow its column. At 360px a
@@ -31,7 +31,7 @@ const TAB_EL_BREAKS: Record<string, string> = {
 };
 
 function TabLabel({ en, el }: { en: string; el: string }) {
-  // One language, wrapping, at 12.74px (13px minus 2%). The accessible name
+  // One language, wrapping, at 12.485px (12.74px minus another 2%). The accessible name
   // on the link still carries both languages.
   return (
     <BilingualText
@@ -39,7 +39,7 @@ function TabLabel({ en, el }: { en: string; el: string }) {
       el={TAB_EL_BREAKS[el] ?? el}
       stacked
       wrap
-      className="w-full text-center text-[12.74px] leading-[1.25] tracking-tight"
+      className="w-full text-center text-[12.485px] leading-[1.25] tracking-tight"
       primaryClassName="break-words"
     />
   );

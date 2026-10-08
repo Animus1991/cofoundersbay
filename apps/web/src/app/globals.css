@@ -1771,11 +1771,12 @@ html {
     }
 
     /* One language in the bottom nav. 13px fit «Εξερεύνηση» on a 360px tab;
-       12.74px is that size minus 2%, with the same one-line fit. */
+       12.74px was that size minus 2%, and 12.485px is another 2% under that,
+       with the same one-line fit. */
     [data-mobile-tabs],
     [data-mobile-tabs] .text-2xs,
     [data-mobile-tabs] .bilingual-secondary {
-      font-size: 12.74px;
+      font-size: 12.485px;
       line-height: 1.25;
     }
 
@@ -3259,18 +3260,17 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.31 · meta 14.7 · body 15.21 · lead 14.013 · figure 16.66 · section 15.29 · title 15.656
+     caption 13.044 · meta 14.406 · body 14.906 · lead 13.733 · figure 16.327 · section 14.984 · title 15.343
 
-   Captions, meta, figure, section headings, and body copy stay put. Page
-   titles and the line under the title are another 5% under the previous
-   phone sizes (16.48 × 0.95 → 15.656, 14.75 × 0.95 → 14.013), on every page
-   that uses those steps. Fields such as Ask AI stay at 16.16px, above the
-   iOS zoom floor; the bar itself shortens with the button floor.
+   Every step is another 2% under the previous phone size (13.31 × 0.98,
+   14.7 × 0.98, 15.21 × 0.98, 14.013 × 0.98, 16.66 × 0.98, 15.29 × 0.98,
+   15.656 × 0.98), on every page. Fields such as Ask AI stay at 16.16px,
+   above the iOS zoom floor.
 
    The dashboard is the phone standard for the same role on every page.
    text-xl through text-7xl, including pages and dialogs outside
-   #main-content, sit on the title step (15.656). The readiness gauge sits
-   on the figure step (16.66).
+   #main-content, sit on the title step (15.343). The readiness gauge sits
+   on the figure step (16.327).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3278,20 +3278,20 @@ textarea[class~="border-input"]:focus,
    those selectors outrank a plain class. */
 @media (max-width: 639.98px) {
   body {
-    font-size: 16.66px;
+    font-size: 16.327px;
     line-height: 1.5;
     letter-spacing: 0;
   }
 
-  .text-2xs { font-size: 13.31px; line-height: 1.35; }
-  .text-xs { font-size: 14.7px; line-height: 1.4; }
-  .text-sm { font-size: 15.21px; line-height: 1.45; }
-  .text-base { font-size: 16.66px; line-height: 1.5; }
-  .text-lg { font-size: 15.29px; line-height: 1.4; }
+  .text-2xs { font-size: 13.044px; line-height: 1.35; }
+  .text-xs { font-size: 14.406px; line-height: 1.4; }
+  .text-sm { font-size: 14.906px; line-height: 1.45; }
+  .text-base { font-size: 16.327px; line-height: 1.5; }
+  .text-lg { font-size: 14.984px; line-height: 1.4; }
 
   .bilingual-secondary,
   .bilingual-separator {
-    font-size: 13.31px;
+    font-size: 13.044px;
     line-height: 1.35;
   }
 
@@ -3319,7 +3319,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat-meta,
   p.founder-dash-stat-label,
   p.founder-dash-stat-meta {
-    font-size: 13.31px;
+    font-size: 13.044px;
     line-height: 1.35;
   }
 
@@ -3334,7 +3334,7 @@ textarea[class~="border-input"]:focus,
   #main-content .type-ui.text-sm,
   #main-content .type-ui.text-base,
   #main-content .type-ui.sm\:text-sm {
-    font-size: 14.7px;
+    font-size: 14.406px;
     line-height: 1.4;
   }
 
@@ -3352,7 +3352,7 @@ textarea[class~="border-input"]:focus,
   #main-content [data-rail-content] h3.page-section,
   #main-content [data-rail-content] h3.founder-dash-section,
   h3.page-section.page-section--compact {
-    font-size: 15.21px;
+    font-size: 14.906px;
     line-height: 1.45;
   }
 
@@ -3360,12 +3360,12 @@ textarea[class~="border-input"]:focus,
   #main-content p.founder-dash-figure,
   p.page-figure,
   p.founder-dash-figure {
-    font-size: 16.66px;
+    font-size: 16.327px;
     line-height: 1.35;
   }
 
   #main-content .score-emblem-figure {
-    font-size: 16.66px;
+    font-size: 16.327px;
     line-height: 1;
   }
 
@@ -3377,15 +3377,15 @@ textarea[class~="border-input"]:focus,
   #main-content h3.founder-dash-section,
   h3.page-section,
   h3.founder-dash-section {
-    font-size: 15.29px;
+    font-size: 14.984px;
     line-height: 1.35;
   }
 
-  /* The line under the page title, on every page. 5% under the previous
-     phone lead, and still under the body copy. */
+  /* The line under the page title, on every page. 2% under the previous
+     phone lead. */
   #main-content p.page-lead,
   p.page-lead {
-    font-size: 14.013px;
+    font-size: 13.733px;
     line-height: 1.45;
   }
 
@@ -3425,7 +3425,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 15.656px;
+    font-size: 15.343px;
     line-height: 1.3;
   }
 
@@ -3447,13 +3447,13 @@ textarea[class~="border-input"]:focus,
 
   [role='dialog'],
   [role='alertdialog'] {
-    font-size: 16.66px;
+    font-size: 16.327px;
     line-height: 1.5;
   }
 }
 
 /* Landing intro. On a phone the headline, the line under it, and the live
-   counts use the dashboard steps (title 15.656, lead 14.013, stat 15.656).
+   counts use the dashboard steps (title 15.343, lead 13.733, stat 15.343).
    From 640px they keep the poster sizes. Pixels, not rem: the desktop root
    is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
@@ -3469,16 +3469,16 @@ textarea[class~="border-input"]:focus,
   }
 }
 #main-content h1.landing-display {
-  font-size: 15.656px;
+  font-size: 15.343px;
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 #main-content p.landing-lead {
-  font-size: 14.013px;
+  font-size: 13.733px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 15.656px;
+  font-size: 15.343px;
   line-height: 1.2;
 }
 @media (min-width: 640px) {
