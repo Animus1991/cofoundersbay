@@ -28,6 +28,7 @@ export function ProfileHero({
   aside,
   actions,
   className,
+  headingLevel = 'h2',
 }: {
   name: string;
   avatarUrl?: string | null;
@@ -46,7 +47,10 @@ export function ProfileHero({
   /** What the reader can do: connect, message, follow, edit, share. */
   actions?: ReactNode;
   className?: string;
+  /** A standalone page (the public /p/ profile) names the person in its h1. */
+  headingLevel?: 'h1' | 'h2';
 }) {
+  const Heading = headingLevel;
   const facts = (meta ?? []).filter(Boolean);
   return (
     <section aria-label={`${name} · Προφίλ`} className={cn('relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm', className)}>
@@ -66,7 +70,7 @@ export function ProfileHero({
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0 space-y-1.5">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <h2 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">{name}</h2>
+                <Heading className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">{name}</Heading>
                 {nameBadge}
               </div>
               {headline ? <div className="text-base text-muted-foreground">{headline}</div> : null}
