@@ -51,9 +51,12 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { opportunitiesEn, opportunitiesEl } from '@/lib/i18n/strings-opportunities';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
-import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
+import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
+import { MessageButton } from '@/components/common/PersonActions';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -122,13 +125,13 @@ const OPP_TYPE_DISPLAY: Record<OpportunityType, { labelKey: `type_${OpportunityT
 };
 
 function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
-  const { success } = useToast();
+  const fmtDate = useDateFormat();
   const { ask } = usePopupChat();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
   const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
-  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
+  const postedAgo = fmtDate(opportunity.createdAt, { day: 'numeric', month: 'short' });
   const deadline = opportunity.deadline
-    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
+    ? fmtDate(opportunity.deadline, { day: 'numeric', month: 'short', year: 'numeric' })
     : null;
 
   return (
@@ -236,15 +239,9 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               <ArrowRight className="icon-sm" />
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => success(opportunitiesEn('saved'), opportunitiesEn('saved_body').replace('{title}', opportunity.title))}
-          >
-            <Bookmark className="icon-sm" />
-            <BilingualText en={opportunitiesEn('save')} el={opportunitiesEl('save')} compact />
-          </Button>
+          {/* Stored for the reader (/api/saved-items). It used to toast
+              "saved on this device" and store nothing. */}
+          <SaveItemButton kind="opportunity" itemId={opportunity.id} title={opportunity.title} />
         </div>
       </CardContent>
     </Card>
@@ -252,7 +249,6 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 }
 
 function JobCard({ job }: { job: JobPostingView }) {
-  const { success } = useToast();
   const { ask } = usePopupChat();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
@@ -298,9 +294,9 @@ function JobCard({ job }: { job: JobPostingView }) {
         </div>
 
         <div className="flex gap-2 pt-1">
-          {/* Same here: the job feed has no apply route and the posting
-              carries no creator id to message, so the honest useful action is
-              the one the assistant can perform. */}
+          {/* The job feed has no apply route, so the useful actions are the
+              draft the assistant writes and a message to the poster (the
+              posting now carries the poster's id). */}
           <Button
             size="sm"
             className="gap-1.5 text-xs"
@@ -312,15 +308,8 @@ function JobCard({ job }: { job: JobPostingView }) {
             <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
             <ArrowRight className="icon-sm" />
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => success(opportunitiesEn('saved'), opportunitiesEn('saved_body').replace('{title}', job.title))}
-          >
-            <Bookmark className="icon-sm" />
-            <BilingualText en={opportunitiesEn('save')} el={opportunitiesEl('save')} compact />
-          </Button>
+          <SaveItemButton kind="job" itemId={job.id} title={job.title} />
+          <MessageButton userId={job.creator?.id} displayName={job.creator.displayName} />
         </div>
       </CardContent>
     </Card>
@@ -535,6 +524,12 @@ export default function OpportunitiesPage() {
   const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
   const [remoteOnly, setRemoteOnly] = useState(false);
+  // Saved only: listings and jobs the reader saved (LinkedIn's "Save").
+  const [savedOnly, setSavedOnly] = useState(false);
+  const savedListings = useSavedItems('opportunity');
+  const savedJobs = useSavedItems('job');
+  const toggleListing = useSaveToggle('opportunity');
+  const toggleJob = useSaveToggle('job');
   const [oppTypeFilter, setOppTypeFilter] = useState<OpportunityType | 'all'>('all');
   const [cardAlertOpen, setCardAlertOpen] = useState(false);
   // A need-card search opened from /saved-searches arrives as ?type=&q=&remote=1.
@@ -573,8 +568,8 @@ export default function OpportunitiesPage() {
     retry: 1,
   });
 
-  const opportunities = opportunitiesData?.opportunities ?? [];
-  const listingJobs = jobsData?.jobs ?? [];
+  const opportunities = (opportunitiesData?.opportunities ?? []).filter((o) => !savedOnly || savedListings.ids.has(o.id));
+  const listingJobs = (jobsData?.jobs ?? []).filter((j) => !savedOnly || savedJobs.ids.has(j.id));
   const pendingProposals = proposals.filter((p) => p.status === 'pending').length;
 
   const handleAcceptProposal = (id: string) => {
@@ -616,6 +611,67 @@ export default function OpportunitiesPage() {
       { value: 'off', en: 'Any location', el: 'Οποιαδήποτε τοποθεσία' },
       { value: 'on', en: 'Remote only', el: 'Μόνο εξ αποστάσεως' },
     ], remoteOnly ? 'on' : 'off', (v) => setRemoteOnly(v === 'on')),
+    choiceControl('saved_only', 'Saved only', 'Μόνο αποθηκευμένα', [
+      { value: 'all', en: 'Everything', el: 'Όλα' },
+      { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα' },
+    ], savedOnly ? 'saved' : 'all', (v) => setSavedOnly(v === 'saved')),
+    {
+      // The same write as each card's Save; Undo removes exactly the row it added.
+      id: 'save_listing',
+      labelEn: 'Save a listing',
+      labelEl: 'Αποθήκευση καταχώρισης',
+      writes: true,
+      options: rowOptions(opportunities.filter((o) => !savedListings.ids.has(o.id)), (o) => o.id, (o) => o.title),
+      unavailableEn: opportunities.some((o) => !savedListings.ids.has(o.id)) ? undefined : 'Every listing shown is already saved.',
+      unavailableEl: opportunities.some((o) => !savedListings.ids.has(o.id)) ? undefined : 'Κάθε καταχώριση που εμφανίζεται είναι ήδη αποθηκευμένη.',
+      run: async (v) => {
+        if (!v || !opportunities.some((o) => o.id === v)) return ROW_GONE;
+        await toggleListing.mutateAsync({ itemId: v, save: true });
+      },
+      undo: (v) => (v && !savedListings.ids.has(v) ? { control: 'unsave_listing', value: v } : undefined),
+    },
+    {
+      id: 'unsave_listing',
+      labelEn: 'Remove a listing from saved',
+      labelEl: 'Αφαίρεση καταχώρισης από τα αποθηκευμένα',
+      writes: true,
+      options: rowOptions(opportunities.filter((o) => savedListings.ids.has(o.id)), (o) => o.id, (o) => o.title),
+      unavailableEn: opportunities.some((o) => savedListings.ids.has(o.id)) ? undefined : 'No saved listing is shown.',
+      unavailableEl: opportunities.some((o) => savedListings.ids.has(o.id)) ? undefined : 'Δεν εμφανίζεται αποθηκευμένη καταχώριση.',
+      run: async (v) => {
+        if (!v) return ROW_GONE;
+        await toggleListing.mutateAsync({ itemId: v, save: false });
+      },
+      undo: (v) => (v && savedListings.ids.has(v) ? { control: 'save_listing', value: v } : undefined),
+    },
+    {
+      id: 'save_job',
+      labelEn: 'Save a job',
+      labelEl: 'Αποθήκευση θέσης',
+      writes: true,
+      options: rowOptions(listingJobs.filter((j) => !savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
+      unavailableEn: listingJobs.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Every job shown is already saved.',
+      unavailableEl: listingJobs.some((j) => !savedJobs.ids.has(j.id)) ? undefined : 'Κάθε θέση που εμφανίζεται είναι ήδη αποθηκευμένη.',
+      run: async (v) => {
+        if (!v || !listingJobs.some((j) => j.id === v)) return ROW_GONE;
+        await toggleJob.mutateAsync({ itemId: v, save: true });
+      },
+      undo: (v) => (v && !savedJobs.ids.has(v) ? { control: 'unsave_job', value: v } : undefined),
+    },
+    {
+      id: 'unsave_job',
+      labelEn: 'Remove a job from saved',
+      labelEl: 'Αφαίρεση θέσης από τα αποθηκευμένα',
+      writes: true,
+      options: rowOptions(listingJobs.filter((j) => savedJobs.ids.has(j.id)), (j) => j.id, (j) => j.title),
+      unavailableEn: listingJobs.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'No saved job is shown.',
+      unavailableEl: listingJobs.some((j) => savedJobs.ids.has(j.id)) ? undefined : 'Δεν εμφανίζεται αποθηκευμένη θέση.',
+      run: async (v) => {
+        if (!v) return ROW_GONE;
+        await toggleJob.mutateAsync({ itemId: v, save: false });
+      },
+      undo: (v) => (v && savedJobs.ids.has(v) ? { control: 'save_job', value: v } : undefined),
+    },
     { id: 'post_opportunity', labelEn: 'Open the post form', labelEl: 'Άνοιγμα φόρμας δημοσίευσης', writes: false, run: () => setShowPostForm(true) },
     {
       id: 'alert_new_need_cards',
@@ -670,7 +726,7 @@ export default function OpportunitiesPage() {
    * counts describe the list, and the type and remote filters narrow it, so
    * both live in the rail. The filters apply to the Listings section only.
    */
-  const listingFilters = (oppTypeFilter !== 'all' ? 1 : 0) + (remoteOnly ? 1 : 0);
+  const listingFilters = (oppTypeFilter !== 'all' ? 1 : 0) + (remoteOnly ? 1 : 0) + (savedOnly ? 1 : 0);
   const listCount = (n: number) => (oppLoading || oppError ? '—' : n);
   const rail: PageRailSection[] = [
     {
@@ -699,7 +755,7 @@ export default function OpportunitiesPage() {
         <div className="space-y-4">
           {activeTab !== 'listings' && (
             <p className="px-2.5 text-xs leading-relaxed text-muted-foreground">
-              <BilingualText en="These filters narrow the Listings section." el="Αυτά τα φίλτρα περιορίζουν την ενότητα Καταχωρίσεις." wrap />
+              <BilingualText en="Type and location narrow the Listings section; Saved narrows Listings and Jobs." el="Ο τύπος και η τοποθεσία περιορίζουν τις Καταχωρίσεις· τα Αποθηκευμένα περιορίζουν Καταχωρίσεις και Θέσεις." wrap />
             </p>
           )}
           <RailOptions
@@ -724,8 +780,18 @@ export default function OpportunitiesPage() {
             value={remoteOnly ? 'on' : 'off'}
             onChange={(v) => { setRemoteOnly(v === 'on'); setActiveTab('listings'); }}
           />
+          <RailOptions
+            title="Saved"
+            titleEl="Αποθηκευμένα"
+            options={[
+              { value: 'all', en: 'Everything', el: 'Όλα', icon: Briefcase },
+              { value: 'saved', en: 'Saved only', el: 'Μόνο αποθηκευμένα', icon: Bookmark, count: savedListings.ids.size + savedJobs.ids.size },
+            ]}
+            value={savedOnly ? 'saved' : 'all'}
+            onChange={(v) => setSavedOnly(v === 'saved')}
+          />
           {listingFilters > 0 && (
-            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setOppTypeFilter('all'); setRemoteOnly(false); }} />
+            <RailAction icon={X} en="Clear filters" el="Καθαρισμός φίλτρων" onClick={() => { setOppTypeFilter('all'); setRemoteOnly(false); setSavedOnly(false); }} />
           )}
         </div>
       ),
@@ -906,6 +972,15 @@ export default function OpportunitiesPage() {
                   </CardContent>
                 </Card>
               ))
+            ) : savedOnly && !listingJobs.length ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
+                <Bookmark className="h-10 w-10 mb-3 opacity-30" />
+                <p className="font-medium"><BilingualText en="No saved jobs yet" el="Καμία αποθηκευμένη θέση ακόμη" compact /></p>
+                <p className="text-sm mt-1"><BilingualText en="Press Save on a job to keep it here." el="Πατήστε «Αποθήκευση» σε μια θέση για να μείνει εδώ." wrap /></p>
+                <Button variant="secondary" className="mt-4" onClick={() => openRailSection('filters')}>
+                  <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                </Button>
+              </div>
             ) : !jobsData?.jobs?.length ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
                 <Briefcase className="h-10 w-10 mb-3 opacity-30" />
@@ -921,7 +996,7 @@ export default function OpportunitiesPage() {
                 </Button>
               </div>
             ) : (
-              (jobsData.jobs as JobPostingView[])
+              (listingJobs as JobPostingView[])
                 .filter(
                   (j) =>
                     !search.trim() ||

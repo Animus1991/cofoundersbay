@@ -2011,7 +2011,8 @@ export type JobPostingView = {
   isRemote: boolean;
   type?: string;
   isFeatured?: boolean;
-  creator: { displayName: string; avatarUrl: string | null };
+  /** `id` is the poster's user id (absent from older API builds). */
+  creator: { id?: string; displayName: string; avatarUrl: string | null };
   href?: string;
 };
 

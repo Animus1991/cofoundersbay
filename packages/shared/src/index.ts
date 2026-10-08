@@ -17,3 +17,4 @@ export * from './search';
 export * from './transparency';
 export * from './referrals';
 export * from './experience';
+export * from './saved-items';

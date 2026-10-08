@@ -390,6 +390,8 @@ export const TOAST_EL: Record<string, string> = {
   "Rule updated": "Ο κανόνας ενημερώθηκε",
   "Save failed": "Η αποθήκευση απέτυχε",
   "Saved": "Αποθηκεύτηκε",
+  "Removed from saved": "Αφαιρέθηκε από τα αποθηκευμένα",
+  "Find it under Saved on this page.": "Θα το βρείτε στα Αποθηκευμένα αυτής της σελίδας.",
   "Saved to shortlist": "Αποθηκεύτηκε στη λίστα επιλογών",
   "Screen sharing started": "Η κοινή χρήση οθόνης ξεκίνησε",
   "Screen sharing stopped": "Η κοινή χρήση οθόνης σταμάτησε",
