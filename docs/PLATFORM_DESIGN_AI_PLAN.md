@@ -3326,3 +3326,423 @@ Tests: `ProfileTrust.test.tsx` (9), `useScrollToHash.test.tsx` (3), `whatsNew.te
 ### 47.5 Πύλες
 
 tsc web 0· vitest web 1048/1048 (133 αρχεία)· οι σελίδες του 47.2 ξαναφωτογραφήθηκαν σε production build στα 1440.
+
+## 48. Έλεγχος 2026-10-08 (β) — συγχώνευση στο `20e6db41`, πλάνο για κάθε σελίδα, component, modal, button
+
+Αφορμή: εξονυχιστικός έλεγχος του πιο αναπτυγμένου αποθετηρίου, στο branch που κρατά όλες τις τελευταίες αναβαθμίσεις, και πλάνο για κάθε σελίδα, component, modal και button. Το §45 μέτρησε το `f088d473`. Τα §46 και §47 καλύπτουν τη συγχώνευση στο `main` ως το `e7fe1bf6` και το γιατί η δουλειά LinkedIn/StreetUpper δεν φαινόταν. Αυτό το τμήμα μετρά ξανά μετά από ό,τι μπήκε έπειτα, και δεν ξαναϊστορεί τα κλεισμένα.
+
+### 48.1 Ποιο αποθετήριο και ποιο branch
+
+Στον λογαριασμό `Animus1991` το αναπτυγμένο αποθετήριο αυτού του προϊόντος είναι το `cofoundersbay` (τελευταίο push 2026-10-08, μέγεθος 42270). Το `cofounder-startapp` είναι μικρότερο (29488) και το τελευταίο push του είναι 2026-09-04. Τα υπόλοιπα αποθετήρια του λογαριασμού είναι άλλα προϊόντα (Curbflow, agrosphere, ai tutor, και τα λοιπά) και δεν μπαίνουν σε αυτόν τον έλεγχο.
+
+Το tip με τις αναβαθμίσεις του Claude είναι το `origin/claude/project-audit-upgrade-y2ebnr` στο `a2efbe85`. Το `main` είναι το `e7fe1bf6` και του λείπουν 7 commits. Το `git merge --ff-only` δεν ίσχυε: το Claude είχε 9 commits έξω από το HEAD και το HEAD είχε 4. Έγινε `git merge --no-edit`. Το `ProfileCard.tsx` και το `SearchFilters.tsx` ενώθηκαν μόνα τους: έμειναν και το `.person-name` / `.person-subtitle` / `data-filter-field`, και τα δίγλωσσα Σύνδεση / Μήνυμα / Φίλτρα. Καμία σύγκρουση. Το HEAD της μέτρησης είναι το `20e6db41`.
+
+Οι 9 του Claude, από το νεότερο: `a2efbe85` η δημόσια σελίδα στην ίδια πάνω κάρτα και η εμπειρία διαβάζει το αποθηκευμένο σχήμα, `09aa429f` το προφίλ διαβάζεται ως επαγγελματικό προφίλ με τους δικούς μας κανόνες, `e7fe1bf6` το §47, `d937b8d9` το παράδειγμα του Discover βρίσκει κάποιον και τα κενά είναι στα ελληνικά, `8966fc65` τα σήματα εμπιστοσύνης ακολουθούν τα πραγματικά δεδομένα και οι άγκυρες των Ρυθμίσεων προσγειώνονται, `1c362eb9` το §46, `0826409c` cache στα static assets αντί για KV που δεν ήταν δεμένο, `3d10905e` συγχώνευση του preview με το −5% και το §45, `1936ae16` το deploy χτίζει το shared πριν από το typecheck.
+
+Τα 4 που δεν ήταν στο Claude: `64bec0fb` όλες οι γραμματοσειρές κινητού −2%, `23bed040` όσα κάθονταν πάνω από τον τίτλο κατέβηκαν στο βήμα του τίτλου, `2dec27dc` οι υπότιτλοι λίγο ακόμα, `5ca9277f` οι επικεφαλίδες ενοτήτων σε title case.
+
+Μετά τη συγχώνευση κάθε καταγεγραμμένο remote head έχει 0 commits έξω από το HEAD:
+
+| remote | SHA | commits έξω από το HEAD |
+|---|---|---|
+| `claude/project-audit-upgrade-y2ebnr` | `a2efbe85` | 0 |
+| `main` | `e7fe1bf6` | 0 · το HEAD είναι 7 commits μπροστά |
+| `cursor/ui-upgrade-cloudflare-preview-53e0` | `3a777732` | 0 |
+| `cursor/phone-component-sizes-53e0` | `477ca958` | 0 |
+| `integration/ai-platform-upgrade` | `0e792ce7` | 0 |
+| `cursor/ai-os-fullpage-chat-53e0` | `7ce1fe32` | 0 |
+| `cursor/phone-fonts-minus-2-53e0` (origin, πριν το push αυτής της ώρας) | `5ca9277f` | 0 |
+
+Δεν υπάρχει δεύτερο tip. Το April `main` (`91d6ea3a`) έχει ήδη γίνει fast-forward στο §46· δεν ξαναενώνεται. Δεν προστίθενται Feed σε Prisma, ένωση ημερολογίου, μοντέλα fundraising, jobs-create, ούτε συγχώνευση των matches με τις recommendations.
+
+### 48.2 Ξαναμέτρηση στο `20e6db41`
+
+Ίδια οικογένεια τομής με το §45 (`page.tsx`, `components/**/*.tsx`, `<Button`, `<button`, `DialogContent` ή `SheetContent`). Οι αριθμοί `<Button>` και `<button>` αυτού του γύρου είναι το `git grep -o` πάνω σε όλο το `apps/web/src`, μαζί με τα tests. Στο `f088d473` η ίδια εντολή δίνει 1447 `<Button>` και 592 `<button>`, ενώ το §45 έγραψε 1435 και 585· αυτή είναι η τομή εκείνου του γύρου και δεν ξαναερμηνεύεται. Η διαφορά που μετρά εδώ είναι ανάμεσα στις δύο εκτελέσεις της ίδιας εντολής.
+
+| αντικείμενο | `f088d473` με αυτή την εντολή | τώρα | διαφορά |
+|---|---:|---:|---|
+| `page.tsx` | 169 | **169** | 0 |
+| `components/**/*.tsx` | 301 | **307** | +6, καμία διαγραφή |
+| `git grep -o '<Button'` | 1447 | **1456** | +9 |
+| `git grep -o '<button'` | 592 | **592** | 0 |
+| αρχεία με `DialogContent` ή `SheetContent` | 62 | **62** | 0 |
+
+Οι στατικές σελίδες είναι 149 και οι δυναμικές 20. 149 + 20 = 169. Το `scripts/platform-sweep-routes.txt` έχει 149 γραμμές και είναι το ίδιο σύνολο με τις στατικές: καμία δεν λείπει και καμία δεν περισσεύει. Το `scripts/platform-sweep-dynamic.txt` έχει 21 γραμμές για 20 πρότυπα, γιατί το `/commitments/[id]` μένει δύο φορές (`need-harbor`, `need-athens-intros`). Το `/u/demo-alex-sept` είναι μέσα. Το βήμα 3 του §45.8 έχει κλείσει από το §46.1 και επιβεβαιώνεται στο δέντρο. Οι τέσσερις σελίδες κάτω από `(auth)` είναι τα `/login`, `/register`, `/forgot-password`, `/reset-password`.
+
+Τα +6 αρχεία components: `ExperienceEditor.tsx`, `ProfileHero.tsx`, `ProfileSections.tsx`, `ProfileSections.test.tsx`, `ProfileTrust.tsx`, `ProfileTrust.test.tsx`. Έξω από τον φάκελο components, και δεν μπαίνουν στο 307, προστέθηκαν τα `hooks/useScrollToHash.ts` με το test του, το `lib/experience.test.ts`, το `app/sectionKickerCase.test.ts` και το `packages/shared/src/experience/index.ts`.
+
+Τα +9 `<Button>`, αρχείο προς αρχείο, έναντι του `f088d473`: `ProfileSections.tsx` +5, `ExperienceEditor.tsx` +2, `ProfileTrust.tsx` +1, `profiles/[userId]/ProfileContent.tsx` +1. Κανένα αρχείο δεν έχασε `<Button>`. Κανένα native `<button>` δεν προστέθηκε ή αφαιρέθηκε.
+
+### 48.3 Τι μπήκε μετά το §47
+
+Το §47.4 έγραφε ότι κεφαλίδα προφίλ με ενότητες δεν είχε συμφωνηθεί και δεν είχε γίνει. Τα `09aa429f` και `a2efbe85` την έκαναν, με κανόνες του προϊόντος και όχι του LinkedIn: η λωρίδα είναι ήρεμο χρώμα και ποτέ εικόνα-τοίχος, το «Ανοιχτός/ή σε» είναι γραμμή και ποτέ κορνίζα στη φωτογραφία, η φωτογραφία είναι κύκλος, και τα μεγέθη είναι η σκάλα του προϊόντος (όνομα `text-xl` / `md:text-2xl`, κεφαλίδα `text-base`, τα υπόλοιπα `text-sm`).
+
+Η εμπειρία και η εκπαίδευση ζουν στο `rolePayload` (`experience`, `education`). Δεν προστέθηκε στήλη ούτε migration. Γράφονται από τον επεξεργαστή ή, όταν το διαλέξει το άτομο, από εισαγωγή LinkedIn, και τίποτα δεν αποθηκεύεται πριν από το Save της φόρμας. Οι ημερομηνίες κρατούν μόνο το έτος. Όριο 10 ρόλοι και 6 σπουδές, κείμενο έως 120 χαρακτήρες. Το `readExperience` δέχεται ό,τι σχήμα έφτασε και ταξινομεί από το νεότερο. Σε ξένο προφίλ η κενή ενότητα δεν ζωγραφίζεται· στο δικό σου λέει πώς γεμίζει.
+
+Τα «παρόμοια προφίλ» βγαίνουν από κοινό ρόλο, δεξιότητες, κλάδο και πόλη. Όχι από το ποιος είδε ποιον. Η σύγκριση με το LinkedIn §7 το κρατά εκτός.
+
+### 48.4 Κλίμακα που κλειδώνει αυτός ο γύρος
+
+Ισχύει μόνο κάτω από 640px. Το tablet (640–1023) και το desktop (1024+, ρίζα 82%) δεν άλλαξαν σε αυτόν τον γύρο. Οι αριθμοί είναι ό,τι ζητά το `phoneReadingScale.test.ts` μέσα στο unlayered block «Phone reading scale», και μετρήθηκαν ξανά στα 390px στο `/profile` και στο `/discover` (τίτλος 15.343px, επικεφαλίδα μενού με `text-transform: none`).
+
+| βήμα | px | ποιοι |
+|---|---:|---|
+| caption | 13.044 | `.text-2xs`, ετικέτα στατιστικού μέσα στο `#main-content` |
+| meta | 14.406 | `.text-xs` |
+| body | 14.906 | `.text-sm` |
+| lead | 13.321 | `p.page-lead` και `p.landing-lead` |
+| γραμμή κάτω από όνομα | 14.459 | `.person-subtitle` |
+| section | 14.984 | `.text-lg` |
+| title | 15.343 | `h1.page-title`, `.text-xl` έως `.text-7xl`, `.person-name`, πεδίο και select με `data-filter-field` |
+| figure | 16.327 | `.text-base`, `body`, `.score-emblem-figure` |
+
+Το `.text-lg` (14.984) μένει μικρότερο από το `.text-base` έξω από το override του `#main-content` (16.327). Η ιεραρχία είναι επιλογή και δεν «διορθώνεται». Τα dialogs βγαίνουν έξω από το `#main-content`, οπότε και τα δύο selectors είναι ορισμένα.
+
+Το κατώφλι κουμπιού μένει **39.71px**. Ο φρουρός ζητά ≥39.66. Τα `select` και το `.tap-target-y` μένουν 44px. Τα πεδία σύνδεσης και το Ask AI μένουν **16.16px**, ώστε το iOS να μην ζουμάρει. Το κάτω μενού είναι 12.485px, `min-h-[3.75rem]`, `sm:hidden`. Η μπάρα Ask AI κρατά padding 5.65px.
+
+Οι επικεφαλίδες ενοτήτων που ζευγαρώνουν `uppercase` με `tracking-wide`, `tracking-wider`, `tracking-widest` ή `tracking-[…]` ζωγραφίζονται ως το κείμενο της πηγής (Dashboard, όχι DASHBOARD) σε κάθε πλάτος. Το tracking που άνοιγε τα κεφαλαία μηδενίζεται. Ένα σκέτο `uppercase` χωρίς αυτό το tracking μένει κεφαλαία: τύπος παρόχου, συντομογραφία μήνα, «SSO», «OK», ο διαχωριστής «Or continue with». Ο φρουρός είναι το `sectionKickerCase.test.ts`.
+
+### 48.5 Κάθε button
+
+Η σύμβαση του §45.4 ισχύει για καθένα από τα 1456 `<Button>` και για τα 592 native `<button>` όταν φορούν τις κλάσεις του floor. Δεν προστίθεται variant. Δεν ξαναγράφονται τα παλιά call sites. Δεν ξανακατεβαίνει το 39.71 και δεν γυρίζει στα 44. Όποιος γράψει φρουρό ύψους ζητά ≥39.66 κάτω από 640px.
+
+Τα εννέα καινούργια, με το κείμενο που φορούν:
+
+| αρχείο | κουμπιά |
+|---|---|
+| `ProfileSections.tsx` | «Όλες οι ενημερώσεις», «Γράψτε ενημέρωση», «Γράψτε κάρτα ανάγκης», «Επεξεργασία» (προς `/profile/edit#experience`), «Βρείτε περισσότερους» |
+| `ExperienceEditor.tsx` | «Αφαίρεση» ανά γραμμή, «Προσθήκη ρόλου» και «Προσθήκη σχολής» (το ίδιο ζεύγος κουμπιών του επεξεργαστή, δύο φορές στο δέντρο) |
+| `ProfileTrust.tsx` | «Επαλήθευση στις Ρυθμίσεις» ή «Διαχείριση επαλήθευσης» |
+| `ProfileContent.tsx` | μία επιπλέον εμφάνιση στον πηγαίο κώδικα μετά την αναδιάταξη της κάρτας· οι ενέργειες ονομάζονται στο `/profiles/[userId]` του §48.8 |
+
+Κανένα από αυτά δεν αλλάζει το ύψος του floor. Στο τηλέφωνο ακολουθούν τη γραμματοσειρά του §48.4, όχι νέα κλίμακα.
+
+### 48.6 Κάθε modal και sheet
+
+Νέο dialog περνά από `DialogContent` ή `SheetContent`. Τα αρχεία αυτής της τομής είναι πάλι 62. Κανένα δεν προστέθηκε και κανένα δεν αφαιρέθηκε έναντι του `f088d473`. Το μόνο που άλλαξε συμπεριφορά είναι το `LinkedInImportDialog`: μπορεί να γεμίσει εμπειρία και εκπαίδευση, και η εγγραφή περιμένει το Save.
+
+| αρχείο | επόμενο |
+|---|---|
+| `apps/web/src/app/admin/billing/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/communities/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/feature-flags/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/programs/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/reports/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/taxonomy/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/admin/user-management/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/data-room/[id]/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/discover/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/groups/components/CreateGroupModal.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/jobs/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/matches/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/mentoring/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/messages/ComposeMessageDialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/opportunities/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/org/applications/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/org/[slug]/admin/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/pitch/[id]/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/programs/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/provider/projects/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/provider/services/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/recommendations/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/research/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/saved-searches/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/tenant/members/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/app/tenant/programs/page.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/auth/TwoFactorManagement.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/builder/BranchPanel.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/builder/BuilderWorkspace.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/builder/CollabToolbar.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/builder/ReviewPanel.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/builder/VersionHistoryDrawer.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/collaboration/CollaborationStarter.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/commitments/NeedCardAlertDialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/common/CommandPalette.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/common/ConnectionRequest.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/common/KeyboardShortcutsDialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/common/ReportBlockModal.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/common/ScheduleCallModal.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/discover/SearchFilters.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/endorsements/GiveEndorsementDialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/feed/CreatePost.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/intros/AskIntroDialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/layout/MobileNav.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/layout/PageRail.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/mentoring/SessionDialogs.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/messaging/ConversationValidation.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/profile/LinkedInImportDialog.tsx` | Μπορεί να προσθέσει ρόλους και σπουδές στις λίστες της φόρμας· τίποτα δεν γράφεται πριν από το Save. Το επόμενο ύψους του §45.5 ισχύει (39.71px, φρουρός ≥39.66). |
+| `apps/web/src/components/research/BoardHistoryDrawer.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/research/BoardSettingsPanel.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/research/BoardTemplates.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/research/CanvasVersionPanel.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/research/EntityReferenceSelector.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/research/ResearchNodeViewer.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/confirm-dialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/dialog.returnFocus.test.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/dialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/export-dialog.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/image-cropper.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/rich-text-editor.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/share-modal.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+| `apps/web/src/components/ui/sheet.tsx` | Το επόμενο του §45.5 ισχύει· το κλείσιμο στο τηλέφωνο μένει 39.71px και ο φρουρός ≥39.66. Η γραμματοσειρά μέσα στο παράθυρο είναι η κλίμακα του §48.4. |
+
+### 48.7 Κάθε component
+
+Τα 307 αρχεία `.tsx` κάτω από `apps/web/src/components`, μαζί με τα tests. Κανένα από τα 301 του `f088d473` δεν διαγράφηκε. Για κάθε αρχείο που υπήρχε, το επόμενο του §45.6 ισχύει, με την κλίμακα του §48.4 στη θέση των 15.656 / 14.013 και με τις επικεφαλίδες ενοτήτων σε title case. Τα έξι νέα δεν είχαν γραμμή εκεί.
+
+Τα νέα, και το επόμενό τους:
+
+| αρχείο | τι κάνει | επόμενο |
+|---|---|---|
+| `profile/ProfileHero.tsx` | Η πάνω κάρτα, μία για το δικό σου προφίλ, το ξένο και το δημόσιο | δεν αποκτά εξώφυλλο-εικόνα ούτε κορνίζα «Open to Work» |
+| `profile/ProfileSections.tsx` | Δραστηριότητα, Εμπειρία, συστάσεις που εγκρίθηκαν, παρόμοια προφίλ | η κενή δραστηριότητα στο δικό σου προφίλ οδηγεί σε ενημέρωση ή κάρτα· δεν γίνεται feed |
+| `profile/ProfileTrust.tsx` | Τέσσερις μέθοδοι, μόνο όσες επέστρεψε το `/verification/me`, σύνδεσμος στις Ρυθμίσεις | δεν δείχνει «επαληθευμένο» χωρίς σήμα |
+| `profile/ExperienceEditor.tsx` | Γραμμές ρόλου και σχολής μέσα στη φόρμα | όριο 10 και 6· το έτος μόνο |
+| `profile/ProfileSections.test.tsx` | Κενή εμπειρία σε ξένο προφίλ δεν ζωγραφίζεται· στο δικό σου ζωγραφίζεται | μένει δίπλα στο component |
+| `profile/ProfileTrust.test.tsx` | Το σήμα και το pill ακολουθούν την απόκριση, όχι σταθερό κείμενο | μένει δίπλα στο component |
+
+Δίπλα τους, εκτός του φακέλου: `hooks/useScrollToHash.ts` (και το test του) μόνο στις Ρυθμίσεις· `packages/shared/src/experience/index.ts` είναι ο αναγνώστης του σχήματος, χωρίς στήλη στη βάση.
+
+Ονομαστικά, και τα 307:
+
+- **activity** (1): `ActivityFeed.tsx`
+- **admin** (5): `AbuseMonitorPanel.tsx`, `AdminAnalyticsDashboard.test.tsx`, `AdminAnalyticsDashboard.tsx`, `ExperimentationPanel.tsx`, `ScoreInspector.tsx`
+- **ai** (9): `AIComposer.tsx`, `AIInsightButton.tsx`, `AIMatchExplainer.tsx`, `AIQuickAsk.tsx`, `ActionCard.test.tsx`, `ActionCard.tsx`, `CitationChip.tsx`, `CopilotEmptyState.tsx`, `CopilotWorkspace.tsx`
+- **analytics** (1): `AdvancedAnalyticsDashboard.tsx`
+- **auth** (4): `AdminGuard.tsx`, `OAuthButtons.tsx`, `TwoFactorManagement.tsx`, `TwoFactorSetup.tsx`
+- **behavioral** (2): `BehaviorAdminPanel.tsx`, `BehavioralNudge.tsx`
+- **billing** (1): `FeatureGate.tsx`
+- **brand** (1): `Logo.tsx`
+- **builder** (19): `ActivityTimeline.tsx`, `ApplicationGenerator.test.tsx`, `ApplicationGenerator.tsx`, `ApplicationProgramsChrome.tsx`, `ArtifactDiffView.tsx`, `BranchPanel.tsx`, `BuilderStageChrome.tsx`, `BuilderWorkspace.tsx`, `BusinessModelCanvas.tsx`, `CollabToolbar.tsx`, `FinancialPlanning.tsx`, `IdeaCore.tsx`, `MVPPlanner.tsx`, `MarketAnalysis.tsx`, `PitchDeckBuilder.tsx`, `PitchPublication.tsx`, `ReadinessScoring.tsx`, `ReviewPanel.tsx`, `VersionHistoryDrawer.tsx`
+- **canvas** (2): `ResearchCanvas.test.tsx`, `ResearchCanvas.tsx`
+- **charts** (1): `MatchCompatibilityChart.tsx`
+- **chat** (1): `UnifiedChatPopup.tsx`
+- **collaboration** (1): `CollaborationStarter.tsx`
+- **commitments** (16): `CommitmentLadder.tsx`, `CommitmentOutcomes.test.tsx`, `CommitmentOutcomes.tsx`, `ContactWarning.tsx`, `NeedCard.tsx`, `NeedCardAlertDialog.tsx`, `NeedCardsSection.tsx`, `NonGuaranteeNote.tsx`, `OutcomeChip.tsx`, `PersonVerifiedBadge.tsx`, `ProjectNeedCard.tsx`, `ThreadWorkspace.tsx`, `VerifiedBadge.tsx`, `commitments.test.tsx`, `needCardAlerts.test.tsx`, `verifiedBadgePlacement.test.tsx`
+- **common** (56): `AnimatedCard.tsx`, `AnimatedList.tsx`, `AppRouteLoading.tsx`, `BilingualText.tsx`, `ChatBubble.tsx`, `CommandPalette.tsx`, `ConnectionRequest.tsx`, `CookieConsent.tsx`, `DemoDataToggle.tsx`, `DomI18n.tsx`, `EmptyState.test.tsx`, `EmptyState.tsx`, `EmptyStates.tsx`, `ErrorBoundary.tsx`, `FirstRunTour.tsx`, `FormDraftNotice.tsx`, `HelpCallout.tsx`, `I18nProvider.tsx`, `KeyboardShortcutsDialog.tsx`, `LanguagePreferenceToggle.tsx`, `LanguageSwitcher.tsx`, `LazyComponents.tsx`, `LegalText.test.tsx`, `LegalText.tsx`, `LoadingCard.tsx`, `LocalTime.tsx`, `LocaleSync.tsx`, `MatchCard.tsx`, `NotificationCenter.tsx`, `OfflineIndicator.tsx`, `OnboardingSteps.tsx`, `OptimizedLink.tsx`, `PageContextualHelp.tsx`, `PageLoading.tsx`, `PageSkeletons.tsx`, `PageTransition.tsx`, `PersonActions.tsx`, `PreviewSessionGuard.tsx`, `ProfileCompletion.tsx`, `QuickActions.tsx`, `RelativeTime.tsx`, `ReportBlockModal.tsx`, `RoleBadge.tsx`, `RoleSwitcher.tsx`, `RouteError.tsx`, `SampleDataNotice.tsx`, `SanitizedHtml.tsx`, `ScheduleCallModal.tsx`, `ServiceWorkerRegistration.tsx`, `SkillChip.tsx`, `Spinner.tsx`, `StatCard.tsx`, `StatusText.tsx`, `ThemeToggle.tsx`, `UnavailableButton.tsx`, `UnavailableMenuItem.tsx`
+- **dashboard** (13): `DashboardActivity.tsx`, `DashboardCalendar.tsx`, `DashboardGreeting.tsx`, `DashboardHero.tsx`, `DashboardJobs.tsx`, `DashboardMembers.tsx`, `DashboardNewsletter.tsx`, `DashboardPoll.tsx`, `DashboardStats.tsx`, `MetricTile.tsx`, `SectionCard.tsx`, `WhatsNewPanel.tsx`, `whatsNew.test.tsx`
+- **discover** (3): `ProfileCard.tsx`, `SearchFilters.tsx`, `naturalSearch.test.tsx`
+- **endorsements** (3): `EndorsementBasisLine.tsx`, `GiveEndorsementDialog.test.tsx`, `GiveEndorsementDialog.tsx`
+- **events** (1): `EventCard.tsx`
+- **feed** (5): `CreatePost.test.tsx`, `CreatePost.tsx`, `FeedPostComposer.test.tsx`, `FeedPostComposer.tsx`, `PostCard.tsx`
+- **gamification** (10): `BadgesWidget.tsx`, `NextActionBanner.tsx`, `OnboardingChecklist.test.tsx`, `OnboardingChecklist.tsx`, `ReputationSystem.tsx`, `UserBadges.tsx`, `VentureReadinessCard.tsx`, `WorkspaceMetricsPanels.tsx`, `WorkspaceScoringWidget.tsx`, `XPProgressWidget.tsx`
+- **icons** (2): `CfbGlyph.test.tsx`, `CfbGlyph.tsx`
+- **intros** (2): `AskIntroDialog.tsx`, `OpenToLine.tsx`
+- **landing** (2): `LiveStats.test.tsx`, `LiveStats.tsx`
+- **layout** (24): `AppShell.tsx`, `AppShellFrame.test.tsx`, `CommandPaletteHost.tsx`, `GlobalFloatingUi.tsx`, `LandingNav.tsx`, `MobileBottomNav.tsx`, `MobileNav.tsx`, `MobileNavigation.test.tsx`, `ModeSwitcher.tsx`, `NotificationsBell.tsx`, `PageRail.test.tsx`, `PageRail.tsx`, `PageRailContext.tsx`, `PhonePlaceholderFit.tsx`, `RailParts.test.tsx`, `RailParts.tsx`, `RoleTheme.tsx`, `SearchBar.tsx`, `SideNav.tsx`, `SidebarContext.tsx`, `SkipToContent.tsx`, `TopBar.tsx`, `UserMenu.test.tsx`, `UserMenu.tsx`
+- **members** (2): `EnhancedMemberDirectory.tsx`, `MembersPageClient.tsx`
+- **mentoring** (4): `BookingCalendar.tsx`, `BookingCard.tsx`, `SessionDateTile.tsx`, `SessionDialogs.tsx`
+- **messages** (2): `MessageComposer.tsx`, `MessageThread.tsx`
+- **messaging** (4): `ChatWindow.tsx`, `ConversationList.tsx`, `ConversationValidation.tsx`, `ThreadAvatar.tsx`
+- **notifications** (1): `NotificationCenter.tsx`
+- **optimization** (1): `VirtualList.tsx`
+- **profile** (10): `ExperienceEditor.tsx`, `LinkedInImportDialog.test.tsx`, `LinkedInImportDialog.tsx`, `ProfileCompleteness.tsx`, `ProfileHero.tsx`, `ProfileSections.test.tsx`, `ProfileSections.tsx`, `ProfileTrust.test.tsx`, `ProfileTrust.tsx`, `SkillEvidencePanel.tsx`
+- **providers** (5): `ApiHealthProbe.tsx`, `PostHogProvider.tsx`, `QueryProvider.test.tsx`, `QueryProvider.tsx`, `TenantContext.tsx`
+- **recommendations** (1): `SmartRecommendations.tsx`
+- **research** (34): `AIAnalysisPanel.tsx`, `BoardExport.tsx`, `BoardHistoryDrawer.tsx`, `BoardMiniMap.test.tsx`, `BoardMiniMap.tsx`, `BoardSettingsPanel.tsx`, `BoardSummaryPanel.tsx`, `BoardTemplates.tsx`, `CanvasAlignmentGuides.tsx`, `CanvasBranchSelector.tsx`, `CanvasCommentPin.tsx`, `CanvasCopilotPanel.tsx`, `CanvasDrawToolbar.test.tsx`, `CanvasDrawToolbar.tsx`, `CanvasInspectorPanel.tsx`, `CanvasRulers.tsx`, `CanvasVersionPanel.tsx`, `CollaboratorsBar.tsx`, `CommentsPanel.tsx`, `EmptyCanvasStarter.tsx`, `EntityReferenceSelector.tsx`, `FlowDiagramNode.tsx`, `MermaidDiagramNode.tsx`, `NodeTagsEditor.tsx`, `PdfAnnotationViewer.tsx`, `ResearchConnectorLines.tsx`, `ResearchGroupFrame.tsx`, `ResearchNodeCard.tsx`, `ResearchNodeViewer.tsx`, `RichTextEditor.tsx`, `ShapeLibraryPanel.tsx`, `ShapeNode.tsx`, `VisualTemplateNode.tsx`, `WhiteboardNode.tsx`
+- **search** (1): `AdvancedSearch.tsx`
+- **settings** (4): `LinkedAccounts.tsx`, `OpenToCard.tsx`, `VerificationCard.test.tsx`, `VerificationCard.tsx`
+- **shared** (1): `ContributionGraph.tsx`
+- **social** (2): `InviteSystem.tsx`, `ShareButton.tsx`
+- **theme** (1): `ThemeSwitcher.tsx`
+- **ui** (40): `accordion.test.tsx`, `accordion.tsx`, `avatar.tsx`, `badge.tsx`, `bulk-action-bar.tsx`, `button.test.tsx`, `button.tsx`, `card.tsx`, `checkbox.tsx`, `confirm-dialog.test.tsx`, `confirm-dialog.tsx`, `date-range-picker.tsx`, `dialog.returnFocus.test.tsx`, `dialog.tsx`, `dropdown-menu.tsx`, `enhanced-card.tsx`, `export-dialog.tsx`, `form-field.test.tsx`, `form-field.tsx`, `hairline-meter.tsx`, `image-cropper.tsx`, `input.tsx`, `label.tsx`, `progress.test.tsx`, `progress.tsx`, `rich-text-editor.tsx`, `select.tsx`, `settings-row.tsx`, `share-modal.test.tsx`, `share-modal.tsx`, `sheet.tsx`, `skeleton.tsx`, `skeletons.tsx`, `switch.tsx`, `table.tsx`, `tabs.tsx`, `textarea.tsx`, `toast.test.tsx`, `toast.tsx`, `tooltip.tsx`
+- **updates** (3): `FollowButton.tsx`, `UpdateCard.tsx`, `UpdateComposer.tsx`
+- **video** (3): `VideoCall.tsx`, `VideoCallDemo.tsx`, `VideoCallProvider.tsx`
+- **workspace** (3): `FilterBar.tsx`, `PageHeader.tsx`, `StatsCard.tsx`
+
+### 48.8 Κάθε σελίδα
+
+Οι 169 διαδρομές είναι το ίδιο σύνολο με το §45.7. Καμία σελίδα δεν προστέθηκε και καμία δεν αφαιρέθηκε. Οι εννέα που άλλαξαν συμπεριφορά μετά το `f088d473` έχουν δική τους γραμμή. Οι υπόλοιπες 160 κρατούν τη γραμμή του §45.7, με τους αριθμούς του §48.4 στη θέση των 15.656 και 14.013.
+
+| διαδρομή | επόμενο |
+|---|---|
+| `/` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/achievements` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/activity` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/audit-log` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/automations` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/billing` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/communities` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/community-management` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/content-moderation` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/domains` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/feature-flags` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/mentorship-management` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/programs` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/reports` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/security-monitoring` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/sso` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/system-settings` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/taxonomy` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/tenants` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/user-detail/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/user-management` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/admin/users` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/ai` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/ai/capabilities` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/api-status` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/auth/oauth-callback` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/auth/sso-complete` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/auth/verify-email` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/builder` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/builder/applications` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/builder/pitch-deck` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/c/[token]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/calendar` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/coaching` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/commitments` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/commitments/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/commitments/new` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/compare` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/connections` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard/founder` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard/incubator` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard/investor` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard/mentor` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/dashboard/provider` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/data-room/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/demo` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/discover` | Το παράδειγμα αναζήτησης είναι το ίδιο με το πεδίο και βρίσκει μέλος του demo και στις δύο γλώσσες. «Φίλτρα» και «Ενεργά» είναι δίγλωσσα· κάτω από 640px η λέξη μένει στο εικονίδιο (`hidden sm:inline`). Οι ενέργειες κάρτας είναι Σύνδεση και Μήνυμα. Το όνομα είναι `.person-name` (15.343px) και η γραμμή από κάτω `.person-subtitle` (14.459px). Το πεδίο και η ταξινόμηση (`data-filter-field`) είναι 15.343px μόνο στο τηλέφωνο. Επόμενο: το `AdvancedSearch` μένει ασύνδετο (§48.9). |
+| `/endorsements` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/events` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/events/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/events/create` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/expert-reviews` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/feed` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/forgot-password` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/fundraising` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/groups` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/groups/[groupId]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/groups/manage` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/groups/moderation` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/help` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/intros` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/pipeline` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/portfolio` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/scouting` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investor/watchlist` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/investors` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/invite` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/jobs` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/learning` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/login` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/marketplace` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/matches` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/matches/[userId]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/matches/compare` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/members` | Το σήμα είναι `PersonVerifiedBadge` και τυλίγεται κάτω από το όνομα, όχι σταθερό εικονίδιο σε κάθε κάρτα. Επόμενο: το όνομα μένει `text-sm` (14.906px στο τηλέφωνο), κάτω από τον τίτλο της σελίδας· δεν μεγαλώνει. |
+| `/mentor/availability` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/earnings` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/mentees` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/profile` | Ο έλεγχος δίπλα στο όνομα είναι `PersonVerifiedBadge` του συνδεδεμένου χρήστη, όχι μόνιμο `BadgeCheck`. Η σελίδα δεν χρησιμοποιεί το `ProfileHero`. Επόμενο: ίδια πάνω κάρτα με το `/profile` μόνο αν ζητηθεί· δεν είναι ο γύρος αυτός. |
+| `/mentor/requests` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/reviews` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentor/sessions` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/mentoring` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/messages` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/milestones` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/milestones/new` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/notifications` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/onboarding` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/opportunities` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/[slug]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/[slug]/admin` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/applications` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/cohorts` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/cohorts/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/events` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/members` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/mentors` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/programs` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/settings` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/org/startups` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/p/[username]` | Η δημόσια σελίδα μοιράζεται το `ProfileHero` (το όνομα είναι το h1) και το `ProfileExperience` από το `rolePayload`. Κενή εμπειρία σε ξένο προφίλ δεν ζωγραφίζεται. Δεν έχει Δραστηριότητα ούτε «παρόμοια προφίλ»: και τα δύο θέλουν θεατή. Μετρήθηκε στο `/p/preview-demo-user`: 200, το όνομα σε 15.343px, η ενότητα Experience παρούσα, χωρίς σφάλμα κονσόλας. Επόμενο: δραστηριότητα στη δημόσια κάρτα μόνο με απόφαση για το τι διαβάζεται χωρίς σύνδεση. |
+| `/pitch/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/pricing` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/privacy` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/profile` | Πάνω κάρτα `ProfileHero` (ήρεμη λωρίδα, κυκλική φωτογραφία, σήμα μόνο με `/verification/me`, γραμμή «Ανοιχτός/ή σε» από το `/open-to/me`). Από κάτω: Σχετικά, Δραστηριότητα (ενημερώσεις και κάρτες ανάγκης), Εμπειρία και Εκπαίδευση, παρόμοια προφίλ από κοινό ρόλο, δεξιότητες, κλάδο και πόλη. Μετρήθηκε στα 390px: τίτλος 15.343px, ενότητες Experience και Activity παρούσες, επικεφαλίδα μενού `text-transform: none`, κανένα σφάλμα κονσόλας. Επόμενο: η εμπειρία μένει στο `rolePayload`· δεν προστίθεται στήλη ούτε migration. |
+| `/profile/edit` | Ο επεξεργαστής εμπειρίας γράφει έως 10 ρόλους και 6 σπουδές, μόνο έτος, και αποθηκεύεται με το Save της φόρμας (`#experience`). Η εισαγωγή LinkedIn μπορεί να γεμίσει τις ίδιες λίστες και δεν γράφει τίποτα πριν από το Save. Επόμενο: έξω από τα demo cookies η αποθήκευση περιμένει το βήμα 2 του §48.9. |
+| `/profiles/[userId]` | Ίδια πάνω κάρτα με το `/profile`. Η Δραστηριότητα φορτώνει μόνο όταν υπάρχει θεατής. Ενέργειες: Πίσω, και στο δικό σου προφίλ Επεξεργασία και αντιγραφή συνδέσμου· στο ξένο Σύνδεση, Μήνυμα, ακολουθία, σύσταση, ανάλυση ταιριάσματος και αντιγραφή συνδέσμου. Επόμενο: το ίδιο όριο αποθήκευσης της εμπειρίας με το `/profile`. |
+| `/programs` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/programs/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/projects` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/projects/[projectId]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/projects/create` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/inquiries` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/profile` | Ίδια διόρθωση με το `/mentor/profile`: το σήμα ακολουθεί την επαλήθευση, όχι σταθερό εικονίδιο. Επόμενο: ίδια πάνω κάρτα με το `/profile` μόνο αν ζητηθεί. |
+| `/provider/projects` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/reviews` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/provider/services` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/readiness` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/recommendations` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/referrals` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/register` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/reputation` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/research` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/research/[boardId]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/research/canvas` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/reset-password` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/saved-searches` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/scout` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/search` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/settings` | Το `useScrollToHash` περιμένει την κάρτα του `#verification`, `#open-to` και `#language`, κατεβαίνει μία φορά και δεν κουνά σελίδα που κύλησε ήδη ο αναγνώστης. Επόμενο: οι κάρτες του §45.7 μένουν· δεν προστίθεται νέα ενότητα ρυθμίσεων σε αυτόν τον γύρο. |
+| `/settings/ai` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/settings/billing` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/settings/data-export` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/settings/notifications` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/share/[token]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/shortlist` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/startups/[id]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/t/[slug]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/analytics` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/api-keys` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/automation` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/billing` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/branding` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/dashboard` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/domains` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/members` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/programs` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/settings` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/sso` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/tenant/webhooks` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/terms` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/test-onboarding` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/themes/alliance` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/transparency` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/u/[token]` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/unauthorized` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+| `/updates` | Η γραμμή του §45.7 ισχύει. Στο τηλέφωνο ο τίτλος είναι 15.343px, ο υπότιτλος σελίδας 13.321px, η γραμμή κάτω από όνομα 14.459px, το σώμα 14.906px και το κουμπί 39.71px. Οι επικεφαλίδες ενοτήτων διαβάζονται σε title case (§48.4). |
+
+### 48.9 Σειρά που μένει
+
+| σειρά | δουλειά | αποδοχή | ρητά εκτός |
+|---|---|---|---|
+| 1 | `prisma db push` για `Commitment*`, `FounderUpdate`, `OpenToSignal`, `IntroRequest`, `SkillEvidence`, `ScoutBrief`, `ScoutProposal`, `UserVerification`, `WorkEmailChallenge`, `ProfileImportDraft`, `PublicPitch`, το πεδίο `Endorsement.basis` και το `TransparencyEvent` | εγγραφή που αποτυγχάνει στη βάση φαίνεται ως αποτυχία· χωρίς το push η αναφορά διαφάνειας μένει 0 | η εμπειρία και η εκπαίδευση δεν μπαίνουν σε αυτό το push: ζουν στο `rolePayload` και δεν έχουν στήλη |
+| 2 | εγγραφή έξω από demo cookies, στις σελίδες που γράφουν, μαζί με `/updates`, `/intros`, `/scout`, `/transparency`, τις ειδοποιήσεις καρτών, το σήμα «Ανοιχτός σε» και το Save της εμπειρίας | το toast δεν μετρά ως απόδειξη· στο demo οι κόσμοι preview μένουν η απάντηση | τα sweeps μένουν σε demo μέχρι να υπάρξει αυτή η διαδρομή |
+| 3 | το `AdvancedSearch` να καλεί `/api/search` ή να φύγει | καμία κλήση προς `/api/v1/search` από component που δεν το εισάγει σελίδα· σήμερα το καλεί το `components/search/AdvancedSearch.tsx` και καμία σελίδα δεν το εισάγει | η σελίδα `/search` καλεί ήδη `/api/search` |
+| 4 | έγκριση εφαρμογής LinkedIn για `r_verify` και `r_dma_portability_3rd_party` | μέχρι τότε μένουν κλειστά και η σελίδα το λέει | το εταιρικό email, το αρχείο εξαγωγής και η εισαγωγή εμπειρίας από αρχείο δεν περιμένουν αυτή την έγκριση |
+| 5 | απόφαση ιδιοκτήτη για να ανέβει αυτό το HEAD | το `main` είναι 7 commits πίσω (οι δύο του προφίλ και οι τέσσερις της κλίμακας, συν τη συγχώνευση)· το workflow κάνει deploy μόνο από το `main` και το πρώτο run απέτυχε γιατί λείπουν τα secrets και χρειάζεται Workers Paid (§46.5) | δεν γίνεται deploy από αυτόν τον γύρο και δεν γίνεται force στο `main` |
+| 6 | ελληνικό νομικό κείμενο στο `/privacy`, ρυθμός και γλώσσα της αναφοράς διαφάνειας, ποιος μετρά ως επενδυτής, νομική ανάγνωση του EU AI Act για κατάταξη ανθρώπων | ό,τι γραφτεί λέει ό,τι κάνει ο κώδικας | δεν το συντάσσει κύκλος κώδικα |
+
+Έκλεισε και δεν ξανανοίγει: το `/u/demo-alex-sept` μέσα στο dynamic sweep· η πάνω κάρτα προφίλ και η εμπειρία στο `rolePayload`· τα σήματα που ακολουθούν την επαλήθευση· η άγκυρα των Ρυθμίσεων· το παράδειγμα αναζήτησης του Discover· η κλίμακα του §48.4· το title case των επικεφαλίδων ενοτήτων.
+
+Δεν αλλάζει σε κανένα βήμα, εκτός αν ζητηθεί: το 39.71, τα πεδία 44px / 16.16px, το κάτω μενού, το tablet, το desktop 82%, το θόλωμα 54.72px, το πλάτος 98% του intro, και το ότι στο τηλέφωνο το `text-lg` είναι μικρότερο από το `text-base`.
+
+### 48.10 Τι δεν αποδεικνύει αυτό το τμήμα
+
+Δεν ξαναέτρεξαν typecheck, vitest, contrast, το πλήρες static sweep, το dynamic sweep, το dialog sweep ή η σουίτα προσβασιμότητας. Οι πύλες του §47.5 (tsc web 0, vitest web 1048/1048) ανήκουν στο `e7fe1bf6`, πριν από τα δύο commits του προφίλ και πριν από τη συγχώνευση με την κλίμακα. Η απογραφή έγινε με ανάγνωση του δέντρου στο `20e6db41`. Το `@cofounderbay/shared` ξαναχτίστηκε, γιατί το `dist` δεν είχε το `experience`.
+
+Με cookies του `/demo`, τοπικά, 200 στα `/dashboard/founder`, `/discover`, `/profile`, `/profile/edit`, `/profiles/user-elena`, `/p/preview-demo-user`, `/members`, `/settings`, `/jobs`, `/transparency`, `/u/demo-alex-sept`. Στα 390px, χωρίς σφάλμα κονσόλας: το `/profile` δείχνει Experience και Activity με τίτλο 15.343px, το `/p/preview-demo-user` δείχνει Experience και όχι Δραστηριότητα, το `/discover` δείχνει Connect, και η επικεφαλίδα μενού έχει `text-transform: none`. Το quick tunnel της προηγούμενης ώρας (`alot-mild-biz-dos.trycloudflare.com`) απαντούσε `Unauthorized: Tunnel not found`. Το ενεργό την ώρα αυτού του ελέγχου είναι `https://kay-kissing-prot-our.trycloudflare.com/demo` (307 με τα τρία cookies του demo, και 200 στα `/profile` και `/discover`).
