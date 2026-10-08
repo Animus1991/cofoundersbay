@@ -107,7 +107,7 @@ function StartupCard({ startup }: { startup: Startup }) {
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg">
             <AvatarImage src={startup.logoUrl} />
@@ -359,13 +359,13 @@ export default function OrgStartupsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Startups" el="Σύνολο startups" compact /></p>
               <p className="page-stat text-xl font-bold">{startups.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
                 {startups.filter((s) => s.status === 'active').length}
@@ -373,7 +373,7 @@ export default function OrgStartupsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Graduated" el="Αποφοίτησαν" compact /></p>
               <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
                 {startups.filter((s) => s.status === 'graduated').length}
@@ -381,7 +381,7 @@ export default function OrgStartupsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Avg. Readiness" el="Μέση ετοιμότητα" compact /></p>
               <p className="page-stat text-xl font-bold">
                 {scored.length ? `${Math.round(scored.reduce((acc, s) => acc + (s.readinessScore ?? 0), 0) / scored.length)}%` : '\u2014'}

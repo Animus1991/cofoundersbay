@@ -145,7 +145,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <MessageCircle className="icon-sm text-primary-accessible" />
+          <MessageCircle className="icon-sm text-muted-foreground" />
           <span className="text-sm font-semibold truncate max-w-[180px]">
             {nodeTitle ? `Comments: ${nodeTitle}` : 'Comments'}
           </span>

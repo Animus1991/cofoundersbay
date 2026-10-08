@@ -276,7 +276,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
         achievement.unlocked && 'hover:border-primary/30'
       )}
     >
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           {/* The badge is the achievement, not decoration beside it. */}
           <div
@@ -367,12 +367,12 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
   return (
     <Card className="bg-primary/[0.03] shadow-sm border-border animate-fade-in">
-      <CardContent className="p-4 md:p-6">
+      <CardContent>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary-accessible" />
+                <Trophy className="icon-lg text-muted-foreground" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
@@ -442,7 +442,7 @@ function AchievementsSkeleton() {
       <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-5">
+            <CardContent>
               <div className="flex items-start gap-4">
                 <Skeleton className="h-14 w-14 rounded-xl" />
                 <div className="flex-1 space-y-2">
@@ -732,7 +732,7 @@ export default function AchievementsPage() {
                           <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-1 px-2">
+                      <CardContent className="space-y-1">
                         {LEADERBOARD.map((user) => (
                           <div
                             key={user.rank}
@@ -744,7 +744,7 @@ export default function AchievementsPage() {
                             <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
                               {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
                             </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                               {user.name[0]}
                             </div>
                             <div className="flex-1 min-w-0">

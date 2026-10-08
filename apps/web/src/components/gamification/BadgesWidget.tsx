@@ -19,7 +19,7 @@ export function BadgesWidget() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+            <CfbGlyph name="award" className="icon-md text-muted-foreground" />
             <BilingualText en="Badges" el="Εμβλήματα" wrap />
           </CardTitle>
         </CardHeader>
@@ -39,7 +39,7 @@ export function BadgesWidget() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+            <CfbGlyph name="award" className="icon-md text-muted-foreground" />
             <BilingualText en="Badges" el="Εμβλήματα" wrap />
           </CardTitle>
         </CardHeader>
@@ -75,7 +75,7 @@ export function BadgesWidget() {
       <CardHeader>
         <CardTitle className="flex flex-col gap-2 text-base">
           <div className="flex min-w-0 items-center gap-2">
-            <CfbGlyph name="award" className="icon-md shrink-0 text-primary-accessible" />
+            <CfbGlyph name="award" className="icon-md shrink-0 text-muted-foreground" />
             <BilingualText en="Badges" el="Εμβλήματα" wrap />
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -195,7 +195,7 @@ function MedalFace({
         <circle cx="36" cy="36" r="24.5" fill="none" stroke="hsl(var(--primary) / 0.45)" strokeWidth="1.4" />
         <circle cx="36" cy="36" r="20" fill="none" stroke="hsl(var(--background) / 0.55)" strokeWidth="1" />
       </svg>
-      <CfbGlyph name={glyph} className="relative icon-lg text-primary-accessible" />
+      <CfbGlyph name={glyph} className="relative icon-lg text-muted-foreground" />
     </div>
   );
 }

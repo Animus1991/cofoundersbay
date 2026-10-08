@@ -11,9 +11,10 @@ import { previewUpdatesApi } from './demo/updates-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
+import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
 import { addComposedPost } from './feed-demo';
-import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis } from '@cofounderbay/shared';
+import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
 import { ORG, ORG_FOUNDERS, ORG_INVESTORS, ORG_MENTORS, ORG_SLUG, ORG_STAFF } from './demo/org-world';
 import {
@@ -2642,6 +2643,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // The co-founder scout: proposals only, from the demo world's people.
   const scoutAnswer = previewScoutApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (scoutAnswer !== undefined) return scoutAnswer;
+  // The transparency report: what this demo session's rules refused.
+  const transparencyAnswer = previewTransparencyApi(pathname, path, previewNowMs());
+  if (transparencyAnswer !== undefined) return transparencyAnswer;
   // The landing page's counts, counted from the demo world so demo mode
   // shows the demo's real numbers rather than fabricated ones.
   if (pathname === '/api/public/stats') {
@@ -2720,14 +2724,25 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       joinedAt: previewIsoInDays(-m.joined, 9),
     }));
     const pool = roles.includes('mentor') ? [...PEOPLE, ...orgMentorHits] : PEOPLE;
+    // The sheet's industry, skill and commitment filters, as the API applies
+    // them; a place matches in either language («Λεμεσός» finds "Limassol").
+    const listParam = (name: string) => (params.get(name) ?? '').split(',').map((v) => v.trim().toLowerCase()).filter(Boolean);
+    const industries = listParam('industries');
+    const skills = listParam('skills');
+    const commitment = listParam('commitment');
+    const places = location ? placeVariants(location).map((v) => v.toLowerCase()) : [];
     const people = pool.filter((p) => {
       const blob = `${p.displayName} ${p.headline} ${p.bio} ${p.skillNames.join(' ')} ${p.lookingFor} ${p.role}`.toLowerCase();
       const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
-      const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
-      const roleOk = !roles.length || roles.includes(p.role);
+      const locOk = !location || places.some((v) => p.location.toLowerCase().includes(v) || blob.includes(v));
+      // A co-founder candidate is a founder account in the API's role enum.
+      const roleOk = !roles.length || roles.includes(p.role) || (p.role === 'cofounder' && roles.includes('founder'));
+      const industryOk = !industries.length || p.industries.some((i) => industries.includes(i.toLowerCase()));
+      const skillOk = !skills.length || p.skillNames.some((sk) => skills.includes(sk.toLowerCase()));
+      const commitmentOk = !commitment.length || commitment.includes(String(p.availability ?? '').toLowerCase());
       const stages: readonly string[] = 'investmentStages' in p && Array.isArray(p.investmentStages) ? p.investmentStages : [];
       const stageOk = !investmentStages.length || investmentStages.some((st) => stages.includes(st));
-      return qOk && locOk && roleOk && stageOk;
+      return qOk && locOk && roleOk && stageOk && industryOk && skillOk && commitmentOk;
     });
     const peopleHits = people.map((p) => ({
       id: p.userId,
@@ -4749,7 +4764,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true };
   }
   if (pathname === '/api/invites/stats') {
-    return { stats: { total: 5, pending: 2, accepted: 2, remaining: 45 } };
+    // Ioanna verified and connected; Thanos joined and has done nothing yet.
+    return { stats: { total: 5, pending: 2, accepted: 2, active: 1, remaining: 45 } };
   }
   if (pathname === '/api/invites') {
     const invites = [

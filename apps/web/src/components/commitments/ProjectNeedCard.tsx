@@ -30,7 +30,7 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
     if (!owned) return null;
     return (
       <Card className="border-primary/15 bg-primary/[0.03]">
-        <CardContent className="flex flex-wrap items-center gap-3 p-4">
+        <CardContent className="flex flex-wrap items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-foreground"><BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact /></p>
             <p className="text-xs text-muted-foreground"><BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap /></p>

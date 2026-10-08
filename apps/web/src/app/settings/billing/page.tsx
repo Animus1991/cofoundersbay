@@ -481,6 +481,7 @@ export default function UserBillingPage() {
               <div className="p-8 text-center">
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
+                <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact /></p>
               </div>
             ) : (
               <div className="divide-y divide-border/50">

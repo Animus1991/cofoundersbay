@@ -1,7 +1,7 @@
 'use client';
 
 
-import { PROMOTED_COPY, splitPromoted } from '@cofounderbay/shared';
+import { PROMOTED_COPY, readNaturalSearch, splitPromoted, type NaturalFilter } from '@cofounderbay/shared';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
@@ -218,6 +218,44 @@ export default function DiscoverPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, activeTab]);
 
+  /*
+   * Plain-language search. Enter in the field reads the words it knows
+   * ("συνιδρυτής fintech Θεσσαλονίκη part-time") into the same filters the
+   * sheet sets and leaves the rest as text; the strip under the field says
+   * what was read and puts the words back as typed in one click.
+   */
+  const [interpreted, setInterpreted] = useState<{ typed: string; before: SearchFiltersValues; understood: NaturalFilter[] } | null>(null);
+  const searchFromField = useCallback(() => {
+    const read = readNaturalSearch(filters.q);
+    if (!read.understood.length) {
+      void runSearch();
+      return;
+    }
+    const union = (a: string[], b: string[]) => [...new Set([...a, ...b])];
+    setInterpreted({ typed: filters.q, before: filters, understood: read.understood });
+    setFilters((f) => ({
+      ...f,
+      q: read.rest,
+      role: union(f.role, read.roles),
+      industries: union(f.industries, read.industries),
+      stage: union(f.stage, read.stage),
+      availability: union(f.availability, read.availability),
+      fundingStage: union(f.fundingStage, read.fundingStage),
+      languages: union(f.languages, read.languages),
+      location: read.location ?? f.location,
+    }));
+  }, [filters, runSearch]);
+  const searchAsTyped = useCallback(() => {
+    if (!interpreted) return;
+    setFilters({ ...interpreted.before, q: interpreted.typed });
+    setInterpreted(null);
+  }, [interpreted]);
+  const changeFilters = useCallback((next: SearchFiltersValues) => {
+    // Typing again starts a new request; the old reading no longer applies.
+    if (next.q !== filters.q) setInterpreted(null);
+    setFilters(next);
+  }, [filters.q]);
+
   // Convert SearchHit to ProfileCardData
   const hitToProfile = (hit: SearchHit): ProfileCardData => ({
     id: hit.id,
@@ -348,7 +386,15 @@ export default function DiscoverPage() {
       { value: 'grid', en: 'Grid', el: 'Πλέγμα' },
       { value: 'list', en: 'List', el: 'Λίστα' },
     ], viewMode, (v) => setViewMode(v as ViewMode)),
-    { id: 'reset_filters', labelEn: 'Reset the search filters', labelEl: 'Επαναφορά φίλτρων αναζήτησης', writes: false, run: () => setFilters(defaultFilters) },
+    { id: 'reset_filters', labelEn: 'Reset the search filters', labelEl: 'Επαναφορά φίλτρων αναζήτησης', writes: false, run: () => { setInterpreted(null); setFilters(defaultFilters); } },
+    {
+      id: 'search_as_typed',
+      labelEn: 'Search the words as typed, without reading them into filters',
+      labelEl: 'Αναζήτηση των λέξεων όπως γράφτηκαν, χωρίς φίλτρα',
+      writes: false,
+      ...(interpreted ? {} : { unavailableEn: 'The last search was not read into filters.', unavailableEl: 'Η τελευταία αναζήτηση δεν μετατράπηκε σε φίλτρα.' }),
+      run: () => searchAsTyped(),
+    },
     { id: 'save_search', labelEn: 'Save the current search', labelEl: 'Αποθήκευση τρέχουσας αναζήτησης', writes: false, run: () => openSaveSearch() },
     { id: 'connect_with', labelEn: 'Open a connection request to', labelEl: 'Άνοιγμα αιτήματος σύνδεσης προς', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleConnect(hitToProfile(h)); } },
     { id: 'message_person', labelEn: 'Message', labelEl: 'Μήνυμα σε', writes: false, options: byName(shown), run: (v) => { const h = hitById(v); if (h) handleMessage(hitToProfile(h)); } },
@@ -460,8 +506,10 @@ export default function DiscoverPage() {
           {/* Filters */}
           <SearchFilters
             filters={filters}
-            onFiltersChange={setFilters}
-            onSearch={runSearch}
+            onFiltersChange={changeFilters}
+            onSearch={searchFromField}
+            interpreted={interpreted?.understood}
+            onSearchAsTyped={searchAsTyped}
             loading={loading}
             resultCount={total}
             onSaveSearch={openSaveSearch}
@@ -483,7 +531,7 @@ export default function DiscoverPage() {
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
               <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
-                <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
+                <BadgeCheck className="icon-sm shrink-0 text-muted-foreground" />
                 <span className="text-sm font-semibold text-foreground">
                   <BilingualText en="Featured profiles" el="Προτεινόμενα προφίλ" compact />
                 </span>
@@ -495,7 +543,7 @@ export default function DiscoverPage() {
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profiles/${h.userId}`}
                     className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                       {initialsOf(h.displayName)}
                     </div>
                     <div className="min-w-0">
@@ -605,7 +653,7 @@ export default function DiscoverPage() {
           <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+                  <Sparkles className="icon-md shrink-0 text-muted-foreground" />
                   Suggested for you
                 </h2>
                 <p className="text-sm text-muted-foreground">
@@ -686,7 +734,7 @@ export default function DiscoverPage() {
           <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                  <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
+                  <TrendingUp className="icon-md shrink-0 text-muted-foreground" />
                   Your Top Matches
                 </h2>
                 <p className="text-sm text-muted-foreground">

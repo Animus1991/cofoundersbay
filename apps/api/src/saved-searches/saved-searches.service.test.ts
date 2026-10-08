@@ -34,8 +34,24 @@ function fakePrisma() {
   return { prisma: { savedSearch }, rows };
 }
 
-function setup(hits: Array<{ userId: string }>) {
-  const { prisma, rows } = fakePrisma();
+type Card = { id: string; ownerId: string; title: string; kind: string; status: string; place: string | null; stage: string; isRemote: boolean; expiresAt: Date | null };
+
+/** Need cards for the `need_cards` scope: status, owner, kind and remote are applied as the API does. */
+function cardTable(cards: Card[]) {
+  return {
+    findMany: vi.fn(async ({ where }: { where: Row }) =>
+      cards
+        .filter((c) => where.status.in.includes(c.status) && c.ownerId !== where.ownerId.not)
+        .filter((c) => !where.kind || where.kind.in.includes(c.kind))
+        .filter((c) => !where.isRemote || c.isRemote)
+        .filter((c) => !c.expiresAt || c.expiresAt > new Date('2026-10-07T00:00:00Z'))
+        .map(({ id, title, kind, place, stage, isRemote }) => ({ id, title, kind, place, stage, isRemote }))),
+  };
+}
+
+function setup(hits: Array<{ userId: string }>, cards: Card[] = []) {
+  const { prisma: base, rows } = fakePrisma();
+  const prisma = { ...base, commitmentCard: cardTable(cards) };
   const search = { searchProfiles: vi.fn(async () => ({ hits, total: hits.length })) };
   const notifications = { createNotification: vi.fn(async () => ({})) };
   const service = new SavedSearchesService(prisma as never, search as never, notifications as never);
@@ -45,6 +61,7 @@ function setup(hits: Array<{ userId: string }>) {
 describe('saved-search input', () => {
   it('keeps known filter keys, drops the rest, and defaults the frequency', () => {
     expect(readSavedSearchInput({ name: ' Fintech CTOs ', query: ' payments ', filters: { roles: ['cofounder', 'cofounder'], evil: ['x'], skills: [] } })).toEqual({
+      scope: 'people',
       name: 'Fintech CTOs',
       query: 'payments',
       filters: { roles: ['cofounder'] },
@@ -128,6 +145,36 @@ describe('SavedSearchesService', () => {
     expect(rows[0].lastAlertAt).toBeInstanceOf(Date);
     expect(await service.remove('me', search.id)).toEqual({ ok: true });
     expect(rows).toHaveLength(0);
+  });
+
+  it('saves a need-card search, keeps only the board’s filters, and alerts on new cards from others', async () => {
+    const card = (id: string, extra: Partial<Card> = {}): Card => ({ id, ownerId: 'elena', title: `Card ${id}`, kind: 'cofounder', status: 'open', place: 'Athens', stage: 'building', isRemote: true, expiresAt: null, ...extra });
+    const cards = [card('c1'), card('c2', { kind: 'investor_intro' }), card('mine', { ownerId: 'me' })];
+    const { service, notifications } = setup([], cards);
+    const input = readSavedSearchInput({ scope: 'need_cards', name: 'Co-founder cards', filters: { kinds: ['cofounder', 'nonsense'], remote: ['true'], roles: ['founder'] } });
+    expect(input).toMatchObject({ scope: 'need_cards', filters: { kinds: ['cofounder'], remote: ['true'] } });
+    expect(input.filters).not.toHaveProperty('roles');
+
+    const { search } = await service.create('me', { scope: 'need_cards', name: 'Co-founder cards', filters: { kinds: ['cofounder'] }, alertsEnabled: true, alertFrequency: 'instant' });
+    expect(search).toMatchObject({ scope: 'need_cards', resultCount: 1 });
+    // The owner's own card and other kinds are never results.
+    expect((await service.run('me', search.id)).results).toEqual([expect.objectContaining({ id: 'c1' })]);
+    // What the query asks the database for: open, not mine, not expired, and only board fields back.
+    const { prisma } = (service as unknown as { prisma: { commitmentCard: { findMany: ReturnType<typeof vi.fn> } } });
+    const args = prisma.commitmentCard.findMany.mock.calls[0][0];
+    expect(args.where).toMatchObject({ status: { in: ['open', 'in_discussion'] }, ownerId: { not: 'me' }, kind: { in: ['cofounder'] } });
+    expect(args.where.AND[0]).toEqual({ OR: [{ expiresAt: null }, { expiresAt: { gt: expect.any(Date) } }] });
+    expect(Object.keys(args.select).sort()).toEqual(['id', 'isRemote', 'kind', 'place', 'stage', 'title']);
+
+    const later = Date.now() + 2 * 3_600_000;
+    expect(await service.runDueAlerts(later)).toEqual({ checked: 1, notified: 0 });
+    cards.push(card('c3'), card('c4', { status: 'closed' }), card('c5', { expiresAt: new Date('2026-01-01T00:00:00Z') }));
+    expect(await service.runDueAlerts(later + 2 * 3_600_000)).toEqual({ checked: 1, notified: 1 });
+    expect(notifications.createNotification).toHaveBeenCalledWith(expect.objectContaining({
+      userId: 'me',
+      title: '1 new need card for “Co-founder cards”',
+      meta: { savedSearchId: search.id, cardIds: ['c3'] },
+    }));
   });
 
   it('caps saved searches per person', async () => {

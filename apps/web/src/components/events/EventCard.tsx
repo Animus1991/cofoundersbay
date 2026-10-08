@@ -116,15 +116,15 @@ export function EventCard({
   if (variant === 'compact') {
     return (
       <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
-        <CardContent className="p-4">
+        <CardContent>
           <div className="flex gap-4">
             {/* Date box */}
             <div className="flex-shrink-0 text-center">
-              <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
-                <span className="text-xs font-medium text-primary-accessible">
+              <div className="w-14 h-14 rounded-lg bg-muted flex flex-col items-center justify-center">
+                <span className="text-xs text-primary-accessible">
                   {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
-                <span className="text-lg font-bold text-primary-accessible">
+                <span className="text-lg font-semibold text-primary-accessible">
                   {event.startDate.getDate()}
                 </span>
               </div>
@@ -276,12 +276,14 @@ export function EventCard({
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
-                className={cn(bookmarked && 'text-status-warning ')}
+                className={cn('gap-1.5 sm:w-auto sm:px-3', bookmarked && 'text-status-warning ')}
               >
                 <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
+                <span className="hidden sm:inline"><BilingualText en="Save" el="Αποθήκευση" compact /></span>
               </Button>
-              <Button variant="ghost" size="icon" onClick={onShare} aria-label={`Share event ${event.title}`}>
+              <Button variant="ghost" size="icon" onClick={onShare} aria-label={`Share event ${event.title}`} className="gap-1.5 sm:w-auto sm:px-3">
                 <Share2 className="icon-sm" />
+                <span className="hidden sm:inline"><BilingualText en="Share" el="Κοινοποίηση" compact /></span>
               </Button>
               <Button
                 variant={rsvped ? 'secondary' : 'default'}
@@ -313,11 +315,11 @@ export function EventCard({
         <div className="flex gap-4">
           {/* Date box */}
           <div className="flex-shrink-0 text-center">
-            <div className="w-16 h-16 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
-              <span className="text-xs font-medium text-primary-accessible">
+            <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center">
+              <span className="text-xs text-primary-accessible">
                 {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
               </span>
-              <span className="text-2xl font-bold text-primary-accessible">
+              <span className="text-2xl font-semibold text-primary-accessible">
                 {event.startDate.getDate()}
               </span>
             </div>
@@ -328,12 +330,14 @@ export function EventCard({
             {/* Wraps rather than squeezing: in a narrow card the type badge used
                 to take the title's width and cut it to two words. */}
             <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
-              <Link
-                href={`/events/${event.id}`}
-                className="min-w-0 flex-1 basis-32 font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
-              >
-                {event.title}
-              </Link>
+              <h3 className="min-w-0 flex-1 basis-32">
+                <Link
+                  href={`/events/${event.id}`}
+                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
+                >
+                  {event.title}
+                </Link>
+              </h3>
               <Badge variant="outline" className="flex-shrink-0 gap-1">
                 <EventTypeIcon type={event.type} />
                 <EventTypeLabel type={event.type} />
@@ -358,7 +362,7 @@ export function EventCard({
               <div className="flex min-w-0 items-center gap-2">
                 <Avatar className="h-6 w-6 shrink-0">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-2xs">
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs">
                     {initialsOf(event.hostName)}
                   </AvatarFallback>
                 </Avatar>
@@ -377,9 +381,10 @@ export function EventCard({
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
-            className={cn('h-8 w-8', bookmarked && 'text-status-warning ')}
+            className={cn('h-8 w-8 gap-1.5 sm:w-auto sm:px-3', bookmarked && 'text-status-warning ')}
           >
             <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
+            <span className="hidden sm:inline"><BilingualText en="Save" el="Αποθήκευση" compact /></span>
           </Button>
           <Button
             variant={rsvped ? 'secondary' : 'default'}

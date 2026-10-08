@@ -42,7 +42,7 @@ const authGuard = {
     CommitmentsService,
     { provide: PrismaService, useValue: fake.prisma },
     { provide: NotificationsService, useValue: fake.notifications },
-    { provide: VerificationService, useValue: { isVerified: async () => true, publicMethods: async () => [] } },
+    { provide: VerificationService, useValue: { isVerified: async () => true, publicMethods: async () => [], roleCleared: async () => true } },
   ],
 })
 class CommitmentsTestModule {}

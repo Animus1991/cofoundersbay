@@ -37,6 +37,7 @@ import {
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
+import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 
 /*
  * The provider's one home.
@@ -249,6 +250,7 @@ export default function ProviderDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+        <WhatsNewPanel audience="provider" />
 
         {/* Four figures, each linking to the page that lists what it counts. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">

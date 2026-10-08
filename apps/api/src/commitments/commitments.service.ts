@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Inject, Optional } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import {
   acceptsInterest,
@@ -25,10 +25,13 @@ import {
   type CommitmentStep,
   type NeedCardInput,
   type TermsFields,
+  ROLE_VERIFICATION_COPY,
+  ROLE_VERIFICATION_METHODS,
 } from '@cofounderbay/shared';
 import { VerificationService } from '../verification/verification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TransparencyService } from '../transparency/transparency.service';
 
 /**
  * Need cards and the commitment ladder.
@@ -191,6 +194,18 @@ function incompleteRefusal(assessment: ReturnType<typeof assessNeedCard>) {
  * `COMMITMENT_VERIFICATION=off` lifts the gate (local development, a pilot
  * before any verification method is configured).
  */
+/**
+ * An investor or organisation account answering an investor-introduction
+ * card first verifies its workplace (`meetsRolePolicy`); identity alone
+ * proves a person, not the fund.
+ */
+function roleRefusal() {
+  return refusal('role_verification_required', ROLE_VERIFICATION_COPY.en, {
+    messageEl: ROLE_VERIFICATION_COPY.el,
+    methods: [...ROLE_VERIFICATION_METHODS],
+  });
+}
+
 function verificationRefusal() {
   return refusal('verification_required', VERIFICATION_REQUIRED_COPY.en, {
     messageEl: VERIFICATION_REQUIRED_COPY.el,
@@ -204,8 +219,16 @@ export class CommitmentsService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
     // A Pick type emits no runtime metadata, so the token is named explicitly.
-    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'isVerified' | 'publicMethods'>,
+    @Inject(VerificationService) private readonly verification: Pick<VerificationService, 'isVerified' | 'publicMethods' | 'roleCleared'>,
+    // Counts refusals for the transparency report; absent in unit tests.
+    @Optional() @Inject(TransparencyService) private readonly transparency?: Pick<TransparencyService, 'record'>,
   ) {}
+
+  /** A need card the rules turned away: count what the transparency report counts. */
+  private countCardRefusal(assessment: ReturnType<typeof assessNeedCard>) {
+    if (assessment.contact.length) this.transparency?.record('contact_refused', 'need_card');
+    if (assessment.checks.some((c) => c.id === 'promise_free' && !c.ok)) this.transparency?.record('promise_refused', 'need_card');
+  }
 
   private async requireVerified(viewer: Viewer) {
     if (process.env.COMMITMENT_VERIFICATION === 'off') return;
@@ -332,6 +355,27 @@ export class CommitmentsService {
     return out;
   }
 
+  /**
+   * The author's verification methods, read live (a signal can lapse or be
+   * removed after the card was written), for the badge beside their name.
+   * Methods only: never the work domain or a date. A failed lookup shows no
+   * badge rather than failing the read.
+   */
+  private async withOwnerVerification<T extends { owner: { id: string } }>(cards: T[]): Promise<Array<T & { owner: T['owner'] & { verifiedMethods: string[] } }>> {
+    const ids = [...new Set(cards.map((c) => c.owner.id).filter(Boolean))];
+    const methods = new Map<string, string[]>();
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          methods.set(id, await this.verification.publicMethods(id));
+        } catch {
+          methods.set(id, []);
+        }
+      }),
+    );
+    return cards.map((c) => ({ ...c, owner: { ...c.owner, verifiedMethods: methods.get(c.owner.id) ?? [] } }));
+  }
+
   // ── Cards ─────────────────────────────────────────────────────────────────
 
   async listCards(
@@ -374,7 +418,7 @@ export class CommitmentsService {
         threads: { select: { id: true, candidateId: true, step: true } },
       },
     });
-    return { cards: rows.map((row) => this.cardShape(row as CardRow, viewer.id)) };
+    return { cards: await this.withOwnerVerification(rows.map((row) => this.cardShape(row as CardRow, viewer.id))) };
   }
 
   async getCard(viewer: Viewer, id: string) {
@@ -387,13 +431,15 @@ export class CommitmentsService {
       },
     });
     if (!card) throw new NotFoundException('Need card not found');
-    return { card: this.cardShape(card as CardRow, viewer.id) };
+    const [shaped] = await this.withOwnerVerification([this.cardShape(card as CardRow, viewer.id)]);
+    return { card: shaped };
   }
 
   async createCard(viewer: Viewer, body: Record<string, unknown>) {
     const input = readCardInput(body);
     const assessment = assessNeedCard(input);
     if (!assessment.ready) {
+      this.countCardRefusal(assessment);
       throw incompleteRefusal(assessment);
     }
     const evidence = await this.evidenceFor(viewer.id);
@@ -446,6 +492,7 @@ export class CommitmentsService {
     const patch = readCardInput({ ...current, ...body, kind: existing.kind });
     const assessment = assessNeedCard(patch);
     if (!assessment.ready) {
+      this.countCardRefusal(assessment);
       throw incompleteRefusal(assessment);
     }
     const changes = cardOfferChanges(current, patch);
@@ -557,6 +604,7 @@ export class CommitmentsService {
     });
     if (!card) throw new NotFoundException('This link is not valid or was turned off');
     const owner = person(card.owner as PersonRow);
+    const [{ owner: verifiedOwner }] = await this.withOwnerVerification([{ owner }]);
     return {
       card: {
         id: card.id,
@@ -575,7 +623,8 @@ export class CommitmentsService {
         version: card.version,
         outcome: card.status,
         settledAt: iso(card.settledAt),
-        owner: { displayName: owner.displayName, headline: owner.headline, avatarUrl: owner.avatarUrl },
+        // No id: the public card never names who the author is in the database.
+        owner: { displayName: owner.displayName, headline: owner.headline, avatarUrl: owner.avatarUrl, verifiedMethods: verifiedOwner.verifiedMethods },
       },
     };
   }
@@ -609,8 +658,17 @@ export class CommitmentsService {
     if (!acceptsInterest(card.status as CommitmentOutcome)) throw new ConflictException('This card is not taking interest any more');
     const note = textField(body?.note, NEED_CARD_LIMITS.note);
     const kinds = contactKinds(note);
-    if (kinds.length) throw contactRefusal(kinds);
-    if (hasPromiseClaims(note)) throw refusal('promise', 'Remove promised returns from the note.', { messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+    if (kinds.length) {
+      this.transparency?.record('contact_refused', 'interest');
+      throw contactRefusal(kinds);
+    }
+    if (hasPromiseClaims(note)) {
+      this.transparency?.record('promise_refused', 'interest');
+      throw refusal('promise', 'Remove promised returns from the note.', { messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+    }
+    if (card.kind === 'investor_intro' && process.env.COMMITMENT_VERIFICATION !== 'off' && !(await this.verification.roleCleared(viewer.id))) {
+      throw roleRefusal();
+    }
     const existing = await this.prisma.commitmentThread.findUnique({
       where: { cardId_candidateId: { cardId, candidateId: viewer.id } },
     });
@@ -802,7 +860,10 @@ export class CommitmentsService {
     const text = textField(body?.body, NEED_CARD_LIMITS.message);
     if (!text) throw new BadRequestException('Write a message first');
     const kinds = contactKinds(text);
-    if (kinds.length) throw contactRefusal(kinds);
+    if (kinds.length) {
+      this.transparency?.record('contact_refused', 'conversation');
+      throw contactRefusal(kinds);
+    }
     const message = await this.prisma.commitmentMessage.create({
       data: { threadId, authorId: viewer.id, body: text },
     });
@@ -867,6 +928,8 @@ export class CommitmentsService {
     }
     const { fields, note } = readTerms(body);
     const problems = validateTerms(fields, note);
+    if (problems.includes('contact')) this.transparency?.record('contact_refused', 'terms');
+    if (problems.includes('promise')) this.transparency?.record('promise_refused', 'terms');
     if (problems.includes('contact')) throw contactRefusal(contactKinds([fields.role, fields.scope, note ?? ''].join('\n')));
     if (problems.length) throw refusal('terms_invalid', 'Check the terms and try again.', { problems, messageEl: 'Ελέγξτε τους όρους και δοκιμάστε ξανά.' });
 
@@ -952,7 +1015,10 @@ export class CommitmentsService {
     if (thread.step === 'closed') throw new ConflictException('Already closed');
     if (thread.step === 'agreed') throw new ConflictException('Close the deal room before stepping back');
     const reason = textField(body?.reason, 200) || null;
-    if (reason && contactKinds(reason).length) throw contactRefusal(contactKinds(reason));
+    if (reason && contactKinds(reason).length) {
+      this.transparency?.record('contact_refused', 'conversation');
+      throw contactRefusal(contactKinds(reason));
+    }
     await this.prisma.commitmentThread.update({
       where: { id: threadId },
       data: { step: 'closed', closedById: viewer.id, closedReason: reason, closedAt: new Date() },

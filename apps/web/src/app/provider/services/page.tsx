@@ -81,7 +81,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
 
   return (
     <Card className={cn('transition-all', !isActive && 'surface-inactive')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -408,13 +408,13 @@ export default function ProviderServicesPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Services" el="Σύνολο υπηρεσιών" compact /></p>
               <p className="page-stat text-xl font-bold">{services.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className="page-stat text-xl font-bold text-status-success">
                 {services.filter((s) => s.isActive).length}
@@ -422,7 +422,7 @@ export default function ProviderServicesPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Bookings" el="Σύνολο κρατήσεων" compact /></p>
               <p className="page-stat text-xl font-bold">
                 {services.reduce((acc, s) => acc + s.bookings, 0)}

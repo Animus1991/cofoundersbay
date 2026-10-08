@@ -13,7 +13,7 @@ interface StatsCardProps {
 export function StatsCard({ value, label, color, className }: StatsCardProps) {
   return (
     <Card className={cn('transition-all hover:shadow-sm', className)}>
-      <CardContent className="p-4 text-center">
+      <CardContent className="text-center">
         <p 
           className="page-stat text-2xl font-bold tabular-nums"
           style={color ? { color } : undefined}

@@ -50,6 +50,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { bilingualInline } from '@/lib/i18n/format';
+import { pitchPost, useSuggestedPost } from '@/lib/share-text';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -506,6 +507,7 @@ export default function PitchDeckPage() {
   const [showShare, setShowShare] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [copied, setCopied] = useState(false);
+  const suggested = useSuggestedPost();
   // The share links quote this page's URL. Read during render it was ''
   // on the server and the real URL in the browser — a hydration mismatch on
   // every visit. Stamped after mount instead.
@@ -752,7 +754,7 @@ export default function PitchDeckPage() {
                 </a>
               </Button>
               <Button aria-label={bilingualAria('Share on LinkedIn', 'Κοινοποίηση στο LinkedIn')} variant="outline" size="icon" className="h-8 w-8" asChild>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(pitchPost(deck, pageUrl, suggested.lang))}>
                   <Linkedin className="icon-sm" />
                 </a>
               </Button>
@@ -844,7 +846,7 @@ export default function PitchDeckPage() {
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
-                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(pitchPost(deck, pageUrl, suggested.lang))}>
                   <Linkedin className="icon-sm mr-2" />LinkedIn
                 </a>
               </Button>

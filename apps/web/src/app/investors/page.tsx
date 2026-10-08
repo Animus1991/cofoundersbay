@@ -34,6 +34,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -232,7 +233,7 @@ function InvestorCard({
 
   return (
     <Card className="group transition-all hover:border-primary/30">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Avatar className="h-11 w-11 shrink-0">
             <AvatarImage src={investor.avatarUrl} alt="" />
@@ -287,9 +288,10 @@ function InvestorCard({
                   aria-pressed={saved}
                   type="button"
                   onClick={onToggleSave}
-                  className="tap-target rounded-md p-1 transition-colors hover:bg-muted"
+                  className="tap-target flex items-center gap-1 rounded-md p-1 transition-colors hover:bg-muted sm:px-1.5"
                 >
                   <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
+                  <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
                 </button>
               </div>
             </div>
@@ -336,7 +338,8 @@ function InvestorCard({
                   </span>
                 ))}
               </div>
-              <div className="ml-auto flex shrink-0 gap-2">
+              {/* Three actions wrap on a phone instead of widening the page. */}
+              <div className="ml-auto flex min-w-0 max-w-full flex-wrap justify-end gap-2">
                 {investor.sample ? (
                   <>
                     <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
@@ -345,7 +348,7 @@ function InvestorCard({
                     </Button>
                     <Button size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
                       <UserPlus className="icon-sm" aria-hidden="true" />
-                      <BilingualText en="Request intro" el="Αίτημα γνωριμίας" compact />
+                      <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                     </Button>
                   </>
                 ) : (
@@ -356,11 +359,14 @@ function InvestorCard({
                         <BilingualText en="Profile" el="Προφίλ" compact />
                       </Link>
                     </Button>
-                    {/* An intro starts as a message thread. */}
+                    {/* A warm path first: who you know who knows them (the
+                        intermediary decides whether to forward). The direct
+                        message stays beside it, named for what it is. */}
+                    <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="h-7 gap-1 text-xs" />
                     <Button size="sm" className="h-7 gap-1 text-xs" asChild>
                       <Link href={`/messages?to=${investor.userId}`}>
                         <UserPlus className="icon-sm" aria-hidden="true" />
-                        <BilingualText en="Request intro" el="Αίτημα γνωριμίας" compact />
+                        <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                       </Link>
                     </Button>
                   </>
@@ -624,7 +630,7 @@ export default function InvestorsPage() {
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
-                  <CardContent className="flex gap-4 p-5">
+                  <CardContent className="flex gap-4">
                     <Skeleton className="h-11 w-11 shrink-0 rounded-lg" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />

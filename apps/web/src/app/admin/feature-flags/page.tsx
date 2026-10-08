@@ -170,16 +170,8 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
 
   return (
     <Card className={cn('transition-all', !isEnabled && 'surface-inactive')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
-          <Switch
-            checked={isEnabled}
-            onCheckedChange={(v) => void onToggle(flag.id, v)}
-            className="mt-0.5"
-            aria-label={isEnabled
-              ? bilingualAria(`Disable ${flag.name}`, `Απενεργοποίηση: ${flag.name}`)
-              : bilingualAria(`Enable ${flag.name}`, `Ενεργοποίηση: ${flag.name}`)}
-          />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">{flag.name}</span>
@@ -213,6 +205,15 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
               <span className="min-w-0 truncate">By {flag.createdBy}</span>
             </div>
           </div>
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <Switch
+              checked={isEnabled}
+              onCheckedChange={(v) => void onToggle(flag.id, v)}
+              className="mt-0.5"
+              aria-label={isEnabled
+                ? bilingualAria(`Disable ${flag.name}`, `Απενεργοποίηση: ${flag.name}`)
+                : bilingualAria(`Enable ${flag.name}`, `Ενεργοποίηση: ${flag.name}`)}
+            />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -228,6 +229,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
               <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(flag)}><Trash2 className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Delete" el="Διαγραφή" compact /></DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -484,7 +486,7 @@ export default function AdminFeatureFlagsPage() {
             { label: 'Disabled', labelEl: 'Ανενεργές', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
           ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
                   <Icon className={cn('icon-sm', color)} />
                 </div>

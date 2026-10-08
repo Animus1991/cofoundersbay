@@ -479,7 +479,7 @@ export default function ProjectDetailPage() {
 
           <div className="space-y-4">
             <Card className="rounded-xl">
-              <CardContent className="space-y-3 p-4">
+              <CardContent className="space-y-3">
                 {owned ? (
                   <p className="text-center text-sm text-muted-foreground">
                     <BilingualText en={projectEn('own_this')} el={projectEl('own_this')} />

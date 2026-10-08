@@ -44,6 +44,7 @@ import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
@@ -71,7 +72,7 @@ function SearchCard({
 
   return (
     <Card className="group hover:border-primary/30 transition-colors">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -90,6 +91,21 @@ function SearchCard({
 
             {/* Filters */}
             <div className="flex flex-wrap gap-1.5 mt-3">
+              {search.scope === 'need_cards' && (
+                <Badge variant="secondary" className="text-xs">
+                  <BilingualText en="Need cards" el="Κάρτες ανάγκης" compact />
+                </Badge>
+              )}
+              {search.filters?.kinds?.map((k) => (
+                <Badge key={k} variant="outline" className="text-xs">
+                  <StatusText value={k} />
+                </Badge>
+              ))}
+              {search.filters?.remote?.length ? (
+                <Badge variant="outline" className="text-xs">
+                  <BilingualText en="Remote" el="Εξ αποστάσεως" compact />
+                </Badge>
+              ) : null}
               {search.filters.roles?.map((role) => (
                 <Badge key={role} variant="secondary" className="text-xs">
                   <Users className="icon-sm mr-1" aria-hidden="true" />
@@ -159,7 +175,7 @@ function SearchCard({
                 aria-label={bilingualAria(savedSearchesEn('toggle_alerts'), savedSearchesEl('toggle_alerts'))}
               />
               {search.alertsEnabled ? (
-                <Bell className="icon-sm text-primary-accessible" />
+                <Bell className="icon-sm text-muted-foreground" />
               ) : (
                 <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
               )}
@@ -356,6 +372,19 @@ export default function SavedSearchesPage() {
   });
 
   const handleRun = (search: SavedSearch) => {
+    if (search.scope === 'need_cards') {
+      // A need-card search opens the need cards in Opportunities with its filters.
+      const kinds = search.filters?.kinds ?? [];
+      const type = kinds.length === 1 ? ({ cofounder: 'cofounder', investor_intro: 'investment', equity_role: 'job' } as Record<string, string>)[kinds[0]] ?? 'all' : 'all';
+      const params = new URLSearchParams({ type });
+      if (search.query) params.set('q', search.query);
+      if (search.filters?.remote?.length) params.set('remote', '1');
+      void runSavedSearch(search.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: qk('saved-searches') }))
+        .catch(() => undefined);
+      router.push(`/opportunities?${params.toString()}`);
+      return;
+    }
     const params = new URLSearchParams();
     params.set('q', search.query);
     if (search.filters.roles?.length) params.set('roles', search.filters.roles.join(','));

@@ -14,6 +14,7 @@ const PUBLIC_PATHS = new Set([
   '/pricing',
   '/terms',
   '/privacy',
+  '/transparency',
   '/help',
   '/demo',
   '/api-status',

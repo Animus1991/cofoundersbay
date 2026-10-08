@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailQueueService } from '../mailer/email-queue.service';
 import { ConfigService } from '@nestjs/config';
+import { isActiveReferral, referralPoints, type ReferralActivity } from '@cofounderbay/shared';
 
 @Injectable()
 export class InvitesService {
@@ -72,13 +73,16 @@ export class InvitesService {
 
     const remaining = Math.max(0, this.MONTHLY_INVITE_LIMIT - thisMonthInvites);
     const conversionRate = totalInvites > 0 ? (acceptedInvites / totalInvites) * 100 : 0;
-    const rewards = acceptedInvites * 10; // 10 points per accepted invite
+    // Rewards follow confirmed activity, never a sign-up alone (shared `isActiveReferral`).
+    const active = await this.activeReferrals(userId);
+    const rewards = referralPoints(active);
 
     return {
       stats: {
         total: totalInvites,
         pending: pendingInvites,
         accepted: acceptedInvites,
+        active,
         remaining,
       },
       // Legacy fields for backwards compatibility
@@ -88,6 +92,56 @@ export class InvitesService {
       rewards,
       conversionRate,
     };
+  }
+
+  /**
+   * How many people who accepted this member's invitations have verified
+   * their email and taken a first real step. Each source is read on its own
+   * so a table this database lacks counts as no activity, not an error.
+   */
+  async activeReferrals(userId: string): Promise<number> {
+    const accepted = await this.prisma.invite.findMany({
+      where: { senderId: userId, status: 'accepted', acceptedById: { not: null } },
+      select: { acceptedBy: { select: { id: true, emailVerified: true } } },
+      take: 500,
+    });
+    const invitees = accepted.map((a) => a.acceptedBy).filter((u): u is { id: string; emailVerified: boolean } => !!u);
+    const verified = invitees.filter((u) => u.emailVerified).map((u) => u.id);
+    if (!verified.length) return 0;
+    const activity = new Map<string, ReferralActivity[]>(verified.map((id) => [id, []]));
+    const mark = (ids: Array<string | null | undefined>, kind: ReferralActivity) => {
+      for (const id of ids) if (id && activity.has(id)) activity.get(id)!.push(kind);
+    };
+    const attempt = async (fn: () => Promise<void>) => {
+      try {
+        await fn();
+      } catch {
+        // A source this database does not have is no activity.
+      }
+    };
+    await Promise.all([
+      attempt(async () => {
+        const rows = await this.prisma.connectionRequest.findMany({
+          where: { status: 'accepted', OR: [{ requesterId: { in: verified } }, { receiverId: { in: verified } }] },
+          select: { requesterId: true, receiverId: true },
+          take: 2000,
+        });
+        mark(rows.flatMap((r) => [r.requesterId, r.receiverId]), 'connection');
+      }),
+      attempt(async () => {
+        const rows = await this.prisma.commitmentCard.findMany({ where: { ownerId: { in: verified } }, select: { ownerId: true }, take: 2000 });
+        mark(rows.map((r) => r.ownerId), 'need_card');
+      }),
+      attempt(async () => {
+        const rows = await this.prisma.milestone.findMany({ where: { ownerId: { in: verified }, status: 'completed' }, select: { ownerId: true }, take: 2000 });
+        mark(rows.map((r) => r.ownerId), 'milestone');
+      }),
+      attempt(async () => {
+        const rows = await this.prisma.commitmentThread.findMany({ where: { candidateId: { in: verified } }, select: { candidateId: true }, take: 2000 });
+        mark(rows.map((r) => r.candidateId), 'interest');
+      }),
+    ]);
+    return invitees.filter((u) => isActiveReferral({ emailVerified: u.emailVerified, activity: activity.get(u.id) ?? [] })).length;
   }
 
   async createInvite(userId: string, email: string, message?: string) {

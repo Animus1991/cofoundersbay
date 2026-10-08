@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Copy, Linkedin, Link2, Link2Off, MoreHorizontal } from 'lucide-react';
-import { acceptsInterest, contactKinds, findPromiseClaims, INTEREST_BUDGET_COPY, NEED_CARD_LIMITS } from '@cofounderbay/shared';
+import { Copy, Linkedin, Link2, Link2Off, MoreHorizontal, Search } from 'lucide-react';
+import { acceptsInterest, contactKinds, findPromiseClaims, INTEREST_BUDGET_COPY, NEED_CARD_LIMITS, briefFromNeedCard } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction } from '@/components/layout/RailParts';
@@ -46,6 +46,8 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { cn } from '@/lib/utils';
+import { needCardPost, useSuggestedPost } from '@/lib/share-text';
+import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,
@@ -58,7 +60,7 @@ const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
 function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => void }) {
   const { success } = useToast();
   const [note, setNote] = useState('');
-  const [error, setError] = useState<{ en: string; el: string } | null>(null);
+  const [error, setError] = useState<{ en: string; el: string; reason?: string | null } | null>(null);
   const [sending, setSending] = useState(false);
   // A small budget of answers waiting on authors keeps each one considered.
   const budget = useQuery({ queryKey: qk('commitments', 'interest-budget'), queryFn: getInterestBudget });
@@ -99,6 +101,11 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
       />
       <ContactWarning text={note} promises />
       {error ? <p role="alert" className="text-sm text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
+      {error?.reason === 'role_verification_required' || error?.reason === 'verification_required' ? (
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
+        </Button>
+      ) : null}
       {budget.data ? (
         <p className="text-xs text-muted-foreground">
           {full ? (
@@ -125,6 +132,7 @@ function Board() {
   const router = useRouter();
   const qc = useQueryClient();
   const { success } = useToast();
+  const suggested = useSuggestedPost();
   const cardId = String(params?.id ?? '');
   const threadParam = search?.get('thread') ?? '';
 
@@ -195,6 +203,16 @@ function Board() {
   const notOwnerEl = isOwner ? undefined : 'Μόνο ο συντάκτης της κάρτας μπορεί να το κάνει.';
   const closed = card?.outcome === 'closed';
   usePageControls([
+    {
+      id: 'brief_scout_from_card',
+      labelEn: 'Brief the co-founder scout from this card (opens the scout, saves nothing)',
+      labelEl: 'Σημείωμα στον ανιχνευτή συνιδρυτών από αυτή την κάρτα (ανοίγει τον ανιχνευτή, δεν αποθηκεύει)',
+      writes: false,
+      ...(isOwner && card && (card.kind === 'cofounder' || card.kind === 'equity_role') && acceptsInterest(card.outcome)
+        ? {}
+        : { unavailableEn: 'Only the author of an open co-founder or equity-role card can brief the scout from it.', unavailableEl: 'Μόνο ο συντάκτης ανοιχτής κάρτας συνιδρυτή ή ρόλου με μετοχές μπορεί να ενημερώσει τον ανιχνευτή από αυτήν.' }),
+      run: () => scoutFromCard(),
+    },
     {
       id: 'open_response',
       labelEn: 'Open one response to this card',
@@ -307,6 +325,7 @@ function Board() {
                   href={linkedInShareUrl(shareUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => suggested.copy(needCardPost(card, shareUrl, suggested.lang))}
                   className="tap-target flex min-h-10 w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-muted/70"
                 >
                   <Linkedin className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -322,8 +341,40 @@ function Board() {
       },
       ]
     : [];
+  // The scout, briefed from this card: role, place, time, stage and the
+  // "who is missing" sentence. Nothing is saved until Save on /scout.
+  const scoutFromCard = () => {
+    if (!card) return;
+    const brief = briefFromNeedCard(card);
+    stashFormDraft('scout_brief', { role: brief.role, place: brief.place, commitment: brief.commitment, stage: brief.stage, note: brief.note });
+    router.push(FORM_DRAFT_ROUTES.scout_brief);
+  };
+  const scoutable = isOwner && card && (card.kind === 'cofounder' || card.kind === 'equity_role') && acceptsInterest(card.outcome);
+  const scoutSection: PageRailSection[] = scoutable
+    ? [
+      {
+        id: 'scout',
+        glyph: 'discover',
+        labelEn: 'Find people',
+        labelEl: 'Εύρεση ανθρώπων',
+        content: (
+          <div className="space-y-2">
+            <p className="px-2.5 text-xs text-muted-foreground">
+              <BilingualText
+                en="The co-founder scout reads the members against this card and proposes people with its reasons. It contacts nobody."
+                el="Ο ανιχνευτής συνιδρυτών διαβάζει τα μέλη με βάση αυτή την κάρτα και προτείνει ανθρώπους με τους λόγους του. Δεν επικοινωνεί με κανέναν."
+                wrap
+              />
+            </p>
+            <RailAction icon={Search} en="Brief the scout from this card" el="Σημείωμα στον ανιχνευτή από αυτή την κάρτα" onClick={scoutFromCard} />
+          </div>
+        ),
+      },
+      ]
+    : [];
   const rail: PageRailSection[] = [
     ...shareSection,
+    ...scoutSection,
     {
       id: 'versions',
       glyph: 'research',
@@ -430,7 +481,7 @@ function Board() {
     >
       <div className="space-y-6">
         <Card>
-          <CardContent className="p-5">
+          <CardContent>
             <NeedCard card={card} headingLevel={2} />
             {card.projectRef ? (
               <p className="pt-4 text-sm">
@@ -480,7 +531,7 @@ function Board() {
           </Card>
         ) : (
           <Card>
-            <CardContent className="p-5">
+            <CardContent>
               {activeThreadId ? (
                 <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} />
               ) : acceptsInterest(card.outcome) ? (

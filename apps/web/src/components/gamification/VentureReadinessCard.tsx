@@ -80,9 +80,9 @@ function RadialGauge({ score }: { score: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" aria-hidden="true">
-        <span className="text-base font-bold leading-none text-foreground tabular-nums">
+        <span className="text-base font-semibold leading-none text-foreground tabular-nums">
           {score}
-          <span className="text-xs font-medium text-muted-foreground">/100</span>
+          <span className="text-xs text-muted-foreground">/100</span>
         </span>
         {/* The tier label is a single Greek or English word inside the ring;
             centred and clipped rather than allowed to spill, so a longer tier
@@ -90,7 +90,7 @@ function RadialGauge({ score }: { score: number }) {
             it used to carry is now a 3.3px `gap` on the column, so the figure
             and the label are separated by the container rather than by a margin
             that the first line's own leading was already eating. */}
-        <span className={cn('max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
+        <span className={cn('max-w-full truncate px-1 text-center text-xs font-semibold', color)}>
           {tierLabel}
         </span>
       </div>
@@ -128,7 +128,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   if (isLoading && !vrs) {
     return (
       <Card className={className}>
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="space-y-3">
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-20 w-full" />
         </CardContent>
@@ -161,7 +161,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact && 'page-section--compact', titleClassName)}>
-            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+            <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
             <BilingualText en="Founder progress score" el="Βαθμός προόδου ιδρυτή" />
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>

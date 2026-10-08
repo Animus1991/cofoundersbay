@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -32,7 +32,7 @@ import {
   listOpportunities, type OpportunityItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
-import { NeedCardsSection } from '@/components/commitments/NeedCardsSection';
+import { NeedCardsSection, kindsForOpportunityType } from '@/components/commitments/NeedCardsSection';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -132,7 +132,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-4 sm:p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
@@ -169,7 +169,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         {opportunity.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opportunity.tags.map((tag: string) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
+              <span key={tag} className="chip rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -254,7 +254,7 @@ function JobCard({ job }: { job: JobPostingView }) {
   const { ask } = usePopupChat();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-4 sm:p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
@@ -344,7 +344,7 @@ function ProposalCard({
 
   return (
     <Card className={cn('transition-all', !isPending && 'surface-inactive')}>
-      <CardContent className="p-5 space-y-4">
+      <CardContent className="space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
@@ -532,6 +532,16 @@ export default function OpportunitiesPage() {
   const [search, setSearch] = useState('');
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [oppTypeFilter, setOppTypeFilter] = useState<OpportunityType | 'all'>('all');
+  const [cardAlertOpen, setCardAlertOpen] = useState(false);
+  // A need-card search opened from /saved-searches arrives as ?type=&q=&remote=1.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const type = p.get('type');
+    if (type && (['all', 'job', 'cofounder', 'investment', 'partnership', 'mentorship', 'other'] as const).includes(type as OpportunityType | 'all')) setOppTypeFilter(type as OpportunityType | 'all');
+    const q = p.get('q');
+    if (q) setSearch(q.slice(0, 200));
+    if (p.get('remote') === '1') setRemoteOnly(true);
+  }, []);
   const [sampleProposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
   const [showPostForm, setShowPostForm] = useState(false);
   const { openRailSection } = usePageRail();
@@ -603,6 +613,14 @@ export default function OpportunitiesPage() {
       { value: 'on', en: 'Remote only', el: 'Μόνο εξ αποστάσεως' },
     ], remoteOnly ? 'on' : 'off', (v) => setRemoteOnly(v === 'on')),
     { id: 'post_opportunity', labelEn: 'Open the post form', labelEl: 'Άνοιγμα φόρμας δημοσίευσης', writes: false, run: () => setShowPostForm(true) },
+    {
+      id: 'alert_new_need_cards',
+      labelEn: 'Set up an alert for new need cards with these filters',
+      labelEl: 'Ρύθμιση ειδοποίησης για νέες κάρτες ανάγκης με αυτά τα φίλτρα',
+      writes: false,
+      ...(kindsForOpportunityType(oppTypeFilter) ? {} : { unavailableEn: 'This opportunity type has no need cards.', unavailableEl: 'Αυτός ο τύπος ευκαιρίας δεν έχει κάρτες ανάγκης.' }),
+      run: () => { setActiveTab('listings'); setCardAlertOpen(true); },
+    },
     { id: 'accept_proposal', labelEn: 'Accept sample proposal (this screen only)', labelEl: 'Αποδοχή δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleAcceptProposal(v); } },
     { id: 'decline_proposal', labelEn: 'Decline sample proposal (this screen only)', labelEl: 'Απόρριψη δείγματος πρότασης (μόνο σε αυτή την οθόνη)', writes: false, options: rowOptions(pendingList, (p) => p.id, (p) => p.fromName), run: (v) => { if (v) handleDeclineProposal(v); } },
     {
@@ -780,7 +798,7 @@ export default function OpportunitiesPage() {
         {/* Listings tab */}
         {activeTab === 'listings' && (
           <div className="space-y-6">
-            <NeedCardsSection type={oppTypeFilter} remoteOnly={remoteOnly} search={search} />
+            <NeedCardsSection type={oppTypeFilter} remoteOnly={remoteOnly} search={search} alertOpen={cardAlertOpen} onAlertOpenChange={setCardAlertOpen} />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
@@ -803,7 +821,7 @@ export default function OpportunitiesPage() {
               </CardContent></Card>
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}><CardContent className="flex gap-4 p-5">
+                <Card key={i}><CardContent className="flex gap-4">
                   <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-48" />
@@ -875,7 +893,7 @@ export default function OpportunitiesPage() {
             ) : jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
-                  <CardContent className="flex gap-4 p-5">
+                  <CardContent className="flex gap-4">
                     <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />

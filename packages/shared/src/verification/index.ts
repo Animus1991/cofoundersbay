@@ -101,3 +101,37 @@ export const VERIFICATION_REQUIRED_COPY = {
   en: 'Verify yourself once to propose or accept terms. Interest and the first conversation do not need it.',
   el: 'Επαληθευτείτε μία φορά για να προτείνετε ή να αποδεχτείτε όρους. Το ενδιαφέρον και η πρώτη συζήτηση δεν το χρειάζονται.',
 } as const;
+
+/**
+ * Role verification for the roles founders trust with their raise.
+ *
+ * LinkedIn has required workplace verification for recruiter and executive
+ * titles since 2025. Here, an account whose role is investor or
+ * organisation (incubators, accelerators) needs a workplace-grade signal -
+ * a work email, Verified on LinkedIn for the workplace, or a role the
+ * platform team checked - before it accepts an introduction or answers a
+ * founder's investor-introduction card. Identity alone is not enough: it
+ * proves a person, not the fund or programme they claim. Everyone else
+ * keeps the ordinary progressive rule (`meetsLadderPolicy`).
+ *
+ * Data rooms are not gated here: a founder shares one by link, with an
+ * optional password, often with people who have no account at all, so the
+ * founder's choice of link is the control.
+ */
+export const SENSITIVE_ROLES = ['investor', 'org'] as const;
+export const ROLE_VERIFICATION_METHODS: readonly VerificationMethod[] = ['work_email', 'linkedin_workplace', 'admin'];
+
+export function isSensitiveRole(role: string | null | undefined): boolean {
+  return (SENSITIVE_ROLES as readonly string[]).includes(String(role ?? ''));
+}
+
+/** Whether this person may take part in introductions to investors, given their role and signals. */
+export function meetsRolePolicy(role: string | null | undefined, signals: ReadonlyArray<{ method: string; expiresAt?: string | Date | null }>, now = Date.now()): boolean {
+  if (!isSensitiveRole(role)) return true;
+  return activeSignals(signals, now).some((s) => (ROLE_VERIFICATION_METHODS as readonly string[]).includes(s.method));
+}
+
+export const ROLE_VERIFICATION_COPY = {
+  en: 'Investor and organisation accounts verify their workplace once - a work email or Verified on LinkedIn - before taking part in introductions to investors.',
+  el: 'Οι λογαριασμοί επενδυτών και οργανισμών επαληθεύουν μία φορά τον χώρο εργασίας τους - με εταιρικό email ή Verified on LinkedIn - πριν συμμετάσχουν σε συστάσεις προς επενδυτές.',
+} as const;

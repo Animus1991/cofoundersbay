@@ -101,7 +101,7 @@ function GroupCard({
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -117,16 +117,16 @@ function GroupCard({
         // nothing the card's own icon does not.
         <div className={cn('h-10 w-full rounded-t-xl relative', coverTone)}>
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
           </div>
         </div>
       )}
-      <CardContent className="p-5 space-y-3">
+      <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
               {group.avatarUrl ? (
                 <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={44} height={44} />
               ) : (
@@ -139,7 +139,7 @@ function GroupCard({
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {group.category && (
-                  <Badge variant="secondary" className="text-2xs">{group.category}</Badge>
+                  <Badge variant="secondary" className="text-xs">{group.category}</Badge>
                 )}
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
@@ -158,7 +158,7 @@ function GroupCard({
         {group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {group.tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -560,7 +560,7 @@ export default function GroupsPage() {
           {!discoverQuery.isLoading && topGroups.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-primary-accessible" />
+                <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
                 </h2>

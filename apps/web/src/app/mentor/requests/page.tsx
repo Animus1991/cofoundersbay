@@ -65,7 +65,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
       'transition-all',
       request.status === 'pending' && 'border-status-warning-border'
     )}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-4">
           <Link href={`/profiles/${request.requesterId}`} aria-label={`${displayName}`}>
             <Avatar className="h-10 w-10">
@@ -271,7 +271,7 @@ export default function MentorRequestsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-warning-bg p-2">
                 <Clock className="icon-md text-status-warning" />
               </div>
@@ -282,7 +282,7 @@ export default function MentorRequestsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-success-bg p-2">
                 <CheckCircle2 className="icon-md text-status-success" />
               </div>
@@ -293,7 +293,7 @@ export default function MentorRequestsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <div className="rounded-lg bg-status-danger-bg p-2">
                 <XCircle className="icon-md text-status-danger" />
               </div>

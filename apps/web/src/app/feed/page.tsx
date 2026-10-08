@@ -341,7 +341,8 @@ function PostCard({
             }
             aria-pressed={post.isBookmarked}
           >
-            <Bookmark className={cn('icon-sm', post.isBookmarked && 'fill-current')} aria-hidden="true" />
+            <Bookmark className={cn('icon-sm sm:mr-1', post.isBookmarked && 'fill-current')} aria-hidden="true" />
+            <span className="hidden sm:inline"><BilingualText en="Save" el="Αποθήκευση" compact /></span>
           </Button>
         </div>
 
@@ -445,7 +446,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border">
       <CardHeader className="pb-3 border-b border-border">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="icon-sm text-primary-accessible" />
+          <Users className="icon-sm text-muted-foreground" />
           Suggested Connections
         </h3>
       </CardHeader>

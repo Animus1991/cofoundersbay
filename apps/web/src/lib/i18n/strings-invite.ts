@@ -14,6 +14,8 @@ export const INVITE_STRINGS: Record<string, BilingualPair> = {
   stat_sent: { en: 'Sent', el: 'Στάλθηκαν' },
   stat_joined: { en: 'Joined', el: 'Εγγράφηκαν' },
   stat_joined_hint: { en: 'Accepted your invite', el: 'Δέχτηκαν την πρόσκλησή σας' },
+  stat_active: { en: 'Active', el: 'Ενεργοί' },
+  stat_active_hint: { en: 'Verified, with a first real step', el: 'Επαληθευμένοι, με ένα πρώτο βήμα' },
   stat_remaining: { en: 'Remaining', el: 'Απομένουν' },
   stat_remaining_hint: { en: 'Invites left', el: 'Προσκλήσεις που σας μένουν' },
 

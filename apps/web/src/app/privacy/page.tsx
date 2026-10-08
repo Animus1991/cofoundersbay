@@ -82,7 +82,11 @@ We process your data based on legitimate interests, contractual necessity, legal
 
 **Verification and LinkedIn:**
 • Work-email codes are stored hashed and expire after 15 minutes. "Verified on LinkedIn" stores only which categories LinkedIn verified (identity, workplace), never documents.
+• Accounts whose role is investor or organisation need a work-email or LinkedIn workplace verification, or a role checked by the platform team, before they accept an introduction or answer an investor-introduction card.
 • A LinkedIn data export you choose to import is read in your browser. If you use LinkedIn's portability API instead, the selected fields wait on our server for at most 15 minutes and are deleted when your profile form reads them. Nothing reaches your profile until you press Save.
+
+**Safety rules and the transparency report:**
+• Before two people have both confirmed, messages, notes, cards and briefs that contain contact details or promised returns are refused, not rewritten. Each refusal is recorded as its kind, where it happened and when, with no account and no text, and the counts are published per half year at /transparency together with the number of reports received and decided.
 
 You can review your assistant preferences in Settings → AI preferences.`,
   },
@@ -262,7 +266,7 @@ export default function PrivacyPage() {
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
             <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
@@ -290,7 +294,7 @@ export default function PrivacyPage() {
               // Four across, a side icon left ~88px for the text and the Greek
               // ran out of its tile; the icon sits above the text there.
               <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 lg:flex-col lg:gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
                   <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
                 <div className="min-w-0">
@@ -329,7 +333,7 @@ export default function PrivacyPage() {
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                     <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>

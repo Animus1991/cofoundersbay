@@ -45,6 +45,7 @@ import { IntrosModule } from './intros/intros.module';
 import { SkillEvidenceModule } from './skill-evidence/skill-evidence.module';
 import { ScoutModule } from './scout/scout.module';
 import { PublicModule } from './public/public.module';
+import { TransparencyModule } from './transparency/transparency.module';
 import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { AdminModule } from './admin/admin.module';
@@ -134,6 +135,7 @@ function findEnvFiles(): string[] {
     SkillEvidenceModule,
     ScoutModule,
     PublicModule,
+    TransparencyModule,
     LearningModule,
     MarketplaceModule,
     AdminModule,

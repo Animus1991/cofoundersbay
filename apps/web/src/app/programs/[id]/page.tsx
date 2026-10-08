@@ -153,7 +153,7 @@ export default function ProgramDetailPage() {
               Lab · Accelerator · Active · Athens" with nothing saying which
               was the organiser, the type, the status or the place. */}
           <Card>
-            <CardContent className="p-5">
+            <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
                 <Fact en="Organiser" el="Διοργανωτής">
                   {program.organization?.slug ? (
@@ -193,7 +193,7 @@ export default function ProgramDetailPage() {
           </Card>
           {program.description && (
             <Card>
-              <CardContent className="p-5">
+              <CardContent>
                 <p className="whitespace-pre-line text-sm leading-relaxed">{program.description}</p>
               </CardContent>
             </Card>
@@ -210,7 +210,7 @@ export default function ProgramDetailPage() {
           )}
           {(program.benefits?.length ?? 0) > 0 && (
             <Card>
-              <CardContent className="space-y-3 p-5">
+              <CardContent className="space-y-3">
                 <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="What the programme offers" el="Τι προσφέρει το πρόγραμμα" compact wrap /></h2>
                 <ul className="space-y-1.5 text-sm">
                   {program.benefits.map((b) => (
@@ -227,7 +227,7 @@ export default function ProgramDetailPage() {
 
         <aside>
           <Card>
-            <CardContent className="space-y-3 p-5">
+            <CardContent className="space-y-3">
               <p className="text-sm font-semibold">
                 <BilingualText en={`${programsEn('apply_to')} ${program.title}`} el={`${programsEl('apply_to')} ${program.title}`} compact wrap />
               </p>

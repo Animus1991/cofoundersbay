@@ -89,7 +89,7 @@ export function ActivityFeed() {
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex gap-4">
                 <div className="h-12 w-12 rounded-full bg-secondary/40 animate-pulse"></div>
                 <div className="flex-1 space-y-3">
@@ -113,7 +113,7 @@ export function ActivityFeed() {
 
         return (
           <Card key={activity.id} className="hover:border-primary/30 transition-colors">
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex gap-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={activity.userAvatar} alt={activity.userName} />

@@ -15,6 +15,7 @@ const PUBLIC_ROUTES: Array<{
   { path: '/register', changeFrequency: 'yearly', priority: 0.8 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/privacy', changeFrequency: 'yearly', priority: 0.3 },
+  { path: '/transparency', changeFrequency: 'monthly', priority: 0.3 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

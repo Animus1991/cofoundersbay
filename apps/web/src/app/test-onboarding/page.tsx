@@ -181,7 +181,7 @@ export default function TestOnboardingPage() {
 
         {/* Progress */}
         <Card className="mb-8">
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold"><BilingualText en="Test Progress" el="Πρόοδος ελέγχων" compact /></h2>
               <Badge variant={hasErrors ? 'destructive' : progress === 100 ? 'default' : 'secondary'}>
@@ -199,7 +199,7 @@ export default function TestOnboardingPage() {
         <div className="space-y-4 mb-8">
           {steps.map((step, index) => (
             <Card key={step.id} className={currentStepIndex === index ? 'ring-2 ring-primary' : ''}>
-              <CardContent className="p-6">
+              <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ export default function TestOnboardingPage() {
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="ml-auto flex items-center gap-2">
                     {step.status === 'success' && (
                       <Badge variant="default"><BilingualText en="Success" el="Επιτυχία" compact /></Badge>
                     )}

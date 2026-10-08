@@ -63,7 +63,7 @@ function StarRating({ rating }: { rating: number }) {
 function ReviewCard({ review }: { review: Review }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Avatar className="h-10 w-10">
             <AvatarImage src={review.menteeAvatar} />
@@ -191,7 +191,7 @@ export default function MentorReviewsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="flex items-center gap-6">
                 <div className="text-center">
                   <p className="text-3xl font-bold">{avgRating}</p>
@@ -213,7 +213,7 @@ export default function MentorReviewsPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Sessions given" el="Συνεδρίες που δόθηκαν" compact /></p>

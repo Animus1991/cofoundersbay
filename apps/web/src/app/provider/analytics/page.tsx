@@ -109,11 +109,11 @@ function MetricCard({
 
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between mb-2">
           <p className="text-xs text-muted-foreground">{label}</p>
           <div className="rounded-md bg-primary/10 p-1.5">
-            <Icon className="icon-sm text-primary-accessible" />
+            <Icon className="icon-sm text-muted-foreground" />
           </div>
         </div>
         <p className="page-stat text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
@@ -519,7 +519,7 @@ export default function ProviderAnalyticsPage() {
                     <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Per-service performance is not tracked yet." el="Η απόδοση ανά υπηρεσία δεν καταγράφεται ακόμα." wrap /></p>
                   )}
                   {topServices.map(svc => (
-                    <div key={svc.name} className="flex items-center gap-4 px-4 py-3">
+                    <div key={svc.name} className="flex items-center gap-4 px-4 sm:px-6 py-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">{svc.name}</p>
                         <p className="text-xs text-muted-foreground">{svc.inquiries} inquiries</p>

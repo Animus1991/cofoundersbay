@@ -263,12 +263,12 @@ export default function AdminAuditLogPage() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="icon-sm text-primary-accessible" />
+              <Shield className="icon-sm text-muted-foreground" />
               <BilingualText en="Activity log" el="Καταγραφή δραστηριότητας" compact />
             </CardTitle>
-            <span className="text-xs text-muted-foreground"><BilingualText en={`${total} total entries`} el={`${total} εγγραφές συνολικά`} compact /></span>
+            <span className="ml-auto text-xs text-muted-foreground"><BilingualText en={`${total} total entries`} el={`${total} εγγραφές συνολικά`} compact /></span>
           </CardHeader>
-          <CardContent className="p-4">
+          <CardContent>
             {isLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 6 }).map((_, i) => (

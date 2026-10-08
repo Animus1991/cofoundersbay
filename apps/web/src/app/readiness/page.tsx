@@ -483,7 +483,7 @@ function DimensionCard({
           at the foot of it. The grid matches these cards' heights; without it
           the shorter of a pair ended on empty space instead of its own
           content. */}
-      <CardContent className="h-full p-4 sm:p-5">
+      <CardContent className="h-full">
         {/* One column: the dimension glyph sits on the title row only.
             A side well beside the body left an empty tab under the icon,
             so criteria, “+N more”, and the recommendation started to the
@@ -493,7 +493,7 @@ function DimensionCard({
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-                  <CfbGlyph name={dim.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                  <CfbGlyph name={dim.glyph} className="icon-sm shrink-0 text-muted-foreground" />
                   <BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap />
                 </h3>
                 <TooltipProvider>
@@ -528,7 +528,7 @@ function DimensionCard({
               <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
             </div>
             <p className="mt-1.5 text-xs text-muted-foreground">
-              {done}/{dim.criteria.length}{' '}
+              <span className="tabular-nums">{done}/{dim.criteria.length}</span>{' '}
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
@@ -544,7 +544,7 @@ function DimensionCard({
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
-                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm transition-colors',
+                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg py-2.5 text-left text-sm transition-colors',
                     canToggle ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
@@ -562,7 +562,7 @@ function DimensionCard({
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="flex min-h-11 w-full items-center rounded-lg px-2.5 py-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
+                  className="flex min-h-11 w-full items-center rounded-lg py-2.5 text-left text-xs text-primary-accessible transition-colors hover:bg-secondary/60"
                 >
                   <span className="min-w-0 flex-1">
                     {expanded
@@ -581,7 +581,7 @@ function DimensionCard({
                 the space honestly. */}
             {status === 'excellent' && (
               <div className="mt-auto space-y-2.5 rounded-xl bg-secondary/40 p-3">
-                <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
+                <p className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
                   <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} />
                   <BilingualText
                     en={remaining.length ? 'What is left' : 'Fully covered'}
@@ -614,13 +614,13 @@ function DimensionCard({
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
               <div className="mt-auto space-y-2.5 rounded-xl bg-secondary/40 p-3">
-                <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
+                <p className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
                   <CfbGlyph name="spark" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
                 </p>
                 {remaining[0] && (
-                  <p className="text-xs font-medium leading-snug">
-                    <BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap />
+                  <p className="text-xs leading-snug">
+                    <span className="font-semibold"><BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap /></span>
                     {': '}
                     <BilingualText en={remaining[0].name} el={remaining[0].nameEl ?? remaining[0].name} wrap />
                     <span className="ml-1 font-normal text-muted-foreground">· {remaining[0].weight}%</span>
@@ -653,7 +653,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     <Card className="flex h-full flex-col">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2">
-          <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
           <BilingualText en={readinessEn('readiness_radar')} el={readinessEl('readiness_radar')} compact />
         </CardTitle>
       </CardHeader>
@@ -689,7 +689,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2">
-            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+            <CfbGlyph name="chart" className="icon-sm text-muted-foreground" />
             <BilingualText en={readinessEn('score_progression')} el={readinessEl('score_progression')} compact />
           </CardTitle>
           <button
@@ -726,10 +726,10 @@ function ReadinessSkeleton() {
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-96" />
       </div>
-      <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
+      <Card><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[...Array(6)].map((_, i) => (
-          <Card key={i}><CardContent className="p-5"><Skeleton className="h-32 w-full" /></CardContent></Card>
+          <Card key={i}><CardContent><Skeleton className="h-32 w-full" /></CardContent></Card>
         ))}
       </div>
     </div>
@@ -927,7 +927,7 @@ export default function ReadinessPage() {
   if (!isDemo && !workspaceId) {
     return (
       <AppShell actions={reassessAction} showHelp>
-        <Card><CardContent className="space-y-4 p-6">
+        <Card><CardContent className="space-y-4">
           <p><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
@@ -946,7 +946,7 @@ export default function ReadinessPage() {
   if (isError && !isDemo || !apiData) {
     return (
       <AppShell actions={reassessAction} showHelp>
-        <Card><CardContent className="space-y-4 p-6">
+        <Card><CardContent className="space-y-4">
           <p role="alert"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
           <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Retry" el="Επανάληψη" /></Button>
         </CardContent></Card>
@@ -989,10 +989,10 @@ export default function ReadinessPage() {
         {/* `h-full`: the grid stretches the Card, but this column was only as
         tall as its own content, so the `mt-auto` on the button below had
         nothing to push against and left 85px of empty card under it. */}
-        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <CardContent className="flex h-full flex-col gap-4">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-        <CfbGlyph name="award" className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name="award" className="icon-sm shrink-0 text-muted-foreground" />
         <BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} stacked wrap />
         </h3>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} wrap /></p>
@@ -1021,10 +1021,10 @@ export default function ReadinessPage() {
         {/* `h-full`: the grid stretches the Card, but this column was only as
         tall as its own content, so the `mt-auto` on the button below had
         nothing to push against and left 85px of empty card under it. */}
-        <CardContent className="flex h-full flex-col gap-4 p-5">
+        <CardContent className="flex h-full flex-col gap-4">
         <div className="min-w-0">
         <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-        <CfbGlyph name="wallet" className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name="wallet" className="icon-sm shrink-0 text-muted-foreground" />
         <BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} stacked wrap />
         </h3>
         <p className="mt-0.5 text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} wrap /></p>
@@ -1059,7 +1059,7 @@ export default function ReadinessPage() {
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">
-        <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+        <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
         <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
         </CardTitle>
         <AIInsightButton
@@ -1143,7 +1143,7 @@ export default function ReadinessPage() {
         <CardContent className="space-y-1">
         {demoHistory.slice().reverse().map((h, i) => (
         <div key={i} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
         {h.week}
         </div>
         <div className="flex-1">
@@ -1170,7 +1170,7 @@ export default function ReadinessPage() {
         ))}
         </CardContent>
         </Card>
-        </> : <Card><CardContent className="p-4 text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
+        </> : <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
       </div>,
     },
     {
@@ -1190,7 +1190,7 @@ export default function ReadinessPage() {
         ] as const).map((step) => (
         <Button key={step.href} asChild variant="outline" className="h-auto min-h-14 justify-start gap-3 whitespace-normal px-3 py-3 text-left">
         <Link href={step.href}>
-        <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+        <CfbGlyph name={step.glyph} className="icon-sm shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium leading-snug"><BilingualText en={readinessEn(step.title)} el={readinessEl(step.title)} compact wrap /></span>
         <span className="mt-0.5 block text-xs leading-snug text-muted-foreground"><BilingualText en={readinessEn(step.hint)} el={readinessEl(step.hint)} compact wrap /></span>
@@ -1234,7 +1234,7 @@ export default function ReadinessPage() {
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
           <Card className="min-w-0 overflow-hidden border-0 bg-primary/[0.03] lg:col-span-1">
-            <CardContent className="flex h-full flex-col items-center gap-5 p-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
+            <CardContent className="flex h-full flex-col items-center gap-5 text-center lg:flex-row lg:items-center lg:gap-8 lg:text-left">
               <ScoreEmblem
                 score={overallScore}
                 dimensions={dimensions.map((d) => ({
@@ -1427,7 +1427,7 @@ export default function ReadinessPage() {
                     const investContrib = Math.round(pct * d.investorWeight / 100);
                     return (
                       <div key={d.key} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
-                        <CfbGlyph name={d.glyph} className="icon-sm flex-shrink-0 text-primary-accessible" />
+                        <CfbGlyph name={d.glyph} className="icon-sm flex-shrink-0 text-muted-foreground" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium"><BilingualText en={d.labelEn} el={d.labelEl} compact /></p>
                           <p className="text-xs text-muted-foreground">

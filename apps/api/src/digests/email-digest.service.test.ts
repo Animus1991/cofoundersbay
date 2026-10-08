@@ -274,3 +274,58 @@ describe('message digest attribution', () => {
     ).not.toHaveProperty('participants');
   });
 });
+
+describe('digest sections fed by follows and saved searches', () => {
+  function readerPrisma() {
+    const prisma = {
+      ...makePrisma(),
+      user: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: 'reader',
+          emailVerified: true,
+          moderationStatus: 'active',
+          digestPreference: { frequency: 'weekly' },
+          notificationChannels: [],
+        }),
+      },
+      userFollow: { findMany: vi.fn().mockResolvedValue([{ followingId: 'elena' }]) },
+      founderUpdate: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: 'up-1', title: 'September: twelve interviews', body: 'What we learned.', createdAt: new Date('2026-10-05T09:00:00Z'), author: { profile: { displayName: 'Elena Papadopoulos' } } },
+        ]),
+      },
+      savedSearch: {
+        findMany: vi.fn().mockResolvedValue([
+          { id: 'ss-1', name: 'Co-founder cards', searchType: 'opportunity', pendingNewCount: 2, updatedAt: new Date('2026-10-06T09:00:00Z') },
+          { id: 'ss-2', name: 'Fintech CTOs', searchType: 'cofounder', pendingNewCount: 1, updatedAt: new Date('2026-10-06T09:00:00Z') },
+        ]),
+      },
+    };
+    return prisma;
+  }
+
+  it('lists updates from people the reader follows, and saved searches with unseen results', async () => {
+    const prisma = readerPrisma();
+    const { service } = makeService(prisma as never);
+    const digest = await service.generateUserDigest('reader', 'weekly');
+    expect(digest?.content.updates?.items[0]).toMatchObject({ title: 'Elena Papadopoulos: September: twelve interviews', url: '/updates?update=up-1' });
+    expect(prisma.founderUpdate.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ authorId: { in: ['elena'] } }) }));
+    expect(digest?.content.searches?.items.map((i) => i.description)).toEqual(['2 new need cards', '1 new profile']);
+    expect(prisma.savedSearch.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 'reader', pendingNewCount: { gt: 0 } } }));
+  });
+
+  it('leaves both sections out when the reader turned the categories off, or the tables are missing', async () => {
+    const prisma = readerPrisma();
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'reader', emailVerified: true, moderationStatus: 'active', digestPreference: { frequency: 'weekly' },
+      notificationChannels: [{ category: 'updates', isEnabled: false }, { category: 'opportunities', isEnabled: false }],
+    });
+    const { service } = makeService(prisma as never);
+    expect(await service.generateUserDigest('reader', 'weekly')).toBeNull();
+
+    const bare = { ...makePrisma(), user: readerPrisma().user };
+    const { service: older } = makeService(bare as never);
+    // No follow or saved-search tables in this database: no section, no error.
+    expect(await older.generateUserDigest('reader', 'weekly')).toBeNull();
+  });
+});

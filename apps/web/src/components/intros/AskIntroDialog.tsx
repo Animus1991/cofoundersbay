@@ -28,13 +28,13 @@ const relations = (list: IntroRelation[]) => ({
  * be for. The request goes to the intermediary, who decides whether to
  * forward it; nothing reaches the person until they do.
  */
-export function AskIntroButton({ targetId, targetName }: { targetId: string; targetName: string }) {
+export function AskIntroButton({ targetId, targetName, className }: { targetId: string; targetName: string; className?: string }) {
   const me = useStoredUser();
   const [open, setOpen] = useState(false);
   if (!me?.id || me.id === targetId) return null;
   return (
     <>
-      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+      <Button size="sm" variant="outline" className={className} onClick={() => setOpen(true)}>
         <BilingualText en="Ask for an introduction" el="Ζητήστε σύσταση" compact />
       </Button>
       {open ? <AskIntroDialog open={open} onOpenChange={setOpen} targetId={targetId} targetName={targetName} /> : null}

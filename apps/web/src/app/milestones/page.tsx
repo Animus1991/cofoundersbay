@@ -227,7 +227,7 @@ function MilestoneCard({
                       {item.status === 'completed' && (
                         // Build in public: the composer opens with the milestone as its title.
                         <Link
-                          href={`/updates?title=${encodeURIComponent(`Milestone reached: ${item.title}`)}&milestone=${encodeURIComponent(item.id)}`}
+                          href={`/updates?title=${encodeURIComponent(`${primary === 'el' ? 'Ορόσημο που πετύχαμε' : 'Milestone reached'}: ${item.title}`)}&milestone=${encodeURIComponent(item.id)}`}
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                         >
                           <Share2 className="icon-sm text-muted-foreground" />

@@ -9,7 +9,7 @@ export default function ActivityLoading() {
       <div className="space-y-4 mt-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i}>
-            <CardContent className="p-5 space-y-4">
+            <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="flex-1 space-y-2">

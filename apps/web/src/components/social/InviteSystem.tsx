@@ -105,10 +105,10 @@ export function InviteSystem() {
   return (
     <div className="space-y-6">
       <Card className="bg-primary/[0.03]">
-        <CardContent className="p-6">
+        <CardContent>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">
-              <Gift className="icon-lg text-primary-accessible" />
+              <Gift className="icon-lg text-muted-foreground" />
             </div>
             <div>
               <h2 className="text-xl font-semibold"><BilingualText en="Invite Friends & Earn Rewards" el="Προσκαλέστε φίλους & κερδίστε ανταμοιβές" compact /></h2>
@@ -266,8 +266,7 @@ export function InviteSystem() {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>• Share your unique referral link</li>
                   <li>• Friends sign up using your link</li>
-                  <li>• You both get premium features</li>
-                  <li>• Earn rewards for every successful referral</li>
+                  <li>• Rewards count once the person you invited verifies their email and takes a first real step; a sign-up alone earns nothing</li>
                 </ul>
               </div>
             </CardContent>

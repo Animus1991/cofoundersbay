@@ -11,6 +11,7 @@ import { getPitchPublication, publishPitch, unpublishPitch } from '@/lib/api';
 import { linkedInShareUrl } from '@/lib/commitments-links';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { pitchPost, useSuggestedPost } from '@/lib/share-text';
 
 /**
  * The deck's public page, from the owner's side: publish it at /pitch/[id],
@@ -23,6 +24,7 @@ import { qk } from '@/lib/query-keys';
 export function PitchPublication({ documentId }: { documentId?: string }) {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const suggested = useSuggestedPost();
   const [origin, setOrigin] = useState('');
   useEffect(() => setOrigin(window.location.origin), []);
   const key = qk('pitch-deck', 'publication', documentId ?? '');
@@ -102,7 +104,7 @@ export function PitchPublication({ documentId }: { documentId?: string }) {
               <Copy className="icon-sm mr-1.5" aria-hidden="true" /><BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact />
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href={linkedInShareUrl(url)} target="_blank" rel="noopener noreferrer" aria-label={bilingualAria('Share on LinkedIn (opens a new tab)', 'Κοινοποίηση στο LinkedIn (ανοίγει νέα καρτέλα)')}>
+              <a href={linkedInShareUrl(url)} target="_blank" rel="noopener noreferrer" onClick={() => suggested.copy(pitchPost({ title: suggested.lang === 'el' ? 'Η startup μας' : 'Our startup' }, url, suggested.lang))} aria-label={bilingualAria('Share on LinkedIn (opens a new tab)', 'Κοινοποίηση στο LinkedIn (ανοίγει νέα καρτέλα)')}>
                 <Linkedin className="icon-sm mr-1.5" aria-hidden="true" /><BilingualText en="LinkedIn" el="LinkedIn" compact />
               </a>
             </Button>

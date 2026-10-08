@@ -78,7 +78,7 @@ function InquiryCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex gap-3 sm:gap-4">
           <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
             <AvatarImage src={inquiry.clientAvatar} />
@@ -389,7 +389,7 @@ export default function ProviderInquiriesPage() {
             { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
           ].map(({ label, labelEl, value, icon: Icon, color }) => (
             <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
+              <CardContent className="flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="page-stat font-bold tabular-nums">{value}</p>

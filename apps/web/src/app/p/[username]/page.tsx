@@ -21,6 +21,7 @@ import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MainLandmark } from '@/components/layout/AppShell';
 
@@ -212,9 +213,17 @@ export default function PublicProfilePage() {
                         <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">
                           {firstName} {lastName}
                         </h1>
-                        {isVerified && (
-                          <CheckCircle2 className="icon-md text-primary-accessible" />
-                        )}
+                        {/* The platform's badge when a check stands behind it; otherwise
+                            the profile's own flag, labelled as what it is: self-declared. */}
+                        <PersonVerifiedBadge
+                          userId={username}
+                          fallback={isVerified ? (
+                            <span title="Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα" className="inline-flex items-center">
+                              <CheckCircle2 className="icon-md text-primary-accessible" aria-hidden="true" />
+                              <span className="sr-only">Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα</span>
+                            </span>
+                          ) : null}
+                        />
                         <RoleBadge role={profile.role} />
                       </div>
                       <p className="text-muted-foreground mt-1">{profile.headline ?? ''}</p>
@@ -300,7 +309,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="icon-md text-primary-accessible" />
+                    <Target className="icon-md text-muted-foreground" />
                     <BilingualText en="Looking For" el="Αναζητά" compact />
                   </CardTitle>
                 </CardHeader>

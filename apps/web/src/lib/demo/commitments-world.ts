@@ -20,9 +20,13 @@ import {
   type TermsFields,
   LADDER_TERMS_METHODS,
   VERIFICATION_REQUIRED_COPY,
+  ROLE_VERIFICATION_COPY,
+  ROLE_VERIFICATION_METHODS,
+  type TransparencySurface,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
-import { demoMeVerified, demoPersonMethods } from './verification-world';
+import { recordDemoRefusal } from './transparency-world';
+import { demoMeVerified, demoPersonMethods, demoRoleCleared } from './verification-world';
 
 export { DemoRefusal };
 
@@ -463,6 +467,8 @@ export function resetDemoCommitments() {
 }
 
 const person = (id: string) => ({ id, displayName: PEOPLE[id]?.displayName ?? 'Member', avatarUrl: null, headline: PEOPLE[id]?.headline ?? null, role: PEOPLE[id]?.role ?? null });
+/** A card's author, with the badge the API reads live beside their name. */
+const author = (id: string) => ({ ...person(id), verifiedMethods: demoPersonMethods(id) });
 
 function cardShape(world: World, card: Card) {
   const mine = card.ownerId === ME;
@@ -491,7 +497,7 @@ function cardShape(world: World, card: Card) {
     expiresAt: card.expiresAt,
     createdAt: card.createdAt,
     updatedAt: card.updatedAt,
-    owner: person(card.ownerId),
+    owner: author(card.ownerId),
     isMine: mine,
     shareToken: mine ? card.shareToken : null,
     shared: Boolean(card.shareToken),
@@ -512,9 +518,10 @@ function refresh(world: World, cardId: string, nowIso: string) {
   card.updatedAt = nowIso;
 }
 
-function contactRefusal(text: string) {
+function contactRefusal(text: string, surface: TransparencySurface) {
   const kinds = contactKinds(text);
   if (!kinds.length) return;
+  recordDemoRefusal('contact_refused', surface);
   const what = describeContactKinds(kinds);
   throw new DemoRefusal(400, `This conversation stays on CoFounderBay until you both confirm. Remove ${what.en} and send again.`, {
     reason: 'contact_details',
@@ -554,6 +561,8 @@ function readCard(body: Record<string, unknown>): NeedCardInput {
 function incomplete(input: NeedCardInput) {
   const assessment = assessNeedCard(input);
   if (assessment.ready) return;
+  if (assessment.contact.length) recordDemoRefusal('contact_refused', 'need_card');
+  if (assessment.checks.some((c) => c.id === 'promise_free' && !c.ok)) recordDemoRefusal('promise_refused', 'need_card');
   throw new DemoRefusal(400, 'The card is not ready to publish yet.', {
     reason: 'card_incomplete',
     failing: assessment.checks.filter((c) => c.required && !c.ok).map((c) => c.id),
@@ -671,7 +680,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
         version: shape.version,
         outcome: shape.outcome,
         settledAt: shape.settledAt,
-        owner: { displayName: shape.owner.displayName, headline: shape.owner.headline, avatarUrl: null },
+        owner: { displayName: shape.owner.displayName, headline: shape.owner.headline, avatarUrl: null, verifiedMethods: shape.owner.verifiedMethods },
       },
     };
   }
@@ -796,8 +805,14 @@ function route(world: World, pathname: string, path: string, method: string, bod
       if (card.ownerId === ME) throw new DemoRefusal(400, 'This is your own card');
       if (!acceptsInterest(card.status)) throw new DemoRefusal(409, 'This card is not taking interest any more');
       const note = text(body.note, NEED_CARD_LIMITS.note);
-      contactRefusal(note);
-      if (hasPromiseClaims(note)) throw new DemoRefusal(400, 'Remove promised returns from the note.', { reason: 'promise', messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+      contactRefusal(note, 'interest');
+      if (hasPromiseClaims(note)) {
+        recordDemoRefusal('promise_refused', 'interest');
+        throw new DemoRefusal(400, 'Remove promised returns from the note.', { reason: 'promise', messageEl: 'Αφαιρέστε τις υποσχέσεις αποδόσεων από το σημείωμα.' });
+      }
+      if (card.kind === 'investor_intro' && !demoRoleCleared(nowMs)) {
+        throw new DemoRefusal(400, ROLE_VERIFICATION_COPY.en, { reason: 'role_verification_required', messageEl: ROLE_VERIFICATION_COPY.el, methods: [...ROLE_VERIFICATION_METHODS] });
+      }
       if (world.threads.some((t) => t.cardId === card.id && t.candidateId === ME)) throw new DemoRefusal(409, 'You have already answered this card');
       const waiting = world.threads.filter((t) => t.candidateId === ME && t.step === 'interest').length;
       if (waiting >= INTEREST_BUDGET) {
@@ -893,7 +908,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
       }
       const message = text(body.body, NEED_CARD_LIMITS.message);
       if (!message) throw new DemoRefusal(400, 'Write a message first');
-      contactRefusal(message);
+      contactRefusal(message, 'conversation');
       const row: Message = { id: newId('msg'), threadId: thread.id, authorId: ME, body: message, createdAt: nowIso };
       world.messages.push(row);
       touch();
@@ -944,7 +959,8 @@ function route(world: World, pathname: string, path: string, method: string, bod
       };
       const note = text(body.note, NEED_CARD_LIMITS.note) || null;
       const problems = validateTerms(fields, note);
-      if (problems.includes('contact')) contactRefusal([fields.role, fields.scope, note ?? ''].join('\n'));
+      if (problems.includes('promise')) recordDemoRefusal('promise_refused', 'terms');
+      if (problems.includes('contact')) contactRefusal([fields.role, fields.scope, note ?? ''].join('\n'), 'terms');
       if (problems.length) throw new DemoRefusal(400, 'Check the terms and try again.', { reason: 'terms_invalid', problems, messageEl: 'Ελέγξτε τους όρους και δοκιμάστε ξανά.' });
       const changed = latest ? termsChanges(latest, fields) : [];
       if (latest && changed.length === 0) {
@@ -999,7 +1015,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
       if (thread.step === 'closed') throw new DemoRefusal(409, 'Already closed');
       if (thread.step === 'agreed') throw new DemoRefusal(409, 'Close the deal room before stepping back');
       const reason = text(body.reason, 200) || null;
-      if (reason) contactRefusal(reason);
+      if (reason) contactRefusal(reason, 'conversation');
       Object.assign(thread, { step: 'closed', closedById: ME, closedReason: reason, closedAt: nowIso });
       touch();
       refresh(world, card.id, nowIso);

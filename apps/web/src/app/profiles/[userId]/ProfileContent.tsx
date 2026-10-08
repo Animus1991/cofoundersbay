@@ -50,6 +50,7 @@ import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
@@ -321,7 +322,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         {/* Identity card */}
         <div className="space-y-4">
           <Card className="animate-fade-in">
-            <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
+            <CardContent className="flex flex-col items-center gap-4 text-center">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary-accessible text-xl font-bold">
@@ -330,7 +331,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               </Avatar>
 
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
+                  <PersonVerifiedBadge userId={userId} />
+                </div>
                 {profile.headline && (
                   <p className="text-sm text-muted-foreground">{profile.headline}</p>
                 )}
@@ -451,7 +455,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-primary-accessible" />
+                  <RoleIcon className="icon-sm text-muted-foreground" />
                   <StatusText value={profile.role} /> <BilingualText en="details" el="στοιχεία" compact />
                 </CardTitle>
               </CardHeader>

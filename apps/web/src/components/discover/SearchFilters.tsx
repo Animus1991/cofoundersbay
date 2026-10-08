@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import type { NaturalFilter } from '@cofounderbay/shared';
 
 export type SearchFiltersValues = {
   q: string;
@@ -59,6 +60,10 @@ type SearchFiltersProps = {
   loading?: boolean;
   resultCount?: number;
   onSaveSearch?: () => void;
+  /** What the last Enter read out of the words typed, if anything. */
+  interpreted?: readonly NaturalFilter[];
+  /** Puts the words back as typed and drops what was read from them. */
+  onSearchAsTyped?: () => void;
 };
 
 const roles = [
@@ -156,6 +161,8 @@ export function SearchFilters({
   loading,
   resultCount,
   onSaveSearch,
+  interpreted,
+  onSearchAsTyped,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -230,7 +237,7 @@ export function SearchFilters({
             <Input
               type="text"
               aria-label={bilingualAria("Search profiles", "Αναζήτηση προφίλ")}
-              placeholder={bilingualInline("Search by name, skills, industry…", "Αναζήτηση με όνομα, δεξιότητες, κλάδο…")}
+              placeholder={bilingualInline("Name, skill, or e.g. cofounder SaaS Athens full-time", "Όνομα, δεξιότητα ή π.χ. συνιδρυτής SaaS Αθήνα πλήρης απασχόληση")}
               value={filters.q}
               onChange={(e) => updateFilter('q', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
@@ -270,7 +277,7 @@ export function SearchFilters({
             <SheetContent side="right" className="w-full overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="icon-md text-primary-accessible" />
+                <Filter className="icon-md text-muted-foreground" />
                 Search Filters
               </SheetTitle>
               <SheetDescription className="sr-only"><BilingualText en="Refine search results by role, skills and other criteria." el="Περιορίστε τα αποτελέσματα αναζήτησης με ρόλο, δεξιότητες και άλλα κριτήρια." /></SheetDescription>
@@ -475,6 +482,25 @@ export function SearchFilters({
           </Button>
         )}
       </div>
+
+      {/* What Enter read out of the words typed, and the way back to them. */}
+      {interpreted && interpreted.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2" role="status">
+          <span className="text-sm text-muted-foreground">
+            <BilingualText en="Read as filters:" el="Διαβάστηκε ως φίλτρα:" compact />
+          </span>
+          {interpreted.map((f) => (
+            <Badge key={`${f.kind}-${f.value}`} variant="secondary">
+              <BilingualText en={f.en} el={f.el} compact />
+            </Badge>
+          ))}
+          {onSearchAsTyped && (
+            <Button variant="ghost" size="sm" className="ml-auto" onClick={onSearchAsTyped}>
+              <BilingualText en="Search the words as typed" el="Αναζήτηση όπως γράφτηκε" compact />
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Quick role filters */}
       <div className="flex flex-wrap items-center gap-2">

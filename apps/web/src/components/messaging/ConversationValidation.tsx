@@ -316,7 +316,7 @@ export function ConversationValidationMenu({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="icon-md text-primary-accessible" />
+              <Shield className="icon-md text-muted-foreground" />
               <BilingualText en="Conversation Validation Mode" el="Λειτουργία επικύρωσης συνομιλίας" compact />
             </DialogTitle>
             <DialogDescription>

@@ -1,5 +1,6 @@
 import { FOUNDER_UPDATE_PROBLEM_COPY, readFounderUpdate } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
+import { recordDemoRefusal } from './transparency-world';
 
 /**
  * Following and founder updates in the preview demo.
@@ -223,6 +224,7 @@ export function previewUpdatesApi(pathname: string, method: string, body: Record
   if (parts.length === 2 && method === 'POST') {
     const read = readFounderUpdate(body);
     if (!read.ok) {
+      if (read.problems.includes('promise')) recordDemoRefusal('promise_refused', 'founder_update');
       throw new DemoRefusal(400, read.problems.map((p) => FOUNDER_UPDATE_PROBLEM_COPY[p].en).join(' '), {
         reason: 'update_invalid',
         problems: read.problems,

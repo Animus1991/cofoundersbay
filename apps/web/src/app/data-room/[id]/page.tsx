@@ -658,7 +658,7 @@ export default function DataRoomPage() {
                       const FileIcon = getFileIcon(document.type);
                       return (
                         <Card key={document.id} className="group">
-                          <CardContent className="p-4">
+                          <CardContent>
                             <div className="flex items-start justify-between">
                               <FileIcon className="h-10 w-10 text-muted-foreground" />
                               <DropdownMenu>

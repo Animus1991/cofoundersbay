@@ -1,9 +1,10 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Optional, Inject } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import type { FounderUpdate, Prisma } from '@prisma/client';
 import { FOUNDER_UPDATE_PROBLEM_COPY, readFounderUpdate } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TransparencyService } from '../transparency/transparency.service';
 
 /**
  * Follow a founder, and the updates they send the people who do.
@@ -31,6 +32,7 @@ export class FounderUpdatesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    @Optional() @Inject(TransparencyService) private readonly transparency?: Pick<TransparencyService, 'record'>,
   ) {}
 
   // ── Follow ────────────────────────────────────────────────────────────────
@@ -94,6 +96,7 @@ export class FounderUpdatesService {
   async create(authorId: string, body: unknown) {
     const read = readFounderUpdate(body);
     if (!read.ok) {
+      if (read.problems.includes('promise')) this.transparency?.record('promise_refused', 'founder_update');
       throw new BadRequestException({
         success: false,
         error: {

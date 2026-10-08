@@ -38,7 +38,10 @@ export default async function FounderDashboardPage() {
     // which hydrates into a different cache entry — so this fetch was paid for on
     // the server, shipped in the payload, then thrown away and refetched on the
     // client, exactly the silent miss the comment above warns about.
-    seed(queryKeys.recommendations, '/api/matching/recommendations?limit=5'),
+    // The API serves recommendations at /api/recommendations (the client's
+    // getRecommendations); /api/matching/recommendations never existed, so this
+    // seed always missed and the client fetched again.
+    seed(queryKeys.recommendations, '/api/recommendations?limit=5'),
     seed(queryKeys.connections.pendingReceived(), '/api/connections/requests'),
   ]);
 

@@ -57,6 +57,7 @@
 /groups/manage
 /groups/moderation
 /help
+/intros
 /investor/analytics
 /investor/dashboard
 /investor/pipeline
@@ -120,6 +121,7 @@
 /research/canvas
 /reset-password
 /saved-searches
+/scout
 /search
 /settings
 /settings/ai
@@ -142,4 +144,6 @@
 /terms
 /test-onboarding
 /themes/alliance
+/transparency
 /unauthorized
+/updates

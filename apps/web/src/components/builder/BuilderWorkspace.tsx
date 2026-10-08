@@ -552,7 +552,7 @@ export function BuilderWorkspace({
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="min-w-0">
-              <CardContent className="p-3">
+              <CardContent>
                 <Skeleton className="mb-2 h-7 w-12" />
                 <Skeleton className="h-3 w-20" />
               </CardContent>
@@ -905,13 +905,14 @@ export function BuilderWorkspace({
             </p>
           </div>
           <AIInsightButton
-            className="h-8 w-full sm:w-auto"
+            className="h-8 w-full sm:ml-auto sm:w-auto"
             prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`}
           />
         </CardHeader>
         {/* Two columns keep each percentage beside its name instead of a
             full content width away from it. */}
-        <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2">
+        <CardContent>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {DEFAULT_DOC_TYPES.map((type) => {
             const existing = documents.find((d) => d.type === type);
             const labelEn = docLabelEn(type);
@@ -919,7 +920,7 @@ export function BuilderWorkspace({
             return (
               <Button
                 key={type}
-                className="h-auto w-full justify-between rounded-md bg-secondary/30 px-3 py-1.5 text-foreground"
+                className="chip h-auto w-full justify-between rounded-md bg-secondary/30 px-3 py-1.5 text-foreground"
                 variant="ghost"
                 size="sm"
                 onClick={() => {
@@ -951,6 +952,7 @@ export function BuilderWorkspace({
               </Button>
             );
           })}
+          </div>
         </CardContent>
       </Card>
 
@@ -993,7 +995,7 @@ export function BuilderWorkspace({
                   <ul className="space-y-2">
                     {nextMilestones.slice(0, 6).map((milestone, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs leading-snug text-foreground">
-                        <ChevronRight className="icon-sm mt-0.5 shrink-0 text-primary-accessible" aria-hidden="true" />
+                        <ChevronRight className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                         <span className="min-w-0"><PreviewHint text={milestone} /></span>
                       </li>
                     ))}

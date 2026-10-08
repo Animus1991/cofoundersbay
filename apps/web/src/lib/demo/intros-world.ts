@@ -13,9 +13,12 @@ import {
   type IntroProblem,
   type IntroRole,
   type IntroStatus,
+  ROLE_VERIFICATION_COPY,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
 import { previewCommitmentsApi } from './commitments-world';
+import { demoRoleCleared } from './verification-world';
+import { recordDemoRefusal } from './transparency-world';
 
 /**
  * Warm introductions in the preview demo, with the API's rules.
@@ -228,6 +231,8 @@ function myCards(now: number): DemoCard[] {
 }
 
 function refuse(problems: IntroProblem[]): never {
+  if (problems.includes('contact')) recordDemoRefusal('contact_refused', 'intro');
+  if (problems.includes('promise')) recordDemoRefusal('promise_refused', 'intro');
   throw new DemoRefusal(400, problems.map((p) => INTRO_PROBLEM_COPY[p].en).join(' '), {
     reason: 'intro_invalid',
     problems,
@@ -320,6 +325,9 @@ export function previewIntrosApi(pathname: string, path: string, method: string,
   if (parts[1] === 'not-now' && method === 'POST') return step('not_now');
   if (parts[1] === 'accept' && method === 'POST') {
     if (!introTransition(row.status, role, 'accept')) throw new DemoRefusal(403, 'That step is not yours to take now');
+    if (!demoRoleCleared(now)) {
+      throw new DemoRefusal(400, ROLE_VERIFICATION_COPY.en, { reason: 'role_verification_required', messageEl: ROLE_VERIFICATION_COPY.el });
+    }
     const answer = previewCommitmentsApi(
       `/api/commitments/cards/${encodeURIComponent(row.cardId)}/interest`,
       `/api/commitments/cards/${encodeURIComponent(row.cardId)}/interest`,

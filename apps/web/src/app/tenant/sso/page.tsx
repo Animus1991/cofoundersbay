@@ -85,7 +85,7 @@ function ProviderCard({
 
   return (
     <Card className={provider.isActive ? undefined : 'surface-inactive'}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -402,7 +402,7 @@ export default function TenantSSOPage() {
         {/* Status Banner */}
         {ssoMode !== 'disabled' && activeProviderCount > 0 ? (
           <Card className="border-status-success-border bg-status-success-bg">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <Shield className="icon-md text-status-success shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium"><BilingualText en="SSO is active" el="Το SSO είναι ενεργό" compact /></p>
@@ -418,7 +418,7 @@ export default function TenantSSOPage() {
           </Card>
         ) : (
           <Card className="border-status-warning-border bg-status-warning-bg">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="flex items-center gap-3">
               <AlertCircle className="icon-md text-status-warning shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium"><BilingualText en="SSO is not set up" el="Το SSO δεν έχει ρυθμιστεί" compact /></p>

@@ -89,6 +89,7 @@ export const QUERY_ROOTS = [
   'skills',
   'sso',
   'tenant',
+  'transparency',
   'user-search-invite',
   'verification',
   'weekly-digest',

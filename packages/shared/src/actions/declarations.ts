@@ -30,8 +30,8 @@ export const ACTION_DECLARATIONS = [
     kind: 'read',
     label: { en: 'Search people', el: 'Αναζήτηση ανθρώπων' },
     description: {
-      en: 'Search profiles across the network by free text and optionally by location. Returns up to six people with headline, role and match score.',
-      el: 'Αναζητά προφίλ στο δίκτυο με ελεύθερο κείμενο και προαιρετικά τοποθεσία. Επιστρέφει έως έξι άτομα με τίτλο, ρόλο και σκορ ταιριάσματος.',
+      en: 'Search profiles across the network by free text and optionally by location, role, industry, commitment and investment stage. Known words in the text ("cofounder fintech Thessaloniki part-time") are read into those filters. Returns up to six people with headline, role and match score.',
+      el: 'Αναζητά προφίλ στο δίκτυο με ελεύθερο κείμενο και προαιρετικά τοποθεσία, ρόλο, κλάδο, διαθέσιμο χρόνο και στάδιο επένδυσης. Γνωστές λέξεις του κειμένου («συνιδρυτής fintech Θεσσαλονίκη part-time») διαβάζονται ως φίλτρα. Επιστρέφει έως έξι άτομα με τίτλο, ρόλο και σκορ ταιριάσματος.',
     },
     params: [
       {
@@ -50,6 +50,42 @@ export const ACTION_DECLARATIONS = [
         description: {
           en: 'City or country to narrow the search, e.g. "Athens".',
           el: 'Πόλη ή χώρα για περιορισμό, π.χ. «Αθήνα».',
+        },
+      },
+      {
+        name: 'roles',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Comma-separated directory roles: founder, mentor, investor, org.',
+          el: 'Ρόλοι καταλόγου, χωρισμένοι με κόμμα: founder, mentor, investor, org.',
+        },
+      },
+      {
+        name: 'industries',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Comma-separated industries as the Discover filters name them, e.g. "Fintech,SaaS".',
+          el: 'Κλάδοι όπως τους ονομάζουν τα φίλτρα της Ανακάλυψης, π.χ. «Fintech,SaaS».',
+        },
+      },
+      {
+        name: 'commitment',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Comma-separated time commitment: full-time, part-time, weekends, flexible.',
+          el: 'Διαθέσιμος χρόνος, χωρισμένος με κόμμα: full-time, part-time, weekends, flexible.',
+        },
+      },
+      {
+        name: 'fundingStage',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'Comma-separated investment stages for investors: pre-seed, seed, series-a, series-b, bootstrapped.',
+          el: 'Στάδια επένδυσης για επενδυτές, χωρισμένα με κόμμα: pre-seed, seed, series-a, series-b, bootstrapped.',
         },
       },
     ],

@@ -45,6 +45,7 @@ describe('CommitmentsService', () => {
   let fake: ReturnType<typeof createFakePrisma>;
   let service: CommitmentsService;
   let verified: Set<string>;
+  let roleBlocked: Set<string>;
 
   beforeEach(() => {
     fake = createFakePrisma();
@@ -52,9 +53,11 @@ describe('CommitmentsService', () => {
     fake.addUser(MARCUS.id, 'Marcus Chen');
     fake.addUser(SOFIA.id, 'Sofia Alexiou');
     verified = new Set([ELENA.id, MARCUS.id, SOFIA.id]);
+    roleBlocked = new Set();
     service = new CommitmentsService(fake.prisma as never, fake.notifications as never, {
       isVerified: async (id: string) => verified.has(id),
       publicMethods: async (id: string) => (verified.has(id) ? ['work_email'] : []),
+      roleCleared: async (id: string) => !roleBlocked.has(id),
     });
   });
 
@@ -174,11 +177,23 @@ describe('CommitmentsService', () => {
       const { token } = await service.shareCard(ELENA, card.id);
       const { card: open } = await service.getPublicCard(token);
       expect(open.title).toBe(CARD.title);
-      expect(open.owner).toEqual({ displayName: 'Elena Papadopoulos', headline: null, avatarUrl: null });
+      // The badge says how she is verified, never the domain or the date.
+      expect(open.owner).toEqual({ displayName: 'Elena Papadopoulos', headline: null, avatarUrl: null, verifiedMethods: ['work_email'] });
       const serialised = JSON.stringify(open);
       for (const leak of ['u-elena', 'projectRef', 'shareToken', token, 'elena@harbor.test']) {
         expect(serialised).not.toContain(leak);
       }
+    });
+
+    it('carries the author’s verification live, on the board and on the public card', async () => {
+      const card = await publish();
+      expect((await service.getCard(MARCUS, card.id)).card.owner.verifiedMethods).toEqual(['work_email']);
+      expect((await service.listCards(MARCUS, {})).cards[0].owner.verifiedMethods).toEqual(['work_email']);
+      // A signal that lapses after the card was written is not shown.
+      verified.delete(ELENA.id);
+      expect((await service.getCard(MARCUS, card.id)).card.owner.verifiedMethods).toEqual([]);
+      const { token } = await service.shareCard(ELENA, card.id);
+      expect((await service.getPublicCard(token)).card.owner.verifiedMethods).toEqual([]);
     });
 
     it('stops working the moment it is revoked', async () => {
@@ -413,6 +428,28 @@ describe('CommitmentsService', () => {
       } finally {
         delete process.env.COMMITMENT_VERIFICATION;
       }
+    });
+  });
+
+  describe('role verification for investor-introduction cards', () => {
+    const INTRO_CARD = { ...CARD, kind: 'investor_intro', title: 'An introduction to a pre-seed fund for Harbor' };
+
+    it('asks an investor or organisation account without a workplace signal to verify before answering', async () => {
+      const { card } = await service.createCard(ELENA, INTRO_CARD);
+      roleBlocked.add(MARCUS.id);
+      await expect(service.expressInterest(MARCUS, card.id, { note: 'I back B2B SaaS at pre-seed.' })).rejects.toMatchObject({
+        response: { error: { details: { reason: 'role_verification_required', methods: ['work_email', 'linkedin_workplace', 'admin'] } } },
+      });
+      roleBlocked.delete(MARCUS.id);
+      const { thread } = await service.expressInterest(MARCUS, card.id, { note: 'I back B2B SaaS at pre-seed.' });
+      expect(thread.step).toBe('interest');
+    });
+
+    it('leaves co-founder and equity-role cards to the ordinary progressive rule', async () => {
+      const card = await publish();
+      roleBlocked.add(MARCUS.id);
+      const { thread } = await service.expressInterest(MARCUS, card.id, { note: 'I shipped a real-time trading platform.' });
+      expect(thread.step).toBe('interest');
     });
   });
 });

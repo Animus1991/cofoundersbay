@@ -75,7 +75,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
       'card-interactive hover-lift group transition-all duration-200',
       featured && 'border-primary/15 bg-primary/[0.03]'
     )}>
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           {/* Company avatar */}
           <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
@@ -125,7 +125,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
             </div>
           </div>
 
-          <Button variant="ghost" size="sm" className="gap-1 shrink-0" asChild>
+          <Button variant="ghost" size="sm" className="ml-auto gap-1 shrink-0" asChild>
             <Link href={job.href ?? `/jobs`}>
               <ExternalLink className="icon-sm" />
               <BilingualText en={jobsEn('view')} el={jobsEl('view')} compact />
@@ -140,7 +140,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
 function JobSkeleton() {
   return (
     <Card>
-      <CardContent className="flex items-start gap-4 p-5">
+      <CardContent className="flex items-start gap-4">
         <Skeleton className="h-11 w-11 rounded-lg shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-48" />
@@ -487,7 +487,7 @@ export default function JobsPage() {
           {featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-primary-accessible" />
+                <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   <BilingualText en={jobsEn('featured')} el={jobsEl('featured')} compact />
                 </h2>

@@ -1,5 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
-import type { PublicStats } from '@cofounderbay/shared';
+import type { PublicStats, TransparencyReport } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -2651,6 +2651,8 @@ export type InviteStats = {
   total: number;
   pending: number;
   accepted: number;
+  /** Accepted, verified and with a first real step: what rewards count. */
+  active?: number;
   remaining: number;
 };
 
@@ -5796,10 +5798,18 @@ export interface SavedSearchFilters {
   industries?: string[];
   locations?: string[];
   stage?: string[];
+  /** Need-card searches: card kinds, categories, commitments, places, `['true']` for remote. */
+  kinds?: string[];
+  categories?: string[];
+  commitments?: string[];
+  places?: string[];
+  remote?: string[];
 }
 
 export interface SavedSearch {
   id: string;
+  /** People in the directory, or other members' need cards. Absent means people. */
+  scope?: 'people' | 'need_cards';
   name: string;
   query: string;
   filters: SavedSearchFilters;
@@ -7244,4 +7254,39 @@ export async function adminGetBehaviorNudgeLogs(userId: string, limit = 20): Pro
 
 export async function adminClassifyUser(userId: string): Promise<BehavioralStateResponse> {
   return apiRequest(`/api/behavior/admin/classify/${userId}`);
+}
+
+// ─── Transparency report ─────────────────────────────────────────────────────
+
+/**
+ * The half-yearly transparency report (`GET /api/public/transparency`).
+ * Partial payloads become zeros, never invented figures; a missing period
+ * means the request failed and the page says so.
+ */
+export async function getTransparencyReport(period?: string): Promise<TransparencyReport> {
+  const raw = (await apiRequest<unknown>(`/api/public/transparency${period ? `?period=${encodeURIComponent(period)}` : ''}`, undefined, { retryOn401: false })) ?? {};
+  return toTransparencyReport(raw);
+}
+
+export function toTransparencyReport(raw: unknown): TransparencyReport {
+  const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object' ? (v as Record<string, unknown>) : {});
+  const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.floor(v) : 0);
+  const r = obj(raw);
+  const refusal = (k: string) => {
+    const b = obj(obj(r.refusals)[k]);
+    const by: Record<string, number> = {};
+    for (const [surface, count] of Object.entries(obj(b.bySurface))) if (n(count)) by[surface] = n(count);
+    return { total: n(b.total), bySurface: by };
+  };
+  const p = obj(r.period);
+  const reports = obj(r.reports);
+  return {
+    period: { key: typeof p.key === 'string' ? p.key : '', from: typeof p.from === 'string' ? p.from : '', to: typeof p.to === 'string' ? p.to : '' },
+    inProgress: r.inProgress === true,
+    refusals: { contact_refused: refusal('contact_refused'), promise_refused: refusal('promise_refused') },
+    reports: { received: n(reports.received), resolved: n(reports.resolved), dismissed: n(reports.dismissed), open: n(reports.open) },
+    blocks: n(r.blocks),
+    generatedAt: typeof r.generatedAt === 'string' ? r.generatedAt : '',
+    ...(r.sample === true ? { sample: true } : {}),
+  };
 }

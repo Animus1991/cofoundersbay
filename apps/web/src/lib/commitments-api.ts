@@ -39,6 +39,8 @@ export type CommitmentPerson = {
   avatarUrl: string | null;
   headline: string | null;
   role: string | null;
+  /** How the author is verified, for the badge; methods only, read live. */
+  verifiedMethods?: VerificationMethod[];
 };
 
 export type CommitmentCard = {
@@ -76,7 +78,7 @@ export type CommitmentCard = {
 export type PublicCommitmentCard = Pick<
   CommitmentCard,
   'id' | 'kind' | 'title' | 'exists' | 'goal' | 'missing' | 'offer' | 'category' | 'place' | 'isRemote' | 'stage' | 'commitment' | 'evidence' | 'version' | 'outcome' | 'settledAt'
-> & { owner: Pick<CommitmentPerson, 'displayName' | 'headline' | 'avatarUrl'> };
+> & { owner: Pick<CommitmentPerson, 'displayName' | 'headline' | 'avatarUrl' | 'verifiedMethods'> };
 
 export type CommitmentThreadSummary = {
   id: string;
@@ -155,7 +157,13 @@ export function toCommitmentPerson(raw: unknown): CommitmentPerson {
     avatarUrl: strOrNull(p.avatarUrl),
     headline: strOrNull(p.headline),
     role: strOrNull(p.role),
+    verifiedMethods: verifiedMethodsOf(p.verifiedMethods),
   };
+}
+
+/** Known methods only, so an unknown value from a newer API is not shown as a badge. */
+export function verifiedMethodsOf(raw: unknown): VerificationMethod[] {
+  return Array.isArray(raw) ? raw.filter((m): m is VerificationMethod => (VERIFICATION_METHODS as readonly string[]).includes(m as string)) : [];
 }
 
 export function toCommitmentCard(raw: unknown): CommitmentCard {
@@ -231,7 +239,7 @@ export function toPublicCommitmentCard(raw: unknown): PublicCommitmentCard {
     version: card.version,
     outcome: card.outcome,
     settledAt: card.settledAt,
-    owner: { displayName: str(owner.displayName, 'Member') || 'Member', headline: strOrNull(owner.headline), avatarUrl: strOrNull(owner.avatarUrl) },
+    owner: { displayName: str(owner.displayName, 'Member') || 'Member', headline: strOrNull(owner.headline), avatarUrl: strOrNull(owner.avatarUrl), verifiedMethods: verifiedMethodsOf(owner.verifiedMethods) },
   };
 }
 

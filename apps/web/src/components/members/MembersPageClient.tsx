@@ -136,7 +136,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
   if (isGridView) {
     return (
       <Card className="card-interactive hover-lift group transition-all duration-300">
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="space-y-4">
           <div className="flex flex-col items-center text-center">
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
@@ -154,7 +154,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <Link
               href={`/profiles/${member.userId}`}
-              className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
+              className="font-display text-base font-semibold text-foreground hover:text-primary-accessible transition-colors mb-1"
             >
               {member.displayName}
             </Link>
@@ -204,7 +204,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             {/* Contribution score */}
             <div className="w-full mb-3">
-              <div className="flex items-center justify-between text-2xs mb-1">
+              <div className="flex items-center justify-between text-xs mb-1">
                 <span className="text-muted-foreground"><BilingualText en="Profile completeness" el="Πληρότητα προφίλ" compact /></span>
                 <span className={cn('font-semibold', scoreColor(completeness))}>{completeness}%</span>
               </div>
@@ -223,6 +223,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </Button>
               <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                 <MessageCircle className="icon-sm" />
+                <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
               </Button>
             </div>
           </div>
@@ -233,7 +234,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
@@ -254,7 +255,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div>
                 <Link
                   href={`/profiles/${member.userId}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                  className="font-display text-base font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {member.displayName}
                 </Link>
@@ -271,6 +272,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                 </Button>
                 <Button aria-label={`Message ${member.displayName}`} size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
                   <MessageCircle className="icon-sm" />
+                  <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
                 </Button>
               </div>
             </div>
@@ -326,7 +328,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
   if (viewMode === 'grid') {
     return (
       <Card>
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="space-y-4">
           <div className="flex flex-col items-center">
             <Skeleton className="h-24 w-24 rounded-full mb-3" />
             <Skeleton className="h-5 w-32 mb-2" />
@@ -344,7 +346,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
 
   return (
     <Card>
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start gap-4">
           <Skeleton className="h-12 w-12 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">
@@ -584,7 +586,7 @@ export function MembersPageClient() {
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-primary-accessible" />
+              <Sparkles className="icon-sm text-muted-foreground" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><BilingualText en="Featured Members" el="Προτεινόμενα μέλη" compact /></h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -600,7 +602,7 @@ export function MembersPageClient() {
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
                     <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
+                  <BadgeCheck className="icon-sm text-muted-foreground shrink-0" />
                 </div>
               ))}
             </div>

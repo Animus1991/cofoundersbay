@@ -39,6 +39,7 @@ import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
 import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { formatCompactMoney } from '@/lib/i18n/format';
+import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -211,6 +212,7 @@ export default function InvestorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
+        <WhatsNewPanel audience="investor" />
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">

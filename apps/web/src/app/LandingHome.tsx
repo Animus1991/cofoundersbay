@@ -458,6 +458,7 @@ const LANDING_EL: Record<string, string> = {
   "Blog": "Blog",
   "Contact": "Επικοινωνία",
   "Privacy Policy": "Πολιτική απορρήτου",
+  "Transparency report": "Αναφορά διαφάνειας",
   "Terms of Service": "Όροι χρήσης",
 };
 
@@ -610,7 +611,7 @@ export function LandingHome() {
           </div>
           <div className="mx-auto grid w-full max-w-4xl grid-cols-1 items-start gap-8 lg:grid-cols-2">
             <Card className="animate-fade-in">
-              <CardContent className="p-5 sm:p-6">
+              <CardContent>
                 <Badge variant="secondary" className="mb-3 text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
                 <NeedCard card={SAMPLE_NEED_CARD} />
               </CardContent>
@@ -619,7 +620,7 @@ export function LandingHome() {
               <ol className="space-y-4">
                 {CARD_STEPS.map(({ icon: Icon, en, el, noteEn, noteEl }, index) => (
                   <li key={en} className="flex items-start gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                       <Icon className="icon-sm" aria-hidden />
                     </span>
                     <div className="min-w-0">
@@ -717,7 +718,7 @@ export function LandingHome() {
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Icon className="icon-md text-primary-accessible" />
+                  <Icon className="icon-md text-muted-foreground" />
                 </div>
                 {/* min-w-0 and a wrapping title: four cards a row leave too little width for both languages on one line. */}
                 <div className="min-w-0">
@@ -777,7 +778,7 @@ export function LandingHome() {
                   &ldquo;{quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 border-t border-border pt-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-accessible">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
                     {avatar}
                   </div>
                   <div>
@@ -854,7 +855,7 @@ export function LandingHome() {
       <section id="cta" className="border-t border-border px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
               <Network className="h-7 w-7 text-primary-accessible" />
             </div>
           </div>
@@ -964,6 +965,7 @@ export function LandingHome() {
                   { href: '/blog',    label: 'Blog' },
                   { href: '/contact', label: 'Contact' },
                   { href: '/privacy', label: 'Privacy Policy' },
+                  { href: '/transparency', label: 'Transparency report' },
                   { href: '/terms',   label: 'Terms of Service' },
                 ].map(({ href, label }) => (
                   <li key={label}>
@@ -981,7 +983,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="icon-sm text-primary-accessible" />
+              <Zap className="icon-sm text-muted-foreground" />
               <BilingualText en="Built for founders, by founders" el="Από ιδρυτές, για ιδρυτές" compact />
             </div>
           </div>

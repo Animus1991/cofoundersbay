@@ -217,7 +217,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="icon-md text-primary-accessible" />
+                <Shield className="icon-md text-muted-foreground" />
                 <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact wrap />
               </DialogTitle>
               <DialogDescription>

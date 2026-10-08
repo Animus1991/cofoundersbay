@@ -14,7 +14,24 @@ export type DigestContentType =
   | 'messages'
   | 'opportunities'
   | 'events'
-  | 'updates';
+  | 'updates'
+  | 'searches';
+
+/**
+ * Section headings for the sections whose generic "N New <Type>" would read
+ * wrongly. `updates` are founder updates from people the reader follows;
+ * `searches` are saved searches (people or need cards) with results the
+ * reader has not seen, governed by the `opportunities` preference.
+ */
+const SECTION_TITLES: Partial<Record<DigestContentType, (count: number) => string>> = {
+  updates: (n) => (n === 1 ? '1 update from a founder you follow' : `${n} updates from founders you follow`),
+  searches: (n) => (n === 1 ? '1 saved search found something new' : `${n} saved searches found something new`),
+};
+
+function sectionTitle(type: string, count: number): string {
+  const custom = SECTION_TITLES[type as DigestContentType];
+  return custom ? custom(count) : `${count} New ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+}
 
 interface DigestContent {
   type: DigestContentType;
@@ -32,7 +49,7 @@ interface DigestData {
   userId: string;
   type: DigestType;
   frequency: DigestType;
-  content: Record<DigestContentType, DigestContent | undefined>;
+  content: Partial<Record<DigestContentType, DigestContent>>;
   preferences: {
     connections: boolean;
     messages: boolean;
@@ -298,11 +315,13 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       messages: true,
       opportunities: true,
       events: true,
-      updates: false,
+      // Founder updates from people the reader chose to follow: a source they
+      // asked for, so on unless they turned the category off.
+      updates: true,
     };
     for (const channel of user.notificationChannels) {
       if (channel.category in digestPrefs) {
-        digestPrefs[channel.category as DigestContentType] = channel.isEnabled;
+        digestPrefs[channel.category as keyof typeof digestPrefs] = channel.isEnabled;
       }
     }
 
@@ -313,6 +332,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       opportunities: undefined,
       events: undefined,
       updates: undefined,
+      searches: undefined,
     };
 
     if (digestPrefs.connections) {
@@ -340,6 +360,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     if (digestPrefs.updates) {
       const updatesData = await this.getUpdatesDigest(userId, startDate);
       if (updatesData) content.updates = updatesData;
+    }
+    if (digestPrefs.opportunities) {
+      const searchesData = await this.getSavedSearchesDigest(userId);
+      if (searchesData) content.searches = searchesData;
     }
 
     // Return null if no content
@@ -519,13 +543,72 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     };
   }
 
+  /**
+   * Founder updates from the people this reader follows, published in the
+   * period, to followers or publicly. Platform announcements still have no
+   * persisted source and are not claimed here. A database without the
+   * schema-only follow tables yields no section, not an error.
+   */
   private async getUpdatesDigest(
     userId: string,
     since: Date,
   ): Promise<DigestContent | null> {
-    // Platform updates need a persisted, auditable source before they can be
-    // claimed in a personalized email.
-    return null;
+    try {
+      const follows = (await this.prisma.userFollow.findMany({
+        where: { followerId: userId },
+        select: { followingId: true },
+        take: 500,
+      })) as Array<{ followingId: string }>;
+      if (!follows.length) return null;
+      const updates = (await this.prisma.founderUpdate.findMany({
+        where: { authorId: { in: follows.map((f) => f.followingId) }, createdAt: { gte: since } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: { id: true, title: true, body: true, createdAt: true, author: { select: { profile: { select: { displayName: true } } } } },
+      })) as Array<{ id: string; title: string; body: string; createdAt: Date; author?: { profile?: { displayName?: string | null } | null } | null }>;
+      if (!updates.length) return null;
+      return {
+        type: 'updates',
+        count: updates.length,
+        items: updates.map((u) => ({
+          id: u.id,
+          title: `${u.author?.profile?.displayName ?? 'A founder you follow'}: ${u.title}`,
+          description: u.body.substring(0, 100),
+          url: `/updates?update=${encodeURIComponent(u.id)}`,
+          createdAt: u.createdAt,
+        })),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Saved searches (people or need cards) whose alerts found results the
+   * reader has not opened yet: the count the "N new" badge shows on
+   * /saved-searches. Names and counts only; the results are on the site.
+   */
+  private async getSavedSearchesDigest(userId: string): Promise<DigestContent | null> {
+    try {
+      const rows = (await this.prisma.savedSearch.findMany({
+        where: { userId, pendingNewCount: { gt: 0 } },
+        orderBy: { updatedAt: 'desc' },
+        take: 10,
+        select: { id: true, name: true, searchType: true, pendingNewCount: true, updatedAt: true },
+      })) as Array<{ id: string; name: string; searchType: string; pendingNewCount: number; updatedAt: Date }>;
+      if (!rows.length) return null;
+      return {
+        type: 'searches',
+        count: rows.length,
+        items: rows.map((r) => {
+          const cards = r.searchType === 'opportunity';
+          const what = cards ? (r.pendingNewCount === 1 ? 'new need card' : 'new need cards') : r.pendingNewCount === 1 ? 'new profile' : 'new profiles';
+          return { id: r.id, title: r.name, description: `${r.pendingNewCount} ${what}`, url: '/saved-searches', createdAt: r.updatedAt };
+        }),
+      };
+    } catch {
+      return null;
+    }
   }
 
   private webBaseUrl(): string {
@@ -652,7 +735,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       if (content && content.count > 0) {
         html += `
           <div class="section">
-            <div class="section-title">${content.count} New ${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+            <div class="section-title">${escapeHtml(sectionTitle(type, content.count))}</div>
         `;
 
         content.items.forEach((item) => {
@@ -693,7 +776,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
 
     Object.entries(data.content).forEach(([type, content]) => {
       if (content && content.count > 0) {
-        text += `${content.count} New ${type.charAt(0).toUpperCase() + type.slice(1)}\n`;
+        text += `${sectionTitle(type, content.count)}\n`;
         text += '─'.repeat(30) + '\n';
 
         content.items.forEach((item) => {

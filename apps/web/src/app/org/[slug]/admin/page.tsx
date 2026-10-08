@@ -211,7 +211,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
 }) {
   return (
     <Card>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
@@ -227,8 +227,8 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
               </p>
             )}
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <Icon className="icon-lg text-primary-accessible" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+            <Icon className="icon-lg text-muted-foreground" />
           </div>
         </div>
       </CardContent>

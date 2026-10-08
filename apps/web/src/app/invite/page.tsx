@@ -28,6 +28,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
 import { qk } from '@/lib/query-keys';
+import { REFERRAL_REWARD_COPY } from '@cofounderbay/shared';
 
 type InviteKey = keyof typeof INVITE_STRINGS;
 
@@ -53,7 +54,7 @@ function StatCard({
 }) {
   return (
     <Card className={cn('', accent && 'border-primary/15 bg-primary/5')}>
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
@@ -191,25 +192,30 @@ export default function InvitePage() {
     <AppShell>
       <div className="w-full space-y-6 pb-10">
         {/* Stats row */}
-        <div className="grid grid-cols-2 kpi-odd-span-sm gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {statsLoading ? (
-            Array.from({ length: 3 }).map((_, i) => (
-              <Card key={i}><CardContent className="p-4"><Skeleton className="h-12 w-full" /></CardContent></Card>
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}><CardContent><Skeleton className="h-12 w-full" /></CardContent></Card>
             ))
           ) : (
             <>
               <StatCard icon={Send} labelKey="stat_sent" value={stats?.total ?? 0} />
               <StatCard icon={UserCheck} labelKey="stat_joined" value={stats?.accepted ?? 0} descriptionKey="stat_joined_hint" accent />
+              <StatCard icon={UserCheck} labelKey="stat_active" value={stats?.active ?? 0} descriptionKey="stat_active_hint" />
               <StatCard icon={Gift} labelKey="stat_remaining" value={stats?.remaining ?? 0} descriptionKey="stat_remaining_hint" />
             </>
           )}
         </div>
+        {/* Why "Active" and not "Joined" is what rewards count. */}
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={REFERRAL_REWARD_COPY.en} el={REFERRAL_REWARD_COPY.el} wrap />
+        </p>
 
         {/* Invite form */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-md shrink-0 text-primary-accessible" />
+              <Sparkles className="icon-md shrink-0 text-muted-foreground" />
               <BilingualText en={inviteEn('form_title')} el={inviteEl('form_title')} compact wrap />
             </CardTitle>
             <CardDescription>
@@ -286,7 +292,7 @@ export default function InvitePage() {
               <BilingualText en={inviteEn('history_title')} el={inviteEl('history_title')} compact wrap />
             </CardTitle>
           </CardHeader>
-          <CardContent className="px-4 pb-4 pt-0">
+          <CardContent className="pb-4 pt-0">
             {invitesLoading ? (
               <div className="space-y-1">
                 {Array.from({ length: 3 }).map((_, i) => (

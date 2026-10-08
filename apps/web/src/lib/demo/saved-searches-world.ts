@@ -8,11 +8,14 @@
  * lives in sessionStorage so a rename or an alert toggle survives navigation.
  */
 
+import { previewCommitmentsApi } from './commitments-world';
+
 export interface DemoSavedSearch {
   id: string;
+  scope?: 'people' | 'need_cards';
   name: string;
   query: string;
-  filters: { roles?: string[]; skills?: string[]; industries?: string[]; locations?: string[]; stage?: string[] };
+  filters: { roles?: string[]; skills?: string[]; industries?: string[]; locations?: string[]; stage?: string[]; kinds?: string[]; remote?: string[] };
   alertsEnabled: boolean;
   alertFrequency: 'instant' | 'daily' | 'weekly';
   lastRun?: string;
@@ -42,6 +45,21 @@ function seed(now: number): DemoSavedSearch[] {
       newResults: 2,
       createdAt: iso(21),
       updatedAt: iso(3),
+    },
+    {
+      // A need-card search (scope need_cards): other members' co-founder cards.
+      id: 'ss-cofounder-cards',
+      scope: 'need_cards',
+      name: 'Co-founder cards',
+      query: '',
+      filters: { kinds: ['cofounder'] },
+      alertsEnabled: true,
+      alertFrequency: 'weekly',
+      lastRun: iso(6),
+      resultCount: 1,
+      newResults: 1,
+      createdAt: iso(14),
+      updatedAt: iso(6),
     },
     {
       id: 'ss-fundraising-mentors',
@@ -102,16 +120,22 @@ export function previewSavedSearchesApi(pathname: string, method: string, body: 
     if (method === 'POST') {
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 80) : '';
       const raw = (body.filters ?? {}) as Record<string, unknown>;
+      const cards = body.scope === 'need_cards';
       const search: DemoSavedSearch = {
         id: `ss-demo-${now.toString(36)}`,
+        scope: cards ? 'need_cards' : 'people',
         name: name || 'Untitled search',
         query: typeof body.query === 'string' ? body.query.trim().slice(0, 200) : '',
-        filters: { roles: list(raw.roles), skills: list(raw.skills), industries: list(raw.industries), locations: list(raw.locations), stage: list(raw.stage) },
+        // The same keys the API keeps for each scope; anything else is dropped.
+        filters: cards
+          ? { kinds: list(raw.kinds)?.filter((k) => ['cofounder', 'equity_role', 'investor_intro'].includes(k)), remote: list(raw.remote)?.includes('true') ? ['true'] : undefined }
+          : { roles: list(raw.roles), skills: list(raw.skills), industries: list(raw.industries), locations: list(raw.locations), stage: list(raw.stage) },
         alertsEnabled: body.alertsEnabled === true,
         alertFrequency: (FREQUENCIES as readonly unknown[]).includes(body.alertFrequency) ? (body.alertFrequency as DemoSavedSearch['alertFrequency']) : 'daily',
         createdAt: stamp,
         updatedAt: stamp,
       };
+      if (cards) search.resultCount = matchingCards(search, now).length;
       rows.unshift(search);
       save();
       return { search };
@@ -124,6 +148,12 @@ export function previewSavedSearchesApi(pathname: string, method: string, body: 
   if (action === 'run' && method === 'POST') {
     row.lastRun = stamp;
     row.newResults = undefined;
+    if (row.scope === 'need_cards') {
+      const results = matchingCards(row, now);
+      row.resultCount = results.length;
+      save();
+      return { results, count: results.length };
+    }
     save();
     return { results: [], count: row.resultCount ?? 0 };
   }
@@ -141,4 +171,21 @@ export function previewSavedSearchesApi(pathname: string, method: string, body: 
     return { ok: true };
   }
   return undefined;
+}
+
+/**
+ * Other people's need cards that still take interest (open or in discussion)
+ * and fit a need-card search, from the demo
+ * commitments world: what the API's alert would count. Never the demo
+ * founder's own cards.
+ */
+function matchingCards(search: DemoSavedSearch, now: number): Array<{ id: string; title: string; kind: string }> {
+  const board = previewCommitmentsApi('/api/commitments/cards', '/api/commitments/cards', 'GET', {}, now) as { cards?: Array<Record<string, unknown>> } | undefined;
+  const words = search.query.toLowerCase().split(/\s+/).filter(Boolean);
+  return (board?.cards ?? [])
+    .filter((c) => c.isMine !== true && (c.outcome === 'open' || c.outcome === 'in_discussion'))
+    .filter((c) => !search.filters.kinds?.length || search.filters.kinds.includes(String(c.kind)))
+    .filter((c) => !search.filters.remote?.length || c.isRemote === true)
+    .filter((c) => words.every((w) => `${c.title} ${c.exists} ${c.goal} ${c.missing}`.toLowerCase().includes(w)))
+    .map((c) => ({ id: String(c.id), title: String(c.title), kind: String(c.kind) }));
 }

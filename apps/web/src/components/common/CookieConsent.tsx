@@ -103,8 +103,8 @@ export function CookieConsent() {
             /* Main Banner */
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Cookie className="icon-md text-primary-accessible" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                  <Cookie className="icon-md text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-foreground mb-1"><BilingualText en="We value your privacy" el="Σεβόμαστε το απόρρητό σας" compact /></h3>
@@ -152,8 +152,8 @@ export function CookieConsent() {
             <div className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Settings className="icon-sm text-primary-accessible" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Settings className="icon-sm text-muted-foreground" />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-foreground"><BilingualText en="Cookie Preferences" el="Προτιμήσεις cookies" compact /></h3>

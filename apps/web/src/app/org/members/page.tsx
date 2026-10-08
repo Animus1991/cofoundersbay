@@ -284,7 +284,7 @@ export default function OrgMembersPage() {
             { label: 'Pending Invites', labelEl: 'Εκκρεμείς προσκλήσεις', value: members.filter((m) => m.status === 'invited').length },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="p-4">
+              <CardContent>
                 <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>

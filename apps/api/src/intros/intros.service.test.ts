@@ -115,9 +115,9 @@ function setup() {
       return { thread: { ...thread, step: 'interest' } };
     }),
   };
-  const verification = { publicMethods: vi.fn(async () => ['work_email']) };
+  const verification = { publicMethods: vi.fn(async () => ['work_email']), roleCleared: vi.fn(async (_id: string) => true) };
   const service = new IntrosService(prisma as never, notifications as never, commitments as never, verification as never);
-  return { service, notifications, commitments, intros };
+  return { service, notifications, commitments, intros, verification };
 }
 
 const ask = { intermediaryId: 'elena', targetId: 'nikos', cardId: 'c1', note: 'Raising a pre-seed for Harbor; you know Nikos well.' };
@@ -182,5 +182,18 @@ describe('IntrosService', () => {
     expect(capped.getResponse().error.details.reason).toBe('too_many_open');
     expect((await service.withdraw('alex', first.intro.id)).intro.status).toBe('withdrawn');
     await expect(service.withdraw('alex', first.intro.id)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('asks an investor or organisation account to verify its workplace before it takes up an introduction', async () => {
+    const { service, commitments, verification } = setup();
+    const { intro } = await service.request('alex', ask);
+    await service.forward('elena', intro.id, { note: 'Alex is worth twenty minutes.' });
+    verification.roleCleared.mockResolvedValueOnce(false);
+    await expect(service.accept('nikos', intro.id)).rejects.toMatchObject({ response: { error: { details: { reason: 'role_verification_required' } } } });
+    // Nothing reached the founder's card, and the request is still waiting on Nikos.
+    expect(commitments.expressInterest).not.toHaveBeenCalled();
+    const { threadId } = await service.accept('nikos', intro.id);
+    expect(threadId).toBeTruthy();
+    expect(verification.roleCleared).toHaveBeenCalledWith('nikos');
   });
 });

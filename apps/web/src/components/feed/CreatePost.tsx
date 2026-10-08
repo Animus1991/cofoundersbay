@@ -143,7 +143,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="icon-md text-primary-accessible" />
+              <Send className="icon-md text-muted-foreground" />
               <BilingualText en="Create Post" el="Νέα ανάρτηση" />
             </DialogTitle>
             <DialogDescription className="sr-only"><BilingualText en="Write and publish a post to the feed." el="Συντάξτε και δημοσιεύστε μια ανάρτηση στη ροή." /></DialogDescription>

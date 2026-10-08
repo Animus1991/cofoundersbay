@@ -87,7 +87,7 @@ export function ConnectionRequestDialog({
       <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-lg overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-primary-accessible" />
+            <Send className="icon-md text-muted-foreground" />
             Request Connection
           </DialogTitle>
           <DialogDescription>
@@ -119,7 +119,7 @@ export function ConnectionRequestDialog({
         {/* Suggested messages */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="icon-sm text-primary-accessible" />
+            <Sparkles className="icon-sm text-muted-foreground" />
             Quick suggestions
           </div>
           <div className="flex flex-wrap gap-2">

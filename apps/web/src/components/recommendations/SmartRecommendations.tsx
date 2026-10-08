@@ -244,7 +244,7 @@ export function SmartRecommendations() {
                     <AvatarFallback>{rec.title[0]}</AvatarFallback>
                   </Avatar>
                 ) : (
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
                     {getTypeIcon(rec.type)}
                   </div>
                 )}
@@ -301,7 +301,7 @@ export function SmartRecommendations() {
               {/* Match Reasons */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <Zap className="icon-sm text-primary-accessible" />
+                  <Zap className="icon-sm text-muted-foreground" />
                   Why this matches you:
                 </div>
                 <ul className="space-y-1">

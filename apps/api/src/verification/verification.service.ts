@@ -5,6 +5,7 @@ import { readState, signState } from '../common/signed-state';
 import {
   maskEmail,
   meetsLadderPolicy,
+  meetsRolePolicy,
   methodsFromLinkedInReport,
   workEmailDomain,
   type VerificationMethod,
@@ -77,6 +78,15 @@ export class VerificationService {
 
   async isVerified(userId: string): Promise<boolean> {
     return meetsLadderPolicy(await this.signals(userId));
+  }
+
+  /**
+   * Whether an investor or organisation account has the workplace-grade
+   * signal the role asks for (`meetsRolePolicy`); always true for other roles.
+   */
+  async roleCleared(userId: string, now = new Date()): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    return meetsRolePolicy(user?.role ?? null, await this.signals(userId, now), now.getTime());
   }
 
   /** Methods only, for showing someone else's badge: no domains, no dates. */

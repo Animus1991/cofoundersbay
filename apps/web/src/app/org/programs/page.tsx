@@ -120,7 +120,7 @@ function ProgramCard({ program }: { program: Program }) {
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent className="p-5">
+      <CardContent>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -326,13 +326,13 @@ export default function OrgProgramsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Programs" el="Σύνολο προγραμμάτων" compact /></p>
               <p className="page-stat text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Active" el="Ενεργά" compact /></p>
               <p className={cn('page-stat text-xl font-bold', STATUS.success.icon)}>
                 {programs.filter((p) => p.status === 'active').length}
@@ -340,7 +340,7 @@ export default function OrgProgramsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Enrolled" el="Σύνολο εγγεγραμμένων" compact /></p>
               <p className="page-stat text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.enrolled, 0)}
@@ -348,7 +348,7 @@ export default function OrgProgramsPage() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4">
+            <CardContent>
               <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένα" compact /></p>
               <p className={cn('page-stat text-xl font-bold', STATUS.info.icon)}>
                 {programs.filter((p) => p.status === 'completed').length}
