@@ -209,7 +209,7 @@ const faqCategories: FAQCategory[] = [
     faqs: [
       {
         question: 'Who can see my profile?',
-        answer: 'Anyone with your profile\'s link can read it, including people who are not signed in, and members can find you in search. Your email stays hidden. Visibility switches per item are not available yet; your "Open to" signal has its own setting: nobody, verified members or everyone.',
+        answer: 'Anyone with your profile\'s link can read it, unless you turn "Public profile" off in Settings > Privacy (then only signed-in members can). Members find you in search and recommendations unless you turn "Appear in search" off. Your email stays hidden. Hiding your location is not available yet; your "Open to" signal has its own setting: nobody, verified members or everyone.',
       },
       {
         question: 'How is my data protected?',

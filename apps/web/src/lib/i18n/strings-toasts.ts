@@ -391,6 +391,7 @@ export const TOAST_EL: Record<string, string> = {
   "Save failed": "Η αποθήκευση απέτυχε",
   "Saved": "Αποθηκεύτηκε",
   "Removed from saved": "Αφαιρέθηκε από τα αποθηκευμένα",
+  "Could not save the change": "Η αλλαγή δεν αποθηκεύτηκε",
   "Find it under Saved on this page.": "Θα το βρείτε στα Αποθηκευμένα αυτής της σελίδας.",
   "Saved to shortlist": "Αποθηκεύτηκε στη λίστα επιλογών",
   "Screen sharing started": "Η κοινή χρήση οθόνης ξεκίνησε",

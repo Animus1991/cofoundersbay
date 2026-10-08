@@ -21,6 +21,7 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { ProfileHero } from '@/components/profile/ProfileHero';
+import { FollowButton } from '@/components/updates/FollowButton';
 
 interface OrgContentProps {
   org: OrgProfile;
@@ -88,12 +89,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           }
           actions={
             <>
-              {/* There is no organisation follow model; Contact uses the
-                  organisation's own address when it lists one. */}
-              <Button size="sm" className="gap-1.5" disabled title="Following organisations is not supported yet · Η παρακολούθηση οργανισμών δεν υποστηρίζεται ακόμη">
-                <Users className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Follow" el="Ακολούθηση" compact />
-              </Button>
+              {/* An organisation is an account (role "org"), so following it
+                  is the same follow as a person's: its updates reach the
+                  reader's /updates, and unfollowing removes the row. It was a
+                  disabled button that said following was not supported. */}
+              <FollowButton userId={org.id} />
               {org.email || org.website ? (
                 <Button size="sm" variant="outline" className="gap-1.5" asChild>
                   <a href={org.email ? `mailto:${org.email}` : org.website!} target={org.email ? undefined : '_blank'} rel="noopener noreferrer">

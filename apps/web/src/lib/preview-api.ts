@@ -9,6 +9,7 @@ import { previewSavedSearchesApi } from './demo/saved-searches-world';
 import { previewVerificationApi } from './demo/verification-world';
 import { previewUpdatesApi } from './demo/updates-world';
 import { previewSavedItemsApi } from './demo/saved-items-world';
+import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
@@ -2746,7 +2747,12 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
   if (pathname === '/api/me/profile') {
-    return ME_PROFILE;
+    // Settings' visibility switches are stored for the demo; the rest of the
+    // profile stays the demo's own.
+    if (method === 'PATCH' && body && typeof body === 'object' && 'visibilityRules' in (body as Record<string, unknown>)) {
+      return { ...ME_PROFILE, visibilityRules: writeDemoVisibility((body as Record<string, unknown>).visibilityRules) };
+    }
+    return { ...ME_PROFILE, visibilityRules: readDemoVisibility() ?? (ME_PROFILE as { visibilityRules?: unknown }).visibilityRules ?? null };
   }
   if (pathname === '/api/auth/refresh' || pathname === '/api/auth/logout') {
     return { ok: true };

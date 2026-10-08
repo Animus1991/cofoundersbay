@@ -4,6 +4,7 @@ import type { PublicStats, TransparencyReport } from '@cofounderbay/shared';
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
 import { getApiOrigin } from './api-origin';
+import { readDemoVisibility } from '@/lib/demo/visibility-world';
 
 function getApiBase(): string {
   return getApiOrigin();
@@ -488,7 +489,8 @@ export async function getMeProfile(): Promise<{ profile: OwnProfile | null; hasC
         languages: ['English', 'Greek'],
         avatarUrl: null,
         rolePayload: { stage: 'idea', lookingFor: ['cofounder', 'mentor'] },
-        visibilityRules: null,
+        // Settings' visibility switches, as the demo stored them.
+        visibilityRules: readDemoVisibility() as Record<string, string> | null,
         role: 'founder',
         email: 'demo@cofounderbay.com',
         skills: [
