@@ -290,7 +290,7 @@ export default function NotificationPreferencesPage() {
               const Icon = CATEGORY_ICONS[category.id];
               return (
                 <section key={category.id} className="border-b border-border last:border-b-0" aria-labelledby={`cat-${category.id}`}>
-                  <div className="flex flex-col gap-3 bg-muted/20 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                         <Icon className="icon-sm text-muted-foreground" aria-hidden="true" />
