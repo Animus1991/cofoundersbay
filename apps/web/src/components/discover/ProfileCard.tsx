@@ -175,7 +175,7 @@ function ProfileCardInner({
                 <p className="text-xs text-muted-foreground truncate">{profile.headline}</p>
               )}
             </div>
-            <Button aria-label="Connect" size="sm" variant="ghost" onClick={onConnect}>
+            <Button aria-label="Connect · Σύνδεση" size="sm" variant="ghost" onClick={onConnect}>
               <UserPlus className="icon-sm" />
             </Button>
           </div>
@@ -313,11 +313,11 @@ function ProfileCardInner({
           <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
             <Button onClick={onConnect} size="sm" className="min-h-10 flex-1 gap-2">
               <UserPlus className="icon-sm" />
-              Connect
+              <BilingualText en="Connect" el="Σύνδεση" compact />
             </Button>
             <Button onClick={onMessage} size="sm" variant="secondary" className="min-h-10 flex-1 gap-2">
               <MessageCircle className="icon-sm" />
-              Message
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </Button>
             <div className="flex items-center gap-1">
               <Button aria-label="Save"
@@ -475,9 +475,9 @@ function ProfileCardInner({
         <div className="mt-4 flex min-w-0 items-center gap-2">
           <Button onClick={onConnect} size="sm" variant="secondary" className="min-h-10 flex-1 gap-1.5">
             <UserPlus className="icon-sm" />
-            Connect
+            <BilingualText en="Connect" el="Σύνδεση" compact />
           </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message">
+          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5 sm:min-w-0 sm:px-3" aria-label="Message · Μήνυμα">
             <MessageCircle className="icon-sm" />
             <span className="hidden sm:inline"><BilingualText en="Message" el="Μήνυμα" compact /></span>
           </Button>

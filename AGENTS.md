@@ -110,4 +110,6 @@
 - LinkedIn shares: the official share URL takes only a URL, so `lib/share-text.ts` copies a suggested post (reader's language, built from content that already passed the rules) on the same click. Never claim the text is pre-filled.
 - Referral rewards follow confirmed activity (`isActiveReferral`: verified email plus one of connection, need card, completed milestone, answer to a card); `GET /invites/stats` reports `active` beside `accepted`.
 - `WhatsNewPanel` (per role dashboard) lists only shipped features with links to pages that exist (`whatsNew.test.tsx` checks the files); update it when a round adds something people should find.
-
+- Trust marks render only from a signal: the own `/profile` reads `/verification/me` and `/open-to/me` through `components/profile/ProfileTrust.tsx` (same cache keys as Settings); anyone else's check is `PersonVerifiedBadge`. Never draw a constant check, "Verified member" or "Open to work" (`ProfileTrust.test.tsx` scans the pages that once did).
+- A page whose anchored sections mount after load calls `useScrollToHash()` (Settings: `#verification`, `#open-to`, `#language`); the browser's own fragment scroll misses a card that appears later.
+- An example query shown to people ("What's new", placeholders) must find someone in the demo: `whatsNew.test.tsx` runs it through `readNaturalSearch` and the preview directory, which has four people.
