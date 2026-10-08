@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { readNaturalSearch } from '@cofounderbay/shared';
+import { resolvePreviewApi } from '@/lib/preview-api';
 import { WhatsNewPanel, whatsNewItems, type WhatsNewAudience } from './WhatsNewPanel';
 
 /**
@@ -41,5 +43,27 @@ describe('what is new', () => {
     cleanup();
     render(<WhatsNewPanel audience="founder" />);
     expect(screen.queryByRole('heading', { name: /What’s new/ })).toBeNull();
+  });
+});
+
+describe('the search example it advertises', () => {
+  // The panel said to type "co-founder fintech Thessaloniki part-time"; the
+  // demo directory has nobody like that, so following it showed an empty
+  // page. The example now has to find someone where people try it.
+  const discover = whatsNewItems('founder').find((i) => i.href === '/discover')!;
+  const quoted = (text: string) => /["«](.+?)["»]/.exec(text)?.[1] ?? '';
+
+  it.each([['en', quoted(discover.hintEn)], ['el', quoted(discover.hintEl)]])('finds someone in the demo (%s)', (_lang, example) => {
+    expect(example.length).toBeGreaterThan(0);
+    const read = readNaturalSearch(example);
+    expect(read.understood.length).toBeGreaterThan(1);
+    const sp = new URLSearchParams();
+    if (read.rest) sp.set('q', read.rest);
+    if (read.roles.length) sp.set('roles', read.roles.join(','));
+    if (read.industries.length) sp.set('industries', read.industries.join(','));
+    if (read.location) sp.set('location', read.location);
+    if (read.availability.length) sp.set('commitment', read.availability.join(','));
+    const res = resolvePreviewApi(`/api/search/profiles?${sp.toString()}`) as { hits: unknown[] };
+    expect(res.hits.length).toBeGreaterThan(0);
   });
 });

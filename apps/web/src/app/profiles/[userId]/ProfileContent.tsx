@@ -11,6 +11,9 @@ import { FollowButton } from '@/components/updates/FollowButton';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { OpenToLine } from '@/components/intros/OpenToLine';
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
+import { ProfileHero } from '@/components/profile/ProfileHero';
+import { ProfileActivity, ProfileExperience, ProfileRecommendations, SimilarProfiles } from '@/components/profile/ProfileSections';
+import type { PageRailSection } from '@/components/layout/PageRail';
 import {
   MapPin,
   Clock,
@@ -40,7 +43,6 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
@@ -266,7 +268,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const RoleIcon = ROLE_ICONS[profile.role] ?? Briefcase;
 
   const rolePayloadNodes: React.ReactNode[] = Object.entries(rolePayload)
-    .filter(([k]) => k !== 'links')
+    .filter(([k]) => k !== 'links' && k !== 'experience' && k !== 'education')
     .reduce<React.ReactNode[]>((acc, [key, val]) => {
       acc.push(<PayloadEntry key={key} entryKey={key} value={val} />);
       return acc;
@@ -286,6 +288,39 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const isConnected = connStatus?.status === 'accepted';
   const isPendingSent = connStatus?.status === 'pending' && connStatus.direction === 'sent';
 
+  /*
+   * Rail: what supports reading this person, never a copy of a control. Similar
+   * profiles come from shared role, skills and industry; recommendations are
+   * what others wrote and the person approved.
+   */
+  const rail: PageRailSection[] = [
+    {
+      id: 'similar',
+      glyph: 'people',
+      labelEn: 'Similar profiles',
+      labelEl: 'Παρόμοια προφίλ',
+      content: (
+        <SimilarProfiles
+          person={{
+            userId,
+            role: profile.role,
+            skills: (profile.skills ?? []).map((s) => s.skillName).filter((n): n is string => typeof n === 'string'),
+            industries: Array.isArray(rolePayload.industries) ? (rolePayload.industries as string[]) : [],
+            location: profile.location,
+          }}
+          viewerId={viewerId}
+        />
+      ),
+    },
+    {
+      id: 'recommendations',
+      glyph: 'star',
+      labelEn: 'Recommendations',
+      labelEl: 'Συστάσεις',
+      content: <ProfileRecommendations userId={userId} />,
+    },
+  ];
+
   return (
     <AppShell
       title={profile.displayName}
@@ -296,106 +331,77 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       description={
         profile.headline ?? (profile.role ? `${profile.role} on CoFounderBay` : undefined)
       }
+      rail={rail}
       actions={
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleShare}
-            title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
-            aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
-          >
-            <Share2 className="icon-sm" />
-          </Button>
-          <FollowButton userId={userId} />
-          <AskIntroButton targetId={userId} targetName={profile.displayName} />
-          <Button variant="secondary" size="sm" className="gap-2" asChild>
-            <Link href="/discover">
-              <ArrowLeft className="icon-sm" />
-              <BilingualText en="Back" el="Πίσω" compact />
-            </Link>
-          </Button>
-        </div>
+        <Button variant="secondary" size="sm" className="gap-2" asChild>
+          <Link href="/discover">
+            <ArrowLeft className="icon-sm" />
+            <BilingualText en="Back" el="Πίσω" compact />
+          </Link>
+        </Button>
       }
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-        {/* Identity card */}
-        <div className="space-y-4">
-          <Card className="animate-fade-in">
-            <CardContent className="flex flex-col items-center gap-4 text-center">
-              <Avatar className="h-20 w-20 ring-4 ring-primary/20">
-                <AvatarImage src={profile.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary-accessible text-xl font-bold">
-                  {profile.displayName?.[0]?.toUpperCase() ?? '?'}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  <h2 className="text-xl font-semibold text-foreground">{profile.displayName}</h2>
-                  <PersonVerifiedBadge userId={userId} />
-                </div>
-                {profile.headline && (
-                  <p className="text-sm text-muted-foreground">{profile.headline}</p>
-                )}
-                <div className="flex justify-center pt-1">
-                  <RoleBadge role={profile.role} />
-                </div>
-                {!isOwnProfile ? <OpenToLine userId={userId} /> : null}
-              </div>
-
-              <div className="w-full space-y-2 text-sm text-muted-foreground">
-                {profile.location && (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="icon-sm shrink-0" />
-                    {profile.location}
-                  </p>
-                )}
-                {profile.timezone && (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="icon-sm shrink-0" />
-                    {profile.timezone}
-                  </p>
-                )}
-                {profile.languages?.length ? (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="icon-sm shrink-0" />
-                    {profile.languages.join(' · ')}
-                  </p>
+      <div className="space-y-6">
+        <ProfileHero
+          name={profile.displayName}
+          avatarUrl={profile.avatarUrl}
+          nameBadge={<PersonVerifiedBadge userId={userId} />}
+          headline={profile.headline}
+          meta={[
+            profile.location ? <><MapPin className="icon-sm shrink-0" aria-hidden="true" />{profile.location}</> : null,
+            profile.timezone ? <><Clock className="icon-sm shrink-0" aria-hidden="true" />{profile.timezone}</> : null,
+            profile.languages?.length ? <><Languages className="icon-sm shrink-0" aria-hidden="true" />{profile.languages.join(' · ')}</> : null,
+          ]}
+          openTo={!isOwnProfile ? <OpenToLine userId={userId} /> : null}
+          aside={<RoleBadge role={profile.role} />}
+          actions={
+            isOwnProfile ? (
+              <>
+                <Button variant="secondary" asChild>
+                  <Link href="/profile/edit"><BilingualText en="Edit your profile" el="Επεξεργασία προφίλ" compact /></Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleShare}
+                  title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                  aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                >
+                  <Share2 className="icon-sm" />
+                </Button>
+              </>
+            ) : (
+              <>
+                {viewerId ? (
+                  <>
+                    <Button
+                      className="gap-2"
+                      onClick={() => void handleConnect()}
+                      disabled={connecting || isConnected || isPendingSent || isBlocked}
+                      variant={isConnected || isBlocked ? 'secondary' : 'default'}
+                    >
+                      {connecting ? (
+                        <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                      ) : isConnected || isBlocked ? (
+                        <UserCheck className="icon-sm" aria-hidden="true" />
+                      ) : (
+                        <UserPlus className="icon-sm" aria-hidden="true" />
+                      )}
+                      {connButtonLabel}
+                    </Button>
+                    <Button variant="outline" className="gap-2" onClick={handleMessage} disabled={messaging || isBlocked}>
+                      {messaging ? (
+                        <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+                      ) : (
+                        <MessageCircle className="icon-sm" aria-hidden="true" />
+                      )}
+                      <BilingualText en="Message" el="Μήνυμα" compact />
+                    </Button>
+                  </>
                 ) : null}
-              </div>
-
-              {/* Actions */}
-              {!isOwnProfile && viewerId && (
-                <div className="flex w-full flex-col gap-2 pt-1">
-                  <Button
-                    className="w-full gap-2"
-                    onClick={() => void handleConnect()}
-                    disabled={connecting || isConnected || isPendingSent || isBlocked}
-                    variant={isConnected || isBlocked ? 'secondary' : 'default'}
-                  >
-                    {connecting ? (
-                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
-                    ) : isConnected || isBlocked ? (
-                      <UserCheck className="icon-sm" aria-hidden="true" />
-                    ) : (
-                      <UserPlus className="icon-sm" aria-hidden="true" />
-                    )}
-                    {connButtonLabel}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handleMessage}
-                    disabled={messaging || isBlocked}
-                  >
-                    {messaging ? (
-                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
-                    ) : (
-                      <MessageCircle className="icon-sm" aria-hidden="true" />
-                    )}
-                    <BilingualText en="Message" el="Μήνυμα" compact />
-                  </Button>
+                <FollowButton userId={userId} />
+                <AskIntroButton targetId={userId} targetName={profile.displayName} />
+                {viewerId ? (
                   <AIInsightButton
                     prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
                     agentId="matching"
@@ -403,98 +409,100 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant="outline"
                     size="sm"
                     label="AI Match Analysis"
-                    className="w-full"
                   />
-                </div>
-              )}
-
-              {isOwnProfile && (
-                <Button variant="secondary" className="w-full" asChild>
-                  <Link href="/profile/edit" className="w-full"><BilingualText en="Edit your profile" el="Επεξεργασία προφίλ" compact /></Link>
+                ) : null}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleShare}
+                  title={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                  aria-label={bilingualAria('Copy link', 'Αντιγραφή συνδέσμου')}
+                >
+                  <Share2 className="icon-sm" />
                 </Button>
+              </>
+            )
+          }
+        />
+
+        {profile.bio && (
+          <Card className="shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="text-lg font-semibold"><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
+            </CardHeader>
+            <CardContent className="pt-5">
+              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                {profile.bio}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {viewerId ? <ProfileActivity userId={userId} own={isOwnProfile} /> : null}
+
+        <ProfileExperience payload={rolePayload as Record<string, unknown>} own={isOwnProfile} />
+
+        {profile.skills?.length ? (
+          <Card className="shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="text-lg font-semibold">
+                <BilingualText en="Skills" el="Δεξιότητες" compact />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2 pt-5">
+              {profile.skills.map((s, i) => (
+                // skillId can be absent on a partially-populated payload, and
+                // key={undefined} is the same as no key to React.
+                <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+        {viewerId ? <SkillEvidencePanel userId={userId} /> : null}
+
+        {Object.keys(rolePayload).filter((k) => k !== 'experience' && k !== 'education').length > 0 && (
+          <Card className="shadow-sm border-border">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <RoleIcon className="icon-sm text-muted-foreground" />
+                <StatusText value={profile.role} /> <BilingualText en="details" el="στοιχεία" compact />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-5">
+              {/* Generic role payload display */}
+              <>{rolePayloadNodes}</>
+
+              {/* Social links */}
+              {rolePayload.links && typeof rolePayload.links === 'object' && (
+                <div className="space-y-1.5 pt-2 border-t border-border">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        { key: 'websiteUrl', icon: Globe, label: 'Website' },
+                        { key: 'linkedinUrl', icon: Linkedin, label: 'LinkedIn' },
+                        { key: 'githubUrl', icon: Github, label: 'GitHub' },
+                        { key: 'twitterUrl', icon: Twitter, label: 'Twitter/X' },
+                      ] as { key: string; icon: React.ElementType; label: string }[]
+                    )
+                      .filter(({ key }) => {
+                        const url = (rolePayload.links as Record<string, unknown>)[key];
+                        return typeof url === 'string' && url.trim();
+                      })
+                      .map(({ key, icon: LinkIcon, label }) => (
+                        <SocialLinkButton
+                          key={key}
+                          href={String((rolePayload.links as Record<string, unknown>)[key])}
+                          icon={LinkIcon}
+                          label={label}
+                        />
+                      ))}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
-
-          {/* Skills */}
-          {profile.skills?.length ? (
-            <Card className="animate-fade-in stagger-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  <BilingualText en="Skills" el="Δεξιότητες" compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2 pt-0">
-                {profile.skills.map((s, i) => (
-                  // skillId can be absent on a partially-populated payload, and
-                  // key={undefined} is the same as no key to React.
-                  <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
-                ))}
-              </CardContent>
-            </Card>
-          ) : null}
-          {viewerId ? <SkillEvidencePanel userId={userId} /> : null}
-        </div>
-
-        {/* Details */}
-        <div className="space-y-4">
-          {profile.bio && (
-            <Card className="animate-fade-in stagger-2">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {profile.bio}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {Object.keys(rolePayload).length > 0 && (
-            <Card className="animate-fade-in stagger-3">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-muted-foreground" />
-                  <StatusText value={profile.role} /> <BilingualText en="details" el="στοιχεία" compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Generic role payload display */}
-                <>{rolePayloadNodes}</>
-
-                {/* Social links */}
-                {rolePayload.links && typeof rolePayload.links === 'object' && (
-                  <div className="space-y-1.5 pt-2 border-t border-border">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>
-                    <div className="flex flex-wrap gap-2">
-                      {(
-                        [
-                          { key: 'websiteUrl', icon: Globe, label: 'Website' },
-                          { key: 'linkedinUrl', icon: Linkedin, label: 'LinkedIn' },
-                          { key: 'githubUrl', icon: Github, label: 'GitHub' },
-                          { key: 'twitterUrl', icon: Twitter, label: 'Twitter/X' },
-                        ] as { key: string; icon: React.ElementType; label: string }[]
-                      )
-                        .filter(({ key }) => {
-                          const url = (rolePayload.links as Record<string, unknown>)[key];
-                          return typeof url === 'string' && url.trim();
-                        })
-                        .map(({ key, icon: LinkIcon, label }) => (
-                          <SocialLinkButton
-                            key={key}
-                            href={String((rolePayload.links as Record<string, unknown>)[key])}
-                            icon={LinkIcon}
-                            label={label}
-                          />
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        )}
       </div>
     </AppShell>
   );

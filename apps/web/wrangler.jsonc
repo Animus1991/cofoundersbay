@@ -17,7 +17,9 @@
     "enabled": true
   },
 
-  // Uncomment and fill in the namespace id after running:
+  // Optional KV cache for the revalidating routes. Uncomment and fill in the
+  // namespace id after running the command below, and only together with the
+  // kv-incremental-cache import in open-next.config.ts (see the note there):
   //   npx wrangler kv namespace create NEXT_INC_CACHE_KV
   // "kv_namespaces": [
   //   { "binding": "NEXT_INC_CACHE_KV", "id": "<namespace-id>" }

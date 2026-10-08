@@ -50,7 +50,7 @@ function setup() {
         updates.push(row);
         return withAuthor(row);
       }),
-      findMany: vi.fn(async ({ where }: any) => updates.filter((u) => (where.authorId?.in ? where.authorId.in.includes(u.authorId) : u.authorId === where.authorId)).map(withAuthor)),
+      findMany: vi.fn(async ({ where }: any) => updates.filter((u) => (where.authorId?.in ? where.authorId.in.includes(u.authorId) : u.authorId === where.authorId) && (!where.visibility || u.visibility === where.visibility)).map(withAuthor)),
       findUnique: vi.fn(async ({ where }: any) => {
         const row = updates.find((u) => (where.id ? u.id === where.id : u.publicToken === where.publicToken));
         return row ? withAuthor(row) : null;
@@ -86,6 +86,19 @@ describe('FounderUpdatesService', () => {
     expect((await service.feed('sofia')).updates).toHaveLength(0);
     await expect(service.get('sofia', update.id)).rejects.toBeInstanceOf(NotFoundException);
     expect((await service.get('marcus', update.id)).update.title).toBe('September');
+  });
+
+  it('shows a profile the updates its reader may read: all to the author and followers, public ones to anyone else', async () => {
+    const { service } = setup();
+    await service.create('elena', { title: 'For followers', body: 'Two pilots live.' });
+    await service.create('elena', { title: 'For everyone', body: 'Seed round open.', visibility: 'public' });
+    expect((await service.byAuthor('elena', 'elena')).updates.map((u) => u.title).sort()).toEqual(['For everyone', 'For followers']);
+    expect(await service.byAuthor('sofia', 'elena')).toMatchObject({ following: false, updates: [{ title: 'For everyone' }] });
+    await service.follow('marcus', 'elena');
+    const asFollower = await service.byAuthor('marcus', 'elena');
+    expect(asFollower.following).toBe(true);
+    expect(asFollower.updates).toHaveLength(2);
+    expect(asFollower.updates.every((u) => u.publicToken === null)).toBe(true);
   });
 
   it('gives a public update a token only its author sees, and serves it without ids', async () => {

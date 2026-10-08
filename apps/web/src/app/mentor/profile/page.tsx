@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Star, BadgeCheck, Clock, Globe, DollarSign, Video, Users, Edit, Save, RefreshCw, Plus, X, ChevronDown,
+  Star, Clock, Globe, DollarSign, Video, Users, Edit, Save, RefreshCw, Plus, X, ChevronDown,
 } from 'lucide-react';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,6 +53,8 @@ const EXPERTISE_AREAS = [
 const SESSION_FORMATS = ['video', 'in_person', 'async'];
 
 export default function MentorProfilePage() {
+  // The preview's check is the real verification, not a constant.
+  const me = useStoredUser();
   const { hasSession, mounted } = useSession();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
@@ -140,7 +144,7 @@ export default function MentorProfilePage() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="icon-sm text-muted-foreground" />
+                  <PersonVerifiedBadge userId={me?.id ?? ''} />
                   <Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

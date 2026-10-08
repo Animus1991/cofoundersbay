@@ -19,7 +19,6 @@ import {
   TrendingUp,
   Sparkles,
   Activity,
-  BadgeCheck,
   Circle,
   Award,
   Compass,
@@ -37,6 +36,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
@@ -599,10 +599,13 @@ export function MembersPageClient() {
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                    {/* The badge wraps under the name rather than clipping it. */}
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                      <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                      <PersonVerifiedBadge userId={member.userId} />
+                    </div>
                     <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-muted-foreground shrink-0" />
                 </div>
               ))}
             </div>

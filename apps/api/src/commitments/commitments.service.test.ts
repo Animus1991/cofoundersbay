@@ -128,6 +128,10 @@ describe('CommitmentsService', () => {
       expect((await service.listCards(MARCUS, { stage: 'idea' })).cards).toHaveLength(0);
       expect((await service.listCards(MARCUS, { projectRefs: ['1', '9'] })).cards).toHaveLength(1);
       expect((await service.listCards(MARCUS, { mine: true })).cards).toHaveLength(0);
+      // One member's cards, for their profile's Activity.
+      const [card] = (await service.listCards(MARCUS, {})).cards;
+      expect((await service.listCards(MARCUS, { owner: card.owner.id })).cards).toHaveLength(1);
+      expect((await service.listCards(MARCUS, { owner: 'someone-else' })).cards).toHaveLength(0);
     });
 
     it('expires an open card that went quiet, on read', async () => {

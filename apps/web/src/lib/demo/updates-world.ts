@@ -217,6 +217,14 @@ export function previewUpdatesApi(pathname: string, method: string, body: Record
   if (parts.length === 3 && parts[2] === 'mine' && method === 'GET') {
     return { updates: state.updates.filter((u) => u.authorId === ME).sort(newest).map((u) => shape(u, now)) };
   }
+  if (parts.length === 4 && parts[2] === 'by' && method === 'GET') {
+    // The API's rule: the author reads all, a follower all, anyone else the public ones.
+    const author = parts[3];
+    const own = author === ME;
+    const following = own ? null : state.follows.some((f) => f.followerId === ME && f.followingId === author);
+    const rows = state.updates.filter((u) => u.authorId === author && (own || following || u.visibility === 'public'));
+    return { updates: rows.sort(newest).map((u) => shape(u, now)), following };
+  }
   if (parts.length === 3 && parts[2] === 'feed' && method === 'GET') {
     const ids = new Set(state.follows.filter((f) => f.followerId === ME).map((f) => f.followingId));
     return { updates: state.updates.filter((u) => ids.has(u.authorId)).sort(newest).map((u) => shape(u, now)) };

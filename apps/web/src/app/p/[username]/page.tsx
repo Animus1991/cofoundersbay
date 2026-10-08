@@ -6,10 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { FollowButton } from '@/components/updates/FollowButton';
 import {
-  MapPin, Globe, Linkedin, Twitter, Github, Mail,
-  Calendar, Briefcase, GraduationCap, Award, Users,
+  MapPin, Globe, Linkedin, Twitter, Github,
+  Calendar, Award, Users,
   MessageSquare, UserPlus, Share2, ExternalLink, Clock,
-  CheckCircle2, Star, Zap, Target, PenLine, Loader2,
+  CheckCircle2, Star, Zap, Target, PenLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,12 +18,14 @@ import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Logo } from '@/components/brand/Logo';
-import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { ProfileHero } from '@/components/profile/ProfileHero';
+import { ProfileExperience } from '@/components/profile/ProfileSections';
+import { formatDate } from '@/lib/i18n/format';
 
 function deriveProfileFields(profile: PublicProfile) {
   const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
@@ -32,8 +34,6 @@ function deriveProfileFields(profile: PublicProfile) {
   const lastName = nameParts.slice(1).join(' ') || '';
   const skills = (profile.skills ?? []).map((s) => s.skillName ?? s.skillId);
   const interests = (rp.interests as string[] | undefined) ?? [];
-  const experience = (rp.experience as Array<{ title: string; company: string; period: string; description?: string }> | undefined) ?? [];
-  const education = (rp.education as Array<{ degree: string; school: string; year?: string }> | undefined) ?? [];
   const achievements = (rp.achievements as string[] | undefined) ?? [];
   const connectionsCount = rp.connectionsCount as number | undefined;
   const projectsCount = rp.projectsCount as number | undefined;
@@ -45,7 +45,7 @@ function deriveProfileFields(profile: PublicProfile) {
   const twitter = (rp.twitter ?? rp.twitterUrl) as string | undefined;
   const github = (rp.github ?? rp.githubUrl) as string | undefined;
   const joinedAt = new Date(profile.createdAt);
-  return { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt, connectionsCount, projectsCount };
+  return { firstName, lastName, skills, interests, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt, connectionsCount, projectsCount };
 }
 
 function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
@@ -172,7 +172,7 @@ export default function PublicProfilePage() {
     );
   }
 
-  const { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt } = derived;
+  const { firstName, lastName, skills, interests, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt } = derived;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -197,98 +197,69 @@ export default function PublicProfilePage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Profile Header */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <Avatar className="h-20 w-20 shrink-0">
-                    <AvatarImage src={profile.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-xl bg-primary/10 text-primary-accessible">
-                      {firstName[0]}{lastName[0] || firstName[1] || ''}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">
-                          {firstName} {lastName}
-                        </h1>
-                        {/* The platform's badge when a check stands behind it; otherwise
-                            the profile's own flag, labelled as what it is: self-declared. */}
-                        <PersonVerifiedBadge
-                          userId={username}
-                          fallback={isVerified ? (
-                            <span title="Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα" className="inline-flex items-center">
-                              <CheckCircle2 className="icon-md text-primary-accessible" aria-hidden="true" />
-                              <span className="sr-only">Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα</span>
-                            </span>
-                          ) : null}
-                        />
-                        <RoleBadge role={profile.role} />
-                      </div>
-                      <p className="text-muted-foreground mt-1">{profile.headline ?? ''}</p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      {profile.location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="icon-sm" />
-                          {profile.location}
-                        </span>
-                      )}
-                      {profile.timezone && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="icon-sm" />
-                          {profile.timezone}
-                        </span>
-                      )}
-                      {profile.role && (
-                        <span className="flex items-center gap-1 capitalize">
-                          <Briefcase className="icon-sm" />
-                          {profile.role}
-                        </span>
-                      )}
-                    </div>
-
-                    {isAvailable && (
-                      <Badge className="bg-status-success-bg text-status-success border-status-success-border">
-                        <Zap className="icon-sm mr-1" />
-                        <BilingualText en="Open to Opportunities" el="Ανοιχτός/ή σε ευκαιρίες" compact />
-                      </Badge>
-                    )}
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <Button className="gap-2" asChild>
-                        <Link href={`/register?action=message&user=${username}`}>
-                          <MessageSquare className="icon-sm" />
-                          <BilingualText en="Message" el="Μήνυμα" compact />
-                        </Link>
-                      </Button>
-                      <Button variant="outline" className="gap-2" asChild>
-                        <Link href={`/register?action=connect&user=${username}`}>
-                          <UserPlus className="icon-sm" />
-                          <BilingualText en="Connect" el="Σύνδεση" compact />
-                        </Link>
-                      </Button>
-                      {profile?.userId ? <FollowButton userId={profile.userId} /> : null}
-                      {/* Had no handler. */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Share profile"
-                        onClick={() => {
-                          const url = window.location.href;
-                          if (navigator.share) void navigator.share({ url }).catch(() => {});
-                          else void navigator.clipboard?.writeText(url);
-                        }}
-                      >
-                        <Share2 className="icon-sm" aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* The same top card as the signed-in profiles (ProfileHero), with
+                the actions a visitor without an account can take. */}
+            <ProfileHero
+              headingLevel="h1"
+              name={`${firstName} ${lastName}`.trim()}
+              avatarUrl={profile.avatarUrl}
+              nameBadge={
+                // The platform's badge when a check stands behind it; otherwise
+                // the profile's own flag, labelled as what it is: self-declared.
+                <PersonVerifiedBadge
+                  userId={username}
+                  fallback={isVerified ? (
+                    <span title="Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα" className="inline-flex items-center">
+                      <CheckCircle2 className="icon-md text-primary-accessible" aria-hidden="true" />
+                      <span className="sr-only">Self-declared on the profile, not checked by the platform · Δηλωμένο στο προφίλ, χωρίς έλεγχο από την πλατφόρμα</span>
+                    </span>
+                  ) : null}
+                />
+              }
+              headline={profile.headline ?? undefined}
+              meta={[
+                profile.location ? <><MapPin className="icon-sm" aria-hidden="true" />{profile.location}</> : null,
+                profile.timezone ? <><Clock className="icon-sm" aria-hidden="true" />{profile.timezone}</> : null,
+                <><Calendar className="icon-sm" aria-hidden="true" /><BilingualText en={`Member since ${formatDate(joinedAt, 'en', { month: 'long', year: 'numeric' })}`} el={`Μέλος από ${formatDate(joinedAt, 'el', { month: 'long', year: 'numeric' })}`} compact /></>,
+              ]}
+              openTo={isAvailable ? (
+                <Badge className="bg-status-success-bg text-status-success border-status-success-border">
+                  <Zap className="icon-sm mr-1" />
+                  <BilingualText en="Open to Opportunities" el="Ανοιχτός/ή σε ευκαιρίες" compact />
+                </Badge>
+              ) : null}
+              aside={<RoleBadge role={profile.role} />}
+              actions={
+                <>
+                  <Button className="gap-2" asChild>
+                    <Link href={`/register?action=message&user=${username}`}>
+                      <MessageSquare className="icon-sm" />
+                      <BilingualText en="Message" el="Μήνυμα" compact />
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="gap-2" asChild>
+                    <Link href={`/register?action=connect&user=${username}`}>
+                      <UserPlus className="icon-sm" />
+                      <BilingualText en="Connect" el="Σύνδεση" compact />
+                    </Link>
+                  </Button>
+                  {profile?.userId ? <FollowButton userId={profile.userId} /> : null}
+                  {/* Had no handler. */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Share profile · Κοινοποίηση προφίλ"
+                    onClick={() => {
+                      const url = window.location.href;
+                      if (navigator.share) void navigator.share({ url }).catch(() => {});
+                      else void navigator.clipboard?.writeText(url);
+                    }}
+                  >
+                    <Share2 className="icon-sm" aria-hidden="true" />
+                  </Button>
+                </>
+              }
+            />
 
             {/* About */}
             <Card>
@@ -325,60 +296,8 @@ export default function PublicProfilePage() {
               </Card>
             )}
 
-            {/* Experience */}
-            {experience.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="icon-md" />
-                  <BilingualText en="Experience" el="Εμπειρία" compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {experience.map((exp, i) => (
-                  <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border')}>
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Briefcase className="icon-md text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-foreground">{exp.title}</h4>
-                        <p className="text-sm text-muted-foreground">{exp.company}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{exp.period}</p>
-                        {exp.description && <p className="text-sm text-muted-foreground mt-2">{exp.description}</p>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            )}
-
-            {/* Education */}
-            {education.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <GraduationCap className="icon-md" />
-                  <BilingualText en="Education" el="Εκπαίδευση" compact />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {education.map((edu, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <GraduationCap className="icon-md text-muted-foreground" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-foreground">{edu.degree}</h4>
-                      <p className="text-sm text-muted-foreground">{edu.school}</p>
-                      {edu.year && <p className="text-xs text-muted-foreground">{edu.year}</p>}
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            )}
+            {/* Experience and education, as the editor and the LinkedIn import store them. */}
+            <ProfileExperience payload={profile.rolePayload as Record<string, unknown> | null} own={false} />
 
             {/* Endorsements / Testimonials */}
             <Card>
@@ -412,7 +331,7 @@ export default function PublicProfilePage() {
                       <BilingualText en="No endorsements yet" el="Δεν υπάρχουν συστάσεις ακόμα" compact />
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Be the first to endorse {firstName}
+                      <BilingualText en={`Be the first to endorse ${firstName}`} el={`Γράψτε πρώτοι σύσταση για ${firstName}`} wrap />
                     </p>
                   </div>
                 )}
@@ -429,12 +348,12 @@ export default function PublicProfilePage() {
                     fit this sidebar ("ConnectionsProjects" ran together). */}
                 <dl className="divide-y divide-border/50 text-sm">
                   {[
-                    { label: 'Connections', value: derived?.connectionsCount ?? '—' },
-                    { label: 'Projects', value: derived?.projectsCount ?? '—' },
-                    { label: 'Endorsements', value: endorsementsLoading ? '—' : endorsements.length },
+                    { label: 'Connections', labelEl: 'Συνδέσεις', value: derived?.connectionsCount ?? '—' },
+                    { label: 'Projects', labelEl: 'Έργα', value: derived?.projectsCount ?? '—' },
+                    { label: 'Endorsements', labelEl: 'Συστάσεις', value: endorsementsLoading ? '—' : endorsements.length },
                   ].map((row) => (
                     <div key={row.label} className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
-                      <dt className="text-muted-foreground">{row.label}</dt>
+                      <dt className="text-muted-foreground"><BilingualText en={row.label} el={row.labelEl} compact /></dt>
                       <dd className="font-semibold tabular-nums text-foreground">{row.value}</dd>
                     </div>
                   ))}
@@ -449,7 +368,7 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {skills.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText en="No skills listed" el="Δεν έχουν καταχωριστεί δεξιότητες" compact /></p>}
+                  {skills.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText wrap en="No skills listed" el="Δεν έχουν καταχωριστεί δεξιότητες" compact /></p>}
                   {skills.map((skill) => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>
                   ))}
@@ -464,7 +383,7 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {interests.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText en="No interests listed" el="Δεν έχουν καταχωριστεί ενδιαφέροντα" compact /></p>}
+                  {interests.length === 0 && <p className="text-sm text-muted-foreground"><BilingualText wrap en="No interests listed" el="Δεν έχουν καταχωριστεί ενδιαφέροντα" compact /></p>}
                   {interests.map((interest) => (
                     <Badge key={interest} variant="outline">{interest}</Badge>
                   ))}
@@ -501,7 +420,7 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {!website && !linkedin && !twitter && !github && (
-                  <p className="text-sm text-muted-foreground"><BilingualText en="No links added" el="Δεν έχουν προστεθεί σύνδεσμοι" compact /></p>
+                  <p className="text-sm text-muted-foreground"><BilingualText wrap en="No links added" el="Δεν έχουν προστεθεί σύνδεσμοι" compact /></p>
                 )}
                 {website && (
                   <a href={website} target="_blank" rel="noopener noreferrer"
@@ -538,27 +457,17 @@ export default function PublicProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Member Since */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Calendar className="icon-sm" />
-                  <span>Member since {joinedAt.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' })}</span>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* CTA */}
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6 text-center">
                 <h3 className="font-semibold text-foreground mb-2">
-                  Want to connect with {firstName}?
+                  <BilingualText en={`Want to connect with ${firstName}?`} el={`Θέλετε να συνδεθείτε με ${firstName};`} wrap />
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Join CoFounderBay to message and connect with founders like {firstName}.
+                  <BilingualText en={`Join CoFounderBay to message and connect with founders like ${firstName}.`} el={`Εγγραφείτε στο CoFounderBay για μηνύματα και συνδέσεις με ιδρυτές όπως ${firstName}.`} wrap />
                 </p>
                 <Button className="w-full" asChild>
-                  <Link href="/register">Join CoFounderBay Free</Link>
+                  <Link href="/register"><BilingualText en="Join CoFounderBay free" el="Εγγραφείτε δωρεάν στο CoFounderBay" compact wrap /></Link>
                 </Button>
               </CardContent>
             </Card>

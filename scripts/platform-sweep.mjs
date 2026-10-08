@@ -33,7 +33,7 @@ import { createRequire } from 'node:module';
 const requireFromWeb = createRequire(new URL('../apps/web/package.json', import.meta.url));
 const { chromium } = requireFromWeb('@playwright/test');
 
-const BASE = 'http://localhost:3000';
+const BASE = process.env.SWEEP_BASE ?? 'http://localhost:3000'; // e.g. http://localhost:8787 for `pnpm cf:preview` (workerd)
 const routes = readFileSync(process.argv[2] ?? new URL('./platform-sweep-routes.txt', import.meta.url), 'utf8').split(/\r?\n/).filter(Boolean);
 const W = Number(process.argv[3] ?? 1440);
 const SINGLE_LANGUAGE = W < 640;

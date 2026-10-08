@@ -4,7 +4,18 @@ import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
 import { LinkedInImportDialog, type ImportableProfile } from '@/components/profile/LinkedInImportDialog';
 import { takeProfileImportDraft } from '@/lib/linkedin-import/api';
-import { fromLinkedInRecords, type LinkedInImport } from '@cofounderbay/shared';
+import {
+  cleanEducation,
+  cleanExperience,
+  fromLinkedInRecords,
+  readEducation,
+  readExperience,
+  type EducationEntry,
+  type ExperienceEntry,
+  type LinkedInImport,
+} from '@cofounderbay/shared';
+import { ExperienceEditor } from '@/components/profile/ExperienceEditor';
+import { useScrollToHash } from '@/hooks/useScrollToHash';
 
 import { useState, useEffect, useId, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -54,6 +65,10 @@ import { bilingualInline } from '@/lib/i18n/format';
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
 type ProfileFormData = {
+  // Experience and education (rolePayload.experience / .education)
+  experience: ExperienceEntry[];
+  education: EducationEntry[];
+
   // Basic info
   displayName: string;
   headline: string;
@@ -128,6 +143,8 @@ const defaultFormData: ProfileFormData = {
   geography: [],
   orgType: '',
   programTypes: [],
+  experience: [],
+  education: [],
 };
 
 const roleOptions: { value: Role; label: string; icon: React.ElementType; description: string }[] = [
@@ -335,6 +352,11 @@ export default function ProfileEditPage() {
   const [formInitialized, setFormInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  // Whether the saved profile had roles or schools, so removing the last one
+  // still sends a payload (an empty one would otherwise keep the old list).
+  const hadHistory = useRef(false);
+  // /profile/edit#experience: the section mounts once the profile has loaded.
+  useScrollToHash();
   const [aiLoading, setAILoading] = useState(false);
   const [aiSuggestions, setAISuggestions] = useState<ProfileSuggestions | null>(null);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
@@ -413,7 +435,10 @@ export default function ProfileEditPage() {
       orgType: (typeof rolePayload.organizationType === 'string' ? rolePayload.organizationType : '') ?? '',
       programTypes: Array.isArray(rolePayload.programTypes)
         ? (rolePayload.programTypes as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+      experience: readExperience(rolePayload.experience),
+      education: readEducation(rolePayload.education),
     });
+    hadHistory.current = Array.isArray(rolePayload.experience) || Array.isArray(rolePayload.education);
     setFormInitialized(true);
   }, [meData, formInitialized]);
 
@@ -506,6 +531,11 @@ export default function ProfileEditPage() {
         if (form.programTypes.length) rolePayload.programTypes = form.programTypes;
       }
 
+      const experience = cleanExperience(form.experience);
+      const education = cleanEducation(form.education);
+      if (experience.length) rolePayload.experience = experience;
+      if (education.length) rolePayload.education = education;
+
       await updateProfile({
         displayName: form.displayName,
         headline: form.headline || undefined,
@@ -514,7 +544,7 @@ export default function ProfileEditPage() {
         location: form.location || undefined,
         timezone: form.timezone || undefined,
         languages: form.languages.length ? form.languages : undefined,
-        rolePayload: Object.keys(rolePayload).length ? rolePayload : undefined,
+        rolePayload: Object.keys(rolePayload).length || hadHistory.current ? rolePayload : undefined,
         skillIds,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
@@ -614,7 +644,7 @@ export default function ProfileEditPage() {
           <LinkedInImportDialog
             open={importOpen}
             onOpenChange={setImportOpen}
-            current={{ displayName: form.displayName, headline: form.headline, bio: form.bio, location: form.location, websiteUrl: form.websiteUrl, skills: form.skills }}
+            current={{ displayName: form.displayName, headline: form.headline, bio: form.bio, location: form.location, websiteUrl: form.websiteUrl, skills: form.skills, experience: form.experience, education: form.education }}
             skillCatalog={skillCatalog.map((s) => s.name)}
             initial={importInitial}
             onApply={applyImport}
@@ -931,6 +961,30 @@ export default function ProfileEditPage() {
                       max={5}
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Experience and education: the profile's "Experience" section. */}
+              <Card id="experience" className="scroll-mt-20 shadow-sm border-border">
+                <CardHeader className="pb-4 border-b border-border">
+                  <CardTitle className="text-lg font-semibold">
+                    <BilingualText en="Experience and education" el="Εμπειρία και εκπαίδευση" compact />
+                  </CardTitle>
+                  <CardDescription>
+                    <BilingualText
+                      en="The roles you have held and where you studied, newest first on your profile. Import from LinkedIn fills these too."
+                      el="Οι ρόλοι που είχατε και πού σπουδάσατε, οι πιο πρόσφατοι πρώτοι στο προφίλ. Η εισαγωγή από το LinkedIn τα συμπληρώνει κι αυτά."
+                      wrap
+                    />
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <ExperienceEditor
+                    experience={form.experience}
+                    education={form.education}
+                    onExperience={(rows) => updateField('experience', rows)}
+                    onEducation={(rows) => updateField('education', rows)}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
