@@ -1782,21 +1782,23 @@ html {
     /* Call sites pin h-7 / h-8 / h-9 / h-10 (28 / 32 / 36 / 40px) for the
        desktop ladder, and Button's own sizes are h-11 (44px) until `md`.
        Those utilities are not breakpoint-scoped, so a phone inherited them.
-       The phone floor is 41.8px — 5% under 44px — so a control stays
-       reachable without the extra height. h-11 and h-12 join the list
+       The phone floor is 39.71px — another 5% under 41.8px — so a control
+       stays reachable without the extra height. h-11 and h-12 join the list
        because that is the height the eye meets on a phone. From 640px the
        utilities mean what they say again. Square controls shrink on both
-       axes; a full-width button only shrinks in height. Fields stay 44px. */
+       axes; a full-width button only shrinks in height. Fields stay 44px.
+       The Ask AI bar is only as tall as the button inside it, so it shortens
+       with this floor. */
     :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .h-11, .h-12, .min-h-7, .min-h-8, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .min-h-\[44px\]) {
       height: auto;
-      min-height: 41.8px;
+      min-height: 39.71px;
     }
     :is(button, a, [role='button']):is(.w-7, .w-8, .w-9, .w-10, .w-11, .min-w-\[44px\]),
     :is(button, a, [role='button']).h-10.w-10,
     :is(button, a, [role='button']).h-11.w-11,
     :is(button, a, [role='button']).h-12.w-12 {
-      width: 41.8px;
-      min-width: 41.8px;
+      width: 39.71px;
+      min-width: 39.71px;
     }
 
     /* What a fingertip still missed at 390px (measured on 15 pages, 60
@@ -1808,8 +1810,14 @@ html {
       min-height: 44px;
     }
     .tap-target-phone {
-      min-height: 41.8px;
-      min-width: 41.8px;
+      min-height: 39.71px;
+      min-width: 39.71px;
+    }
+    /* The Ask AI bar measured 55.8px. 5% under that is 53.01. The button
+       inside is now 39.71, so the leftover is this padding plus the border. */
+    [data-ask-ai] {
+      padding-top: 5.65px;
+      padding-bottom: 5.65px;
     }
     [role='switch'] {
       position: relative;
@@ -3251,17 +3259,17 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.31 · meta 14.7 · body 15.21 · lead 14.75 · figure 16.66 · section 15.29 · title 16.48
+     caption 13.31 · meta 14.7 · body 15.21 · lead 14.013 · figure 16.66 · section 15.29 · title 15.656
 
-   Captions, meta, figure, and section subtitles stay put. Page titles, the
-   line under the title, body copy (text-sm on every page), and fields such
-   as Ask AI are another 3% under the previous phone sizes
-   (16.99 × 0.97 → 16.48, 15.21 × 0.97 → 14.75, 15.68 × 0.97 → 15.21,
-   16.66 × 0.97 → 16.16). Fields stay at 16.16px, above the iOS zoom floor.
+   Captions, meta, figure, section headings, and body copy stay put. Page
+   titles and the line under the title are another 5% under the previous
+   phone sizes (16.48 × 0.95 → 15.656, 14.75 × 0.95 → 14.013), on every page
+   that uses those steps. Fields such as Ask AI stay at 16.16px, above the
+   iOS zoom floor; the bar itself shortens with the button floor.
 
    The dashboard is the phone standard for the same role on every page.
    text-xl through text-7xl, including pages and dialogs outside
-   #main-content, sit on the title step (16.48). The readiness gauge sits
+   #main-content, sit on the title step (15.656). The readiness gauge sits
    on the figure step (16.66).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
@@ -3373,11 +3381,11 @@ textarea[class~="border-input"]:focus,
     line-height: 1.35;
   }
 
-  /* The line under the page title, on every page. 3% under the previous
+  /* The line under the page title, on every page. 5% under the previous
      phone lead, and still under the body copy. */
   #main-content p.page-lead,
   p.page-lead {
-    font-size: 14.75px;
+    font-size: 14.013px;
     line-height: 1.45;
   }
 
@@ -3417,7 +3425,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 16.48px;
+    font-size: 15.656px;
     line-height: 1.3;
   }
 
@@ -3445,7 +3453,7 @@ textarea[class~="border-input"]:focus,
 }
 
 /* Landing intro. On a phone the headline, the line under it, and the live
-   counts use the dashboard steps (title 16.48, lead 14.75, stat 16.48).
+   counts use the dashboard steps (title 15.656, lead 14.013, stat 15.656).
    From 640px they keep the poster sizes. Pixels, not rem: the desktop root
    is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
@@ -3461,16 +3469,16 @@ textarea[class~="border-input"]:focus,
   }
 }
 #main-content h1.landing-display {
-  font-size: 16.48px;
+  font-size: 15.656px;
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 #main-content p.landing-lead {
-  font-size: 14.75px;
+  font-size: 14.013px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 16.48px;
+  font-size: 15.656px;
   line-height: 1.2;
 }
 @media (min-width: 640px) {

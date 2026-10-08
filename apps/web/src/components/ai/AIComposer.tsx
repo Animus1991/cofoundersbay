@@ -44,6 +44,7 @@ export function AIComposer({
   return (
     <form
       onSubmit={submit}
+      data-ask-ai=""
       className={cn(
         'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 max-sm:min-h-11',
         className,
