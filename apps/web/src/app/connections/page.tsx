@@ -89,7 +89,7 @@ function ConnectionCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+            <Link href={`/profiles/${other.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -179,7 +179,7 @@ function IntroRequestCard({
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+              <Link href={`/profiles/${sender.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />

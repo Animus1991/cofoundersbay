@@ -242,6 +242,7 @@ export function SearchFilters({
               onChange={(e) => updateFilter('q', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
               className="min-h-10 pr-10"
+              data-filter-field=""
             />
             {filters.q && (
               <button
@@ -574,6 +575,7 @@ export function SearchFilters({
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
             className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
+            data-filter-field=""
           >
             <option value="relevance">Most relevant</option>
             <option value="recent">Recently active</option>

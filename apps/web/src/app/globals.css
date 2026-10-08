@@ -3429,6 +3429,21 @@ textarea[class~="border-input"]:focus,
     line-height: 1.3;
   }
 
+  #main-content .person-name {
+    /* Inherited the body step (16.327) and sat above the page title.
+       On a phone it uses the title step. From 640px the inherited size
+       stays, and that size is already under the title. */
+    font-size: 15.343px;
+    line-height: 1.3;
+  }
+
+  input[data-filter-field]:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+  select[data-filter-field] {
+    /* The discover query and its sort control used the 16.16px field floor
+       and sat above the title. Login fields stay on that floor. */
+    font-size: 15.343px !important;
+  }
+
   /* Long tokens and pictures stay inside the viewport. A wide table scrolls
      inside itself instead of dragging the page sideways. */
   #main-content {
