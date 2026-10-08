@@ -599,10 +599,13 @@ export function MembersPageClient() {
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                    {/* The badge wraps under the name rather than clipping it. */}
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                      <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
+                      <PersonVerifiedBadge userId={member.userId} />
+                    </div>
                     <p className="line-clamp-2 text-2xs leading-snug text-muted-foreground">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <PersonVerifiedBadge userId={member.userId} />
                 </div>
               ))}
             </div>

@@ -574,21 +574,27 @@ export default function DiscoverPage() {
 
           {!loading && roleHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <p className="text-sm text-muted-foreground">No {roleFilter.replace('_', ' ')}s found. Try clearing the role filter.</p>
-              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline">Show all roles</button>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText
+                  en={`No ${roleFilter.replace('_', ' ')}s in these results. Try clearing the role filter.`}
+                  el="Κανένα αποτέλεσμα με αυτόν τον ρόλο. Δοκιμάστε χωρίς το φίλτρο ρόλου."
+                  wrap
+                />
+              </p>
+              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline"><BilingualText en="Show all roles" el="Όλοι οι ρόλοι" compact /></button>
             </div>
           )}
 
           {!loading && hits.length === 0 && (
             <EmptyState
-              title="No profiles found"
-              description="Try adjusting your filters or search for something different."
+              title={<BilingualText en="No profiles found" el="Δεν βρέθηκαν προφίλ" compact wrap />}
+              description={<BilingualText en="Try other filters, or search the words as typed." el="Δοκιμάστε άλλα φίλτρα ή αναζήτηση όπως γράφτηκε." wrap />}
               illustration="search"
               className="py-12"
               askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
-                  Clear filters
+                  <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
                 </Button>
               }
             />

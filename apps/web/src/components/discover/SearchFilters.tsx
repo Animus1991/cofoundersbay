@@ -266,7 +266,7 @@ export function SearchFilters({
                 className="relative min-h-10 shrink-0 gap-2 px-3"
               >
                 <Filter className="icon-sm" aria-hidden="true" />
-                <span className="hidden sm:inline">Filters</span>
+                <span className="hidden sm:inline"><BilingualText en="Filters" el="Φίλτρα" compact /></span>
                 {activeFiltersCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
                     {activeFiltersCount}
@@ -532,7 +532,7 @@ export function SearchFilters({
       {/* Active filter pills */}
       {activeFilterPills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Active:</span>
+          <span className="text-sm text-muted-foreground"><BilingualText en="Active:" el="Ενεργά:" compact /></span>
           {activeFilterPills.slice(0, 10).map((pill) => (
             <Badge
               key={pill.key}
