@@ -433,7 +433,7 @@ function ProfileCardInner({
               </div>
             </div>
             {profile.headline && (
-              <p className="mt-1 text-sm text-muted-foreground dark:text-muted-foreground line-clamp-2">{profile.headline}</p>
+              <p className="person-subtitle mt-1 text-sm text-muted-foreground dark:text-muted-foreground line-clamp-2">{profile.headline}</p>
             )}
             {profile.location && (
               <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground dark:text-muted-foreground">

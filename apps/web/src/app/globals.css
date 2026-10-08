@@ -3260,7 +3260,7 @@ textarea[class~="border-input"]:focus,
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.044 · meta 14.406 · body 14.906 · lead 13.733 · figure 16.327 · section 14.984 · title 15.343
+     caption 13.044 · meta 14.406 · body 14.906 · lead 13.321 · figure 16.327 · section 14.984 · title 15.343
 
    Every step is another 2% under the previous phone size (13.31 × 0.98,
    14.7 × 0.98, 15.21 × 0.98, 14.013 × 0.98, 16.66 × 0.98, 15.29 × 0.98,
@@ -3381,12 +3381,17 @@ textarea[class~="border-input"]:focus,
     line-height: 1.35;
   }
 
-  /* The line under the page title, on every page. 2% under the previous
-     phone lead. */
+  /* The line under the page title, on every page. Another 3% under
+     13.733px. */
   #main-content p.page-lead,
   p.page-lead {
-    font-size: 13.733px;
+    font-size: 13.321px;
     line-height: 1.45;
+  }
+
+  #main-content .person-subtitle {
+    font-size: 14.459px;
+    line-height: 1.4;
   }
 
   .text-xl,
@@ -3468,7 +3473,7 @@ textarea[class~="border-input"]:focus,
 }
 
 /* Landing intro. On a phone the headline, the line under it, and the live
-   counts use the dashboard steps (title 15.343, lead 13.733, stat 15.343).
+   counts use the dashboard steps (title 15.343, lead 13.321, stat 15.343).
    From 640px they keep the poster sizes. Pixels, not rem: the desktop root
    is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
@@ -3489,7 +3494,7 @@ textarea[class~="border-input"]:focus,
   letter-spacing: -0.02em;
 }
 #main-content p.landing-lead {
-  font-size: 13.733px;
+  font-size: 13.321px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
