@@ -112,10 +112,18 @@ test.describe('authenticated routes', () => {
    * the server and during hydration and upgrades to the site's own relative
    * wording after mount. Hydration errors are ordinary uncaught errors again.
    */
-  for (const route of ROUTES) {
-    test(`${route.name} renders and has no WCAG A/AA violations`, async ({ page }) => {
+  /*
+   * Each route in both states a reader meets. signIn turns sample data on,
+   * and with it on the client answers from the demo world, not the stub, so
+   * until 2026-10-08 no route here was scanned as a real account reads it
+   * (the stub's empty lists and unfinished checklist); that state hid a
+   * 2.49:1 checklist row. `stub` turns sample data off for the same route.
+   */
+  for (const route of ROUTES) for (const state of ['sample data', 'stub'] as const) {
+    test(`${route.name} (${state}) renders and has no WCAG A/AA violations`, async ({ page }) => {
       const pageErrors: string[] = [];
       page.on('pageerror', (e) => pageErrors.push(e.message));
+      if (state === 'stub') await page.addInitScript(() => localStorage.setItem('cfb_demo_data', '0'));
 
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       // Wait for the shell, then for the DOM to go quiet. `networkidle` is not
