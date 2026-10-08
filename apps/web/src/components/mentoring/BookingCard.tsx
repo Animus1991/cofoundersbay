@@ -103,7 +103,7 @@ export function BookingCard({
                   <h3 className="min-w-0">
                     <Link
                       href={`/profiles/${otherUserId}`}
-                      className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
+                      className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
                     >
                       {other.displayName}
                     </Link>

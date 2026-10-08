@@ -277,7 +277,7 @@ function ReportCard({
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                <Link href={`/profiles/${report.reported.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {report.reported?.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs"><StatusText value={report.reported.role} /></Badge>

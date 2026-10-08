@@ -312,7 +312,7 @@ function MatchListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/profiles/${hit.userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                <Link href={`/profiles/${hit.userId}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">

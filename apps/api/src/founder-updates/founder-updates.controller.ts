@@ -54,6 +54,13 @@ export class FounderUpdatesController {
     return this.updates.feed(user.id);
   }
 
+  /** One person's updates, as far as this viewer may read them (profile Activity). */
+  @Get('by/:userId')
+  @UseGuards(JwtAuthGuard)
+  byAuthor(@CurrentUser() user: { id: string }, @Param('userId') userId: string) {
+    return this.updates.byAuthor(user.id, userId);
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { ttl: 60_000, limit: 5 } })

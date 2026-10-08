@@ -233,9 +233,11 @@ export function SideNav() {
         <nav ref={navRef} className={cn('flex-1 overflow-y-auto overflow-x-hidden py-1 scrollbar-hide', rail && 'flex flex-col items-center')}>
           {sections.map(({ section, links }, sectionIndex) => (
             <div key={section} className={cn('mb-0.5', rail && 'flex w-full flex-col items-center')}>
-              {/* nav-section-label, not plain text-xs: these uppercase headings
+              {/* nav-section-label, not plain text-xs: these section headings
                   take the display steps' -2% per pass while the links under them
-                  take the +2% of the body scale (see globals.css). */}
+                  take the +2% of the body scale. The uppercase + tracking classes
+                  still mark a kicker; globals.css paints them as the source
+                  title case (Dashboard), not DASHBOARD. */}
               {showLabels ? (
                 <p className="nav-section-label mx-3 mb-1 mt-2.5 text-xs text-muted-foreground first:mt-1">
                   <BilingualText

@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Save, RefreshCw, BadgeCheck, Globe, DollarSign, Star, Building2, Users, TrendingUp,
+  Save, RefreshCw, Globe, DollarSign, Star, Building2, Users, TrendingUp,
 } from 'lucide-react';
+import { useStoredUser } from '@/hooks/useStoredUser';
+import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +61,8 @@ const INDUSTRIES = [
 const STARTUP_STAGES = ['Pre-seed', 'Seed', 'Series A', 'Series B+', 'Growth', 'All stages'];
 
 export default function ProviderProfilePage() {
+  // The preview's check is the real verification, not a constant.
+  const me = useStoredUser();
   const { hasSession, mounted } = useSession();
   const { success } = useToast();
 
@@ -143,7 +147,7 @@ export default function ProviderProfilePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
-                  <BadgeCheck className="icon-sm text-muted-foreground" />
+                  <PersonVerifiedBadge userId={me?.id ?? ''} />
                   <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

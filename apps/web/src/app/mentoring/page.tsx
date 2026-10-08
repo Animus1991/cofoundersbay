@@ -154,7 +154,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+              <Link href={`/profiles/${mentor.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
               {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
@@ -422,7 +422,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-2">
-                  <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+                  <Link href={`/profiles/${other.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                     {other.displayName}
                   </Link>
                   <span className="text-xs text-muted-foreground">

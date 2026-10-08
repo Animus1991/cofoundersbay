@@ -128,7 +128,7 @@ export function PostCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${author.id}`}
-                  className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
+                  className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {author.displayName}
                 </Link>

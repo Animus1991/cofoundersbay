@@ -38,7 +38,20 @@ describe('LinkedInImportDialog', () => {
     expect(screen.getByText(/1 LinkedIn skill is not in CoFounderBay’s list/)).toBeTruthy();
     fireEvent.click(screen.getByLabelText(/^Headline/));
     fireEvent.click(screen.getByRole('button', { name: /Fill the form/ }));
-    expect(onApply).toHaveBeenCalledWith({ displayName: 'Elena Papadopoulou', location: 'Athens', skills: ['Fundraising', 'Sales', 'Product Management'] });
+    expect(onApply).toHaveBeenCalledWith({
+      displayName: 'Elena Papadopoulou',
+      location: 'Athens',
+      skills: ['Fundraising', 'Sales', 'Product Management'],
+      // Positions fill the Experience section unless unticked.
+      experience: [{ title: 'Co-founder', company: 'Harbor', start: '2024', end: '' }],
+    });
+  });
+
+  it('leaves Experience alone when unticked, and adds only roles not already there', () => {
+    const onApply = renderDialog();
+    fireEvent.click(screen.getByLabelText(/Add 1 position to Experience/));
+    fireEvent.click(screen.getByRole('button', { name: /Fill the form/ }));
+    expect(onApply.mock.calls[0][0].experience).toBeUndefined();
   });
 
   it('adds positions to About only when asked', () => {

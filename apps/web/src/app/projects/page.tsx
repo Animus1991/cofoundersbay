@@ -129,7 +129,7 @@ function ProjectCard({
           <div className="flex items-center gap-4">
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex items-center gap-2">
-                <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
+                <Link href={`/projects/${project.id}`} className="page-section person-name inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
                   {project.name}
                 </Link>
                 <StageBadge status={project.status} />
@@ -178,7 +178,7 @@ function ProjectCard({
         <div className="flex items-start justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
-              <Link href={`/projects/${project.id}`} className="page-section inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
+              <Link href={`/projects/${project.id}`} className="page-section person-name inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
                   {project.name}
                 </Link>
               {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}

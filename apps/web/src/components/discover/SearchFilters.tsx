@@ -242,6 +242,7 @@ export function SearchFilters({
               onChange={(e) => updateFilter('q', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
               className="min-h-10 pr-10"
+              data-filter-field=""
             />
             {filters.q && (
               <button
@@ -266,7 +267,7 @@ export function SearchFilters({
                 className="relative min-h-10 shrink-0 gap-2 px-3"
               >
                 <Filter className="icon-sm" aria-hidden="true" />
-                <span className="hidden sm:inline">Filters</span>
+                <span className="hidden sm:inline"><BilingualText en="Filters" el="Φίλτρα" compact /></span>
                 {activeFiltersCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
                     {activeFiltersCount}
@@ -532,7 +533,7 @@ export function SearchFilters({
       {/* Active filter pills */}
       {activeFilterPills.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Active:</span>
+          <span className="text-sm text-muted-foreground"><BilingualText en="Active:" el="Ενεργά:" compact /></span>
           {activeFilterPills.slice(0, 10).map((pill) => (
             <Badge
               key={pill.key}
@@ -574,6 +575,7 @@ export function SearchFilters({
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
             className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
+            data-filter-field=""
           >
             <option value="relevance">Most relevant</option>
             <option value="recent">Recently active</option>

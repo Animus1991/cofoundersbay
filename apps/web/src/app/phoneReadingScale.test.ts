@@ -48,21 +48,23 @@ function fontSize(selector: string): string {
 
 describe('phone reading scale', () => {
   it('raises every reading step and leaves the query phone-only', () => {
-    expect(fontSize('.text-2xs')).toBe('13.31px');
-    expect(fontSize('.text-xs')).toBe('14.7px');
-    expect(fontSize('.text-sm')).toBe('15.21px');
-    expect(fontSize('.text-base')).toBe('16.66px');
-    expect(fontSize('body')).toBe('16.66px');
-    expect(fontSize('#main-content .text-sm')).toBe('15.21px');
-    expect(fontSize('p.page-lead')).toBe('14.013px');
-    expect(fontSize('.text-lg')).toBe('15.29px');
-    expect(fontSize('#main-content .text-lg')).toBe('15.29px');
-    expect(fontSize('#main-content h1.page-title')).toBe('15.656px');
-    expect(fontSize('#main-content p.page-stat-label')).toBe('13.31px');
-    expect(fontSize('.text-xl')).toBe('15.656px');
-    expect(fontSize('.text-4xl')).toBe('15.656px');
-    expect(fontSize('.text-7xl')).toBe('15.656px');
-    expect(fontSize('#main-content .score-emblem-figure')).toBe('16.66px');
+    expect(fontSize('.text-2xs')).toBe('13.044px');
+    expect(fontSize('.text-xs')).toBe('14.406px');
+    expect(fontSize('.text-sm')).toBe('14.906px');
+    expect(fontSize('.text-base')).toBe('16.327px');
+    expect(fontSize('body')).toBe('16.327px');
+    expect(fontSize('#main-content .text-sm')).toBe('14.906px');
+    expect(fontSize('p.page-lead')).toBe('13.321px');
+    expect(fontSize('#main-content .person-subtitle')).toBe('14.459px');
+    expect(fontSize('.text-lg')).toBe('14.984px');
+    expect(fontSize('#main-content .text-lg')).toBe('14.984px');
+    expect(fontSize('#main-content h1.page-title')).toBe('15.343px');
+    expect(fontSize('#main-content p.page-stat-label')).toBe('13.044px');
+    expect(fontSize('#main-content .person-name')).toBe('15.343px');
+    expect(fontSize('.text-xl')).toBe('15.343px');
+    expect(fontSize('.text-4xl')).toBe('15.343px');
+    expect(fontSize('.text-7xl')).toBe('15.343px');
+    expect(fontSize('#main-content .score-emblem-figure')).toBe('16.327px');
     expect(BLOCK).not.toMatch(/min-width/);
     expect(BLOCK).not.toMatch(/12\.2412px/);
   });

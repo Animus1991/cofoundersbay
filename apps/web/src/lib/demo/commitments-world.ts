@@ -692,6 +692,7 @@ function route(world: World, pathname: string, path: string, method: string, bod
       const q = (sp.get('q') ?? '').toLowerCase();
       const cards = world.cards
         .filter((c) => sp.get('mine') !== '1' || c.ownerId === ME)
+        .filter((c) => sp.get('mine') === '1' || !sp.get('owner') || c.ownerId === sp.get('owner'))
         .filter((c) => !sp.get('kind') || c.kind === sp.get('kind'))
         .filter((c) => !sp.get('stage') || c.stage === sp.get('stage'))
         .filter((c) => !sp.get('commitment') || c.commitment === sp.get('commitment'))

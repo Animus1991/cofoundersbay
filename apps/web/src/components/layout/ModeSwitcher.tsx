@@ -119,7 +119,7 @@ export function ModeSwitcher({ currentMode, onModeChange, variant }: ModeSwitche
                 {variant === 'row' && (
                   // The phone reading scale puts text-sm at 15.68px, where
                   // «Λογαριασμός» needs 103px of a 91-99px cell; its caption
-                  // step (13.31px) fits from 360px. A tablet keeps text-sm.
+                  // step (13.044px) fits from 360px. A tablet keeps text-sm.
                   <span lang={greek ? 'el' : 'en'} className="min-w-0 text-2xs leading-tight sm:text-sm [hyphens:manual]">
                     {greek ? MODE_LABEL_EL_ROW[mode.id] : mode.shortLabel}
                   </span>

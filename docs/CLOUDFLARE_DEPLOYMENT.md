@@ -13,7 +13,7 @@ bundle.
 
 | File | Purpose |
 |---|---|
-| `apps/web/open-next.config.ts` | OpenNext adapter config; wires the incremental cache to Workers KV |
+| `apps/web/open-next.config.ts` | OpenNext adapter config; serves prerendered pages from the Worker's static assets (KV is an opt-in switch) |
 | `apps/web/wrangler.jsonc` | Worker name, entrypoint, compatibility flags, asset binding, vars |
 | `.github/workflows/deploy-cloudflare.yml` | Typecheck, build and deploy on push to `main`, or on demand |
 
@@ -37,13 +37,28 @@ bundle.
      the `connect-src` CSP directive in `next.config.ts`, so a wrong value here
      blocks the app's own API calls in the browser.
 
-4. **(Optional) Enable the ISR cache**:
+4. **(Optional) Cache the revalidating routes in KV**. By default the
+   incremental cache is the read-only static-assets cache: prerendered pages
+   come from the Worker's own assets and nothing else is needed. The routes
+   that revalidate (`/profiles/[userId]`, `/org/[slug]`, the Open Graph
+   fetches of the shareable layouts) then render fresh on every request. To
+   cache them:
    ```bash
    cd apps/web
    npx wrangler kv namespace create NEXT_INC_CACHE_KV
    ```
    Paste the returned id into the commented `kv_namespaces` block in
-   `wrangler.jsonc`. Without it the app still serves correctly, just uncached.
+   `wrangler.jsonc` **and** switch the import in `open-next.config.ts` to
+   `kv-incremental-cache`. Do both or neither: with the KV import and no
+   binding, `opennextjs-cloudflare deploy` stops at
+   `No KV binding "NEXT_INC_CACHE_KV" found!` (the first deploy from `main`,
+   run 37736389279, failed exactly there).
+
+5. **Plan size**. The worker is about 8.3 MiB gzipped (41 MiB raw) for 153
+   prerendered pages and the dynamic routes. Cloudflare accepts at most 3 MiB
+   on the Workers Free plan and 10 MiB on Workers Paid, so the account needs
+   Workers Paid. `pnpm exec wrangler deploy --dry-run --outdir /tmp/w` in
+   `apps/web` after `pnpm run cf:build` prints the current figure.
 
 ## Deploying by hand
 
