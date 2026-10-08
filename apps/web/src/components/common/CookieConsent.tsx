@@ -102,23 +102,29 @@ export function CookieConsent() {
           {!showSettings ? (
             /* Main Banner */
             <div className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <Cookie className="icon-md text-muted-foreground" />
+              {/* Text above, choices below. Side by side, the three bilingual
+                  buttons refused to wrap and squeezed the text column to one
+                  word per line at 1440px. */}
+              <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Cookie className="icon-md text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="mb-1 text-sm font-semibold text-foreground"><BilingualText en="We value your privacy" el="Σεβόμαστε το απόρρητό σας" compact /></h3>
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      <BilingualText
+                        en="We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking “Accept All”, you consent to our use of cookies."
+                        el="Χρησιμοποιούμε cookies για να βελτιώσουμε την περιήγησή σας, να αναλύσουμε την επισκεψιμότητα και να εξατομικεύσουμε το περιεχόμενο. Πατώντας «Αποδοχή όλων» συναινείτε στη χρήση τους."
+                        wrap
+                      />{' '}
+                      <Link href="/privacy" className="text-primary-accessible hover:underline">
+                        <BilingualText en="Read the Privacy Policy" el="Διαβάστε την Πολιτική απορρήτου" compact />
+                      </Link>
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground mb-1"><BilingualText en="We value your privacy" el="Σεβόμαστε το απόρρητό σας" compact /></h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
-                    By clicking "Accept All", you consent to our use of cookies. 
-                    Read our{' '}
-                    <Link href="/privacy" className="text-primary-accessible hover:underline">
-                      <BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact />
-                    </Link>{' '}
-                    to learn more.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <Button
                     variant="ghost"
                     size="sm"

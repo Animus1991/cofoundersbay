@@ -68,6 +68,14 @@ describe('the need-card wall', () => {
 
     const category = screen.getByRole('button', { name: /^Category/ });
     expect(category.getAttribute('aria-expanded')).toBe('false');
+    // A closed panel is hidden by class as well: a display utility would
+    // outrank the bare attribute, and all four panels once showed at once.
+    for (const key of ['category', 'place', 'stage', 'commitment']) {
+      const panel = document.getElementById(`need-chip-${key}`)!;
+      expect(panel.hidden).toBe(true);
+      expect(panel.classList.contains('hidden')).toBe(true);
+      expect(panel.classList.contains('flex')).toBe(false);
+    }
     fireEvent.click(category);
     expect(category.getAttribute('aria-expanded')).toBe('true');
     const panel = screen.getByRole('group', { name: /^Category/ });

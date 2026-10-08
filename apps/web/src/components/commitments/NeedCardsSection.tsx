@@ -164,7 +164,9 @@ export function NeedCardsSection({
             role="group"
             aria-label={bilingualInline(CHIP_LABEL[key].en, CHIP_LABEL[key].el)}
             hidden={openChip !== key}
-            className="flex flex-wrap gap-2 rounded-xl border border-border bg-card p-3"
+            // A display utility outranks the `hidden` attribute (same
+            // specificity, later in the cascade), so the closed panel takes `hidden` as a class too.
+            className={cn('flex-wrap gap-2 rounded-xl border border-border bg-card p-3', openChip === key ? 'flex' : 'hidden')}
           >
             <button type="button" aria-pressed={!chips[key]} className={chipClass(!chips[key])} onClick={() => choose(key, '')}>
               <BilingualText en="Any" el="Οποιοδήποτε" compact />

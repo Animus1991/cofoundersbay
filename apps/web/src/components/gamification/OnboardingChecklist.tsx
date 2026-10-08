@@ -165,8 +165,10 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             key={step.id}
             className={cn(
               'grid grid-cols-1 items-start gap-x-3 gap-y-2 rounded-lg px-3 py-2.5 transition-colors sm:grid-cols-[minmax(0,1fr)_auto]',
+              // A finished step reads quieter through its struck, muted label,
+              // not through opacity: 60% over muted text measured 2.49:1.
               step.done
-                ? 'opacity-60'
+                ? ''
                 : 'bg-foreground/[0.025] hover:bg-foreground/[0.04]',
             )}
           >
