@@ -28,6 +28,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { INVITE_STRINGS, inviteEn, inviteEl } from '@/lib/i18n/strings-invite';
 import { qk } from '@/lib/query-keys';
+import { REFERRAL_REWARD_COPY } from '@cofounderbay/shared';
 
 type InviteKey = keyof typeof INVITE_STRINGS;
 
@@ -205,6 +206,10 @@ export default function InvitePage() {
             </>
           )}
         </div>
+        {/* Why "Active" and not "Joined" is what rewards count. */}
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={REFERRAL_REWARD_COPY.en} el={REFERRAL_REWARD_COPY.el} wrap />
+        </p>
 
         {/* Invite form */}
         <Card className="shadow-sm border-border">

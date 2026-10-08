@@ -337,7 +337,8 @@ function InvestorCard({
                   </span>
                 ))}
               </div>
-              <div className="ml-auto flex shrink-0 gap-2">
+              {/* Three actions wrap on a phone instead of widening the page. */}
+              <div className="ml-auto flex min-w-0 max-w-full flex-wrap justify-end gap-2">
                 {investor.sample ? (
                   <>
                     <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
