@@ -3230,3 +3230,49 @@ Hover peek, κουμπί καρφιτσώματος, sheet κάτω από `lg` 
 ### 45.9 Τι δεν αποδεικνύει αυτό το τμήμα
 
 Δεν ξαναέτρεξαν typecheck, vitest, contrast, το πλήρες static sweep, το dynamic sweep, το dialog sweep ή η σουίτα προσβασιμότητας. Τα νούμερα του §44.5 ανήκουν σε εκείνη την εκτέλεση, όχι σε αυτή την ώρα. Η απογραφή 169 / 301 / 1435 / 585 / 62 έγινε με ανάγνωση του δέντρου στο `f088d473`. Οι controllers του 45.3 διαβάστηκαν· δεν κλήθηκαν με φορτίο. Το `@cofounderbay/shared` ξαναχτίστηκε, γιατί το `dist` δεν είχε τα `transparency` και `search`. Το `/demo` επιβεβαιώθηκε με cookie jar, τοπικά και μέσα από το quick tunnel: 307, τα cookies `cfb_session=preview-demo`, `cfb_preview_demo=1`, `cfb_primary_role=existing_founder`, και 200 στα `/dashboard/founder`, `/discover`, `/transparency` (τίτλος «Transparency report»). Το quick tunnel πεθαίνει· το προηγούμενο `everyday-crop-remainder-control.trycloudflare.com` απαντούσε `Unauthorized: Tunnel not found`. Το ενεργό την ώρα αυτού του ελέγχου είναι `https://cologne-addresses-dans-sig.trycloudflare.com/demo`.
+
+## 46. Συγχώνευση στο `main` και πρώτο deploy (2026-10-08)
+
+Αφορμή: ρητή άδεια του ιδιοκτήτη «κάνε πλήρες commit push και merge στο main branch και deploy».
+
+### 46.1 Git
+
+- Το preview branch (`cursor/ui-upgrade-cloudflare-preview-53e0`, `3a777732`) είχε τέσσερα commits εκτός του Claude: `3eb11bd7` απογραφή, `0dc0dcd7` κλίμακα κινητού −5% (τίτλος 15.656px, υπότιτλος 14.013px, κουμπί 39.71px), `f088d473` η δική του συγχώνευση του Claude, `3a777732` το §45. Περιείχε ήδη το `2720d096`· η συγχώνευση (`3d10905e`) έγινε χωρίς σύγκρουση. Το §44 (β) του `3eb11bd7` το αντικατέστησε το ίδιο το §45 και μένει στο ιστορικό, όπως γράφει εκεί.
+- Πύλες στο `3d10905e` πριν από το `main`: tsc web 0, tsc api 0, vitest web 1032/1032 (131 αρχεία, μαζί το eval 82 στα 100%), vitest api 463/463 (45), `node --test` 12/12, contrast 0.
+- `main`: fast-forward `91d6ea3a` → `3d10905e` (+478 commits), χωρίς force. Το `main` δεν είχε καμία αλλαγή εκτός του branch. Με το push το GitHub κατέγραψε για πρώτη φορά το workflow «Deploy web to Cloudflare Workers».
+- Το AGENTS.md γράφει πλέον το 39.71 / ≥39.66 (όχι 41.8), και το `scripts/platform-sweep-dynamic.txt` έχει το `/u/demo-alex-sept` (κλείνει το βήμα 3 του §45.8).
+
+### 46.2 Πρώτο run (37736389279) και τι διορθώθηκε
+
+| βήμα | αποτέλεσμα |
+|---|---|
+| install, shared build (νέο βήμα, `1936ae16`), typecheck | επιτυχία· χωρίς το βήμα του shared το typecheck σε καθαρό checkout έβγαζε 141 σφάλματα (αναπαράχθηκε τοπικά) |
+| build worker bundle | επιτυχία σε 3:50 |
+| deploy | αποτυχία για δύο λόγους |
+
+1. `CLOUDFLARE_API_TOKEN` και `CLOUDFLARE_ACCOUNT_ID` ήταν κενά στο run: τα secrets δεν έχουν οριστεί στο repository. Δεν διορθώνεται από κώδικα. Το workflow έχει πλέον βήμα «Check Cloudflare credentials» που ονομάζει ό,τι λείπει πριν από το upload.
+2. `No KV binding "NEXT_INC_CACHE_KV" found!`: το `open-next.config.ts` εισήγαγε την KV cache ενώ το `wrangler.jsonc` κρατά το binding σε σχόλιο. Το `opennextjs-cloudflare deploy` γεμίζει την cache πριν ανεβάσει, άρα το binding που λείπει είναι μοιραίο εκεί (το σχόλιο έλεγε ότι πέφτει ομαλά σε «χωρίς cache»· ίσχυε μόνο για το runtime). Διόρθωση `0826409c`: static-assets incremental cache, που σερβίρει τις prerendered σελίδες από τα assets του ίδιου του Worker (binding `ASSETS`, υπάρχει ήδη). Η KV μένει διακόπτης: namespace, binding και import μαζί (`docs/CLOUDFLARE_DEPLOYMENT.md` βήμα 4). Οι διαδρομές με revalidate (`/profiles/[userId]`, `/org/[slug]`, τα Open Graph fetch των κοινοποιήσιμων layouts) αποδίδονται φρέσκες σε κάθε αίτημα αντί να κρατιούνται σε cache.
+
+### 46.3 Επαλήθευση στο runtime του Cloudflare (workerd, τοπικά)
+
+`pnpm exec opennextjs-cloudflare preview` στο `0826409c`:
+- «Populating Workers static assets… Successfully populated static assets cache».
+- 200 στα `/`, `/pricing`, `/transparency`, `/u/demo-alex-sept`, `/c/harbor-commercial-demo`, `/robots.txt`· 307 στο `/dashboard` χωρίς session (το middleware τρέχει).
+- Το `/pricing` απαντά `x-nextjs-cache: HIT` από την static-assets cache, με το CSP στην απόκριση.
+- Το `/demo` δίνει 307 → `/dashboard/founder` με `cfb_session=preview-demo`, `cfb_preview_demo=1`, `cfb_primary_role=existing_founder`· με αυτά τα cookies 200 σε `/dashboard/founder`, `/discover`, `/commitments`, `/updates`, `/intros`, `/scout`, `/opportunities`, `/settings`, `/profile`, `/investors`, `/invite`, `/saved-searches`.
+- `SWEEP_BASE=http://localhost:8787 ROLE=existing_founder node scripts/platform-sweep.mjs` σε 18 διαδρομές στα 1440: 18×200, 0 σφάλματα, 0 overflow, 0 ανώνυμα, 0 κενά εικονίδια· το «no askAI 2» είναι οι δημόσιες `/u/…` και `/transparency`, σκόπιμα. Το `SWEEP_BASE` είναι νέο: το sweep ήταν δεμένο στο `:3000`.
+
+### 46.4 Μέγεθος του Worker
+
+`wrangler deploy --dry-run`: 41,969.80 KiB, gzip 8,476.79 KiB (≈8.3 MiB). Το Cloudflare δέχεται έως 3 MiB στο Workers Free και 10 MiB στο Workers Paid. Ο λογαριασμός χρειάζεται Workers Paid. Δεν βρέθηκε κάτι που να αφαιρείται χωρίς να χαθεί λειτουργία (το `resvg.wasm` είναι του `app/icon.tsx`).
+
+### 46.5 Τι μένει στον ιδιοκτήτη για να ανέβει
+
+1. Workers Paid στον λογαριασμό Cloudflare.
+2. Secrets (Settings → Secrets and variables → Actions → Secrets): `CLOUDFLARE_API_TOKEN` (πρότυπο «Edit Cloudflare Workers»), `CLOUDFLARE_ACCOUNT_ID`.
+3. Variables (ίδια σελίδα → Variables): `NEXT_PUBLIC_API_URL` (η διεύθυνση του NestJS API· χωρίς αυτήν το CSP επιτρέπει μόνο same-origin και η εφαρμογή δουλεύει μόνο ως demo μέσω `/demo`), `NEXT_PUBLIC_SITE_URL` (η πραγματική διεύθυνση· το πρώτο deploy τυπώνει το `https://cofounderbay-web.<subdomain>.workers.dev`, και μετά ξανατρέχει το workflow για να μπει στα canonical, `robots.txt`, `sitemap.xml`).
+4. Actions → «Deploy web to Cloudflare Workers» → Run workflow, ή το επόμενο push στο `main`.
+
+### 46.6 Τι δεν αποδεικνύει αυτό το τμήμα
+
+Δεν έγινε πραγματικό upload: χωρίς secrets δεν υπάρχει διεύθυνση στο Cloudflare. Ο χρόνος εκκίνησης του Worker στο edge δεν μετρήθηκε· το workerd τοπικά δεν έχει το όριο CPU εκκίνησης του Cloudflare. Το NestJS API, η Postgres (με `prisma db push` για τα schema-only μοντέλα) και η Redis δεν ανεβαίνουν από αυτό το workflow· η web εφαρμογή χωρίς API είναι το demo. Η σουίτα axe στο `main` (run 37736389275, στο `3d10905e`) πέρασε· τρέχει ξανά σε κάθε push στο `main`.
