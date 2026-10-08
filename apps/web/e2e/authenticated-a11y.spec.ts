@@ -179,6 +179,42 @@ test.describe('authenticated routes', () => {
     expect(dangling).toEqual([]);
   });
 
+  /*
+   * The founder's first screen against the stub, which answers with no need
+   * card and an unfinished checklist: one move up front, the rest folded and
+   * one press away, the choice remembered across a reload - and the unfolded
+   * dashboard scanned as well, so the fold does not shrink the coverage above.
+   */
+  test('a new founder meets one move, and the rest of the dashboard is one remembered press away', async ({ page }) => {
+    await page.addInitScript(() => {
+      for (const who of ['u_1', 'preview', 'preview-demo-user']) localStorage.setItem(`cfb.tour.founder-dashboard.${who}`, 'done');
+    });
+    await page.goto('/dashboard/founder', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: /Who does your startup need/ })).toBeVisible({ timeout: 15_000 });
+    const rest = page.locator('#founder-dashboard-rest');
+    const show = page.getByRole('button', { name: /^Show the rest of the dashboard/ });
+    await expect(show).toHaveAttribute('aria-expanded', 'false');
+    await expect(rest).toBeHidden();
+
+    await show.click();
+    await expect(page.getByRole('button', { name: /^Hide the rest of the dashboard/ })).toHaveAttribute('aria-expanded', 'true');
+    await expect(rest).toBeVisible();
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(rest).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(async () => {
+        await waitForStableDom(page, 400, 5_000);
+        const results = await new AxeBuilder({ page })
+          .exclude(LOGOTYPE)
+          .withTags(TAGS)
+          .disableRules(['aria-valid-attr-value'])
+          .analyze();
+        return results.violations.map((v) => `${v.id} (${v.impact}) x${v.nodes.length}: ${v.help}`);
+      }, { message: 'axe violations on the unfolded founder dashboard', timeout: 45_000, intervals: [0, 1500, 3000] })
+      .toEqual([]);
+  });
+
   test('the app shell is mounted exactly once', async ({ page }) => {
     await page.goto('/discover', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
