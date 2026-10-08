@@ -35,6 +35,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { formatCompactMoney } from '@/lib/i18n/format';
+import { formatDate } from '@/lib/i18n/format';
 
 const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
 const PortfolioValueChart = dynamic(
@@ -139,7 +140,8 @@ function portfolioValueSeries(deals: InvestorDeal[]): { month: string; value: nu
   const points = dated.map((d) => {
     running += d.investedCents ?? 0;
     return {
-      month: new Date(d.investedAt as string).toLocaleDateString('en-GB', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
+      // "10/26" reads the same in both languages.
+      month: formatDate(d.investedAt as string, 'en', { month: '2-digit', year: '2-digit' }),
       value: Math.round(running / 100_000),
     };
   });

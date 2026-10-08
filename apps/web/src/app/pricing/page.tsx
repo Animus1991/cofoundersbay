@@ -400,7 +400,7 @@ export default function PricingPage() {
           <BilingualText en="Frequently asked questions" el="Συχνές ερωτήσεις" compact />
         </h2>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
           {/* Every answer says what the code does: checkout grants no trial
               (the "14-day free trial, no card" answers described nothing that
               existed), and plan changes and cancellation go through the

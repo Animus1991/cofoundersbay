@@ -4,7 +4,7 @@ const { chromium } = requireFromWeb('@playwright/test');
 const BASE = 'http://localhost:3000';
 const routes = (process.env.PROBE_ROUTES || 'ai/capabilities,investor/analytics,marketplace,projects/create,reputation,tenant/analytics').split(',');
 const b = await chromium.launch();
-const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const ctx = await b.newContext({ viewport: { width: Number(process.env.W || 1440), height: 900 } });
 await ctx.addCookies([
   { name: 'cfb_session', value: 'probe', domain: 'localhost', path: '/' },
   { name: 'cfb_primary_role', value: 'platform_admin', domain: 'localhost', path: '/' },
