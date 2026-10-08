@@ -56,7 +56,7 @@ for (const route of routes) {
   } catch { /* measured as is */ }
   await page.waitForTimeout(700);
   const m = await page.evaluate(() => {
-    const main = document.querySelector('main#main-content') ?? document.querySelector('main') ?? document.body;
+    const main = document.querySelector('main#main-content') ?? document.querySelector('main, [role="main"]') ?? document.body;
     const shown = (el) => el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true;
     const rectOk = (el, w = 1, h = 1) => { const r = el.getBoundingClientRect(); return r.width >= w && r.height >= h; };
     const tag = (el) => {
@@ -185,7 +185,7 @@ for (const route of routes) {
     const leaves = all.filter((el) => el.children.length === 0 && shown(el));
     const dupes = [];
     for (const { h, t } of heads) {
-      const again = leaves.filter((el) => !h.contains(el) && !el.contains(h) && norm(el.innerText) === t && !el.closest('h1,h2,h3,' + CONTROL));
+      const again = leaves.filter((el) => !h.contains(el) && !el.contains(h) && norm(el.innerText) === t && rectOk(el, 2, 2) && !el.closest('.sr-only, h1,h2,h3,' + CONTROL));
       if (again.length) dupes.push(`"${t.slice(0, 40)}" x${again.length + 1}`);
     }
     // Echoes: a heading whose next line says the same thing again ("Billing"
@@ -205,8 +205,11 @@ for (const route of routes) {
       if (shared / nw.length >= 0.5) echoes.push(`"${enOf(h).trim().slice(0, 30)}" / "${enOf(next).trim().slice(0, 50)}"`);
     }
     const words = (main.innerText ?? '').split(/\s+/).filter(Boolean).length;
-    // The skip link's target: one main#main-content per page.
-    const landmark = document.querySelectorAll('main#main-content').length === 1;
+    // The skip link's target: one main#main-content per page. The research
+    // canvas is the documented exception: its own named role="main", because
+    // #main-content's global CSS would change the canvas.
+    const landmark = document.querySelectorAll('main#main-content').length === 1
+      || (document.querySelectorAll('main#main-content').length === 0 && document.querySelectorAll('[role="main"][aria-label]').length === 1);
     return { cards: cards.length, shadows, tints, frames, offAxis, centered, glyphs, dupes, echoes, words, landmark };
   });
   const row = { route, status, ...m };
