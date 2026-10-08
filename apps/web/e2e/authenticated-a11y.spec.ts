@@ -95,7 +95,7 @@ async function signIn(page: Page) {
     // Pin the demo-data toggle so the assertions do not depend on its default.
     localStorage.setItem('cfb_demo_data', '1');
     // Dismiss the cookie banner, which otherwise overlays every page.
-    localStorage.setItem('cookie_consent', 'accepted');
+    localStorage.setItem('cfb_cookie_consent', 'true');
   });
 }
 
@@ -196,8 +196,6 @@ test.describe('authenticated routes', () => {
   test('a new founder meets one move, and the rest of the dashboard is one remembered press away', async ({ page }) => {
     await page.addInitScript(() => {
       for (const who of ['u_1', 'preview', 'preview-demo-user']) localStorage.setItem(`cfb.tour.founder-dashboard.${who}`, 'done');
-      // The banner's own key (signIn's `cookie_consent` is not it): its card would take the click.
-      localStorage.setItem('cfb_cookie_consent', 'true');
       // Sample data off, so reads go to the stub: with it on, the client answers
       // from the demo world, whose founder already has need cards.
       localStorage.setItem('cfb_demo_data', '0');

@@ -477,7 +477,8 @@ export async function getMeProfile(): Promise<{ profile: OwnProfile | null; hasC
   // The demo answers through `apiRequest` like every other read: the profile
   // comes from the demo world (preview-api ME_PROFILE), the one copy its
   // edits change and whose Experience and Education the profile shows. A
-  // second, hand-written copy here hid both from one's own profile.
+  // second, hand-written copy here hid both from one's own profile. The demo's
+  // visibility switches (Settings → Privacy) are read there too.
   return apiRequest('/api/me/profile');
 }
 
@@ -1989,7 +1990,8 @@ export type JobPostingView = {
   isRemote: boolean;
   type?: string;
   isFeatured?: boolean;
-  creator: { displayName: string; avatarUrl: string | null };
+  /** `id` is the poster's user id (absent from older API builds). */
+  creator: { id?: string; displayName: string; avatarUrl: string | null };
   href?: string;
 };
 
