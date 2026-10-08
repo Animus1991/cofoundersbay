@@ -1345,11 +1345,24 @@ html {
 
   /* Greek set in capitals with open tracking drops its accents and loses its
      word shapes: "ΔΡΑΣΤΗΡΙΟΤΗΤΑ & ΦΗΜΗ" under "ACTIVITY & REPUTATION" read as
-     a second shout rather than a translation. An uppercase label keeps its
-     capitals in English and reads Greek in sentence case, whichever of the
-     two is the primary line. */
+     a second shout rather than a translation. A bare uppercase label (a
+     provider-type badge, a month tile, the OAuth divider) keeps its capitals
+     in English and reads Greek in sentence case. */
   .uppercase [lang='el'],
   .uppercase[lang='el'] {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Section kickers pair `uppercase` with open tracking, so a source string
+     that already says "Dashboard" was painted DASHBOARD. Title case is the
+     string itself; the tracking only existed to space those capitals, so it
+     collapses with them. Every viewport, every page. A code that is already
+     capitals in the source (SSO, OK, TXT) is unchanged. */
+  .uppercase.tracking-wide,
+  .uppercase.tracking-wider,
+  .uppercase.tracking-widest,
+  .uppercase[class*='tracking-['] {
     text-transform: none;
     letter-spacing: normal;
   }
