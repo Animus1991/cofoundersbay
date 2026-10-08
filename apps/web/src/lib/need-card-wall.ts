@@ -9,6 +9,9 @@ import { statusEl } from '@/components/common/StatusText';
  * controls and the saved-search alert, so the three cannot disagree.
  */
 
+/** The newest cards the board reads at once (the API's own cap per request). */
+export const BOARD_LIMIT = 100;
+
 export const CHIP_KEYS = ['category', 'place', 'stage', 'commitment'] as const;
 export type ChipKey = (typeof CHIP_KEYS)[number];
 /** '' is "any". */
@@ -163,4 +166,11 @@ export function savedFiltersToParams(filters: Partial<Record<string, string[]>> 
     ['commitment', first('commitments')],
   ];
   for (const [key, value] of pairs) if (value) params.set(key, value);
+}
+
+/** The chips as `listCommitmentCards` filters, for the server once the board is full. */
+export function chipsToCardFilters(chips: CardChips): Partial<Record<ChipKey, string>> {
+  const out: Partial<Record<ChipKey, string>> = {};
+  for (const key of CHIP_KEYS) if (chips[key]) out[key] = chips[key];
+  return out;
 }

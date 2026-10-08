@@ -1,16 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
-import type { CommitmentKind } from '@cofounderbay/shared';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePageRail } from '@/components/layout/PageRailContext';
-import { listCommitmentCards } from '@/lib/commitments-api';
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { bilingualInline } from '@/lib/i18n/format';
 import {
@@ -19,28 +16,16 @@ import {
   NO_CHIPS,
   activeChipCount,
   applyChips,
-  boardCards,
-  chipOptions,
   chipSummary,
   type CardChips,
   type ChipKey,
 } from '@/lib/need-card-wall';
-import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { NeedCard } from './NeedCard';
 import { NeedCardAlertDialog } from './NeedCardAlertDialog';
+import { useNeedCardWall } from './useNeedCardWall';
 
-/** Which card kinds an opportunity type filter covers; `null` hides the section. */
-export function kindsForOpportunityType(type: string): CommitmentKind[] | null {
-  if (type === 'all') return ['cofounder', 'equity_role', 'investor_intro'];
-  if (type === 'cofounder') return ['cofounder'];
-  if (type === 'investment') return ['investor_intro'];
-  if (type === 'job' || type === 'partnership') return ['equity_role'];
-  return null;
-}
-
-/** The query every reader of the board shares (the section, the page's assistant controls). */
-export const BOARD_QUERY = { queryKey: qk('commitments', 'cards', 'browse'), queryFn: () => listCommitmentCards({ limit: 50 }) };
+export { kindsForOpportunityType } from './useNeedCardWall';
 
 const chipClass = (on: boolean) =>
   cn(
@@ -85,18 +70,9 @@ export function NeedCardsSection({
   const setChips = onChipsChange ?? setOwnChips;
   const [openChip, setOpenChip] = useState<ChipKey | null>(null);
   const { openRailSection } = usePageRail();
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => setNow(Date.now()), []);
-  const kinds = useMemo(() => kindsForOpportunityType(type), [type]);
-  const query = useQuery({ ...BOARD_QUERY, enabled: kinds !== null, staleTime: 60_000 });
-
-  const board = useMemo(
-    () => (kinds && now !== null ? boardCards(query.data ?? [], { kinds, remoteOnly, search, now }) : []),
-    [kinds, now, query.data, remoteOnly, search],
-  );
-  const options = useMemo(() => chipOptions(board, chips), [board, chips]);
-  const cards = useMemo(() => applyChips(board, chips), [board, chips]);
-  if (!kinds || now === null) return null;
+  const wall = useNeedCardWall({ type, remoteOnly, search, chips });
+  const { kinds, board, options, cards } = wall;
+  if (!kinds || !wall.ready) return null;
 
   const active = activeChipCount(chips);
   const summary = chipSummary(chips);
@@ -186,7 +162,7 @@ export function NeedCardsSection({
           </div>
         ))}
 
-        {!query.isLoading && !query.isError && board.length > 0 ? (
+        {!wall.isLoading && !wall.isError && board.length > 0 ? (
           <p className="text-xs text-muted-foreground" aria-live="polite">
             <BilingualText
               en={active ? `${cards.length} of ${board.length} cards` : `${board.length} ${board.length === 1 ? 'card' : 'cards'}`}
@@ -197,7 +173,7 @@ export function NeedCardsSection({
         ) : null}
       </div>
 
-      {query.isLoading ? (
+      {wall.isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2" aria-hidden="true">
           {[0, 1].map((i) => (
             <Card key={i}><CardContent className="space-y-3">
@@ -207,12 +183,12 @@ export function NeedCardsSection({
             </CardContent></Card>
           ))}
         </div>
-      ) : query.isError ? (
+      ) : wall.isError ? (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
           <p className="text-sm text-muted-foreground">
             <BilingualText en="The need cards could not be loaded." el="Δεν ήταν δυνατή η φόρτωση των καρτών ανάγκης." wrap />
           </p>
-          <Button size="sm" variant="outline" onClick={() => void query.refetch()}>
+          <Button size="sm" variant="outline" onClick={() => wall.refetch()}>
             <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
           </Button>
         </div>

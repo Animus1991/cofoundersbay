@@ -32,14 +32,12 @@ import {
   listOpportunities, type OpportunityItem, type OpportunityType,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
-import { BOARD_QUERY, NeedCardsSection, kindsForOpportunityType } from '@/components/commitments/NeedCardsSection';
+import { NeedCardsSection, kindsForOpportunityType } from '@/components/commitments/NeedCardsSection';
+import { useNeedCardWall } from '@/components/commitments/useNeedCardWall';
 import {
   CHIP_KEYS,
   CHIP_LABEL,
   NO_CHIPS,
-  applyChips,
-  boardCards,
-  chipOptions,
   chipsFromParams,
   type CardChips,
 } from '@/lib/need-card-wall';
@@ -595,16 +593,13 @@ export default function OpportunitiesPage() {
   });
 
   /*
-   * The need-card board, on the section's own query (one request), so the
-   * assistant's chip controls offer exactly the choices the chips show.
+   * The need-card wall's data, from the hook the section draws with (one
+   * request, shared cache), so the assistant's chip controls offer exactly
+   * the choices the chips show and its rows are the cards on the wall.
    */
-  const boardKinds = kindsForOpportunityType(oppTypeFilter);
-  const { data: boardData } = useQuery({ ...BOARD_QUERY, enabled: boardKinds !== null, staleTime: 60_000 });
-  const [boardNow, setBoardNow] = useState<number | null>(null);
-  useEffect(() => setBoardNow(Date.now()), []);
-  const board = boardKinds && boardNow !== null ? boardCards(boardData ?? [], { kinds: boardKinds, remoteOnly, search, now: boardNow }) : [];
-  const chipChoices = chipOptions(board, cardChips);
-  const wallCards = applyChips(board, cardChips);
+  const wall = useNeedCardWall({ type: oppTypeFilter, remoteOnly, search, chips: cardChips });
+  const chipChoices = wall.options;
+  const wallCards = wall.cards;
 
   const opportunities = (opportunitiesData?.opportunities ?? []).filter((o) => !savedOnly || savedListings.ids.has(o.id));
   const listingJobs = (jobsData?.jobs ?? []).filter((j) => !savedOnly || savedJobs.ids.has(j.id));
@@ -632,7 +627,7 @@ export default function OpportunitiesPage() {
       id: 'need_cards',
       labelEn: 'Need cards',
       labelEl: 'Κάρτες ανάγκης',
-      rows: boardKinds === null || boardNow === null ? [] : wallCards.map((c) => `${c.title} · ${c.kind} · ${c.category || '—'} · ${c.isRemote ? 'remote' : (c.place ?? '—')} · ${c.stage} · ${c.commitment} · ${c.outcome}`),
+      rows: !wall.ready ? [] : wallCards.map((c) => `${c.title} · ${c.kind} · ${c.category || '—'} · ${c.isRemote ? 'remote' : (c.place ?? '—')} · ${c.stage} · ${c.commitment} · ${c.outcome}`),
     },
     {
       id: 'opportunities',
