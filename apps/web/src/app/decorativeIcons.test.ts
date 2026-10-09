@@ -58,4 +58,14 @@ describe('decorative icon rules', () => {
     expect(well).toContain(':not([data-keep-icon])');
     expect(well).toContain(':not(:has(> :not(svg.lucide):not(svg.cfb-glyph)))');
   });
+
+  it('count only a fixed-size box as a well, so a text row keeps its words', () => {
+    // `:has(> :not(svg))` cannot see a text node: without this guard
+    // <span><Clock/>45 min</span> went with its glyph (2026-10-09: durations,
+    // places, event dates and attendance, `.probes/hidden_text.mjs`).
+    const GUARD = ':is(:is([class^="h-"], [class*=" h-"]):is([class^="w-"], [class*=" w-"]), [class^="size-"], [class*=" size-"])';
+    const wells = raw.split('\n').filter((line) => /^#main-content (\[data-surface="card"\] )?:is\(div, span\)/.test(line));
+    expect(wells.length).toBe(2);
+    for (const line of wells) expect(line).toContain(`:is(div, span)${GUARD}`);
+  });
 });
