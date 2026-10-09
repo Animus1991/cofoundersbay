@@ -65,6 +65,7 @@ import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/common/SaveItemButton';
 import { MessageButton } from '@/components/common/PersonActions';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { FactLine } from '@/components/common/FactLine';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -179,15 +180,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
           <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{opportunity.description}</p>
         )}
 
-        {opportunity.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {opportunity.tags.map((tag: string) => (
-              <span key={tag} className="chip rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <FactLine items={opportunity.tags ?? []} />
 
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {opportunity.location && (

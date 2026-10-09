@@ -54,6 +54,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
+import { FactLine } from '@/components/common/FactLine';
 
 type PublicProfile = Awaited<ReturnType<typeof getPublicProfile>>;
 
@@ -102,11 +103,7 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
     return (
       <div className="space-y-1.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        <div className="flex flex-wrap gap-1.5">
-          {(value as string[]).map((item) => (
-            <Badge key={item} variant="secondary" className="text-xs">{item}</Badge>
-          ))}
-        </div>
+        <FactLine className="text-sm text-foreground" items={value as string[]} />
       </div>
     );
   }

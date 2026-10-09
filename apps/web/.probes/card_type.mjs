@@ -72,7 +72,13 @@ for (const route of routes) {
     const cards = [...main.querySelectorAll('[data-card]')].filter((c) => shown(c) && rectOk(c, 60, 30) && !c.closest(FLOAT) && !c.querySelector('[data-card]'));
     const out = [];
     for (const card of cards) {
-      const leaves = [...card.querySelectorAll('*')].filter((el) => ownText(el) && shown(el) && rectOk(el, 2, 2) && !el.closest(CONTROL) && !el.closest('.sr-only,[aria-hidden="true"],[data-keep-icon],svg'));
+      // An avatar's initials are a mark: a round box that clips its text.
+      const inAvatar = (el) => [el, el.parentElement, el.parentElement?.parentElement].some((n) => {
+        if (!n || n === card) return false;
+        const q = n.getBoundingClientRect();
+        return Math.abs(q.width - q.height) < 2 && q.width <= 64 && getComputedStyle(n).overflow === 'hidden';
+      });
+      const leaves = [...card.querySelectorAll('*')].filter((el) => ownText(el) && shown(el) && rectOk(el, 2, 2) && !el.closest(CONTROL) && !el.closest('.sr-only,[aria-hidden="true"],[data-keep-icon],svg') && !inAvatar(el));
       const styles = new Set();
       const sizes = new Set();
       for (const el of leaves) {
@@ -89,7 +95,8 @@ for (const route of routes) {
         const r = el.getBoundingClientRect();
         if (r.height < 12 || r.height > 40 || r.width > 260) continue;
         // An avatar (a round box whose text is initials) is a mark, not a pill.
-        if (el.closest('[data-keep-icon]') || (Math.abs(r.width - r.height) < 2 && cs.overflow === 'hidden')) continue;
+        const square = (n) => { if (!n) return false; const q = n.getBoundingClientRect(); return Math.abs(q.width - q.height) < 2 && getComputedStyle(n).overflow === 'hidden'; };
+        if (el.closest('[data-keep-icon]') || square(el) || square(el.parentElement)) continue;
         const radius = parseFloat(cs.borderTopLeftRadius) || 0;
         const filled = alpha(cs.backgroundColor) > 0.02 || parseFloat(cs.borderTopWidth) > 0;
         if (filled && radius >= r.height / 2 - 1 && !el.parentElement?.closest('[data-pill-counted]')) {

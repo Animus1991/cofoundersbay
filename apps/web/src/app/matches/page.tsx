@@ -42,6 +42,7 @@ import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { FactLine } from '@/components/common/FactLine';
 
 const MATCHES_TOUR: TourStep[] = [
   {
@@ -338,16 +339,10 @@ function MatchListRow({
             </div>
 
             {/* Skills + reasons */}
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
-                  {s}
-                </span>
-              ))}
-              {(hit.skillNames ?? []).length > 5 && (
-                <span className="text-xs text-muted-foreground self-center">+{(hit.skillNames ?? []).length - 5}</span>
-              )}
-            </div>
+            <FactLine
+              className="mt-2"
+              items={[...(hit.skillNames ?? []).slice(0, 5), (hit.skillNames ?? []).length > 5 ? `+${(hit.skillNames ?? []).length - 5}` : null]}
+            />
 
             {/* Match reasons inline */}
             {matchReasons.length > 0 && (
