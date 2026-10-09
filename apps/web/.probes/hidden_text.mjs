@@ -1,6 +1,9 @@
-// Text hidden with its glyph: elements the decorative-icon "well" rules set to
-// display:none although they hold their own text beside the icon (a text node
-// is not an element child, so `:not(:has(> :not(svg)))` cannot see it).
+// The two ways the decorative-icon "well" rules can fail, per route:
+//  - text hidden with its glyph: an element set to display:none although it
+//    holds its own text beside the icon (a text node is not an element child,
+//    so `:not(:has(> :not(svg)))` cannot see it);
+//  - an empty well: a small framed or tinted box left on screen with its
+//    glyphs hidden and nothing else in it (EMPTY-WELL).
 //   node .probes/hidden_text.mjs <routes.txt> [width=1440]   (env BASE, ROLE, STATE=stub)
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -43,10 +46,21 @@ for (const route of routes) {
       if (el.matches('.hidden') || el.closest('[data-state="closed"]')) continue;
       out.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(/\s+/).slice(0, 4).join('.')} "${text.slice(0, 40)}"`);
     }
-    return out;
+    // Empty wells: a small framed or tinted box left on screen whose glyphs
+    // are all hidden and which holds no text (the other way the rule fails).
+    const wells = [];
+    for (const el of main.querySelectorAll('div, span')) {
+      if (getComputedStyle(el).display === 'none' || !el.querySelector(':scope > svg')) continue;
+      if ([...el.children].some((c) => c.tagName.toLowerCase() !== 'svg' || getComputedStyle(c).display !== 'none')) continue;
+      if ((el.textContent ?? '').trim()) continue;
+      const cs = getComputedStyle(el); const r = el.getBoundingClientRect();
+      const framed = parseFloat(cs.borderTopWidth) > 0 || !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor);
+      if (framed && r.width > 0 && r.width <= 64 && r.height <= 64) wells.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(/\s+/).slice(0, 5).join('.')}`);
+    }
+    return out.concat(wells.map((w) => `EMPTY-WELL ${w}`));
   });
   total += hits.length;
   if (hits.length) console.log(`${route} | ${hits.length} | ${hits.slice(0, 4).join(' | ')}`);
 }
-console.log(`\n=== TOTAL hidden texts: ${total} over ${routes.length} routes`);
+console.log(`\n=== TOTAL hidden texts + empty wells: ${total} over ${routes.length} routes`);
 await b.close();
