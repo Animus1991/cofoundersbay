@@ -26,7 +26,6 @@ import { MatchCard } from '@/components/common/MatchCard';
 import type { CommitmentStep } from '@cofounderbay/shared';
 import { StepChip } from '@/components/commitments/OutcomeChip';
 import { listCommitmentThreads } from '@/lib/commitments-api';
-import { SkillChip } from '@/components/common/SkillChip';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
@@ -471,9 +470,7 @@ function MatchPreviewPanel({
           {(hit.skillNames ?? []).length > 0 && (
             <div>
               <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Skills" el="Δεξιότητες" compact /></p>
-              <div className="flex flex-wrap gap-1.5">
-                {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
-              </div>
+              <FactLine className="text-sm text-foreground" items={hit.skillNames ?? []} />
             </div>
           )}
 

@@ -3520,6 +3520,17 @@ textarea[class~="border-input"]:focus,
     font-size: 15.343px !important;
   }
 
+  /* A paragraph a card cuts with an ellipsis wraps on a phone instead:
+     "Pre-seed Bootcamp · Spring 2027 · 1d" lost its age and a byline its
+     place (132 cut texts across 836 cards, 2026-10-09). Names and labels
+     inside a flex row (spans) keep their single line; from 640px the cut
+     returns where the row is wide enough to need it. */
+  #main-content [data-card] p.truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
   /* Long tokens and pictures stay inside the viewport. A wide table scrolls
      inside itself instead of dragging the page sideways. */
   #main-content {

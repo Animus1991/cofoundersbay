@@ -46,6 +46,11 @@ describe('facts are text, states are pills', () => {
     expect(stale).toEqual([]);
   });
 
+  it('draws no static SkillChip in a loop (a chip without onClick or removable is a fact)', () => {
+    const offenders = all.filter((file) => /<SkillChip\s+key=[^>]*\/>/.test(readFileSync(file, 'utf8')) && !/<SkillChip\s+key=[^>]*(onClick|removable)/.test(readFileSync(file, 'utf8')));
+    expect(offenders).toEqual([]);
+  });
+
   it('draws no tinted tag span in a loop', () => {
     const TAG = /\.map\([^)]*\)\s*=>\s*\(?\s*<span[^>]*className="[^"]*(?:rounded-(?:full|md))[^"]*bg-(?:secondary|muted)[^"]*px-2[^"]*"/;
     const offenders = all.filter((file) => TAG.test(readFileSync(file, 'utf8').replace(/\n\s*/g, ' ')));

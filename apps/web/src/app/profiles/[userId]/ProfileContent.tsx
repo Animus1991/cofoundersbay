@@ -45,7 +45,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { SkillChip } from '@/components/common/SkillChip';
 import { statusEl } from '@/components/common/StatusText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -448,12 +447,8 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <BilingualText en="Skills" el="Δεξιότητες" compact />
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-2 pt-5">
-              {profile.skills.map((s, i) => (
-                // skillId can be absent on a partially-populated payload, and
-                // key={undefined} is the same as no key to React.
-                <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
-              ))}
+            <CardContent className="pt-5">
+              <FactLine className="text-sm text-foreground" items={profile.skills.map((s) => s.skillName)} />
             </CardContent>
           </Card>
         ) : null}
