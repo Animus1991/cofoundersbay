@@ -438,6 +438,7 @@ export default function CommitmentsPage() {
                   <NeedCard
                     card={card}
                     compact
+                    showOwner={false}
                     footer={<HistoryNote settled={card.settledAt} now={at} />}
                     actions={
                       <>

@@ -49,7 +49,13 @@ function fontSize(selector: string): string {
 describe('phone reading scale', () => {
   it('raises every reading step and leaves the query phone-only', () => {
     expect(fontSize('.text-2xs')).toBe('13.044px');
-    expect(fontSize('.text-xs')).toBe('14.406px');
+    // Secondary text sits a full step under the body (13.044 vs 14.906);
+    // controls set in text-xs keep the meta step.
+    expect(fontSize('.text-xs')).toBe('13.044px');
+    expect(fontSize('#main-content .text-xs')).toBe('13.044px');
+    expect(fontSize("#main-content .text-xs[data-slot='button']")).toBe('14.406px');
+    expect(fontSize('#main-content button.text-xs')).toBe('14.406px');
+    expect(fontSize('#main-content .type-ui')).toBe('14.406px');
     expect(fontSize('.text-sm')).toBe('14.906px');
     expect(fontSize('.text-base')).toBe('16.327px');
     expect(fontSize('body')).toBe('16.327px');

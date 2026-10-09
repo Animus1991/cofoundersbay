@@ -3306,6 +3306,14 @@ textarea[class~="border-input"]:focus,
 
      caption 13.044 · meta 14.406 · body 14.906 · lead 13.321 · figure 16.327 · section 14.984 · title 15.343
 
+   Secondary text (.text-xs, .type-support: labels, meta, helper lines,
+   facts, badges) sits on the caption step, not the meta step. At 14.406 it
+   was half a pixel under the body (14.906) and a card's label, its sentence
+   and its title (section 14.984) read as one size, ranked by grey alone -
+   the "wall" a need card made on a phone (2026-10-09). The meta step stays
+   for controls (.type-ui, buttons, tabs, fields), whose labels the hand
+   aims at.
+
    Every step is another 2% under the previous phone size (13.31 × 0.98,
    14.7 × 0.98, 15.21 × 0.98, 14.013 × 0.98, 16.66 × 0.98, 15.29 × 0.98,
    15.656 × 0.98), on every page. Fields such as Ask AI stay at 16.16px,
@@ -3328,7 +3336,7 @@ textarea[class~="border-input"]:focus,
   }
 
   .text-2xs { font-size: 13.044px; line-height: 1.35; }
-  .text-xs { font-size: 14.406px; line-height: 1.4; }
+  .text-xs { font-size: 13.044px; line-height: 1.4; }
   .text-sm { font-size: 14.906px; line-height: 1.45; }
   .text-base { font-size: 16.327px; line-height: 1.5; }
   .text-lg { font-size: 14.984px; line-height: 1.4; }
@@ -3371,7 +3379,26 @@ textarea[class~="border-input"]:focus,
   #main-content .type-support,
   #main-content .type-support.type-caption,
   #main-content .type-support.text-xs,
-  #main-content .type-support.text-sm,
+  #main-content .type-support.text-sm {
+    font-size: 13.044px;
+    line-height: 1.4;
+  }
+
+  /* Controls keep the meta step: a button, tab or field set in text-xs. */
+  .text-xs[data-slot='button'],
+  button.text-xs,
+  [role='button'].text-xs,
+  [role='tab'].text-xs,
+  input.text-xs,
+  select.text-xs,
+  textarea.text-xs,
+  #main-content .text-xs[data-slot='button'],
+  #main-content button.text-xs,
+  #main-content [role='button'].text-xs,
+  #main-content [role='tab'].text-xs,
+  #main-content input.text-xs,
+  #main-content select.text-xs,
+  #main-content textarea.text-xs,
   #main-content .type-ui,
   #main-content .type-ui.text-2xs,
   #main-content .type-ui.text-xs,
