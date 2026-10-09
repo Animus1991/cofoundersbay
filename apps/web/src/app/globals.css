@@ -3234,6 +3234,14 @@ a[class~="inline-flex"].bg-destructive {
 #main-content svg.cfb-glyph:not(.absolute):not([data-keep-icon]):not([data-keep-icon] *):not(:is(button, a, label, summary, [role="button"], [role="link"], [role="menuitem"], [role="tab"], [role="checkbox"], [role="switch"], [role="combobox"], [role="option"], [role="status"], [role="alert"], [role="img"], [data-slot="button"], [data-rail-surface]) *) {
   display: none;
 }
+/* The data glyphs the rule above keeps (a trend arrow, a star) are only data
+   beside a figure or a rating. Beside a section heading ("Featured
+   Providers") they are decoration like any other. Warnings and notes stay. */
+#main-content svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star):has(+ :is(h1, h2, h3, h4)),
+#main-content :is(h1, h2, h3, h4) + svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star) {
+  display: none;
+}
+
 /* ...and the well each one sat in, as inside cards: a box whose only
    children are glyphs that rule hides.
 
