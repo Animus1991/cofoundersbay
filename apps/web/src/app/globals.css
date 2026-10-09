@@ -3664,3 +3664,15 @@ textarea[class~="border-input"]:focus,
   margin-left: 0.5rem;
   color: hsl(var(--muted-foreground));
 }
+/* Inside a fact line the dot means "next fact", so a bilingual pair there
+   joins its two languages with a thin slash instead of BilingualText's own
+   dot: "Guide / Οδηγός · Intermediate / Μέσο", not four dotted words. */
+.facts-dotted .bilingual-separator {
+  font-size: 0;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+.facts-dotted .bilingual-separator::before {
+  content: "/";
+  font-size: 0.75rem;
+}
