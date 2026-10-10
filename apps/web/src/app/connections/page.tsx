@@ -46,6 +46,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { PeopleYouMayKnow } from '@/components/network/PeopleYouMayKnow';
 
 const CollaborationStarter = dynamic(
@@ -170,6 +171,7 @@ function IntroRequestCard({
   isPending?: boolean;
 }) {
   const sender = connection.requester;
+  const formatDay = useDateFormat();
   // Endorsements' anatomy: avatar, name and headline, the kind at the right;
   // the note and the foot (date, then the two answers) on the avatar's edge.
   return (
@@ -206,7 +208,7 @@ function IntroRequestCard({
           <p className="card-body italic text-foreground/80">{connection.message}</p>
         )}
 
-        <CardFoot meta={new Date(connection.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}>
+        <CardFoot meta={formatDay(connection.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}>
           <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
             <Check className="icon-sm" />
             <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />

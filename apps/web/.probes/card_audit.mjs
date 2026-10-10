@@ -20,6 +20,18 @@
 //   overlap     text drawn over the avatar.
 //   centered    centred text in a card that is not a stat card.
 //   loneRight   a right-aligned line with nothing to its left.
+// Anatomy (the Endorsements/Connections card, measured 2026-10-10: 16px
+// inset on a phone and 24px from 640px, a 2.5rem mark, title 15.343/16.32,
+// the line under it no louder than 14.906/14.28):
+//   titleStep   the card's head title is off the card-title step by >0.4px
+//               (a display title, an h1 or a stat figure is exempt).
+//   subStep     the line under the title is louder than the subtitle step.
+//   markSize    the mark beside the title is not 2.5rem (a hero cover's
+//               avatar, 3rem and up beside an h1, is exempt).
+//   inset       the card's left axis sits more than 4px off its padding
+//               (12px compact rows and 16-24px cards pass).
+//   tile        a framed box inside the card that holds a person (an
+//               avatar and a name): a card drawn inside a card.
 // Per page:
 //   fields      a field whose text (value or placeholder) is not smaller than
 //               its label; an unlabelled field is judged against the body step.
@@ -56,7 +68,7 @@ await ctx.addInitScript(({ stub, lang }) => {
   } catch { /* ignore */ }
 }, { stub: process.env.STATE === 'stub', lang: LANG });
 
-const KINDS = ['offAxis', 'overTitle', 'bodyLoud', 'tight', 'lower', 'escape', 'overlap', 'centered', 'loneRight'];
+const KINDS = ['offAxis', 'overTitle', 'bodyLoud', 'tight', 'lower', 'escape', 'overlap', 'centered', 'loneRight', 'titleStep', 'subStep', 'markSize', 'inset', 'tile'];
 const page = await ctx.newPage();
 const rows = [];
 for (const route of routes) {
@@ -66,7 +78,9 @@ for (const route of routes) {
     status = res?.status() ?? 0;
   } catch { /* measured as is */ }
   await page.waitForTimeout(700);
-  const m = await page.evaluate((W) => {
+  // A page that navigates on its own after load (a redirect, a guard)
+  // destroys the context mid-measure: settle and measure once more.
+  const measure = () => page.evaluate((W) => {
     const main = document.querySelector('main#main-content') ?? document.querySelector('main, [role="main"]') ?? document.body;
     const shown = (el) => el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true;
     const FLOAT = '[role=dialog],[role=alertdialog],[role=menu],[role=listbox],[role=tooltip],[data-radix-popper-content-wrapper],[data-sonner-toaster],[data-rail-surface]';
@@ -163,7 +177,7 @@ for (const route of routes) {
         .sort((a, b) => b.getBoundingClientRect().right - a.getBoundingClientRect().right)[0] : null;
       if (beside) { avatar = beside; ar = beside.getBoundingClientRect(); }
       const axes = [tg?.left, ar?.left].filter((x) => typeof x === 'number');
-      const issues = Object.fromEntries(['offAxis', 'overTitle', 'bodyLoud', 'tight', 'lower', 'escape', 'overlap', 'centered', 'loneRight'].map((k) => [k, []]));
+      const issues = Object.fromEntries(['offAxis', 'overTitle', 'bodyLoud', 'tight', 'lower', 'escape', 'overlap', 'centered', 'loneRight', 'titleStep', 'subStep', 'markSize', 'inset', 'tile'].map((k) => [k, []]));
       // Things that can sit in front of a text on its line.
       const blockers = [...card.querySelectorAll('svg,img,input,button,a,[role=button],[role=progressbar],progress,[data-slot=avatar],[data-keep-icon]')].filter(shown).map((el) => el.getBoundingClientRect()).concat(marks.map((mk) => mk.getBoundingClientRect()));
       // A filled or framed control is placed by its box; a ghost control's
@@ -293,6 +307,37 @@ for (const route of routes) {
           }
         }
       }
+      // Anatomy against the Endorsements/Connections card.
+      if (!stat && titleEl && tg) {
+        const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const TITLE = W < 640 ? 15.343 : 16.32;
+        const SUB = W < 640 ? 14.906 : 14.28;
+        const display = titleEl.closest('h1') || card.matches('[data-card-hero]') || card.querySelector('h1');
+        const head = tg.top - inner.top < 90;
+        if (head && !display && Math.abs(tSize - TITLE) > 0.4) issues.titleStep.push(`${label(titleEl)} ${tSize.toFixed(2)}`);
+        const tb = titleBlock.getBoundingClientRect();
+        const subG = glyphs.find(({ el, g }) => !titleBlock.contains(el) && !el.closest('.bilingual-secondary') && g.top >= tb.bottom - 2 && g.top - tb.bottom < 10 && Math.abs(g.left - tg.left) <= 2 && !inCtl(el));
+        if (head && !display && subG && fs(subG.el) > SUB + 0.3) issues.subStep.push(`${label(subG.el)} ${fs(subG.el).toFixed(2)}`);
+        if (beside && !display) {
+          const mw = beside.getBoundingClientRect().width;
+          if (Math.abs(mw - 2.5 * root) > 1.5 && mw < 3 * root) issues.markSize.push(`${label(beside)} ${mw.toFixed(1)}`);
+        }
+        if (head && !display) {
+          const axis = Math.min(tg.left, beside ? beside.getBoundingClientRect().left : Infinity);
+          const inset = axis - inner.left;
+          const want = W < 640 ? 16 : 24;
+          if (!(Math.abs(inset - want) <= 4 || Math.abs(inset - 12) <= 1.5 || (inset >= 12 && inset <= want + 4))) issues.inset.push(`${label(card).slice(0, 50)} inset ${inset.toFixed(1)}`);
+        }
+      }
+      for (const box of card.querySelectorAll('div,li,article,section,a')) {
+        if (box === card || !shown(box)) continue;
+        const bcs = getComputedStyle(box);
+        const r = box.getBoundingClientRect();
+        if (r.width < 120 || r.height < 40) continue;
+        const sides = ['Top', 'Right', 'Bottom', 'Left'].every((sd) => parseFloat(bcs[`border${sd}Width`]) >= 0.5 && bcs[`border${sd}Style`] !== 'none');
+        if (!sides || parseFloat(bcs.borderTopLeftRadius) < 6) continue;
+        if (box.querySelector('[data-slot=avatar]') && (box.innerText ?? '').trim().length > 2 && !box.parentElement.closest('[data-tile-ok]')) issues.tile.push(label(box).slice(0, 60));
+      }
       for (const k of Object.keys(issues)) issues[k] = [...new Set(issues[k])];
       const total = Object.values(issues).reduce((s, a) => s + a.length, 0);
       out.push({ framed: !card.hasAttribute('data-card'), card: label(card).slice(0, 70), title: titleEl ? label(titleEl).slice(0, 60) : null, titleSize: tSize, stat, avatar: Boolean(avatar), issues, total });
@@ -318,6 +363,11 @@ for (const route of routes) {
     }
     return { cards: out, fields };
   }, W);
+  let m;
+  for (let attempt = 0; attempt < 3 && !m; attempt++) {
+    try { m = await measure(); } catch { await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(800); }
+  }
+  if (!m) { console.log(`${route} | ${status} | not measured (the page kept navigating)`); continue; }
   const sum = Object.fromEntries(KINDS.map((k) => [k, m.cards.reduce((s, c) => s + c.issues[k].length, 0)]));
   const row = { route, status, cards: m.cards.length, sum, fields: m.fields, detail: m.cards.filter((c) => c.total) };
   rows.push(row);

@@ -137,8 +137,7 @@ function ApplyModal({
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TypeIcon className="icon-md text-muted-foreground" />
+          <DialogTitle>
             <BilingualText
               en={`${programsEn('apply_to')} ${program.title}`}
               el={`${programsEl('apply_to')} ${program.title}`}
@@ -147,45 +146,48 @@ function ApplyModal({
             />
           </DialogTitle>
           <DialogDescription>
-            <BilingualText
-              en={`${program.organization?.name ?? ''} — ${programsEn('apply_intro')}`.trim()}
-              el={`${program.organization?.name ?? ''} — ${programsEl('apply_intro')}`.trim()}
-              wrap
-            />
+            <BilingualText en={programsEn('apply_intro')} el={programsEl('apply_intro')} wrap />
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="rounded-lg bg-secondary/40 p-3 space-y-1 text-sm">
-            <div className="flex justify-between gap-3">
-              <span className="text-muted-foreground">
-                <BilingualText en={programsEn('program_type')} el={programsEl('program_type')} compact />
-              </span>
-              <span className="font-medium capitalize">
-                <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact />
-              </span>
-            </div>
-            {program.applicationDeadline && (
-              <div className="flex justify-between gap-3">
-                <span className="text-muted-foreground">
-                  <BilingualText en={programsEn('application_deadline')} el={programsEl('application_deadline')} compact />
-                </span>
-                <span className="font-medium">{program.applicationDeadline ? fmtDate(program.applicationDeadline, PROGRAM_DATE) : null}</span>
-              </div>
-            )}
-            {program.capacity && (
-              <div className="flex justify-between gap-3">
-                <span className="text-muted-foreground">
-                  <BilingualText en={programsEn('capacity')} el={programsEl('capacity')} compact />
-                </span>
-                <span className="font-medium">
+          {/* The programme as its card shows it: the organiser's mark, its
+              name with the kind under it, the dates and places on one fact
+              line on the mark's edge. It was a grey box of label/value rows. */}
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <CardHead
+              titleAs="p"
+              mark={(
+                <Avatar className="h-10 w-10 rounded-xl">
+                  <AvatarImage src={program.organization?.logoUrl ?? undefined} />
+                  <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                    <TypeIcon className="icon-md" aria-hidden="true" />
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              title={program.organization?.name ?? <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact />}
+              subtitle={program.organization?.name ? <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact /> : undefined}
+            />
+            <FactLine
+              label={bilingualAria('Deadline and places', 'Προθεσμία και θέσεις')}
+              items={[
+                program.applicationDeadline ? (
                   <BilingualText
+                    key="deadline"
+                    en={`${programsEn('application_deadline')}: ${fmtDate(program.applicationDeadline, PROGRAM_DATE)}`}
+                    el={`${programsEl('application_deadline')}: ${fmtDate(program.applicationDeadline, PROGRAM_DATE)}`}
+                    compact
+                  />
+                ) : null,
+                program.capacity ? (
+                  <BilingualText
+                    key="capacity"
                     en={`${program.participantCount}/${program.capacity} ${programsEn('spots_taken')}`}
                     el={`${program.participantCount}/${program.capacity} ${programsEl('spots_taken')}`}
                     compact
                   />
-                </span>
-              </div>
-            )}
+                ) : null,
+              ]}
+            />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="prog-f1" className="text-sm font-medium">
