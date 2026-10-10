@@ -72,6 +72,7 @@ import {
   type ShortlistItem,
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 
 type ViewMode = 'list' | 'grid';
 type SortBy = 'saved_newest' | 'saved_oldest' | 'name_az' | 'match_score';
@@ -124,7 +125,7 @@ function NoteEditor({
   const say = useBilingualString();
   const [value, setValue] = useState(initial);
   return (
-    <div className="mt-2 space-y-2">
+    <div className="space-y-2">
       <textarea
         autoFocus
         value={value}
@@ -173,175 +174,161 @@ function ShortlistCard({
   }
 
 
+  const iconAction = 'flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
+
+  // The Connections card: circle, name, headline, role and place; the quick
+  // actions at the right of the head. The skills, the reader's own label and
+  // note, and the foot all start on the avatar's edge.
   return (
-    <div className={cn(
-      'group rounded-xl border bg-card p-4 transition-all hover:shadow-sm',
-      isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-border hover:border-border',
+    <Card className={cn(
+      'group transition-all hover:shadow-sm',
+      isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-border',
     )}>
-      <div className="flex items-start gap-3">
-        {/* Checkbox (compare mode) */}
-        {compareMode && (
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={isSelected}
-            aria-label={bilingualAria(`Compare ${profile?.displayName ?? 'this profile'}`, `Σύγκριση: ${profile?.displayName ?? 'αυτό το προφίλ'}`)}
-            onClick={() => onToggleSelect(item.userId)}
-            className="mt-1 shrink-0"
-          >
-            {isSelected
-              ? <CheckSquare className="icon-sm text-muted-foreground" />
-              : <Square className="icon-sm text-muted-foreground" />}
-          </button>
-        )}
-
-        {/* Avatar */}
-        <Link
-          href={`/profiles/${item.userId}`}
-          className="shrink-0"
-          aria-label={profile?.displayName || say(shortlistEn('view_profile'), shortlistEl('view_profile'))}
-        >
-          {profile?.avatarUrl ? (
-            <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
-          ) : (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
-              <User className="icon-md text-muted-foreground" />
-            </div>
-          )}
-        </Link>
-
-        {/* Details */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/profiles/${item.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors">
-                  {profile?.displayName ?? 'Unknown'}
-                </Link>
-                {/* Match score badge — only for pairings the engine has scored. */}
-                {matchScore != null && (
-                  <span className={cn(
-                    'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold',
-                    matchScore >= 85 ? 'bg-status-success-bg text-status-success'
-                      : matchScore >= 70 ? 'bg-status-info-bg text-status-info'
-                      : 'bg-muted text-muted-foreground',
-                  )}>
-                    <Sparkles className="h-2.5 w-2.5" />
-                    {matchScore}%{' '}
-                    <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
-                  </span>
-                )}
-                {statusLabel && (
-                  <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
-                    {(() => { const Icon = STATUS_CONFIG[statusLabel].icon; return <Icon className="h-3 w-3" aria-hidden="true" />; })()}
-                    <BilingualText
-                      en={shortlistEn(STATUS_CONFIG[statusLabel].key)}
-                      el={shortlistEl(STATUS_CONFIG[statusLabel].key)}
-                      compact
-                    />
-                  </span>
-                )}
-              </div>
-              {profile?.headline && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{profile.headline}</p>}
-              {(profile?.role || profile?.location) && (
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                  {profile?.role && (
-                    <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                      <Briefcase className="icon-sm" />
-                      <span ><StatusText value={profile.role} /></span>
-                    </div>
-                  )}
-                  {profile?.location && (
-                    <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                      <MapPin className="icon-sm" />
-                      {profile.location}
-                    </div>
-                  )}
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Link
+              href={`/profiles/${item.userId}`}
+              className="shrink-0"
+              aria-label={profile?.displayName || say(shortlistEn('view_profile'), shortlistEl('view_profile'))}
+            >
+              {profile?.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
+              ) : (
+                <div data-keep-icon="" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
+                  <User className="icon-md text-muted-foreground" aria-hidden="true" />
                 </div>
               )}
-            </div>
-
-            {/* Actions — quiet but always visible: hover-only controls do not
-                exist on touch, and a saved person is not a guessing game. */}
-            <div className="flex items-center gap-1 shrink-0 transition-opacity">
-              <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} aria-label={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            </Link>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <Link href={`/profiles/${item.userId}`} className="transition-colors hover:text-primary-accessible">
+                {profile?.displayName ?? 'Unknown'}
+              </Link>
+              {/* Match score badge — only for pairings the engine has scored. */}
+              {matchScore != null && (
+                <span className={cn(
+                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold tabular-nums',
+                  matchScore >= 85 ? 'bg-status-success-bg text-status-success'
+                    : matchScore >= 70 ? 'bg-status-info-bg text-status-info'
+                    : 'bg-muted text-muted-foreground',
+                )}>
+                  <Sparkles className="h-2.5 w-2.5" />
+                  {matchScore}%{' '}
+                  <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
+                </span>
+              )}
+              {statusLabel && (
+                <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
+                  {(() => { const Icon = STATUS_CONFIG[statusLabel].icon; return <Icon className="h-3 w-3" aria-hidden="true" />; })()}
+                  <BilingualText
+                    en={shortlistEn(STATUS_CONFIG[statusLabel].key)}
+                    el={shortlistEl(STATUS_CONFIG[statusLabel].key)}
+                    compact
+                  />
+                </span>
+              )}
+            </span>
+          )}
+          subtitle={profile?.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
+          meta={(profile?.role || profile?.location) ? (
+            <FactLine
+              items={[
+                profile?.role ? <StatusText key="role" value={profile.role} /> : null,
+                profile?.location,
+              ]}
+            />
+          ) : undefined}
+          asideStays
+          aside={(
+            // Quiet but always visible: hover-only controls do not exist on
+            // touch, and a saved person is not a guessing game.
+            <div className="flex items-center gap-0.5">
+              {/* Checkbox (compare mode): beside the actions, never in front
+                  of the avatar. */}
+              {compareMode && (
+                <button
+                  type="button"
+                  role="checkbox"
+                  aria-checked={isSelected}
+                  aria-label={bilingualAria(`Compare ${profile?.displayName ?? 'this profile'}`, `Σύγκριση: ${profile?.displayName ?? 'αυτό το προφίλ'}`)}
+                  onClick={() => onToggleSelect(item.userId)}
+                  className={iconAction}
+                >
+                  {isSelected
+                    ? <CheckSquare className="icon-sm text-muted-foreground" />
+                    : <Square className="icon-sm text-muted-foreground" />}
+                </button>
+              )}
+              <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} aria-label={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className={iconAction}>
                 <Edit2 className="icon-sm" />
               </button>
-              <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} aria-label={say(shortlistEn('message'), shortlistEl('message'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} aria-label={say(shortlistEn('message'), shortlistEl('message'))} className={iconAction}>
                 <MessageCircle className="icon-sm" />
               </Link>
-              <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} aria-label={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} aria-label={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className={iconAction}>
                 <ExternalLink className="icon-sm" />
               </Link>
-              <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} aria-label={say(shortlistEn('remove'), shortlistEl('remove'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
+              <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} aria-label={say(shortlistEn('remove'), shortlistEl('remove'))} className={cn(iconAction, 'hover:bg-destructive/10 hover:text-destructive-accessible')}>
                 <Trash2 className="icon-sm" />
               </button>
             </div>
-          </div>
-
-          {/* Skills */}
-          {profile?.skills && profile.skills.length > 0 && (
-            <FactLine className="mt-2" items={[...profile.skills.slice(0, 5), profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null]} />
           )}
+        />
 
-          {/* Working state: the label the reader gave this person, their note
-              and the housekeeping line are their own band, not a fourth stray
-              row under the identity block. */}
-          <div className="mt-3 space-y-2 border-t border-border/60 pt-2.5">
-            {/* Status label picker */}
-            <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={bilingualAria(shortlistEn('label'), shortlistEl('label'))}>
-              <span className="text-2xs text-muted-foreground font-medium"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
-              {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
-                <button
-                  key={key}
-                  aria-pressed={statusLabel === key}
-                  onClick={() => setStatusLabel(statusLabel === key ? null : key)}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
-                    statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
-                  )}
-                >
-                  <cfg.icon className="h-3 w-3" aria-hidden="true" />
-                  <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
-                </button>
-              ))}
-            </div>
+        {/* Skills */}
+        {profile?.skills && profile.skills.length > 0 && (
+          <FactLine items={[...profile.skills.slice(0, 5), profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null]} />
+        )}
 
-            {/* Note */}
-            {!editingNote && item.note && (
-              <div className="flex items-start gap-1.5 rounded-lg bg-muted/50 px-3 py-2">
-                <Tag className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
-                <p className="text-xs text-foreground/80 flex-1">{item.note}</p>
-              </div>
-            )}
-            {editingNote && (
-              <NoteEditor initial={item.note ?? ''} onSave={handleSaveNote} onCancel={() => setEditingNote(false)} isSaving={savingNote} />
-            )}
-
-            {/* Footer */}
-            <div className="flex items-center justify-between">
-            <p className="text-2xs text-muted-foreground flex items-center gap-1">
-              <Clock className="icon-sm" />
-              {/* The date itself stays pinned to UTC, as every date in the
-                  product is; only the word around it changes language. */}
-              <BilingualText
-                en={shortlistEn('saved_on').replace('{date}', formatDate(item.savedAt, 'en'))}
-                el={shortlistEl('saved_on').replace('{date}', formatDate(item.savedAt, 'el'))}
-                compact
-              />
-            </p>
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground" asChild>
-                <Link href={`/matches/compare?ids=${item.userId}`}>
-                  <GitMerge className="icon-sm" /> <BilingualText en={shortlistEn('compare')} el={shortlistEl('compare')} compact />
-                </Link>
-              </Button>
-            </div>
-            </div>
-          </div>
+        {/* The reader's own label for this person, as a row of choices. */}
+        <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={bilingualAria(shortlistEn('label'), shortlistEl('label'))}>
+          <span className="text-xs font-medium text-muted-foreground"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
+          {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
+            <button
+              key={key}
+              aria-pressed={statusLabel === key}
+              onClick={() => setStatusLabel(statusLabel === key ? null : key)}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs transition-all',
+                statusLabel === key ? cfg.color : 'border-border text-muted-foreground hover:border-border',
+              )}
+            >
+              <cfg.icon className="h-3 w-3" aria-hidden="true" />
+              <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
+            </button>
+          ))}
         </div>
-      </div>
-    </div>
+
+        {/* The reader's note: a quoted sentence on the card, not a tile in it. */}
+        {!editingNote && item.note && (
+          <p className="card-body italic text-muted-foreground">&ldquo;{item.note}&rdquo;</p>
+        )}
+        {editingNote && (
+          <NoteEditor initial={item.note ?? ''} onSave={handleSaveNote} onCancel={() => setEditingNote(false)} isSaving={savingNote} />
+        )}
+
+        {/* Foot: when it was saved, and the way to compare. */}
+        <CardFoot
+          meta={(
+            // The date itself stays pinned to UTC, as every date in the
+            // product is; only the word around it changes language.
+            <BilingualText
+              en={shortlistEn('saved_on').replace('{date}', formatDate(item.savedAt, 'en'))}
+              el={shortlistEl('saved_on').replace('{date}', formatDate(item.savedAt, 'el'))}
+              compact
+            />
+          )}
+        >
+          <Button variant="outline" size="sm" className="gap-1" asChild>
+            <Link href={`/matches/compare?ids=${item.userId}`}>
+              <GitMerge className="icon-sm" /> <BilingualText en={shortlistEn('compare')} el={shortlistEl('compare')} compact />
+            </Link>
+          </Button>
+        </CardFoot>
+      </CardContent>
+    </Card>
   );
 }
 

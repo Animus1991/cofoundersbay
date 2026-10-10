@@ -79,13 +79,13 @@ export default function MatchComparePage() {
   });
   const breakdowns: (MatchBreakdown | undefined)[] = breakdownQueries.map((q) => q.data);
 
-  const scoreOf = (i: number) => breakdowns[i]?.overall.score ?? people[i]?.matchScore ?? null;
+  const scoreOf = (i: number) => breakdowns[i]?.overall?.score ?? people[i]?.matchScore ?? null;
   const axes = Array.from(
     new Map(
       breakdowns.flatMap((b) => b?.breakdown ?? []).map((axis) => [axis.key, axis.label] as const),
     ).entries(),
   );
-  const axisScore = (i: number, key: string) => breakdowns[i]?.breakdown.find((a) => a.key === key)?.score ?? null;
+  const axisScore = (i: number, key: string) => breakdowns[i]?.breakdown?.find((a) => a.key === key)?.score ?? null;
   const leaderOf = (values: (number | null)[]) => {
     const present = values.filter((v): v is number => v != null);
     if (present.length < 2) return -1;
@@ -224,7 +224,7 @@ export default function MatchComparePage() {
                         <X className="icon-sm" aria-hidden="true" />
                       </Button>
                       <div className="flex items-start gap-3 pr-8">
-                        <Avatar className="h-11 w-11 shrink-0">
+                        <Avatar className="h-10 w-10 shrink-0">
                           <AvatarImage src={person.avatarUrl ?? undefined} />
                           <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
                         </Avatar>
@@ -243,8 +243,8 @@ export default function MatchComparePage() {
                           <Badge variant="success" size="sm" className="gap-1"><Crown className="h-3 w-3" aria-hidden="true" /><BilingualText en="Highest" el="Υψηλότερη" compact /></Badge>
                         )}
                       </div>
-                      {breakdowns[i]?.overall.confidence != null && (
-                        <p className="text-xs text-muted-foreground">{breakdowns[i]?.overall.confidence}% confidence</p>
+                      {breakdowns[i]?.overall?.confidence != null && (
+                        <p className="text-xs text-muted-foreground"><BilingualText en={`${breakdowns[i]?.overall?.confidence}% confidence`} el={`${breakdowns[i]?.overall?.confidence}% βεβαιότητα`} compact /></p>
                       )}
                       <div className="mt-3 flex gap-2">
                         <MessageButton userId={person.userId} displayName={person.displayName} variant="default" className="flex-1" />

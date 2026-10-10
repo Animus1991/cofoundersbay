@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3 } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 
 type CompareProfileMin = {
   id: string;
@@ -43,8 +44,8 @@ export function ComparisonChart({ profiles }: { profiles: CompareProfileMin[] })
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="icon-md text-muted-foreground" />
-          Comparison Overview
+          <BarChart3 className="icon-md text-muted-foreground" aria-hidden="true" />
+          <BilingualText en="Comparison overview" el="Επισκόπηση σύγκρισης" compact />
         </CardTitle>
       </CardHeader>
       <CardContent>

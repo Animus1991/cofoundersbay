@@ -123,7 +123,7 @@ const DEMO_POSTS: FeedPost[] = [
       id: 'u3',
       displayName: 'Dr. Sarah Kim',
       avatarUrl: undefined,
-      headline: 'Startup Mentor | Ex-Google | 3x Founder',
+      headline: 'Startup Mentor | Former product lead | 3x Founder',
       role: 'mentor',
     },
     type: 'update',
@@ -246,7 +246,7 @@ function PostCard({
               )}
             </span>
           )}
-          subtitle={post.author.headline || undefined}
+          subtitle={post.author?.headline || undefined}
           /* Computed in an effect, not during render: the server's "now" is
              not the browser's, and the two disagreeing is what made this page
              fail hydration on every load. */

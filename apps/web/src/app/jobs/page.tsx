@@ -8,7 +8,6 @@ import {
   Briefcase,
   MapPin,
   Wifi,
-  Building2,
   Search,
   Plus,
   ExternalLink,
@@ -37,7 +36,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -50,6 +48,8 @@ import { jobsEn, jobsEl } from '@/lib/i18n/strings-jobs';
 import { bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -72,75 +72,66 @@ const EMPLOYMENT_TYPES = [
 ] as const;
 
 function JobCard({ job, featured = false }: { job: JobPostingView; featured?: boolean }) {
+  // The Opportunities card: the poster's mark, the role's title with the
+  // poster and the kind of work under it, then the facts and the actions,
+  // all on the mark's left edge.
   return (
     <Card className={cn(
-      'card-interactive hover-lift group transition-all duration-200',
+      'card-interactive group transition-all hover:border-primary/20',
       featured && 'border-primary/15 bg-primary/[0.03]'
     )}>
-      <CardContent>
-        <div className="flex items-start gap-4">
-          {/* Company avatar */}
-          <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
-            <AvatarImage src={job.creator?.avatarUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
-              {initialsOf(job.creator.displayName)}
-            </AvatarFallback>
-          </Avatar>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={job.creator?.avatarUrl ?? undefined} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+                {initialsOf(job.creator?.displayName ?? '')}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={<span className="transition-colors group-hover:text-primary-accessible">{job.title}</span>}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                job.creator?.displayName,
+                job.type ? <StatusText key="type" value={job.type} /> : null,
+              ]}
+            />
+          )}
+          asideStays
+          aside={featured ? (
+            <Star role="img" className="icon-sm fill-status-warning text-status-warning" aria-label={bilingualInline('Featured', 'Προτεινόμενη')} />
+          ) : undefined}
+        />
 
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary-accessible transition-colors">
-                    {job.title}
-                  </h3>
-                  {featured && <Star className="icon-sm text-status-warning fill-status-warning" />}
-                </div>
-                <p className="text-sm text-muted-foreground">{job.creator.displayName}</p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {job.role && (
-                  <Badge variant="secondary" className="text-xs"><StatusText value={job.role} /></Badge>
-                )}
-                {job.type && (
-                  <Badge variant="outline" className="text-xs"><StatusText value={job.type} /></Badge>
-                )}
-                {job.isRemote && (
-                  <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
-                    <Wifi className="mr-1 icon-sm" />
-                    <BilingualText en={jobsEn('remote')} el={jobsEl('remote')} compact />
-                  </Badge>
-                )}
-              </div>
-            </div>
+        <FactLine
+          items={[
+            job.role ? <StatusText key="role" value={job.role} /> : null,
+            // "Remote — EU time zones" already says remote; the word is added
+            // only when the place does not.
+            job.isRemote && !/remote/i.test(job.location ?? '') ? <BilingualText key="remote" en={jobsEn('remote')} el={jobsEl('remote')} compact /> : null,
+            job.location || null,
+            !job.location && !job.isRemote
+              ? <BilingualText key="where" en={jobsEn('location_unknown')} el={jobsEl('location_unknown')} compact />
+              : null,
+          ]}
+        />
 
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              {job.location && (
-                <span className="flex items-center gap-1"><MapPin className="icon-sm" />{job.location}</span>
-              )}
-              {!job.location && !job.isRemote && (
-                <span className="flex items-center gap-1">
-                  <Building2 className="icon-sm" />
-                  <BilingualText en={jobsEn('location_unknown')} el={jobsEl('location_unknown')} compact />
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="ml-auto flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
-            <SaveItemButton kind="job" itemId={job.id} title={job.title} />
-            {/* "View" linked to /discover (API) or back to /jobs (demo) for
-                every role; it opens the poster's profile when the poster is known. */}
-            {job.creator?.id ? (
-              <Button variant="ghost" size="sm" className="gap-1" asChild>
-                <Link href={`/profiles/${job.creator.id}`}>
-                  <ExternalLink className="icon-sm" />
-                  <BilingualText en="View poster" el="Προβολή εκδότη" compact />
-                </Link>
-              </Button>
-            ) : null}
-          </div>
-        </div>
+        <CardFoot>
+          <SaveItemButton kind="job" itemId={job.id} title={job.title} />
+          {/* "View" linked to /discover (API) or back to /jobs (demo) for
+              every role; it opens the poster's profile when the poster is known. */}
+          {job.creator?.id ? (
+            <Button variant="outline" size="sm" className="gap-1" asChild>
+              <Link href={`/profiles/${job.creator.id}`}>
+                <ExternalLink className="icon-sm" aria-hidden="true" />
+                <BilingualText en="View poster" el="Προβολή εκδότη" compact />
+              </Link>
+            </Button>
+          ) : null}
+        </CardFoot>
       </CardContent>
     </Card>
   );

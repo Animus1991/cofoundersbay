@@ -807,7 +807,7 @@ export default function ProfileEditPage() {
                       id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
-                      placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
+                      placeholder="e.g., 3x Founder | Building AI SaaS | Former product lead"
                     />
                     <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
