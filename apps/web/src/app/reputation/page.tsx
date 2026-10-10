@@ -19,6 +19,8 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { LocalTime } from '@/components/common/LocalTime';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useMyXP, useMyBadges, useMyStreak, useMarkBadgesSeen, type Badge, type XPEvent } from '@/hooks/useGamification';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -132,29 +134,34 @@ function BadgeCard({ badge, primary }: { badge: Badge; primary: 'en' | 'el' }) {
   const rarity = (badge.rarity || 'common').toLowerCase();
   const rarityLabel = REPUTATION_STRINGS[`rarity_${rarity}` as Key] ?? { en: badge.rarity, el: badge.rarity };
   const isNew = !badge.seenAt;
+  // The card every card is: the trophy as the mark (its tone is the rarity),
+  // the name with the rarity under it and "New" at the right, the sentence
+  // on the mark's edge and the date in the foot. The body used to sit in a
+  // column beside the trophy, 56px in from the card's axis, with the rarity
+  // as a tinted pill.
   return (
-    <Card className={cn('relative overflow-hidden transition-colors hover:border-primary/30', isNew && 'ring-1 ring-primary/40')}>
-      <CardContent className="flex gap-3">
-        <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
-          <Trophy className="icon-md" aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="truncate text-sm font-semibold">{badge.name}</p>
-            {isNew && (
-              <BadgePill variant="default" className="shrink-0 text-2xs">
-                <BilingualText en={reputationEn('new_badge')} el={reputationEl('new_badge')} compact />
-              </BadgePill>
-            )}
-          </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">{badge.description}</p>
-          <p className="mt-2 flex flex-wrap items-center gap-x-2 text-2xs text-muted-foreground">
-            <span className={cn('rounded-full px-1.5 py-0.5 font-medium', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
-              {primary === 'el' ? rarityLabel.el : rarityLabel.en}
+    <Card className={cn('transition-colors hover:border-primary/30', isNew && 'ring-1 ring-primary/40')}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <span data-keep-icon data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', RARITY_TONE[rarity] ?? RARITY_TONE.common)}>
+              <Trophy className="icon-md" aria-hidden />
             </span>
-            <span>{primary === 'el' ? reputationEl('earned_on') : reputationEn('earned_on')} <LocalTime value={badge.awardedAt} /></span>
-          </p>
-        </div>
+          )}
+          title={badge.name}
+          subtitle={<span className="first-letter:uppercase">{primary === 'el' ? rarityLabel.el : rarityLabel.en}</span>}
+          aside={isNew ? (
+            <BadgePill variant="outline">
+              <BilingualText en={reputationEn('new_badge')} el={reputationEl('new_badge')} compact />
+            </BadgePill>
+          ) : undefined}
+        />
+        {badge.description ? (
+          <p className="card-body text-muted-foreground first-letter:uppercase">{badge.description}</p>
+        ) : null}
+        <CardFoot
+          meta={<>{primary === 'el' ? reputationEl('earned_on') : reputationEn('earned_on')} <LocalTime value={badge.awardedAt} /></>}
+        />
       </CardContent>
     </Card>
   );
@@ -162,18 +169,17 @@ function BadgeCard({ badge, primary }: { badge: Badge; primary: 'en' | 'el' }) {
 
 function HistoryItem({ event }: { event: XPEvent }) {
   const label = eventLabel(event.eventType);
-  const group = EVENT_GROUP[event.eventType] ?? 'other';
-  const Icon = GROUP_ICON[group] ?? Layers;
+  // A row of the history card: what earned the points, when, and the
+  // points at the right. The group's icon well beside it was hidden as
+  // decoration inside the card and left nothing to read.
   return (
-    <li className="flex items-center gap-3 border-b border-border py-3 last:border-0">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-status-success-bg text-status-success">
-        <Icon className="icon-sm" aria-hidden />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium"><BilingualText en={label.en} el={label.el} compact /></p>
-        <p className="text-xs text-muted-foreground"><RelativeTime date={event.createdAt} /></p>
-      </div>
-      <span className="shrink-0 text-sm font-semibold tabular-nums text-status-success">+{event.xpAmount}</span>
+    <li>
+      <RowHead
+        title={<BilingualText en={label.en} el={label.el} compact />}
+        subtitle={<RelativeTime date={event.createdAt} />}
+        asideStays
+        aside={<span className="card-body font-semibold tabular-nums text-status-success">+{event.xpAmount}</span>}
+      />
     </li>
   );
 }
@@ -384,7 +390,7 @@ export default function ReputationPage() {
                 <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5">
                   <Card className="lg:col-span-3">
                     <CardHeader>
-                      <CardTitle className="text-base"><BilingualText en={reputationEn('how_xp_title')} el={reputationEl('how_xp_title')} /></CardTitle>
+                      <CardTitle><BilingualText en={reputationEn('how_xp_title')} el={reputationEl('how_xp_title')} /></CardTitle>
                       <CardDescription><BilingualText en={reputationEn('how_xp_desc')} el={reputationEl('how_xp_desc')} compact wrap /></CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -406,7 +412,7 @@ export default function ReputationPage() {
 
                   <Card className="lg:col-span-2">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-base">
+                      <CardTitle className="flex items-center gap-2">
                         <Flame className="icon-sm text-status-warning" aria-hidden />
                         <BilingualText en={reputationEn('streak_title')} el={reputationEl('streak_title')} />
                       </CardTitle>
@@ -444,9 +450,11 @@ export default function ReputationPage() {
 
               <TabsContent value="badges" className="mt-6">
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                  {/* min-w-0 and a wrapping sentence: on one compact line it ran
+                      243px past a 390px screen. */}
+                  <div className="min-w-0">
                     <h3 className="text-base font-semibold"><BilingualText en={reputationEn('badges_title')} el={reputationEl('badges_title')} /></h3>
-                    <p className="mt-0.5 text-sm text-muted-foreground"><BilingualText en={reputationEn('badges_desc')} el={reputationEl('badges_desc')} compact /></p>
+                    <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={reputationEn('badges_desc')} el={reputationEl('badges_desc')} wrap /></p>
                   </div>
                   {unseen > 0 && (
                     <Button variant="outline" size="sm" onClick={() => markSeen.mutate()} disabled={markSeen.isPending}>
@@ -472,14 +480,14 @@ export default function ReputationPage() {
               <TabsContent value="history" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base"><BilingualText en={reputationEn('history_title')} el={reputationEl('history_title')} /></CardTitle>
+                    <CardTitle><BilingualText en={reputationEn('history_title')} el={reputationEl('history_title')} /></CardTitle>
                     <CardDescription><BilingualText en={reputationEn('history_desc')} el={reputationEl('history_desc')} compact wrap /></CardDescription>
                   </CardHeader>
                   <CardContent>
                     {events.length === 0 ? (
                       <p className="text-sm text-muted-foreground"><BilingualText en={reputationEn('no_history')} el={reputationEl('no_history')} compact /></p>
                     ) : (
-                      <ul>{events.map((e) => <HistoryItem key={e.id} event={e} />)}</ul>
+                      <ul className="card-rows">{events.map((e) => <HistoryItem key={e.id} event={e} />)}</ul>
                     )}
                   </CardContent>
                 </Card>
@@ -491,7 +499,7 @@ export default function ReputationPage() {
         {/* Tips — kept, and now they describe the real ladder rather than "get likes". */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2">
               <Sparkles className="icon-sm text-muted-foreground" aria-hidden />
               <BilingualText en={reputationEn('tips_title')} el={reputationEl('tips_title')} />
             </CardTitle>

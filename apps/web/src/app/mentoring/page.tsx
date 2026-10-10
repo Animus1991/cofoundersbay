@@ -175,7 +175,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <FactLine
               items={[
                 mentor.rating > 0 ? (
-                  <span key="rating" className="inline-flex items-center gap-0.5">
+                  <span key="rating" data-keep-icon="" className="inline-flex items-center gap-0.5">
                     <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
                     <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
                     {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}

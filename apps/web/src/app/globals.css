@@ -3172,7 +3172,8 @@ a[class~="inline-flex"].bg-destructive {
    Icons that *are* the control stay: nav/chrome, close (X), chevrons
    inside a control, checkbox, spinner - and every icon-only control. So do
    glyphs that carry state rather than decoration (check, empty circle,
-   lock) and any icon inside [data-keep-icon], where the icon is content.
+   lock), rating stars (a review's score, as on the page-wide rule below)
+   and any icon inside [data-keep-icon], where the icon is content.
    "Labeled" means an element child other than the icon, its sr-only name,
    or a responsive label (`hidden sm:inline`): below its breakpoint that
    label is display:none, so it cannot stand in for the icon there, and the
@@ -3193,7 +3194,7 @@ a[class~="inline-flex"].bg-destructive {
   display: none;
 }
 #main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.cfb-glyph:not([data-keep-icon] > *):not([data-card-mark] > *),
-#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not([data-keep-icon] > *):not([data-card-mark] > *),
+#main-content [data-surface="card"] :not(button):not(a):not([role="button"]):not([data-slot="button"]):not([role="checkbox"]):not([role="combobox"]):not([role="menuitem"]):not([role="switch"]):not([role="tab"]) > svg.lucide:not(.lucide-check):not(.lucide-circle-check):not(.lucide-circle-check-big):not(.lucide-circle):not(.lucide-lock):not(.lucide-loader-2):not(.lucide-loader-circle):not(.lucide-star):not(.lucide-star-half):not([data-keep-icon] > *):not([data-card-mark] > *),
 #main-content [data-surface="card"] button:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 #main-content [data-surface="card"] [data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 #main-content [data-surface="card"] a:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),

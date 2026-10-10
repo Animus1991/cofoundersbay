@@ -18,6 +18,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -222,19 +223,18 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className={cn('rounded-full p-3', currentTier.color.replace('text-', 'bg-').replace('500', '500/10'))}>
-            <CurrentIcon className={cn('icon-xl', currentTier.color)} />
-          </div>
-          <div>
-            <h3 className={cn('text-xl font-semibold leading-snug', currentTier.color)}>
-              <BilingualText en={referralsEn(currentTier.key)} el={referralsEl(currentTier.key)} compact />
-            </h3>
-            <p className="text-sm leading-snug text-muted-foreground">
-              <BilingualText {...fill('multiplier', { n: currentTier.rewardMultiplier })} compact wrap />
-            </p>
-          </div>
-        </div>
+        {/* The tier as a row head: its emblem as the mark, the name a step
+            under the card's title (it was text-xl, louder than that title)
+            and the multiplier under it. */}
+        <RowHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+              <CurrentIcon className={cn('icon-md', currentTier.color)} aria-hidden="true" />
+            </div>
+          )}
+          title={<span className={currentTier.color}><BilingualText en={referralsEn(currentTier.key)} el={referralsEl(currentTier.key)} compact /></span>}
+          subtitle={<BilingualText {...fill('multiplier', { n: currentTier.rewardMultiplier })} compact wrap />}
+        />
 
         {nextTier && (
           <div className="space-y-2">
@@ -291,34 +291,34 @@ function ReferralCard({ referral }: { referral: Referral }) {
     .join('')
     .toUpperCase() || referral.email[0].toUpperCase();
 
+  // A row of the invitations card: the person as the mark, the name with the
+  // email under it, the reward and the state at the right.
   return (
-    <div className="flex items-center gap-4">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={referral.avatarUrl} />
-        <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
-          {initials}
-        </AvatarFallback>
-      </Avatar>
-
-      <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium" translate={referral.name ? undefined : "no"}>{referral.name || referral.email}</p>
-        {referral.name && (
-          <p className="text-sm text-muted-foreground truncate">{referral.email}</p>
-        )}
-      </div>
-
-      <div className="flex items-center gap-3">
-        {referral.rewardAmount && (
-          <Badge variant="secondary" className="bg-status-success-bg text-status-success">
-            +€{referral.rewardAmount}
+    <RowHead
+      mark={(
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={referral.avatarUrl} />
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+      )}
+      title={<span className="block truncate" translate={referral.name ? undefined : 'no'}>{referral.name || referral.email}</span>}
+      subtitle={referral.name ? <span className="block truncate">{referral.email}</span> : undefined}
+      aside={(
+        <>
+          {referral.rewardAmount && (
+            <Badge variant="secondary" className="bg-status-success-bg text-status-success">
+              +€{referral.rewardAmount}
+            </Badge>
+          )}
+          <Badge className={cn('gap-1', config.color)}>
+            <StatusIcon className="icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText en={referralsEn(config.key)} el={referralsEl(config.key)} compact />
           </Badge>
-        )}
-        <Badge className={cn('gap-1', config.color)}>
-          <StatusIcon className="icon-sm shrink-0" aria-hidden="true" />
-          <BilingualText en={referralsEn(config.key)} el={referralsEl(config.key)} compact />
-        </Badge>
-      </div>
-    </div>
+        </>
+      )}
+    />
   );
 }
 
@@ -467,12 +467,12 @@ export default function ReferralsPage() {
         <ol className="space-y-4">
           {(['1', '2', '3'] as const).map((n) => (
             <li key={n} className="flex min-w-0 gap-3">
-              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground">
+              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold tabular-nums text-muted-foreground">
                 {n}
               </div>
               <div className="min-w-0">
-                <p className="font-medium leading-snug"><BilingualText en={referralsEn(`step${n}_title`)} el={referralsEl(`step${n}_title`)} compact wrap /></p>
-                <p className="text-sm leading-snug text-muted-foreground">
+                <p className="text-sm font-medium"><BilingualText en={referralsEn(`step${n}_title`)} el={referralsEl(`step${n}_title`)} compact wrap /></p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   <BilingualText en={referralsEn(`step${n}_body`)} el={referralsEl(`step${n}_body`)} compact wrap />
                 </p>
               </div>
@@ -513,7 +513,7 @@ export default function ReferralsPage() {
             {filteredReferrals.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
                 <Users className="mx-auto mb-3 h-12 w-12 opacity-50" aria-hidden="true" />
-                <p><BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap /></p>
+                <p className="text-sm"><BilingualText en={referralsEn('empty_list')} el={referralsEl('empty_list')} compact wrap /></p>
               </div>
             ) : (
               <div className="card-rows">

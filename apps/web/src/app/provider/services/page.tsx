@@ -94,7 +94,10 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <span className="min-w-0 break-words">{service.name}</span>
-              <Badge variant={isActive ? 'default' : 'secondary'}>
+              {/* On a phone the switch's own label is hidden, so the state
+                  rides with the name; from sm the label beside the switch
+                  says it once. */}
+              <Badge variant={isActive ? 'default' : 'secondary'} className="sm:hidden">
                 {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
               </Badge>
             </span>
@@ -149,7 +152,7 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
               {service.price}
               {service.priceType === 'hourly' && <BilingualText en="/hr" el="/ώρα" compact />}
             </span>,
-            service.deliveryTime || null,
+            service.deliveryTime && service.deliveryTime !== '—' ? service.deliveryTime : null,
             /*
              * Shown only where there is a rating. The marketplace is a
              * directory of listings, not a booking system, so a real
@@ -447,7 +450,7 @@ export default function ProviderServicesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Store className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
+                <h3 className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   <BilingualText en="Try adjusting your search or add a new service" el="Δοκιμάστε άλλη αναζήτηση ή προσθέστε νέα υπηρεσία" wrap />
                 </p>

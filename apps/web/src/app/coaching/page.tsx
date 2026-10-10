@@ -20,10 +20,10 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailAction } from '@/components/layout/RailParts';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -286,8 +286,8 @@ function SessionCard({ session }: { session: CoachingSession }) {
   const totalActions = session.actionItems?.length ?? 0;
 
   return (
-    <div data-card="" className="rounded-2xl border border-border bg-card overflow-hidden">
-      <div className="space-y-3 p-4">
+    <Card className="overflow-hidden">
+      <CardContent className="space-y-3">
         <CardHead
           mark={<SessionDateTile date={new Date(session.scheduledAt)} />}
           title={session.title}
@@ -325,11 +325,15 @@ function SessionCard({ session }: { session: CoachingSession }) {
 
         {/* Rating */}
         {session.rating && (
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/30')} />
-            ))}
-            <span className="text-xs text-muted-foreground ml-1">
+          // The stars are the rating: data-keep-icon keeps them past the
+          // card's decorative-icon rule, which hid them once this became a Card.
+          <div className="flex items-center gap-2">
+            <span data-keep-icon="" role="img" aria-label={bilingualAria(`${session.rating} of 5`, `${session.rating} από 5`)} className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/30')} aria-hidden="true" />
+              ))}
+            </span>
+            <span className="text-xs text-muted-foreground">
               <BilingualText en="Your rating" el="Η βαθμολογία σας" compact />
             </span>
           </div>
@@ -392,7 +396,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             )}
             {/* Messaging is real, and it lives with the mentors a founder can
                 actually reach today. */}
-            <Button size="sm" variant="ghost" className="gap-1" asChild>
+            <Button size="sm" variant="outline" className="gap-1" asChild>
               <Link href="/mentoring">
                 <MessageCircle className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Find a mentor" el="Εύρεση μέντορα" compact wrap />
@@ -400,18 +404,20 @@ function SessionCard({ session }: { session: CoachingSession }) {
             </Button>
           </div>
           <button
+            type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+            aria-expanded={expanded}
+            className="flex items-center gap-0.5 rounded-md text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             {expanded ? <BilingualText en="Collapse" el="Σύμπτυξη" compact /> : <BilingualText en="Details" el="Λεπτομέρειες" compact />}
             <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
           </button>
         </div>
-      </div>
+      </CardContent>
 
-      {/* Expanded details */}
+      {/* Expanded details, on the card's own padding so the labels keep its axis. */}
       {expanded && (
-        <div className="border-t border-border bg-muted/30 p-4 space-y-3">
+        <div className="space-y-3 border-t border-border bg-muted/30 p-4 sm:p-6">
           {session.agenda && (
             <div>
               <p className="mb-0.5 text-xs font-medium text-muted-foreground"><BilingualText en="Agenda" el="Ατζέντα" compact /></p>
@@ -439,85 +445,87 @@ function SessionCard({ session }: { session: CoachingSession }) {
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
 function CoachCard({ coach }: { coach: CoachProfile }) {
   return (
-    <div data-card="" className="space-y-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/20">
-      <CardHead
-        mark={(
-          <Avatar className="h-10 w-10">
-            {coach.avatar && <AvatarImage src={coach.avatar} />}
-            <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-              {initialsOf(coach.name)}
-            </AvatarFallback>
-          </Avatar>
-        )}
-        title={(
-          <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-            <span>{coach.name}</span>
-            {coach.isVerified && (
-              <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-accessible border-primary/20">
-                <BilingualText en="Verified" el="Επαληθευμένος" compact />
-              </Badge>
-            )}
-          </span>
-        )}
-        subtitle={coach.title}
-        aside={coach.pricePerHour != null ? (
-          <span className="font-semibold tabular-nums text-foreground">
-            {/* The dollar sign used to be written in. A mentor records a
-                currency beside the rate; bill them in it. */}
-            {new Intl.NumberFormat('en-GB', {
-              style: 'currency',
-              currency: coach.currency || 'USD',
-              maximumFractionDigits: 0,
-            }).format(coach.pricePerHour)}
-            <BilingualText en="/hr" el="/ώρα" compact />
-          </span>
-        ) : undefined}
-      />
-
-      <p className="card-body line-clamp-2 text-muted-foreground">{coach.bio}</p>
-
-      <div className="space-y-1">
-        <FactLine items={coach.specialties.slice(0, 3).map((s) => <BilingualText key={s} en={SESSION_TYPE_CONFIG[s].label} el={SESSION_TYPE_CONFIG[s].labelEl} compact />)} />
-        <FactLine
-          items={[
-            <span key="rating" className="inline-flex items-center gap-1">
-              <Star className="icon-sm fill-status-warning text-status-warning" />
-              {coach.rating > 0 ? coach.rating : '—'}{' '}
-              <BilingualText
-                en={`(${coach.sessionCount} sessions)`}
-                el={`(${coach.sessionCount} ${coach.sessionCount === 1 ? 'συνεδρία' : 'συνεδρίες'})`}
-                compact
-              />
-            </span>,
-            coach.responseTime ? <BilingualText key="responds" en={`Responds ${coach.responseTime}`} el={`Απαντά ${coach.responseTime}`} compact /> : null,
-          ]}
+    <Card className="transition-colors hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              {coach.avatar && <AvatarImage src={coach.avatar} />}
+              <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
+                {initialsOf(coach.name)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <span>{coach.name}</span>
+              {coach.isVerified && (
+                <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-accessible border-primary/20">
+                  <BilingualText en="Verified" el="Επαληθευμένος" compact />
+                </Badge>
+              )}
+            </span>
+          )}
+          subtitle={coach.title}
+          aside={coach.pricePerHour != null ? (
+            <span className="font-semibold tabular-nums text-foreground">
+              {/* The dollar sign used to be written in. A mentor records a
+                  currency beside the rate; bill them in it. */}
+              {new Intl.NumberFormat('en-GB', {
+                style: 'currency',
+                currency: coach.currency || 'USD',
+                maximumFractionDigits: 0,
+              }).format(coach.pricePerHour)}
+              <BilingualText en="/hr" el="/ώρα" compact />
+            </span>
+          ) : undefined}
         />
-      </div>
 
-      {/* These coaches are constants with demo ids, so neither booking nor
-          a conversation can be opened with them. `/mentoring` is the same
-          offer against real people. */}
-      <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-        <Button size="sm" className="gap-1" asChild>
-          <Link href="/mentoring">
-            <Calendar className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
-          </Link>
-        </Button>
-        <Button size="sm" variant="outline" className="gap-1" asChild>
-          <Link href="/mentoring">
-            <MessageCircle className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Browse" el="Περιήγηση" compact wrap />
-          </Link>
-        </Button>
-      </div>
-    </div>
+        <p className="card-body line-clamp-2 text-muted-foreground">{coach.bio}</p>
+
+        <div className="space-y-1">
+          <FactLine items={coach.specialties.slice(0, 3).map((s) => <BilingualText key={s} en={SESSION_TYPE_CONFIG[s].label} el={SESSION_TYPE_CONFIG[s].labelEl} compact />)} />
+          <FactLine
+            items={[
+              <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
+                <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+                {coach.rating > 0 ? coach.rating : '—'}{' '}
+                <BilingualText
+                  en={`(${coach.sessionCount} sessions)`}
+                  el={`(${coach.sessionCount} ${coach.sessionCount === 1 ? 'συνεδρία' : 'συνεδρίες'})`}
+                  compact
+                />
+              </span>,
+              coach.responseTime ? <BilingualText key="responds" en={`Responds ${coach.responseTime}`} el={`Απαντά ${coach.responseTime}`} compact /> : null,
+            ]}
+          />
+        </div>
+
+        {/* These coaches are constants with demo ids, so neither booking nor
+            a conversation can be opened with them. `/mentoring` is the same
+            offer against real people. */}
+        <CardFoot>
+          <Button size="sm" className="gap-1" asChild>
+            <Link href="/mentoring">
+              <Calendar className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Book with a mentor" el="Κράτηση με μέντορα" compact wrap />
+            </Link>
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1" asChild>
+            <Link href="/mentoring">
+              <MessageCircle className="icon-sm" aria-hidden="true" />
+              <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+            </Link>
+          </Button>
+        </CardFoot>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -845,24 +853,17 @@ export default function CoachingPage() {
       labelEn: 'Summary',
       labelEl: 'Σύνοψη',
       content: (
-        <div className="space-y-2">
-          {railStats.map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
-            <div
-              key={labelEn}
-              className="flex items-center gap-3 rounded-lg border border-border bg-card p-2.5"
-            >
-              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', bg, color)}>
-                <Icon className="icon-sm" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-base font-semibold leading-none text-foreground">{value}</p>
-                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                  <BilingualText en={labelEn} el={labelEl} compact wrap />
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        // The shared rail figures: a soft tile per figure, not a framed card.
+        <RailStats
+          items={railStats.map(({ labelEn, labelEl, value, icon, color, bg }) => ({
+            key: labelEn,
+            label: labelEn,
+            labelEl,
+            value,
+            icon,
+            tone: cn(bg, color),
+          }))}
+        />
       ),
     },
     {
@@ -1094,16 +1095,18 @@ export default function CoachingPage() {
           <TabsContent value="actions" className="mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm"><BilingualText en="All Action Items" el="Όλες οι ενέργειες" compact /></CardTitle>
+                <CardTitle><BilingualText en="All Action Items" el="Όλες οι ενέργειες" compact /></CardTitle>
               </CardHeader>
-              <CardContent className="space-y-1">
+              {/* One row per item on the card's axis, hairlines between them:
+                  the rows were inset 8px with a hover box of their own. */}
+              <CardContent className="card-rows">
                 {sessions.flatMap((session) =>
                   (session.actionItems ?? []).map((item, idx) => (
-                    <div key={`${session.id}-${idx}`} className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-muted/50 transition-colors">
+                    <div key={`${session.id}-${idx}`} className="flex items-start gap-3">
                       <CheckCircle2 className={cn('mt-0.5 icon-sm shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/30')} />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
-                        <p className="text-2xs text-muted-foreground">From: {session.title}</p>
+                        <p className="text-xs text-muted-foreground"><BilingualText en={`From: ${session.title}`} el={`Από: ${session.title}`} compact wrap /></p>
                       </div>
                       {!item.done && (
                         <Badge variant="outline" className="shrink-0 text-2xs"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
@@ -1120,7 +1123,7 @@ export default function CoachingPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="icon-sm text-muted-foreground" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
                   </CardTitle>
                 </CardHeader>
@@ -1142,7 +1145,7 @@ export default function CoachingPage() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <ListChecks className="icon-sm text-status-success" /> <BilingualText en="Execution Rate" el="Ποσοστό εκτέλεσης" compact />
                   </CardTitle>
                 </CardHeader>
@@ -1165,7 +1168,7 @@ export default function CoachingPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
-                      <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={`${completedActions} of ${totalActionItems.length} items done`} el={`${completedActions} από ${totalActionItems.length} ολοκληρώθηκαν`} compact wrap /></p>
                       <p className="text-xs text-status-success"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact wrap /></p>
                     </div>
                   </div>
@@ -1177,16 +1180,17 @@ export default function CoachingPage() {
             {sessions.filter((s) => s.keyInsights).length > 0 && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <Lightbulb className="icon-sm text-status-warning" /> <BilingualText en="Key Insights" el="Βασικές αναλύσεις" compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                {/* Quotes as rows on the card's axis, not a tinted box each. */}
+                <CardContent className="card-rows">
                   {sessions.filter((s) => s.keyInsights).map((s) => (
-                    <div key={s.id} className="rounded-lg bg-muted/50 px-3 py-2 border-l-2 border-status-warning-border">
-                      <p className="text-xs text-foreground/80 italic">"{s.keyInsights}"</p>
-                      <p className="text-2xs text-muted-foreground mt-1">— {s.title}</p>
-                    </div>
+                    <figure key={s.id}>
+                      <blockquote className="card-body italic text-muted-foreground">“{s.keyInsights}”</blockquote>
+                      <figcaption className="mt-1 text-xs text-muted-foreground">— {s.title}</figcaption>
+                    </figure>
                   ))}
                 </CardContent>
               </Card>

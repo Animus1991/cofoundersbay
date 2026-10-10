@@ -47,7 +47,9 @@ type Review = {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5" role="img" aria-label={bilingualInline(`${rating} of 5 stars`, `${rating} από 5 αστέρια`)}>
+    // data-keep-icon: inside a card the decorative-icon rule hides every
+    // bare glyph, and these stars are the rating itself.
+    <div data-keep-icon="" className="flex gap-0.5" role="img" aria-label={bilingualInline(`${rating} of 5 stars`, `${rating} από 5 αστέρια`)}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
@@ -195,7 +197,7 @@ export default function MentorReviewsPage() {
                 </div>
                 <div className="flex-1 space-y-2">
                   {ratingDistribution.map((item) => (
-                    <div key={item.rating} className="flex items-center gap-2">
+                    <div key={item.rating} data-keep-icon="" className="flex items-center gap-2">
                       <span className="text-sm w-3">{item.rating}</span>
                       <Star className="icon-sm fill-status-warning text-status-warning" />
                       <Progress value={item.percentage} className="h-2 flex-1" />

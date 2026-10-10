@@ -118,7 +118,9 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
             </AreaChart>
           </ResponsiveContainer>
           <details className="mt-3 text-xs text-muted-foreground">
-            <summary className="cursor-pointer rounded-xl focus-visible:outline-none"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
+            {/* No disclosure triangle in front: it put the label 14px off the
+                card's axis. The label reads as a link instead. */}
+            <summary className="inline-flex cursor-pointer list-none rounded-md text-primary-accessible hover:underline focus-ring [&::-webkit-details-marker]:hidden"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
             <ul className="mt-3 space-y-1.5">{chartData.map((point) => <li key={point.date}>{point.date}: {point.views} / {point.unique ?? '—'}</li>)}</ul>
           </details>
         </> : <Unavailable />}

@@ -149,8 +149,8 @@ function InquiryCard({
           )}
         />
         {/* The service asked about is a fact, the message the body. */}
-        <p className="text-xs font-medium text-muted-foreground">{inquiry.service}</p>
-        <p className="card-body text-muted-foreground">{inquiry.message}</p>
+        <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{inquiry.service}</p>
+        <p className="card-body text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
         {inquiry.status === 'new' && (
           <CardFoot>
                 {/* Both had no handler; they do what the menu's Reply and
@@ -436,7 +436,7 @@ export default function ProviderInquiriesPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
+                  <h3 className="card-title text-foreground"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'all'
                       ? 'You have no inquiries yet'

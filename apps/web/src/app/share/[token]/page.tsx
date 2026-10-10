@@ -19,6 +19,8 @@ import { apiRequest } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -371,39 +373,40 @@ export default function SharePage() {
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-semibold">{document.title}</h1>
                   {document.description && (
-                    <p className="text-muted-foreground mt-1">{document.description}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{document.description}</p>
                   )}
                 </div>
               </div>
 
               {/* Workspace info */}
               {document.workspace && (
-                <Card className="border-border">
+                // The startup behind the document: its mark and name, the
+                // stage and sector under it, the owner at the right.
+                <Card>
                   <CardContent>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <Rocket className="icon-sm text-muted-foreground" />
-                        <span className="font-medium text-sm">
-                          {document.workspace.startupName ?? document.workspace.name}
-                        </span>
-                      </div>
-                      {document.workspace.stage && (
-                        <Badge variant="secondary" className="text-xs capitalize">
-                          {document.workspace.stage}
-                        </Badge>
-                      )}
-                      {document.workspace.industry && (
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {document.workspace.industry}
-                        </span>
-                      )}
-                      {document.owner && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-                          <User className="icon-sm" />
-                          {document.owner.displayName}
+                    <CardHead
+                      mark={(
+                        <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          <Rocket className="icon-md" aria-hidden="true" />
                         </div>
                       )}
-                    </div>
+                      title={document.workspace.startupName ?? document.workspace.name}
+                      subtitle={(document.workspace.stage || document.workspace.industry) ? (
+                        <FactLine
+                          className="text-sm"
+                          items={[
+                            document.workspace.stage ? <StatusText key="stage" value={document.workspace.stage} /> : null,
+                            document.workspace.industry ? <span key="industry" className="inline-block first-letter:uppercase">{document.workspace.industry}</span> : null,
+                          ]}
+                        />
+                      ) : undefined}
+                      aside={document.owner ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <User className="icon-sm" aria-hidden="true" />
+                          {document.owner.displayName}
+                        </span>
+                      ) : undefined}
+                    />
                   </CardContent>
                 </Card>
               )}
@@ -424,7 +427,7 @@ export default function SharePage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <FileText className="icon-sm" />
                     <BilingualText en="Document Content" el="Περιεχόμενο εγγράφου" compact />
                   </CardTitle>

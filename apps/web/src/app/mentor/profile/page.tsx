@@ -159,7 +159,7 @@ export default function MentorProfilePage() {
             />
             <FactLine
               items={[
-                <span key="rating" className="inline-flex items-center gap-1">
+                <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
                   <Star className="icon-sm text-status-warning" aria-hidden="true" />
                   {ratingValue != null
                     ? <BilingualText en={`${ratingValue.toFixed(1)}${ratingNote}`} el={`${ratingValue.toFixed(1)}${demoRating ? ` (${demoRating.count} αξιολογήσεις)` : ''}`} compact />

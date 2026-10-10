@@ -412,7 +412,7 @@ export default function ProviderAnalyticsPage() {
                       heights (views up to 140px plus inquiries) in a 176px box
                       that also held the day label, so the tallest day grew up
                       through the card title. */}
-                  <div className="flex h-44 items-stretch gap-2">
+                  <div data-chart="" className="flex h-44 items-stretch gap-2">
                     {weeklyViews.map(d => (
                       <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
                         <div className="flex w-full flex-1 flex-col justify-end gap-0.5">

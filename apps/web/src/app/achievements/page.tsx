@@ -29,6 +29,7 @@ import { RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -672,7 +673,7 @@ export default function AchievementsPage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
+                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
                       <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} /></p>
                     </CardContent>
                   </Card>
@@ -690,7 +691,7 @@ export default function AchievementsPage() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
+                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
                       <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} /></p>
                     </CardContent>
                   </Card>
@@ -737,20 +738,17 @@ export default function AchievementsPage() {
                                 aria-current={isMe ? 'true' : undefined}
                                 className="py-3 first:pt-0 last:pb-0"
                               >
-                                <CardHead
-                                  titleAs="p"
+                                <RowHead
                                   mark={(
                                     <Avatar className={cn('h-10 w-10', isMe && 'ring-2 ring-primary/20')}>
                                       <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{user.name[0]}</AvatarFallback>
                                     </Avatar>
                                   )}
                                   title={isMe
-                                    ? <BilingualText en={user.name === 'You' ? 'You' : `${user.name} (You)`} el={user.name === 'You' ? 'Εσείς' : `${user.name} (Εσείς)`} compact />
+                                    ? <span className="text-primary-accessible"><BilingualText en={user.name === 'You' ? 'You' : `${user.name} (You)`} el={user.name === 'You' ? 'Εσείς' : `${user.name} (Εσείς)`} compact /></span>
                                     : user.name}
-                                  titleClassName={isMe ? 'text-primary-accessible' : undefined}
                                   subtitle={(
                                     <FactLine
-                                      className="text-sm"
                                       items={[
                                         <span key="rank" className={cn('tabular-nums', RANK_COLORS[user.rank])}>
                                           {user.rank <= 3 ? `${['🥇', '🥈', '🥉'][user.rank - 1]} ` : ''}#{user.rank}
@@ -791,8 +789,7 @@ export default function AchievementsPage() {
                               const Icon = a.icon;
                               return (
                                 <li key={a.id} className="py-3 first:pt-0 last:pb-0">
-                                  <CardHead
-                                    titleAs="p"
+                                  <RowHead
                                     mark={(
                                       <div data-keep-icon data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', TIER_BG[a.tier])}>
                                         <Icon className={cn('icon-md', TIER_COLORS[a.tier])} aria-hidden="true" />

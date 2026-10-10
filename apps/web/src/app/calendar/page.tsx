@@ -34,6 +34,9 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -224,49 +227,52 @@ function formatUpcomingDate(iso: string, lang: 'en' | 'el'): string {
 
 // ── Components ───────────────────────────────────────────────────────────────
 
-function EventChip({ event }: { event: CalendarEvent }) {
+/**
+ * One calendar entry. The kind is its mark (the same hue as the kind's dot
+ * in the month grid), the title opens it when it has a page, and time,
+ * place and people are one line of facts. Inside the day's section card it
+ * is a row with no frame of its own (`RowHead`, hairlines from `card-rows`);
+ * in the list view each entry stands alone as a card. It used to be a tile
+ * tinted in the kind's hue, framed inside the day's card.
+ */
+function EventChip({ event, framed = false }: { event: CalendarEvent; framed?: boolean }) {
   const cfg = TYPE_CONFIG[event.type];
-  const Wrapper = event.href ? Link : 'div';
-  const wrapperProps = event.href ? { href: event.href } : {};
-
-  return (
-    <Wrapper
-      {...(wrapperProps as any)}
-      className={cn(
-        'flex items-start gap-2.5 rounded-lg border p-3 transition-all hover:shadow-sm',
-        cfg.bg,
-      )}
-    >
-      <div className="flex-1 min-w-0 space-y-0.5">
-        <div className="flex items-center gap-2">
-          <span className="min-w-0 truncate text-sm font-medium">
-            <BilingualText en={event.title} el={event.titleEl} compact />
-          </span>
-          {event.priority === 'high' && (
-            <Badge variant="destructive" size="sm" className="px-1">
-              <BilingualText en="High" el="Υψηλή" compact secondaryClassName="hidden" />
-            </Badge>
-          )}
-        </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-          {event.time && (
-            <span className="flex items-center gap-0.5"><Clock className="icon-sm" aria-hidden="true" />{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span>
-          )}
-          {event.location && (
-            <span className="flex items-center gap-0.5">
-              <MapPin className="icon-sm" />
-              <BilingualText en={event.location} el={event.locationEl} compact />
-            </span>
-          )}
-          {event.participants && event.participants.length > 0 && (
-            <span className="flex items-center gap-0.5"><Users className="icon-sm" aria-hidden="true" />{event.participants.join(', ')}</span>
-          )}
-        </div>
+  const title = <BilingualText en={event.title} el={event.titleEl} compact wrap />;
+  const head = {
+    mark: (
+      <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl bg-muted', cfg.color)}>
+        <cfg.icon className="icon-md" aria-hidden="true" />
       </div>
-      <Badge variant="secondary" className="h-4 shrink-0 text-2xs">
-        <BilingualText en={cfg.labelEn} el={cfg.labelEl} compact secondaryClassName="hidden" />
+    ),
+    title: event.href ? (
+      <Link href={event.href} className="transition-colors hover:text-primary-accessible">{title}</Link>
+    ) : title,
+    subtitle: (
+      <FactLine
+        className={framed ? 'text-sm' : undefined}
+        items={[
+          <BilingualText key="kind" en={cfg.labelEn} el={cfg.labelEl} compact />,
+          event.time ? <span key="time" className="tabular-nums">{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span> : null,
+          event.location ? <BilingualText key="where" en={event.location} el={event.locationEl} compact /> : null,
+        ]}
+      />
+    ),
+    meta: event.participants && event.participants.length > 0 ? event.participants.join(', ') : undefined,
+    aside: event.priority === 'high' ? (
+      <Badge variant="outline" className="border-status-danger-border text-xs text-status-danger">
+        <BilingualText en="High priority" el="Υψηλή προτεραιότητα" compact />
       </Badge>
-    </Wrapper>
+    ) : undefined,
+  };
+
+  if (!framed) return <RowHead {...head} />;
+  return (
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead {...head} />
+        {event.description ? <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{event.description}</p> : null}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -604,7 +610,7 @@ export default function CalendarPage() {
             <div className="space-y-6">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <CalendarDays className="icon-sm text-muted-foreground" />
                     <BilingualText
                       en={selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -615,7 +621,7 @@ export default function CalendarPage() {
                 </CardHeader>
                 <CardContent>
                   {selectedDayEvents.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="card-rows">
                       {selectedDayEvents.map((e) => <EventChip key={e.id} event={e} />)}
                     </div>
                   ) : (
@@ -632,7 +638,7 @@ export default function CalendarPage() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <Sparkles className="icon-sm text-muted-foreground" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                   </CardTitle>
                 </CardHeader>
@@ -659,9 +665,9 @@ export default function CalendarPage() {
           </div>
         ) : (
           /* List view */
-          <div className="space-y-2">
+          <div className="space-y-3">
             {filteredEvents.length > 0 ? (
-              filteredEvents.map((e) => <EventChip key={e.id} event={e} />)
+              filteredEvents.map((e) => <EventChip key={e.id} event={e} framed />)
             ) : (
               <Card>
                 <CardContent>

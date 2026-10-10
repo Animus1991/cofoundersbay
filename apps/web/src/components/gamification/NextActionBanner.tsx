@@ -118,7 +118,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
         <button
           type="button"
           onClick={handleDismiss}
-          className="absolute right-2 top-2 rounded-xl p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
+          className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
           title={bilingualAria('Dismiss', 'Απόρριψη')}
           aria-label={dismissLabel}
         >
@@ -146,7 +146,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="rounded-xl p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+                className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
                 title={bilingualAria('Dismiss', 'Απόρριψη')}
                 aria-label={dismissLabel}
               >

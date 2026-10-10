@@ -498,7 +498,7 @@ export default function InvestorScoutingPage() {
             <Card className="col-span-2">
               <CardContent className="py-12 text-center">
                 <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
+                <h3 className="card-title text-foreground"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap /></p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
               </CardContent>

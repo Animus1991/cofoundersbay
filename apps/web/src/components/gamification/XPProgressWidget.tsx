@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMyXP, useMyStreak } from '@/hooks/useGamification';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 import { LEVEL_LABEL_EL, REPUTATION_STRINGS } from '@/lib/i18n/strings-reputation';
@@ -78,9 +78,9 @@ export function XPProgressWidget() {
       <CardContent className="space-y-5">
         <div className="space-y-3">
           {/* The level as the mark, its name as the title and the points
-              under it - the head every card has. */}
-          <CardHead
-            titleAs="p"
+              under it: a row of this section card (RowHead), a step under
+              the card's own title rather than level with it. */}
+          <RowHead
             mark={(
               <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted font-semibold tabular-nums text-foreground">
                 {xp.level}
@@ -129,7 +129,7 @@ export function XPProgressWidget() {
           </div>
         )}
 
-        {xp.recentEvents.length > 0 && (
+        {(xp.recentEvents?.length ?? 0) > 0 && (
           <div className="min-w-0 space-y-2">
             <div className="min-w-0 text-sm font-medium leading-snug text-muted-foreground">
               {/* Not "Recent activity": the dashboard's activity feed already carries that name. */}
@@ -138,7 +138,7 @@ export function XPProgressWidget() {
             {/* A divided list, not tinted boxes: in the 242px page-tools rail the boxes'
                 padding left the label ~110px, and each language broke over two lines. */}
             <div className="divide-y divide-border/40">
-              {xp.recentEvents.slice(0, 3).map((event) => (
+              {(xp.recentEvents ?? []).slice(0, 3).map((event) => (
                 <div
                   key={event.id}
                   className="flex items-center justify-between gap-2 py-1.5 text-xs"

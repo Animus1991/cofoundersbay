@@ -4,14 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ArrowRight, ExternalLink, MapPin, MessageCircle, Star, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, MessageCircle, Star, XCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
@@ -233,7 +235,7 @@ export default function StartupDealPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base"><BilingualText en="Stage" el="Στάδιο" compact /></CardTitle>
+              <CardTitle><BilingualText en="Stage" el="Στάδιο" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <ol className="flex flex-wrap gap-2" aria-label="Pipeline stages. Στάδια ροής">
@@ -260,7 +262,7 @@ export default function StartupDealPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base"><BilingualText en="Add a note" el="Προσθήκη σημείωσης" compact /></CardTitle>
+              <CardTitle><BilingualText en="Add a note" el="Προσθήκη σημείωσης" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (note.trim()) addNote.mutate(); }}>
@@ -280,7 +282,7 @@ export default function StartupDealPage() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base"><BilingualText en="History" el="Ιστορικό" compact /></CardTitle>
+              <CardTitle><BilingualText en="History" el="Ιστορικό" compact /></CardTitle>
             </CardHeader>
             <CardContent>
               {(deal.recentEvents?.length ?? 0) === 0 ? (
@@ -301,37 +303,63 @@ export default function StartupDealPage() {
         </div>
 
         <aside className="space-y-4">
+          {/* The startup itself: its logo and name, the facts as one line,
+              the website and the investor's own notes, on the logo's edge. */}
           <Card>
-            <CardContent className="space-y-2 text-sm">
-              {deal.industry && <Badge variant="secondary">{deal.industry}</Badge>}
-              {deal.companyStage && <p><span className="text-muted-foreground"><BilingualText en="Stage" el="Στάδιο" compact />:</span> <StatusText value={deal.companyStage} /></p>}
-              {deal.location && (
-                <p className="flex items-center gap-1.5"><MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />{deal.location}</p>
-              )}
-              {deal.teamSize != null && <p><span className="text-muted-foreground"><BilingualText en="Team" el="Ομάδα" compact />:</span> <span className="tabular-nums">{deal.teamSize}</span></p>}
-              {deal.askAmountCents != null && (
-                <p>
-                  <span className="text-muted-foreground"><BilingualText en="Raising" el="Αναζητά" compact />:</span>{' '}
-                  {new Intl.NumberFormat('en-GB', { style: 'currency', currency: deal.currency, maximumFractionDigits: 0 }).format(deal.askAmountCents / 100)}
-                </p>
-              )}
+            <CardContent className="space-y-3">
+              <CardHead
+                mark={(
+                  <Avatar className="h-10 w-10 rounded-xl">
+                    {deal.logoUrl ? <AvatarImage src={deal.logoUrl} alt="" /> : null}
+                    <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{deal.name[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                )}
+                title={deal.name}
+                subtitle={deal.industry ? <span className="first-letter:uppercase">{deal.industry}</span> : undefined}
+              />
+              <FactLine
+                items={[
+                  deal.companyStage ? <StatusText key="stage" value={deal.companyStage} /> : null,
+                  deal.location,
+                  deal.teamSize != null ? <BilingualText key="team" en={`Team of ${deal.teamSize}`} el={`Ομάδα ${deal.teamSize}`} compact /> : null,
+                  deal.askAmountCents != null ? (
+                    <span key="ask" className="font-medium tabular-nums text-foreground">
+                      <BilingualText
+                        en={`Raising ${new Intl.NumberFormat('en-GB', { style: 'currency', currency: deal.currency, maximumFractionDigits: 0 }).format(deal.askAmountCents / 100)}`}
+                        el={`Αναζητά ${new Intl.NumberFormat('en-GB', { style: 'currency', currency: deal.currency, maximumFractionDigits: 0 }).format(deal.askAmountCents / 100)}`}
+                        compact
+                      />
+                    </span>
+                  ) : null,
+                ]}
+              />
               {deal.website && (
-                <a href={deal.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-primary-accessible hover:underline">
+                <a href={deal.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary-accessible hover:underline">
                   <ExternalLink className="icon-sm" aria-hidden="true" />
                   {deal.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
-              {deal.notes && <p className="whitespace-pre-line border-t border-border pt-2 text-muted-foreground">{deal.notes}</p>}
+              {deal.notes && <p className="card-body whitespace-pre-line border-t border-border pt-3 text-muted-foreground">{deal.notes}</p>}
             </CardContent>
           </Card>
           {deal.founder && (
             <Card>
-              <CardContent className="text-sm">
-                <p className="text-xs text-muted-foreground"><BilingualText en="Founder" el="Ιδρυτής" compact /></p>
-                <Link href={`/profiles/${deal.founder.id}`} className="font-medium hover:text-primary-accessible">
-                  {deal.founder?.displayName ?? '—'}
-                </Link>
-                {deal.founder.headline && <p className="text-muted-foreground">{deal.founder.headline}</p>}
+              <CardContent>
+                <CardHead
+                  mark={(
+                    <Avatar className="h-10 w-10">
+                      {deal.founder.avatarUrl ? <AvatarImage src={deal.founder.avatarUrl} alt="" /> : null}
+                      <AvatarFallback>{(deal.founder?.displayName ?? '?')[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  title={(
+                    <Link href={`/profiles/${deal.founder.id}`} className="hover:text-primary-accessible">
+                      {deal.founder?.displayName ?? '—'}
+                    </Link>
+                  )}
+                  subtitle={deal.founder?.headline ?? undefined}
+                  meta={<BilingualText en="Founder" el="Ιδρυτής" compact />}
+                />
               </CardContent>
             </Card>
           )}

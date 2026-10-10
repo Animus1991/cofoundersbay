@@ -112,7 +112,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
   const titleEl = userName ? `Η πορεία του ${userName} ως ιδρυτής` : 'Η πορεία σας ως ιδρυτής';
 
   return (
-    <Card className="rounded-xl" data-tour="founder-checklist">
+    <Card data-tour="founder-checklist">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <button
@@ -123,7 +123,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             aria-controls={listId}
           >
             <div className="min-w-0">
-              <CardTitle className="text-sm font-semibold text-foreground">
+              <CardTitle className="text-foreground">
                 <BilingualText en={titleEn} el={titleEl} />
               </CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -142,7 +142,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           <button
             type="button"
             onClick={handleDismiss}
-            className="tap-target-phone inline-flex shrink-0 items-center justify-center rounded-xl p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="tap-target-phone inline-flex shrink-0 items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title={dismissLabel}
             aria-label={dismissLabel}
           >

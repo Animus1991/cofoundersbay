@@ -618,7 +618,7 @@ export default function InvestorWatchlistPage() {
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Eye className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                    <h3 className="font-medium"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
+                    <h3 className="card-title text-foreground"><BilingualText en="No results" el="Κανένα αποτέλεσμα" compact /></h3>
                     <p className="text-sm text-muted-foreground mt-1">
                       {search ? 'No startups match your search' : 'Add startups from the scouting feed'}
                     </p>

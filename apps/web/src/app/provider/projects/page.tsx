@@ -398,7 +398,7 @@ export default function ProviderProjectsPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <FolderKanban className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
+                  <h3 className="card-title text-foreground"><BilingualText en="No projects found" el="Δεν βρέθηκαν έργα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     No {activeTab.replace('_', ' ')} projects
                   </p>

@@ -320,7 +320,7 @@ export default function ProviderReviewsPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
+                <h3 className="card-title text-foreground"><BilingualText en="No reviews found" el="Δεν βρέθηκαν αξιολογήσεις" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   <BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact />
                 </p>

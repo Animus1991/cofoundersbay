@@ -27,6 +27,8 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -716,38 +718,50 @@ export default function PitchDeckPage() {
         </MainLandmark>
 
         {/* Author sidebar */}
-        <aside className="flex flex-col gap-4 w-full xl:w-64 flex-shrink-0">
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={deck.author.avatarUrl} />
-                <AvatarFallback>
-                  {initialsOf(deck.author.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{deck.author.name}</p>
-                <p className="text-xs text-muted-foreground">{deck.author.headline}</p>
-              </div>
-            </div>
-            {deck.allowContact && (
-              <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
-              </Button>
-            )}
-          </div>
+        <aside className="flex w-full flex-shrink-0 flex-col gap-4 xl:w-72">
+          {/* The author, the deck's figures and the share links: cards on
+              the Endorsements anatomy (mark, name, headline; then the rows
+              on the mark's edge). */}
+          <Card>
+            <CardContent className="space-y-3">
+              <CardHead
+                mark={(
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={deck.author.avatarUrl} alt="" />
+                    <AvatarFallback>
+                      {initialsOf(deck.author.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                title={deck.author.name}
+                subtitle={deck.author.headline}
+              />
+              {deck.allowContact && (
+                <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
+                  <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
+                </Button>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></span><span className="font-medium">{deck.stats.views}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></span><span className="font-medium">{deck.stats.shares}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></span><span className="font-medium">{deck.stats.contactRequests}</span></div>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.views}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.shares}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.contactRequests}</dd></div>
+              </dl>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"><BilingualText en="Share" el="Κοινοποίηση" compact /></p>
+          <Card>
+            <CardHeader>
+              <CardTitle><BilingualText en="Share" el="Κοινοποίηση" compact /></CardTitle>
+            </CardHeader>
+            <CardContent>
             <div className="flex gap-2">
               <Button aria-label={bilingualAria('Share on X', 'Κοινοποίηση στο X')} variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
@@ -763,7 +777,8 @@ export default function PitchDeckPage() {
                 {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
-          </div>
+            </CardContent>
+          </Card>
         </aside>
       </div>
 

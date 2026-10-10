@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailAction } from '@/components/layout/RailParts';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -238,13 +238,16 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           />
         </div>
 
-        {/* Footer */}
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border">
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
-            <p className="card-body truncate font-semibold tabular-nums">{priceForDisplay(provider.pricing, primary)}</p>
-          </div>
-          <div className="flex shrink-0 gap-2">
+        {/* Foot: the starting price at the left, the actions at the right. */}
+        <CardFoot
+          className="mt-auto"
+          meta={(
+            <>
+              <p><BilingualText en="Starting at" el="Από" compact /></p>
+              <p className="card-body truncate font-semibold tabular-nums text-foreground">{priceForDisplay(provider.pricing, primary)}</p>
+            </>
+          )}
+        >
             {/* Neither had a handler. A listing carries its provider's own
                 contact and website links, so those are what these open. */}
             {provider.contactUrl ? (
@@ -269,8 +272,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 <BilingualText en="Request" el="Αίτημα" compact />
               </Button>
             )}
-          </div>
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -401,17 +403,7 @@ export default function MarketplacePage() {
       labelEn: 'Marketplace stats',
       labelEl: 'Στατιστικά αγοράς',
       content: (
-        <div className="space-y-2">
-          {marketplaceStats(allProviders).map(s => (
-            <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border p-3">
-              <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold">{s.value}</p>
-                <p className="text-2xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <RailStats items={marketplaceStats(allProviders).map((s) => ({ key: s.label, label: s.label, labelEl: s.labelEl, value: s.value, icon: s.icon }))} />
       ),
     },
     {
@@ -480,8 +472,8 @@ export default function MarketplacePage() {
         <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
+              <h2 className="card-title text-foreground"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></h2>
+              <p className="card-body mt-0.5 text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
             </div>
             {/* Theirs turns a dead button into a real link to /provider/services;
                 our icon-size token is kept. */}
@@ -560,7 +552,7 @@ export default function MarketplacePage() {
                 {filtered.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
                     <Package className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
-                    <p className="font-medium"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
+                    <p className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
                     <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap /></p>
                   </div>
                 )}

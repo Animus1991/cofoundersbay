@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailStats } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline, formatShortDate } from '@/lib/i18n/format';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -186,18 +187,19 @@ export default function MentorEarningsPage() {
       labelEl: 'Σύνολα εσόδων',
       badge: pendingCount || null,
       content: (
-        <ul className="space-y-2">
-          {figures.map(({ id, icon: Icon, en, el, value, subEn, subEl, tone }) => (
-            <li key={id} className="rounded-lg border border-border p-3">
-              <div className="flex items-center gap-2">
-                <Icon className={cn('icon-sm shrink-0', tone)} aria-hidden="true" />
-                <span className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact wrap /></span>
-              </div>
-              <p className="page-stat mt-1 text-xl font-bold tabular-nums">{value}</p>
-              <p className="text-xs text-muted-foreground"><BilingualText en={subEn} el={subEl} compact wrap /></p>
-            </li>
-          ))}
-        </ul>
+        // The shared rail figures: a soft tile per total, not a framed box.
+        <RailStats
+          items={figures.map(({ id, icon, en, el, value, subEn, subEl, tone }) => ({
+            key: id,
+            label: en,
+            labelEl: el,
+            value,
+            icon,
+            tone: cn('bg-muted', tone),
+            note: subEn,
+            noteEl: subEl,
+          }))}
+        />
       ),
     },
     {
