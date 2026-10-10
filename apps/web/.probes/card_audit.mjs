@@ -14,7 +14,8 @@
 //               exempt).
 //   bodyLoud    a sentence under the header that is not at least 0.3px under
 //               the title's subtitle (the thesis that read as loud as the byline).
-//   tight       wrapped text whose line-height is under 1.35 x its size.
+//   tight       wrapped text whose line-height is under 1.35 x its size
+//               (1.345: the ladder sets exactly 1.35, which rounds under it).
 //   lower       a block of content that starts with a lowercase letter.
 //   escape      text that leaves the card's box on the left or the top.
 //   overlap     text drawn over the avatar.
@@ -285,7 +286,7 @@ for (const route of routes) {
         if (tSize && !stat && el !== titleEl && !titleBlock?.contains(el) && !inCtl(el) && fs(el) > tSize - 0.3) issues.overTitle.push(`${label(el)} ${fs(el).toFixed(2)}>${tSize.toFixed(2)}`);
         const lh = parseFloat(cs.lineHeight);
         const r = el.getBoundingClientRect();
-        if (lh && lines(el) >= 2 && lh / fs(el) < 1.35 && !inCtl(el)) issues.tight.push(`${label(el)} ${(lh / fs(el)).toFixed(2)}`);
+        if (lh && lines(el) >= 2 && lh / fs(el) < 1.345 && !inCtl(el)) issues.tight.push(`${label(el)} ${(lh / fs(el)).toFixed(2)}`);
         const t = (el.textContent ?? '').trim();
         const raised = ['capitalize', 'uppercase'].includes(cs.textTransform) || [el, el.parentElement].some((n) => n && getComputedStyle(n, '::first-letter').textTransform === 'uppercase');
         if (!stat && /^[a-zα-ωά-ώ]/.test(t) && !raised && !hasFront && el.matches('p,li,dd,h1,h2,h3,h4,h5,blockquote,span,div') && t.length > 3 && !/^(e\.g\.|i\.e\.|vs\.?|via|iOS|eBay|npm|pnpm|http|www\.)/.test(t) && !el.closest('code,pre,kbd,[translate=no]')) issues.lower.push(label(el));
