@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { summarizeMeetingNotes, type MeetingNotesSummary, type MentorBookingItem } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -92,70 +94,66 @@ export function BookingCard({
 
   return (
     <Card className="card-interactive">
-      <CardContent>
-        <div className="flex gap-3 sm:gap-4">
-          <SessionDateTile date={start} />
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2">
-                  <h3 className="min-w-0">
-                    <Link
-                      href={`/profiles/${otherUserId}`}
-                      className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
-                    >
-                      {other.displayName}
-                    </Link>
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {isMentor
-                      ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
-                      : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  <LocalTime value={start} />
-                  {' – '}
-                  <LocalTime value={end} />
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-end gap-1.5">
-                <Badge
-                  variant="outline"
-                  className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
-                >
-                  <StatusText value={booking.status} />
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={<SessionDateTile date={start} />}
+          title={(
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              <Link
+                href={`/profiles/${otherUserId}`}
+                className="transition-colors hover:text-primary-accessible"
+              >
+                {other.displayName}
+              </Link>
+              <span className="text-xs font-normal text-muted-foreground">
+                {isMentor
+                  ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />
+                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+              </span>
+            </span>
+          )}
+          subtitle={(
+            <>
+              <LocalTime value={start} />
+              {' – '}
+              <LocalTime value={end} />
+            </>
+          )}
+          aside={(
+            <>
+              <Badge
+                variant="outline"
+                className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
+              >
+                <StatusText value={booking.status} />
+              </Badge>
+              {showSource && (
+                <Badge variant="secondary" className="text-xs">
+                  <BilingualText en="Booking" el="Κράτηση" compact />
                 </Badge>
-                {showSource && (
-                  <Badge variant="secondary" className="text-xs">
-                    <BilingualText en="Booking" el="Κράτηση" compact />
-                  </Badge>
-                )}
-              </div>
-            </div>
-
+              )}
+            </>
+          )}
+        />
+        <div>
             {isMentor && booking.status === 'requested' && (
               <p className="mt-1 text-xs text-status-warning">
                 <BilingualText en="Awaiting your confirmation" el="Περιμένει την επιβεβαίωσή σας" compact />
               </p>
             )}
 
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" aria-hidden="true" />
-                {Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} min
-              </span>
-              <span className="flex items-center gap-1">
-                <Video className="icon-sm" aria-hidden="true" />
-                {MEETING_TYPE_LABEL[booking.meetingType]
-                  ? <BilingualText en={MEETING_TYPE_LABEL[booking.meetingType].en} el={MEETING_TYPE_LABEL[booking.meetingType].el} compact />
-                  : booking.meetingType}
-              </span>
-            </div>
+            <FactLine
+              className="mt-1"
+              items={[
+                <BilingualText key="len" en={`${Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} min`} el={`${Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} λεπτά`} compact />,
+                MEETING_TYPE_LABEL[booking.meetingType]
+                  ? <BilingualText key="type" en={MEETING_TYPE_LABEL[booking.meetingType].en} el={MEETING_TYPE_LABEL[booking.meetingType].el} compact />
+                  : booking.meetingType,
+              ]}
+            />
 
             {booking.notes && (
-              <p className="mt-2 text-xs text-muted-foreground italic line-clamp-2">
+              <p className="card-body mt-2 italic text-muted-foreground line-clamp-2">
                 &ldquo;{booking.notes}&rdquo;
               </p>
             )}
@@ -245,7 +243,7 @@ export function BookingCard({
 
             {/* Action row: right on desktop, wraps below the content on phones. */}
             {!isPast && (booking.status === 'requested' || booking.status === 'confirmed') && (
-              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
+              <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
                 {isMentor && booking.status === 'requested' && (
                   <>
                     <Button size="sm" className="h-7 gap-1 text-xs" onClick={onConfirm} disabled={isActing}>
@@ -269,18 +267,17 @@ export function BookingCard({
                   </>
                 )}
                 {!isMentor && booking.status === 'requested' && (
-                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
                     <BilingualText en="Cancel request" el="Ακύρωση αιτήματος" compact />
                   </Button>
                 )}
                 {booking.status === 'confirmed' && (
-                  <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
+                  <Button size="sm" variant="outline" className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible" onClick={onCancel} disabled={isActing}>
                     <BilingualText en="Cancel session" el="Ακύρωση συνεδρίας" compact />
                   </Button>
                 )}
               </div>
             )}
-          </div>
         </div>
       </CardContent>
     </Card>

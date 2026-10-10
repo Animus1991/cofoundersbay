@@ -138,8 +138,9 @@ function MilestoneCard({
 
   return (
     <div
+      data-card=""
       className={cn(
-        'group relative rounded-xl border bg-card transition-all hover:shadow-sm',
+        'group relative rounded-2xl border bg-card transition-all hover:shadow-sm',
         // No opacity fade on a completed row. Fading the container fades its text
         // with it: muted text measured 4.35:1 at 0.75 on the card and 4.38:1 at
         // 0.80 on this row's own success tint -- both under AA, and the exact

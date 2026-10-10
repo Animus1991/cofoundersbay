@@ -20,6 +20,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { readComposedPosts } from '@/lib/feed-demo';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge, badgeVariants } from '@/components/ui/badge';
@@ -219,48 +220,39 @@ function PostCard({
       className="overflow-hidden shadow-sm border-border hover:border-primary/30 transition-colors scroll-mt-24 focus:outline-none data-[linked=true]:ring-2 data-[linked=true]:ring-primary"
     >
       <CardHeader className="p-4 pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex gap-3">
+        <CardHead
+          mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
               <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <a
-                  href={`/profiles/${post.author.id}`}
-                  className="font-semibold text-foreground hover:underline"
-                >
-                  {post.author.displayName}
-                </a>
-                <Badge variant="outline" className={cn('text-xs', config.color)}>
-                  <TypeIcon className="icon-sm mr-1" />
-                  {config.label}
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <a href={`/profiles/${post.author.id}`} className="hover:underline">
+                {post.author.displayName}
+              </a>
+              <Badge variant="outline" className={cn('text-xs', config.color)}>
+                <TypeIcon className="icon-sm mr-1" />
+                {config.label}
+              </Badge>
+              {post.personalizationScore && (
+                <Badge variant="secondary" className="text-xs bg-status-info-bg text-status-info border-status-info-border">
+                  <Sparkles className="icon-sm mr-1" />
+                  <BilingualText en={`${Math.round(post.personalizationScore * 100)}% match`} el={`${Math.round(post.personalizationScore * 100)}% ταίριασμα`} compact />
                 </Badge>
-                {post.personalizationScore && (
-                  <Badge variant="secondary" className="text-xs bg-status-info-bg text-status-info border-status-info-border">
-                    <Sparkles className="icon-sm mr-1" />
-                    {Math.round(post.personalizationScore * 100)}% match
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">{post.author.headline}</p>
-              {/* Computed in an effect, not during render: the server's
-                  "now" is not the browser's, and the two disagreeing is
-                  what made this page fail hydration on every load. */}
-              <p className="text-xs text-muted-foreground mt-0.5">
-                <RelativeTime date={post.createdAt} />
-              </p>
-              {post.relevanceReasons && post.relevanceReasons.length > 0 && (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  <span className="font-medium">Why you're seeing this:</span> {post.relevanceReasons.join(', ')}
-                </div>
               )}
-            </div>
-          </div>
-
+            </span>
+          )}
+          subtitle={post.author.headline || undefined}
+          /* Computed in an effect, not during render: the server's "now" is
+             not the browser's, and the two disagreeing is what made this page
+             fail hydration on every load. */
+          meta={<RelativeTime date={post.createdAt} />}
+          asideStays
+          aside={(
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria('Open post actions', 'Άνοιγμα ενεργειών δημοσίευσης')}>
@@ -284,11 +276,17 @@ function PostCard({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+          )}
+        />
+        {post.relevanceReasons && post.relevanceReasons.length > 0 && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            <span className="font-medium"><BilingualText en="Why you're seeing this" el="Γιατί το βλέπετε" compact />:</span> {post.relevanceReasons.join(', ')}
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-4 pt-2">
-        <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+        <p className="card-body text-foreground whitespace-pre-wrap">{post.content}</p>
 
         {post.tags && post.tags.length > 0 && (
           <FactLine className="mt-3" items={post.tags.map((tag) => `#${tag}`)} />
@@ -296,8 +294,8 @@ function PostCard({
 
         {/* Engagement Stats */}
         <div className="flex items-center gap-4 mt-4 pt-3 border-t text-sm text-muted-foreground">
-          <span>{post.likes} likes</span>
-          <span>{post.comments} comments</span>
+          <span><BilingualText en={`${post.likes} likes`} el={`${post.likes} μου αρέσει`} compact /></span>
+          <span><BilingualText en={`${post.comments} comments`} el={`${post.comments} σχόλια`} compact /></span>
           <span>{post.shares} shares</span>
         </div>
 

@@ -218,7 +218,7 @@ function MatchCardInner({
           <div className="flex-1 min-w-0 pr-14">
             <Link
               href={`/profiles/${userId}`}
-              className="text-base font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
+              className="card-title text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
             >
               {displayName}
             </Link>
@@ -226,7 +226,7 @@ function MatchCardInner({
               <RoleBadge role={role} size="sm" showIcon />
             </div>
             {headline && (
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2 leading-relaxed">{headline}</p>
+              <p className="card-subtitle mt-1 line-clamp-2">{headline}</p>
             )}
           </div>
         </div>

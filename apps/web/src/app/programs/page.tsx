@@ -7,10 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Search,
   Award,
-  Calendar,
-  MapPin,
   Users,
-  Clock,
   ChevronRight,
   Building2,
   Rocket,
@@ -23,7 +20,6 @@ import {
   BookmarkCheck,
   ArrowRight,
   Zap,
-  Star,
   Filter,
   X,
   Handshake,
@@ -64,6 +60,7 @@ import {
 import { pressableProps } from '@/lib/pressable';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead } from '@/components/common/CardAnatomy';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
   open: 'success',
@@ -236,111 +233,108 @@ function ProgramCard({
   const spotsLeft = program.capacity ? program.capacity - program.participantCount : null;
   const isFull = spotsLeft !== null && spotsLeft <= 0;
 
+  const status = badgeStatus(program.status);
+  const type = badgeType(program.programType);
+  const benefits = ((program.benefits as string[] | undefined) ?? []).slice(0, 3);
+
+  // The Opportunities card, copied: mark and title with the organiser and
+  // kind under it, the state at the right, then the sentence, the facts and
+  // the actions, all on the mark's left edge.
   return (
-    <Card className={cn('transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border">
-            <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-            {/* Stands in for the organisation's logo: an avatar, not decoration. */}
-            <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
-              <TypeIcon className="icon-lg" aria-hidden="true" />
-            </AvatarFallback>
-          </Avatar>
+    <Card className={cn('card-interactive transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40')}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={program.organization?.logoUrl ?? undefined} />
+              {/* Stands in for the organisation's logo: an avatar, not decoration. */}
+              <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                <TypeIcon className="icon-md" aria-hidden="true" />
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={program.title}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                program.organization?.name,
+                <BilingualText key="type" en={type.en} el={type.el} compact />,
+              ]}
+            />
+          )}
+          aside={isEnrolled ? (
+            <Badge variant="outline" className="gap-1 border-primary/30 bg-primary/10 text-xs text-primary-accessible">
+              <CheckCircle2 className="icon-sm" aria-hidden="true" />
+              <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
+            </Badge>
+          ) : (
+            <Badge variant="outline" className={cn('border text-xs', STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'].chip)}>
+              <BilingualText en={status.en} el={status.el} compact />
+            </Badge>
+          )}
+        />
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 justify-between flex-wrap">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold truncate">{program.title}</h3>
-                  {isEnrolled && (
-                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary-accessible border-primary/30 gap-1">
-                      <CheckCircle2 className="icon-sm" aria-hidden="true" />
-                      <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Building2 className="icon-sm flex-shrink-0" />
-                  <span className="truncate">{program.organization?.name}</span>
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5 items-center">
-                <Badge variant="outline" className={cn('text-xs capitalize border', STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'].chip)}>
-                  <BilingualText en={badgeStatus(program.status).en} el={badgeStatus(program.status).el} compact />
-                </Badge>
-                <Badge variant="outline" className="text-xs capitalize text-muted-foreground">
-                  <BilingualText en={badgeType(program.programType).en} el={badgeType(program.programType).el} compact />
-                </Badge>
-              </div>
-            </div>
+        {program.description && (
+          <p className="card-body line-clamp-2 text-muted-foreground">{program.description}</p>
+        )}
 
-            {program.description && (
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{program.description}</p>
-            )}
+        <FactLine items={(program.industries ?? []).slice(0, 5)} />
 
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
-              {program.applicationDeadline && acceptsApplications(program) && deadline !== null && (
-                <span className={cn('flex items-center gap-1', deadline !== null && deadline <= 7 && deadlineUrgencyClass(deadline))}>
-                  <Clock className="icon-sm" />
-                  {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
-                </span>
-              )}
-              {program.startDate && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="icon-sm" />
-                  <BilingualText en={`Starts ${fmtDate(program.startDate, PROGRAM_DATE)}`} el={`Ξεκινά ${fmtDate(program.startDate, PROGRAM_DATE)}`} compact />
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                {program.isRemote ? <Globe className="icon-sm" /> : <MapPin className="icon-sm" />}
-                {program.isRemote ? 'Remote' : (program.location ?? 'On-site')}
+        <FactLine
+          label={bilingualAria('When and where', 'Πότε και πού')}
+          items={[
+            program.applicationDeadline && acceptsApplications(program) && deadline !== null ? (
+              <span key="deadline" className={cn(deadline <= 7 && deadlineUrgencyClass(deadline))}>
+                {deadline > 0
+                  ? <BilingualText en={`${deadline} days to apply`} el={`${deadline} ημέρες για αίτηση`} compact />
+                  : <BilingualText en="Deadline today" el="Λήγει σήμερα" compact />}
               </span>
-              {spotsLeft !== null && (
-                <span className={cn(
-                  'flex items-center gap-1',
-                  isFull ? cn('font-medium', STATUS.danger.icon) : spotsLeft <= 3 ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
-                )}>
-                  <Users className="icon-sm" />
-                  {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
-                </span>
-              )}
-            </div>
+            ) : null,
+            program.startDate ? (
+              <BilingualText key="start" en={`Starts ${fmtDate(program.startDate, PROGRAM_DATE)}`} el={`Ξεκινά ${fmtDate(program.startDate, PROGRAM_DATE)}`} compact />
+            ) : null,
+            program.isRemote
+              ? <BilingualText key="place" en="Remote" el="Εξ αποστάσεως" compact />
+              : program.location ?? <BilingualText key="place" en="On-site" el="Δια ζώσης" compact />,
+            spotsLeft !== null ? (
+              <span key="spots" className={cn(isFull ? cn('font-medium', STATUS.danger.icon) : spotsLeft <= 3 ? cn('font-medium', STATUS.warning.icon) : undefined)}>
+                {isFull
+                  ? <BilingualText en="Full" el="Πλήρες" compact />
+                  : <BilingualText en={`${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`} el={`${spotsLeft} ${spotsLeft !== 1 ? 'θέσεις' : 'θέση'} ακόμη`} compact />}
+              </span>
+            ) : null,
+          ]}
+        />
 
-            <FactLine className="mt-3" items={(program.industries ?? []).slice(0, 5)} />
+        {benefits.length ? (
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground"><BilingualText en="Offers" el="Προσφέρει" compact /></span>
+            {': '}
+            {benefits.join(' · ')}
+          </p>
+        ) : null}
 
-            {(program.benefits as string[] | undefined)?.length ? (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {(program.benefits as string[]).slice(0, 3).map((b, i) => (
-                  <span key={i} className={cn('text-xs flex items-center gap-1', STATUS.success.text)}>
-                    <Star className="icon-sm" />{b}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-
-            <div className="flex items-center gap-2 mt-4">
-              {acceptsApplications(program) && !isEnrolled && !isFull && (
-                <Button size="sm" onClick={(e) => { e.preventDefault(); onApply(program); }}>
-                  <Zap className="icon-sm mr-1.5" aria-hidden="true" />
-                  <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
-                </Button>
-              )}
-              {isEnrolled && (
-                // A state, not an action: it looked like a button and did
-                // nothing. Disabled, so it reads as "Applied, unavailable".
-                <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40" disabled>
-                  <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
-                  <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
-                </Button>
-              )}
-              <Button size="sm" variant="ghost" asChild>
-                <Link href={`/programs/${program.id}`}>
-                  View Details <ArrowRight className="icon-sm ml-1" />
-                </Link>
-              </Button>
-            </div>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          {acceptsApplications(program) && !isEnrolled && !isFull && (
+            <Button size="sm" className="gap-1.5" onClick={(e) => { e.preventDefault(); onApply(program); }}>
+              <BilingualText en={programsEn('apply_now')} el={programsEl('apply_now')} compact />
+              <ArrowRight className="icon-sm" aria-hidden="true" />
+            </Button>
+          )}
+          {isEnrolled && (
+            // A state, not an action: it looked like a button and did
+            // nothing. Disabled, so it reads as "Applied, unavailable".
+            <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40" disabled title={bilingualAria('Your application is in', 'Η αίτησή σας έχει υποβληθεί')}>
+              <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
+              <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
+            </Button>
+          )}
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/programs/${program.id}`}>
+              <BilingualText en="View details" el="Λεπτομέρειες" compact />
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>

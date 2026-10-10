@@ -337,7 +337,7 @@ export default function PrivacyPage() {
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
                     <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
-                  <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
+                  <h2 className="card-title pt-1 text-foreground">{section.title}</h2>
                 </div>
                 <LegalText content={section.content} />
               </CardContent>

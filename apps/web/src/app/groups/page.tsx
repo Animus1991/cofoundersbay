@@ -55,6 +55,7 @@ import { qk } from '@/lib/query-keys';
 
 import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead } from '@/components/common/CardAnatomy';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
 const TYPE_FILTERS = [
@@ -101,7 +102,8 @@ function GroupCard({
           className="h-28 w-full bg-cover bg-center relative"
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
-          <div className="absolute top-2 left-2">
+          {/* On the card's axis, like everything under it. */}
+          <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
             <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
@@ -117,7 +119,7 @@ function GroupCard({
         // block with a faint icon was the tallest thing on the card and said
         // nothing the card's own icon does not.
         <div className={cn('h-10 w-full rounded-t-xl relative', coverTone)}>
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
             <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
               {groupType}
             </span>
@@ -125,35 +127,34 @@ function GroupCard({
         </div>
       )}
       <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-muted text-muted-foreground">
               {group.avatarUrl ? (
-                <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={44} height={44} />
+                <img src={group.avatarUrl} alt={group.name} className="h-10 w-10 object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
               ) : (
                 <Users className="icon-md" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <h3 className="font-display text-sm font-semibold text-foreground truncate">{group.name}</h3>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {group.category && (
-                  <Badge variant="secondary" className="text-xs">{group.category}</Badge>
-                )}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
-                  <span className="capitalize">{group.privacy}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          {group.isMember && <CheckCircle2 className={cn('icon-sm shrink-0 mt-0.5', STATUS.success.icon)} />}
-        </div>
+          )}
+          title={group.name}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                group.category,
+                group.privacy === 'public'
+                  ? <BilingualText key="privacy" en="Public" el="Δημόσια" compact />
+                  : <BilingualText key="privacy" en="Private" el="Ιδιωτική" compact />,
+              ]}
+            />
+          )}
+          asideStays
+          aside={group.isMember ? <CheckCircle2 className={cn('icon-sm shrink-0', STATUS.success.icon)} aria-label={bilingualInline('You are a member', 'Είστε μέλος')} /> : undefined}
+        />
 
         {group.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{group.description}</p>
+          <p className="card-body line-clamp-2 text-muted-foreground">{group.description}</p>
         )}
 
         <FactLine items={group.tags.slice(0, 4)} />
@@ -162,16 +163,12 @@ function GroupCard({
           className="flex items-center justify-between pt-2 border-t border-border"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Users className="icon-sm" />
-              {group.memberCount.toLocaleString('en-GB')}
-            </span>
-            <span className="flex items-center gap-1">
-              <MessageCircle className="icon-sm" />
-              {group.postCount.toLocaleString('en-GB')}
-            </span>
-          </div>
+          <FactLine
+            items={[
+              <BilingualText key="members" en={`${group.memberCount.toLocaleString('en-GB')} members`} el={`${group.memberCount.toLocaleString('el-GR')} μέλη`} compact />,
+              <BilingualText key="posts" en={`${group.postCount.toLocaleString('en-GB')} posts`} el={`${group.postCount.toLocaleString('el-GR')} αναρτήσεις`} compact />,
+            ]}
+          />
           <Button
             variant={group.isMember ? 'outline' : 'default'}
             size="sm"
@@ -182,9 +179,9 @@ function GroupCard({
             {loading ? (
               <Loader2 className="icon-sm animate-spin" />
             ) : group.isMember ? (
-              <><LogOut className="icon-sm" /> Leave</>
+              <><LogOut className="icon-sm" /> <BilingualText en="Leave" el="Αποχώρηση" compact /></>
             ) : (
-              <><UserPlus className="icon-sm" /> Join</>
+              <><UserPlus className="icon-sm" /> <BilingualText en="Join" el="Συμμετοχή" compact /></>
             )}
           </Button>
         </div>

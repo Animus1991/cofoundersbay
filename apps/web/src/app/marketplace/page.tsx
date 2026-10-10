@@ -34,6 +34,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead } from '@/components/common/CardAnatomy';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -170,75 +171,78 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
       featured && 'border-primary/15 bg-primary/[0.03]',
       !provider.isAvailable && 'surface-inactive',
     )}>
-      <CardContent className="flex flex-1 flex-col gap-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-11 w-11 shrink-0 rounded-lg">
+      <CardContent className="flex flex-1 flex-col gap-3">
+        {/* The Opportunities card: the service is the title, its provider the
+            line under it; the sentence, the facts and the foot start on the
+            mark's edge. */}
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={provider.providerAvatar} />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-sm font-semibold leading-snug">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
-                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
-              </div>
-              {/* "Growth Marketing Strategist" is 170px against the 102px
-                  this column gives it at 1024px — the trade an ellipsis makes
-                  here is the whole specialism for one line. */}
-              <p className="text-xs leading-snug text-muted-foreground">{provider.providerTitle}</p>
-              <div className="flex items-center gap-1 mt-1">
+          )}
+          title={provider.title}
+          subtitle={(
+            <span className="inline-flex flex-wrap items-center gap-x-1.5">
+              <span className="font-medium text-foreground">{provider.providerName}</span>
+              {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+              {/* "Growth Marketing Strategist" wraps rather than losing the
+                  whole specialism to an ellipsis. */}
+              <span>· {provider.providerTitle}</span>
+            </span>
+          )}
+          meta={(
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-center gap-1">
                 <Star className="icon-sm fill-status-warning text-status-warning" />
-                <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
-              </div>
-            </div>
-          </div>
-          {/* Their tap target and accessible name (this icon-only button had
-              neither), kept with our icon-size and contrast-safe tokens. */}
-          <button
-            onClick={() => setSaved(!saved)}
-            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
-            aria-label={saved ? 'Remove bookmark' : 'Save provider'}
-          >
-            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
-            <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-          </button>
-        </div>
+                <span className="font-medium text-foreground">{provider.avgRating.toFixed(1)}</span>
+                <span>({provider.reviewCount})</span>
+              </span>
+              {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
+            </span>
+          )}
+          asideStays
+          aside={(
+            /* Their tap target and accessible name (this icon-only button had
+               neither), kept with our icon-size and contrast-safe tokens. */
+            <button
+              onClick={() => setSaved(!saved)}
+              className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
+              aria-label={saved ? 'Remove bookmark' : 'Save provider'}
+            >
+              <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
+              <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
+            </button>
+          )}
+        />
 
-        {/* Service */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1">
-            <CatIcon className={cn('icon-sm shrink-0', catCfg.color)} />
-            <h3 className="font-semibold text-sm">{provider.title}</h3>
-          </div>
-          <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{provider.description}</p>
-        </div>
+        <p className="card-body line-clamp-2 text-muted-foreground">{provider.description}</p>
 
-        {/* Specialties */}
-        <FactLine items={[...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
-
-        {/* Meta */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Clock className="icon-sm" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact /></div>
-          <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
-          <div className="flex items-center gap-1">
-            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-status-success-mark' : 'bg-muted')} />
-            {provider.isAvailable
-              ? <BilingualText en="Available" el="Διαθέσιμος" compact />
-              : <BilingualText en="Fully booked" el="Πλήρης" compact />}
-          </div>
+        <div className="space-y-1">
+          {/* Category, then specialties: facts, one line each. */}
+          <FactLine items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
+          <FactLine
+            items={[
+              provider.responseTime,
+              <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
+              provider.location,
+              <span key="avail" className={provider.isAvailable ? 'text-status-success' : undefined}>
+                {provider.isAvailable
+                  ? <BilingualText en="Available" el="Διαθέσιμος" compact />
+                  : <BilingualText en="Fully booked" el="Πλήρης" compact />}
+              </span>,
+            ]}
+          />
         </div>
 
         {/* Footer */}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
-            <p className="truncate font-semibold text-sm">{priceForDisplay(provider.pricing, primary)}</p>
+            <p className="card-body truncate font-semibold tabular-nums">{priceForDisplay(provider.pricing, primary)}</p>
           </div>
           <div className="flex shrink-0 gap-2">
             {/* Neither had a handler. A listing carries its provider's own
