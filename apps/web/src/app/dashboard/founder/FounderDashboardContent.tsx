@@ -355,8 +355,10 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
           : <Circle className="icon-sm text-muted-foreground" aria-hidden="true" />}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">
+        {/* The priority wraps under the title when both do not fit: in
+            the rail it squeezed the title to one letter. */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="min-w-0 text-sm font-medium">
             <BilingualText en={milestone.titleEn} el={milestone.titleEl} compact wrap />
           </p>
           {/* 'warning', not 'destructive': high priority is not an error state, and
@@ -736,7 +738,7 @@ export default function FounderDashboardContent() {
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="wallet" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
+                  <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} compact />
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
                   <Link href="/fundraising">
@@ -805,7 +807,9 @@ export default function FounderDashboardContent() {
                   </p>
                 )}
                 <div className="space-y-2.5">
-                  <div className="flex flex-col gap-2.5 sm:flex-row">
+                  {/* One column in the rail (two side by side ran past its
+                      edge at 1440), two in the expanded view. */}
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                     <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                       <Link href="/fundraising" className="flex-1">
                         <CfbGlyph name="wallet" className="icon-sm" />
@@ -838,7 +842,7 @@ export default function FounderDashboardContent() {
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="matches" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
+                  <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
                   <Link href="/matches">
@@ -900,7 +904,7 @@ export default function FounderDashboardContent() {
               <div className="flex items-center justify-between gap-2">
                 <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
                   <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
-                  <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
+                  <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} compact />
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="-mr-2 min-w-0 max-w-[50%] gap-1" asChild>
                   <Link href="/milestones">

@@ -32,6 +32,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -541,33 +542,37 @@ export default function DiscoverPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
+                {/* The people as rows on the card, each its circle with the
+                    name and role beside it: no framed chip around a person
+                    inside the card. The strip still scrolls on a phone. */}
+                <div className="-mx-1 flex gap-x-6 gap-y-3 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                   {hits.slice(0, 4).map((h) => (
                     <Link key={h.id} href={`/profiles/${h.userId}`}
-                      className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                        {initialsOf(h.displayName)}
-                      </div>
+                      className="group flex shrink-0 items-center gap-3 rounded-md">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={h.avatarUrl ?? undefined} alt="" />
+                        <AvatarFallback className="bg-muted text-xs font-semibold text-muted-foreground">
+                          {initialsOf(h.displayName)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="min-w-0">
-                        {/* 100px cut "Elena Papadopoulos" by a fifth. These
-                            chips sit in a horizontal scroller, so a wider one
-                            costs nothing but a little scroll. */}
-                        {/* No cap and no ellipsis: these chips sit in a
-                            horizontal scroller and are already `shrink-0`, so a
-                            full name costs a little scroll and nothing else.
-                            Capped at 100px, "Elena Papadopoulos" lost two
-                            thirds of itself. */}
-                        <p className="whitespace-nowrap text-xs font-medium text-foreground">{h.displayName}</p>
+                        {/* No cap and no ellipsis: the strip scrolls, so a
+                            full name costs a little scroll and nothing else
+                            (capped at 100px, "Elena Papadopoulos" lost two
+                            thirds of itself). */}
+                        <p className="whitespace-nowrap text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">{h.displayName}</p>
                         {/* The raw role ("founder") read as a lower-case enum once the
                             DOM pass translated it («ιδρυτής»). */}
-                        <p className="whitespace-nowrap text-xs text-muted-foreground"><StatusText value={h.role} /></p>
+                        <p className="flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+                          <StatusText value={h.role} />
+                          {h.matchScore !== undefined && (
+                            <span className={cn(
+                              'rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
+                              h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip,
+                            )}>{h.matchScore}%</span>
+                          )}
+                        </p>
                       </div>
-                      {h.matchScore !== undefined && (
-                        <span className={cn(
-                          'ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold tabular-nums',
-                          h.matchScore >= 80 ? STATUS.success.chip : h.matchScore >= 60 ? STATUS.info.chip : STATUS.neutral.chip,
-                        )}>{h.matchScore}%</span>
-                      )}
                     </Link>
                   ))}
                 </div>

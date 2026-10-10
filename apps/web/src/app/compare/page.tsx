@@ -167,7 +167,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-[400px]"
+      className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-48 sm:min-h-[400px]"
     >
       <div className="rounded-full bg-primary/10 p-4 mb-3">
         <Plus className="icon-xl text-primary-accessible" />

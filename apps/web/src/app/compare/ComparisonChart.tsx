@@ -54,7 +54,9 @@ export function ComparisonChart({ profiles }: { profiles: CompareProfileMin[] })
             <XAxis type="number" domain={[0, 100]} />
             <YAxis type="category" dataKey="dimension" width={100} tick={{ fontSize: 12 }} />
             <Tooltip />
-            <Legend />
+            {/* The legend names on the caption step, never louder than the
+                card's title (recharts sets them at the root size). */}
+            <Legend formatter={(value) => <span className="text-xs">{value}</span>} />
             {profiles.map((p, i) => (
               <Bar
                 key={p.id}

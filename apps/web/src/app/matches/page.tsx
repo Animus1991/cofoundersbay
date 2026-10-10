@@ -320,16 +320,20 @@ function MatchListRow({
             </Link>
           )}
           subtitle={hit.headline ? <span className="line-clamp-1">{hit.headline}</span> : undefined}
-          meta={hit.location ?? undefined}
-          aside={(
-            <>
-              <Badge variant="outline" className={cn('border text-xs tabular-nums', colors.chip)}>
-                <BilingualText en={`${matchesEn(`tier_${tier}` as const)} · ${score}%`} el={`${matchesEl(`tier_${tier}` as const)} · ${score}%`} compact />
-              </Badge>
+          // The place, and where a commitment stands, on the title's edge;
+          // the tier is the head's one pill at the right.
+          meta={(hit.location || commitment) ? (
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {hit.location ? <span>{hit.location}</span> : null}
               {commitment ? (
-                <Link href={commitment.href} className="rounded-full"><StepChip step={commitment.step} /></Link>
+                <Link href={commitment.href} className="inline-flex rounded-full"><StepChip step={commitment.step} /></Link>
               ) : null}
-            </>
+            </span>
+          ) : undefined}
+          aside={(
+            <Badge variant="outline" className={cn('border text-xs tabular-nums', colors.chip)}>
+              <BilingualText en={`${matchesEn(`tier_${tier}` as const)} · ${score}%`} el={`${matchesEl(`tier_${tier}` as const)} · ${score}%`} compact />
+            </Badge>
           )}
         />
 

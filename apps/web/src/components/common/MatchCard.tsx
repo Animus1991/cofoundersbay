@@ -92,29 +92,28 @@ function getScoreTier(score: number) {
 
 function ScoreBadge({ score }: { score: number }) {
   const { label } = getScoreTier(score);
-  const r = 18, cx = 22, cy = 22;
+  const r = 8, cx = 10, cy = 10;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
 
+  // One line, the ring in front of its words: the score and the tier read
+  // as a state at the head's right (under the headline on a phone), not a
+  // 44px dial with the tier hanging alone beneath it.
   return (
-    <div className="flex flex-col items-center gap-0.5">
-      <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
-        <svg width={44} height={44} viewBox="0 0 44 44">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={1.5} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold))" strokeWidth={1.5}
-            strokeDasharray={`${filled} ${circ - filled}`}
-            strokeDashoffset={circ / 4}
-            strokeLinecap="round"
-            style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
-        </svg>
-        <span className="absolute text-2xs font-medium tabular-nums text-[hsl(var(--ring-gold-ink))]">
-          {score}%
-        </span>
-      </div>
-      <span className="text-xs font-medium text-[hsl(var(--ring-gold-ink))]">
+    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs font-medium text-[hsl(var(--ring-gold-ink))]">
+      <svg width={20} height={20} viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold-track))" strokeWidth={2} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--ring-gold))" strokeWidth={2}
+          strokeDasharray={`${filled} ${circ - filled}`}
+          strokeDashoffset={circ / 4}
+          strokeLinecap="round"
+          style={{ transformOrigin: '10px 10px', transition: 'stroke-dasharray 1s ease' }} />
+      </svg>
+      <span className="tabular-nums">{score}%</span>
+      <span className="min-w-0">
         <BilingualText en={label.en} el={label.el} compact />
       </span>
-    </div>
+    </span>
   );
 }
 
@@ -202,7 +201,13 @@ function MatchCardInner({
             </span>
           )}
           subtitle={headline ? <span className="line-clamp-2">{headline}</span> : undefined}
-          asideStays
+          // Where a commitment stands: a state on the title's edge, under
+          // the headline, so the head keeps one thing at its right.
+          meta={commitment ? (
+            <Link href={commitment.href} onClick={(e) => e.stopPropagation()} className="inline-flex rounded-full" aria-label={bilingualAria(`Commitment with ${displayName}`, `Δέσμευση με ${displayName}`)}>
+              <StepChip step={commitment.step} />
+            </Link>
+          ) : undefined}
           aside={(
             <>
               {/* Selection checkbox (compare mode): beside the score, never
@@ -222,14 +227,7 @@ function MatchCardInner({
                   </span>
                 </button>
               )}
-              <div className="flex flex-col items-end gap-1">
-                <ScoreBadge score={compatibilityScore} />
-                {commitment ? (
-                  <Link href={commitment.href} onClick={(e) => e.stopPropagation()} className="rounded-full" aria-label={bilingualAria(`Commitment with ${displayName}`, `Δέσμευση με ${displayName}`)}>
-                    <StepChip step={commitment.step} />
-                  </Link>
-                ) : null}
-              </div>
+              <ScoreBadge score={compatibilityScore} />
             </>
           )}
         />

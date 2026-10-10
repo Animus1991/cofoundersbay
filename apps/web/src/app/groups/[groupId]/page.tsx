@@ -451,11 +451,12 @@ export default function GroupDetailPage() {
                 being pushed off the card's right edge. */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex min-w-0 items-end gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-muted">
+                {/* The community's mark, as on its card in the directory. */}
+                <div data-card-mark="" data-keep-icon className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-muted">
                   {group.avatarUrl ? (
-                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary-accessible" />
+                    <Users className="h-7 w-7 text-primary-accessible" aria-hidden="true" />
                   )}
                 </div>
                 <div className="min-w-0 pb-1">

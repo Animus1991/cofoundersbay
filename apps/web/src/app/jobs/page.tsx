@@ -102,7 +102,10 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
           )}
           asideStays
           aside={featured ? (
-            <Star role="img" className="icon-sm fill-status-warning text-status-warning" aria-label={bilingualInline('Featured', 'Προτεινόμενη')} />
+            // A state, not decoration: kept through the card's icon rule.
+            <span data-keep-icon role="img" aria-label={bilingualInline('Featured', 'Προτεινόμενη')} className="inline-flex">
+              <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+            </span>
           ) : undefined}
         />
 

@@ -148,8 +148,11 @@ export function RowHead({
   const asidePlace = asideStays
     ? cn(mark ? 'col-start-3' : 'col-start-2', 'row-start-1 justify-end')
     : cn(mark ? 'col-start-2 sm:col-start-3' : 'col-start-1 sm:col-start-2', 'row-start-2 mt-1 sm:row-start-1 sm:mt-0 sm:justify-end');
+  // `data-rail-keep-layout`: the page rail folds every `.grid` inside it to
+  // one column, which stacked the mark over the title (Top Matches in the
+  // founder's rail drew the avatar across the name).
   return (
-    <div className={cn('grid grid-cols-1 items-start gap-x-3', cols, className)}>
+    <div data-rail-keep-layout="" className={cn('grid grid-cols-1 items-start gap-x-3', cols, className)}>
       {mark ? <div className={cn('col-start-1 row-start-1 shrink-0', aside && !asideStays && 'row-span-2 sm:row-span-1')}>{mark}</div> : null}
       <div className={cn('min-w-0 row-start-1', mark ? 'col-start-2' : 'col-start-1')}>
         <Title className="break-words text-sm font-medium text-foreground">{title}</Title>

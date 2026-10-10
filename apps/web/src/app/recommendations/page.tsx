@@ -629,24 +629,23 @@ export default function RecommendationsPage() {
                   </Badge>
                 )}
               />
-              <div className="flex gap-3 overflow-x-auto pb-1">
+              {/* The people as rows on the card's axis, each circle with
+                  the first name and the score beside it, not names centred
+                  under floating avatars. The strip scrolls on a phone. */}
+              <div className="-mx-1 flex gap-x-6 gap-y-3 overflow-x-auto px-1 pb-1 scrollbar-hide sm:flex-wrap">
                 {weeklyRecs.slice(0, 5).map((m) => (
-                  <Link key={m.userId} href={`/profiles/${m.userId}`} className="shrink-0">
-                    <div className="flex flex-col items-center gap-1.5 w-16 text-center group">
-                      <div className="relative">
-                        <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
-                          <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
-                            {m.profile?.displayName?.[0] ?? '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-2xs font-bold px-1 rounded-full">
-                          {m.score}%
-                        </div>
-                      </div>
-                      <p className="text-xs truncate w-full text-muted-foreground group-hover:text-foreground">
+                  <Link key={m.userId} href={`/profiles/${m.userId}`} className="group flex shrink-0 items-center gap-3 rounded-md">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={m.profile?.avatarUrl ?? undefined} alt="" />
+                      <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary-accessible">
+                        {m.profile?.displayName?.[0] ?? '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="whitespace-nowrap text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">
                         {m.profile?.displayName?.split(' ')[0] ?? 'User'}
                       </p>
+                      <p className="text-xs font-medium tabular-nums text-muted-foreground">{m.score}%</p>
                     </div>
                   </Link>
                 ))}
@@ -664,12 +663,12 @@ export default function RecommendationsPage() {
             onClick={() => setShowFilter(p => !p)}
           >
             <Filter className="icon-sm" />
-            Filter
+            <BilingualText en="Filter" el="Φίλτρο" compact />
             {minScore > 0 && <span className="ml-1 text-xs text-primary-accessible font-semibold">≥{minScore}%</span>}
           </Button>
           {showFilter && (
             <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">
-              <span className="text-xs text-muted-foreground shrink-0">Min score:</span>
+              <span className="text-xs text-muted-foreground shrink-0"><BilingualText en="Min score:" el="Ελάχιστος βαθμός:" compact /></span>
               <input
                 type="range"
                 min={0}
@@ -688,8 +687,11 @@ export default function RecommendationsPage() {
             </div>
           )}
           <span className="ml-auto text-xs text-muted-foreground">
-            {recommendations.length} match{recommendations.length !== 1 ? 'es' : ''}
-            {savedIds.size > 0 && ` · ${savedIds.size} saved`}
+            <BilingualText
+              en={`${recommendations.length} match${recommendations.length !== 1 ? 'es' : ''}${savedIds.size > 0 ? ` · ${savedIds.size} saved` : ''}`}
+              el={`${recommendations.length} ${recommendations.length !== 1 ? 'αντιστοιχίσεις' : 'αντιστοίχιση'}${savedIds.size > 0 ? ` · ${savedIds.size} ${savedIds.size !== 1 ? 'αποθηκευμένες' : 'αποθηκευμένη'}` : ''}`}
+              compact
+            />
           </span>
         </div>
 
