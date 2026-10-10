@@ -11,10 +11,8 @@ import {
   Calendar,
   Clock,
   Video,
-  MapPin,
   Plus,
   CheckCircle2,
-  MessageCircle,
   Loader2,
   AlertCircle,
   RefreshCw,
@@ -30,7 +28,9 @@ import { useSession } from '@/hooks/useSession';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
-import { BookingCard } from '@/components/mentoring/BookingCard';
+import { BookingCard, MEETING_TYPE_LABEL } from '@/components/mentoring/BookingCard';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { fromBooking, fromMentorshipSession, isUpcoming, mergeSessions, type UnifiedSession } from '@/lib/mentoring/sessions';
 import {
@@ -44,7 +44,6 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 type SessionActions = {
   onReschedule: (s: MentorshipSessionItem) => void;
@@ -53,7 +52,6 @@ type SessionActions = {
 };
 
 function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: MentorshipSessionItem } & SessionActions) {
-  const fmtDate = useDateFormat();
   const statusColors: Record<string, string> = {
     scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
     completed: 'bg-status-success-bg text-status-success border-status-success-border',
@@ -61,92 +59,78 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
     no_show: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
-  const meetingIcons: Record<string, React.ElementType> = {
-    video: Video,
-    in_person: MapPin,
-    chat: MessageCircle,
-  };
-
-  const MeetingIcon = meetingIcons[session.meetingType || 'video'] || Video;
-
   const scheduledDate = new Date(session.scheduledAt);
-  const formattedDate = fmtDate(scheduledDate, { month: 'short', day: 'numeric', year: 'numeric' });
   const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
   });
+  const meetingLabel = session.meetingType ? MEETING_TYPE_LABEL[session.meetingType] : undefined;
 
+  // The booking card's anatomy: the date tile is the mark, the title and
+  // time beside it, and the facts, agenda and actions on the tile's edge.
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-3 sm:gap-4">
-          <SessionDateTile date={scheduledDate} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold">{session.title || 'Mentorship Session'}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {formattedTime}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-end gap-1.5">
-                <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
-                  <StatusText value={session.status} />
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
-                </Badge>
-              </div>
-            </div>
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={<SessionDateTile date={scheduledDate} />}
+          title={session.title || 'Mentorship Session'}
+          subtitle={formattedTime}
+          aside={(
+            <>
+              <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
+                <StatusText value={session.status} />
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+              </Badge>
+            </>
+          )}
+        />
 
-            <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
-                {session.duration} min
-              </span>
-              {session.meetingType && (
-                <span className="flex items-center gap-1">
-                  <MeetingIcon className="icon-sm" />
-                  {session.meetingType.replace('_', ' ')}
-                </span>
-              )}
-            </div>
+        <FactLine
+          items={[
+            <BilingualText key="len" en={`${session.duration} min`} el={`${session.duration} λεπτά`} compact />,
+            session.meetingType
+              ? meetingLabel
+                ? <BilingualText key="type" en={meetingLabel.en} el={meetingLabel.el} compact />
+                : <StatusText key="type" value={session.meetingType} />
+              : null,
+          ]}
+        />
 
-            {session.agenda && (
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                {session.agenda}
-              </p>
+        {session.agenda && (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">
+            {session.agenda}
+          </p>
+        )}
+
+        {session.status === 'scheduled' && (
+          <CardFoot>
+            {session.meetingUrl && (
+              <Button size="sm" variant="default" asChild>
+                <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
+                  <Video className="icon-sm mr-1" aria-hidden="true" />
+                  <BilingualText en="Join Meeting" el="Συμμετοχή στη συνάντηση" compact />
+                </a>
+              </Button>
             )}
+            {/* Both had no handler. */}
+            <Button size="sm" variant="outline" onClick={() => onReschedule(session)}>
+              <BilingualText en="Reschedule" el="Αλλαγή ώρας" compact />
+            </Button>
+            <Button size="sm" variant="ghost" className="text-destructive-accessible" onClick={() => onCancel(session)}>
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
+            </Button>
+          </CardFoot>
+        )}
 
-            {session.status === 'scheduled' && (
-              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
-                {session.meetingUrl && (
-                  <Button size="sm" variant="default" className="h-7 text-xs" asChild>
-                    <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
-                      <Video className="icon-sm mr-1" />
-                      <BilingualText en="Join Meeting" el="Συμμετοχή στη συνάντηση" compact />
-                    </a>
-                  </Button>
-                )}
-                {/* Both had no handler. */}
-                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onReschedule(session)}>
-                  <BilingualText en="Reschedule" el="Αλλαγή ώρας" compact />
-                </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible" onClick={() => onCancel(session)}>
-                  <BilingualText en="Cancel" el="Ακύρωση" compact />
-                </Button>
-              </div>
-            )}
-
-            {session.status === 'completed' && (
-              <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
-                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => onNotes(session)}>
-                  <BilingualText en="View Notes" el="Προβολή σημειώσεων" compact />
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
+        {session.status === 'completed' && (
+          <CardFoot>
+            <Button size="sm" variant="outline" onClick={() => onNotes(session)}>
+              <BilingualText en="View Notes" el="Προβολή σημειώσεων" compact />
+            </Button>
+          </CardFoot>
+        )}
       </CardContent>
     </Card>
   );

@@ -17,8 +17,6 @@ import {
   Filter,
   Trash2,
   MoreVertical,
-  Users,
-  MapPin,
   MessageCircle,
   GitCompare,
   Zap,
@@ -54,6 +52,8 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
@@ -224,18 +224,18 @@ const MOCK_ACTIVITY: ActivityItem[] = [
   { id: 'a5', startupId: '1', startupName: 'NeuralFlow AI', logoUrl: null, type: 'deck', title: 'Updated pitch deck (v4)', time: '2026-08-31T10:00:00.000Z' },
 ];
 
-const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color: string }> = {
-  milestone: { label: 'Milestone', color: 'bg-status-success-bg text-status-success' },
-  fundraise: { label: 'Fundraise', color: 'bg-status-info-bg text-status-info' },
-  team: { label: 'Team', color: 'bg-status-accent-bg text-status-accent' },
-  deck: { label: 'Deck', color: 'bg-status-warning-bg text-status-warning' },
-  update: { label: 'Update', color: 'bg-muted text-muted-foreground' },
+const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; labelEl: string; color: string }> = {
+  milestone: { label: 'Milestone', labelEl: 'Ορόσημο', color: 'bg-status-success-bg text-status-success' },
+  fundraise: { label: 'Fundraise', labelEl: 'Χρηματοδότηση', color: 'bg-status-info-bg text-status-info' },
+  team: { label: 'Team', labelEl: 'Ομάδα', color: 'bg-status-accent-bg text-status-accent' },
+  deck: { label: 'Deck', labelEl: 'Παρουσίαση', color: 'bg-status-warning-bg text-status-warning' },
+  update: { label: 'Update', labelEl: 'Ενημέρωση', color: 'bg-muted text-muted-foreground' },
   // InvestorDealEvent.type also records these two (schema.prisma). They were
   // missing here while the live mapping cast the API's string straight to
   // this union, so the first stage change on the board threw inside `.map`
   // and blanked the Activity tab.
-  stage_change: { label: 'Stage change', color: 'bg-status-info-bg text-status-info' },
-  note: { label: 'Note', color: 'bg-muted text-muted-foreground' },
+  stage_change: { label: 'Stage change', labelEl: 'Αλλαγή σταδίου', color: 'bg-status-info-bg text-status-info' },
+  note: { label: 'Note', labelEl: 'Σημείωση', color: 'bg-muted text-muted-foreground' },
 };
 
 /** Narrow the API's free-form event type to one this page can render. */
@@ -256,150 +256,154 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
   // Follow the deal when it changes from elsewhere (the assistant, a refetch).
   useEffect(() => setAlertsEnabled(startup.alertsEnabled), [startup.alertsEnabled]);
 
+  // The Opportunities card: the mark and name with the tagline under it,
+  // the alert toggle and menu at the right; facts, scores, the note and the
+  // dates start on the mark's left edge.
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-10 w-10 rounded-lg shrink-0">
-            <AvatarImage src={startup.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-bold">
-              {startup.name[0]}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <Link
-                  href={`/startups/${startup.id}`}
-                  className="font-semibold hover:text-primary-accessible transition-colors"
-                >
-                  {startup.name}
-                </Link>
-                <p className="text-sm text-muted-foreground line-clamp-1">{startup.tagline}</p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button aria-label="Notifications"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  // Toggled local state only; the deal has an alertsEnabled
-                  // column and PATCH writes it.
-                  onClick={() => { const next = !alertsEnabled; setAlertsEnabled(next); if (live) onAlerts(startup, next); }}
-                  aria-pressed={alertsEnabled}
-                  title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
-                >
-                  {alertsEnabled ? (
-                    <Bell className="icon-sm text-muted-foreground" />
-                  ) : (
-                    <BellOff className="icon-sm text-muted-foreground" />
-                  )}
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Open actions for ${startup.name}`}>
-                      <MoreVertical className="icon-sm" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={startup.logoUrl ?? undefined} alt="" />
+              <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                {startup.name[0]}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <Link href={`/startups/${startup.id}`} className="transition-colors hover:text-primary-accessible">
+              {startup.name}
+            </Link>
+          )}
+          subtitle={startup.tagline ? <span className="line-clamp-1">{startup.tagline}</span> : undefined}
+          asideStays
+          aside={(
+            <>
+              <Button aria-label="Notifications"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                // Toggled local state only; the deal has an alertsEnabled
+                // column and PATCH writes it.
+                onClick={() => { const next = !alertsEnabled; setAlertsEnabled(next); if (live) onAlerts(startup, next); }}
+                aria-pressed={alertsEnabled}
+                title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
+              >
+                {alertsEnabled ? (
+                  <Bell className="icon-sm text-muted-foreground" />
+                ) : (
+                  <BellOff className="icon-sm text-muted-foreground" />
+                )}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Open actions for ${startup.name}`}>
+                    <MoreVertical className="icon-sm" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href={`/startups/${startup.id}`}>
+                      <Eye className="mr-2 icon-sm" /> <BilingualText en="View Details" el="Λεπτομέρειες" compact />
+                    </Link>
+                  </DropdownMenuItem>
+                  {/* These four had no handler. A watched startup is a
+                      deal at "discovered", so adding it to the pipeline
+                      moves it to "reviewing" and removing it deletes it. */}
+                  <DropdownMenuItem disabled={!live} onSelect={() => onPromote(startup)}>
+                    <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
+                  </DropdownMenuItem>
+                  {startup.founderId ? (
                     <DropdownMenuItem asChild>
-                      <Link href={`/startups/${startup.id}`}>
-                        <Eye className="mr-2 icon-sm" /> <BilingualText en="View Details" el="Λεπτομέρειες" compact />
+                      <Link href={`/messages?to=${startup.founderId}`}>
+                        <MessageCircle className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Request Intro" el="Αίτημα γνωριμίας" compact />
                       </Link>
                     </DropdownMenuItem>
-                    {/* These four had no handler. A watched startup is a
-                        deal at "discovered", so adding it to the pipeline
-                        moves it to "reviewing" and removing it deletes it. */}
-                    <DropdownMenuItem disabled={!live} onSelect={() => onPromote(startup)}>
-                      <ArrowUpRight className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
-                    </DropdownMenuItem>
-                    {startup.founderId ? (
-                      <DropdownMenuItem asChild>
-                        <Link href={`/messages?to=${startup.founderId}`}>
-                          <MessageCircle className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Request Intro" el="Αίτημα γνωριμίας" compact />
-                        </Link>
-                      </DropdownMenuItem>
-                    ) : (
-                      <UnavailableMenuItem
-                        icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                        en="Request Intro"
-                        el="Αίτημα γνωριμίας"
-                        reasonEn="This startup is not linked to a founder account."
-                        reasonEl="Η startup δεν συνδέεται με λογαριασμό ιδρυτή."
-                      />
-                    )}
+                  ) : (
                     <UnavailableMenuItem
-                      icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                      en="Compare"
-                      el="Σύγκριση"
-                      reasonEn="Deal comparison is not built yet."
-                      reasonEl="Η σύγκριση συμφωνιών δεν υπάρχει ακόμη."
+                      icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                      en="Request Intro"
+                      el="Αίτημα γνωριμίας"
+                      reasonEn="This startup is not linked to a founder account."
+                      reasonEl="Η startup δεν συνδέεται με λογαριασμό ιδρυτή."
                     />
-                    <DropdownMenuItem className="text-destructive-accessible" disabled={!live} onSelect={() => onRemove(startup)}>
-                      <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Remove from Watchlist" el="Αφαίρεση από τη λίστα παρακολούθησης" compact />
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+                  )}
+                  <UnavailableMenuItem
+                    icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Compare"
+                    el="Σύγκριση"
+                    reasonEn="Deal comparison is not built yet."
+                    reasonEl="Η σύγκριση συμφωνιών δεν υπάρχει ακόμη."
+                  />
+                  <DropdownMenuItem className="text-destructive-accessible" disabled={!live} onSelect={() => onRemove(startup)}>
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> <BilingualText en="Remove from Watchlist" el="Αφαίρεση από τη λίστα παρακολούθησης" compact />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        />
 
-            {/* Meta row */}
-            <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="text-2xs"><StatusText value={startup.stage} /></Badge>
-              <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize}</span>
-              <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
-              <span className="flex items-center gap-1 text-primary-accessible font-medium">{startup.raisingAmount}</span>
-            </div>
+        {/* Facts */}
+        <FactLine
+          items={[
+            <StatusText key="stage" value={startup.stage} />,
+            startup.teamSize ? <BilingualText key="team" en={`Team of ${startup.teamSize}`} el={`Ομάδα ${startup.teamSize}`} compact /> : null,
+            startup.location,
+            startup.raisingAmount ? <span key="raising" className="font-medium text-primary-accessible">{startup.raisingAmount}</span> : null,
+          ]}
+        />
 
-            {/* Scores */}
-            <div className="flex items-center gap-4 mt-3">
-              {startup.readinessScore != null && (
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium">{startup.readinessScore}%</span>
-                    {startup.progressChange !== 0 && (
-                      <span className={cn(
-                        'text-2xs flex items-center',
-                        startup.progressChange > 0 ? 'text-status-success' : 'text-status-danger'
-                      )}>
-                        {startup.progressChange > 0 ? <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" /> : <TrendingDown className="h-2.5 w-2.5" aria-hidden="true" />}
-                        {Math.abs(startup.progressChange)}%
-                      </span>
-                    )}
-                  </div>
+        {/* Scores */}
+        {(startup.readinessScore != null || startup.matchScore != null) && (
+          <div className="flex items-end gap-4">
+            {startup.readinessScore != null && (
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center justify-between text-xs">
+                <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium tabular-nums">{startup.readinessScore}%</span>
+                  {startup.progressChange !== 0 && (
+                    <span className={cn(
+                      'flex items-center tabular-nums',
+                      startup.progressChange > 0 ? 'text-status-success' : 'text-status-danger'
+                    )}>
+                      {startup.progressChange > 0 ? <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" /> : <TrendingDown className="h-2.5 w-2.5" aria-hidden="true" />}
+                      {Math.abs(startup.progressChange)}%
+                    </span>
+                  )}
                 </div>
-                <Progress value={startup.readinessScore} className="h-1.5" />
               </div>
-              )}
-              {startup.matchScore != null && (
-              <div className="text-right shrink-0">
-                <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Ταίριασμα" compact /></p>
-                <p className="text-sm font-bold text-primary-accessible">{startup.matchScore}%</p>
-              </div>
-              )}
+              <Progress value={startup.readinessScore} className="h-1.5" />
             </div>
-
-            {/* Notes */}
-            {startup.notes && (
-              <p className="text-xs text-muted-foreground mt-2 line-clamp-1 italic">
-                📝 {startup.notes}
-              </p>
             )}
-
-            {/* Footer */}
-            <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="icon-sm" />{' '}
-                <RelativeTime date={startup.lastActivity} format={formatRelativeTime} />
-              </span>
-              <span className="text-xs text-muted-foreground">
-                <BilingualText en="Watching since" el="Παρακολουθείται από" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} />
-              </span>
+            {startup.matchScore != null && (
+            <div className={cn('shrink-0', startup.readinessScore != null && 'text-right')}>
+              <p className="text-xs text-muted-foreground"><BilingualText en="Match" el="Ταίριασμα" compact /></p>
+              <p className="card-body font-semibold tabular-nums text-primary-accessible">{startup.matchScore}%</p>
             </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Notes */}
+        {startup.notes && (
+          <p className="card-body line-clamp-1 italic text-muted-foreground">
+            📝 {startup.notes}
+          </p>
+        )}
+
+        <CardFoot
+          meta={(
+            <FactLine
+              items={[
+                <span key="activity" className="inline-flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" /><RelativeTime date={startup.lastActivity} format={formatRelativeTime} /></span>,
+                <span key="since"><BilingualText en="Watching since" el="Παρακολουθείται από" compact /> <RelativeTime date={startup.watchedSince} format={formatRelativeTime} /></span>,
+              ]}
+            />
+          )}
+        />
       </CardContent>
     </Card>
   );
@@ -633,31 +637,28 @@ export default function InvestorWatchlistPage() {
               const cfg = ACTIVITY_TYPE_CONFIG[item.type];
               return (
                 <Card key={item.id} className="transition-all hover:border-primary/20">
-                  <CardContent>
-                    <div className="flex items-start gap-3">
-                      <Avatar className="h-9 w-9 rounded-lg shrink-0">
-                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">
-                          {item.startupName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium">{item.startupName}</p>
-                          <Badge variant="secondary" className={cn('text-xs shrink-0', cfg.color)}>
-                            {cfg.label}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-0.5">{item.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          <RelativeTime date={item.time} format={formatRelativeTime} />
-                        </p>
-                      </div>
-                      <Button variant="ghost" size="sm" className="shrink-0" asChild>
-                        <Link href={`/startups/${item.startupId}`}>
-                          <ArrowUpRight className="icon-sm" />
+                  <CardContent className="space-y-3">
+                    <CardHead
+                      mark={(
+                        <Avatar className="h-10 w-10 rounded-xl">
+                          <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                            {item.startupName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      title={(
+                        <Link href={`/startups/${item.startupId}`} className="transition-colors hover:text-primary-accessible">
+                          {item.startupName}
                         </Link>
-                      </Button>
-                    </div>
+                      )}
+                      subtitle={item.title}
+                      meta={<RelativeTime date={item.time} format={formatRelativeTime} />}
+                      aside={(
+                        <Badge variant="secondary" className={cn('text-xs', cfg.color)}>
+                          <BilingualText en={cfg.label} el={cfg.labelEl} compact />
+                        </Badge>
+                      )}
+                    />
                   </CardContent>
                 </Card>
               );

@@ -8,7 +8,9 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline, formatShortDate } from '@/lib/i18n/format';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
@@ -283,43 +285,53 @@ export default function MentorEarningsPage() {
           <TabsContent value="transactions">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en="Session History" el="Ιστορικό συνεδριών" compact /></CardTitle>
+                <CardTitle><BilingualText en="Session History" el="Ιστορικό συνεδριών" compact /></CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border">
+              <CardContent>
+                {/* One row per session, set like the section rows elsewhere:
+                    the mentee's circle, the name over topic and length, and
+                    the amount, state and date at the right - under the line
+                    on a phone. Five columns in one row once drew the name,
+                    amount and duration on top of each other at 390px. */}
+                <div className="card-rows">
                   {transactions.map(tx => (
-                    // Amount and status stack on the right; the date joins the
-                    // topic line below sm. Five columns in one row drew the
-                    // name, amount and duration on top of each other at 390px.
-                    <div key={tx.id} className="flex items-center gap-3 px-4 sm:px-6 py-3 transition-colors hover:bg-muted/30 sm:gap-4">
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
-                          {tx.mentee.name[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{tx.mentee.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {tx.topic} · {tx.duration} min<span className="sm:hidden"> · {formatShortDate(tx.date, primary)}</span>
-                        </p>
-                      </div>
-                      <div className="ml-auto flex shrink-0 flex-col items-end gap-1">
-                        <p className="text-sm font-semibold tabular-nums">{formatCurrency(tx.amount)}</p>
-                        <Badge
-                          variant={tx.status === 'paid' ? 'secondary' : 'outline'}
-                          className={cn(
-                            'text-xs',
-                            tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
-                          )}
-                        >
-                          {tx.status === 'paid' ? (
-                            <><CheckCircle2 className="icon-sm mr-1" /><BilingualText en="Paid" el="Πληρώθηκε" compact /></>
-                          ) : 'Pending'}
-                        </Badge>
-                      </div>
-                      <p className="hidden w-24 shrink-0 text-right text-xs tabular-nums text-muted-foreground sm:block">{formatShortDate(tx.date, primary)}</p>
-                    </div>
+                    <RowHead
+                      key={tx.id}
+                      mark={(
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} alt="" />
+                          <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                            {tx.mentee?.name?.[0] ?? '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      title={<span className="block truncate">{tx.mentee?.name}</span>}
+                      subtitle={(
+                        <FactLine
+                          items={[
+                            tx.topic ? <span key="topic" className="first-letter:uppercase">{tx.topic}</span> : null,
+                            <BilingualText key="len" en={`${tx.duration} min`} el={`${tx.duration} λεπτά`} compact />,
+                          ]}
+                        />
+                      )}
+                      aside={(
+                        <>
+                          <span className="text-sm font-semibold tabular-nums text-foreground">{formatCurrency(tx.amount)}</span>
+                          <Badge
+                            variant={tx.status === 'paid' ? 'secondary' : 'outline'}
+                            className={cn(
+                              'text-xs',
+                              tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
+                            )}
+                          >
+                            {tx.status === 'paid' ? (
+                              <><CheckCircle2 className="icon-sm mr-1" aria-hidden="true" /><BilingualText en="Paid" el="Πληρώθηκε" compact /></>
+                            ) : <BilingualText en="Pending" el="Σε αναμονή" compact />}
+                          </Badge>
+                          <span className="tabular-nums">{formatShortDate(tx.date, primary)}</span>
+                        </>
+                      )}
+                    />
                   ))}
                 </div>
               </CardContent>
@@ -330,7 +342,7 @@ export default function MentorEarningsPage() {
           <TabsContent value="chart">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Monthly Earnings" el="Μηνιαία έσοδα" compact /></CardTitle>
+                <CardTitle><BilingualText en="Monthly Earnings" el="Μηνιαία έσοδα" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-3 h-48">
@@ -350,7 +362,7 @@ export default function MentorEarningsPage() {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="page-stat text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
-                    <p className="text-xs text-muted-foreground">6-month total</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="6-month total" el="Σύνολο εξαμήνου" compact /></p>
                   </div>
                   <div>
                     <p className="page-stat text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
@@ -370,7 +382,7 @@ export default function MentorEarningsPage() {
           {/* Payout */}
           <TabsContent value="payout">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Payout Settings" el="Ρυθμίσεις πληρωμών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
                   <CreditCard className="icon-xl text-muted-foreground" />
@@ -378,22 +390,26 @@ export default function MentorEarningsPage() {
                     <p className="text-sm font-medium"><BilingualText en="No payout method connected" el="Δεν έχει συνδεθεί τρόπος πληρωμής" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Connect Stripe or bank account to receive payouts" el="Συνδέστε Stripe ή τραπεζικό λογαριασμό για να πληρώνεστε" wrap /></p>
                   </div>
-                  <Button size="sm" disabled title="Payout providers are not connected yet">
+                  <Button size="sm" disabled title={bilingualInline('Payout providers are not connected yet', 'Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη')}>
                     <ArrowUpRight className="mr-2 icon-sm" />
                     <BilingualText en="Connect" el="Σύνδεση" compact />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {/* The methods are rows on the card's axis, not framed tiles. */}
+                <ul className="card-rows">
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
-                    <div key={method} className="flex items-center justify-between p-3 rounded-lg border">
+                    <li key={method} className="flex items-center justify-between gap-3">
                       <span className="text-sm font-medium">{method}</span>
-                      <Button variant="outline" size="sm" disabled title="Payout providers are not connected yet"><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
-                    </div>
+                      <Button variant="outline" size="sm" disabled title={bilingualInline('Payout providers are not connected yet', 'Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη')}><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
+                    </li>
                   ))}
-                </div>
+                </ul>
                 <p className="text-xs text-muted-foreground">
-                  Payouts are processed within 2–5 business days after session completion.
-                  Platform fee: 10% per transaction.
+                  <BilingualText
+                    en="Payouts are processed within 2–5 business days after session completion. Platform fee: 10% per transaction."
+                    el="Οι πληρωμές γίνονται εντός 2–5 εργάσιμων ημερών μετά την ολοκλήρωση της συνεδρίας. Προμήθεια πλατφόρμας: 10% ανά συναλλαγή."
+                    wrap
+                  />
                 </p>
               </CardContent>
             </Card>

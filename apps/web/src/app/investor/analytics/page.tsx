@@ -20,7 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getInvestorSummary, listInvestorDeals, PIPELINE_STAGES, type InvestorDeal, type PipelineStage } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -372,33 +372,42 @@ export default function InvestorAnalyticsPage() {
           <TabsContent value="returns" className="mt-6">
             <SectionCard title="Portfolio returns" titleEl="Αποδόσεις χαρτοφυλακίου" icon={Zap} action={{ href: '/investor/portfolio', label: 'Portfolio', labelEl: 'Χαρτοφυλάκιο' }}>
               {holdings.length === 0 && <EmptyLine en="Returns appear once a deal is marked invested." el="Οι αποδόσεις εμφανίζονται όταν μια συμφωνία σημειωθεί ως επένδυση." />}
-              {holdings.map((d) => {
-                const value = d.currentValueCents ?? d.investedCents ?? 0;
-                const multiple = d.investedCents ? value / d.investedCents : 1;
-                return (
-                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{d.name}</p>
-                      <p className="text-xs text-muted-foreground">Invested {money(d.investedCents, d.currency)}</p>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <p className={cn('font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}>{multiple.toFixed(2)}×</p>
-                      <p className="text-xs text-muted-foreground">{money(value, d.currency)} now</p>
-                    </div>
-                  </div>
-                );
-              })}
               {holdings.length > 0 && (
-                <dl className="grid grid-cols-3 gap-3 border-t border-border pt-3 text-sm">
+                // Rows of the section, not tiles: a hairline between them,
+                // the multiple at the right of each name.
+                <ul className="divide-y divide-border">
+                  {holdings.map((d) => {
+                    const value = d.currentValueCents ?? d.investedCents ?? 0;
+                    const multiple = d.investedCents ? value / d.investedCents : 1;
+                    return (
+                      <li key={d.id} className="py-3 first:pt-0 last:pb-0">
+                        <RowHead
+                          title={<span className="block truncate">{d.name}</span>}
+                          subtitle={<BilingualText en={`Invested ${money(d.investedCents, d.currency)}`} el={`Επένδυση ${money(d.investedCents, d.currency)}`} compact />}
+                          asideStays
+                          aside={(
+                            <div className="text-right">
+                              <p className={cn('card-body font-semibold tabular-nums', multiple >= 1 ? 'text-status-success' : 'text-status-danger')}>{multiple.toFixed(2)}×</p>
+                              <p className="text-xs text-muted-foreground"><BilingualText en={`${money(value, d.currency)} now`} el={`${money(value, d.currency)} σήμερα`} compact /></p>
+                            </div>
+                          )}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {holdings.length > 0 && (
+                <dl className="grid grid-cols-3 gap-3 border-t border-border pt-3 card-body">
                   <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επένδυση" compact /></dt>
                     <dd className="font-semibold tabular-nums">{money(investedTotal, currency)}</dd>
                   </div>
-                  <div className="text-center">
+                  <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Current value" el="Τρέχουσα αξία" compact /></dt>
                     <dd className="font-semibold tabular-nums">{money(valueTotal, currency)}</dd>
                   </div>
-                  <div className="text-right">
+                  <div>
                     <dt className="text-xs text-muted-foreground"><BilingualText en="Unrealised MOIC" el="Μη πραγματοποιημένο MOIC" compact /></dt>
                     <dd className={cn('font-semibold tabular-nums', (moic ?? 1) >= 1 ? 'text-status-success' : 'text-status-danger')}>{moic ? `${moic.toFixed(2)}×` : '—'}</dd>
                   </div>

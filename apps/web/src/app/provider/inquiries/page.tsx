@@ -41,7 +41,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 
@@ -83,8 +83,8 @@ function InquiryCard({
         <CardHead
           mark={(
             <Avatar className="h-10 w-10">
-              <AvatarImage src={inquiry.clientAvatar} />
-              <AvatarFallback>{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarImage src={inquiry.clientAvatar} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
           )}
           title={(
@@ -151,8 +151,8 @@ function InquiryCard({
         {/* The service asked about is a fact, the message the body. */}
         <p className="text-xs font-medium text-muted-foreground">{inquiry.service}</p>
         <p className="card-body text-muted-foreground">{inquiry.message}</p>
-            {inquiry.status === 'new' && (
-              <div className="flex gap-2 border-t border-border pt-3">
+        {inquiry.status === 'new' && (
+          <CardFoot>
                 {/* Both had no handler; they do what the menu's Reply and
                     View Profile do. */}
                 <Button
@@ -171,10 +171,10 @@ function InquiryCard({
                     <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                  <Button size="sm" variant="outline" disabled title={bilingualInline('This client has no profile to open', 'Ο πελάτης δεν έχει προφίλ για προβολή')}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
                 )}
-              </div>
-            )}
+          </CardFoot>
+        )}
       </CardContent>
     </Card>
   );

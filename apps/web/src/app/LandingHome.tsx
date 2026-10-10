@@ -243,7 +243,7 @@ function SectionHeading({ eyebrow, title, lead }: { eyebrow: Pair; title: Pair; 
       <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl"><T p={title} wrap /></h2>
       {/* Under the heading on every width: on a phone the heading sits on
           the 15.343 title step and an unclassed lead (16.327) outranked it. */}
-      {lead ? <p className="mt-3 text-sm text-muted-foreground sm:text-base"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
+      {lead ? <p className="mt-3 text-sm text-muted-foreground sm:text-lg"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
     </div>
   );
 }
@@ -389,7 +389,7 @@ export function LandingHome() {
             ))}
           </ol>
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
-            <p className="text-sm font-medium text-foreground sm:text-base">
+            <p className="text-sm font-medium text-foreground sm:text-lg">
               <BilingualText en="The agreement is the threshold, not the ceiling." el="Η συμφωνία είναι το κατώφλι, όχι το ταβάνι." wrap />
             </p>
             <ul className="flex flex-wrap justify-center gap-1.5" aria-label="What continues after the agreement · Τι συνεχίζεται μετά τη συμφωνία">

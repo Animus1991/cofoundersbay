@@ -16,8 +16,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -27,6 +26,7 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { usePageList } from '@/lib/page-controls';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 
 type Review = {
   id: string;
@@ -42,70 +42,63 @@ type Review = {
 };
 
 function ReviewCard({ review }: { review: Review }) {
+  // The Endorsements card: the client's avatar and name with their company
+  // under it and the rating beside it; the service, the review, your
+  // response and the foot start on the avatar's edge.
   return (
-    <Card>
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={review.clientAvatar} />
-            <AvatarFallback>{review.clientName[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{review.clientName}</span>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          'h-4 w-4',
-                          i < review.rating
-                            ? 'fill-status-warning text-status-warning'
-                            : 'text-muted-foreground/30'
-                        )} aria-hidden="true" />
-                    ))}
-                  </div>
-                </div>
-                {review.clientCompany && (
-                  <p className="text-sm text-muted-foreground">{review.clientCompany}</p>
-                )}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                <RelativeTime date={review.date} format={formatRelativeTime} />
-              </span>
-            </div>
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={review.clientAvatar} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{review.clientName[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
+          title={review.clientName}
+          subtitle={review.clientCompany || undefined}
+          aside={(
+            <span className="flex items-center gap-0.5" role="img" aria-label={bilingualInline(`${review.rating} of 5 stars`, `${review.rating} από 5 αστέρια`)}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    'icon-sm',
+                    i < review.rating
+                      ? 'fill-status-warning text-status-warning'
+                      : 'text-muted-foreground/30'
+                  )} aria-hidden="true" />
+              ))}
+            </span>
+          )}
+        />
 
-            <Badge variant="secondary" className="mt-2 text-xs">
-              {review.service}
-            </Badge>
-
-            <p className="text-sm mt-2">{review.comment}</p>
-
-            {review.response && (
-              <div className="mt-3 border-t border-border pt-3">
-                <p className="text-xs font-medium text-muted-foreground mb-1"><BilingualText en="Your Response" el="Η απάντησή σας" compact /></p>
-                <p className="text-sm">{review.response}</p>
-              </div>
-            )}
-
-            <div className="flex items-center gap-4 mt-3">
-              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
-                <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
-                {/* Nobody can mark a review helpful — there is no field
-                    and no endpoint — so the count is not shown. */}
-                <BilingualText en="Helpful" el="Χρήσιμο" compact />
-              </Button>
-              {!review.response && (
-                <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Responses to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
-                  <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                  <BilingualText en="Respond" el="Απάντηση" compact />
-                </Button>
-              )}
-            </div>
-          </div>
+        <div className="space-y-1.5">
+          {review.service ? <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{review.service}</p> : null}
+          <p className="card-body first-letter:uppercase">{review.comment}</p>
         </div>
+
+        {review.response && (
+          <div className="space-y-1 border-t border-border pt-3">
+            <p className="text-xs font-medium text-muted-foreground"><BilingualText en="Your Response" el="Η απάντησή σας" compact /></p>
+            <p className="card-body text-muted-foreground">{review.response}</p>
+          </div>
+        )}
+
+        <CardFoot meta={<RelativeTime date={review.date} format={formatRelativeTime} />}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
+            <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
+            {/* Nobody can mark a review helpful — there is no field
+                and no endpoint — so the count is not shown. */}
+            <BilingualText en="Helpful" el="Χρήσιμο" compact />
+          </Button>
+          {!review.response && (
+            <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Responses to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
+              <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en="Respond" el="Απάντηση" compact />
+            </Button>
+          )}
+        </CardFoot>
       </CardContent>
     </Card>
   );

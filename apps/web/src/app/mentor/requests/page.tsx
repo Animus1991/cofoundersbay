@@ -33,6 +33,8 @@ import {
   type MentorRequestItem,
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { StatusText } from '@/components/common/StatusText';
 
 type RequestCardProps = {
   request: MentorRequestItem;
@@ -63,95 +65,90 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
 
   return (
     <Card className={cn(
-      'transition-all',
-      request.status === 'pending' && 'border-status-warning-border'
+      'transition-all hover:border-primary/20',
+      // Waiting on the reader: a warning edge, as on Endorsements.
+      request.status === 'pending' && 'border-l-2 border-l-status-warning'
     )}>
-      <CardContent>
-        <div className="flex gap-4">
-          <Link href={`/profiles/${request.requesterId}`} aria-label={`${displayName}`}>
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={request.requester?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <Link href={`/profiles/${request.requesterId}`} className="font-medium hover:text-primary-accessible transition-colors">
-                  {displayName}
-                </Link>
-                {request.requester?.headline && (
-                  <p className="text-sm text-muted-foreground line-clamp-1">
-                    {request.requester.headline}
-                  </p>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Link href={`/profiles/${request.requesterId}`} aria-label={`${displayName}`}>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={request.requester?.avatarUrl || undefined} alt="" />
+                <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
+          title={(
+            <Link href={`/profiles/${request.requesterId}`} className="hover:text-primary-accessible transition-colors">
+              {displayName}
+            </Link>
+          )}
+          subtitle={request.requester?.headline ? <span className="line-clamp-1">{request.requester.headline}</span> : undefined}
+          aside={(
+            <Badge variant="outline" className={cn('text-xs', statusColors[request.status])}>
+              {request.status === 'pending' && <Clock className="icon-sm mr-1" aria-hidden="true" />}
+              {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />}
+              {request.status === 'declined' && <XCircle className="icon-sm mr-1" aria-hidden="true" />}
+              {statusLabel ? <BilingualText en={statusLabel.en} el={statusLabel.el} compact /> : <StatusText value={request.status} />}
+            </Badge>
+          )}
+        />
+
+        {/* The message and the focus areas start on the avatar's edge. */}
+        {request.message ? (
+          <p className="card-body line-clamp-2 text-muted-foreground">
+            &ldquo;{request.message}&rdquo;
+          </p>
+        ) : null}
+
+        <FactLine items={request.focusAreas ?? []} />
+
+        {/* Wraps: at 390px the date and three buttons were 15px wider
+            than the card, and the page scrolled sideways. */}
+        <CardFoot meta={<BilingualText en={formattedDate} el={formattedDateEl} compact />}>
+          {request.status === 'pending' && (
+            <>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={onAccept}
+                disabled={isResponding}
+              >
+                {isResponding ? (
+                  <Loader2 className="icon-sm mr-1 animate-spin" aria-hidden="true" />
+                ) : (
+                  <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />
                 )}
-              </div>
-              <Badge variant="outline" className={cn('text-xs', statusColors[request.status])}>
-                {request.status === 'pending' && <Clock className="icon-sm mr-1" aria-hidden="true" />}
-                {request.status === 'accepted' && <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />}
-                {request.status === 'declined' && <XCircle className="icon-sm mr-1" aria-hidden="true" />}
-                {statusLabel ? <BilingualText en={statusLabel.en} el={statusLabel.el} compact /> : request.status}
-              </Badge>
-            </div>
-
-            <p className="text-sm mt-2 text-muted-foreground line-clamp-2">
-              "{request.message}"
-            </p>
-
-            <FactLine className="mt-2" items={request.focusAreas ?? []} />
-
-            {/* Wraps: at 390px the date and three buttons were 15px wider
-                than the card, and the page scrolled sideways. */}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs text-muted-foreground">
-                <BilingualText en={formattedDate} el={formattedDateEl} compact />
-              </span>
-              {request.status === 'pending' && (
-                <div className="flex flex-wrap gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="default" 
-                    className="h-7 text-xs" 
-                    onClick={onAccept}
-                    disabled={isResponding}
-                  >
-                    {isResponding ? (
-                      <Loader2 className="icon-sm mr-1 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />
-                    )}
-                    <BilingualText en="Accept" el="Αποδοχή" compact />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-7 text-xs" 
-                    onClick={onDecline}
-                    disabled={isResponding}
-                  >
-                    <BilingualText en="Decline" el="Απόρριψη" compact />
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs" asChild>
-                    <Link href={`/messages?to=${request.requesterId}`}>
-                      <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
-                      <BilingualText en="Message" el="Μήνυμα" compact />
-                    </Link>
-                  </Button>
-                </div>
-              )}
-              {request.status === 'accepted' && (
-                <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
-                  <Link href={`/mentor/sessions?new=1&mentee=${request.requesterId}`}>
-                    <Calendar className="icon-sm mr-1" aria-hidden="true" />
-                    <BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact />
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+                <BilingualText en="Accept" el="Αποδοχή" compact />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onDecline}
+                disabled={isResponding}
+              >
+                <BilingualText en="Decline" el="Απόρριψη" compact />
+              </Button>
+              <Button size="sm" variant="ghost" asChild>
+                <Link href={`/messages?to=${request.requesterId}`}>
+                  <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
+                  <BilingualText en="Message" el="Μήνυμα" compact />
+                </Link>
+              </Button>
+            </>
+          )}
+          {request.status === 'accepted' && (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/mentor/sessions?new=1&mentee=${request.requesterId}`}>
+                <Calendar className="icon-sm mr-1" aria-hidden="true" />
+                <BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact />
+              </Link>
+            </Button>
+          )}
+        </CardFoot>
       </CardContent>
     </Card>
   );

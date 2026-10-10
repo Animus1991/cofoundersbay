@@ -111,7 +111,9 @@ export default function DiscoverPage() {
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [promotedIds, setPromotedIds] = useState<string[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // The first search starts on mount (150ms debounce), so the page opens
+  // loading: starting at false showed "No profiles found" until it answered.
+  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState<'search' | 'suggestions' | 'matches'>('search');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');

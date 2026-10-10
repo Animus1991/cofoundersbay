@@ -11,7 +11,6 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Calendar,
   MessageSquare,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -45,6 +44,8 @@ import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePag
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -110,105 +111,101 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
   const config = statusConfig[project.status];
   const StatusIcon = config.icon;
 
+  // The Connections card: the client's avatar and name with the state beside
+  // it and the company under it, the menu at the right; the service, the
+  // progress, the facts and the actions start on the avatar's edge.
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={project.clientAvatar} />
-            <AvatarFallback>{project.clientName[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{project.clientName}</span>
-                  <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 icon-sm" />
-                    <StatusText value={project.status} />
-                  </Badge>
-                </div>
-                {project.clientCompany && (
-                  <p className="text-sm text-muted-foreground">{project.clientCompany}</p>
-                )}
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open project actions for ${project.clientName}`}>
-                    <MoreVertical className="icon-sm" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {/* All four had no handler. A project is an accepted service
-                      inquiry: it can be completed (status 'completed'), and
-                      its client messaged; it has no progress field to set. */}
-                  <DropdownMenuItem onSelect={() => onView(project)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
-                  <UnavailableMenuItem
-                    en="Update Progress"
-                    el="Ενημέρωση προόδου"
-                    reasonEn="Projects do not track progress yet."
-                    reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο."
-                  />
-                  {project.clientId ? (
-                    <DropdownMenuItem asChild>
-                      <Link href={`/messages?to=${project.clientId}`}><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></Link>
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem disabled><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    disabled={!onComplete || project.status === 'completed'}
-                    onSelect={() => onComplete?.(project)}
-                  >
-                    <BilingualText en="Mark Complete" el="Σήμανση ως ολοκληρωμένο" compact />
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={project.clientAvatar} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{project.clientName[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="min-w-0 break-words">{project.clientName}</span>
+              <Badge variant="outline" className={cn('text-xs', config.color)}>
+                <StatusIcon className="mr-1 icon-sm" aria-hidden="true" />
+                <StatusText value={project.status} />
+              </Badge>
+            </span>
+          )}
+          subtitle={project.clientCompany || undefined}
+          asideStays
+          aside={(
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open project actions for ${project.clientName}`}>
+                  <MoreVertical className="icon-sm" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {/* All four had no handler. A project is an accepted service
+                    inquiry: it can be completed (status 'completed'), and
+                    its client messaged; it has no progress field to set. */}
+                <DropdownMenuItem onSelect={() => onView(project)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
+                <UnavailableMenuItem
+                  en="Update Progress"
+                  el="Ενημέρωση προόδου"
+                  reasonEn="Projects do not track progress yet."
+                  reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο."
+                />
+                {project.clientId ? (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/messages?to=${project.clientId}`}><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></Link>
                   </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                ) : (
+                  <DropdownMenuItem disabled><BilingualText en="Message Client" el="Μήνυμα στον πελάτη" compact /></DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  disabled={!onComplete || project.status === 'completed'}
+                  onSelect={() => onComplete?.(project)}
+                >
+                  <BilingualText en="Mark Complete" el="Σήμανση ως ολοκληρωμένο" compact />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
 
-            <Badge variant="secondary" className="mt-2 text-xs">
-              {project.service}
-            </Badge>
+        {project.service ? <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{project.service}</p> : null}
 
-            <div className="mt-3">
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
-                <span className="font-medium">{project.progress}%</span>
-              </div>
-              <Progress value={project.progress} className="h-2" />
-            </div>
-
-            <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
-                Due: {project.dueDate || '—'}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
-                Updated: <RelativeTime date={project.lastUpdate} format={formatRelativeTime} />
-              </span>
-              <span className="font-medium text-foreground">{project.amount}</span>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              {/* Neither had a handler. */}
-              {project.clientId ? (
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/messages?to=${project.clientId}`}>
-                    <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                    <BilingualText en="Message" el="Μήνυμα" compact />
-                  </Link>
-                </Button>
-              ) : (
-                <Button size="sm" variant="outline" disabled>
-                  <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                  <BilingualText en="Message" el="Μήνυμα" compact />
-                </Button>
-              )}
-              <Button size="sm" disabled title="Projects do not track progress yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
-            </div>
+        <div>
+          <div className="mb-1 flex items-center justify-between text-xs">
+            <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
+            <span className="font-medium tabular-nums">{project.progress}%</span>
           </div>
+          <Progress value={project.progress} className="h-2" />
         </div>
+
+        <FactLine
+          items={[
+            <BilingualText key="due" en={`Due: ${project.dueDate || '—'}`} el={`Προθεσμία: ${project.dueDate || '—'}`} compact />,
+            <span key="updated"><BilingualText en="Updated:" el="Ενημέρωση:" compact /> <RelativeTime date={project.lastUpdate} format={formatRelativeTime} /></span>,
+            project.amount ? <span key="amount" className="font-medium tabular-nums text-foreground">{project.amount}</span> : null,
+          ]}
+        />
+
+        <CardFoot>
+          {/* Neither had a handler. */}
+          {project.clientId ? (
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/messages?to=${project.clientId}`}>
+                <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Message" el="Μήνυμα" compact />
+              </Link>
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" disabled title={bilingualInline('This client has no account to message', 'Ο πελάτης δεν έχει λογαριασμό για μήνυμα')}>
+              <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en="Message" el="Μήνυμα" compact />
+            </Button>
+          )}
+          <Button size="sm" disabled title="Projects do not track progress yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
+        </CardFoot>
       </CardContent>
     </Card>
   );

@@ -34,6 +34,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { mentorDemoRating } from '@/lib/demo/mentor-world';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 
 import { pressableProps } from '@/lib/pressable';
 const INDUSTRIES = [
@@ -124,8 +126,8 @@ export default function MentorProfilePage() {
       actions={
         <>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
-            Save Profile
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
+            <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
           </Button>
         </>
       }
@@ -133,34 +135,43 @@ export default function MentorProfilePage() {
       <div className="space-y-6">
         {/* Preview Card */}
         <Card className="border-primary/15 bg-primary/[0.03]">
-          <CardContent>
-            <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 ring-2 ring-primary/30">
-                <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold">
-                  {displayName[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="font-semibold text-lg">{displayName}</h2>
+          <CardContent className="space-y-3">
+            {/* The preview reads like a person's card elsewhere: the circle,
+                the name over the headline, and the facts on its edge. */}
+            <CardHead
+              mark={(
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                    {displayName[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              titleAs="h2"
+              title={(
+                <span className="inline-flex flex-wrap items-center gap-2">
+                  {displayName}
                   <PersonVerifiedBadge userId={me?.id ?? ''} />
-                  <Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {headline || 'Add your headline below...'}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {ratingValue != null ? `${ratingValue.toFixed(1)}${ratingNote}` : 'No reviews yet'}</span>
-                  <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
-                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
-                  <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
-                    <DollarSign className="icon-sm" />
-                    {isFree ? 'Free' : `$${hourlyRate}/hr`}
-                  </span>
-                </div>
-              </div>
-            </div>
+                </span>
+              )}
+              subtitle={headline || <BilingualText en="Add your headline below…" el="Προσθέστε τον τίτλο σας παρακάτω…" compact />}
+              aside={<Badge variant="secondary" className="text-xs"><BilingualText en="Mentor" el="Μέντορας" compact /></Badge>}
+            />
+            <FactLine
+              items={[
+                <span key="rating" className="inline-flex items-center gap-1">
+                  <Star className="icon-sm text-status-warning" aria-hidden="true" />
+                  {ratingValue != null
+                    ? <BilingualText en={`${ratingValue.toFixed(1)}${ratingNote}`} el={`${ratingValue.toFixed(1)}${demoRating ? ` (${demoRating.count} αξιολογήσεις)` : ''}`} compact />
+                    : <BilingualText en="No reviews yet" el="Καμία αξιολόγηση ακόμη" compact />}
+                </span>,
+                <BilingualText key="len" en={`${sessionDuration} min sessions`} el={`Συνεδρίες ${sessionDuration} λεπτών`} compact />,
+                <BilingualText key="hours" en={`${hoursPerWeek}h/week`} el={`${hoursPerWeek} ώρες/εβδομάδα`} compact />,
+                <span key="price" className={cn(isFree && 'text-status-success')}>
+                  {isFree ? <BilingualText en="Free" el="Δωρεάν" compact /> : <BilingualText en={`$${hourlyRate}/hr`} el={`$${hourlyRate}/ώρα`} compact />}
+                </span>,
+              ]}
+            />
           </CardContent>
         </Card>
 
@@ -174,7 +185,7 @@ export default function MentorProfilePage() {
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="About You" el="Σχετικά με εσάς" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="About You" el="Σχετικά με εσάς" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="mentor-headline"><BilingualText en="Headline" el="Τίτλος" compact /></Label>
@@ -236,7 +247,7 @@ export default function MentorProfilePage() {
           {/* Expertise */}
           <TabsContent value="expertise" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries" el="Κλάδοι" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Industries" el="Κλάδοι" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -258,7 +269,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -280,7 +291,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Expertise Areas" el="Πεδία εξειδίκευσης" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Expertise Areas" el="Πεδία εξειδίκευσης" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {EXPERTISE_AREAS.map(area => (
@@ -305,7 +316,7 @@ export default function MentorProfilePage() {
           {/* Pricing & Formats */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Session Formats" el="Μορφές συνεδριών" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Session Formats" el="Μορφές συνεδριών" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {[
@@ -339,7 +350,7 @@ export default function MentorProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing" el="Τιμολόγηση" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Pricing" el="Τιμολόγηση" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between border-t border-border pt-4">
                   <div>

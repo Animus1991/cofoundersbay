@@ -15,7 +15,6 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -33,6 +32,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 
 type Review = {
   id: string;
@@ -47,7 +47,7 @@ type Review = {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5" role="img" aria-label={bilingualInline(`${rating} of 5 stars`, `${rating} από 5 αστέρια`)}>
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
@@ -63,39 +63,33 @@ function StarRating({ rating }: { rating: number }) {
 
 function ReviewCard({ review }: { review: Review }) {
   return (
-    <Card>
-      <CardContent>
-        <div className="flex items-start gap-4">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={review.menteeAvatar} />
-            <AvatarFallback>{review.mentee[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="font-medium">{review.mentee}</span>
-                <div className="flex items-center gap-2 mt-1">
-                  <StarRating rating={review.rating} />
-                  <Badge variant="secondary" className="text-xs">{review.sessionType}</Badge>
-                </div>
-              </div>
-              <span className="text-xs text-muted-foreground">{review.date}</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
-            <div className="flex items-center gap-4 mt-3">
-              {/* Neither had a handler, and reviews have no helpful count or
-                  reply field to write - the same as on the provider side. */}
-              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
-                <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
-                <BilingualText en={`Helpful (${review.helpful})`} el={`Χρήσιμο (${review.helpful})`} compact />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs" disabled title={bilingualInline('Replies to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
-                <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-                <BilingualText en="Reply" el="Απάντηση" compact />
-              </Button>
-            </div>
-          </div>
-        </div>
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={review.menteeAvatar} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{review.mentee[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
+          title={review.mentee}
+          subtitle={review.sessionType}
+          meta={<StarRating rating={review.rating} />}
+        />
+        {/* The quote starts on the avatar's edge, as on Endorsements. */}
+        <p className="card-body text-muted-foreground">{review.comment}</p>
+        <CardFoot meta={review.date || undefined}>
+          {/* Neither had a handler, and reviews have no helpful count or
+              reply field to write - the same as on the provider side. */}
+          <Button variant="ghost" size="sm" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
+            <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
+            <BilingualText en={`Helpful (${review.helpful})`} el={`Χρήσιμο (${review.helpful})`} compact />
+          </Button>
+          <Button variant="ghost" size="sm" disabled title={bilingualInline('Replies to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
+            <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+            <BilingualText en="Reply" el="Απάντηση" compact />
+          </Button>
+        </CardFoot>
       </CardContent>
     </Card>
   );

@@ -67,6 +67,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 
 interface Mentor {
   id: string;
@@ -141,97 +142,97 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
       <CardContent className="space-y-3">
-        {/* Header row */}
-        <div className="flex items-start gap-3">
-          <div className="relative shrink-0">
-            <Avatar className="h-11 w-11 ring-2 ring-primary/20">
-              <AvatarImage src={mentor.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold text-sm">
-                {initialsOf(mentor.displayName)}
-              </AvatarFallback>
-            </Avatar>
-            {availCfg && <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} aria-hidden="true" />}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Link href={`/profiles/${mentor.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
+        <CardHead
+          mark={(
+            <div className="relative">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={mentor.avatarUrl ?? undefined} alt="" />
+                <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
+                  {initialsOf(mentor.displayName)}
+                </AvatarFallback>
+              </Avatar>
+              {availCfg && <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} aria-hidden="true" />}
+            </div>
+          )}
+          title={(
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              <Link href={`/profiles/${mentor.id}`} className="person-name transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
               {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {mentor.isFeatured && (
-                <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0.5">
+                <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0.5 font-normal">
                   <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />
                   <BilingualText en="Featured" el="Προτεινόμενος" compact />
                 </Badge>
               )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
-              {/* Search results carry no rating, so a star with "New" beside
-                  every mentor claimed each one was unreviewed. The slot shows
-                  a rating only when one is known. */}
-              {mentor.rating > 0 && (
-                <span className="flex items-center gap-0.5">
-                  <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
-                  <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
-                  {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
-                </span>
-              )}
-              {mentor.location && (
-                <span className="flex items-center gap-1"><MapPin className="icon-sm" aria-hidden="true" />{mentor.location}</span>
-              )}
-              {mentor.isRemote && (
-                <span className="flex items-center gap-1"><Globe className="icon-sm text-status-info" aria-hidden="true" /><BilingualText en="Remote" el="Εξ αποστάσεως" compact /></span>
-              )}
-            </div>
-          </div>
-
-          {/* Match score pill */}
-          {matchPct != null && (
-            <div className="shrink-0 flex flex-col items-center gap-0.5">
-              <div className={cn(
-                'flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold ring-2',
-                matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
-                : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-status-success'
-                : 'bg-muted text-muted-foreground ring-border',
-              )}>
-                {matchPct}%
-              </div>
-              <span className="text-xs text-muted-foreground"><BilingualText en="match" el="ταίριασμα" compact /></span>
-            </div>
+            </span>
           )}
-        </div>
+          // Search results carry no rating, so a star with "New" beside
+          // every mentor claimed each one was unreviewed. The slot shows a
+          // rating only when one is known.
+          meta={(
+            <FactLine
+              items={[
+                mentor.rating > 0 ? (
+                  <span key="rating" className="inline-flex items-center gap-0.5">
+                    <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+                    <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
+                    {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
+                  </span>
+                ) : null,
+                mentor.location || null,
+                mentor.isRemote ? <BilingualText key="remote" en="Remote" el="Εξ αποστάσεως" compact /> : null,
+              ]}
+            />
+          )}
+          // The match score is the head's one state: a pill at the right.
+          aside={matchPct != null ? (
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-xs tabular-nums',
+                matchPct >= 85 ? 'border-primary/30 bg-primary/10 text-primary-accessible'
+                : matchPct >= 70 ? 'border-status-success-border bg-status-success-bg text-status-success'
+                : 'text-muted-foreground',
+              )}
+            >
+              <BilingualText en={`${matchPct}% match`} el={`${matchPct}% ταίριασμα`} compact />
+            </Badge>
+          ) : undefined}
+        />
 
-        <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{mentor.bio}</p>
+        <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{mentor.bio}</p>
 
         {/* Expertise: one fact line */}
         <FactLine items={[...mentor.expertise.slice(0, 4), mentor.expertise.length > 4 ? `+${mentor.expertise.length - 4}` : null]} />
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-2">
-            {mentor.hourlyRate ? (
-              <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="icon-sm text-muted-foreground" aria-hidden="true" />{mentor.hourlyRate}
-                <BilingualText en="/hr" el="/ώρα" compact />
-              </span>
-            ) : (
-              <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
-                <BilingualText en="Free" el="Δωρεάν" compact />
-              </Badge>
-            )}
-            {availCfg && (
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', availCfg.bg, availCfg.color)}>
-                <BilingualText en={availCfg.en} el={availCfg.el} compact />
-              </span>
-            )}
-          </div>
-          <Button size="sm" onClick={onBook} className="gap-1.5 h-8 text-xs" aria-label={bilingualInline(`Book a session with ${mentor.displayName}`, `Κράτηση συνεδρίας με ${mentor.displayName}`)}>
+        <CardFoot
+          meta={(
+            <span className="flex flex-wrap items-center gap-2">
+              {mentor.hourlyRate ? (
+                <span className="font-semibold tabular-nums text-foreground">
+                  ${mentor.hourlyRate}
+                  <BilingualText en="/hr" el="/ώρα" compact />
+                </span>
+              ) : (
+                <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
+                  <BilingualText en="Free" el="Δωρεάν" compact />
+                </Badge>
+              )}
+              {availCfg && (
+                <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', availCfg.bg, availCfg.color)}>
+                  <BilingualText en={availCfg.en} el={availCfg.el} compact />
+                </span>
+              )}
+            </span>
+          )}
+        >
+          <Button size="sm" onClick={onBook} className="gap-1.5" aria-label={bilingualInline(`Book a session with ${mentor.displayName}`, `Κράτηση συνεδρίας με ${mentor.displayName}`)}>
             <Calendar className="icon-sm" aria-hidden="true" />
             <BilingualText en="Book" el="Κράτηση" compact />
           </Button>
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -407,58 +408,57 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
   const end = u.endAt ? new Date(u.endAt) : null;
   const other = u.counterpart;
   const home = rel.mentorId === userId ? '/mentor/sessions' : '/coaching';
+  // The booking card's anatomy: the date tile is the mark, and the facts
+  // and the link on the tile's edge.
   return (
     <Card>
-      <CardContent>
-        <div className="flex gap-3 sm:gap-4">
-          <SessionDateTile date={start} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2">
-                  <Link href={`/profiles/${other.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
-                    {other.displayName}
-                  </Link>
-                  <span className="text-xs text-muted-foreground">
-                    {rel.mentorId === userId
-                      ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
-                      : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  <LocalTime value={start} />
-                  {end ? <> {' – '} <LocalTime value={end} /> </> : null}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center justify-end gap-1.5">
-                <Badge variant="outline" className="text-xs">
-                  <StatusText value={u.status} />
-                </Badge>
-                <Badge variant="secondary" className="text-xs">
-                  <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
-                </Badge>
-              </div>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-              {u.durationMin != null && (
-                <span className="flex items-center gap-1">
-                  <Clock className="icon-sm" aria-hidden="true" />
-                  {u.durationMin} min
-                </span>
-              )}
-              {u.title && <span className="text-muted-foreground">{u.title}</span>}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2 sm:justify-end">
-              <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
-                <Link href={home}>
-                  {rel.mentorId === userId
-                    ? <BilingualText en="Open in Mentor sessions" el="Άνοιγμα στις συνεδρίες μέντορα" compact />
-                    : <BilingualText en="Open in Coaching" el="Άνοιγμα στο Coaching" compact />}
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={<SessionDateTile date={start} />}
+          title={(
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              <Link href={`/profiles/${other.id}`} className="person-name transition-colors hover:text-primary-accessible">
+                {other.displayName}
+              </Link>
+              <span className="text-xs font-normal text-muted-foreground">
+                {rel.mentorId === userId
+                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+              </span>
+            </span>
+          )}
+          subtitle={(
+            <>
+              <LocalTime value={start} />
+              {end ? <> {' – '} <LocalTime value={end} /> </> : null}
+            </>
+          )}
+          aside={(
+            <>
+              <Badge variant="outline" className="text-xs">
+                <StatusText value={u.status} />
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+              </Badge>
+            </>
+          )}
+        />
+        <FactLine
+          items={[
+            u.durationMin != null ? <BilingualText key="len" en={`${u.durationMin} min`} el={`${u.durationMin} λεπτά`} compact /> : null,
+            u.title ? <span key="title" className="first-letter:uppercase">{u.title}</span> : null,
+          ]}
+        />
+        <CardFoot>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={home}>
+              {rel.mentorId === userId
+                ? <BilingualText en="Open in Mentor sessions" el="Άνοιγμα στις συνεδρίες μέντορα" compact />
+                : <BilingualText en="Open in Coaching" el="Άνοιγμα στο Coaching" compact />}
+            </Link>
+          </Button>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -808,7 +808,7 @@ export default function MentoringPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
-                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-base font-semibold text-foreground">
                       <BilingualText en="Featured mentors" el="Προτεινόμενοι μέντορες" compact />
                     </h2>
                   </div>
@@ -823,7 +823,7 @@ export default function MentoringPage() {
               {regularMentors.length > 0 && (
                 <div className="space-y-3">
                   {featuredMentors.length > 0 && (
-                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    <h2 className="text-base font-semibold text-foreground">
                       <BilingualText en="All mentors" el="Όλοι οι μέντορες" compact />
                     </h2>
                   )}

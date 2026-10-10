@@ -11,8 +11,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Banknote,
-  Clock,
   Star,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -45,6 +43,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 
 type Service = {
   id: string;
@@ -79,87 +79,94 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
     onActive?.(service, next);
   };
 
+  // The Opportunities card: a mark and the listing's name with its state,
+  // the category under it, the switch and menu at the right; the sentence
+  // and the facts start on the mark's left edge.
   return (
-    <Card className={cn('transition-all', !isActive && 'surface-inactive')}>
-      <CardContent>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold">{service.name}</h3>
+    <Card className={cn('transition-all hover:border-primary/20', !isActive && 'surface-inactive')}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <Store className="icon-md" aria-hidden="true" />
+            </div>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="min-w-0 break-words">{service.name}</span>
               <Badge variant={isActive ? 'default' : 'secondary'}>
                 {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
               </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {service.description}
-            </p>
-            <div className="flex flex-wrap gap-3 mt-3 text-sm">
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Banknote className="icon-sm" aria-hidden="true" />
-                {service.price}
-                {service.priceType === 'hourly' && <BilingualText en="/hr" el="/ώρα" compact />}
-              </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="icon-sm" />
-                {service.deliveryTime}
-              </span>
-              {/*
-                * Shown only where there is a rating. The marketplace is a
-                * directory of listings, not a booking system, so a real
-                * listing has none — and "0 (0)" would read as nobody liking it
-                * rather than as nobody having rated it.
-                */}
-              {service.reviews > 0 ? (
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  <Star className="icon-sm fill-status-warning text-status-warning" />
-                  {service.rating} ({service.reviews})
-                </span>
-              ) : null}
-            </div>
-            <div className="flex items-center gap-4 mt-3">
-              <Badge variant="outline"><StatusText value={service.category} /></Badge>
-              {service.bookings > 0 ? (
-                <span className="text-xs text-muted-foreground">
-                  <BilingualText en={`${service.bookings} bookings`} el={`${service.bookings} κρατήσεις`} compact />
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground" aria-hidden="true">
+            </span>
+          )}
+          subtitle={<StatusText value={service.category} />}
+          asideStays
+          aside={(
+            <>
+              <span className="hidden text-xs text-muted-foreground sm:inline" aria-hidden="true">
                 {isActive ? <BilingualText en="Active" el="Ενεργή" compact /> : <BilingualText en="Inactive" el="Ανενεργή" compact />}
               </span>
               <Switch checked={isActive} onCheckedChange={toggleActive} aria-label={bilingualAria(`Active: ${service.name}`, `Ενεργή: ${service.name}`)} />
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${service.name}`}>
-                  <MoreVertical className="icon-sm" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {/* All three had no handler. PATCH and DELETE /marketplace/:id
-                    exist (owner-only, enforced by the service); the public
-                    listing is the marketplace searched for this title. */}
-                <DropdownMenuItem disabled={!onEdit} onSelect={() => onEdit?.(service)}>
-                  <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                  <BilingualText en="Edit Service" el="Επεξεργασία υπηρεσίας" compact />
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={`/marketplace?q=${encodeURIComponent(service.name)}`}>
-                    <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                    <BilingualText en="Preview" el="Προεπισκόπηση" compact />
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
-                  <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
-                  <BilingualText en="Delete" el="Διαγραφή" compact />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${service.name}`}>
+                    <MoreVertical className="icon-sm" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {/* All three had no handler. PATCH and DELETE /marketplace/:id
+                      exist (owner-only, enforced by the service); the public
+                      listing is the marketplace searched for this title. */}
+                  <DropdownMenuItem disabled={!onEdit} onSelect={() => onEdit?.(service)}>
+                    <Edit className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="Edit Service" el="Επεξεργασία υπηρεσίας" compact />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/marketplace?q=${encodeURIComponent(service.name)}`}>
+                      <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                      <BilingualText en="Preview" el="Προεπισκόπηση" compact />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive-accessible" disabled={!onDelete} onSelect={() => onDelete?.(service)}>
+                    <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="Delete" el="Διαγραφή" compact />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        />
+
+        {service.description ? (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">
+            {service.description}
+          </p>
+        ) : null}
+
+        <FactLine
+          items={[
+            <span key="price" className="font-medium tabular-nums text-foreground">
+              {service.price}
+              {service.priceType === 'hourly' && <BilingualText en="/hr" el="/ώρα" compact />}
+            </span>,
+            service.deliveryTime || null,
+            /*
+             * Shown only where there is a rating. The marketplace is a
+             * directory of listings, not a booking system, so a real
+             * listing has none — and "0 (0)" would read as nobody liking it
+             * rather than as nobody having rated it.
+             */
+            service.reviews > 0 ? (
+              <span key="rating" className="inline-flex items-center gap-1">
+                <Star className="icon-sm fill-status-warning text-status-warning" aria-hidden="true" />
+                {service.rating} ({service.reviews})
+              </span>
+            ) : null,
+            service.bookings > 0 ? (
+              <BilingualText key="bookings" en={`${service.bookings} bookings`} el={`${service.bookings} κρατήσεις`} compact />
+            ) : null,
+          ]}
+        />
       </CardContent>
     </Card>
   );

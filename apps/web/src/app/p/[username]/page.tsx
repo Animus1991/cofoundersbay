@@ -458,8 +458,12 @@ export default function PublicProfilePage() {
                 under it, the one action. */}
             <Card>
               <CardHeader>
+                {/* The question wraps in this narrow column: it keeps a
+                    reading line-height rather than the one-line title's. */}
                 <CardTitle>
-                  <BilingualText en={`Want to connect with ${firstName}?`} el={`Θέλετε να συνδεθείτε με ${firstName};`} compact wrap />
+                  <span className="leading-snug">
+                    <BilingualText en={`Want to connect with ${firstName}?`} el={`Θέλετε να συνδεθείτε με ${firstName};`} compact wrap />
+                  </span>
                 </CardTitle>
                 <CardDescription>
                   <BilingualText en={`Join CoFounderBay to message and connect with founders like ${firstName}.`} el={`Εγγραφείτε στο CoFounderBay για μηνύματα και συνδέσεις με ιδρυτές όπως ${firstName}.`} wrap />
