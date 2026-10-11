@@ -119,9 +119,10 @@ export function EmptyLine({ en, el }: { en: string; el?: string }) {
  * under its head - a sentence, a bar, its actions - starts on the mark's left
  * edge, like the body of an Endorsements card.
  *
- * Its title sits a step under the section's own title (`text-sm
- * font-medium`, the Members row step): a row set on `.card-title` read as
- * loud as the section that holds it.
+ * Its title sits a step under the section's own title (the subtitle step
+ * in the foreground, medium, as a need card's byline): a row set on
+ * `.card-title` read as loud as the section that holds it, and `text-sm`
+ * (13.603 on a phone) sat level with a section title at 13.582.
  */
 export function RowHead({
   mark,
@@ -155,7 +156,7 @@ export function RowHead({
     <div data-rail-keep-layout="" className={cn('grid grid-cols-1 items-start gap-x-3', cols, className)}>
       {mark ? <div className={cn('col-start-1 row-start-1 shrink-0', aside && !asideStays && 'row-span-2 sm:row-span-1')}>{mark}</div> : null}
       <div className={cn('min-w-0 row-start-1', mark ? 'col-start-2' : 'col-start-1')}>
-        <Title className="break-words text-sm font-medium text-foreground">{title}</Title>
+        <Title className="card-subtitle card-byline break-words">{title}</Title>
         {subtitle ? <div className="mt-0.5 break-words text-xs text-muted-foreground">{subtitle}</div> : null}
         {meta ? <div className="mt-0.5 text-xs text-muted-foreground">{meta}</div> : null}
       </div>
