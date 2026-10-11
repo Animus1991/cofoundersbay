@@ -339,6 +339,35 @@ export type CardFilters = {
   limit?: number;
 };
 
+export async function getCommitmentCardCounts(filters: {
+  kinds: readonly string[];
+  remoteOnly?: boolean;
+  q?: string;
+  category?: string;
+  place?: string;
+  stage?: string;
+  commitment?: string;
+}): Promise<Record<'category' | 'place' | 'stage' | 'commitment', { value: string; count: number }[]> | null> {
+  const sp = new URLSearchParams();
+  if (filters.kinds.length) sp.set('kinds', filters.kinds.join(','));
+  if (filters.remoteOnly) sp.set('remote', '1');
+  if (filters.q?.trim()) sp.set('q', filters.q.trim());
+  for (const key of ['category', 'place', 'stage', 'commitment'] as const) {
+    const value = filters[key];
+    if (value) sp.set(key, value);
+  }
+  const res = await apiRequest<{ counts?: Record<string, { value?: unknown; count?: unknown }[]> }>(
+    `/api/commitments/cards/counts?${sp.toString()}`,
+  );
+  const counts = res?.counts;
+  if (!counts || typeof counts !== 'object') return null;
+  const read = (key: string) =>
+    (Array.isArray(counts[key]) ? counts[key] : [])
+      .map((row) => ({ value: typeof row?.value === 'string' ? row.value : '', count: typeof row?.count === 'number' ? row.count : 0 }))
+      .filter((row) => row.value);
+  return { category: read('category'), place: read('place'), stage: read('stage'), commitment: read('commitment') };
+}
+
 export async function listCommitmentCards(filters: CardFilters = {}): Promise<CommitmentCard[]> {
   const sp = new URLSearchParams();
   if (filters.mine) sp.set('mine', '1');

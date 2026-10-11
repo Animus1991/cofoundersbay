@@ -1,6 +1,7 @@
 'use client';
 
-import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { useState } from 'react';
@@ -16,9 +17,6 @@ import {
   XCircle,
   Clock,
   MoreVertical,
-  MessageSquare,
-  User,
-  FileText,
   RefreshCw,
   Download,
 } from 'lucide-react';
@@ -133,54 +131,17 @@ function ReportCard({
     dismissed: { color: 'bg-muted text-muted-foreground border-border', icon: <XCircle className="icon-sm" /> },
   };
 
-  // Priority is a fact on the line under the reason, coloured by urgency;
-  // the report's state is the card's one pill.
-  const priorityText: Record<string, string> = {
-    low: 'text-muted-foreground',
-    medium: 'text-status-warning',
-    high: 'text-status-danger',
-  };
-
-  const typeIcons: Record<string, React.ReactNode> = {
-    user: <User className="icon-sm" aria-hidden="true" />,
-    message: <MessageSquare className="icon-sm" aria-hidden="true" />,
-    content: <FileText className="icon-sm" aria-hidden="true" />,
-    spam: <AlertTriangle className="icon-sm" aria-hidden="true" />,
-  };
-
   const config = statusConfig[report.status];
 
   return (
-    // The Endorsements card's anatomy: the kind of report's mark, the reason
-    // over what was reported, the state and the menu at the right, the
-    // description on the mark's edge, who reported it and when in the foot.
+    // Date tile, the reason, one status pill, one caption (who, what, when)
+    // and the description. A second caption, and a coloured priority, were
+    // extra text styles on the same card.
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
         <CardHead
-          mark={(
-            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
-              {typeIcons[report.type]}
-            </div>
-          )}
+          mark={<SessionDateTile date={new Date(report.createdAt)} />}
           title={<span className="block first-letter:uppercase">{report.reason}</span>}
-          subtitle={(
-            <FactLine
-              className="text-sm"
-              items={[
-                <BilingualText key="target" en={`Reported: ${report.targetName}`} el={`Αναφέρθηκε: ${report.targetName}`} compact wrap />,
-                report.targetType ? <StatusText key="type" value={report.targetType} /> : null,
-                report.priority ? (
-                  <span key="priority" className={cn('font-medium', priorityText[report.priority])}>
-                    <BilingualText
-                      en={`${report.priority.charAt(0).toUpperCase()}${report.priority.slice(1)} priority`}
-                      el={`Προτεραιότητα: ${statusEl(report.priority) ?? report.priority}`}
-                      compact
-                    />
-                  </span>
-                ) : null,
-              ]}
-            />
-          )}
           asideStays
           aside={(
             <>
@@ -237,14 +198,21 @@ function ReportCard({
           </p>
         )}
 
-        <CardFoot
-          meta={(
-            <span className="flex flex-wrap items-center gap-x-1.5">
-              <BilingualText en={`By ${report.reporterName}`} el={`Από ${report.reporterName}`} compact />
-              <span aria-hidden="true">·</span>
-              <RelativeTime date={report.createdAt} format={formatRelativeTime} />
-            </span>
-          )}
+        <FactLine
+          items={[
+            <BilingualText key="target" en={`Reported: ${report.targetName}`} el={`Αναφέρθηκε: ${report.targetName}`} compact wrap />,
+            report.targetType ? <StatusText key="type" value={report.targetType} /> : null,
+            report.priority ? (
+              <BilingualText
+                key="priority"
+                en={`${report.priority.charAt(0).toUpperCase()}${report.priority.slice(1)} priority`}
+                el={`Προτεραιότητα: ${statusEl(report.priority) ?? report.priority}`}
+                compact
+              />
+            ) : null,
+            <BilingualText key="by" en={`By ${report.reporterName}`} el={`Από ${report.reporterName}`} compact />,
+            <RelativeTime key="when" date={report.createdAt} format={formatRelativeTime} />,
+          ]}
         />
       </CardContent>
     </Card>

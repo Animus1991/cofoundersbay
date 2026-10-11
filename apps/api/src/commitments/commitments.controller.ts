@@ -56,6 +56,30 @@ export class CommitmentsController {
     return this.commitments.createCard(user, body);
   }
 
+  /** Facet counts over every matching card, past the board's newest 100. */
+  @Get('cards/counts')
+  @UseGuards(JwtAuthGuard)
+  counts(
+    @CurrentUser() user: { id: string },
+    @Query('kinds') kinds?: string,
+    @Query('remote') remote?: string,
+    @Query('q') q?: string,
+    @Query('category') category?: string,
+    @Query('place') place?: string,
+    @Query('stage') stage?: string,
+    @Query('commitment') commitment?: string,
+  ) {
+    return this.commitments.cardCounts(user, {
+      kinds,
+      remote: remote === '1' || remote === 'true',
+      q: q?.trim() || undefined,
+      category,
+      place,
+      stage,
+      commitment,
+    });
+  }
+
   @Get('cards/:id')
   @UseGuards(JwtAuthGuard)
   get(@CurrentUser() user: { id: string }, @Param('id') id: string) {

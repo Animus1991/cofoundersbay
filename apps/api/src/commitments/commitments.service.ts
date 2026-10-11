@@ -7,8 +7,15 @@ import {
   cardOfferChanges,
   contactKinds,
   CARD_CLOSE_REASONS,
+  CARD_COMMITMENTS,
+  CARD_STAGES,
   COMMITMENT_KINDS,
   COMMITMENT_OUTCOMES,
+  facetBoard,
+  facetChipCounts,
+  NO_CHIPS,
+  type CardChips,
+  type FacetCard,
   deriveCardOutcome,
   describeContactKinds,
   hasPromiseClaims,
@@ -426,6 +433,68 @@ export class CommitmentsService {
       },
     });
     return { cards: await this.withOwnerVerification(rows.map((row) => this.cardShape(row as CardRow, viewer.id))) };
+  }
+
+  /**
+   * Chip counts for the need-card wall, over every matching card rather than
+   * the newest 100 the board draws. The numbers are `facetChipCounts`, the
+   * same function the page uses on a board it already holds in full.
+   */
+  async cardCounts(
+    viewer: Viewer,
+    input: { kinds?: string; remote?: boolean; q?: string; category?: string; place?: string; stage?: string; commitment?: string } = {},
+  ) {
+    await this.expireQuietCards();
+    const asked = (input.kinds ?? '').split(',').map((k) => k.trim()).filter((k) => (COMMITMENT_KINDS as readonly string[]).includes(k));
+    const kinds = asked.length ? asked : [...COMMITMENT_KINDS];
+    const rows = await this.prisma.commitmentCard.findMany({
+      where: { kind: { in: kinds }, status: { in: ['open', 'in_discussion', 'agreed'] } },
+      orderBy: { updatedAt: 'desc' },
+      take: 2000,
+      select: {
+        ownerId: true,
+        kind: true,
+        title: true,
+        exists: true,
+        goal: true,
+        missing: true,
+        offerRole: true,
+        category: true,
+        place: true,
+        isRemote: true,
+        stage: true,
+        commitment: true,
+        status: true,
+        settledAt: true,
+      },
+    });
+    const facets: FacetCard[] = rows.map((row) => ({
+      isMine: row.ownerId === viewer.id,
+      kind: row.kind,
+      outcome: row.status,
+      settledAt: row.settledAt ? new Date(row.settledAt).toISOString() : null,
+      isRemote: Boolean(row.isRemote),
+      title: row.title ?? '',
+      exists: row.exists ?? '',
+      goal: row.goal ?? '',
+      missing: row.missing ?? '',
+      offerRole: row.offerRole ?? null,
+      category: row.category ?? null,
+      place: row.place ?? null,
+      stage: row.stage ?? '',
+      commitment: row.commitment ?? '',
+    }));
+    const stage = (CARD_STAGES as readonly string[]).includes(input.stage ?? '') ? input.stage! : '';
+    const commitment = (CARD_COMMITMENTS as readonly string[]).includes(input.commitment ?? '') ? input.commitment! : '';
+    const chips: CardChips = {
+      ...NO_CHIPS,
+      category: (input.category ?? '').slice(0, 60),
+      place: (input.place ?? '').slice(0, 60),
+      stage,
+      commitment,
+    };
+    const board = facetBoard(facets, { kinds, remoteOnly: Boolean(input.remote), search: input.q ?? '', now: Date.now() });
+    return { counts: facetChipCounts(board, chips), total: board.length };
   }
 
   async getCard(viewer: Viewer, id: string) {

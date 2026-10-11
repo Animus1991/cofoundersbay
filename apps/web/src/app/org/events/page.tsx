@@ -8,7 +8,6 @@ import {
   Search,
   Users,
   MoreVertical,
-  Video,
   Edit,
   Trash2,
   Copy,
@@ -41,7 +40,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
-import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { SessionDateTile } from '@/components/mentoring/SessionDateTile';
 
 type OrgEvent = {
   id: string;
@@ -49,6 +49,8 @@ type OrgEvent = {
   type: 'workshop' | 'demo_day' | 'networking' | 'mentorship' | 'keynote';
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   date: string;
+  /** Epoch ms the date tile reads. `date` stays the formatted line. */
+  startsAt: number;
   time: string;
   format: 'online' | 'in-person' | 'hybrid';
   location: string;
@@ -102,6 +104,7 @@ function toOrgEvent(item: EventItem, fmtDate: (v: string | number | Date, o?: In
       end.getTime() < now ? 'completed' : start.getTime() <= now ? 'ongoing' : 'upcoming',
     // Pinned to UTC on both sides of hydration, the way every other date in
     // this codebase is.
+    startsAt: start.getTime(),
     date: fmtDate(start, { day: 'numeric', month: 'short', year: 'numeric' }),
     time: start.toLocaleTimeString('en-GB', {
       hour: '2-digit',
@@ -121,7 +124,7 @@ function toOrgEvent(item: EventItem, fmtDate: (v: string | number | Date, o?: In
  * on. Ages, not dates: the old rows were "upcoming" on dates in April 2025.
  * The speakers are the demo world's people, never a real fund's partner.
  */
-const MOCK_EVENT_ROWS: Array<Omit<OrgEvent, 'date' | 'status'> & { inDays: number }> = [
+const MOCK_EVENT_ROWS: Array<Omit<OrgEvent, 'date' | 'status' | 'startsAt'> & { inDays: number }> = [
   {
     id: '1',
     title: 'Spring Demo Day',
@@ -177,11 +180,15 @@ const MOCK_EVENT_ROWS: Array<Omit<OrgEvent, 'date' | 'status'> & { inDays: numbe
 ];
 
 function mockEvents(now: number, fmtDate: (v: number, o?: Intl.DateTimeFormatOptions) => string): OrgEvent[] {
-  return MOCK_EVENT_ROWS.map(({ inDays, ...row }) => ({
-    ...row,
-    status: inDays > 0 ? 'upcoming' : inDays === 0 ? 'ongoing' : 'completed',
-    date: fmtDate(now + inDays * 86_400_000, { day: 'numeric', month: 'short', year: 'numeric' }),
-  }));
+  return MOCK_EVENT_ROWS.map(({ inDays, ...row }) => {
+    const startsAt = now + inDays * 86_400_000;
+    return {
+      ...row,
+      startsAt,
+      status: inDays > 0 ? 'upcoming' : inDays === 0 ? 'ongoing' : 'completed',
+      date: fmtDate(startsAt, { day: 'numeric', month: 'short', year: 'numeric' }),
+    };
+  });
 }
 
 function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: OrgEvent) => void }) {
@@ -192,7 +199,6 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
   // no fill: dividing by it printed "156/0 attending · Infinity% full".
   const capped = event.capacity > 0;
   const fill = capped ? Math.round((event.attendees / event.capacity) * 100) : 0;
-  const fillColor = fill >= 90 ? STATUS.danger.icon : fill >= 70 ? STATUS.warning.icon : STATUS.success.icon;
 
   // The Opportunities card: the event's mark, the title with its kind and
   // place under it, the state and the menu at the right; the facts, the
@@ -238,24 +244,11 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
     <Card className="transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
         <CardHead
-          mark={(
-            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-              {event.format === 'online' ? <Video className="icon-md" aria-hidden="true" /> : <Calendar className="icon-md" aria-hidden="true" />}
-            </div>
-          )}
+          mark={<SessionDateTile date={new Date(event.startsAt)} />}
           title={(
             <Link href={`/events/${event.id}`} className="transition-colors hover:text-primary-accessible">
               {event.title}
             </Link>
-          )}
-          subtitle={(
-            <FactLine
-              className="text-sm"
-              items={[
-                <BilingualText key="type" en={typeCfg.label} el={typeCfg.labelEl} compact />,
-                event.location,
-              ]}
-            />
           )}
           asideStays
           aside={(
@@ -274,30 +267,25 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
         <FactLine
           label={bilingualInline('When and where', 'Πότε και πού')}
           items={[
-            <span key="date" className="tabular-nums">{event.date}</span>,
+            <BilingualText key="type" en={typeCfg.label} el={typeCfg.labelEl} compact />,
             event.time ? <span key="time" className="tabular-nums">{event.time}</span> : null,
             event.format === 'online'
               ? <BilingualText key="format" en="Online" el="Διαδικτυακά" compact />
               : event.format === 'hybrid'
                 ? <BilingualText key="format" en="Hybrid" el="Υβριδικό" compact />
                 : <BilingualText key="format" en="In person" el="Δια ζώσης" compact />,
+            event.location,
             <BilingualText
               key="attending"
               en={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} attending`}
               el={`${capped ? `${event.attendees}/${event.capacity}` : event.attendees} συμμετέχουν`}
               compact
             />,
+            capped
+              ? <BilingualText key="full" en={`${fill}% full`} el={`${fill}% πλήρης`} compact />
+              : <BilingualText key="cap" en="No attendance cap" el="Χωρίς όριο συμμετοχής" compact />,
+            ...(event.speakers ?? []),
           ]}
-        />
-        <FactLine label={bilingualInline('Speakers', 'Ομιλητές')} items={event.speakers ?? []} />
-        <CardFoot
-          meta={capped ? (
-            <span className={cn('font-medium', fillColor)}>
-              <BilingualText en={`Capacity: ${fill}% full`} el={`Χωρητικότητα: ${fill}% πλήρης`} compact />
-            </span>
-          ) : (
-            <BilingualText en="No attendance cap" el="Χωρίς όριο συμμετοχής" compact />
-          )}
         />
       </CardContent>
     </Card>

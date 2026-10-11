@@ -2759,7 +2759,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true };
   }
 
-  if (pathname.startsWith('/api/search/profiles') || pathname === '/api/search' || pathname.startsWith('/api/v1/search')) {
+  if (pathname.startsWith('/api/search/profiles') || pathname === '/api/search') {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const q = params.get('q')?.toLowerCase() ?? '';
     const location = params.get('location')?.toLowerCase() ?? '';

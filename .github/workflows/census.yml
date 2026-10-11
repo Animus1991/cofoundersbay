@@ -1,0 +1,77 @@
+name: Card and clarity census
+
+# A report, not a gate. It names every card with more than five text styles
+# and every clarity finding, tagging the known exceptions. The job is allowed
+# to fail without blocking a merge.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'scripts/census-report.mjs'
+      - 'scripts/census-exceptions.json'
+      - '.github/workflows/census.yml'
+
+concurrency:
+  group: census-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.14.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Census report unit check
+        run: node --test scripts/census-report.test.cjs
+
+      - name: Install Playwright browser
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+        run: pnpm run build
+
+      - name: Measure
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3001
+        run: |
+          npx next start -p 3000 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://127.0.0.1:3000/login && break
+            sleep 2
+          done
+          node .probes/card_type.mjs ../../scripts/platform-sweep-routes.txt 390 /tmp/card-type.json
+          node .probes/clarity.mjs ../../scripts/platform-sweep-routes.txt 1440 /tmp/clarity.json
+          node ../../scripts/census-report.mjs card-type /tmp/card-type.json
+          node ../../scripts/census-report.mjs clarity /tmp/clarity.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: census-report
+          path: |
+            /tmp/card-type.json
+            /tmp/clarity.json
+          retention-days: 7

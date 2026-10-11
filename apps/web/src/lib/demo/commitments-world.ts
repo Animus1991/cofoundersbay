@@ -25,6 +25,9 @@ import {
   type TransparencySurface,
   foldSearchText,
   placeVariants,
+  facetBoard,
+  facetChipCounts,
+  type FacetCard,
 } from '@cofounderbay/shared';
 import { DemoRefusal } from './demo-refusal';
 import { recordDemoRefusal } from './transparency-world';
@@ -727,6 +730,41 @@ function route(world: World, pathname: string, path: string, method: string, bod
   }
 
   if (parts[0] === 'cards') {
+    if (parts[1] === 'counts' && method === 'GET') {
+      const sp = new URLSearchParams(path.split('?')[1] ?? '');
+      const kinds = (sp.get('kinds') ?? '').split(',').filter(Boolean);
+      const facets: FacetCard[] = world.cards.map((c) => ({
+        isMine: c.ownerId === ME,
+        kind: c.kind,
+        outcome: c.status,
+        settledAt: c.settledAt,
+        isRemote: c.isRemote,
+        title: c.title,
+        exists: c.exists,
+        goal: c.goal,
+        missing: c.missing,
+        offerRole: c.offerRole,
+        category: c.category,
+        place: c.place,
+        stage: c.stage,
+        commitment: c.commitment,
+      }));
+      const board = facetBoard(facets, {
+        kinds: kinds.length ? kinds : ['cofounder', 'equity_role', 'investor_intro'],
+        remoteOnly: sp.get('remote') === '1',
+        search: sp.get('q') ?? '',
+        now: nowMs,
+      });
+      return {
+        counts: facetChipCounts(board, {
+          category: sp.get('category') ?? '',
+          place: sp.get('place') ?? '',
+          stage: sp.get('stage') ?? '',
+          commitment: sp.get('commitment') ?? '',
+        }),
+        total: board.length,
+      };
+    }
     if (parts.length === 1 && method === 'GET') {
       const sp = new URLSearchParams(path.split('?')[1] ?? '');
       const refs = (sp.get('projectRefs') ?? '').split(',').filter(Boolean);

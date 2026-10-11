@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { facetChipCounts } from '@cofounderbay/shared';
 import type { CommitmentCard } from '@/lib/commitments-api';
 import {
+  BOARD_LIMIT,
   NO_CHIPS,
   applyChips,
   boardCards,
@@ -9,7 +11,9 @@ import {
   chipsFromParams,
   chipsToSavedFilters,
   cityOf,
+  overlayChipCounts,
   savedFiltersToParams,
+  toFacetCard,
 } from './need-card-wall';
 
 /**
@@ -85,6 +89,19 @@ describe('chips', () => {
     expect(options.stage.map((o) => o.value)).toEqual(['idea', 'validating']);
     // A chip's own choices ignore that chip, so another commitment can be picked.
     expect(options.commitment.map((o) => [o.value, o.count])).toEqual([['full_time', 1], ['part_time', 2], ['advisory', 1]]);
+  });
+
+  it('matches the shared counts on the loaded board, and names a card past the newest 100', () => {
+    const loaded = Array.from({ length: BOARD_LIMIT }, (_, i) => card(`n${i}`));
+    const options = chipOptions(loaded, NO_CHIPS);
+    const shared = facetChipCounts(loaded.map(toFacetCard), NO_CHIPS);
+    expect(options.category.map((o) => [o.value, o.count])).toEqual(shared.category.map((o) => [o.value, o.count]));
+    const older = card('older', { category: 'BeyondBoard' });
+    const remote = facetChipCounts([older, ...loaded].map(toFacetCard), NO_CHIPS);
+    const shown = overlayChipCounts(options, remote);
+    expect(options.category.some((o) => o.value === 'BeyondBoard')).toBe(false);
+    expect(shown.category.find((o) => o.value === 'BeyondBoard')?.count).toBe(1);
+    expect(shown.category.find((o) => o.value === 'B2B SaaS')?.count).toBe(BOARD_LIMIT);
   });
 
   it('keeps a chosen value listed at zero so it can be seen and changed, with its Greek', () => {

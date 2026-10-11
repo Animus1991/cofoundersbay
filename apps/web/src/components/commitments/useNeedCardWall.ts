@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { CommitmentKind } from '@cofounderbay/shared';
-import { listCommitmentCards } from '@/lib/commitments-api';
+import { getCommitmentCardCounts, listCommitmentCards } from '@/lib/commitments-api';
 import {
   BOARD_LIMIT,
   activeChipCount,
@@ -11,6 +11,7 @@ import {
   boardCards,
   chipOptions,
   chipsToCardFilters,
+  overlayChipCounts,
   type CardChips,
 } from '@/lib/need-card-wall';
 import { qk } from '@/lib/query-keys';
@@ -28,11 +29,13 @@ export function kindsForOpportunityType(type: string): CommitmentKind[] | null {
  * The need-card wall's data, for the section that draws it and the page
  * that offers its chips to the assistant, so the two show the same cards.
  *
- * The board is the newest `BOARD_LIMIT` cards; the chips' choices and counts
- * come from it. While the board holds every card, the chips filter it here.
- * Once it is full there may be more, so a chosen chip also goes to the
- * server (`listCommitmentCards` with category, place, stage, commitment)
- * and the wall shows what the server found among all cards.
+ * The board is the newest `BOARD_LIMIT` cards. Chip counts come from
+ * `GET /commitments/cards/counts`, which applies the same rules to every
+ * matching card, so a choice past that newest page still carries its real
+ * count. While the board holds every card, the chips filter it here. Once
+ * it is full there may be more, so a chosen chip also goes to the server
+ * (`listCommitmentCards` with category, place, stage, commitment) and the
+ * wall shows what the server found among all cards.
  */
 export function useNeedCardWall({ type, remoteOnly, search, chips }: { type: string; remoteOnly: boolean; search: string; chips: CardChips }) {
   const [now, setNow] = useState<number | null>(null);
@@ -52,12 +55,22 @@ export function useNeedCardWall({ type, remoteOnly, search, chips }: { type: str
     enabled: kinds !== null && full && narrowed,
     staleTime: 60_000,
   });
+  const countsQ = useQuery({
+    queryKey: qk('commitments', 'cards', 'counts', { kinds, remoteOnly, search, ...chips }),
+    queryFn: () => getCommitmentCardCounts({ kinds: kinds ?? [], remoteOnly, q: search, ...chips }),
+    enabled: kinds !== null,
+    staleTime: 60_000,
+  });
 
   const board = useMemo(
     () => (kinds && now !== null ? boardCards(boardQ.data ?? [], { kinds, remoteOnly, search, now }) : []),
     [kinds, now, boardQ.data, remoteOnly, search],
   );
-  const options = useMemo(() => chipOptions(board, chips), [board, chips]);
+  const localOptions = useMemo(() => chipOptions(board, chips), [board, chips]);
+  const options = useMemo(
+    () => (countsQ.data ? overlayChipCounts(localOptions, countsQ.data) : localOptions),
+    [localOptions, countsQ.data],
+  );
   const cards = useMemo(() => {
     if (!(full && narrowed)) return applyChips(board, chips);
     if (!kinds || now === null) return [];
@@ -72,7 +85,7 @@ export function useNeedCardWall({ type, remoteOnly, search, chips }: { type: str
     board,
     options,
     cards,
-    /** The board is full: counts describe its newest cards, not every card. */
+    /** The board is full: the list is the newest page, and chip counts come from the counts endpoint. */
     full,
     isLoading: boardQ.isLoading || (full && narrowed && serverQ.isLoading),
     isError: boardQ.isError || (full && narrowed && serverQ.isError),

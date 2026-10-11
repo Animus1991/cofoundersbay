@@ -137,6 +137,40 @@ describe('CommitmentsService', () => {
       expect((await service.listCards(MARCUS, { owner: 'someone-else' })).cards).toHaveLength(0);
     });
 
+    it('counts a category that sits past the newest 100 cards', async () => {
+      await publish();
+      for (let i = 0; i < 100; i++) {
+        fake.db.cards.push({
+          id: `extra-${i}`,
+          ownerId: SOFIA.id,
+          kind: 'cofounder',
+          title: `Extra ${i}`,
+          exists: 'A working product with paying teams already on it.',
+          goal: 'Reach the next hundred teams before the year ends.',
+          missing: 'A person who has shipped this kind of product.',
+          offerRole: 'Co-founder',
+          offerEquity: null,
+          offerHours: 20,
+          offerScope: 'The product and the first hire.',
+          category: i === 99 ? 'BeyondBoard' : 'B2B SaaS',
+          place: 'Athens, Greece',
+          isRemote: false,
+          stage: 'building',
+          commitment: 'full_time',
+          status: 'open',
+          settledAt: null,
+          projectRef: null,
+        });
+      }
+      const listed = await service.listCards(MARCUS, { limit: 100 });
+      expect(listed.cards).toHaveLength(100);
+      expect(JSON.stringify(listed.cards)).not.toContain('BeyondBoard');
+      const { counts, total } = await service.cardCounts(MARCUS, { kinds: 'cofounder' });
+      expect(total).toBe(101);
+      expect(counts.category.find((row) => row.value === 'BeyondBoard')?.count).toBe(1);
+      expect(counts.category.find((row) => row.value === 'B2B SaaS')?.count).toBe(100);
+    });
+
     it('expires an open card that went quiet, on read', async () => {
       const card = await publish();
       fake.db.cards[0].expiresAt = new Date(Date.now() - 1000);
