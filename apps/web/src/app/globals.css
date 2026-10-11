@@ -4372,27 +4372,26 @@ input:is(
   }
 }
 
-/* Messages inbox on a phone: there is no conversation menu, so the tools
-   icon sits under the account initials. A thread places the same control
-   in the header, to the right of the three dots, and that button is not
-   .h-11, so this rule leaves it alone. The header is h-12 and the account
-   control is the phone's 30.458px button, centered in it. Four pixels under
-   that control, and lined up on the same right edge as the header's content.
-   The word stays for the sheet; the icon is the control here. */
+/* Phone page tools: the same icon, at the same height, as the one beside
+   the three dots in a message thread. That icon is centered on the avatar
+   row, 10px under the top bar, and its right edge lines up with the account
+   mark. A header line that would pass under it is handled in PageRail, which
+   writes `top` a little higher or lower. The word stays for the tablet pill. */
 @media (max-width: 639.98px) {
-  button[data-messages-tools].h-11 {
-    top: calc((3rem * var(--chrome-y) + 30.458px) / 2 + 4px);
-    /* The account control is wider than its circle. This inset centers
-       the 30.458px icon on that circle (measured: control 42px, right
-       edge 12px in from the screen). */
-    right: calc(0.75rem + 5.75px);
+  button[data-page-tools].h-11 {
+    top: calc(3rem * var(--chrome-y) + 10px + (2.5rem * var(--chrome-y) - 28.939px) / 2);
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
     bottom: auto;
     left: auto;
     width: 30.458px;
     min-width: 30.458px;
-    height: 30.458px;
-    min-height: 30.458px;
+    height: 28.939px;
+    min-height: 28.939px;
     padding: 0;
-    border-radius: 9999px;
+    border-radius: 0.75rem;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    color: hsl(var(--foreground) / 0.7);
   }
 }

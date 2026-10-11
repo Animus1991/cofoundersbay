@@ -17,6 +17,102 @@ import {
   usePageRail,
 } from './PageRailContext';
 
+/** Phone size of the thread's tools icon: the ghost h-9 floor. */
+const PHONE_TOOLS_HEIGHT = 28.939;
+const PHONE_TOOLS_WIDTH = 30.458;
+
+/**
+ * The thread icon is centered on the avatar row, 10px under the phone top
+ * bar. Every other page uses that same viewport height.
+ */
+function phoneToolsPreferredTop(): number {
+  const chromeY = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-y')) || 0.99;
+  const bar = document.querySelector('header.sticky');
+  const barBottom = bar?.getBoundingClientRect().bottom ?? 3 * 16 * chromeY;
+  return barBottom + 10 + (2.5 * 16 * chromeY - PHONE_TOOLS_HEIGHT) / 2;
+}
+
+/** Viewport top the element has when the page is scrolled to the start. */
+function toolsRestTop(viewportTop: number): number {
+  const main = document.getElementById('main-content');
+  const mainScroll = main && main.scrollHeight > main.clientHeight + 2 ? main.scrollTop : 0;
+  return viewportTop + Math.max(window.scrollY || 0, mainScroll);
+}
+
+/**
+ * Text and controls that occupy the tools column. Positions are restored to
+ * the unscrolled page, so a later scroll does not drag the icon around.
+ * Screen-reader text is not information on the screen.
+ */
+function toolsColumnObstacles(left: number, right: number): { top: number; bottom: number }[] {
+  const out: { top: number; bottom: number }[] = [];
+  const add = (top: number, bottom: number, rLeft: number, rRight: number) => {
+    if (rRight - rLeft < 1 || bottom - top < 1) return;
+    if (rRight <= left || rLeft >= right) return;
+    out.push({ top: toolsRestTop(top), bottom: toolsRestTop(bottom) });
+  };
+  const root = document.getElementById('main-content');
+  if (!root) return out;
+  for (const el of root.querySelectorAll('button, a, input, textarea, select, [role="button"]')) {
+    if (!(el instanceof HTMLElement) || el.closest('[data-page-tools], .sr-only')) continue;
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const r = el.getBoundingClientRect();
+    add(r.top, r.bottom, r.left, r.right);
+  }
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    const parent = node.parentElement;
+    if (parent && node.textContent?.trim() && !parent.closest('.sr-only, [data-page-tools]')) {
+      const cs = getComputedStyle(parent);
+      if (cs.display !== 'none' && cs.visibility !== 'hidden') {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const r of range.getClientRects()) add(r.top, r.bottom, r.left, r.right);
+      }
+    }
+    node = walker.nextNode();
+  }
+  return out;
+}
+
+/** Preferred height, or the nearest clear spot a little above or below it. */
+function placePhoneTools(button: HTMLButtonElement) {
+  if (typeof window.matchMedia !== 'function' || !window.matchMedia('(max-width: 639.98px)').matches) {
+    button.style.top = '';
+    return;
+  }
+  const preferred = phoneToolsPreferredTop();
+  const left = window.innerWidth - 12 - PHONE_TOOLS_WIDTH;
+  const obstacles = toolsColumnObstacles(left - 4, window.innerWidth - 12 + 4);
+  const bar = document.querySelector('header.sticky');
+  const minTop = (bar?.getBoundingClientRect().bottom ?? 0) + 2;
+  const maxTop = window.innerHeight - 80 - PHONE_TOOLS_HEIGHT;
+  const gap = 4;
+  const blocked = (top: number) => {
+    const a = top - gap;
+    const b = top + PHONE_TOOLS_HEIGHT + gap;
+    return obstacles.some((o) => o.bottom > a && o.top < b);
+  };
+  let chosen = preferred;
+  if (blocked(preferred)) {
+    for (let delta = 2; delta <= 40; delta += 2) {
+      const up = preferred - delta;
+      if (up >= minTop && !blocked(up)) {
+        chosen = up;
+        break;
+      }
+      const down = preferred + delta;
+      if (down <= maxTop && !blocked(down)) {
+        chosen = down;
+        break;
+      }
+    }
+  }
+  button.style.top = `${Math.round(chosen * 100) / 100}px`;
+}
+
 /**
  * One group of a page's supporting tools.
  *
@@ -137,6 +233,23 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   // trigger to hand focus back to and it fell to <body> on close. The button
   // that opened it is remembered and refocused instead.
   const expandButton = useRef<HTMLButtonElement | null>(null);
+  const toolsButton = useRef<HTMLButtonElement | null>(null);
+  // Phone: the floating icon uses the thread icon's height. A header line
+  // that would run under it shifts the icon a little, on the same right edge.
+  useLayoutEffect(() => {
+    const button = toolsButton.current;
+    if (!button || threadTools) return;
+    const run = () => placePhoneTools(button);
+    run();
+    window.addEventListener('resize', run);
+    const main = document.getElementById('main-content');
+    const observer = main ? new ResizeObserver(run) : null;
+    observer?.observe(main);
+    return () => {
+      window.removeEventListener('resize', run);
+      observer?.disconnect();
+    };
+  }, [threadTools, pathname]);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
@@ -247,16 +360,17 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
           {!threadTools && (
             <SheetTrigger asChild>
               <button
+                ref={toolsButton}
                 type="button"
                 aria-label={bilingualAria(
                   totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
                   totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
                 )}
-                data-messages-tools={toolsUnderAccount ? '' : undefined}
+                data-page-tools=""
                 className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-auto min-w-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-foreground shadow-lg sm:bottom-6"
               >
                 <SlidersHorizontal className="icon-md" aria-hidden="true" />
-                <span className={cn('text-xs font-medium', toolsUnderAccount && 'hidden sm:inline')}>
+                <span className="hidden text-xs font-medium sm:inline">
                   <BilingualText en="Tools" el="Εργαλεία" compact />
                 </span>
                 {totalBadge > 0 && (
