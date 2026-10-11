@@ -4336,3 +4336,38 @@ input:is(
     min-height: calc(2.75rem * var(--chrome-y) * 0.95);
   }
 }
+
+/* Left drawer only: the account row, the three section buttons, the
+   language chips, the Language label and the Dashboard heading are 2%
+   shorter. Every other nav row, and the desktop sidebar, stay as they are.
+   The phone floor and the mint primary cut are more specific, so these
+   selectors repeat their classes and come last. */
+@media (max-width: 639.98px) {
+  a[data-sidebar-control='account'] {
+    padding-top: 11.354px;
+    padding-bottom: 11.354px;
+  }
+  :is(button)[data-sidebar-control='mode']:is(.min-h-11),
+  :is(button)[data-sidebar-control='language']:is(.min-h-10):not([class~='bg-primary']) {
+    min-height: 29.849px;
+  }
+  :is(button)[data-sidebar-control='language'][class~='bg-primary']:is(.min-h-10) {
+    min-height: 28.36px;
+  }
+  [data-sidebar-control='language-label'] {
+    line-height: 1.323;
+  }
+  [data-sidebar-control='section'] {
+    padding-bottom: 3.604px;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  a[data-sidebar-control='account'] {
+    padding-top: 11.354px;
+    padding-bottom: 11.354px;
+  }
+  :is(button)[data-sidebar-control='mode']:is(.min-h-11):not(.h-auto):not(.min-h-14):not(.min-h-16),
+  :is(button)[data-sidebar-control='language']:is(.min-h-10):not(.h-auto):not(.min-h-14):not(.min-h-16) {
+    min-height: 32.337px;
+  }
+}
