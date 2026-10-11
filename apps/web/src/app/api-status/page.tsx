@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
@@ -115,7 +116,7 @@ export default function ApiStatusPage() {
     <MainLandmark className="container mx-auto p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-semibold mb-2"><BilingualText en="API Status Check" el="Έλεγχος κατάστασης API" compact /></h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText en="Check the status of all API endpoints to diagnose 404 errors" el="Ελέγξτε όλα τα endpoints του API για διάγνωση σφαλμάτων 404" wrap />
         </p>
       </div>
@@ -130,30 +131,29 @@ export default function ApiStatusPage() {
       <div className="grid grid-cols-1 gap-4">
         {endpoints.map((endpoint, index) => (
           <Card key={index}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-                  {getStatusIcon(endpoint.status)}
-                  <CardTitle className="min-w-0 break-all text-base sm:text-lg">{endpoint.endpoint}</CardTitle>
-                  {getStatusBadge(endpoint.status)}
-                </div>
-                {endpoint.responseTime && (
-                  <span className="text-sm text-muted-foreground">
-                    {endpoint.responseTime}ms
-                  </span>
-                )}
-              </div>
-            </CardHeader>
-            {endpoint.error && (
-              <CardContent>
-                <div className="flex items-center gap-2 p-3 bg-status-danger-bg rounded-lg">
-                  <AlertCircle className="icon-sm text-status-danger" />
-                  <code className="text-sm text-status-danger ">
-                    {endpoint.error}
-                  </code>
-                </div>
-              </CardContent>
-            )}
+            <CardContent className="space-y-3">
+              <CardHead
+                mark={
+                  <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                    {getStatusIcon(endpoint.status)}
+                  </div>
+                }
+                title={endpoint.endpoint}
+                titleClassName="break-all"
+                aside={
+                  <>
+                    {getStatusBadge(endpoint.status)}
+                    {endpoint.responseTime ? <span className="tabular-nums">{endpoint.responseTime}ms</span> : null}
+                  </>
+                }
+              />
+              {endpoint.error && (
+                <p className="flex items-center gap-2 text-xs text-status-danger">
+                  <AlertCircle className="icon-sm shrink-0" aria-hidden="true" />
+                  <code className="break-all">{endpoint.error}</code>
+                </p>
+              )}
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -165,7 +165,10 @@ export default function ApiStatusPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="font-semibold mb-2">If endpoints return 404:</h4>
+              {/* The size sits on the inner span: a phone sets an in-card
+                  text-sm line under the card's title, and a heading is not
+                  in that rule. */}
+              <h4 className="mb-2 font-semibold"><span className="text-sm"><BilingualText en="If endpoints return 404:" el="Αν τα endpoints επιστρέφουν 404:" compact /></span></h4>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 <li>Check if the API server is running on port 3001</li>
                 <li><BilingualText en="Verify the API base URL in your environment variables" el="Ελέγξτε το βασικό URL του API στις μεταβλητές περιβάλλοντος" wrap /></li>
@@ -175,7 +178,7 @@ export default function ApiStatusPage() {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-2">Common solutions:</h4>
+              <h4 className="mb-2 font-semibold"><span className="text-sm"><BilingualText en="Common solutions:" el="Συνήθεις λύσεις:" compact /></span></h4>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 <li>Restart the API server: <code>npm run start:dev</code></li>
                 <li><BilingualText en="Check the API logs for any errors" el="Ελέγξτε τα logs του API για σφάλματα" wrap /></li>

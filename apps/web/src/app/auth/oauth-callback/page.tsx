@@ -72,46 +72,59 @@ export default function OAuthCallbackPage() {
   return (
     <MainLandmark className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-8 pb-8 text-center space-y-3">
-          {status === 'loading' && (
-            <>
+        {/* The column stays centred on the page; the card reads like every
+            other card: a mark, the title beside it, the line under it, and
+            the actions on the mark's edge. */}
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-3">
+            {status === 'loading' && (
               <div
                 aria-hidden="true"
-                className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
+                className="h-10 w-10 shrink-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
               />
-              <h1 className="text-lg font-semibold"><BilingualText en="Signing you in" el="Γίνεται σύνδεση" wrap /></h1>
-              <p className="text-sm text-muted-foreground">
-                <BilingualText en="Checking the session your provider returned." el="Ελέγχουμε τη συνεδρία που επέστρεψε ο πάροχος." wrap />
-              </p>
-            </>
-          )}
-
-          {status === 'success' && (
-            <>
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg text-xs font-semibold uppercase tracking-wide text-status-success">
+            )}
+            {status === 'success' && (
+              <div data-card-mark="" aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-status-success-bg text-xs font-semibold uppercase tracking-wide text-status-success">
                 OK
               </div>
-              <h1 className="text-lg font-semibold"><BilingualText en="Welcome" el="Καλώς ήρθατε" wrap /></h1>
-              <p className="text-sm text-muted-foreground" role="status">
-                <BilingualText en={`Signed in with ${provider}. Taking you in…`} el={`Συνδεθήκατε με ${provider}. Σας μεταφέρουμε…`} wrap />
-              </p>
-            </>
-          )}
-
-          {status === 'error' && (
-            <>
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive-accessible">
+            )}
+            {status === 'error' && (
+              <div data-card-mark="" aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-sm font-semibold text-destructive-accessible">
                 !
               </div>
-              <h1 className="text-lg font-semibold"><BilingualText en="Sign-in failed" el="Η σύνδεση απέτυχε" wrap /></h1>
-              <p className="text-sm text-muted-foreground">
-                {errorDetail ?? <BilingualText en="The session could not be confirmed. Try again, or create an account." el="Η συνεδρία δεν επιβεβαιώθηκε. Δοκιμάστε ξανά ή δημιουργήστε λογαριασμό." wrap />}
-              </p>
-              <div className="flex gap-3 justify-center pt-2">
-                <Button variant="outline" onClick={() => router.push('/login')}><BilingualText en="Back to sign in" el="Πίσω στη σύνδεση" compact /></Button>
-                <Button onClick={() => router.push('/register')}><BilingualText en="Create account" el="Δημιουργία λογαριασμού" compact /></Button>
-              </div>
-            </>
+            )}
+            <div className="min-w-0">
+              {status === 'loading' && (
+                <>
+                  <h1 className="card-title text-foreground"><BilingualText en="Signing you in" el="Γίνεται σύνδεση" wrap /></h1>
+                  <p className="card-subtitle mt-0.5">
+                    <BilingualText en="Checking the session your provider returned." el="Ελέγχουμε τη συνεδρία που επέστρεψε ο πάροχος." wrap />
+                  </p>
+                </>
+              )}
+              {status === 'success' && (
+                <>
+                  <h1 className="card-title text-foreground"><BilingualText en="Welcome" el="Καλώς ήρθατε" wrap /></h1>
+                  <p className="card-subtitle mt-0.5" role="status">
+                    <BilingualText en={`Signed in with ${provider}. Taking you in…`} el={`Συνδεθήκατε με ${provider}. Σας μεταφέρουμε…`} wrap />
+                  </p>
+                </>
+              )}
+              {status === 'error' && (
+                <>
+                  <h1 className="card-title text-foreground"><BilingualText en="Sign-in failed" el="Η σύνδεση απέτυχε" wrap /></h1>
+                  <p className="card-subtitle mt-0.5">
+                    {errorDetail ?? <BilingualText en="The session could not be confirmed. Try again, or create an account." el="Η συνεδρία δεν επιβεβαιώθηκε. Δοκιμάστε ξανά ή δημιουργήστε λογαριασμό." wrap />}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+          {status === 'error' && (
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" onClick={() => router.push('/login')}><BilingualText en="Back to sign in" el="Πίσω στη σύνδεση" compact /></Button>
+              <Button onClick={() => router.push('/register')}><BilingualText en="Create account" el="Δημιουργία λογαριασμού" compact /></Button>
+            </div>
           )}
         </CardContent>
       </Card>

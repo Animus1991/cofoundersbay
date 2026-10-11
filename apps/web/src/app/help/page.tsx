@@ -11,7 +11,8 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -274,7 +275,7 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
       </button>
       {isOpen && (
         <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
-          <p className="text-sm text-muted-foreground leading-relaxed"><BilingualText en={faq.answer} el={HELP_FAQ_EL[faq.question]?.a} wrap /></p>
+          <p className="card-body text-muted-foreground"><BilingualText en={faq.answer} el={HELP_FAQ_EL[faq.question]?.a} wrap /></p>
         </div>
       )}
     </div>
@@ -467,8 +468,8 @@ export default function HelpPage() {
           <Card>
             <CardContent>
               <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
-              <h2 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
-              <p className="text-sm text-muted-foreground mb-4"><BilingualText en="Try a different search term or browse all topics" el="Δοκιμάστε άλλον όρο ή δείτε όλα τα θέματα" wrap /></p>
+              <h2 className="card-title mb-2 text-foreground"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
+              <p className="card-body mb-4 text-muted-foreground"><BilingualText en="Try a different search term or browse all topics" el="Δοκιμάστε άλλον όρο ή δείτε όλα τα θέματα" wrap /></p>
               <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
                 <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
               </Button>
@@ -478,21 +479,18 @@ export default function HelpPage() {
           <div className="space-y-4">
             {displayCategories.map((category) => (
               <Card key={category.id} className="shadow-sm border-border">
-                <CardHeader className="border-b border-border py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <category.icon className="h-4 w-4 text-primary-accessible" />
+                <CardHeader className="border-b border-border">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1.5">
+                      <CardTitle><BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact /></CardTitle>
+                      <CardDescription><BilingualText en={category.description} el={HELP_TOPIC_EL[category.id]?.description} compact wrap /></CardDescription>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-sm font-semibold"><BilingualText en={category.title} el={HELP_TOPIC_EL[category.id]?.title} compact /></CardTitle>
-                      <p className="text-xs text-muted-foreground"><BilingualText en={category.description} el={HELP_TOPIC_EL[category.id]?.description} compact wrap /></p>
-                    </div>
-                    <Badge variant="outline" className="text-2xs shrink-0">
+                    <span className="shrink-0 pt-0.5 text-xs text-muted-foreground">
                       <BilingualText en={`${category.faqs.length} FAQ${category.faqs.length !== 1 ? 's' : ''}`} el={`${category.faqs.length} ${category.faqs.length !== 1 ? 'ερωτήσεις' : 'ερώτηση'}`} compact />
-                    </Badge>
+                    </span>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0 px-6">
+                <CardContent className="pt-0">
                   {category.faqs.map((faq, index) => (
                     <FAQAccordion
                       key={index}
@@ -509,12 +507,17 @@ export default function HelpPage() {
 
         {/* Contact Support */}
         <Card>
-          <CardContent>
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-              <Mail className="icon-lg text-muted-foreground" />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground mb-1"><BilingualText en="Still need help?" el="Χρειάζεστε ακόμα βοήθεια;" compact /></h2>
-            <p className="text-sm text-muted-foreground mb-5 max-w-prose">
+          <CardContent className="space-y-3">
+            <CardHead
+              titleAs="h2"
+              mark={
+                <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <Mail className="icon-md" aria-hidden="true" />
+                </div>
+              }
+              title={<BilingualText en="Still need help?" el="Χρειάζεστε ακόμα βοήθεια;" compact />}
+            />
+            <p className="card-body max-w-prose text-muted-foreground">
               <BilingualText en="Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours." el="Δεν βρίσκετε αυτό που ψάχνετε; Η ομάδα υποστήριξης απαντά συνήθως μέσα σε 24 ώρες." wrap />
             </p>
             <div className="flex flex-wrap gap-3">
@@ -540,28 +543,46 @@ export default function HelpPage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
             <Card className="h-full transition-colors hover:border-primary/40">
-              <CardContent className="pt-5 pb-5">
-                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h3>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Read our terms and conditions" el="Διαβάστε τους όρους χρήσης" compact /></p>
+              <CardContent>
+                <CardHead
+                  mark={
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:text-primary-accessible">
+                      <BookOpen className="icon-md" aria-hidden="true" />
+                    </div>
+                  }
+                  title={<BilingualText en="Terms of Service" el="Όροι χρήσης" compact />}
+                  subtitle={<BilingualText en="Read our terms and conditions" el="Διαβάστε τους όρους χρήσης" compact />}
+                />
               </CardContent>
             </Card>
           </Link>
           <Link href="/privacy" className="group">
             <Card className="h-full transition-colors hover:border-primary/40">
-              <CardContent className="pt-5 pb-5">
-                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h3>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Learn how we protect your data" el="Μάθετε πώς προστατεύουμε τα δεδομένα σας" compact /></p>
+              <CardContent>
+                <CardHead
+                  mark={
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:text-primary-accessible">
+                      <Shield className="icon-md" aria-hidden="true" />
+                    </div>
+                  }
+                  title={<BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact />}
+                  subtitle={<BilingualText en="Learn how we protect your data" el="Μάθετε πώς προστατεύουμε τα δεδομένα σας" compact />}
+                />
               </CardContent>
             </Card>
           </Link>
           <Link href="/settings" className="group">
             <Card className="h-full transition-colors hover:border-primary/40">
-              <CardContent className="pt-5 pb-5">
-                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
-                <h3 className="text-sm font-medium text-foreground mb-0.5"><BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact /></h3>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Manage your preferences" el="Διαχειριστείτε τις προτιμήσεις σας" compact /></p>
+              <CardContent>
+                <CardHead
+                  mark={
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:text-primary-accessible">
+                      <Settings className="icon-md" aria-hidden="true" />
+                    </div>
+                  }
+                  title={<BilingualText en="Account Settings" el="Ρυθμίσεις λογαριασμού" compact />}
+                  subtitle={<BilingualText en="Manage your preferences" el="Διαχειριστείτε τις προτιμήσεις σας" compact />}
+                />
               </CardContent>
             </Card>
           </Link>

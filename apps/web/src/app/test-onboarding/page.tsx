@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Circle, ArrowRight, Play, AlertCircle, Rocket } from 'lucide-react';
@@ -175,22 +176,25 @@ export default function TestOnboardingPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold mb-2"><BilingualText en="Production Readiness Tests" el="Έλεγχοι ετοιμότητας παραγωγής" compact /></h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             <BilingualText en="Test all critical components before going to production" el="Ελέγξτε όλα τα κρίσιμα στοιχεία πριν από την παραγωγή" wrap />
           </p>
         </div>
 
         {/* Progress */}
         <Card className="mb-8">
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold"><BilingualText en="Test Progress" el="Πρόοδος ελέγχων" compact /></h2>
-              <Badge variant={hasErrors ? 'destructive' : progress === 100 ? 'default' : 'secondary'}>
-                {completedSteps}/{steps.length} Completed
-              </Badge>
-            </div>
-            <Progress value={progress} className="mb-2" />
-            <p className="text-sm text-muted-foreground">
+          <CardContent className="space-y-3">
+            <CardHead
+              titleAs="h2"
+              title={<BilingualText en="Test Progress" el="Πρόοδος ελέγχων" compact />}
+              aside={
+                <Badge variant={hasErrors ? 'destructive' : progress === 100 ? 'default' : 'secondary'}>
+                  {completedSteps}/{steps.length} Completed
+                </Badge>
+              }
+            />
+            <Progress value={progress} />
+            <p className="text-xs text-muted-foreground">
               {progress === 100 ? 'All tests completed!' : `${Math.round(progress)}% complete`}
             </p>
           </CardContent>
@@ -201,48 +205,46 @@ export default function TestOnboardingPage() {
           {steps.map((step, index) => (
             <Card key={step.id} className={currentStepIndex === index ? 'ring-2 ring-primary' : ''}>
               <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
+                <CardHead
+                  mark={
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
                       {step.status === 'success' ? (
-                        <CheckCircle className="icon-lg text-status-success" />
+                        <CheckCircle className="icon-md text-status-success" aria-hidden="true" />
                       ) : step.status === 'error' ? (
-                        <AlertCircle className="icon-lg text-status-danger" />
+                        <AlertCircle className="icon-md text-status-danger" aria-hidden="true" />
                       ) : step.status === 'running' ? (
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
-                        <Circle className="icon-lg text-muted-foreground" />
+                        <Circle className="icon-md text-muted-foreground" aria-hidden="true" />
                       )}
-                      
-                      <div>
-                        <h3 className="font-semibold">{step.title}</h3>
-                        <p className="text-sm text-muted-foreground">{step.description}</p>
-                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="ml-auto flex items-center gap-2">
-                    {step.status === 'success' && (
-                      <Badge variant="default"><BilingualText en="Success" el="Επιτυχία" compact /></Badge>
-                    )}
-                    {step.status === 'error' && (
-                      <Badge variant="destructive"><BilingualText en="Failed" el="Αποτυχία" compact /></Badge>
-                    )}
-                    {step.status === 'running' && (
-                      <Badge variant="secondary"><BilingualText en="Running" el="Εκτελείται" compact /></Badge>
-                    )}
-                    {step.status === 'pending' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => runTest(step.id)}
-                        disabled={isRunning}
-                      >
-                        <BilingualText en="Test" el="Έλεγχος" compact />
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                  }
+                  title={step.title}
+                  subtitle={step.description}
+                  aside={
+                    <>
+                      {step.status === 'success' && (
+                        <Badge variant="default"><BilingualText en="Success" el="Επιτυχία" compact /></Badge>
+                      )}
+                      {step.status === 'error' && (
+                        <Badge variant="destructive"><BilingualText en="Failed" el="Αποτυχία" compact /></Badge>
+                      )}
+                      {step.status === 'running' && (
+                        <Badge variant="secondary"><BilingualText en="Running" el="Εκτελείται" compact /></Badge>
+                      )}
+                      {step.status === 'pending' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => runTest(step.id)}
+                          disabled={isRunning}
+                        >
+                          <BilingualText en="Test" el="Έλεγχος" compact />
+                        </Button>
+                      )}
+                    </>
+                  }
+                />
               </CardContent>
             </Card>
           ))}

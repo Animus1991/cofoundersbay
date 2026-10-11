@@ -114,7 +114,7 @@ export default function NewMilestonePage() {
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
         <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
-        <Card className="rounded-xl">
+        <Card>
           <CardHeader>
             <CardTitle>
               <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />

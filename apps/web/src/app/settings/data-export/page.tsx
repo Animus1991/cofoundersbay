@@ -10,6 +10,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getAccountExport, type AccountExport, type AccountExportSection } from '@/lib/api';
@@ -140,26 +141,28 @@ export default function DataExportPage() {
         </Link>
 
         <Card className="border-primary/15 bg-primary/5">
-          <CardContent className="pt-5">
-            <div className="flex items-start gap-3">
-              <Shield className="icon-md mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <div>
-                <p className="mb-1 text-sm font-medium text-foreground"><BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact /></p>
-                <p className="text-xs leading-relaxed text-muted-foreground">
+          <CardContent className="space-y-3">
+            <CardHead
+              mark={
+                <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                  <Shield className="icon-md" aria-hidden="true" />
+                </div>
+              }
+              title={<BilingualText en="Your Data Rights" el="Τα δικαιώματά σας στα δεδομένα" compact />}
+            />
+            <p className="card-body text-muted-foreground">
                   <BilingualText
                     en="Under GDPR you can receive a copy of your personal data in a portable format. The file is built when you ask for it and is not kept on our servers. Passwords, sign-in tokens and two-factor secrets are never included."
                     el="Βάσει GDPR μπορείτε να λάβετε αντίγραφο των προσωπικών σας δεδομένων σε φορητή μορφή. Το αρχείο δημιουργείται όταν το ζητάτε και δεν φυλάσσεται στους διακομιστές μας. Κωδικοί, διακριτικά σύνδεσης και μυστικά δύο παραγόντων δεν περιλαμβάνονται ποτέ."
                     wrap
                   />
-                </p>
-              </div>
-            </div>
+            </p>
           </CardContent>
         </Card>
 
         <Card className="border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base"><BilingualText en="Choose what to include" el="Επιλέξτε τι θα περιλαμβάνει" compact /></CardTitle>
+            <CardTitle><BilingualText en="Choose what to include" el="Επιλέξτε τι θα περιλαμβάνει" compact /></CardTitle>
             <CardDescription>
               <BilingualText en="Select the data you want to include in your export" el="Επιλέξτε τα δεδομένα που θα περιλαμβάνει η εξαγωγή" wrap />
             </CardDescription>
@@ -220,31 +223,33 @@ export default function DataExportPage() {
               {downloads.map((d) => (
                 <li key={d.at}>
                   <Card className="border-border">
-                    <CardContent className="flex items-start gap-3 pt-5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-success-bg">
-                        <Archive className="icon-md text-status-success" aria-hidden="true" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground">
-                          <BilingualText en={formatDate(d.at, 'en', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} el={formatDate(d.at, 'el', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} compact />
+                    <CardContent className="space-y-3">
+                      <CardHead
+                        mark={
+                          <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success-bg text-status-success">
+                            <Archive className="icon-md" aria-hidden="true" />
+                          </div>
+                        }
+                        title={<BilingualText en={formatDate(d.at, 'en', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} el={formatDate(d.at, 'el', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} compact />}
+                        subtitle={
+                          <>
+                            {d.sections.map((id) => {
+                              const c = DATA_CATEGORIES.find((x) => x.id === id);
+                              return c ? bilingualInline(c.label, c.labelEl) : id;
+                            }).join(' · ')} · {sizeLabel(d.bytes)}
+                          </>
+                        }
+                      />
+                      {d.unavailable.length > 0 && (
+                        <p className="flex items-start gap-1 text-xs text-status-warning">
+                          <AlertTriangle className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
+                          <BilingualText
+                            en={`Not readable: ${d.unavailable.map((u) => u.part).join(', ')}. The file names them too.`}
+                            el={`Δεν διαβάστηκαν: ${d.unavailable.map((u) => u.part).join(', ')}. Το αρχείο τα αναφέρει επίσης.`}
+                            wrap
+                          />
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                          {d.sections.map((id) => {
-                            const c = DATA_CATEGORIES.find((x) => x.id === id);
-                            return c ? bilingualInline(c.label, c.labelEl) : id;
-                          }).join(' · ')} · {sizeLabel(d.bytes)}
-                        </p>
-                        {d.unavailable.length > 0 && (
-                          <p className="mt-1 flex items-start gap-1 text-xs text-status-warning">
-                            <AlertTriangle className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
-                            <BilingualText
-                              en={`Not readable: ${d.unavailable.map((u) => u.part).join(', ')}. The file names them too.`}
-                              el={`Δεν διαβάστηκαν: ${d.unavailable.map((u) => u.part).join(', ')}. Το αρχείο τα αναφέρει επίσης.`}
-                              wrap
-                            />
-                          </p>
-                        )}
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 </li>

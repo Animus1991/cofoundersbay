@@ -130,7 +130,7 @@ function LoginPageContent() {
               <BilingualText en="Welcome back" el="Καλώς ήρθατε ξανά" wrap />
             )}
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {branding?.dashboardWelcomeText ?? (
               <BilingualText en="Sign in to continue building your network." el="Συνδεθείτε για να συνεχίσετε να χτίζετε το δίκτυό σας." wrap />
             )}

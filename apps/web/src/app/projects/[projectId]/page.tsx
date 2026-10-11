@@ -274,7 +274,7 @@ export default function ProjectDetailPage() {
               <TabsContent value="overview" className="space-y-6">
                 {/* What the project needs and offers for it, as a need card. */}
                 <ProjectNeedCard projectId={project.id} owned={owned} />
-                <Card className="rounded-xl">
+                <Card>
                   <CardHeader>
                     <CardTitle><BilingualText en={projectEn('about')} el={projectEl('about')} compact /></CardTitle>
                   </CardHeader>
@@ -355,7 +355,7 @@ export default function ProjectDetailPage() {
               </TabsContent>
 
               <TabsContent value="team" className="space-y-4">
-                <Card className="rounded-xl">
+                <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle><BilingualText en={projectEn('team_members')} el={projectEl('team_members')} compact /></CardTitle>
                     <span className="text-sm text-muted-foreground">
@@ -402,7 +402,7 @@ export default function ProjectDetailPage() {
               </TabsContent>
 
               <TabsContent value="milestones" className="space-y-4">
-                <Card className="rounded-xl">
+                <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle><BilingualText en={projectEn('milestones')} el={projectEl('milestones')} compact /></CardTitle>
                     <span className="text-sm text-muted-foreground">
@@ -452,7 +452,7 @@ export default function ProjectDetailPage() {
               </TabsContent>
 
               <TabsContent value="updates" className="space-y-4">
-                <Card className="rounded-xl">
+                <Card>
                   <CardHeader>
                     <CardTitle><BilingualText en={projectEn('updates')} el={projectEl('updates')} compact /></CardTitle>
                   </CardHeader>
@@ -474,7 +474,7 @@ export default function ProjectDetailPage() {
           </div>
 
           <div className="space-y-4">
-            <Card className="rounded-xl">
+            <Card>
               <CardContent className="space-y-3">
                 {owned ? (
                   <p className="card-body text-muted-foreground">
@@ -511,7 +511,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader>
                 <CardTitle><BilingualText en={projectEn('project_info')} el={projectEl('project_info')} compact /></CardTitle>
               </CardHeader>
@@ -553,7 +553,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-xl">
+            <Card>
               <CardHeader>
                 <CardTitle><BilingualText en={projectEn('founder')} el={projectEl('founder')} compact /></CardTitle>
               </CardHeader>

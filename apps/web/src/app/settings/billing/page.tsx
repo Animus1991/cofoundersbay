@@ -307,7 +307,7 @@ export default function UserBillingPage() {
         {sub?.plan?.features && (
           <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base"><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
+              <CardTitle><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(sub.plan.features as Record<string, unknown>)
@@ -353,8 +353,8 @@ export default function UserBillingPage() {
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
-                <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
+                <CardTitle><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
+                <CardDescription className="mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
                 {showContactForm
@@ -469,7 +469,7 @@ export default function UserBillingPage() {
         {/* Invoice history */}
         <Card className="border-border shadow-none">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base"><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
+            <CardTitle><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {invoicesLoading ? (

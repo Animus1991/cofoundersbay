@@ -303,7 +303,7 @@ function EmptyState({
   action: React.ReactNode;
 }) {
   return (
-    <Card className="rounded-xl border-dashed">
+    <Card className="border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-12 text-center">
         <CfbGlyph name={glyph} className="mb-4 icon-lg text-muted-foreground/50" />
         <h3 className="page-section mb-1 font-semibold text-foreground">

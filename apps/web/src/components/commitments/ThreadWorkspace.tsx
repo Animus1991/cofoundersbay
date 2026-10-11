@@ -117,7 +117,7 @@ function ProtectedConversation({
   return (
     <section aria-labelledby={`chat-${thread.id}`} className="space-y-3">
       <div className="space-y-1">
-        <h3 id={`chat-${thread.id}`} className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        <h3 id={`chat-${thread.id}`} className="card-subtitle card-byline flex items-center gap-1.5">
           {readOnly ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden /> : null}
           <BilingualText en={CMT.protected.en} el={CMT.protected.el} compact />
         </h3>
@@ -134,7 +134,7 @@ function ProtectedConversation({
         ) : (
           thread.messages.map((m) => (
             <li key={m.id} className={cn('flex', m.mine ? 'justify-end' : 'justify-start')}>
-              <div className={cn('max-w-[85%] rounded-xl px-3 py-2 text-sm', m.mine ? 'bg-primary/10 text-foreground' : 'bg-muted text-foreground')}>
+              <div className={cn('card-body max-w-[85%] rounded-xl px-3 py-2', m.mine ? 'bg-primary/10 text-foreground' : 'bg-muted text-foreground')}>
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
                 {m.createdAt ? (
                   <p className="mt-1 text-2xs text-muted-foreground"><RelativeTime date={m.createdAt} /></p>
@@ -296,7 +296,7 @@ function TermsSpace({
   return (
     <section aria-labelledby={`terms-${thread.id}`} className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 id={`terms-${thread.id}`} className="text-sm font-semibold text-foreground">
+        <h3 id={`terms-${thread.id}`} className="card-subtitle card-byline">
           <BilingualText en={CMT.terms.en} el={CMT.terms.el} compact />
           {latest ? <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">v{latest.version}</span> : null}
         </h3>
@@ -694,7 +694,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
             onSend={async (body) => !(await run(() => sendCommitmentMessage(threadId, body)))}
           />
           <section aria-labelledby={`confirm-${thread.id}`} className="space-y-2 border-t border-border pt-3">
-            <h3 id={`confirm-${thread.id}`} className="text-sm font-semibold text-foreground">
+            <h3 id={`confirm-${thread.id}`} className="card-subtitle card-byline">
               <BilingualText en={CMT.confirm_title.en} el={CMT.confirm_title.el} compact />
             </h3>
             <p className="text-xs text-muted-foreground">
@@ -715,7 +715,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
       {thread.step === 'agreed' && thread.dealRoomActive ? (
         <section aria-labelledby={`deal-${thread.id}`} className="space-y-2 border-t border-status-success-border pt-3">
-          <h3 id={`deal-${thread.id}`} className="text-sm font-semibold text-status-success">
+          <h3 id={`deal-${thread.id}`} className="card-subtitle card-byline">
             <BilingualText en={CMT.deal_room.en} el={CMT.deal_room.el} compact />
           </h3>
           <p className="card-body text-foreground"><BilingualText en={CMT.deal_room_open.en} el={CMT.deal_room_open.el} wrap /></p>
