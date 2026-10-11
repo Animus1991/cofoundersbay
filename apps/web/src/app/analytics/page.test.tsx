@@ -78,6 +78,25 @@ describe('analytics clarity and controls', () => {
     expect(screen.getByText('Network Velocity')).toBeTruthy();
   });
 
+  it('keeps the six overview tiles the same shape when views have a series', async () => {
+    vi.mocked(getAnalyticsOverview).mockResolvedValue({
+      ...overview,
+      metrics: { ...overview.metrics, profileViews: 248, profileViewsChange: 12 },
+      profileViews: [
+        { date: '2026-10-01', views: 10, uniqueVisitors: 4 },
+        { date: '2026-10-02', views: 20, uniqueVisitors: 8 },
+      ],
+    });
+    const { container } = mount();
+    await screen.findAllByText('248');
+    // The series belongs on the Growth chart, not inside one tile. A line on
+    // Profile Views alone made the top row taller than the row under it.
+    expect(container.querySelector('polyline')).toBeNull();
+    expect(screen.queryByText('This window')).toBeNull();
+    expect(screen.getAllByText('Profile Views').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Activity Score').length).toBeGreaterThan(0);
+  });
+
   it('announces the selected period and preserves filter and refresh requests', async () => {
     mount();
     await screen.findByText(/Recorded account activity/);

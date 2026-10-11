@@ -97,11 +97,9 @@ function metricValue(metric: AnalyticsMetric) {
 
 function MetricCard({
   metric,
-  sparkValues,
   onOpenTab,
 }: {
   metric: AnalyticsMetric;
-  sparkValues?: number[];
   onOpenTab?: (tab: AnalyticsTab) => void;
 }) {
   const ChangeIcon =
@@ -116,14 +114,13 @@ function MetricCard({
     : metric.label === 'Activity Score' || metric.label === 'Profile Views' ? 'growth'
     : null;
 
-  // `h-full` down the chain, so every card fills its grid row; the Profile
-  // Views card is taller than the rest by its sparkline.
+  // Every tile is the same three lines: the change, the figure, the name.
+  // A sparkline on Profile Views alone made the top row taller than the
+  // bottom row. The views series is drawn once, on the Growth tab.
   const body = (
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
-      {/* Stretched by the sparkline card's row, a plain tile centres its
-          figure instead of leaving a dead band at the bottom. */}
       <CardContent className="flex h-full flex-col items-center justify-center text-center">
-        <div className="mb-3 flex items-center justify-center gap-2">
+        <div className="mb-2 flex items-center justify-center gap-2">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
@@ -140,17 +137,9 @@ function MetricCard({
           </span>
         </div>
         <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
-        <p className="page-stat-label text-center leading-snug text-muted-foreground">
+        <p className="page-stat-label line-clamp-2 min-h-[2.75em] text-center leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
-        {sparkValues && sparkValues.length > 1 && (
-          <div className="mt-3 flex w-full flex-col items-center">
-            <Sparkline values={sparkValues} />
-            <p className="page-stat-label mt-1 text-center text-muted-foreground">
-              <BilingualText en={analyticsEn('spark_caption')} el={analyticsEl('spark_caption')} wrap />
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -170,23 +159,6 @@ function MetricCard({
     );
   }
   return body;
-}
-
-function Sparkline({ values, color = 'hsl(var(--primary))' }: { values: number[]; color?: string }) {
-  if (values.length < 2) return null;
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values);
-  const w = 80; const h = 28;
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * w;
-    const y = h - ((v - min) / (max - min || 1)) * h;
-    return `${x},${y}`;
-  }).join(' ');
-  return (
-    <svg width={w} height={h} className="mx-auto opacity-60">
-      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={pts} />
-    </svg>
-  );
 }
 
 function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
@@ -753,19 +725,9 @@ export default function AnalyticsPage() {
               </p>
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => {
-                  const sparkValues = metric.label === 'Profile Views'
-                    ? (profileViews ?? []).map((point) => point.views)
-                    : [];
-                  return (
-                    <MetricCard
-                      key={metric.label}
-                      metric={metric}
-                      sparkValues={sparkValues}
-                      onOpenTab={setTab}
-                    />
-                  );
-                })}
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
+                ))}
               </div>
 
               {declining.length > 0 && (
@@ -882,19 +844,9 @@ export default function AnalyticsPage() {
                 </Card>
               )}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => {
-                  const sparkValues = metric.label === 'Profile Views'
-                    ? (profileViews ?? []).map((point) => point.views)
-                    : [];
-                  return (
-                    <MetricCard
-                      key={metric.label}
-                      metric={metric}
-                      sparkValues={sparkValues}
-                      onOpenTab={setTab}
-                    />
-                  );
-                })}
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
+                ))}
               </div>
             </>
           )}
