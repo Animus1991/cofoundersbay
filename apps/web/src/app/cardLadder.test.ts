@@ -81,7 +81,7 @@ describe('card text ladder', () => {
     const phone = media(LADDER, 'max-width: 639.98px');
     expect(size(phone, '#main-content .card-title', 16)).toBe(13.582);
     expect(size(phone, '#main-content .card-subtitle', 16)).toBe(13.044);
-    expect(size(phone, '#main-content .card-body', 16)).toBe(12.921);
+    expect(size(phone, '#main-content .card-body', 16)).toBe(12.663);
   });
 
   it('sets field text under its label (text-sm) at every width', () => {

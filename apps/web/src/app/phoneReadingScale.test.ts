@@ -76,7 +76,7 @@ describe('phone reading scale', () => {
     expect(fontSize('.text-4xl')).toBe('13.582px');
     expect(fontSize('.text-7xl')).toBe('13.582px');
     expect(fontSize('#main-content .score-emblem-figure')).toBe('14.899px');
-    expect(fontSize('#main-content [data-card] p.card-copy')).toBe('12.921px');
+    expect(fontSize('#main-content [data-card] p.card-copy')).toBe('12.663px');
     expect(fontSize('select[data-filter-field]')).toBe('12.410px !important');
     expect(fontSize('#main-content h3.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body))')).toBe('13.673px');
     expect(BLOCK).toMatch(/#main-content \[data-card\] \.card-axis/);
