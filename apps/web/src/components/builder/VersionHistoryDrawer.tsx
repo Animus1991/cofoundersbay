@@ -5,7 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import {
   Sheet,
   SheetContent,
@@ -22,10 +24,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
-  History, RotateCcw, Clock, User, Loader2, ChevronRight,
+  History, RotateCcw, Loader2, ChevronRight,
   GitCommitHorizontal, AlertCircle,
 } from 'lucide-react';
-import { cn, initialsOf } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
 import {
@@ -57,78 +59,58 @@ function VersionCard({
   restoring: boolean;
 }) {
   return (
-    <div
-      className={cn(
-        'flex items-start gap-3 p-3 rounded-lg border transition-colors group',
-        current
-          ? 'border-primary/30 bg-primary/5'
-          : 'border-border hover:border-border hover:bg-muted/40',
-      )}
-    >
-      {/* Version icon */}
-      <div className={cn(
-        'mt-0.5 p-1.5 rounded-md shrink-0',
-        current ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
-      )}>
-        <GitCommitHorizontal className="icon-sm" />
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-foreground">
-            {v.versionLabel ?? `v${v.version}`}
-          </span>
-          {current && (
-            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-accessible">
+    <Card className={cn('group transition-all hover:border-primary/20', current && 'border-primary/30')}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <div
+              data-card-mark=""
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-xl',
+                current ? 'bg-primary/10 text-primary-accessible' : 'bg-muted text-muted-foreground',
+              )}
+            >
+              <GitCommitHorizontal className="icon-md" aria-hidden="true" />
+            </div>
+          )}
+          title={v.versionLabel ?? `v${v.version}`}
+          meta={(
+            <FactLine
+              items={[
+                <BilingualText key="date" en={fmtDate(v.createdAt, 'en-GB')} el={fmtDate(v.createdAt, 'el-GR')} compact />,
+                v.changedBy
+                  ? <span key="by">{v.changedBy.displayName}</span>
+                  : <BilingualText key="by" en="System" el="Σύστημα" compact />,
+              ]}
+            />
+          )}
+          aside={current ? (
+            <Badge variant="outline" className="border-primary/40 text-primary-accessible">
               <BilingualText en="Current" el="Τρέχουσα" compact />
             </Badge>
-          )}
-        </div>
+          ) : undefined}
+        />
 
         {v.changesSummary && (
-          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{v.changesSummary}</p>
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{v.changesSummary}</p>
         )}
 
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="icon-sm" />
-            <BilingualText en={fmtDate(v.createdAt, 'en-GB')} el={fmtDate(v.createdAt, 'el-GR')} compact />
-          </span>
-          {v.changedBy ? (
-            <span className="flex items-center gap-1">
-              <Avatar className="h-3.5 w-3.5">
-                <AvatarImage src={v.changedBy?.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-2xs">
-                  {initialsOf(v.changedBy?.displayName ?? 'U').charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              {v.changedBy.displayName}
-            </span>
-          ) : (
-            <span className="flex items-center gap-1">
-              <User className="icon-sm" />
-              <BilingualText en="System" el="Σύστημα" compact />
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Restore button */}
-      {!current && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 px-2 shrink-0 text-xs"
-          onClick={() => onRestore(v)}
-          disabled={restoring}
-          aria-label={bilingualAria(builderEn('hist_restore'), builderEl('hist_restore'))}
-        >
-          {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
-          <BilingualText en={builderEn('hist_restore')} el={builderEl('hist_restore')} compact />
-        </Button>
-      )}
-    </div>
+        {!current && (
+          <CardFoot>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onRestore(v)}
+              disabled={restoring}
+              aria-label={bilingualAria(builderEn('hist_restore'), builderEl('hist_restore'))}
+            >
+              {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
+              <BilingualText en={builderEn('hist_restore')} el={builderEl('hist_restore')} compact />
+            </Button>
+          </CardFoot>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

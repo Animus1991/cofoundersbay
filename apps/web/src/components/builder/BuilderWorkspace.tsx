@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -895,14 +896,14 @@ export function BuilderWorkspace({
             <CardTitle>
               <BilingualText en={builderEn('quick_actions')} el={builderEl('quick_actions')} compact />
             </CardTitle>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <CardDescription className="mt-0.5">
               <BilingualText
                 en={builderEn('quick_actions_hint')}
                 el={builderEl('quick_actions_hint')}
                 compact
                 wrap
               />
-            </p>
+            </CardDescription>
           </div>
           <AIInsightButton
             className="h-8 w-full sm:ml-auto sm:w-auto"
@@ -956,7 +957,8 @@ export function BuilderWorkspace({
         </CardContent>
       </Card>
 
-      {/* A gap and the step that closes it read as one thought, side by side. */}
+      {/* A gap and the step that closes it read as one thought: the gaps, then the steps under
+          them on the card's one left axis (side by side, the steps column sat 574px off it). */}
       {(blockers.length > 0 || nextMilestones.length > 0) && (
         <Card className="min-w-0">
           <CardHeader>
@@ -966,14 +968,9 @@ export function BuilderWorkspace({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div
-              className={cn(
-                'grid grid-cols-1 gap-5',
-                blockers.length > 0 && nextMilestones.length > 0 && 'md:grid-cols-2 md:gap-0 md:divide-x md:divide-border/60',
-              )}
-            >
+            <div className="space-y-4">
               {blockers.length > 0 && (
-                <section className={cn('min-w-0 space-y-2.5', nextMilestones.length > 0 && 'md:pr-6')}>
+                <section className="min-w-0 space-y-2.5">
                   <p className={cn('type-caption font-medium uppercase tracking-wide', STATUS.danger.text)}>
                     <BilingualText en={builderEn('critical_gaps')} el={builderEl('critical_gaps')} compact />
                   </p>
@@ -988,7 +985,7 @@ export function BuilderWorkspace({
                 </section>
               )}
               {nextMilestones.length > 0 && (
-                <section className={cn('min-w-0 space-y-2.5', blockers.length > 0 && 'md:pl-6')}>
+                <section className={cn('min-w-0 space-y-2.5', blockers.length > 0 && 'border-t border-border pt-4')}>
                   <p className="type-caption font-medium uppercase tracking-wide text-muted-foreground">
                     <BilingualText en={builderEn('next_steps')} el={builderEl('next_steps')} compact />
                   </p>
@@ -1078,7 +1075,7 @@ export function BuilderWorkspace({
         <Card>
           <CardContent className="py-12 text-center">
             <CfbGlyph name="book" className="mx-auto mb-3 icon-lg text-muted-foreground/50" />
-            <p className="mb-4 text-muted-foreground">
+            <p className="mb-4 text-sm text-muted-foreground">
               <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
@@ -1103,7 +1100,7 @@ export function BuilderWorkspace({
                 key={doc.id}
                 role="button"
                 tabIndex={0}
-                className="group cursor-pointer border-border transition-colors hover:border-border hover:bg-muted/20"
+                className="group cursor-pointer transition-all hover:border-primary/20"
                 onClick={() => openDocument(doc)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -1112,17 +1109,31 @@ export function BuilderWorkspace({
                   }
                 }}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex min-w-0 items-start gap-2">
-                    <CfbGlyph name={docGlyph(doc.type)} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
-                    <CardTitle className="min-w-0 leading-snug"><DocTitle title={doc.title} wrap /></CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3 pt-0">
+                <CardContent className="space-y-3">
+                  <CardHead
+                    mark={(
+                      <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                        <CfbGlyph name={docGlyph(doc.type)} className="icon-md" aria-hidden="true" />
+                      </div>
+                    )}
+                    title={<DocTitle title={doc.title} wrap />}
+                    subtitle={(
+                      <span className="tabular-nums">
+                        <BilingualText en={`Version ${doc.version}`} el={`Έκδοση ${doc.version}`} compact />
+                      </span>
+                    )}
+                    aside={(
+                      /* Named, not a bare coloured dot: the state is readable without a legend. */
+                      <Badge variant="outline" className={cn('gap-1.5 border font-medium', STATUS[statusTone(status)].chip)}>
+                        <span className={cn('h-1.5 w-1.5 rounded-full', statusColor(status))} aria-hidden="true" />
+                        <BilingualText en={builderEn(sk)} el={builderEl(sk)} compact />
+                      </Badge>
+                    )}
+                  />
                   {doc.description ? (
-                    <p className="line-clamp-2 text-xs text-muted-foreground"><PreviewHint text={doc.description} /></p>
+                    <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase"><PreviewHint text={doc.description} /></p>
                   ) : builderDocDescription(doc.type, 'en') ? (
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                    <p className="card-body line-clamp-2 text-muted-foreground">
                       <BilingualText
                         en={builderDocDescription(doc.type, 'en')}
                         el={builderDocDescription(doc.type, 'el')}
@@ -1137,32 +1148,32 @@ export function BuilderWorkspace({
                     />
                     <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">{doc.completionPercent}%</span>
                   </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                      <Badge variant="secondary" className="text-xs">
-                        v{doc.version}
-                      </Badge>
-                      {/* Named, not a bare coloured dot: the state is readable without a legend. */}
-                      <Badge variant="outline" className={cn('gap-1.5 border text-2xs font-medium', STATUS[statusTone(status)].chip)}>
-                        <span className={cn('h-1.5 w-1.5 rounded-full', statusColor(status))} aria-hidden="true" />
-                        <BilingualText en={builderEn(sk)} el={builderEl(sk)} compact />
-                      </Badge>
-                    </div>
-                    <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-primary-accessible">
-                      <BilingualText en={builderEn('open')} el={builderEl('open')} compact /> <ArrowRight className="icon-sm" />
-                    </span>
-                  </div>
+                  <CardFoot
+                    meta={(
+                      <span className="flex items-center gap-1 transition-colors group-hover:text-primary-accessible">
+                        <BilingualText en={builderEn('open')} el={builderEl('open')} compact /> <ArrowRight className="icon-sm" aria-hidden="true" />
+                      </span>
+                    )}
+                  />
                 </CardContent>
               </Card>
             );
           })}
 
           <Card
-            className="cursor-pointer border border-dashed border-border bg-transparent transition-colors hover:border-border hover:bg-muted/30"
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer border border-dashed border-border bg-transparent transition-colors hover:border-primary/20 hover:bg-muted/30"
             onClick={() => setShowCreateDocDialog(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowCreateDocDialog(true);
+              }
+            }}
           >
-            <CardContent className="flex h-full flex-col items-center justify-center gap-2 py-8 text-center">
-              <p className="text-sm text-muted-foreground">
+            <CardContent className="flex h-full items-center py-8">
+              <p className="text-sm font-medium text-muted-foreground">
                 <BilingualText en={builderEn('add_document')} el={builderEl('add_document')} compact />
               </p>
             </CardContent>

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -61,6 +61,7 @@ import {
   type ProjectStatus,
 } from '@/lib/projects-demo';
 import { FactLine } from '@/components/common/FactLine';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 
 const STATUS_COLOR: Record<ProjectStatus, string> = {
   idea: 'bg-status-accent-bg text-status-accent border-status-accent-border',
@@ -91,7 +92,7 @@ function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-c
   const en = project.tagline || project.description;
   const el = project.taglineEl || project.descriptionEl;
   return (
-    <p className={cn('text-sm text-muted-foreground', clamp)}>
+    <p className={cn(clamp === 'line-clamp-2' ? 'card-body text-muted-foreground' : 'min-w-0', clamp)}>
       {el ? <BilingualText en={en} el={el} compact={clamp === 'line-clamp-1'} wrap={clamp === 'line-clamp-2'} /> : en}
     </p>
   );
@@ -123,107 +124,119 @@ function ProjectCard({
   onMessage: (project: DemoProject) => void;
   onShare: (project: DemoProject) => void;
 }) {
+  // A project is an organisation-like thing: a rounded-square mark with its initial.
+  const mark = (
+    <Avatar className="h-10 w-10 rounded-xl">
+      <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+        {project.name[0]?.toUpperCase()}
+      </AvatarFallback>
+    </Avatar>
+  );
+  const title = (
+    <span className="inline-flex max-w-full items-center gap-1.5">
+      <Link href={`/projects/${project.id}`} className="min-w-0 break-words transition-colors hover:text-primary-accessible">
+        {project.name}
+      </Link>
+      {project.isStarred && <Star className="icon-sm shrink-0 fill-status-warning text-status-warning" />}
+    </span>
+  );
+  const pills = (
+    <>
+      <StageBadge status={project.status} />
+      {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
+    </>
+  );
+  const team = (
+    <span key="team">
+      <span className="font-medium tabular-nums text-foreground">{project.teamSize}</span>/{project.maxTeamSize}{' '}
+      <BilingualText en={projectEn('members')} el={projectEl('members')} compact />
+    </span>
+  );
+  const members = (count: number) => (
+    <div className="flex -space-x-2" data-keep-icon="">
+      {project.members.slice(0, count).map((m) => (
+        <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
+          <AvatarImage src={m.avatar} />
+          <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
+            {m.name[0]}
+          </AvatarFallback>
+        </Avatar>
+      ))}
+    </div>
+  );
+
   if (viewMode === 'list') {
     return (
-      <Card className="rounded-xl border-border transition-colors hover:border-primary/30">
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center gap-2">
-                <Link href={`/projects/${project.id}`} className="page-section person-name inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
-                  {project.name}
-                </Link>
-                <StageBadge status={project.status} />
-                {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
-                {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
-              </div>
-              <ProjectBlurb project={project} clamp="line-clamp-1" />
-            </div>
-            <div className="flex shrink-0 items-center gap-6">
-              <div className="flex -space-x-2">
-                {project.members.slice(0, 3).map((m) => (
-                  <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
-                    <AvatarImage src={m.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
-                      {m.name[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize}
-              </div>
-              <FactLine className="max-w-[200px]" items={project.rolesNeeded.slice(0, 2).map((role) => roleLabel(role))} />
-              <Button variant="outline" size="sm" className={BUILDER_BTN} asChild>
-                <Link href={`/projects/${project.id}`}>
-                  <BilingualText en={projectEn('view')} el={projectEl('view')} compact />
-                  <ChevronRight className="icon-sm ml-1" />
-                </Link>
-              </Button>
-            </div>
-          </div>
+      <Card className="transition-all hover:border-primary/20">
+        <CardContent className="space-y-3">
+          <CardHead mark={mark} title={title} subtitle={<ProjectBlurb project={project} clamp="line-clamp-1" />} aside={pills} />
+          <CardFoot
+            meta={<FactLine items={[team, ...project.rolesNeeded.slice(0, 2).map((role) => roleLabel(role))]} />}
+          >
+            {members(3)}
+            <Button variant="outline" size="sm" className={BUILDER_BTN} asChild>
+              <Link href={`/projects/${project.id}`}>
+                <BilingualText en={projectEn('view')} el={projectEl('view')} compact />
+                <ChevronRight className="icon-sm ml-1" />
+              </Link>
+            </Button>
+          </CardFoot>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="group flex min-w-0 flex-col rounded-xl border-0">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 flex items-center gap-2">
-              <Link href={`/projects/${project.id}`} className="page-section person-name inline-flex tap-target-y items-center font-semibold leading-snug text-foreground transition-colors hover:text-primary-accessible">
-                  {project.name}
-                </Link>
-              {project.isStarred && <Star className="icon-sm fill-status-warning text-status-warning" />}
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <StageBadge status={project.status} />
-              {outcome ? <OutcomeChip outcome={outcome.outcome} reason={outcome.reason} /> : null}
-            </div>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-md text-muted-foreground hover:text-foreground"
-                aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
-              >
-                <MoreVertical className="icon-sm" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-              <DropdownMenuItem onClick={() => onStar(project.id)}>
-                <Star className="icon-sm mr-2" />
-                <BilingualText
-                  en={project.isStarred ? projectEn('unstar') : projectEn('star')}
-                  el={project.isStarred ? projectEl('unstar') : projectEl('star')}
-                  compact
-                />
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onMessage(project)}>
-                <MessageSquare className="icon-sm mr-2" />
-                <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onShare(project)}>
-                <ExternalLink className="icon-sm mr-2" />
-                <BilingualText en={projectEn('share')} el={projectEl('share')} compact />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </CardHeader>
+    <Card className="group flex min-w-0 flex-col transition-all hover:border-primary/20">
       <CardContent className="flex min-w-0 flex-1 flex-col gap-3">
+        <CardHead
+          mark={mark}
+          title={title}
+          subtitle={<FactLine className="text-sm" items={[project.industry || null, project.location || null]} />}
+          meta={<span className="mt-1 flex flex-wrap items-center gap-1.5">{pills}</span>}
+          asideStays
+          aside={(
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 rounded-md text-muted-foreground hover:text-foreground"
+                  aria-label={bilingualAria(projectEn('more'), projectEl('more'))}
+                >
+                  <MoreVertical className="icon-sm" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                <DropdownMenuItem onClick={() => onStar(project.id)}>
+                  <Star className="icon-sm mr-2" />
+                  <BilingualText
+                    en={project.isStarred ? projectEn('unstar') : projectEn('star')}
+                    el={project.isStarred ? projectEl('unstar') : projectEl('star')}
+                    compact
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onMessage(project)}>
+                  <MessageSquare className="icon-sm mr-2" />
+                  <BilingualText en={projectEn('message_team')} el={projectEl('message_team')} compact />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onShare(project)}>
+                  <ExternalLink className="icon-sm mr-2" />
+                  <BilingualText en={projectEn('share')} el={projectEl('share')} compact />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
+
         <ProjectBlurb project={project} clamp="line-clamp-2" />
 
         <FactLine items={project.tags.slice(0, 4)} />
 
         {project.progress !== undefined && (
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-2xs">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">
                 <BilingualText en={projectEn('progress')} el={projectEl('progress')} compact />
               </span>
@@ -235,52 +248,40 @@ function ProjectCard({
           </div>
         )}
 
-        <div className="border-t border-border pt-2">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CfbGlyph name="people" className="icon-sm" />
-              <span>
-                <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize}{' '}
-                <BilingualText en={projectEn('members')} el={projectEl('members')} compact />
-              </span>
-            </div>
-            {(project.messageCount ?? 0) > 0 && (
-              <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                <CfbGlyph name="messages" className="icon-sm" />
-                {project.messageCount}
-              </div>
-            )}
+        {project.rolesNeeded.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={projectEn('looking_for')} el={projectEl('looking_for')} compact />
+            </p>
+            {/* The roles are what the card is looking for: body text under
+                their caption, not accent pills. */}
+            <FactLine className="text-sm text-foreground" items={project.rolesNeeded.map((role) => roleLabel(role))} />
           </div>
+        )}
 
-          <div className="mb-3 flex -space-x-2">
-            {project.members.slice(0, 4).map((m) => (
-              <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
-                <AvatarImage src={m.avatar} />
-                <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">
-                  {m.name[0]}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-          </div>
-
-          {project.rolesNeeded.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-2xs font-medium text-muted-foreground">
-                <BilingualText en={projectEn('looking_for')} el={projectEl('looking_for')} compact />
-              </p>
-              {/* The roles are what the card is looking for: body text under
-                  their caption, not accent pills. */}
-              <FactLine className="text-sm text-foreground" items={project.rolesNeeded.map((role) => roleLabel(role))} />
-            </div>
+        <CardFoot
+          className="mt-auto"
+          meta={(
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {members(4)}
+              <FactLine
+                items={[
+                  team,
+                  (project.messageCount ?? 0) > 0 ? (
+                    <BilingualText key="msgs" en={`${project.messageCount} messages`} el={`${project.messageCount} μηνύματα`} compact />
+                  ) : null,
+                ]}
+              />
+            </span>
           )}
-        </div>
-
-        <Button variant="secondary" size="sm" className={`mt-auto max-w-full self-start ${BUILDER_BTN}`} asChild>
-          <Link href={`/projects/${project.id}`}>
-            <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
-            <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
-          </Link>
-        </Button>
+        >
+          <Button variant="outline" size="sm" className={`max-w-full ${BUILDER_BTN}`} asChild>
+            <Link href={`/projects/${project.id}`}>
+              <BilingualText en={projectEn('view_project')} el={projectEl('view_project')} compact wrap />
+              <ChevronRight className="icon-sm ml-1 shrink-0" aria-hidden="true" />
+            </Link>
+          </Button>
+        </CardFoot>
       </CardContent>
     </Card>
   );

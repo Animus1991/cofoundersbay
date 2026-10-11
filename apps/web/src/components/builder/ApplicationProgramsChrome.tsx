@@ -1,12 +1,13 @@
 'use client';
 
-import { FileText, Loader, BadgeCheck, Percent, Clock } from 'lucide-react';
+import { FileText, Loader, BadgeCheck, Percent } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { RailStats } from '@/components/layout/RailParts';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { BUILDER_STAT, BUILDER_STAT_LABEL } from './BuilderStageChrome';
 import { cn } from '@/lib/utils';
@@ -50,7 +51,7 @@ export function ApplicationProgramsChrome({
     switch (status) {
       case 'draft':
         return (
-          <Badge variant="secondary">
+          <Badge variant="outline">
             <BilingualText en={builderEn('app_draft')} el={builderEl('app_draft')} compact />
           </Badge>
         );
@@ -68,7 +69,7 @@ export function ApplicationProgramsChrome({
         );
       case 'submitted':
         return (
-          <Badge className={STATUS.success.chip}>
+          <Badge variant="outline" className={cn('border', STATUS.success.chip)}>
             <BilingualText en={builderEn('app_submitted')} el={builderEl('app_submitted')} compact />
           </Badge>
         );
@@ -76,7 +77,7 @@ export function ApplicationProgramsChrome({
   };
 
   const picker = (
-    <div className={layout === 'cards' ? 'grid grid-cols-1 gap-4 md:grid-cols-4' : 'space-y-2'}>
+    <div className={layout === 'cards' ? 'grid grid-cols-1 gap-4 md:grid-cols-2' : 'space-y-2'}>
       {applications.map((app) => {
         const completion = requiredCompletion(app);
         const on = activeApp === app.id;
@@ -87,7 +88,7 @@ export function ApplicationProgramsChrome({
             tabIndex={0}
             aria-pressed={on}
             className={cn(
-              'cursor-pointer rounded-xl transition-all',
+              'cursor-pointer transition-all hover:border-primary/20',
               on && 'ring-2 ring-primary',
               layout === 'rail' && 'shadow-none',
             )}
@@ -99,13 +100,24 @@ export function ApplicationProgramsChrome({
               }
             }}
           >
-            <CardContent className={layout === 'rail' ? 'p-3' : 'p-4'}>
-              <div className="mb-3 flex items-start justify-between">
-                <CfbGlyph name={app.glyph} className="icon-sm text-muted-foreground" />
-                {statusBadge(app.status)}
-              </div>
-              <h3 className="mb-1 page-section font-semibold">{app.name}</h3>
-              <p className="mb-3 text-sm text-muted-foreground">
+            <CardContent className={cn('space-y-3', layout === 'rail' && 'p-3')}>
+              <CardHead
+                mark={(
+                  <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                    <CfbGlyph name={app.glyph} className="icon-md" aria-hidden="true" />
+                  </div>
+                )}
+                title={app.name}
+                meta={(app.deadlineKey || app.deadline) ? (
+                  app.deadlineKey ? (
+                    <BilingualText en={builderEn(app.deadlineKey)} el={builderEl(app.deadlineKey)} compact />
+                  ) : (
+                    app.deadline
+                  )
+                ) : undefined}
+                aside={statusBadge(app.status)}
+              />
+              <p className="card-body line-clamp-2 text-muted-foreground">
                 {app.descKey ? (
                   <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
                 ) : (
@@ -113,24 +125,14 @@ export function ApplicationProgramsChrome({
                 )}
               </p>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between gap-2 text-xs text-muted-foreground">
                   <span>
                     <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact />
                   </span>
-                  <span>{completion}%</span>
+                  <span className="font-medium tabular-nums text-foreground">{completion}%</span>
                 </div>
                 <Progress value={completion} className="h-1.5" />
               </div>
-              {(app.deadlineKey || app.deadline) && (
-                <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="icon-sm" />
-                  {app.deadlineKey ? (
-                    <BilingualText en={builderEn(app.deadlineKey)} el={builderEl(app.deadlineKey)} compact />
-                  ) : (
-                    app.deadline
-                  )}
-                </div>
-              )}
             </CardContent>
           </Card>
         );
@@ -195,7 +197,7 @@ export function ApplicationProgramsChrome({
             { glyph: 'chart' as const, label: 'app_stat_avg' as const, value: `${stats.avg}%` },
           ] as const
         ).map((item) => (
-          <Card key={item.label} className="rounded-xl">
+          <Card key={item.label}>
             <CardContent className="flex items-center gap-3">
               <CfbGlyph name={item.glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
               <div className="min-w-0">

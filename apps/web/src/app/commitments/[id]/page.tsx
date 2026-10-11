@@ -495,8 +495,8 @@ function Board() {
 
         {isOwner ? (
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
+            <CardHeader>
+              <CardTitle>
                 <BilingualText en={CMT.responses.en} el={CMT.responses.el} compact />
                 <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">{responses.length}</span>
               </CardTitle>
@@ -526,10 +526,22 @@ function Board() {
                   ))}
                 </div>
               )}
-              {activeThreadId ? <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} /> : null}
             </CardContent>
           </Card>
-        ) : (
+        ) : null}
+
+        {/* The open response is a card of its own under the list of
+            responses: inside the list's card its name read as a second
+            title under "Responses". */}
+        {isOwner && activeThreadId ? (
+          <Card>
+            <CardContent>
+              <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {isOwner ? null : (
           <Card>
             <CardContent>
               {activeThreadId ? (

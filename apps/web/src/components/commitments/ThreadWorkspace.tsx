@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Flag, Lock } from 'lucide-react';
+import { ChevronDown, Flag, Lock } from 'lucide-react';
 import {
   canReviseTerms,
   contactKinds,
@@ -313,9 +313,11 @@ function TermsSpace({
       </div>
       <p className="text-xs text-muted-foreground"><BilingualText en={CMT.terms_hint.en} el={CMT.terms_hint.el} wrap /></p>
       {!thread.verification.meVerified && thread.step === 'terms' ? (
-        <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="note">
-          <p className="text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
-          <Button asChild size="sm" variant="outline" className="mt-2">
+        // On the card's axis, not in a padded tile of its own: a framed
+        // note inside the card moved its sentence 12px off the axis.
+        <div className="space-y-2" role="note">
+          <p className="card-body font-medium text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
+          <Button asChild size="sm" variant="outline">
             <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
           </Button>
         </div>
@@ -342,9 +344,10 @@ function TermsSpace({
       )}
 
       {earlier.length ? (
-        <details className="border-t border-border pt-3">
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+        <details className="group/more border-t border-border pt-3">
+          <summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
             <BilingualText en={CMT.earlier_versions.en} el={CMT.earlier_versions.el} compact />
+            <ChevronDown className="icon-sm shrink-0 transition-transform group-open/more:rotate-180" aria-hidden="true" />
           </summary>
           <ol className="mt-3 space-y-4">
             {earlier.map((v) => (
@@ -649,7 +652,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       <CommitmentLadder step={thread.step} myConfirmed={thread.myConfirmed} />
 
       {answeredOld ? (
-        <p className="rounded-lg bg-status-info-bg px-3 py-2 text-xs text-status-info">
+        <p className="text-xs font-medium text-status-info" role="note">
           <BilingualText
             en={`${CMT.offer_changed.en} (v${thread.answeredVersion} → v${thread.card.version}).`}
             el={`${CMT.offer_changed.el} (v${thread.answeredVersion} → v${thread.card.version}).`}
@@ -711,7 +714,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       ) : null}
 
       {thread.step === 'agreed' && thread.dealRoomActive ? (
-        <section aria-labelledby={`deal-${thread.id}`} className="space-y-2 rounded-xl border border-status-success-border bg-status-success-bg p-3">
+        <section aria-labelledby={`deal-${thread.id}`} className="space-y-2 border-t border-status-success-border pt-3">
           <h3 id={`deal-${thread.id}`} className="text-sm font-semibold text-status-success">
             <BilingualText en={CMT.deal_room.en} el={CMT.deal_room.el} compact />
           </h3>
@@ -746,9 +749,10 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       ) : null}
 
       {thread.step === 'terms' || thread.step === 'agreed' || (thread.step === 'closed' && thread.messages.length > 0) ? (
-        <details className="border-t border-border pt-3">
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+        <details className="group/more border-t border-border pt-3">
+          <summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
             <BilingualText en={`${CMT.protected.en} · ${thread.messages.length}`} el={`${CMT.protected.el} · ${thread.messages.length}`} compact />
+            <ChevronDown className="icon-sm shrink-0 transition-transform group-open/more:rotate-180" aria-hidden="true" />
           </summary>
           <div className="mt-3">
             <ProtectedConversation thread={thread} sending={false} error={null} onSend={async () => false} />
@@ -765,7 +769,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
       {thread.step === 'conversation' || thread.step === 'terms' ? (
         <div className="border-t border-border pt-3">
-          <Button size="sm" variant="ghost" className="text-muted-foreground" disabled={busy} onClick={() => void stepBack()}>
+          <Button size="sm" variant="outline" className="text-muted-foreground" disabled={busy} onClick={() => void stepBack()}>
             <BilingualText en={CMT.step_back.en} el={CMT.step_back.el} compact />
           </Button>
         </div>

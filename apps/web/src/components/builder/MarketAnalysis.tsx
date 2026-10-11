@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -411,7 +412,7 @@ function RemoveButton({ onClick }: { onClick: () => void }) {
       type="button"
       variant="outline"
       size="icon"
-      className="shrink-0 rounded-xl"
+      className="shrink-0"
       onClick={onClick}
       aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
     >
@@ -495,20 +496,20 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
     items: Competitor[],
     emptyKey: 'mkt_no_comp' | 'mkt_no_indirect',
   ) => (
-    <CardContent className="space-y-4">
+    <CardContent>
       {items.length === 0 ? (
-        <div className="py-8 text-center text-muted-foreground">
-          <CfbGlyph name="shield" className="icon-xl mx-auto mb-2 opacity-50" />
-          <p className="text-xs leading-snug">
-            <BilingualText en={builderEn(emptyKey)} el={builderEl(emptyKey)} />
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en={builderEn(emptyKey)} el={builderEl(emptyKey)} wrap />
+        </p>
       ) : (
-        items.map((competitor, index) => (
-          <Card key={`${type}-${index}`} className="p-4">
-            <div className="mb-3 flex justify-end">
-              <RemoveButton onClick={() => removeCompetitor(type, index)} />
-            </div>
+        <div className="divide-y divide-border">
+        {items.map((competitor, index) => (
+          <div key={`${type}-${index}`} className="space-y-3 py-4 first:pt-0 last:pb-0">
+            <RowHead
+              title={<span className="tabular-nums"><BilingualText en={`Competitor ${index + 1}`} el={`Ανταγωνιστής ${index + 1}`} compact /></span>}
+              aside={<RemoveButton onClick={() => removeCompetitor(type, index)} />}
+              asideStays
+            />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor={`mkt-${type}-name-${index}`}>
@@ -519,7 +520,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                   value={competitor.name}
                   onChange={(e) => updateCompetitor(type, index, 'name', e.target.value)}
                   placeholder={t(builderEn('mkt_ph_comp_name'), builderEl('mkt_ph_comp_name'))}
-                  className="rounded-xl"
+                 
                 />
               </div>
               <div className="space-y-1.5">
@@ -531,7 +532,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                   value={competitor.marketShare}
                   onChange={(e) => updateCompetitor(type, index, 'marketShare', e.target.value)}
                   placeholder={t(builderEn('mkt_ph_share'), builderEl('mkt_ph_share'))}
-                  className="rounded-xl"
+                 
                 />
               </div>
               <div className="space-y-1.5 md:col-span-2">
@@ -543,7 +544,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                   value={competitor.description}
                   onChange={(e) => updateCompetitor(type, index, 'description', e.target.value)}
                   placeholder={t(builderEn('mkt_ph_desc'), builderEl('mkt_ph_desc'))}
-                  className="rounded-xl"
+                 
                 />
               </div>
               <div className="space-y-1.5">
@@ -555,12 +556,13 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                   value={competitor.pricing}
                   onChange={(e) => updateCompetitor(type, index, 'pricing', e.target.value)}
                   placeholder={t(builderEn('mkt_ph_pricing'), builderEl('mkt_ph_pricing'))}
-                  className="rounded-xl"
+                 
                 />
               </div>
             </div>
-          </Card>
-        ))
+          </div>
+        ))}
+        </div>
       )}
     </CardContent>
   );
@@ -658,7 +660,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.tam.value}
                     onChange={(e) => setData((prev) => ({ ...prev, tam: { ...prev.tam, value: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -670,7 +672,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_tam'), builderEl('mkt_ph_tam'))}
                     value={data.tam.description}
                     onChange={(e) => setData((prev) => ({ ...prev, tam: { ...prev.tam, description: e.target.value } }))}
-                    className="min-h-[80px] rounded-xl"
+                    className="min-h-[80px]"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -682,7 +684,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_sources'), builderEl('mkt_ph_sources'))}
                     value={data.tam.sources}
                     onChange={(e) => setData((prev) => ({ ...prev, tam: { ...prev.tam, sources: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
               </CardContent>
@@ -705,7 +707,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.sam.value}
                     onChange={(e) => setData((prev) => ({ ...prev, sam: { ...prev.sam, value: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -717,7 +719,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_sam'), builderEl('mkt_ph_sam'))}
                     value={data.sam.description}
                     onChange={(e) => setData((prev) => ({ ...prev, sam: { ...prev.sam, description: e.target.value } }))}
-                    className="min-h-[80px] rounded-xl"
+                    className="min-h-[80px]"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -729,7 +731,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_method'), builderEl('mkt_ph_method'))}
                     value={data.sam.methodology}
                     onChange={(e) => setData((prev) => ({ ...prev, sam: { ...prev.sam, methodology: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
               </CardContent>
@@ -752,7 +754,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_value'), builderEl('mkt_ph_value'))}
                     value={data.som.value}
                     onChange={(e) => setData((prev) => ({ ...prev, som: { ...prev.som, value: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -764,7 +766,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_som'), builderEl('mkt_ph_som'))}
                     value={data.som.description}
                     onChange={(e) => setData((prev) => ({ ...prev, som: { ...prev.som, description: e.target.value } }))}
-                    className="min-h-[80px] rounded-xl"
+                    className="min-h-[80px]"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -776,7 +778,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_assumptions'), builderEl('mkt_ph_assumptions'))}
                     value={data.som.assumptions}
                     onChange={(e) => setData((prev) => ({ ...prev, som: { ...prev.som, assumptions: e.target.value } }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
               </CardContent>
@@ -873,7 +875,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                       ...prev,
                       idealCustomerProfile: { ...prev.idealCustomerProfile, demographics: e.target.value },
                     }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -888,7 +890,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                       ...prev,
                       idealCustomerProfile: { ...prev.idealCustomerProfile, psychographics: e.target.value },
                     }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -903,7 +905,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                       ...prev,
                       idealCustomerProfile: { ...prev.idealCustomerProfile, buyingBehavior: e.target.value },
                     }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -918,7 +920,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                       ...prev,
                       idealCustomerProfile: { ...prev.idealCustomerProfile, budget: e.target.value },
                     }))}
-                    className="rounded-xl"
+                   
                   />
                 </div>
               </div>
@@ -942,25 +944,26 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
             </CardHeader>
             <CardContent>
               {data.personas.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyph name="people" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p className="text-xs leading-snug">
-                    <BilingualText en={builderEn('mkt_no_persona')} el={builderEl('mkt_no_persona')} />
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('mkt_no_persona')} el={builderEl('mkt_no_persona')} wrap />
+                </p>
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="divide-y divide-border">
                   {data.personas.map((persona, index) => (
-                    <Card key={`persona-${index}`} className="p-4">
+                    <div key={`persona-${index}`} className="py-4 first:pt-0 last:pb-0">
                       <div className="space-y-3">
-                        <div className="flex justify-end">
-                          <RemoveButton
-                            onClick={() => setData((prev) => ({
-                              ...prev,
-                              personas: prev.personas.filter((_, i) => i !== index),
-                            }))}
-                          />
-                        </div>
+                        <RowHead
+                          title={<span className="tabular-nums"><BilingualText en={`Persona ${index + 1}`} el={`Persona ${index + 1}`} compact /></span>}
+                          aside={(
+                            <RemoveButton
+                              onClick={() => setData((prev) => ({
+                                ...prev,
+                                personas: prev.personas.filter((_, i) => i !== index),
+                              }))}
+                            />
+                          )}
+                          asideStays
+                        />
                         <Input
                           placeholder={t(builderEn('mkt_ph_persona_name'), builderEl('mkt_ph_persona_name'))}
                           value={persona.name}
@@ -969,7 +972,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                             personas[index] = { ...persona, name: e.target.value };
                             setData((prev) => ({ ...prev, personas }));
                           }}
-                          className="rounded-xl"
+                         
                         />
                         <Input
                           placeholder={t(builderEn('mkt_ph_role'), builderEl('mkt_ph_role'))}
@@ -979,7 +982,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                             personas[index] = { ...persona, role: e.target.value };
                             setData((prev) => ({ ...prev, personas }));
                           }}
-                          className="rounded-xl"
+                         
                         />
                         <Textarea
                           placeholder={t(builderEn('mkt_ph_quote'), builderEl('mkt_ph_quote'))}
@@ -989,10 +992,10 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                             personas[index] = { ...persona, quote: e.target.value };
                             setData((prev) => ({ ...prev, personas }));
                           }}
-                          className="rounded-xl"
+                         
                         />
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               )}
@@ -1016,17 +1019,15 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                 <BilingualText en={builderEn('mkt_add_trend')} el={builderEl('mkt_add_trend')} compact />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               {data.trends.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyph name="chart" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p className="text-xs leading-snug">
-                    <BilingualText en={builderEn('mkt_no_trend')} el={builderEl('mkt_no_trend')} />
-                  </p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('mkt_no_trend')} el={builderEl('mkt_no_trend')} wrap />
+                </p>
               ) : (
-                data.trends.map((trend, index) => (
-                  <div key={`trend-${index}`} className="flex items-center gap-4 rounded-xl border p-4">
+                <div className="divide-y divide-border">
+                {data.trends.map((trend, index) => (
+                  <div key={`trend-${index}`} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-4 first:pt-0 last:pb-0 sm:flex-nowrap">
                     <div
                       className={cn(
                         'h-3 w-3 shrink-0 rounded-full',
@@ -1034,7 +1035,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                           trend.impact === 'negative' ? 'bg-status-danger-mark' : 'bg-status-warning-mark',
                       )}
                     />
-                    <div className="flex-1">
+                    <div className="min-w-0 flex-1">
                       <Input
                         placeholder={t(builderEn('mkt_ph_trend'), builderEl('mkt_ph_trend'))}
                         value={trend.trend}
@@ -1043,7 +1044,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                           trends[index] = { ...trend, trend: e.target.value };
                           setData((prev) => ({ ...prev, trends }));
                         }}
-                        className="rounded-xl"
+                       
                       />
                     </div>
                     <select
@@ -1054,7 +1055,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                         trends[index] = { ...trend, impact: e.target.value as MarketTrend['impact'] };
                         setData((prev) => ({ ...prev, trends }));
                       }}
-                      className="rounded-xl border px-3 py-2 text-sm"
+                      className="rounded-md border border-input bg-background px-3 py-2 text-sm"
                     >
                       <option value="positive">{t(builderEn('mkt_positive'), builderEl('mkt_positive'))}</option>
                       <option value="negative">{t(builderEn('mkt_negative'), builderEl('mkt_negative'))}</option>
@@ -1068,7 +1069,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                         trends[index] = { ...trend, timeframe: e.target.value };
                         setData((prev) => ({ ...prev, trends }));
                       }}
-                      className="w-32 rounded-xl"
+                      className="w-32"
                     />
                     <RemoveButton
                       onClick={() => setData((prev) => ({
@@ -1077,7 +1078,8 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                       }))}
                     />
                   </div>
-                ))
+                ))}
+                </div>
               )}
             </CardContent>
           </Card>
@@ -1101,7 +1103,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_pos'), builderEl('mkt_ph_pos'))}
                     value={data.positioning}
                     onChange={(e) => setData((prev) => ({ ...prev, positioning: e.target.value }))}
-                    className="min-h-[120px] rounded-xl"
+                    className="min-h-[120px]"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -1113,7 +1115,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                     placeholder={t(builderEn('mkt_ph_adv'), builderEl('mkt_ph_adv'))}
                     value={data.competitiveAdvantage}
                     onChange={(e) => setData((prev) => ({ ...prev, competitiveAdvantage: e.target.value }))}
-                    className="min-h-[100px] rounded-xl"
+                    className="min-h-[100px]"
                   />
                 </div>
               </CardContent>
@@ -1137,7 +1139,7 @@ export function MarketAnalysis({ onSave, onGenerate, initialData, contentRevisio
                         setData((prev) => ({ ...prev, differentiators }));
                       }}
                       placeholder={t(builderEn('mkt_ph_diff'), builderEl('mkt_ph_diff'))}
-                      className="rounded-xl"
+                     
                     />
                     <RemoveButton
                       onClick={() => setData((prev) => ({
