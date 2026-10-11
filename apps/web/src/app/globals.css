@@ -4228,6 +4228,24 @@ html[data-theme="minimal"] [data-own-message] {
   background-color: transparent;
 }
 
+/* A status chip that lost its wash and has no edge is a word, so its
+   letters, not its padding, sit on the card's axis: under the subtitle on
+   a phone, "Active" started 10px in from "Harbor $750K seed" (card_audit,
+   /fundraising, /programs, /projects, 2026-10-11). */
+#main-content .badge:is(
+  [class*='bg-status-success-bg'],
+  [class*='bg-status-warning-bg'],
+  [class*='bg-status-danger-bg'],
+  [class*='bg-status-info-bg'],
+  [class*='bg-status-accent-bg'],
+  [class*='bg-status-neutral-bg'],
+  [class~='bg-secondary'],
+  [class~='bg-muted']
+):is([class~='border-0'], [class~='border-transparent']):not([aria-pressed='true']):not([data-state='active']) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* A description inside a card (a muted sentence that clamps or reads
    relaxed) sits on the body step, a notch under the card's title and the
    line under it: a thesis or a bio read as loud as the byline. Attribute
