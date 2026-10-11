@@ -233,9 +233,9 @@ export function ReportBlockModal({
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
                   <Flag className="icon-md text-status-warning" />
                 </div>
-                <div>
-                  <p className="font-medium text-foreground"><BilingualText en="Report user" el="Αναφορά χρήστη" compact /></p>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground"><BilingualText en="Report user" el="Αναφορά χρήστη" compact /></p>
+                  <p className="text-xs text-muted-foreground">
                     <BilingualText en="Report inappropriate behavior to our moderation team" el="Αναφέρετε ακατάλληλη συμπεριφορά στην ομάδα εποπτείας" wrap />
                   </p>
                 </div>
@@ -248,9 +248,9 @@ export function ReportBlockModal({
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
                   <Ban className="icon-md text-destructive-accessible" />
                 </div>
-                <div>
-                  <p className="font-medium text-foreground"><BilingualText en="Block user" el="Αποκλεισμός χρήστη" compact /></p>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground"><BilingualText en="Block user" el="Αποκλεισμός χρήστη" compact /></p>
+                  <p className="text-xs text-muted-foreground">
                     <BilingualText en="Prevent this user from contacting you" el="Να μη μπορεί να επικοινωνήσει μαζί σας" wrap />
                   </p>
                 </div>
@@ -264,7 +264,7 @@ export function ReportBlockModal({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Flag className="icon-md text-status-warning" />
-                Report {userName}
+                <BilingualText en={`Report ${userName}`} el={`Αναφορά: ${userName}`} compact wrap />
               </DialogTitle>
               <DialogDescription>
                 <BilingualText en="Help us understand what happened" el="Βοηθήστε μας να καταλάβουμε τι συνέβη" compact wrap />
@@ -367,7 +367,7 @@ export function ReportBlockModal({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Ban className="icon-md text-destructive-accessible" />
-                Block {userName}?
+                <BilingualText en={`Block ${userName}?`} el={`Αποκλεισμός: ${userName};`} compact wrap />
               </DialogTitle>
               <DialogDescription>
                 <BilingualText en="This action can be undone from your settings" el="Αυτή η ενέργεια αναιρείται από τις ρυθμίσεις σας" wrap />
@@ -376,7 +376,7 @@ export function ReportBlockModal({
 
             <div className="py-4">
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                <p className="text-sm text-foreground">When you block someone:</p>
+                <p className="text-sm text-foreground"><BilingualText en="When you block someone:" el="Όταν αποκλείετε κάποιον:" compact wrap /></p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />

@@ -4,12 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Award,
+  GraduationCap,
   Search,
   Plus,
   MoreVertical,
-  Users,
-  Calendar,
   Edit,
   Trash2,
   Eye,
@@ -60,6 +58,8 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { formatDate } from '@/lib/i18n/format';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
@@ -152,82 +152,97 @@ function ProgramCard({
     archived: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button aria-label="More options" variant="ghost" size="icon">
+          <MoreVertical className="icon-sm" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/programs/${program.id}`}>
+            <Eye className="mr-2 icon-sm" aria-hidden="true" />
+            <BilingualText en="View Details" el="Λεπτομέρειες" compact />
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={!live}
+          title={live ? undefined : 'Illustrative row — there is nothing to edit'}
+          onClick={() => onEdit(program)}
+        >
+          <Edit className="mr-2 icon-sm" aria-hidden="true" />
+          <BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact />
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          disabled={!live}
+          title={live ? undefined : 'Illustrative row — there is nothing to archive'}
+          className="text-destructive-accessible"
+          onClick={() => onArchive(program)}
+        >
+          <Trash2 className="mr-2 icon-sm" />
+          <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  // The Programs card: the programme's mark, its name over its kind and
+  // dates, the state and the menu at the right; the sentence, the facts and
+  // the schedule's progress on the mark's edge.
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <Link href={`/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
-                {program.name}
-              </Link>
-              <Badge variant="outline" className={cn('text-xs capitalize', statusColors[program.status])}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <GraduationCap className="icon-md" aria-hidden="true" />
+            </div>
+          )}
+          title={(
+            <Link href={`/programs/${program.id}`} className="transition-colors hover:text-primary-accessible">
+              {program.name}
+            </Link>
+          )}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <StatusText key="type" value={program.type} />,
+                <span key="dates" className="tabular-nums">{program.startDate} - {program.endDate}</span>,
+              ]}
+            />
+          )}
+          asideStays
+          aside={(
+            <>
+              <Badge variant="outline" className={cn('text-xs', statusColors[program.status])}>
                 <StatusText value={program.status} />
               </Badge>
+              {menu}
+            </>
+          )}
+        />
+        {program.description ? (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{program.description}</p>
+        ) : null}
+        <FactLine
+          items={[
+            <BilingualText key="participants" en={`${program.startups} participants`} el={`${program.startups} συμμετέχοντες`} compact />,
+            typeof program.mentors === 'number'
+              ? <BilingualText key="mentors" en={`${program.mentors} mentors`} el={`${program.mentors} μέντορες`} compact />
+              : null,
+          ]}
+        />
+        {program.status === 'active' && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
+              <span className="font-medium tabular-nums">{program.progress}%</span>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {program.description}
-            </p>
-            <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <Badge variant="secondary" className="text-xs capitalize"><StatusText value={program.type} /></Badge>
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />
-                <BilingualText en={`${program.startups} participants`} el={`${program.startups} συμμετέχοντες`} compact />
-              </span>
-              {typeof program.mentors === 'number' && (
-                <span className="flex items-center gap-1">
-                  <Award className="icon-sm" aria-hidden="true" />
-                  <BilingualText en={`${program.mentors} mentors`} el={`${program.mentors} μέντορες`} compact />
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {program.startDate} - {program.endDate}
-              </span>
-            </div>
-            {program.status === 'active' && (
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
-                  <span className="font-medium">{program.progress}%</span>
-                </div>
-                <Progress value={program.progress} className="h-2" />
-              </div>
-            )}
+            <Progress value={program.progress} className="h-2" aria-label={`Progress ${program.progress}%. Πρόοδος ${program.progress}%`} />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/programs/${program.id}`}>
-                  <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                  <BilingualText en="View Details" el="Λεπτομέρειες" compact />
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={!live}
-                title={live ? undefined : 'Illustrative row — there is nothing to edit'}
-                onClick={() => onEdit(program)}
-              >
-                <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                <BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact />
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={!live}
-                title={live ? undefined : 'Illustrative row — there is nothing to archive'}
-                className="text-destructive-accessible"
-                onClick={() => onArchive(program)}
-              >
-                <Trash2 className="mr-2 icon-sm" />
-                <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

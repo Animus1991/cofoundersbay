@@ -18,6 +18,7 @@ import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import {
   messagesEn,
   messagesEl,
@@ -947,7 +948,10 @@ export default function MessagesPage() {
               isMobileViewingChat && 'hidden md:grid',
             )}
           >
-            <div className="min-w-0 shrink-0 space-y-3 px-4 pb-3 pt-4">
+            {/* px-5: the inbox's own axis. The conversation rows below sit
+                20px in (the list's px-2 and each row's px-3), so the title
+                and its lead start on the same edge as the avatars. */}
+            <div className="min-w-0 shrink-0 space-y-3 px-5 pb-3 pt-4">
               {/* The compose button gets its own row. This pane is a fixed 392px
                   at every desktop width, and with the button beside the title the
                   heading block was left 138px of a 365px row -- the lead wrapped
@@ -956,7 +960,10 @@ export default function MessagesPage() {
                   pane is also what the reader expects it to be. */}
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                  {/* The page-title step every page header uses: at text-lg
+                      the inbox title sat 0.17px over the card title step on a
+                      desktop, level with a thread's or a request's name. */}
+                  <h1 className="page-title font-semibold tracking-tight text-foreground">
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
                   <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
@@ -1084,10 +1091,11 @@ export default function MessagesPage() {
                 ) : (
                   <div className="space-y-1 p-2">
                     {introRequests.map((req) => (
-                      // A row of the list, set like a card's head: the
-                      // person's mark, the name and the headline under it, the
-                      // date at the right; the note and the answers start on
-                      // the mark's edge. A row, not a tile: the pane is the card.
+                      // A row of the list (RowHead: a card title here would
+                      // outrank the pane's own h1 on a phone): the person's
+                      // mark, the name and the headline under it, the date at
+                      // the right; the note and the answers start on the
+                      // mark's edge. A row, not a tile: the pane is the card.
                       <div
                         key={req.id}
                         role="button"
@@ -1103,12 +1111,11 @@ export default function MessagesPage() {
                           }
                         }}
                         className={cn(
-                          'animate-fade-in cursor-pointer space-y-3 rounded-2xl p-3 transition-colors',
+                          'animate-fade-in cursor-pointer space-y-2 rounded-2xl p-3 transition-colors',
                           selectedIntro?.id === req.id ? 'bg-muted/50' : 'hover:bg-muted/30',
                         )}
                       >
-                        <CardHead
-                          titleAs="p"
+                        <RowHead
                           mark={(
                             <ThreadAvatar
                               name={req.requester.displayName}
@@ -1136,7 +1143,7 @@ export default function MessagesPage() {
                           })}
                         />
                         {req.message && (
-                          <p className="card-body line-clamp-3 italic text-muted-foreground">
+                          <p className="line-clamp-3 text-xs italic leading-relaxed text-muted-foreground">
                             {PREVIEW_MESSAGE_EL[req.message] ? (
                               <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
                             ) : (

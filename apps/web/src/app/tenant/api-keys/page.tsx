@@ -97,7 +97,9 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           )}
         />
         <div className="flex items-center gap-2">
-          <code tabIndex={0} className="min-w-0 flex-1 overflow-x-auto rounded bg-muted px-2 py-1 font-mono text-xs">{revealed ? revealedKey : maskedKey}</code>
+          {/* The key as a line of text on the card's axis, not a tinted chip
+              whose padding set it 8px in. */}
+          <code tabIndex={0} className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-sm py-1 font-mono text-xs text-foreground">{revealed ? revealedKey : maskedKey}</code>
           <Button className="shrink-0" aria-label={revealed ? 'Hide key. Απόκρυψη κλειδιού' : 'Show key. Εμφάνιση κλειδιού'} aria-pressed={revealed} variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
             {revealed ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
           </Button>

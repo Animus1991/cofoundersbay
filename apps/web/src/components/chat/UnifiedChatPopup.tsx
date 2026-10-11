@@ -27,7 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useMessaging, useMessagingUnreadCount } from '@/contexts/MessagingContext';
@@ -100,8 +100,8 @@ function formatTime(d: Date) {
 function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: boolean; onClick: () => void }) {
   const previewEl = PREVIEW_MESSAGE_EL[conv.lastMessage];
   const unread = conv.unreadCount > 0;
-  // A conversation row set like a card's head: the person's mark, the name
-  // as the title, the last message on the line under it, the time and the
+  // A conversation row (RowHead: rows of a list, not cards): the person's
+  // mark, the name, the last message on the line under it, the time and the
   // unread count at the right.
   return (
     <button
@@ -112,8 +112,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
         selected ? 'bg-primary/10' : 'hover:bg-muted/60',
       )}
     >
-      <CardHead
-        titleAs="p"
+      <RowHead
         asideStays
         mark={(
           <div className="relative">
@@ -128,8 +127,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             )}
           </div>
         )}
-        title={<span className="block truncate">{conv.recipientName}</span>}
-        titleClassName={unread ? undefined : 'text-foreground/90'}
+        title={<span className={cn('block truncate', unread ? 'font-semibold' : 'text-foreground/90')}>{conv.recipientName}</span>}
         subtitle={(
           <span className={cn('block truncate', unread && 'font-medium text-foreground/75')}>
             {conv.lastMessage

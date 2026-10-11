@@ -270,7 +270,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
               <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
                 {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? <BilingualText en="Copied" el="Αντιγράφηκε" compact /> : <BilingualText en="Copy" el="Αντιγραφή" compact />}
               </Button>
             </div>
           </div>

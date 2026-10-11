@@ -16,7 +16,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
 import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notifications';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -132,9 +132,10 @@ const NotificationRow = memo(function NotificationRow({
   const colorClass = TYPE_COLORS[item.type] ?? TYPE_COLORS.system;
   const typeLabel = TYPE_LABELS[item.type];
 
-  // A row of the list card, set like every card's head: the type's mark, the
-  // notification as the title with its kind under it, the time at the right;
-  // the sentence and the row's actions start on the mark's left edge.
+  // A row of the list card (RowHead, not a card's head: twenty card titles in
+  // one list read as twenty headings): the type's mark, the notification with
+  // its kind under it, the time at the right; the sentence and the row's
+  // actions start on the mark's left edge.
   return (
     <div
       className={cn(
@@ -157,9 +158,8 @@ const NotificationRow = memo(function NotificationRow({
         </button>
       )}
 
-      <div className="min-w-0 flex-1 space-y-3">
-        <CardHead
-          titleAs="p"
+      <div className="min-w-0 flex-1 space-y-2">
+        <RowHead
           mark={(
             // The type's glyph is the row's mark, so it stays on screen in
             // every row (data-keep-icon on the well itself: the in-card
@@ -174,15 +174,14 @@ const NotificationRow = memo(function NotificationRow({
               )}
             </div>
           )}
-          title={item.title}
-          titleClassName={cn('first-letter:uppercase', !isUnread && 'text-foreground/80')}
+          title={<span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}>{item.title}</span>}
           subtitle={typeLabel
             ? <BilingualText en={typeLabel.en} el={typeLabel.el} compact />
             : <StatusText value={item.type} />}
           aside={<RelativeTime date={item.createdAt} absoluteAfterDays={7} />}
         />
         {item.body && (
-          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{item.body}</p>
+          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground first-letter:uppercase">{item.body}</p>
         )}
         {/* Always shown: at opacity-0 until hover the three actions were
             invisible on touch screens yet still took taps, and on a desktop
@@ -498,13 +497,13 @@ export default function NotificationsPage() {
                 <Bell className="icon-lg text-muted-foreground" />
               </div>
               <div>
-                <p className="font-medium text-foreground">
+                <p className="card-title text-foreground">
                   <BilingualText
                     en={showUnreadOnly ? notificationsEn('empty_no_unread_title') : notificationsEn('empty_all_caught_up')}
                     el={showUnreadOnly ? notificationsEl('empty_no_unread_title') : notificationsEl('empty_all_caught_up')}
                   />
                 </p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="card-body mt-1 text-muted-foreground">
                   <BilingualText
                     en={showUnreadOnly ? notificationsEn('empty_no_unread_desc') : notificationsEn('empty_desc')}
                     el={showUnreadOnly ? notificationsEl('empty_no_unread_desc') : notificationsEl('empty_desc')}

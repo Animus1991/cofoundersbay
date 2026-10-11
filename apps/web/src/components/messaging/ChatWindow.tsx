@@ -892,10 +892,12 @@ export function NoChatSelected({
           </div>
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-xl font-semibold tracking-tight text-foreground">
+          {/* A step under the inbox's own h1 (text-lg, text-xl on a
+              desktop), and the hint a step under this title on a phone too. */}
+          <h3 className="text-lg font-semibold tracking-tight text-foreground">
             <BilingualText en={messagesEn('empty_inbox_title')} el={messagesEl('empty_inbox_title')} />
           </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="card-body text-muted-foreground">
             <BilingualText en={messagesEn('empty_inbox_hint')} el={messagesEl('empty_inbox_hint')} />
           </p>
         </div>

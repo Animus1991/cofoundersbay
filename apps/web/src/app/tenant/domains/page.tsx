@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import {
   Globe, Plus, Trash2, CheckCircle2, XCircle, Clock, RefreshCw,
@@ -216,7 +216,7 @@ function DomainRow({
   // and the actions start on the mark's edge.
   return (
     <div className="space-y-3">
-      <CardHead
+      <RowHead
         titleAs="h4"
         mark={(
           <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -235,7 +235,6 @@ function DomainRow({
         )}
         subtitle={(
           <FactLine
-            className="text-sm"
             items={[
               <BilingualText key="type" en={domain.domainType === 'custom' ? 'Custom' : 'Subdomain'} el={domain.domainType === 'custom' ? 'Προσαρμοσμένο' : 'Υποτομέας'} compact />,
               domain.isPrimary ? <span key="primary" className="font-medium text-primary-accessible"><BilingualText en="Primary" el="Κύριος" compact /></span> : null,
@@ -527,6 +526,7 @@ export default function TenantDomainsPage() {
       title="Domain Management"
       titleEl="Διαχείριση τομέων"
       description="Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies."
+      descriptionEl="Προσθέστε υποτομέα ή συνδέστε δικό σας τομέα. Το SSL ενεργοποιείται αυτόματα μόλις επαληθευτεί το DNS."
     >
       <div className="space-y-6">
 
@@ -554,7 +554,22 @@ export default function TenantDomainsPage() {
           </Card>
         </div>
 
-        {/* Domain list */}
+        {/* Domain list. With nothing to list, the empty state stands on its
+            own: inside the card it was a dashed card within a card whose
+            heading was no louder than the card's title. */}
+        {!isLoading && domains.length === 0 ? (
+          <EmptyTenantDomains
+            action={
+              <Button
+                size="sm"
+                className="gap-1"
+                onClick={() => document.getElementById('add-subdomain')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              >
+                <Globe className="icon-sm" /><BilingualText en="Add a subdomain" el="Προσθήκη υποτομέα" compact />
+              </Button>
+            }
+          />
+        ) : (
         <Card>
           <CardHeader>
             <CardTitle><BilingualText en="Your Domains" el="Οι τομείς σας" compact /></CardTitle>
@@ -567,18 +582,6 @@ export default function TenantDomainsPage() {
               <div className="space-y-2">
                 {[1, 2].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
               </div>
-            ) : domains.length === 0 ? (
-              <EmptyTenantDomains
-                action={
-                  <Button
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => document.getElementById('add-subdomain')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                  >
-                    <Globe className="icon-sm" /><BilingualText en="Add a subdomain" el="Προσθήκη υποτομέα" compact />
-                  </Button>
-                }
-              />
             ) : (
               <div className="card-rows">
                 {domains.map(d => (
@@ -588,6 +591,7 @@ export default function TenantDomainsPage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Add subdomain */}
         <Card id="add-subdomain">
@@ -597,21 +601,24 @@ export default function TenantDomainsPage() {
               <BilingualText en="Platform Subdomain" el="Υποτομέας πλατφόρμας" compact />
             </CardTitle>
             <CardDescription>
-              Claim a subdomain on <code className="bg-muted px-1 rounded">cofounderbay.com</code>. Auto-verified, no DNS setup required.
+              <BilingualText en="Claim a subdomain on cofounderbay.com. Auto-verified, no DNS setup required." el="Δεσμεύστε υποτομέα στο cofounderbay.com. Επαληθεύεται αυτόματα, χωρίς ρύθμιση DNS." wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
-              <div className="relative flex-1">
+              {/* The domain follows the field rather than sitting inside it
+                  over a reserved gutter: the field's end is where it reads. */}
+              <div className="flex min-w-0 flex-1 items-center gap-2">
                 <Input
                   aria-label={bilingualAria("Platform subdomain", "Υποτομέας πλατφόρμας")}
+                  aria-describedby="platform-subdomain-suffix"
                   placeholder="yourorg"
                   value={subdomainInput}
                   onChange={(e) => setSubdomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                  className="pr-44"
+                  className="min-w-0 flex-1"
                   maxLength={63}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none select-none">
+                <span id="platform-subdomain-suffix" className="shrink-0 text-xs text-muted-foreground" translate="no">
                   .cofounderbay.com
                 </span>
               </div>
@@ -622,7 +629,7 @@ export default function TenantDomainsPage() {
                 size="sm"
               >
                 <Plus className="icon-sm" />
-                {addSub.isPending ? 'Adding…' : 'Add'}
+                {addSub.isPending ? <BilingualText en="Adding…" el="Προσθήκη…" compact /> : <BilingualText en="Add" el="Προσθήκη" compact />}
               </Button>
             </div>
             {addSub.isError && (
@@ -644,7 +651,7 @@ export default function TenantDomainsPage() {
               <BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact />
             </CardTitle>
             <CardDescription>
-              Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code>. Requires DNS verification.
+              <BilingualText en="Use your own domain, like founders.youruni.edu. Requires DNS verification." el="Χρησιμοποιήστε δικό σας τομέα, π.χ. founders.youruni.edu. Απαιτείται επαλήθευση DNS." wrap />
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -663,7 +670,7 @@ export default function TenantDomainsPage() {
                 size="sm"
               >
                 <Plus className="icon-sm" />
-                {addCustom.isPending ? 'Adding…' : 'Add'}
+                {addCustom.isPending ? <BilingualText en="Adding…" el="Προσθήκη…" compact /> : <BilingualText en="Add" el="Προσθήκη" compact />}
               </Button>
             </div>
             {addCustom.isError && (
@@ -672,7 +679,7 @@ export default function TenantDomainsPage() {
               </p>
             )}
             <div className="space-y-1 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">How it works:</p>
+              <p className="font-medium text-foreground"><BilingualText en="How it works:" el="Πώς λειτουργεί:" compact /></p>
               <ol className="list-decimal list-inside space-y-0.5 ml-0.5">
                 <li><BilingualText en="Add your domain below — we generate DNS records for you" el="Προσθέστε τον τομέα σας παρακάτω — δημιουργούμε τις εγγραφές DNS για εσάς" wrap /></li>
                 <li><BilingualText en="Add those records in your DNS provider (Cloudflare, Route 53, etc.)" el="Προσθέστε τις εγγραφές στον πάροχο DNS (Cloudflare, Route 53 κ.λπ.)" wrap /></li>

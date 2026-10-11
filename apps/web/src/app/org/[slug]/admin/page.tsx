@@ -202,8 +202,9 @@ function memberStatusChip(status: string) {
   return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
 }
 
-function StatCard({ title, value, change, icon: Icon, trend }: {
+function StatCard({ title, titleEl, value, change, icon: Icon, trend }: {
   title: string;
+  titleEl: string;
   value: string | number;
   change?: string;
   icon: React.ElementType;
@@ -214,7 +215,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
       <CardContent>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en={title} el={titleEl} compact wrap /></p>
             <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
             {change && (
               <p className={cn(
@@ -452,10 +453,10 @@ export default function OrgAdminPage() {
       badge: stats.suspended || null,
       content: (
         <div className="space-y-2">
-          <StatCard title="Total Members" value={stats.totalMembers} icon={Users} />
-          <StatCard title="Active Members" value={stats.activeMembers} icon={CheckCircle2} />
-          <StatCard title="Suspended" value={stats.suspended} icon={XCircle} />
-          <StatCard title="Programs" value={stats.totalProjects} icon={Building2} />
+          <StatCard title="Total Members" titleEl="Σύνολο μελών" value={stats.totalMembers} icon={Users} />
+          <StatCard title="Active Members" titleEl="Ενεργά μέλη" value={stats.activeMembers} icon={CheckCircle2} />
+          <StatCard title="Suspended" titleEl="Σε αναστολή" value={stats.suspended} icon={XCircle} />
+          <StatCard title="Programs" titleEl="Προγράμματα" value={stats.totalProjects} icon={Building2} />
         </div>
       ),
     },

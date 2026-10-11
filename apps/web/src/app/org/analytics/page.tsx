@@ -361,18 +361,22 @@ export default function OrgAnalyticsPage() {
 
           <SectionCard title="Mentor activity" titleEl="Δραστηριότητα μεντόρων" action={{ href: '/org/mentors', label: 'Mentors', labelEl: 'Μέντορες' }}>
             <dl className="grid grid-cols-2 gap-3">
-              {[
-                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} of ${mentors.length}` : '—' },
-                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'last three months' },
-                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined },
-                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined },
-              ].map((cell) => (
+              {([
+                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} / ${mentors.length}` : '—' },
+                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'last three months', noteEl: 'τελευταίοι τρεις μήνες' },
+                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined, noteEl: `${rated.length} αξιολογημένες συνεδρίες` },
+                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined, noteEl: `${taken} από ${slots} θέσεις καθοδηγούμενων` },
+              ] as { en: string; el: string; value: string | number; note?: string; noteEl?: string }[]).map((cell) => (
                 <div key={cell.en} className="min-w-0">
                   <dt className="text-xs text-muted-foreground">
                     <BilingualText en={cell.en} el={cell.el} stacked wrap />
                   </dt>
-                  <dd className="card-body mt-1 font-semibold tabular-nums">{cell.value}</dd>
-                  {cell.note ? <dd className="text-xs text-muted-foreground first-letter:uppercase">{cell.note}</dd> : null}
+                  {/* The note rides on the figure's line: under it, a note in
+                      the right column stood alone where the left had none. */}
+                  <dd className="mt-1">
+                    <span className="card-body font-semibold tabular-nums">{cell.value}</span>
+                    {cell.note ? <span className="text-xs text-muted-foreground"> · <BilingualText en={cell.note} el={cell.noteEl ?? cell.note} compact /></span> : null}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -439,13 +443,16 @@ export default function OrgAnalyticsPage() {
               );
             })}
           </ol>
-          <div className="flex flex-wrap gap-2 pt-2">
-            {programs.filter((p) => p.status === 'upcoming').map((p) => (
-              <Badge key={p.id} variant="info" size="sm">
-                <BilingualText en={`${p.title}: taking applications`} el={`${p.title}: δέχεται αιτήσεις`} compact />
-              </Badge>
-            ))}
-          </div>
+          {/* The caption leads the pills, so the row starts on the card's
+              axis with words rather than a pill's padding. */}
+          {programs.some((p) => p.status === 'upcoming') ? (
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <span className="text-xs text-muted-foreground"><BilingualText en="Taking applications" el="Δέχονται αιτήσεις" compact /></span>
+              {programs.filter((p) => p.status === 'upcoming').map((p) => (
+                <Badge key={p.id} variant="info" size="sm">{p.title}</Badge>
+              ))}
+            </div>
+          ) : null}
         </SectionCard>
       </div>
     </AppShell>

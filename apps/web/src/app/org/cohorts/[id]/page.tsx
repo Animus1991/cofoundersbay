@@ -47,7 +47,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { bilingualInline } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
@@ -667,14 +667,13 @@ export default function CohortDetailPage() {
                       their names, the score under them, the state at the
                       right. */}
                   {matches.slice(0, 3).map((match) => (
-                    <CardHead
+                    <RowHead
                       key={match.id}
                       titleAs="h4"
                       mark={<MatchPair match={match} />}
                       title={<>{match.participant1.name} ↔ {match.participant2.name}</>}
                       subtitle={(
                         <FactLine
-                          className="text-sm"
                           items={[
                             <BilingualText key="score" en={`Match score: ${match.matchScore}%`} el={`Βαθμός ταιριάσματος: ${match.matchScore}%`} compact />,
                             match.interactions > 0 ? <BilingualText key="interactions" en={`${match.interactions} interactions`} el={`${match.interactions} αλληλεπιδράσεις`} compact /> : null,
@@ -708,7 +707,7 @@ export default function CohortDetailPage() {
                     .filter((s) => s.status === 'scheduled')
                     .slice(0, 3)
                     .map((session) => (
-                      <CardHead
+                      <RowHead
                         key={session.id}
                         titleAs="h4"
                         mark={(
@@ -856,13 +855,12 @@ export default function CohortDetailPage() {
                     figure louder than the names. */}
                 {matches.map((match) => (
                   <div key={match.id} className="space-y-2">
-                    <CardHead
+                    <RowHead
                       titleAs="h4"
                       mark={<MatchPair match={match} />}
                       title={<>{match.participant1.name} ↔ {match.participant2.name}</>}
                       subtitle={(
                         <FactLine
-                          className="text-sm"
                           items={[
                             <StatusText key="r1" value={match.participant1.role} />,
                             <StatusText key="r2" value={match.participant2.role} />,
