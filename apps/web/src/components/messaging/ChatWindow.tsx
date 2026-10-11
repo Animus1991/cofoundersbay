@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import {
   Send,
   Paperclip,
   Smile,
   MoreVertical,
+  SlidersHorizontal,
   Info,
   Check,
   CheckCheck,
@@ -357,6 +358,15 @@ export function ChatWindow({
   const t = useMessagesPrimaryText();
   const [inputValue, setInputValue] = useState(initialDraft ?? '');
   const [searchOpen, setSearchOpen] = useState(false);
+  // Tells the page rail that this thread is showing the tools icon, so the
+  // floating pill steps aside. 'unmount' is explicit: the cleanup can run
+  // while the button is still in the document.
+  useLayoutEffect(() => {
+    window.dispatchEvent(new CustomEvent('cfb-messages-tools-anchor', { detail: 'mount' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('cfb-messages-tools-anchor', { detail: 'unmount' }));
+    };
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -482,7 +492,7 @@ export function ChatWindow({
       />
       {/* Header */}
       <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-2 py-2.5 pl-3 pr-14 sm:px-4 sm:py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
               <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden" aria-label={bilingualAria(messagesEn('back_to_conversations'), messagesEl('back_to_conversations'))}>
@@ -593,6 +603,15 @@ export function ChatWindow({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <button
+              type="button"
+              data-messages-tools-anchor=""
+              aria-label={bilingualAria('Page tools', 'Εργαλεία σελίδας')}
+              className="tap-target inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent text-foreground/70 hover:bg-secondary/60 hover:text-foreground sm:hidden"
+              onClick={() => window.dispatchEvent(new CustomEvent('cfb-open-page-tools'))}
+            >
+              <SlidersHorizontal className="icon-md" aria-hidden="true" />
+            </button>
           </div>
           {validationState && (
             <div className="basis-full sm:hidden">

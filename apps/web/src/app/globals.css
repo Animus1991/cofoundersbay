@@ -4372,11 +4372,13 @@ input:is(
   }
 }
 
-/* Messages on a phone: the tools icon sits under the account initials.
-   The header is h-12 and the account control is the phone's 30.458px
-   button, centered in it. Four pixels under that control, and lined up
-   on the same right edge as the header's content. The word stays for
-   the sheet; the icon is the control here. */
+/* Messages inbox on a phone: there is no conversation menu, so the tools
+   icon sits under the account initials. A thread places the same control
+   in the header, to the right of the three dots, and that button is not
+   .h-11, so this rule leaves it alone. The header is h-12 and the account
+   control is the phone's 30.458px button, centered in it. Four pixels under
+   that control, and lined up on the same right edge as the header's content.
+   The word stays for the sheet; the icon is the control here. */
 @media (max-width: 639.98px) {
   button[data-messages-tools].h-11 {
     top: calc((3rem * var(--chrome-y) + 30.458px) / 2 + 4px);

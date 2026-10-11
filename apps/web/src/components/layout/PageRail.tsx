@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -65,9 +65,55 @@ export type PageRailSection = {
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { primary } = useLanguagePreference();
   const pathname = usePathname();
-  // Messages on a phone: the tools icon sits under the account initials
-  // instead of floating above the tab bar, so the thread can reach the bar.
+  // Messages on a phone: the inbox has no conversation menu, so the tools
+  // icon sits under the account initials. A thread offers a slot to the
+  // right of that menu, and the icon moves there.
   const toolsUnderAccount = pathname === '/messages' || pathname?.startsWith('/messages/');
+  // True while a phone thread is showing its own tools icon, beside the
+  // three dots. The floating pill hides then, so the page has one control.
+  const [threadTools, setThreadTools] = useState(false);
+  useLayoutEffect(() => {
+    if (!toolsUnderAccount || typeof window.matchMedia !== 'function') {
+      setThreadTools(false);
+      return;
+    }
+    const mq = window.matchMedia('(max-width: 639.98px)');
+    let observed: HTMLElement | null = null;
+    // Back to the inbox hides the thread instead of unmounting it, so the
+    // slot stays in the document with no box. Watch that, or the floating
+    // pill would stay gone and the page would have no tools control.
+    const observer = new IntersectionObserver(() => sync());
+    function sync() {
+      const slot = document.querySelector('#main-content [data-messages-tools-anchor]');
+      const shown = mq.matches && slot instanceof HTMLElement && slot.getClientRects().length > 0;
+      setThreadTools(shown);
+      if (slot instanceof HTMLElement && slot !== observed) {
+        if (observed) observer.unobserve(observed);
+        observer.observe(slot);
+        observed = slot;
+      } else if (!(slot instanceof HTMLElement) && observed) {
+        observer.unobserve(observed);
+        observed = null;
+      }
+    }
+    const onAnchor = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === 'unmount') {
+        setThreadTools(false);
+        if (observed) observer.unobserve(observed);
+        observed = null;
+        return;
+      }
+      sync();
+    };
+    sync();
+    window.addEventListener('cfb-messages-tools-anchor', onAnchor);
+    mq.addEventListener('change', sync);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('cfb-messages-tools-anchor', onAnchor);
+      mq.removeEventListener('change', sync);
+    };
+  }, [toolsUnderAccount]);
   const badgeText = (section: PageRailSection) => {
     const badge = section.badge === 0 || section.badge == null ? null : section.badge;
     if (badge == null) return null;
@@ -76,6 +122,13 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { pinned, peeked, open, togglePinned, setPeeked, registerRailPresence, registerRailOpener, registerRailSections } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The thread's tools icon lives in the chat header, outside this sheet, and
+  // asks the sheet to open. The floating trigger is the other way in.
+  useEffect(() => {
+    const open = () => setSheetOpen(true);
+    window.addEventListener('cfb-open-page-tools', open);
+    return () => window.removeEventListener('cfb-open-page-tools', open);
+  }, []);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
   /* Which section is open at full size. A section is legible in the panel
      and comfortable here; this is the second, not a substitute. */
@@ -177,6 +230,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     return sum + (typeof b === 'number' ? b : 0);
   }, 0);
 
+
   return (
     <TooltipProvider delayDuration={300}>
       {/*
@@ -190,30 +244,32 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
       */}
       <div className="lg:hidden">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              aria-label={bilingualAria(
-                totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
-                totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
-              )}
-              data-messages-tools={toolsUnderAccount ? '' : undefined}
-              className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-auto min-w-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-foreground shadow-lg sm:bottom-6"
-            >
-              <SlidersHorizontal className="icon-md" aria-hidden="true" />
-              <span className={cn('text-xs font-medium', toolsUnderAccount && 'hidden sm:inline')}>
-                <BilingualText en="Tools" el="Εργαλεία" compact />
-              </span>
-              {totalBadge > 0 && (
-                <span
-                  className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-[1.1rem] text-primary-foreground"
-                  aria-hidden="true"
-                >
-                  {totalBadge}
+          {!threadTools && (
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label={bilingualAria(
+                  totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
+                  totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
+                )}
+                data-messages-tools={toolsUnderAccount ? '' : undefined}
+                className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-auto min-w-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-foreground shadow-lg sm:bottom-6"
+              >
+                <SlidersHorizontal className="icon-md" aria-hidden="true" />
+                <span className={cn('text-xs font-medium', toolsUnderAccount && 'hidden sm:inline')}>
+                  <BilingualText en="Tools" el="Εργαλεία" compact />
                 </span>
-              )}
-            </button>
-          </SheetTrigger>
+                {totalBadge > 0 && (
+                  <span
+                    className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-[1.1rem] text-primary-foreground"
+                    aria-hidden="true"
+                  >
+                    {totalBadge}
+                  </span>
+                )}
+              </button>
+            </SheetTrigger>
+          )}
           <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
             <SheetHeader className="text-left">
               <SheetTitle><BilingualText en="Page tools" el="Εργαλεία σελίδας" /></SheetTitle>
