@@ -1,6 +1,7 @@
 // Card anatomy audit: does every card read like the Endorsements and
 // Connections cards? Measured in a real browser, per innermost [data-card].
 //   node .probes/card_audit.mjs <routes.txt> [width=390] [out.json]
+// A route line may carry steps: "/admin @@tab:Users" (see below).
 // Env: BASE (default http://localhost:3000), ROLE (demo role cookie, default
 // existing_founder), STATE=stub (sample data off), LANG_PREF (default en).
 //
@@ -14,7 +15,8 @@
 //               exempt).
 //   bodyLoud    a sentence under the header that is not at least 0.3px under
 //               the title's subtitle (the thesis that read as loud as the byline).
-//   tight       wrapped text whose line-height is under 1.35 x its size.
+//   tight       wrapped text whose line-height is under 1.35 x its size
+//               (1.345: the ladder sets exactly 1.35, which rounds under it).
 //   lower       a block of content that starts with a lowercase letter.
 //   escape      text that leaves the card's box on the left or the top.
 //   overlap     text drawn over the avatar.
@@ -75,17 +77,32 @@ const rows = [];
 for (const route of routes) {
   let status = 0;
   try {
-    const res = await page.goto(BASE + route, { waitUntil: 'networkidle', timeout: 60000 });
+    const res = await page.goto(BASE + route.split(' @@')[0], { waitUntil: 'networkidle', timeout: 60000 });
     status = res?.status() ?? 0;
   } catch { /* measured as is */ }
   await page.waitForTimeout(700);
+  // Steps after the path open what the default view hides: a tab, a
+  // filled field, a button ("/admin @@tab:Users", "@@fill:Search=ana",
+  // "@@btn:Show details", "@@text:Assets"). Tabbed pages were measured on
+  // their first tab only before 2026-10-11, and three admin tabs that fell
+  // to the error screen went unseen.
+  for (const step of route.split(' @@').slice(1)) {
+    const [kind, ...rest] = step.split(':'); const name = rest.join(':');
+    try {
+      if (kind === 'tab') await page.getByRole('tab', { name: new RegExp(name) }).first().click({ timeout: 8000 });
+      else if (kind === 'fill') { const [ph, val] = name.split('='); await page.getByPlaceholder(new RegExp(ph)).first().fill(val, { timeout: 8000 }); }
+      else if (kind === 'btn') await page.getByRole('button', { name: new RegExp(name) }).first().click({ timeout: 8000 });
+      else await page.getByText(name).first().click({ timeout: 8000 });
+    } catch (e) { console.log(`${route} | step failed: ${step} ${String(e).slice(0, 80)}`); }
+    await page.waitForTimeout(1500);
+  }
   // A page that navigates on its own after load (a redirect, a guard)
   // destroys the context mid-measure: settle and measure once more.
   const measure = () => page.evaluate((W) => {
     const main = document.querySelector('main#main-content') ?? document.querySelector('main, [role="main"]') ?? document.body;
     const shown = (el) => el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true;
     const FLOAT = '[role=dialog],[role=alertdialog],[role=menu],[role=listbox],[role=tooltip],[data-radix-popper-content-wrapper],[data-sonner-toaster],[data-rail-surface]';
-    const CONTROL = 'button,a,input,select,textarea,[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],[role=option],[role=menuitem],[role=slider],[contenteditable=true]';
+    const CONTROL = 'button,a[data-slot=button],input,select,textarea,[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],[role=option],[role=menuitem],[role=slider],[contenteditable=true]';
     const fs = (el) => parseFloat(getComputedStyle(el).fontSize);
     const label = (el) => {
       const cls = typeof el.className === 'string' ? el.className.split(/\s+/).filter(Boolean).slice(0, 3).join('.') : '';
@@ -286,7 +303,7 @@ for (const route of routes) {
         if (tSize && !stat && el !== titleEl && !titleBlock?.contains(el) && !inCtl(el) && fs(el) > tSize - 0.3) issues.overTitle.push(`${label(el)} ${fs(el).toFixed(2)}>${tSize.toFixed(2)}`);
         const lh = parseFloat(cs.lineHeight);
         const r = el.getBoundingClientRect();
-        if (lh && lines(el) >= 2 && lh / fs(el) < 1.35 && !inCtl(el)) issues.tight.push(`${label(el)} ${(lh / fs(el)).toFixed(2)}`);
+        if (lh && lines(el) >= 2 && lh / fs(el) < 1.345 && !inCtl(el)) issues.tight.push(`${label(el)} ${(lh / fs(el)).toFixed(2)}`);
         const t = (el.textContent ?? '').trim();
         const raised = ['capitalize', 'uppercase'].includes(cs.textTransform) || [el, el.parentElement].some((n) => n && getComputedStyle(n, '::first-letter').textTransform === 'uppercase');
         if (!stat && /^[a-zα-ωά-ώ]/.test(t) && !raised && !hasFront && el.matches('p,li,dd,h1,h2,h3,h4,h5,blockquote,span,div') && t.length > 3 && !/^(e\.g\.|i\.e\.|vs\.?|via|iOS|eBay|npm|pnpm|http|www\.)/.test(t) && !el.closest('code,pre,kbd,[translate=no]')) issues.lower.push(label(el));

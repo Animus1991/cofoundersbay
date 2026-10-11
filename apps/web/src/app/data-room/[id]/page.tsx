@@ -41,6 +41,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -653,14 +654,25 @@ export default function DataRoomPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  // Documents inside the list's card are rows, not cards in a
+                  // card: the file's mark and name with its size and date
+                  // under it, the menu at the right, the access and views on
+                  // the mark's edge.
+                  <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 lg:grid-cols-3">
                     {filteredDocuments.map((document) => {
                       const FileIcon = getFileIcon(document.type);
                       return (
-                        <Card key={document.id} className="group">
-                          <CardContent>
-                            <div className="flex items-start justify-between">
-                              <FileIcon className="h-10 w-10 text-muted-foreground" />
+                        <div key={document.id} className="group min-w-0 space-y-2">
+                          <RowHead
+                            mark={(
+                              <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                                <FileIcon className="icon-md" aria-hidden="true" />
+                              </div>
+                            )}
+                            title={<span className="block truncate">{document.name}</span>}
+                            subtitle={<>{formatFileSize(document.size)} · {formatDate(document.uploadedAt)}</>}
+                            asideStays
+                            aside={(
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button aria-label="More options"
@@ -681,13 +693,9 @@ export default function DataRoomPage() {
                                   <UnavailableMenuItem className="text-destructive-accessible" en="Delete" el="Διαγραφή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                            <div className="mt-4">
-                              <p className="font-medium truncate">{document.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {formatFileSize(document.size)} • {formatDate(document.uploadedAt)}
-                              </p>
-                              <div className="flex items-center gap-2 mt-3">
+                            )}
+                          />
+                              <div className="flex items-center gap-2">
                                 {document.isPublic ? (
                                   <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                                     <BilingualText en="Public" el="Δημόσιο" compact />
@@ -697,14 +705,11 @@ export default function DataRoomPage() {
                                     <BilingualText en="Private" el="Ιδιωτικό" compact />
                                   </Badge>
                                 )}
-                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Eye className="icon-sm" />
-                                  {document.viewCount}
+                                <span className="text-xs text-muted-foreground tabular-nums">
+                                  <BilingualText en={`${document.viewCount} views`} el={`${document.viewCount} προβολές`} compact />
                                 </span>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        </div>
                       );
                     })}
                   </div>
@@ -865,8 +870,8 @@ export default function DataRoomPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Require NDA" el="Απαίτηση NDA" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Require NDA" el="Απαίτηση NDA" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Require investors to sign NDA before accessing" el="Οι επενδυτές υπογράφουν NDA πριν την πρόσβαση" wrap />
                     </p>
                   </div>
@@ -876,8 +881,8 @@ export default function DataRoomPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Notify when documents are accessed or downloaded" el="Ειδοποίηση όταν τα έγγραφα ανοίγονται ή κατεβαίνουν" wrap />
                     </p>
                   </div>
@@ -887,8 +892,8 @@ export default function DataRoomPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Download Watermarking" el="Υδατογράφημα λήψεων" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Download Watermarking" el="Υδατογράφημα λήψεων" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Add investor email watermark to downloaded PDFs" el="Υδατογράφημα με το email του επενδυτή στα PDF που κατεβαίνουν" wrap />
                     </p>
                   </div>

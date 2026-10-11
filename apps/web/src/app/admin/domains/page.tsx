@@ -1,6 +1,9 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -20,7 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppShell } from '@/components/layout/AppShell';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -109,6 +112,7 @@ function DomainRow({
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
   const [loadingDns, setLoadingDns] = useState(false);
+  const fmtDate = useDateFormat();
 
   const handleRemove = async () => {
     const ok = await confirm({
@@ -154,70 +158,75 @@ function DomainRow({
     }
   };
 
+  // A row of the list, not a framed tile inside the card: the address over
+  // its kind and state, the verification at the right, the actions on the
+  // address's edge (outline first, so the row's letters keep the axis).
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3 min-w-0">
-          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
-              {domain.isPrimary && <Badge variant="secondary" className="text-xs"><BilingualText en="Primary" el="Κύριος" compact /></Badge>}
-              <Badge variant="outline" className="text-xs"><StatusText value={domain.domainType} /></Badge>
-              {statusBadge(domain.verificationStatus)}
-              {domain.isActive
-                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs"><BilingualText en="Active" el="Ενεργός" compact /></Badge>
-                : <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργός" compact /></Badge>}
-              {domain.sslStatus === 'active' && <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs">SSL</Badge>}
-            </div>
-            {domain.verifiedAt && (
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
-              </p>
-            )}
-          </div>
-        </div>
+    <div className="space-y-3 py-4 first:pt-0 last:pb-0">
+      <RowHead
+        title={<span className="break-all font-mono" translate="no">{domain.domainName}</span>}
+        subtitle={(
+          <FactLine
+            items={[
+              <StatusText key="type" value={domain.domainType} />,
+              domain.isPrimary ? <BilingualText key="primary" en="Primary" el="Κύριος" compact /> : null,
+              domain.isActive
+                ? <span key="active" className="text-status-success"><BilingualText en="Active" el="Ενεργός" compact /></span>
+                : <BilingualText key="active" en="Inactive" el="Ανενεργός" compact />,
+              domain.sslStatus === 'active' ? <span key="ssl">SSL</span> : null,
+              domain.verifiedAt ? (
+                <BilingualText
+                  key="verified"
+                  en={`Verified ${fmtDate(domain.verifiedAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                  el={`Επαληθεύτηκε ${fmtDate(domain.verifiedAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                  compact
+                />
+              ) : null,
+            ]}
+          />
+        )}
+        aside={statusBadge(domain.verificationStatus)}
+      />
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
-            <>
-              <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} className="gap-1 h-7 text-xs">
-                <Link2 className="icon-sm" />
-                DNS Setup
-                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
-                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
-                <BilingualText en="Verify" el="Επαλήθευση" compact />
-              </Button>
-            </>
-          )}
-          {!domain.isPrimary && domain.isActive && (
-            <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
-              <Star className="icon-sm" />
-              <BilingualText en="Set Primary" el="Ορισμός ως κύριου" compact />
+      <div className="flex flex-wrap items-center gap-2">
+        {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
+          <>
+            <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} aria-expanded={showDns} className="gap-1 h-7 text-xs">
+              <Link2 className="icon-sm" />
+              <BilingualText en="DNS Setup" el="Ρύθμιση DNS" compact />
+              {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
             </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => toggle.mutate(!domain.isActive)}
-            disabled={toggle.isPending}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-status-warning hover:text-status-warning' : 'text-status-success hover:text-status-success'}`}
-          >
-            <Power className="icon-sm" />
-            {domain.isActive ? 'Deactivate' : 'Activate'}
+            <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
+              <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
+              <BilingualText en="Verify" el="Επαλήθευση" compact />
+            </Button>
+          </>
+        )}
+        {!domain.isPrimary && domain.isActive && (
+          <Button size="sm" variant="outline" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
+            <Star className="icon-sm" />
+            <BilingualText en="Set Primary" el="Ορισμός ως κύριου" compact />
           </Button>
-          <Button aria-label="Remove domain"
-            size="sm"
-            variant="ghost"
-            onClick={() => void handleRemove()}
-            disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
-          >
-            <Trash2 className="icon-sm" />
-          </Button>
-        </div>
+        )}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => toggle.mutate(!domain.isActive)}
+          disabled={toggle.isPending}
+          className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-status-warning hover:text-status-warning' : 'text-status-success hover:text-status-success'}`}
+        >
+          <Power className="icon-sm" />
+          {domain.isActive ? <BilingualText en="Deactivate" el="Απενεργοποίηση" compact /> : <BilingualText en="Activate" el="Ενεργοποίηση" compact />}
+        </Button>
+        <Button aria-label="Remove domain"
+          size="sm"
+          variant="ghost"
+          onClick={() => void handleRemove()}
+          disabled={remove.isPending}
+          className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
+        >
+          <Trash2 className="icon-sm" />
+        </Button>
       </div>
 
       {showDns && dnsInstructions && <DnsInstructionsPanel instructions={dnsInstructions} />}
@@ -264,7 +273,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       ) : domains.length === 0 ? (
         <p className="text-sm text-muted-foreground"><BilingualText en="No domains configured yet." el="Δεν έχουν οριστεί τομείς ακόμα." compact wrap /></p>
       ) : (
-        <div className="space-y-2">
+        <div className="divide-y divide-border">
           {domains.map((d) => (
             <DomainRow key={d.id} domain={d} tenantId={tenant.id} onRefresh={refetch} />
           ))}
@@ -272,9 +281,9 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       )}
 
       {/* Add subdomain */}
-      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
+      <div className="space-y-3 border-t border-border pt-4">
         <p className="text-sm font-medium"><BilingualText en="Add Platform Subdomain" el="Προσθήκη υποτομέα πλατφόρμας" compact /></p>
-        <p className="text-xs text-muted-foreground">Your org will be accessible at <code className="bg-muted px-1 rounded">[subdomain].cofounderbay.com</code></p>
+        <p className="text-xs text-muted-foreground"><BilingualText en="Your org will be accessible at" el="Ο οργανισμός σας θα είναι διαθέσιμος στο" compact wrap /> <code className="bg-muted px-1 rounded">[subdomain].cofounderbay.com</code></p>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
@@ -301,9 +310,9 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
       </div>
 
       {/* Add custom domain */}
-      <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
+      <div className="space-y-3 border-t border-border pt-4">
         <p className="text-sm font-medium"><BilingualText en="Add Custom Domain" el="Προσθήκη προσαρμοσμένου τομέα" compact /></p>
-        <p className="text-xs text-muted-foreground">Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code></p>
+        <p className="text-xs text-muted-foreground"><BilingualText en="Use your own domain, such as" el="Χρησιμοποιήστε το δικό σας domain, όπως" compact wrap /> <code className="bg-muted px-1 rounded">founders.youruni.edu</code></p>
         <div className="flex gap-2">
           <Input
             placeholder="e.g. founders.university.edu"
@@ -378,7 +387,7 @@ export default function DomainsAdminPage() {
         {/* Tenant selector */}
         <Card className="h-fit">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm"><BilingualText en="Organizations" el="Οργανισμοί" compact /></CardTitle>
+            <CardTitle><BilingualText en="Organizations" el="Οργανισμοί" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
@@ -402,7 +411,7 @@ export default function DomainsAdminPage() {
                       : <div data-keep-icon="" className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-muted-foreground" aria-hidden="true" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{t.slug}</p>
+                      <p className="text-xs text-muted-foreground truncate" translate="no">/{t.slug}</p>
                     </div>
                   </button>
                 ))}
@@ -415,19 +424,18 @@ export default function DomainsAdminPage() {
         <div>
           {!selectedTenant ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground"><BilingualText en="Select an organization to manage its domains" el="Επιλέξτε οργανισμό για να διαχειριστείτε τους τομείς του" wrap /></p>
+              <CardContent>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Select an organization to manage its domains" el="Επιλέξτε οργανισμό για να διαχειριστείτε τους τομείς του" wrap /></p>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" />}
-                  <div>
+                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-10 w-10 rounded-xl object-cover" />}
+                  <div className="min-w-0">
                     <CardTitle>{selectedTenant.displayName || selectedTenant.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">/{selectedTenant.slug}</p>
+                    <CardDescription translate="no">/{selectedTenant.slug}</CardDescription>
                   </div>
                 </div>
               </CardHeader>

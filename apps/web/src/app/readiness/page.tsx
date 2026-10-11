@@ -27,6 +27,8 @@ import { bilingualInline, bilingualAria, formatShortDate } from '@/lib/i18n/form
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -490,19 +492,22 @@ function DimensionCard({
             right of the title. Everything below now starts on the same
             left edge as that icon. */}
         <div className="flex h-full min-w-0 flex-col">
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex min-w-0 items-center gap-2">
-                <h3 className="page-section flex min-w-0 items-center gap-2 font-semibold">
-                  <CfbGlyph name={dim.glyph} className="icon-sm shrink-0 text-muted-foreground" />
-                  <BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap />
-                </h3>
+            {/* The head every card has: the dimension as the title (its
+                description behind the info button) and its state as the one
+                pill under it. At the head's right the two-language pill took
+                half of a narrow card and squeezed "Funding Readiness" onto
+                three lines. */}
+            <CardHead
+              title={(
+                <span className="inline-flex min-w-0 max-w-full items-center gap-2">
+                  <span className="min-w-0"><BilingualText en={dim.labelEn} el={dim.labelEl} compact wrap /></span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
                       <button
                         type="button"
-                        className="-m-1 inline-flex tap-target items-center justify-center text-muted-foreground/50 hover:text-muted-foreground"
+                        className="-m-1 inline-flex shrink-0 tap-target items-center justify-center font-normal text-muted-foreground/50 hover:text-muted-foreground"
                         aria-label={bilingualAria(dim.descriptionEn, dim.descriptionEl)}
                       >
                         <Info className="icon-sm cursor-help" />
@@ -513,11 +518,14 @@ function DimensionCard({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              </div>
-              <Badge variant="outline" className={cn('border text-xs', colors.chip)}>
-                <BilingualText en={statusCopy.en} el={statusCopy.el} compact />
-              </Badge>
-            </div>
+                </span>
+              )}
+              meta={(
+                <Badge variant="outline" className={cn('mt-1 border text-xs', colors.chip)}>
+                  <BilingualText en={statusCopy.en} el={statusCopy.el} compact />
+                </Badge>
+              )}
+            />
 
             <div className="mt-3.5 flex items-center gap-3">
               <Progress
@@ -589,7 +597,7 @@ function DimensionCard({
                     compact
                   />
                 </p>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   {remaining.length ? (
                     <BilingualText en={remaining[0].name} el={remaining[0].nameEl ?? remaining[0].name} />
                   ) : (
@@ -620,7 +628,7 @@ function DimensionCard({
                 <p className="text-xs text-muted-foreground">
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
                 </p>
-                <p className="text-sm leading-relaxed text-foreground">
+                <p className="card-body text-foreground">
                   <BilingualText en={dim.recommendations[0].en} el={dim.recommendations[0].el} />
                 </p>
                 {remaining[0] && (
@@ -676,7 +684,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" /><BilingualText en={readinessEn('your_score')} el={readinessEl('your_score')} compact /></span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-muted-foreground/30" /><BilingualText en={readinessEn('benchmark')} el={readinessEl('benchmark')} compact /></span>
         </div>
-        <p className="page-stat-label mt-1.5 text-muted-foreground">
+        <p className="mt-1.5 text-xs text-muted-foreground">
           <BilingualText en={readinessEn('radar_benchmark_note')} el={readinessEl('radar_benchmark_note')} wrap />
         </p>
       </CardContent>
@@ -930,7 +938,7 @@ export default function ReadinessPage() {
     return (
       <AppShell actions={reassessAction} showHelp>
         <Card><CardContent className="space-y-4">
-          <p><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
+          <p className="text-sm"><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
           <div className="flex flex-wrap gap-2">
             <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
             <AskAiButton
@@ -949,7 +957,7 @@ export default function ReadinessPage() {
     return (
       <AppShell actions={reassessAction} showHelp>
         <Card><CardContent className="space-y-4">
-          <p role="alert"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
+          <p role="alert" className="text-sm"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
           <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Retry" el="Επανάληψη" /></Button>
         </CardContent></Card>
       </AppShell>
@@ -1009,7 +1017,7 @@ export default function ReadinessPage() {
         }
         </div>
         <Progress value={accelScore} label={bilingualAria('Accelerator readiness', 'Ετοιμότητα για επιταχυντή')} className="h-2" />
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="card-body text-muted-foreground">
         <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
         </p>
         <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
@@ -1041,7 +1049,7 @@ export default function ReadinessPage() {
         }
         </div>
         <Progress value={investScore} label={bilingualAria('Investor readiness', 'Ετοιμότητα για επενδυτές')} className="h-2" />
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className="card-body text-muted-foreground">
         <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
         </p>
         <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
@@ -1072,12 +1080,13 @@ export default function ReadinessPage() {
         </CardHeader>
         <CardContent className="space-y-3">
         {weakDims.length === 0 ? (
-        <div className="flex items-center gap-2.5 p-3">
+        <div className="flex items-center gap-2.5">
         <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
         <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_excellent')} el={readinessEl('all_dimensions_excellent')} /></p>
         </div>
         ) : (
-        weakDims
+        <div className="card-rows">
+        {weakDims
         .slice()
         .sort((a, b) => (a.score / a.maxScore) - (b.score / b.maxScore))
         .flatMap((d) =>
@@ -1095,20 +1104,24 @@ export default function ReadinessPage() {
         .map((item) => {
         const itemColors = scoreColors(item.status);
         return (
-        <div key={item.key} className="flex items-start gap-2.5 rounded-xl border border-border bg-card p-3">
-        <ChevronRight className={cn('mt-0.5 icon-sm shrink-0', itemColors.icon)} />
-        <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-        <p className="text-xs font-semibold"><BilingualText en={item.labelEn} el={item.labelEl} compact /></p>
-        <Badge variant="outline" className={cn('border text-2xs', itemColors.chip)}>
+        <div key={item.key} className="space-y-2">
+        {/* A row of the card, not a framed tile inside it: the dimension and
+            its score, the recommendation under it, then its two actions -
+            all on the card's axis. */}
+        <RowHead
+        title={<BilingualText en={item.labelEn} el={item.labelEl} compact />}
+        asideStays
+        aside={(
+        <Badge variant="outline" className={cn('border text-2xs tabular-nums', itemColors.chip)}>
         {item.pct}%
         </Badge>
-        </div>
-        <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">
+        )}
+        />
+        <p className="card-body text-muted-foreground">
         <BilingualText en={item.rec.en} el={item.rec.el} />
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-        <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs" asChild>
+        <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs" asChild>
         <Link href={`#dim-${item.dimKey}`}>
         <BilingualText en={readinessEn('jump_to')} el={readinessEl('jump_to')} compact />
         </Link>
@@ -1119,9 +1132,9 @@ export default function ReadinessPage() {
         />
         </div>
         </div>
-        </div>
         );
-        })
+        })}
+        </div>
         )}
         </CardContent>
         </Card>
@@ -1142,34 +1155,46 @@ export default function ReadinessPage() {
         <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
         </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-1">
+        <CardContent>
+        {/* Rows parted by hairlines, each a head: the week as the mark, the
+            score and its change as the title, the two audiences under it. */}
+        <div className="card-rows">
         {demoHistory.slice().reverse().map((h, i) => (
-        <div key={i} className="flex items-center gap-3 border-b border-border py-3 last:border-0">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+        <RowHead
+        key={i}
+        mark={(
+        <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-xs font-semibold tabular-nums text-muted-foreground">
         {h.week}
         </div>
-        <div className="flex-1">
-        <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">{h.score}% <BilingualText en={readinessEn('overall_short')} el={readinessEl('overall_short')} compact /></span>
+        )}
+        title={(
+        <span className="inline-flex flex-wrap items-center gap-x-2">
+        <span className="tabular-nums">{h.score}% <BilingualText en={readinessEn('overall_short')} el={readinessEl('overall_short')} compact /></span>
         {i < demoHistory.length - 1 && (() => {
         const delta = h.score - demoHistory[demoHistory.length - 2 - i].score;
         return (
-        <span className={cn('flex items-center gap-0.5 text-xs', delta >= 0 ? TREND.up : TREND.down)}>
+        <span className={cn('flex items-center gap-0.5 text-xs tabular-nums', delta >= 0 ? TREND.up : TREND.down)}>
         {delta >= 0 ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
         {delta >= 0 ? '+' : ''}{delta}
         </span>
         );
         })()}
-        </div>
-        <p className="text-xs text-muted-foreground">
+        </span>
+        )}
+        subtitle={(
+        <span className="tabular-nums">
         <BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact />: {h.accel}% · <BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact />: {h.invest}%
-        </p>
-        </div>
+        </span>
+        )}
+        asideStays
+        aside={(
         <Badge variant="outline" className="text-xs">
         <BilingualText en={STATUS_LABEL[scoreToStatus(h.score)].en} el={STATUS_LABEL[scoreToStatus(h.score)].el} compact />
         </Badge>
-        </div>
+        )}
+        />
         ))}
+        </div>
         </CardContent>
         </Card>
         </> : <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
@@ -1236,17 +1261,10 @@ export default function ReadinessPage() {
             gauge no longer shares a row with two restatements of itself. */}
         <div className="grid min-w-0 flex-[1_1_36rem] grid-cols-1 gap-5">
           <Card className="min-w-0 overflow-hidden border-0 bg-primary/[0.03] lg:col-span-1">
-            <CardContent className="flex h-full flex-col items-start gap-5 lg:flex-row lg:items-center lg:gap-8">
-              <ScoreEmblem
-                score={overallScore}
-                dimensions={dimensions.map((d) => ({
-                  key: d.key,
-                  pct: Math.round((d.score / d.maxScore) * 100),
-                  labelEn: d.labelEn,
-                  labelEl: d.labelEl,
-                }))}
-              />
-              <div className="flex min-w-0 w-full flex-1 flex-col items-start gap-4">
+            {/* The card's head first, on the card's axis; the emblem and what
+                to do next under it. Beside the emblem the title started 310px
+                in from the card's edge at 1440. */}
+            <CardContent className="space-y-5">
               <div className="min-w-0">
                 <h2 className="card-title"><BilingualText en={readinessEn('overall_readiness')} el={readinessEl('overall_readiness')} /></h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -1260,7 +1278,7 @@ export default function ReadinessPage() {
                     weighs activity on the platform; this one weighs the company
                     against what investors check. Both linked here, and a reader
                     saw 52 on the dashboard and 61 here with no word on why. */}
-                <p className="page-stat-label mt-1.5 text-muted-foreground">
+                <p className="mt-1.5 text-xs text-muted-foreground">
                   <BilingualText
                     en="How ready the company is for investors. Your founder progress score on the dashboard measures your activity on the platform instead."
                     el="Πόσο έτοιμη είναι η εταιρεία για επενδυτές. Ο βαθμός προόδου στον πίνακα ελέγχου μετρά τη δραστηριότητά σας στην πλατφόρμα."
@@ -1268,21 +1286,32 @@ export default function ReadinessPage() {
                   />
                 </p>
               </div>
+              <div className="flex flex-col items-start gap-5 lg:flex-row lg:items-center lg:gap-8">
+              <ScoreEmblem
+                score={overallScore}
+                dimensions={dimensions.map((d) => ({
+                  key: d.key,
+                  pct: Math.round((d.score / d.maxScore) * 100),
+                  labelEn: d.labelEn,
+                  labelEl: d.labelEl,
+                }))}
+              />
+              <div className="flex min-w-0 w-full flex-1 flex-col items-start gap-4">
               {nextOpen && (
                 <Link
                   href={`#dim-${nextOpen.dimKey}`}
-                  className="w-full rounded-xl bg-card/80 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
+                  className="axis-row block self-stretch rounded-md py-2 text-left transition-colors hover:bg-accent focus-ring"
                 >
-                  <p className="page-stat-label text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     <BilingualText en={readinessEn('next_open')} el={readinessEl('next_open')} wrap />
                   </p>
-                  <p className="mt-1 text-xs font-medium leading-snug">
+                  <p className="mt-0.5 text-sm font-medium">
                     <BilingualText en={nextOpen.name} el={nextOpen.nameEl ?? nextOpen.name} wrap />
                     <span className="ml-1 text-muted-foreground">· {nextOpen.weight}%</span>
                   </p>
                 </Link>
               )}
-              <div className="flex flex-wrap justify-center gap-2 lg:justify-start">
+              <div className="flex flex-wrap gap-2">
                 {weakDims.slice(0, 3).map((d) => (
                   <Link key={d.key} href={`#dim-${d.key}`}>
                     <Badge variant="outline" className="gap-1.5 text-xs">
@@ -1291,6 +1320,7 @@ export default function ReadinessPage() {
                     </Badge>
                   </Link>
                 ))}
+              </div>
               </div>
               </div>
             </CardContent>
@@ -1379,9 +1409,10 @@ export default function ReadinessPage() {
                       </div>
                     );
                   })}
+                  {/* The legend's line follows its words, so the sentence starts on the card's axis. */}
                   <p className="pt-1 text-xs text-muted-foreground">
-                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-accent-mark" />
                     <BilingualText en={readinessEn('accel_threshold_line')} el={readinessEl('accel_threshold_line')} compact />
+                    <span className="ml-1.5 inline-block h-3 w-0.5 align-middle bg-status-accent-mark" aria-hidden="true" />
                   </p>
                 </CardContent>
               </Card>
@@ -1409,9 +1440,10 @@ export default function ReadinessPage() {
                       </div>
                     );
                   })}
+                  {/* The legend's line follows its words, so the sentence starts on the card's axis. */}
                   <p className="pt-1 text-xs text-muted-foreground">
-                    <span className="mr-1 inline-block h-3 w-0.5 align-middle bg-status-success-mark" />
                     <BilingualText en={readinessEn('investor_threshold_line')} el={readinessEl('investor_threshold_line')} compact />
+                    <span className="ml-1.5 inline-block h-3 w-0.5 align-middle bg-status-success-mark" aria-hidden="true" />
                   </p>
                 </CardContent>
               </Card>
@@ -1422,28 +1454,30 @@ export default function ReadinessPage() {
                 <CardTitle><BilingualText en={readinessEn('dimension_weights')} el={readinessEl('dimension_weights')} /></CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                {/* Rows, not tinted tiles: each dimension, its score under it and
+                    what it adds to each audience at the right; two columns from sm. */}
+                <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     const accelContrib = Math.round(pct * d.acceleratorWeight / 100);
                     const investContrib = Math.round(pct * d.investorWeight / 100);
                     return (
-                      <div key={d.key} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
-                        <CfbGlyph name={d.glyph} className="icon-sm flex-shrink-0 text-muted-foreground" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-medium"><BilingualText en={d.labelEn} el={d.labelEl} compact /></p>
-                          <p className="text-xs text-muted-foreground">
-                            <BilingualText en={`${readinessEn('score_pct')}: ${pct}%`} el={`${readinessEl('score_pct')}: ${pct}%`} compact />
-                          </p>
-                        </div>
-                        <div className="space-y-0.5 text-right text-xs">
-                          <p className={cn('font-medium', STATUS.accent.text)}>+{accelContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('accel_short')} el={readinessEl('accel_short')} compact /></span></p>
-                          <p className={cn('font-medium', STATUS.success.text)}>+{investContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('invest_short')} el={readinessEl('invest_short')} compact /></span></p>
-                        </div>
-                      </div>
+                      <li key={d.key} className="border-b border-border py-3">
+                        <RowHead
+                          title={<BilingualText en={d.labelEn} el={d.labelEl} compact />}
+                          subtitle={<BilingualText en={`${readinessEn('score_pct')}: ${pct}%`} el={`${readinessEl('score_pct')}: ${pct}%`} compact />}
+                          asideStays
+                          aside={(
+                            <span className="space-y-0.5 text-right">
+                              <span className={cn('block font-medium tabular-nums', STATUS.accent.text)}>+{accelContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('accel_short')} el={readinessEl('accel_short')} compact /></span></span>
+                              <span className={cn('block font-medium tabular-nums', STATUS.success.text)}>+{investContrib} <span className="font-normal text-muted-foreground"><BilingualText en={readinessEn('invest_short')} el={readinessEl('invest_short')} compact /></span></span>
+                            </span>
+                          )}
+                        />
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               </CardContent>
             </Card>
           </TabsContent>

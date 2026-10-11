@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { analytics } from '@/lib/analytics';
@@ -434,36 +435,43 @@ export default function TenantsAdminPage() {
                 />
               </label>
               {visibleTenants.map((tenant) => (
+                // A row of the list, set like every row in a section card:
+                // the organisation's rounded square, the name over its
+                // address (a step under the section's title), the state and
+                // the settings at the right.
                 <div
                   key={tenant.id}
-                  className="axis-row flex items-center justify-between rounded-md py-3 transition-colors hover:bg-accent"
+                  className="axis-row flex items-start gap-3 rounded-md py-3 transition-colors hover:bg-accent"
                 >
-                  <div className="flex min-w-0 items-center gap-4">
-                    <BulkCheckbox
-                      id={tenant.id}
-                      selectedIds={selectedIds}
-                      onToggle={toggle}
-                      label={`Select ${tenant.displayName || tenant.name}`}
-                      className="shrink-0"
-                    />
-                    {tenant.logoUrl ? (
-                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                  <BulkCheckbox
+                    id={tenant.id}
+                    selectedIds={selectedIds}
+                    onToggle={toggle}
+                    label={`Select ${tenant.displayName || tenant.name}`}
+                    className="mt-3 shrink-0"
+                  />
+                  <RowHead
+                    className="min-w-0 flex-1"
+                    titleAs="h3"
+                    mark={tenant.logoUrl ? (
+                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-xl object-cover" />
                     ) : (
-                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Building2 className="icon-md text-muted-foreground" aria-hidden="true" />
+                      <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                        <Building2 className="icon-md" aria-hidden="true" />
                       </div>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-medium">{tenant.displayName || tenant.name}</h3>
-                      <p className="truncate text-sm text-muted-foreground">/{tenant.slug}</p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-3">
-                    {getStatusBadge(tenant.status)}
-                    <Button aria-label={`Settings for ${tenant.displayName || tenant.name}`} variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
-                      <Settings className="icon-sm" aria-hidden="true" />
-                    </Button>
-                  </div>
+                    title={tenant.displayName || tenant.name}
+                    subtitle={<span className="block truncate" translate="no">/{tenant.slug}</span>}
+                    asideStays
+                    aside={(
+                      <>
+                        {getStatusBadge(tenant.status)}
+                        <Button aria-label={`Settings for ${tenant.displayName || tenant.name}`} variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedTenant(tenant)}>
+                          <Settings className="icon-sm" aria-hidden="true" />
+                        </Button>
+                      </>
+                    )}
+                  />
                 </div>
               ))}
             </div>

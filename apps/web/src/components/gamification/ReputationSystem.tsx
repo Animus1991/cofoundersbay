@@ -28,6 +28,7 @@ import { getMyXP, type GamificationRecentEvent } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -271,20 +272,19 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                     <li
                       key={level.level}
                       aria-current={isCurrentLevel ? 'step' : undefined}
-                      className={cn(
-                        'py-3 transition-all first:pt-0 last:pb-0',
-                        isPastLevel && !isCurrentLevel && 'opacity-60',
-                        isFutureLevel && 'opacity-40'
-                      )}
+                      className="py-3 first:pt-0 last:pb-0"
                     >
-                      <CardHead
-                        titleAs="p"
+                      {/* Past and future levels are told by the mark and the
+                          pill, not by fading the row: opacity over muted text
+                          fell under 3:1. */}
+                      <RowHead
                         mark={(
                           <div
                             data-card-mark=""
                             className={cn(
                               'flex h-10 w-10 items-center justify-center rounded-full',
-                              isCurrentLevel ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                              isCurrentLevel ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                              isFutureLevel && 'text-muted-foreground'
                             )}
                           >
                             <span className="font-bold tabular-nums">{level.level}</span>
@@ -319,9 +319,9 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             </CardHeader>
             <CardContent>
               {recentActivities.length === 0 && (
-                <div className="py-8 text-center text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   <BilingualText en="No XP activity yet. Start building to earn your first points." el="Δεν υπάρχει δραστηριότητα XP ακόμα. Ξεκινήστε για να κερδίσετε τους πρώτους πόντους." wrap />
-                </div>
+                </p>
               )}
               {/* One row per change, parted by hairlines: the action, when,
                   and the points at the right - no frame per row. */}
@@ -331,10 +331,8 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
 
                   return (
                     <li key={activity.id} className="py-3 first:pt-0 last:pb-0">
-                      <CardHead
-                        titleAs="p"
-                        titleClassName="first-letter:uppercase"
-                        title={activity.action}
+                      <RowHead
+                        title={<span className="block first-letter:uppercase">{activity.action}</span>}
                         subtitle={(
                           <span className="tabular-nums">
                             {new Date(activity.timestamp).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
@@ -375,8 +373,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
               <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
                 {pointsEarningGuide.map((item, index) => (
                   <li key={index} className="border-b border-border py-3">
-                    <CardHead
-                      titleAs="p"
+                    <RowHead
                       title={item.action}
                       asideStays
                       aside={(

@@ -155,7 +155,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-3"><BilingualText en={`About ${tenantName}`} el={`Σχετικά με ${tenantName}`} wrap /></h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground sm:text-lg">
                   {b?.aboutText || tenant.aboutText}
                 </p>
               </div>
@@ -204,7 +204,9 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
                   {sso.provider?.loginButtonText || <BilingualText en="SSO Login" el="Σύνδεση SSO" compact />}
                 </Button>
               )}
-              <Button size="lg" className="gap-2" asChild>
+              {/* Default size: a large button's label outranked the card's
+                  own title. */}
+              <Button className="gap-2" asChild>
                 <Link href={b?.ctaUrl || '/register'}>
                   {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
                   <ChevronRight className="icon-sm" />
@@ -318,7 +320,7 @@ export default function TenantPage() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground"><BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact /></h1>
-        <p className="text-muted-foreground max-w-sm"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
+        <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
         <Button variant="outline" asChild>
           <Link href="/"><BilingualText en="Back to CoFounderBay" el="Επιστροφή στο CoFounderBay" compact /></Link>
         </Button>

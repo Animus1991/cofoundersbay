@@ -144,19 +144,19 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-7">
         {[
-          { label: 'Total users', value: METRICS.totalUsers ?? dash, icon: Users },
-          { label: 'Active users', value: METRICS.activeUsers ?? dash, icon: TrendingUp },
-          { label: 'New users', value: METRICS.newUsers ?? dash, icon: Users },
-          { label: 'Startups', value: METRICS.totalStartups ?? dash, icon: Rocket },
-          { label: 'Mentors', value: METRICS.totalMentors ?? dash, icon: BarChart3 },
-          { label: 'Investors', value: METRICS.totalInvestors ?? dash, icon: TrendingUp },
-          { label: 'Tenants', value: METRICS.totalTenants ?? dash, icon: Users },
-        ].map(({ label, value, icon: Icon }) => (
+          { label: 'Total users', labelEl: 'Σύνολο χρηστών', value: METRICS.totalUsers ?? dash, icon: Users },
+          { label: 'Active users', labelEl: 'Ενεργοί χρήστες', value: METRICS.activeUsers ?? dash, icon: TrendingUp },
+          { label: 'New users', labelEl: 'Νέοι χρήστες', value: METRICS.newUsers ?? dash, icon: Users },
+          { label: 'Startups', labelEl: 'Startups', value: METRICS.totalStartups ?? dash, icon: Rocket },
+          { label: 'Mentors', labelEl: 'Μέντορες', value: METRICS.totalMentors ?? dash, icon: BarChart3 },
+          { label: 'Investors', labelEl: 'Επενδυτές', value: METRICS.totalInvestors ?? dash, icon: TrendingUp },
+          { label: 'Tenants', labelEl: 'Οργανισμοί', value: METRICS.totalTenants ?? dash, icon: Users },
+        ].map(({ label, labelEl, value, icon: Icon }) => (
           <Card key={label}>
             <CardContent>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Icon className="icon-sm" />
-                <span className="text-sm">{label}</span>
+                <span className="text-sm"><BilingualText en={label} el={labelEl} compact wrap /></span>
               </div>
               <p className="page-stat mt-1 text-xl font-bold tabular-nums">{value.toLocaleString('en-GB')}</p>
             </CardContent>
@@ -166,7 +166,7 @@ export default function AdminAnalyticsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-base">Users by role</CardTitle>
+          <CardTitle><BilingualText en="Users by role" el="Χρήστες ανά ρόλο" compact /></CardTitle>
         </CardHeader>
         <CardContent>
           <UserRoleChart

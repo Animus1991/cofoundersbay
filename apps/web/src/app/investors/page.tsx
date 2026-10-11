@@ -614,7 +614,7 @@ export default function InvestorsPage() {
             <Card>
               <CardContent className="py-14 text-center">
                 <TrendingUp className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" aria-hidden="true" />
-                <p className="font-medium">
+                <p className="card-title text-foreground">
                   {directory.length === 0 && !query
                     ? <BilingualText en="No investors have joined yet" el="Δεν έχουν εγγραφεί ακόμα επενδυτές" />
                     : <BilingualText en="No investors match" el="Κανένας επενδυτής δεν ταιριάζει" />}

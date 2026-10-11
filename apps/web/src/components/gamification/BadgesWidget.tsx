@@ -7,7 +7,8 @@ import { Badge as BadgeUI } from '@/components/ui/badge';
 import { useMyBadges } from '@/hooks/useGamification';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardFoot } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
 
@@ -102,15 +103,15 @@ export function BadgesWidget() {
       <CardContent className="space-y-3">
         {/* One row per badge, parted by hairlines: the medal as the mark,
             the name and its rarity beside it, "New" at the right while it is
-            unseen. Framed medal tiles inside the card were cards in a card. */}
+            unseen. Framed medal tiles inside the card were cards in a card;
+            a row's name sits a step under the card's title (RowHead). */}
         <ul className="divide-y divide-border">
           {badges.map((badge) => {
             const rarityEl = RARITY_EL[badge.rarity] ?? badge.rarity;
             const nameEl = BADGE_NAME_EL[badge.name];
             return (
               <li key={badge.id} className="py-3 first:pt-0 last:pb-0">
-                <CardHead
-                  titleAs="p"
+                <RowHead
                   mark={(
                     <MedalFace
                       id={badge.id}

@@ -11,6 +11,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -162,10 +163,11 @@ function DomainRow({
   onDelete: (id: string) => void;
   onVerify: (id: string) => void;
 }) {
-  // A row of the card's head without its frame: the domain's mark, the
-  // address over what it does, the state and the remove control at the right.
+  // A row of the Email domains card: the domain's mark, the address over
+  // what it does, the state and the remove control at the right. A row's
+  // name sits a step under the card's title.
   return (
-    <CardHead
+    <RowHead
       titleAs="h4"
       mark={(
         <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -233,9 +235,9 @@ function RoleMappingEditor({
               <Input value={r.value} onChange={e => update(i, 'value', e.target.value)} placeholder={bilingualInline('Value (e.g. admins)', 'Τιμή (π.χ. admins)')} aria-label={bilingualInline(`Rule ${i + 1} value`, `Κανόνας ${i + 1}: τιμή`)} className="text-xs h-8" />
               <select value={r.role} onChange={e => update(i, 'role', e.target.value)}
                 aria-label={bilingualInline(`Rule ${i + 1} role`, `Κανόνας ${i + 1}: ρόλος`)}
-                className="h-8 w-full rounded-xl border border-input bg-background px-2 text-xs">
+                className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
                 {['founder', 'investor', 'mentor', 'member', 'admin'].map(role =>
-                  <option key={role} value={role}>{role}</option>
+                  <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
                 )}
               </select>
               <button aria-label={bilingualInline(`Remove rule ${i + 1}`, `Αφαίρεση κανόνα ${i + 1}`)} type="button" onClick={() => remove(i)} className="tap-target text-muted-foreground hover:text-destructive-accessible">
@@ -545,7 +547,7 @@ export default function TenantSSOPage() {
                         <label htmlFor="sso-cert" className="text-sm font-medium"><BilingualText en="Public certificate (PEM)" el="Δημόσιο πιστοποιητικό (PEM)" compact /></label>
                         <textarea id="sso-cert" value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))}
                           placeholder="-----BEGIN CERTIFICATE-----&#10;..." rows={3}
-                          className="w-full rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
                       </div>
                     </>
                   )}
@@ -615,7 +617,7 @@ export default function TenantSSOPage() {
                     <div className="space-y-1">
                       <label htmlFor="sso-selected-provider" className="text-sm font-medium"><BilingualText en="Identity provider" el="Πάροχος ταυτότητας" compact /></label>
                       <select id="sso-selected-provider" value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
-                        className="w-full rounded-xl border border-input bg-background px-3 py-2">
+                        className="w-full rounded-md border border-input bg-background px-3 py-2">
                         <option value="">{bilingualInline('None selected', 'Καμία επιλογή')}</option>
                         {providers?.map(p => <option key={p.id} value={p.id}>{p.providerName} ({p.providerType.toUpperCase()})</option>)}
                       </select>
@@ -651,7 +653,7 @@ export default function TenantSSOPage() {
                       <div className="space-y-1">
                         <label htmlFor="sso-default-role" className="text-sm font-medium"><BilingualText en="Default role for new SSO members" el="Προεπιλεγμένος ρόλος νέων μελών SSO" compact wrap /></label>
                         <select id="sso-default-role" value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
-                          className="w-full rounded-xl border border-input bg-background px-3 py-2">
+                          className="w-full rounded-md border border-input bg-background px-3 py-2">
                           {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
                         </select>
                       </div>

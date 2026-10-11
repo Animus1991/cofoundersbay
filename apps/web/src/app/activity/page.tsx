@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingUp, Users, Sparkles, Bell, Calendar, MessageCircle,
   Award, Briefcase, RefreshCw, CheckCheck, ExternalLink,
-  Flag, Star, Gift, Activity, Zap, Clock, ArrowRight,
+  Flag, Star, Gift, Activity, Zap, ArrowRight,
   UserCheck, Target, BarChart3, CheckCircle2, X,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { FactLine } from '@/components/common/FactLine';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { bilingualAria } from '@/lib/i18n/format';
 import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-activity';
@@ -159,15 +160,17 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
             />
           </p>
         )}
-        <div className="mt-1 flex items-center gap-2">
-          <Clock className="icon-sm text-muted-foreground/60" />
-          <span className="text-2xs text-muted-foreground">{item.timeAgo}</span>
-          {/* The type was printed raw and `capitalize`d, which is why it read
-              "Connection" in English on a Greek page. */}
-          <Badge variant="outline" className="h-4 px-1.5 text-2xs">
-            <BilingualText en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact />
-          </Badge>
-        </div>
+        {/* The time and the kind are facts: one dotted text line, not a
+            clock glyph and an outlined pill. (The type was once printed raw
+            and `capitalize`d, which is why it read "Connection" in English
+            on a Greek page.) */}
+        <FactLine
+          className="mt-1"
+          items={[
+            <span key="time">{item.timeAgo}</span>,
+            <BilingualText key="type" en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact />,
+          ]}
+        />
       </div>
       {item.href && (
         <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label={bilingualAria(activityEn('open_item'), activityEl('open_item'))}>
@@ -209,8 +212,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         </p>
         {item.body && <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>}
         <div className="mt-1 flex items-center gap-2">
-          <Clock className="icon-sm text-muted-foreground/60" />
-          <span className="text-2xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             <RelativeTime
               date={item.createdAt}
               format={(iso) => <BilingualText {...formatTimeAgo(iso)} compact />}
@@ -520,7 +522,7 @@ export default function ActivityPage() {
 
               {/* Network tab with type filters */}
               <TabsContent value="network" className="mt-0 space-y-3" data-tour="activity-stream">
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {activityError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <p className="text-sm text-muted-foreground">
@@ -586,7 +588,7 @@ export default function ActivityPage() {
 
               {/* Notifications */}
               <TabsContent value="notifications" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {notifError ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <p className="text-sm text-muted-foreground">
@@ -628,7 +630,7 @@ export default function ActivityPage() {
 
               {/* Events */}
               <TabsContent value="events" className="mt-0">
-                <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+                <div className="overflow-hidden rounded-2xl border border-border bg-card">
                   {activityLoading ? (
                     Array.from({ length: 3 }).map((_, i) => <ItemSkeleton key={i} />)
                   ) : eventItems.length === 0 ? (

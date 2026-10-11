@@ -97,7 +97,9 @@ export function EmptyState({
         {/* Text content */}
         <div className="space-y-2">
           <p className="mx-auto max-w-prose text-balance break-words text-base font-semibold leading-snug">{title}</p>
-          {description && <p className="mx-auto max-w-prose break-words text-sm leading-relaxed text-muted-foreground">{description}</p>}
+          {/* card-body: a step under the title on a phone too, where text-sm
+              (14.91) sat 0.07px under the title's 14.98. */}
+          {description && <p className="card-body mx-auto max-w-prose break-words text-muted-foreground">{description}</p>}
         </div>
         {(action || askAiPrompt) && (
           <div className="flex flex-wrap items-center justify-center gap-2 pt-2">

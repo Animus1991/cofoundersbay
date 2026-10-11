@@ -40,6 +40,7 @@ type WebhookItem = {
   events: string[];
   isActive: boolean;
   lastTriggered?: string;
+  lastTriggeredEl?: string;
   successRate: number;
   totalDeliveries: number;
 };
@@ -51,6 +52,7 @@ const MOCK_WEBHOOKS: WebhookItem[] = [
     events: ['application.submitted', 'startup.graduated', 'milestone.completed'],
     isActive: true,
     lastTriggered: '5 minutes ago',
+    lastTriggeredEl: 'πριν από 5 λεπτά',
     successRate: 98,
     totalDeliveries: 342,
   },
@@ -60,6 +62,7 @@ const MOCK_WEBHOOKS: WebhookItem[] = [
     events: ['user.joined', 'event.created'],
     isActive: true,
     lastTriggered: '1 hour ago',
+    lastTriggeredEl: 'πριν από 1 ώρα',
     successRate: 100,
     totalDeliveries: 87,
   },
@@ -69,6 +72,7 @@ const MOCK_WEBHOOKS: WebhookItem[] = [
     events: ['application.submitted', 'startup.created'],
     isActive: false,
     lastTriggered: '3 days ago',
+    lastTriggeredEl: 'πριν από 3 ημέρες',
     successRate: 72,
     totalDeliveries: 25,
   },
@@ -127,7 +131,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
           asideStays
           aside={(
             <>
-              <Switch checked={active} onCheckedChange={setActive} aria-label={`Deliver to ${truncUrl}`} />
+              <Switch checked={active} onCheckedChange={setActive} aria-label={`Deliver to ${truncUrl}. Παράδοση στο ${truncUrl}`} />
               {menu}
             </>
           )}
@@ -136,7 +140,11 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
           label="Events. Συμβάντα"
           items={webhook.events.map((e) => <span key={e} className="font-mono" translate="no">{e}</span>)}
         />
-        <CardFoot meta={webhook.lastTriggered || undefined}>
+        <CardFoot
+          meta={webhook.lastTriggered
+            ? <BilingualText en={`Last delivery ${webhook.lastTriggered}`} el={`Τελευταία παράδοση ${webhook.lastTriggeredEl ?? webhook.lastTriggered}`} compact />
+            : undefined}
+        >
           <Button aria-label="Copy URL. Αντιγραφή URL" variant="ghost" size="icon" onClick={() => void navigator.clipboard?.writeText(webhook.url)}>
             <Copy className="icon-sm" aria-hidden="true" />
           </Button>

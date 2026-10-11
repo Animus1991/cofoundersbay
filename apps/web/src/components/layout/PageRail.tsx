@@ -244,7 +244,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     window.addEventListener('resize', run);
     const main = document.getElementById('main-content');
     const observer = main ? new ResizeObserver(run) : null;
-    observer?.observe(main);
+    if (main && observer) observer.observe(main);
     return () => {
       window.removeEventListener('resize', run);
       observer?.disconnect();

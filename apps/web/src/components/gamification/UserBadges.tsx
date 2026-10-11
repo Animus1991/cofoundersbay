@@ -232,7 +232,8 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
 
   const earnedCount = resolvedBadges.filter(b => b.earned).length;
   const totalCount = resolvedBadges.length;
-  const completionPercentage = (earnedCount / totalCount) * 100;
+  // No badges yet is 0%, not NaN%.
+  const completionPercentage = totalCount > 0 ? (earnedCount / totalCount) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -306,8 +307,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   key={badge.id} 
                   className={cn(
                     'transition-all hover:border-primary/30',
-                    badge.earned && 'border-primary/50',
-                    !badge.earned && 'opacity-75'
+                    badge.earned && 'border-primary/50'
                   )}
                 >
                   <CardContent className="space-y-3">

@@ -17,6 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { readinessEvidence } from '@/lib/readiness-evidence';
 import { qk } from '@/lib/query-keys';
 import {
@@ -118,12 +120,12 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <Target className="icon-sm text-muted-foreground" />
             <BilingualText en="Startup Readiness" el="Ετοιμότητα startup" compact />
           </CardTitle>
           <div className="flex items-center gap-1.5">
-            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
+            <span className={cn('card-body font-semibold tabular-nums', scoreColor(score))}>
               {score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
@@ -194,7 +196,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         })}
         {compact && (
           <p className="text-2xs text-muted-foreground pt-1">
-            Showing top 4 dimensions · Full view in Readiness tab
+            <BilingualText en="Showing top 4 dimensions · Full view in Readiness tab" el="Εμφανίζονται οι 4 κορυφαίες διαστάσεις · Πλήρης προβολή στην καρτέλα Ετοιμότητα" compact wrap />
           </p>
         )}
       </CardContent>
@@ -240,24 +242,24 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
   const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-status-success ' : momentumLevel === 'Steady' ? 'text-status-warning ' : 'text-status-danger ';
 
   const componentBars = [
-    { label: 'Velocity',           value: bd.velocityScore             ?? 0 },
-    { label: 'Recent Activity',    value: bd.recentActivityScore       ?? 0 },
-    { label: 'Collaboration',      value: bd.collaborationDensityScore ?? 0 },
-    { label: 'Feedback Loops',     value: bd.feedbackLoopScore         ?? 0 },
-    { label: 'Milestone Rate',     value: bd.milestoneRateScore        ?? 0 },
+    { label: 'Velocity',           labelEl: 'Ταχύτητα',              value: bd.velocityScore             ?? 0 },
+    { label: 'Recent Activity',    labelEl: 'Πρόσφατη δραστηριότητα', value: bd.recentActivityScore       ?? 0 },
+    { label: 'Collaboration',      labelEl: 'Συνεργασία',            value: bd.collaborationDensityScore ?? 0 },
+    { label: 'Feedback Loops',     labelEl: 'Βρόχοι ανατροφοδότησης', value: bd.feedbackLoopScore         ?? 0 },
+    { label: 'Milestone Rate',     labelEl: 'Ρυθμός ορόσημων',       value: bd.milestoneRateScore        ?? 0 },
   ];
 
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <Zap className="icon-sm text-status-warning" />
             <BilingualText en="Team Momentum" el="Ορμή ομάδας" compact />
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className={cn('text-xs font-medium', momentumColor)}>{momentumLevel}</span>
-            <span className={cn('text-lg font-semibold tracking-tight tabular-nums', scoreColor(score))}>
+            <span className={cn('card-body font-semibold tabular-nums', scoreColor(score))}>
               {score}
               <span className="text-xs text-muted-foreground font-normal">/100</span>
             </span>
@@ -266,29 +268,31 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
         <Progress value={score} className="h-1.5 mt-1" />
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-2 text-center">
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="page-stat font-bold tabular-nums">{velocity.toFixed(2)}</p>
-            <p className="text-2xs text-muted-foreground">actions/day (14d)</p>
+        {/* Figures on the card's axis, not in tinted boxes inside it; the
+            label comes first for a screen reader, the figure shows above it. */}
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Actions a day (14 days)" el="Ενέργειες την ημέρα (14 ημέρες)" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{velocity.toFixed(2)}</dd>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="page-stat font-bold tabular-nums">{bd.activeContributors}</p>
-            <p className="text-2xs text-muted-foreground">contributors</p>
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Contributors" el="Συνεισφέροντες" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{bd.activeContributors ?? 0}</dd>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="page-stat font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
-            <p className="text-2xs text-muted-foreground">actions (7d)</p>
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Actions (7 days)" el="Ενέργειες (7 ημέρες)" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{bd.meaningful7d ?? 0}</dd>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="page-stat font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
-            <p className="text-2xs text-muted-foreground">feedback loops</p>
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Feedback loops" el="Βρόχοι ανατροφοδότησης" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{bd.feedbackLoopsCompleted ?? 0}</dd>
           </div>
-        </div>
+        </dl>
         <div className="space-y-1.5">
-          {componentBars.map(({ label, value }) => (
+          {componentBars.map(({ label, labelEl, value }) => (
             <div key={label}>
               <div className="flex items-center justify-between text-xs mb-0.5">
-                <span className="text-muted-foreground">{label}</span>
+                <span className="text-muted-foreground"><BilingualText en={label} el={labelEl} compact /></span>
                 <span className="font-medium tabular-nums">{value}</span>
               </div>
               <div className="w-full h-1 rounded-full bg-muted overflow-hidden">
@@ -337,70 +341,67 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
           <Users className="icon-sm text-status-info" />
           <BilingualText en="Contributions" el="Συνεισφορές" compact />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent>
+        {/* Rows parted by hairlines, each a head: the member, their rank and
+            what they did as one facts line, the score at the right; the bar
+            and the explanation under it on the same axis. */}
+        <div className="card-rows">
         {contributors.slice(0, 5).map((c, idx) => {
-          const bd = c.breakdown;
+          const bd = c.breakdown ?? ({} as NonNullable<typeof c.breakdown>);
           const recentActivity = (bd.recentArtifactsCreated ?? 0) + (bd.recentArtifactsImproved ?? 0) + (bd.recentFeedbackApplied ?? 0);
           return (
-            <div key={c.userId} className="space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs text-muted-foreground w-4 shrink-0">#{idx + 1}</span>
-                  <span className="text-xs font-medium truncate" title={c.userId}>
-                    {c.userId}
-                  </span>
-                </div>
-                {/* Was `6C·9I ·0FA ·3↑`. The letters were invented here and
-                    explained only in a `title`, which never appears on a touch
-                    screen and was English either way, so half the product's
-                    readers had four numbers and no nouns.
-
-                    Icons were the first attempt and the wrong one: this file
-                    sits inside [data-surface="card"], where the sweep below
-                    globals.css line 2798 hides decorative svg.lucide on purpose
-                    (181 of them across 37 routes) and keeps only state glyphs.
-                    Three of the four icons rendered at display:none. The rule is
-                    right — an icon standing in for a noun is the same guess the
-                    letters were — so the nouns are written out, in both
-                    languages, and a count of zero is dropped rather than printed
-                    as `0FA`. */}
-                <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 shrink-0 text-2xs text-muted-foreground">
-                  {([
-                    { n: bd.artifactsCreated, en: 'created', el: 'δημιουργίες' },
-                    { n: bd.artifactsImproved, en: 'improved', el: 'βελτιώσεις' },
-                    { n: bd.feedbackApplied, en: 'applied', el: 'εφαρμοσμένα' },
-                    { n: recentActivity, en: 'in 14 days', el: 'σε 14 ημέρες', tone: 'text-status-success' },
-                  ] as const)
-                    .filter((part) => part.n > 0)
-                    .map((part, i, kept) => (
-                      <span key={part.en} className={cn('whitespace-nowrap', 'tone' in part ? part.tone : undefined)}>
-                        <span className="tabular-nums font-medium">{part.n}</span>{' '}
-                        <BilingualText en={part.en} el={part.el} compact />
-                        {i < kept.length - 1 && <span aria-hidden="true" className="ml-2 opacity-50">·</span>}
-                      </span>
-                    ))}
-                  <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
+            <div key={c.userId} className="space-y-2">
+              {/* Was `6C·9I ·0FA ·3↑`: letters invented here and explained only
+                  in a `title`, which never appears on a touch screen. The nouns
+                  are written out in both languages, and a count of zero is
+                  dropped rather than printed as `0FA`. */}
+              <RowHead
+                title={<span className="block truncate" title={c.userId} translate="no">{c.userId}</span>}
+                subtitle={(
+                  <FactLine
+                    items={[
+                      <span key="rank" className="tabular-nums">#{idx + 1}</span>,
+                      ...([
+                        { n: bd.artifactsCreated ?? 0, en: 'Created', el: 'Δημιουργίες' },
+                        { n: bd.artifactsImproved ?? 0, en: 'Improved', el: 'Βελτιώσεις' },
+                        { n: bd.feedbackApplied ?? 0, en: 'Applied', el: 'Εφαρμοσμένα' },
+                        { n: recentActivity, en: 'In 14 days', el: 'Σε 14 ημέρες', tone: 'text-status-success' },
+                      ] as const)
+                        .filter((part) => part.n > 0)
+                        .map((part) => (
+                          <span key={part.en} className={'tone' in part ? part.tone : undefined}>
+                            <BilingualText en={part.en} el={part.el} compact />{' '}
+                            <span className="font-medium tabular-nums">{part.n}</span>
+                          </span>
+                        )),
+                    ]}
+                  />
+                )}
+                asideStays
+                aside={(
+                  <Badge variant={scoreBadgeVariant(c.score)} className="tabular-nums">
                     {c.score}
                   </Badge>
-                </div>
-              </div>
+                )}
+              />
               <div className="w-full h-1 rounded-full bg-muted overflow-hidden">
                 <div
                   className={cn('h-full rounded-full', scoreBarColor(c.score))}
                   style={{ width: `${c.score}%` }}
                 />
               </div>
-              {c.rawScore > 0 && idx === 0 && (
-                <p className="text-2xs text-muted-foreground">{c.explain}</p>
+              {c.rawScore > 0 && idx === 0 && c.explain && (
+                <p className="text-xs text-muted-foreground first-letter:uppercase">{c.explain}</p>
               )}
             </div>
           );
         })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -439,7 +440,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2">
             <MessageSquare className="icon-sm text-status-accent" />
             <BilingualText en="Mentor Feedback Loop" el="Βρόχος ανατροφοδότησης μέντορα" compact />
           </CardTitle>
@@ -449,31 +450,33 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-base font-bold">{data.feedbackCount}</p>
-            <p className="text-2xs text-muted-foreground">received</p>
+        {/* Figures on the card's axis, not in tinted boxes inside it; the
+            label comes first for a screen reader, the figure shows above it. */}
+        <dl className="grid grid-cols-3 gap-x-4">
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Received" el="Ελήφθησαν" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{data.feedbackCount ?? 0}</dd>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-base font-bold">{data.appliedFeedbackCount}</p>
-            <p className="text-2xs text-muted-foreground">applied</p>
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Applied" el="Εφαρμόστηκαν" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{data.appliedFeedbackCount ?? 0}</dd>
           </div>
-          <div className="rounded-lg bg-muted/40 p-2">
-            <p className="text-base font-bold">{Math.round(data.appliedFeedbackRate * 100)}%</p>
-            <p className="text-2xs text-muted-foreground">apply rate</p>
+          <div className="flex min-w-0 flex-col-reverse justify-end">
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Apply rate" el="Ποσοστό εφαρμογής" compact wrap /></dt>
+            <dd className="page-stat font-bold tabular-nums">{Math.round((data.appliedFeedbackRate ?? 0) * 100)}%</dd>
           </div>
-        </div>
+        </dl>
 
         <div className="space-y-1.5">
           {[
-            { label: 'Apply Rate',  value: Math.round((data.appliedFeedbackRate ?? 0) * 100) },
-            { label: 'Speed',       value: Math.round((data.speedScore ?? 0) * 100) },
-            { label: 'Depth',       value: Math.round((data.depthScore ?? 0) * 100) },
-            { label: 'Low Burden',  value: Math.round((data.burdenScore ?? 0) * 100) },
-          ].map(({ label, value }) => (
+            { label: 'Apply Rate',  labelEl: 'Ποσοστό εφαρμογής', value: Math.round((data.appliedFeedbackRate ?? 0) * 100) },
+            { label: 'Speed',       labelEl: 'Ταχύτητα',          value: Math.round((data.speedScore ?? 0) * 100) },
+            { label: 'Depth',       labelEl: 'Βάθος',             value: Math.round((data.depthScore ?? 0) * 100) },
+            { label: 'Low Burden',  labelEl: 'Χαμηλός φόρτος',    value: Math.round((data.burdenScore ?? 0) * 100) },
+          ].map(({ label, labelEl, value }) => (
             <div key={label}>
               <div className="flex items-center justify-between text-xs mb-0.5">
-                <span className="text-muted-foreground">{label}</span>
+                <span className="text-muted-foreground"><BilingualText en={label} el={labelEl} compact /></span>
                 <span className="font-medium tabular-nums">{value}%</span>
               </div>
               <div className="w-full h-1 rounded-full bg-muted overflow-hidden">

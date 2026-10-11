@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Save, RefreshCw, Globe, DollarSign, Star, Building2, Users, TrendingUp,
+  Save, RefreshCw, DollarSign, Star, Building2,
 } from 'lucide-react';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
@@ -34,6 +34,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 const SERVICE_TYPES = [
   { value: 'legal', label: 'Legal' },
   { value: 'accounting', label: 'Accounting & Finance' },
@@ -135,34 +137,43 @@ export default function ProviderProfilePage() {
     >
       <div className="space-y-6">
         {/* Preview Card */}
+        {/* The card others meet, on the card anatomy: the company's mark and
+            name with the headline under it, the kind at the right, the facts
+            on the mark's left edge. */}
         <Card className="border-primary/15 bg-primary/[0.03]">
-          <CardContent>
-            <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
-                <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-bold rounded-xl">
-                  {displayName[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
+          <CardContent className="space-y-3">
+            <CardHead
+              titleAs="h2"
+              mark={(
+                <Avatar className="h-10 w-10 rounded-xl ring-2 ring-primary/20">
+                  <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                    {displayName[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              title={(
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span className="min-w-0 break-words">{companyName || displayName}</span>
                   <PersonVerifiedBadge userId={me?.id ?? ''} />
-                  <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  {headline || 'Add your service headline below...'}
-                </p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="icon-sm text-status-warning" aria-hidden="true" /> {summary?.avgRating != null ? `${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)` : 'No reviews yet'}</span>
-                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {clientsServed || '?'} clients</span>
-                  <span className="flex items-center gap-1"><TrendingUp className="icon-sm" /> {yearsInBusiness}y in business</span>
-                  {companyWebsite && (
-                    <span className="flex items-center gap-1"><Globe className="icon-sm" /> {companyWebsite}</span>
-                  )}
-                </div>
-              </div>
-            </div>
+                </span>
+              )}
+              subtitle={headline || <BilingualText en="Add your service headline below..." el="Προσθέστε τον τίτλο της υπηρεσίας σας παρακάτω..." compact />}
+              aside={<Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>}
+            />
+            <FactLine
+              items={[
+                <span key="rating" className="inline-flex items-center gap-1">
+                  <Star className="icon-sm text-status-warning" aria-hidden="true" />
+                  {summary?.avgRating != null
+                    ? <BilingualText en={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} reviews)`} el={`${summary.avgRating.toFixed(1)} (${summary.reviewCount} αξιολογήσεις)`} compact />
+                    : <BilingualText en="No reviews yet" el="Καμία αξιολόγηση ακόμη" compact />}
+                </span>,
+                <BilingualText key="clients" en={`${clientsServed || '?'} clients`} el={`${clientsServed || '?'} πελάτες`} compact />,
+                <BilingualText key="years" en={`${yearsInBusiness}y in business`} el={`${yearsInBusiness} έτη λειτουργίας`} compact />,
+                companyWebsite ? <span key="web" className="break-all">{companyWebsite}</span> : null,
+              ]}
+            />
           </CardContent>
         </Card>
 
@@ -176,7 +187,7 @@ export default function ProviderProfilePage() {
           {/* Basics */}
           <TabsContent value="basics" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Company Info" el="Στοιχεία εταιρείας" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Company Info" el="Στοιχεία εταιρείας" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
@@ -257,7 +268,7 @@ export default function ProviderProfilePage() {
           {/* Targeting */}
           <TabsContent value="targeting" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Industries You Serve" el="Κλάδοι που εξυπηρετείτε" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Industries You Serve" el="Κλάδοι που εξυπηρετείτε" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRIES.map(ind => (
@@ -279,7 +290,7 @@ export default function ProviderProfilePage() {
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Startup Stages" el="Στάδια startup" compact /></CardTitle></CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {STARTUP_STAGES.map(stage => (
@@ -304,7 +315,7 @@ export default function ProviderProfilePage() {
           {/* Pricing */}
           <TabsContent value="pricing" className="space-y-4">
             <Card>
-              <CardHeader><CardTitle className="text-base"><BilingualText en="Pricing Model" el="Μοντέλο τιμολόγησης" compact /></CardTitle></CardHeader>
+              <CardHeader><CardTitle><BilingualText en="Pricing Model" el="Μοντέλο τιμολόγησης" compact /></CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   {PRICING_MODELS.map(pm => (

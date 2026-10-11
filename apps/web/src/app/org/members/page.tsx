@@ -33,7 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EmptyOrgMembers } from '@/components/common/EmptyStates';
-import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -162,7 +162,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
   );
 
   return (
-    <CardHead
+    <RowHead
       mark={(
         <Avatar className="h-10 w-10">
           <AvatarImage src={member.avatarUrl} alt="" />

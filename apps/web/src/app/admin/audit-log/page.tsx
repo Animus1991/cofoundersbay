@@ -1,6 +1,8 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -14,7 +16,6 @@ import { Button } from '@/components/ui/button';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -95,31 +96,32 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
     .map(([k, v]) => `${k.charAt(0).toUpperCase()}${k.slice(1)}: ${String(v)}`)
     .join(' · ');
 
+  // A row of the log, set like every row in a section card: the action's
+  // mark, the actor over the action and the entity, the time at the right
+  // (under the line on a phone), and the details on the mark's edge.
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-border last:border-0">
-      <div className={cn('rounded-lg p-2 border shrink-0 mt-0.5', colorClass)}>
-        <ActionIcon className="icon-sm" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* An address and an action name are identifiers: never translated,
-              never re-cased. */}
-          <span className="font-medium text-sm" translate="no">{log.actorEmail}</span>
-          <Badge variant="outline" className={cn('text-xs', colorClass)} translate="no">
-            {log.action}
-          </Badge>
-          <Badge variant="secondary" className="text-xs"><StatusText value={log.entityType} /></Badge>
-          {log.entityId && (
-            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-              #{log.entityId}
-            </code>
-          )}
-        </div>
-        {metaStr && (
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">{metaStr}</p>
+    <div className="py-3">
+      <RowHead
+        mark={(
+          <div data-card-mark="" className={cn('flex h-8 w-8 items-center justify-center rounded-lg border', colorClass)}>
+            <ActionIcon className="icon-sm" aria-hidden="true" />
+          </div>
         )}
-      </div>
-      <span className="text-xs text-muted-foreground shrink-0"><RelativeTime date={log.createdAt} /></span>
+        // An address and an action name are identifiers: never translated,
+        // never re-cased.
+        title={<span translate="no">{log.actorEmail}</span>}
+        subtitle={(
+          <FactLine
+            items={[
+              <code key="action" className="font-mono" translate="no">{log.action}</code>,
+              <StatusText key="entity" value={log.entityType} />,
+              log.entityId ? <code key="id" className="font-mono" translate="no">#{log.entityId}</code> : null,
+            ]}
+          />
+        )}
+        meta={metaStr ? <span className="block truncate">{metaStr}</span> : undefined}
+        aside={<RelativeTime date={log.createdAt} />}
+      />
     </div>
   );
 }
@@ -264,7 +266,7 @@ export default function AdminAuditLogPage() {
         {/* Log Table */}
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
               <Shield className="icon-sm text-muted-foreground" />
               <BilingualText en="Activity log" el="Καταγραφή δραστηριότητας" compact />
             </CardTitle>
@@ -299,7 +301,7 @@ export default function AdminAuditLogPage() {
                 </p>
               </div>
             ) : (
-              <div>
+              <div className="divide-y divide-border">
                 {filtered.map((log) => (
                   <AuditLogRow key={log.id} log={log} />
                 ))}

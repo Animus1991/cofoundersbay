@@ -4,7 +4,7 @@ import { AlertTriangle, Ban, Check, Loader2, RotateCcw, Sparkles, X } from 'luci
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { getActionSpec, undoAvailable } from '@/lib/action-registry';
 import { STATUS } from '@/lib/semantic-colors';
@@ -63,7 +63,9 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
   const actions = cancelled || undone || dismissed ? null : done ? (action.href || canUndo ? (
     <>
       {action.href && (
-        <Button asChild size="sm" variant="ghost" className="h-7 tap-target-y">
+        // outline: the first action of a foot that wraps under its caption on
+        // a phone starts on the card's axis; a ghost's padding put it 12px in.
+        <Button asChild size="sm" variant="outline" className="h-7 tap-target-y">
           <Link href={action.href}>
             <BilingualText en="Open" el="Άνοιγμα" />
           </Link>
@@ -73,7 +75,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
         <Button
           type="button"
           size="sm"
-          variant="ghost"
+          variant={action.href ? 'ghost' : 'outline'}
           className="h-7 gap-1.5 tap-target-y"
           disabled={busy || otherBusy}
           onClick={() => onUndo?.(action)}
@@ -130,7 +132,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
         failed && 'border-destructive/40',
       )}
     >
-      <div className="space-y-3 p-4">
+      <CardContent className="space-y-3">
         <CardHead
           titleAs="p"
           title={action.title}
@@ -183,7 +185,7 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss, onUndo }: Act
         )}
 
         <CardFoot meta={state}>{actions}</CardFoot>
-      </div>
+      </CardContent>
     </Card>
   );
 }

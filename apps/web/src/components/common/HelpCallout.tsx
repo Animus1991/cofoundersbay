@@ -107,7 +107,7 @@ export function HelpCallout({
                 type="button"
                 onClick={() => persist(false)}
                 aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
-                className="rounded-xl p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
               >
                 <X className="icon-sm" aria-hidden="true" />
               </button>
@@ -148,7 +148,7 @@ export function HelpCallout({
           type="button"
           onClick={() => persist(false)}
           aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
-          className="rounded-xl p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           {/* Decorative: the button already carries its name via aria-label. */}
           <X className="icon-sm" aria-hidden="true" />

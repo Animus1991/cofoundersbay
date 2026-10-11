@@ -18,6 +18,7 @@ import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import {
   messagesEn,
   messagesEl,
@@ -947,16 +948,16 @@ export default function MessagesPage() {
               isMobileViewingChat && 'hidden md:grid',
             )}
           >
-            <div className="min-w-0 shrink-0 space-y-2 px-3 pb-2 pt-3 sm:space-y-3 sm:px-4 sm:pb-3 sm:pt-4">
-              {/* The compose button gets its own row from sm up. This pane is a
-                  fixed 392px at every desktop width, and with the button beside
-                  the title the heading block was left 138px of a 365px row.
-                  On a phone the lead is the same fact the Pinned and All
-                  messages headings already state, so it stays off that screen
-                  and the two actions sit side by side, each saying what it does. */}
-              <div className="flex items-center gap-2 max-sm:pr-10">
+            {/* From sm the inbox axis is 20px, the same edge as the avatars
+                (the list's px-2 and each row's px-3). On a phone the pane is
+                tighter, and the title row keeps clear of the tools icon. */}
+            <div className="min-w-0 shrink-0 space-y-2 px-3 pb-2 pt-3 sm:space-y-3 sm:px-5 sm:pb-3 sm:pt-4">
+              <div className="flex items-center gap-2 max-sm:pr-10 sm:items-start">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                  {/* The page-title step every page header uses: at text-lg
+                      the inbox title sat 0.17px over the card title step on a
+                      desktop, level with a thread's or a request's name. */}
+                  <h1 className="page-title font-semibold tracking-tight text-foreground">
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
                   <p className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">
@@ -1086,10 +1087,11 @@ export default function MessagesPage() {
                 ) : (
                   <div className="space-y-1 p-2">
                     {introRequests.map((req) => (
-                      // A row of the list, set like a card's head: the
-                      // person's mark, the name and the headline under it, the
-                      // date at the right; the note and the answers start on
-                      // the mark's edge. A row, not a tile: the pane is the card.
+                      // A row of the list (RowHead: a card title here would
+                      // outrank the pane's own h1 on a phone): the person's
+                      // mark, the name and the headline under it, the date at
+                      // the right; the note and the answers start on the
+                      // mark's edge. A row, not a tile: the pane is the card.
                       <div
                         key={req.id}
                         role="button"
@@ -1105,12 +1107,11 @@ export default function MessagesPage() {
                           }
                         }}
                         className={cn(
-                          'animate-fade-in cursor-pointer space-y-3 rounded-2xl p-3 transition-colors',
+                          'animate-fade-in cursor-pointer space-y-2 rounded-2xl p-3 transition-colors',
                           selectedIntro?.id === req.id ? 'bg-muted/50' : 'hover:bg-muted/30',
                         )}
                       >
-                        <CardHead
-                          titleAs="p"
+                        <RowHead
                           mark={(
                             <ThreadAvatar
                               name={req.requester.displayName}
@@ -1138,7 +1139,7 @@ export default function MessagesPage() {
                           })}
                         />
                         {req.message && (
-                          <p className="card-body line-clamp-3 italic text-muted-foreground">
+                          <p className="line-clamp-3 text-xs italic leading-relaxed text-muted-foreground">
                             {PREVIEW_MESSAGE_EL[req.message] ? (
                               <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
                             ) : (
