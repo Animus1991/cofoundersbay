@@ -4371,3 +4371,26 @@ input:is(
     min-height: 32.337px;
   }
 }
+
+/* Messages on a phone: the tools icon sits under the account initials.
+   The header is h-12 and the account control is the phone's 30.458px
+   button, centered in it. Four pixels under that control, and lined up
+   on the same right edge as the header's content. The word stays for
+   the sheet; the icon is the control here. */
+@media (max-width: 639.98px) {
+  button[data-messages-tools].h-11 {
+    top: calc((3rem * var(--chrome-y) + 30.458px) / 2 + 4px);
+    /* The account control is wider than its circle. This inset centers
+       the 30.458px icon on that circle (measured: control 42px, right
+       edge 12px in from the screen). */
+    right: calc(0.75rem + 5.75px);
+    bottom: auto;
+    left: auto;
+    width: 30.458px;
+    min-width: 30.458px;
+    height: 30.458px;
+    min-height: 30.458px;
+    padding: 0;
+    border-radius: 9999px;
+  }
+}

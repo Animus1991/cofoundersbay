@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -63,6 +64,10 @@ export type PageRailSection = {
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { primary } = useLanguagePreference();
+  const pathname = usePathname();
+  // Messages on a phone: the tools icon sits under the account initials
+  // instead of floating above the tab bar, so the thread can reach the bar.
+  const toolsUnderAccount = pathname === '/messages' || pathname?.startsWith('/messages/');
   const badgeText = (section: PageRailSection) => {
     const badge = section.badge === 0 || section.badge == null ? null : section.badge;
     if (badge == null) return null;
@@ -192,10 +197,11 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
                 totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
                 totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
               )}
+              data-messages-tools={toolsUnderAccount ? '' : undefined}
               className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-auto min-w-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-foreground shadow-lg sm:bottom-6"
             >
               <SlidersHorizontal className="icon-md" aria-hidden="true" />
-              <span className="text-xs font-medium">
+              <span className={cn('text-xs font-medium', toolsUnderAccount && 'hidden sm:inline')}>
                 <BilingualText en="Tools" el="Εργαλεία" compact />
               </span>
               {totalBadge > 0 && (

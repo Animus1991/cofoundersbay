@@ -482,7 +482,7 @@ export function ChatWindow({
       />
       {/* Header */}
       <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 py-2.5 pl-3 pr-14 sm:px-4 sm:py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
               <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden" aria-label={bilingualAria(messagesEn('back_to_conversations'), messagesEl('back_to_conversations'))}>

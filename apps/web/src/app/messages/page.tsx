@@ -954,7 +954,7 @@ export default function MessagesPage() {
                   On a phone the lead is the same fact the Pinned and All
                   messages headings already state, so it stays off that screen
                   and the two actions sit side by side, each saying what it does. */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 max-sm:pr-10">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-lg font-semibold tracking-tight text-foreground">
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
