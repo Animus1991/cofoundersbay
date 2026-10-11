@@ -4009,6 +4009,34 @@ textarea[class~="border-input"]:focus,
   .card-subtitle { font-size: 1.06675091rem; }
   .card-body { font-size: 1.02855183rem; }
 }
+/* A section card's own title (CardTitle renders h3.page-section) sits on
+   the card-title step from 640px up too, as it already does on a phone:
+   after the 2026-10-11 merge the section step was 15.83px over a 15.36px
+   card title, two title sizes in one column (card_audit titleStep 44 on
+   /builder alone). A card in the page rail keeps the rail's compact step. */
+@media (min-width: 640px) {
+  #main-content [data-card] h2.page-section,
+  #main-content [data-card] h3.page-section:not(.page-section--compact) {
+    font-size: 0.959710rem;
+    line-height: 1.35;
+  }
+  #main-content [data-rail-content] [data-card] h2.page-section,
+  #main-content [data-rail-content] [data-card] h3.page-section {
+    font-size: 0.86598840rem;
+    line-height: 1.299375rem;
+  }
+}
+@media (min-width: 1024px) {
+  #main-content [data-card] h2.page-section,
+  #main-content [data-card] h3.page-section:not(.page-section--compact) {
+    font-size: 1.17037814rem;
+  }
+  #main-content [data-rail-content] [data-card] h2.page-section,
+  #main-content [data-rail-content] [data-card] h3.page-section {
+    font-size: 1.05608341rem;
+    line-height: 1.58460366rem;
+  }
+}
 @media (max-width: 639.98px) {
   /* Members page on a phone: the name is the page-title step, the line
      under it is the member subtitle, and a sentence ("Who you are looking

@@ -53,7 +53,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import {
   BUILDER_BTN,
-  BUILDER_CARD_TITLE,
   BuilderAskAiButton,
   BuilderStageHeader,
   useAskInPlace,
@@ -1046,7 +1045,7 @@ export function PitchDeckBuilder({
       {data.slides.length === 0 ? (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+            <CardTitle className="flex items-center gap-2">
               <CfbGlyph name="flag" className="icon-sm" />
               <BilingualText en={builderEn('pitch_outline')} el={builderEl('pitch_outline')} compact />
             </CardTitle>
@@ -1107,7 +1106,7 @@ export function PitchDeckBuilder({
               {missingTemplates.length > 0 && (
                 <Card className="min-w-0 border-status-warning-border/50">
                   <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                    <CardTitle className="flex items-center gap-2">
                       <AlertTriangle className={cn('icon-sm shrink-0', STATUS.warning.icon)} aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_missing')} el={builderEl('pitch_missing')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{missingTemplates.length}</span>
@@ -1135,7 +1134,7 @@ export function PitchDeckBuilder({
               {emptySlides.length > 0 && (
                 <Card className="min-w-0">
                   <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                    <CardTitle className="flex items-center gap-2">
                       <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_next_write')} el={builderEl('pitch_next_write')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{emptySlides.length}</span>

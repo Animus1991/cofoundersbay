@@ -136,10 +136,16 @@ function ReviewDecisionDialog({
           <DialogDescription>{decisionMeta.desc}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="p-3 bg-muted rounded-lg text-sm">
-            <p className="font-medium">{proposal.title}</p>
+          {/* The proposal under review, set as a card head (title, the
+              variant it came from) with its sentence on the same edge. */}
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <CardHead
+              titleAs="p"
+              title={proposal.title}
+              subtitle={proposal.branch ? <>from variant &ldquo;{proposal.branch.name}&rdquo;</> : undefined}
+            />
             {proposal.description && (
-              <p className="text-muted-foreground mt-1 text-xs">{proposal.description}</p>
+              <p className="card-body line-clamp-3 text-muted-foreground first-letter:uppercase">{proposal.description}</p>
             )}
           </div>
 

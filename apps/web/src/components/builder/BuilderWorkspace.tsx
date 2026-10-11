@@ -971,12 +971,12 @@ export function BuilderWorkspace({
             <div className="space-y-4">
               {blockers.length > 0 && (
                 <section className="min-w-0 space-y-2.5">
-                  <p className={cn('type-caption font-medium uppercase tracking-wide', STATUS.danger.text)}>
+                  <p className={cn('text-xs font-medium', STATUS.danger.text)}>
                     <BilingualText en={builderEn('critical_gaps')} el={builderEl('critical_gaps')} compact />
                   </p>
                   <ul className="space-y-2">
                     {blockers.slice(0, 3).map((b, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs leading-snug text-foreground">
+                      <li key={i} className="card-body flex items-start gap-2 text-foreground">
                         <AlertCircle className={cn('icon-sm mt-0.5 shrink-0', STATUS.danger.icon)} aria-hidden="true" />
                         <span className="min-w-0"><PreviewHint text={b} /></span>
                       </li>
@@ -986,12 +986,12 @@ export function BuilderWorkspace({
               )}
               {nextMilestones.length > 0 && (
                 <section className={cn('min-w-0 space-y-2.5', blockers.length > 0 && 'border-t border-border pt-4')}>
-                  <p className="type-caption font-medium uppercase tracking-wide text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     <BilingualText en={builderEn('next_steps')} el={builderEl('next_steps')} compact />
                   </p>
                   <ul className="space-y-2">
                     {nextMilestones.slice(0, 6).map((milestone, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs leading-snug text-foreground">
+                      <li key={i} className="card-body flex items-start gap-2 text-foreground">
                         <ChevronRight className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                         <span className="min-w-0"><PreviewHint text={milestone} /></span>
                       </li>
