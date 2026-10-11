@@ -66,24 +66,29 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
   });
   const meetingLabel = session.meetingType ? MEETING_TYPE_LABEL[session.meetingType] : undefined;
 
-  // The booking card's anatomy: the date tile is the mark, the title beside
-  // it, and one caption (time, length, how you meet) under that.
+  // The booking card's anatomy: the date tile is the mark, the title and
+  // time beside it, and the facts, agenda and actions on the tile's edge.
   return (
     <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
         <CardHead
           mark={<SessionDateTile date={scheduledDate} />}
           title={session.title || 'Mentorship Session'}
+          subtitle={formattedTime}
           aside={(
-            <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
-              <StatusText value={session.status} />
-            </Badge>
+            <>
+              <Badge variant="outline" className={cn('text-xs', statusColors[session.status])}>
+                <StatusText value={session.status} />
+              </Badge>
+              <Badge variant="secondary" className="text-xs">
+                <BilingualText en="Mentorship" el="Σχέση καθοδήγησης" compact />
+              </Badge>
+            </>
           )}
         />
 
         <FactLine
           items={[
-            <span key="time" className="tabular-nums">{formattedTime}</span>,
             <BilingualText key="len" en={`${session.duration} min`} el={`${session.duration} λεπτά`} compact />,
             session.meetingType
               ? meetingLabel

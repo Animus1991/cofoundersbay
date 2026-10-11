@@ -90,8 +90,7 @@ export function NeedCardsSection({
           </h2>
           <p className="text-xs text-muted-foreground"><BilingualText en={CMT.needs_cards_hint.en} el={CMT.needs_cards_hint.el} wrap /></p>
         </div>
-        {/* On a phone the actions take their own line and start on the heading's left edge. */}
-        <div className="flex basis-full flex-wrap justify-start gap-2 sm:basis-auto">
+        <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="ghost" onClick={() => setAlertOpen(true)}>
             <BilingualText en="Alert me about new cards" el="Ειδοποίησέ με για νέες κάρτες" compact />
           </Button>

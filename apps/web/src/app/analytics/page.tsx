@@ -120,7 +120,7 @@ function MetricCard({
   const body = (
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       <CardContent className="flex h-full flex-col items-center justify-center text-center">
-        <div className="mb-2 flex items-center justify-center gap-2">
+        <div className="mb-3 flex items-center justify-center gap-2">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(

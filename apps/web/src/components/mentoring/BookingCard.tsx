@@ -98,42 +98,57 @@ export function BookingCard({
         <CardHead
           mark={<SessionDateTile date={start} />}
           title={(
-            <Link
-              href={`/profiles/${otherUserId}`}
-              className="transition-colors hover:text-primary-accessible"
-            >
-              {other.displayName}
-            </Link>
+            <span className="flex flex-wrap items-baseline gap-x-2">
+              <Link
+                href={`/profiles/${otherUserId}`}
+                className="transition-colors hover:text-primary-accessible"
+              >
+                {other.displayName}
+              </Link>
+              <span className="text-xs font-normal text-muted-foreground">
+                {isMentor
+                  ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />
+                  : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
+              </span>
+            </span>
+          )}
+          subtitle={(
+            <>
+              <LocalTime value={start} />
+              {' – '}
+              <LocalTime value={end} />
+            </>
           )}
           aside={(
-            <Badge
-              variant="outline"
-              className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
-            >
-              <StatusText value={booking.status} />
-            </Badge>
+            <>
+              <Badge
+                variant="outline"
+                className={cn('text-xs', STATUS_COLORS[booking.status] ?? '')}
+              >
+                <StatusText value={booking.status} />
+              </Badge>
+              {showSource && (
+                <Badge variant="secondary" className="text-xs">
+                  <BilingualText en="Booking" el="Κράτηση" compact />
+                </Badge>
+              )}
+            </>
           )}
         />
         <div>
+            {isMentor && booking.status === 'requested' && (
+              <p className="mt-1 text-xs text-status-warning">
+                <BilingualText en="Awaiting your confirmation" el="Περιμένει την επιβεβαίωσή σας" compact />
+              </p>
+            )}
+
             <FactLine
               className="mt-1"
               items={[
-                <span key="when">
-                  <LocalTime value={start} />
-                  {' – '}
-                  <LocalTime value={end} />
-                </span>,
                 <BilingualText key="len" en={`${Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} min`} el={`${Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000))} λεπτά`} compact />,
                 MEETING_TYPE_LABEL[booking.meetingType]
                   ? <BilingualText key="type" en={MEETING_TYPE_LABEL[booking.meetingType].en} el={MEETING_TYPE_LABEL[booking.meetingType].el} compact />
                   : booking.meetingType,
-                <BilingualText
-                  key="who"
-                  en={isMentor ? 'Mentee' : 'Mentor'}
-                  el={isMentor ? 'Καθοδηγούμενος' : 'Μέντορας'}
-                  compact
-                />,
-                showSource ? <BilingualText key="src" en="Booking" el="Κράτηση" compact /> : null,
               ]}
             />
 
