@@ -264,7 +264,7 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
 /** "gold" → "Gold": the tier and category keys are lower-case words. */
 const cap = (value: string) => (value ? value.charAt(0).toUpperCase() + value.slice(1) : value);
 
-function AchievementCard({ achievement }: { achievement: Achievement }) {
+function AchievementCard({ achievement, meterSlot = 0 }: { achievement: Achievement; meterSlot?: number }) {
   const Icon = achievement.icon;
   const progressPercentage = (achievement.progress / achievement.total) * 100;
 
@@ -338,7 +338,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 {achievement.progress} / {achievement.total}
               </span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            <Progress value={progressPercentage} data-meter-slot={meterSlot % 3} className="h-2" />
           </div>
         )}
 
@@ -386,7 +386,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
                   {stats.totalPoints} / {stats.nextLevelPoints} pts
                 </span>
               </div>
-              <Progress value={levelProgress} className="h-2" />
+              <Progress value={levelProgress} data-meter-slot={0} className="h-2" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -666,8 +666,8 @@ export default function AchievementsPage() {
               {activeTab === 'all' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
@@ -684,8 +684,8 @@ export default function AchievementsPage() {
               {activeTab === 'unlocked' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
@@ -702,8 +702,8 @@ export default function AchievementsPage() {
               {activeTab === 'locked' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
@@ -819,7 +819,7 @@ export default function AchievementsPage() {
                         <CardTitle><BilingualText en={achievementsEn('tier_breakdown')} el={achievementsEl('tier_breakdown')} compact /></CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
-                        {(['platinum','gold','silver','bronze'] as const).map((tier) => {
+                        {(['platinum','gold','silver','bronze'] as const).map((tier, index) => {
                           const count = achievements.filter((a) => a.tier === tier && a.unlocked).length;
                           const total = achievements.filter((a) => a.tier === tier).length;
                           return (
@@ -828,7 +828,7 @@ export default function AchievementsPage() {
                               <span className="w-20 text-xs text-muted-foreground">
                                 <BilingualText en={cap(achievementsEn(`tier_${tier}`))} el={cap(achievementsEl(`tier_${tier}`))} compact />
                               </span>
-                              <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
+                              <Progress value={total ? (count / total) * 100 : 0} data-meter-slot={index % 3} className="flex-1 h-1.5" />
                               <span className="text-xs text-muted-foreground w-8 text-right tabular-nums">{count}/{total}</span>
                             </div>
                           );

@@ -61,15 +61,6 @@ const PRIORITY_CONFIG: Record<MilestonePriority, { priKey: 'pri_low' | 'pri_medi
   high:   { priKey: 'pri_high',   tone: 'danger' },
 };
 
-const PRIORITY_DOT: Record<StatusTone, string> = {
-  success: 'bg-status-success-mark',
-  warning: 'bg-status-warning-mark',
-  danger: 'bg-status-danger-mark',
-  info: 'bg-status-info-mark',
-  accent: 'bg-status-accent-mark',
-  neutral: 'bg-muted-foreground',
-};
-
 const CATEGORY_ORDER = ['all', 'product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'] as const;
 
 function formatMilestoneDate(iso: string | null, lang: 'en' | 'el'): string {
@@ -132,7 +123,6 @@ function MilestoneCard({
     return () => window.removeEventListener('keydown', onKey);
   }, [menuOpen]);
   const status = STATUS_CONFIG[item.status];
-  const statusColors = STATUS[status.tone];
   const priority = PRIORITY_CONFIG[item.priority];
   const overdue = isOverdue(item.dueDate, item.status);
   const dueSoon = isDueSoon(item.dueDate);
@@ -154,22 +144,8 @@ function MilestoneCard({
         overdue && STATUS.danger.border,
       )}
     >
-      {/* Priority stripe */}
-      <div
-        aria-hidden="true"
-        className={cn(
-          'absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full',
-          item.priority === 'high' ? PRIORITY_DOT.danger : item.priority === 'medium' ? PRIORITY_DOT.warning : PRIORITY_DOT.neutral,
-        )}
-      />
-
       <CardContent className="space-y-3">
         <CardHead
-          mark={(
-            <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', statusColors.bg)}>
-              <CfbGlyph name={status.glyph} className={cn('icon-md', statusColors.icon)} />
-            </div>
-          )}
           title={previewEl ? <BilingualText en={item.title} el={previewEl.title} wrap /> : item.title}
           titleClassName={item.status === 'completed' ? 'text-muted-foreground' : undefined}
           subtitle={(
@@ -181,17 +157,14 @@ function MilestoneCard({
                     ? <BilingualText key="cat" en={milestoneEn(catKey)} el={milestoneEl(catKey)} compact />
                     : <span key="cat" className="inline-block first-letter:uppercase">{item.category}</span>
                 ) : null,
-                <span key="pri" className="inline-flex items-center gap-1.5">
-                  <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', PRIORITY_DOT[priority.tone])} aria-hidden="true" />
-                  <BilingualText en={milestoneEn(priority.priKey)} el={milestoneEl(priority.priKey)} compact />
-                </span>,
+                <BilingualText key="pri" en={milestoneEn(priority.priKey)} el={milestoneEl(priority.priKey)} compact />,
               ]}
             />
           )}
           aside={(
             <Badge
               variant="outline"
-              className={cn('gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
+              className="gap-1 rounded-full border-0 px-0 text-2xs font-medium text-muted-foreground"
             >
               {/* Singular: this chip describes one milestone, not the set. */}
               <BilingualText
@@ -654,8 +627,8 @@ export default function MilestonesPage() {
                   className={cn(
                     'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                     categoryFilter === cat
-                      ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                      : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
+                      ? 'border-foreground/30 text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
                   {cat === 'all'
@@ -685,16 +658,10 @@ export default function MilestonesPage() {
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                     priorityFilter === opt.value
-                      ? 'border-primary/40 bg-primary/10 text-primary-accessible'
-                      : 'border-border bg-secondary/30 text-muted-foreground hover:text-foreground',
+                      ? 'border-foreground/30 text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
-                  {opt.value !== 'all' && (
-                    <span
-                      className={cn('h-1.5 w-1.5 rounded-full', PRIORITY_DOT[PRIORITY_CONFIG[opt.value].tone])}
-                      aria-hidden="true"
-                    />
-                  )}
                   <BilingualText en={milestoneEn(opt.key)} el={milestoneEl(opt.key)} compact />
                 </button>
               ))}

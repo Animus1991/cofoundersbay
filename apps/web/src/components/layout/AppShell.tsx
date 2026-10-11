@@ -159,9 +159,10 @@ export function AppShellFrame({
               tabIndex={-1}
               className={cn(
                 'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
-                // Phone clearance covers the bottom nav and the page-tools button
-                // above it. From `sm` there is no bottom nav.
-                'pb-[calc(10rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                // Phone clearance is the bottom nav only. The tools icon on this
+                // page sits under the account initials, so the thread reaches
+                // the bar. The sum is the nav's own padding, tab, and border.
+                'pb-[calc(0.25rem+3.75rem+max(0.75rem,env(safe-area-inset-bottom,0px))+1px)] sm:pb-0',
                 contentClassName,
               )}
             >

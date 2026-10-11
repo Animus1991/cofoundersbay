@@ -33,6 +33,7 @@ import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { StatusText } from '@/components/common/StatusText';
 
 interface Member {
   id: string;
@@ -360,11 +361,12 @@ export function EnhancedMemberDirectory() {
                       )}
                     </div>
                     <Badge variant="outline" className="mt-1">
-                      {member.role}
+                      <StatusText value={member.role} />
                     </Badge>
                   </div>
 
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <div className="space-y-2">
+                  <p className="card-copy text-sm text-muted-foreground line-clamp-2">
                     {member.headline}
                   </p>
 
@@ -403,6 +405,7 @@ export function EnhancedMemberDirectory() {
                         <BilingualText en="Message" el="Μήνυμα" compact />
                       </Link>
                     </Button>
+                  </div>
                   </div>
                 </div>
               </div>

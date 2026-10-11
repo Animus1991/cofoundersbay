@@ -113,42 +113,38 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
 
   return (
     <Card data-tour="founder-checklist">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <button
-            type="button"
-            className="flex min-w-0 items-center gap-2 rounded-lg text-left"
-            onClick={() => setExpandedChoice(!expanded)}
-            aria-expanded={expanded}
-            aria-controls={listId}
-          >
-            <div className="min-w-0">
-              <CardTitle className="text-foreground">
-                <BilingualText en={titleEn} el={titleEl} />
-              </CardTitle>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                <BilingualText
-                  en={`${completedCount} of ${steps.length} steps complete`}
-                  el={`${completedCount} από ${steps.length} βήματα ολοκληρωμένα`}
-                  compact
-                />
-              </p>
-            </div>
-            {expanded
-              ? <ChevronDown className="ml-2 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-              : <ChevronRight className="ml-2 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
-            }
-          </button>
-          <button
-            type="button"
-            onClick={handleDismiss}
-            className="tap-target-phone inline-flex shrink-0 items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title={dismissLabel}
-            aria-label={dismissLabel}
-          >
-            <X className="icon-sm" aria-hidden="true" />
-          </button>
-        </div>
+      <CardHeader className="relative pb-2 text-center">
+        <button
+          type="button"
+          className="flex w-full min-w-0 flex-col items-center rounded-lg px-10 text-center"
+          onClick={() => setExpandedChoice(!expanded)}
+          aria-expanded={expanded}
+          aria-controls={listId}
+        >
+          <CardTitle className="text-center text-foreground">
+            <BilingualText en={titleEn} el={titleEl} />
+          </CardTitle>
+          <p className="mt-0.5 text-center text-xs text-muted-foreground">
+            <BilingualText
+              en={`${completedCount} of ${steps.length} steps complete`}
+              el={`${completedCount} από ${steps.length} βήματα ολοκληρωμένα`}
+              compact
+            />
+          </p>
+          {expanded
+            ? <ChevronDown className="mt-1 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+            : <ChevronRight className="mt-1 icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
+          }
+        </button>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="tap-target-phone absolute right-3 top-3 inline-flex shrink-0 items-center justify-center rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          title={dismissLabel}
+          aria-label={dismissLabel}
+        >
+          <X className="icon-sm" aria-hidden="true" />
+        </button>
         <Progress
           value={pct}
           className="mt-2 h-1.5"

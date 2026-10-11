@@ -91,7 +91,7 @@ export function XPProgressWidget() {
           />
 
           <div className="space-y-1">
-            <Progress value={xp.levelProgress} label={bilingualAria('Level progress', 'Πρόοδος επιπέδου')} className="h-2" />
+            <Progress value={xp.levelProgress} label={bilingualAria('Level progress', 'Πρόοδος επιπέδου')} data-meter-slot={0} className="h-2" />
             <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
               <span className="min-w-0">
                 <BilingualText en={`Level ${xp.level}`} el={`Επίπεδο ${xp.level}`} compact />

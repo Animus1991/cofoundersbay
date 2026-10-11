@@ -55,23 +55,24 @@ html {
     --popover-foreground: 232 10% 21%;
 
     /* One tone recipe, four hues (lilac here; cyan, mint and apricot in the
-       named themes). Every accent theme carries chroma 30 and the same
-       relative luminance as the reference buttons (0.49: Cursor #7bafe9,
-       Windsurf #34e8bb, Windsurf #f09f6d), so no theme is louder than
-       another — only the hue changes. Read from the reference pixels, then solved for contrast:
+       named themes). Lilac, mint and apricot carry chroma 30 and the same
+       relative luminance as the reference buttons (0.49: Windsurf #34e8bb,
+       Windsurf #f09f6d). Cyan's tint is #66bce1; its solid fill is #207da5
+       so a white label clears 4.6:1.
+       Read from the reference pixels, then solved for contrast:
        .probes/sample_pixels.mjs, .probes/tone_solver2.cjs.
 
        --primary        the accent wherever it is solid: buttons, active pills,
-                        rings, bars, avatars, badges, chart series. A lively
-                        fill with a near-black ink label of its own hue
-                        (--primary-foreground, 9.6:1) - Cursor's "Upgrade",
-                        Windsurf's "Download"
+                        rings, bars, avatars, badges, chart series. The fill
+                        is deep enough for a white label (--primary-foreground,
+                        >=4.6:1), except Mint, whose solid fill is the pastel
+                        #bce3bd and whose label is a dark green of that hue.
        --primary-mid    the deeper tone, only for faint tints (/5../40), which
                         a pastel cannot carry
        --primary-accessible  link and emphasis text, >=5:1 on a card
        --ink            the label on any lively status mark */
-    --primary: 250 74% 82.6%;
-    --primary-foreground: 250 30% 9.5%;
+    --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
     /* 50%, not 55%: the accent's text tone also sits on the accent's own
        tints (bg-primary/10..20 draw from --primary-mid), on 38 avatars,
@@ -196,8 +197,8 @@ html {
     --card-foreground: 220 10% 93%;
     --popover: 222 20% 11.4%;
     --popover-foreground: 220 10% 93%;
-    --primary: 248 47% 76.6%;
-    --primary-foreground: 248 32% 12%;
+    --primary: 248 47% 59.6%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-accessible: 248 50% 82%;
     --secondary: 232 16% 13.8%;
     --secondary-foreground: 232 10% 93%;
@@ -247,7 +248,7 @@ html {
     color-scheme: dark;
   }
 
-  /* ── "Cyan" (id: alliance) — Cursor's soft sky blue on a cool page.
+  /* ── "Cyan" (id: alliance) — solid #207da5, tint #66bce1, on a cool page.
      Neutral-cool surfaces; the accent lives in the accent-lock block below. ── */
   [data-theme="alliance"] {
     --shadow-color: 200 40% 18%;
@@ -366,8 +367,8 @@ html {
   }
 
   .role-founder {
-    --primary: 250 74% 82.6%;
-    --primary-foreground: 250 30% 9.5%;
+    --primary: 250 74% 63.9%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 250 45.9% 59%;             /* tints only (/5../40) */
     --primary-accessible: 250 40.7% 50%;
     --accent: 232 10% 94.2%;
@@ -375,17 +376,17 @@ html {
     --ring: 250 40.7% 55%;
   }
   html.dark.role-founder {
-    --primary: 248 47% 76.6%;
+    --primary: 248 47% 59.6%;
     --primary-accessible: 248 50% 82%;
     --accent: 232 14% 15.5%;
     --ring: 248 47% 76.6%;
-    --primary-foreground: 248 32% 12%;
+    --primary-foreground: 0 0% 100%;
     --accent-foreground: 220 10% 93%;
   }
 
   .role-mentor {
-    --primary: 190 74% 58.7%;
-    --primary-foreground: 190 30% 9.5%;
+    --primary: 190 74% 33.5%;             /* white label, 4.63:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 190 45.9% 38%;             /* tints only (/5../40) */
     --primary-accessible: 190 40.7% 31.5%;
     --accent: 232 10% 94.2%;
@@ -393,17 +394,17 @@ html {
     --ring: 190 40.7% 36.5%;
   }
   html.dark.role-mentor {
-    --primary: 190 28.5% 61.4%;
+    --primary: 190 28.5% 40.9%;
     --primary-accessible: 190 37.5% 76%;
     --accent: 232 14% 15.5%;
     --ring: 190 28.5% 61.4%;
-    --primary-foreground: 190 30% 10%;
+    --primary-foreground: 0 0% 100%;
     --accent-foreground: 220 10% 93%;
   }
 
   .role-investor {
-    --primary: 32 74% 67%;
-    --primary-foreground: 32 30% 9.5%;
+    --primary: 32 74% 37.8%;              /* white label, 4.63:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 32 45.9% 41%;              /* tints only (/5../40) */
     --primary-accessible: 32 40.7% 34.25%;
     --accent: 232 10% 94.2%;
@@ -411,17 +412,17 @@ html {
     --ring: 32 40.7% 39.25%;
   }
   html.dark.role-investor {
-    --primary: 32 28.5% 61.4%;
+    --primary: 32 28.5% 42.9%;
     --primary-accessible: 32 30% 70%;
     --accent: 232 14% 15.5%;
     --ring: 32 28.5% 61.4%;
-    --primary-foreground: 32 30% 10%;
+    --primary-foreground: 0 0% 100%;
     --accent-foreground: 220 10% 93%;
   }
 
   .role-org {
-    --primary: 262 74% 81.8%;
-    --primary-foreground: 262 30% 9.5%;
+    --primary: 262 74% 61.8%;             /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 262 45.9% 57.75%;          /* tints only (/5../40) */
     --primary-accessible: 262 40.7% 49.5%;
     --accent: 232 10% 94.2%;
@@ -429,11 +430,11 @@ html {
     --ring: 262 40.7% 54.5%;
   }
   html.dark.role-org {
-    --primary: 258 35.5% 69%;
+    --primary: 258 35.5% 56%;
     --primary-accessible: 258 37.5% 76%;
     --accent: 232 14% 15.5%;
     --ring: 258 35.5% 69%;
-    --primary-foreground: 258 28% 12%;
+    --primary-foreground: 0 0% 100%;
     --accent-foreground: 220 10% 93%;
   }
 
@@ -444,33 +445,42 @@ html {
      page and not the accent. The default light/dark themes keep the role
      hues. Values from .probes/tone_solver.cjs. */
   html[data-theme="alliance"] {
-    --primary: 212 71.4% 72.5%;           /* Cursor "Upgrade" #7bafe9, a touch lighter */
-    --primary-foreground: 0 0% 9.4%;      /* its label, #181818 */
-    --primary-mid: 212 44.3% 48.25%;          /* tints only (/5../40) */
-    --primary-accessible: 212 39.3% 39.5%;
+    --primary: 198.05 67.21% 38.7%;       /* #207da5, white label 4.62:1 */
+    --primary-foreground: 0 0% 100%;
+    --primary-mid: 198.05 67.21% 64.12%;  /* the same cyan; tints are washes of it */
+    --primary-accessible: 198.05 37% 37.5%; /* links, >=5:1 on a card */
     --accent: 210 10% 94%;
     --accent-foreground: 220 15% 10%;
-    --ring: 212 39.3% 45.5%;
+    --ring: 198.05 37% 43.5%;
   }
   html[data-theme="minimal"] {
-    --primary: 158 72% 55%;               /* #34e8bb nudged a touch golden-pastel */
-    --primary-foreground: 168 18.5% 5.3%; /* its label, #0b100f */
-    --primary-mid: 165 49.4% 34.25%;          /* tints only (/5../40) */
-    --primary-accessible: 165 43.8% 27.5%;
-    --accent: 43 24.1% 82.9%;                  /* Windsurf active nav #ded8c9 */
+    /* The button fill is the lightest this green can be while white
+       letters still clear 4.5:1 (rgb(56, 134, 58), 4.53:1). The pale
+       rgb(188, 227, 189) left white at 1.4:1. */
+    --primary: 121.54 41.05% 37.3%;       /* #38863a, buttons, white label */
+    --mint-mark: 138.7 30.3% 56.2%;       /* #6db183 rgb(109, 177, 131): #71b687, 2% darker in OKLab lightness. Bay and profile fills */
+    --mint-ring: 162.7 20.4% 43.3%;       /* #588578 rgb(88, 133, 120). Rings, chat icon, green outlines, sent-message fill */
+    --mint-button-ink: 138.5 36% 18.5%;   /* #1e4029, kept for the contrast record. Buttons no longer use it: white on the pastel is 2.27:1 */
+    --mint-ring-hover: 138.2 33.9% 55.5%; /* leftover hover of the pastel fill; buttons now darken --primary */
+    --meter-apricot: 22.6 81.4% 68.5%;    /* #f09f6d, the Apricot theme's apricot */
+    --meter-lilac: 250 74% 63.9%;         /* #765fe7, the Light theme's lilac */
+    --primary-foreground: 0 0% 100%;      /* white letters on mint buttons */
+    --primary-mid: 120 41.74% 58%;        /* tints only (/5../40); the same green, 20% more chroma */
+    --primary-accessible: 120 32% 30.5%;  /* #356735, links, >=5:1 on a card */
+    --accent: 43 24.1% 82.9%;             /* Windsurf active nav #ded8c9 */
     --accent-foreground: 30 8% 11%;
-    --ring: 165 43.8% 31.5%;
+    --ring: 120 32% 36%;
   }
   html[data-theme="apricot"] {
-    --primary: 28 76% 67.5%;              /* #f09f6d nudged golden-pastel, a touch deeper */
-    --primary-foreground: 20 30% 9%;
+    --primary: 28 76% 39.5%;              /* white label, 4.62:1 */
+    --primary-foreground: 0 0% 100%;
     --primary-mid: 23 50.5% 44%;              /* tints only (/5../40) */
     --primary-accessible: 23 44.8% 36%;
     --accent: 30 22% 92.6%;
     --accent-foreground: 24 10% 12%;
     --ring: 23 44.8% 41.5%;
   }
-  /* Dark surfaces already fill with a pastel and a dark label; their tints
+  /* Dark surfaces fill with the same deepened accent and a white label; their tints
      come from that same tone. */
   html.dark,
   html[data-theme="cofounder"],
@@ -546,10 +556,10 @@ html {
     --status-info-bg:    232 11.4% 95.6%;
     --status-info-border: 232 6% 90.6%;
     --status-info-mark:  232 46% 76.5%;   /* 2.06 on card, ink 8.46 */
-    --status-accent-fg:  212 24.7% 42.5%;   /* 5.01 on tint, 5.47 on card */
-    --status-accent-bg:  212 11.4% 95.6%;
-    --status-accent-border: 212 6% 90.6%;
-    --status-accent-mark: 212 46% 71.5%;   /* 2.07 on card, ink 8.43 */
+    --status-accent-fg:  198.05 24.7% 39%;   /* 5.04 on tint, 5.47 on card */
+    --status-accent-bg:  198.05 11.4% 95.6%;
+    --status-accent-border: 198.05 6% 90.6%;
+    --status-accent-mark: 198.05 46% 71.5%; /* ink on the mark stays clear */
     --status-neutral-fg:     210 6% 40%;
     --status-neutral-bg:     210 6% 95.0%;
     --status-neutral-border: 210 4.5% 91.0%;
@@ -1388,6 +1398,7 @@ html {
   .text-7xl { font-size: 4.5rem; }
 
   @media (max-width: 1023.98px) {
+    .sm\:text-2xs { font-size: max(0.765075rem, 12.2412px); line-height: 1rem; }
     .sm\:text-xs  { font-size: 0.82883125rem; line-height: 1.25rem; }
     .sm\:text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
     .sm\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
@@ -1471,6 +1482,13 @@ html {
 
     .text-7xl {
       font-size: 5.48780488rem;
+    }
+
+    /* The message composer's suggestion chips (ChatWindow) step down to
+       the caption from sm. */
+    .sm\:text-2xs {
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
 
     .sm\:text-xs {
@@ -1785,25 +1803,44 @@ html {
     }
 
     /* Call sites pin h-7 / h-8 / h-9 / h-10 (28 / 32 / 36 / 40px) for the
-       desktop ladder, and Button's own sizes are h-11 (44px) until `md`.
-       Those utilities are not breakpoint-scoped, so a phone inherited them.
-       The phone floor is 39.71px — another 5% under 41.8px — so a control
-       stays reachable without the extra height. h-11 and h-12 join the list
-       because that is the height the eye meets on a phone. From 640px the
-       utilities mean what they say again. Square controls shrink on both
-       axes; a full-width button only shrinks in height. Fields stay 44px.
-       The Ask AI bar is only as tall as the button inside it, so it shortens
-       with this floor. */
+       desktop ladder, and older buttons still carry h-11 (44px). Those
+       utilities are not breakpoint-scoped, so a phone inherited them.
+       The phone height is 2% under the Help topic pill (All topics,
+       Getting started): 31.08 × 0.98 = 30.458px. h-11 and h-12 join the
+       list because that is the height the eye meets on a phone. From 640px
+       the same cut is 32.997px (the rule after the height restatement). Square controls
+       shrink on both axes; a full-width button only shrinks in height.
+       Fields stay 44px. The Ask AI bar is only as tall as the button
+       inside it, so it shortens with this height. */
     :is(button, a, [role='tab'], [role='button']):is(.h-7, .h-8, .h-9, .h-10, .h-11, .h-12, .min-h-7, .min-h-8, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .min-h-\[44px\]) {
       height: auto;
-      min-height: 39.71px;
+      min-height: 30.458px;
     }
     :is(button, a, [role='button']):is(.w-7, .w-8, .w-9, .w-10, .w-11, .min-w-\[44px\]),
     :is(button, a, [role='button']).h-10.w-10,
     :is(button, a, [role='button']).h-11.w-11,
     :is(button, a, [role='button']).h-12.w-12 {
-      width: 39.71px;
-      min-width: 39.71px;
+      width: 30.458px;
+      min-width: 30.458px;
+    }
+
+    /* Purple primary and transparent outline/ghost buttons are 5% under
+       the topic pill on a phone, then 2% under that: 29.53 × 0.98 = 28.939.
+       From 640px they stay with the other buttons. A stacked label still
+       grows. Attribute selectors, so the utility names are not folded
+       into Tailwind. */
+    :is(button, a):is([class~='bg-primary'], [class~='bg-transparent']):not(.min-h-14):not(.min-h-16) {
+      height: auto;
+      min-height: 28.939px;
+    }
+    :is(button, a)[class~='h-[30.458px]'][class~='w-[30.458px]']:is([class~='bg-primary'], [class~='bg-transparent']),
+    :is(button, a).h-10.w-10:is([class~='bg-primary'], [class~='bg-transparent']),
+    :is(button, a).h-11.w-11:is([class~='bg-primary'], [class~='bg-transparent']),
+    :is(button, a).h-12.w-12:is([class~='bg-primary'], [class~='bg-transparent']) {
+      width: 28.939px;
+      min-width: 28.939px;
+      height: 28.939px;
+      min-height: 28.939px;
     }
 
     /* What a fingertip still missed at 390px (measured on 15 pages, 60
@@ -1815,11 +1852,17 @@ html {
       min-height: 44px;
     }
     .tap-target-phone {
-      min-height: 39.71px;
-      min-width: 39.71px;
+      min-height: 30.458px;
+      min-width: 30.458px;
     }
-    /* The Ask AI bar measured 55.8px. 5% under that is 53.01. The button
-       inside is now 39.71, so the leftover is this padding plus the border. */
+    /* py-1.5 pills measure 31.08px from 6px of padding. 0.311px off each
+       side is the 2% cut. Attribute selector, so it is not folded into
+       the py-1.5 utility. */
+    :is(button, a, [role='button'], [role='tab'])[class~='py-1.5'] {
+      padding-top: 5.689px;
+      padding-bottom: 5.689px;
+    }
+    /* The Ask AI bar follows the button inside it (the topic-pill height). */
     [data-ask-ai] {
       padding-top: 5.65px;
       padding-bottom: 5.65px;
@@ -2406,6 +2449,36 @@ html {
   .lg\:h-auto { height: auto; }
 }
 
+/* Topic pills and the same py-1.5 chips size themselves from padding, so
+   the min-height floor does not shorten them. 0.337px off each side is 2%
+   of the 33.67px pill. On a phone the pill's padding is 6px and the same
+   cut is 0.311px, in the phone block above. */
+@media (min-width: 1024px) {
+  :is(button, a, [role='button'], [role='tab'])[class~='py-1.5'] {
+    padding-top: calc(6px * var(--chrome-y) - 0.337px);
+    padding-bottom: calc(6px * var(--chrome-y) - 0.337px);
+  }
+}
+
+/* Buttons are 2% under the Help topic pill's 33.67px from 640px, so
+   32.997px. A single-line h-9…h-12 control comes down to that. One that
+   carries h-auto, or an explicit min-h-14 / min-h-16, keeps the height
+   its own label needs. */
+@media (min-width: 640px) {
+  :is(button, a, [role='button']):is(.h-9, .h-10, .h-11, .h-12, .min-h-9, .min-h-10, .min-h-11, .min-h-12, .md\:h-9, .md\:h-10, .md\:min-h-9, .md\:min-h-10):not(.h-auto):not(.min-h-14):not(.min-h-16) {
+    height: auto;
+    min-height: 32.997px;
+  }
+  :is(button, a, [role='button']).h-10.w-10,
+  :is(button, a, [role='button']).h-11.w-11,
+  :is(button, a, [role='button']).h-12.w-12 {
+    width: 32.997px;
+    min-width: 32.997px;
+    height: 32.997px;
+    min-height: 32.997px;
+  }
+}
+
 [data-radix-select-trigger],
 [role='combobox'] {
   min-height: calc(2.5rem * var(--chrome-y));
@@ -2532,7 +2605,7 @@ span.page-stat,
 div.page-stat,
 dd.page-stat,
 p.founder-dash-stat {
-  font-size: max(12.2412px, 1.11375rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 p.page-stat-label,
@@ -2547,7 +2620,7 @@ p.founder-dash-stat-meta {
 }
 h3.page-section,
 h3.founder-dash-section {
-  font-size: max(12.2412px, 1.03046733rem);
+  font-size: max(12.2412px, 0.98924864rem);
   line-height: 1.485rem;
 }
 /* Glyph in the title row = 1.08 × that title, not a fixed 16px next to 16.65. */
@@ -2562,7 +2635,7 @@ h3.founder-dash-section svg.lucide {
 }
 p.page-figure,
 p.founder-dash-figure {
-  font-size: max(12.2412px, 0.95413642rem);
+  font-size: max(12.2412px, 0.91597096rem);
   line-height: 1.423125rem;
 }
 @media (min-width: 640px) {
@@ -2574,7 +2647,7 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.11375rem);
+    font-size: max(12.2412px, 1.047816rem);
     line-height: 1.60875rem;
   }
   p.page-stat-label,
@@ -2589,7 +2662,7 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.03046733rem);
+    font-size: max(12.2412px, 0.98924864rem);
     line-height: 1.485rem;
   }
 }
@@ -2602,7 +2675,7 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.35823171rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   p.page-stat-label,
@@ -2617,12 +2690,12 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.25666748rem);
+    font-size: max(12.2412px, 1.20640078rem);
     line-height: 1.81097561rem;
   }
   p.page-figure,
   p.founder-dash-figure {
-    font-size: max(12.2412px, 1.16358100rem);
+    font-size: max(12.2412px, 1.11703776rem);
     line-height: 1.73551823rem;
   }
 }
@@ -2633,7 +2706,7 @@ p.founder-dash-figure {
 h3.page-section.page-section--compact,
 [data-rail-content] h3.page-section,
 [data-rail-content] h3.founder-dash-section {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.299375rem;
 }
 
@@ -2641,7 +2714,7 @@ h3.page-section.page-section--compact,
   h3.page-section.page-section--compact,
   [data-rail-content] h3.page-section,
   [data-rail-content] h3.founder-dash-section {
-    font-size: 0.88366163rem;
+    font-size: 0.86598840rem;
     line-height: 1.299375rem;
   }
 }
@@ -2649,7 +2722,7 @@ h3.page-section.page-section--compact,
   h3.page-section.page-section--compact,
   [data-rail-content] h3.page-section,
   [data-rail-content] h3.founder-dash-section {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
 }
@@ -2670,11 +2743,11 @@ h3.page-section.page-section--compact,
    the one below it, and every Tailwind step lands on one of them:
 
      caption 12.24   2xs, stat labels, the bilingual floor
-     meta    13.13   xs, tabs, small buttons, chips
-     body    14.14   sm, copy, inputs, rail card titles
-     figure  15.27   in-card figures ($375K)
-     section 16.49   card and section titles, base, lg
-     title   17.82   h1, stat figures, xl and above (ceiling below)
+     meta    12.87   xs, tabs, small buttons, chips
+     body    13.86   sm, copy, rail card titles
+     figure  14.66   in-card figures ($375K)
+     section 15.83   card and section titles, base, lg
+     title   16.77   h1, stat figures, xl and above (ceiling below)
 
    The readiness gauge (32px) is the one display figure. Same pixels on
    phone and desktop. The left SideNav keeps its own chrome ladder.
@@ -2685,11 +2758,11 @@ h3.page-section.page-section--compact,
   line-height: 1rem;
 }
 #main-content .text-xs {
-  font-size: 0.82054294rem;
+  font-size: 0.80413208rem;
   line-height: 1.2375rem;
 }
 #main-content .text-sm {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.299375rem;
 }
 /* Tailwind's base (16.32) and lg (18) sat 0.2px either side of the section
@@ -2698,42 +2771,42 @@ h3.page-section.page-section--compact,
 #main-content .text-lg,
 #main-content p.page-section,
 #main-content h2.page-section {
-  font-size: 1.03046733rem;
+  font-size: 0.98924864rem;
   line-height: 1.485rem;
 }
 /* Responsive variants after the plain steps, so `text-base sm:text-sm`
    (inputs, selects) still resolves to its sm step. */
 @media (min-width: 640px) {
   #main-content .sm\:text-xs {
-    font-size: 0.82054294rem;
+    font-size: 0.80413208rem;
     line-height: 1.2375rem;
   }
   #main-content .sm\:text-sm {
-    font-size: 0.88366163rem;
+    font-size: 0.86598840rem;
     line-height: 1.299375rem;
   }
   #main-content .sm\:text-lg {
-    font-size: 1.03046733rem;
+    font-size: 0.98924864rem;
     line-height: 1.485rem;
   }
 }
 @media (min-width: 768px) {
   #main-content .md\:text-lg {
-    font-size: 1.03046733rem;
+    font-size: 0.98924864rem;
     line-height: 1.485rem;
   }
 }
 /* Tabs switch the copy under them, so they sit a step below it. After
    `.text-sm`: the trigger carries that class. */
 #main-content [role='tab'] {
-  font-size: 0.82054294rem;
+  font-size: 0.80413208rem;
   line-height: 1.2375rem;
 }
 /* The rail is ~240px wide: every heading step stays on its title size. */
 #main-content [data-rail-content] .text-base,
 #main-content [data-rail-content] .text-lg,
 #main-content [data-rail-content] .sm\:text-lg {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.299375rem;
 }
 
@@ -2743,42 +2816,42 @@ h3.page-section.page-section--compact,
     line-height: max(1.24402439rem, 16.3216px);
   }
   #main-content .text-xs {
-    font-size: 1.00066212rem;
+    font-size: 0.98064888rem;
     line-height: 1.50914634rem;
   }
   #main-content .text-sm {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
   #main-content .text-base,
   #main-content .text-lg,
   #main-content p.page-section,
   #main-content h2.page-section {
-    font-size: 1.25666748rem;
+    font-size: 1.20640078rem;
     line-height: 1.81097561rem;
   }
   #main-content .sm\:text-xs,
   #main-content .lg\:text-xs {
-    font-size: 1.00066212rem;
+    font-size: 0.98064888rem;
     line-height: 1.50914634rem;
   }
   #main-content .sm\:text-sm {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
   #main-content .sm\:text-lg,
   #main-content .md\:text-lg {
-    font-size: 1.25666748rem;
+    font-size: 1.20640078rem;
     line-height: 1.81097561rem;
   }
   #main-content [role='tab'] {
-    font-size: 1.00066212rem;
+    font-size: 0.98064888rem;
     line-height: 1.50914634rem;
   }
   #main-content [data-rail-content] .text-base,
   #main-content [data-rail-content] .text-lg,
   #main-content [data-rail-content] .sm\:text-lg {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
 }
@@ -2808,7 +2881,7 @@ h3.page-section.page-section--compact,
 #main-content .text-6xl,
 #main-content .text-7xl,
 #main-content .text-\[2\.75rem\] {
-  font-size: max(12.2412px, 1.11375rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 #main-content .text-\[11px\],
@@ -2823,7 +2896,7 @@ h3.page-section.page-section--compact,
 #main-content [data-rail-content] .text-2xl,
 #main-content [data-rail-content] .sm\:text-2xl,
 #main-content [data-rail-content] .text-3xl {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.299375rem;
 }
 @media (min-width: 1024px) {
@@ -2843,7 +2916,7 @@ h3.page-section.page-section--compact,
   #main-content .text-6xl,
   #main-content .text-7xl,
   #main-content .text-\[2\.75rem\] {
-    font-size: max(12.2412px, 1.35823171rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   #main-content [data-rail-content] .text-xl,
@@ -2851,7 +2924,7 @@ h3.page-section.page-section--compact,
   #main-content [data-rail-content] .text-2xl,
   #main-content [data-rail-content] .sm\:text-2xl,
   #main-content [data-rail-content] .text-3xl {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
 }
@@ -2867,7 +2940,7 @@ h3.page-section.page-section--compact,
 #main-content div.page-stat,
 #main-content dd.page-stat,
 #main-content p.founder-dash-stat {
-  font-size: max(12.2412px, 1.11375rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 #main-content p.page-stat-label,
@@ -2882,18 +2955,18 @@ h3.page-section.page-section--compact,
 }
 #main-content h3.page-section,
 #main-content h3.founder-dash-section {
-  font-size: max(12.2412px, 1.03046733rem);
+  font-size: max(12.2412px, 0.98924864rem);
   line-height: 1.485rem;
 }
 #main-content p.page-figure,
 #main-content p.founder-dash-figure {
-  font-size: max(12.2412px, 0.95413642rem);
+  font-size: max(12.2412px, 0.91597096rem);
   line-height: 1.423125rem;
 }
 #main-content h3.page-section.page-section--compact,
 #main-content [data-rail-content] h3.page-section,
 #main-content [data-rail-content] h3.founder-dash-section {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.299375rem;
 }
 @media (min-width: 1024px) {
@@ -2905,7 +2978,7 @@ h3.page-section.page-section--compact,
   #main-content div.page-stat,
   #main-content dd.page-stat,
   #main-content p.founder-dash-stat {
-    font-size: max(12.2412px, 1.35823171rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   #main-content p.page-stat-label,
@@ -2920,18 +2993,18 @@ h3.page-section.page-section--compact,
   }
   #main-content h3.page-section,
   #main-content h3.founder-dash-section {
-    font-size: max(12.2412px, 1.25666748rem);
+    font-size: max(12.2412px, 1.20640078rem);
     line-height: 1.81097561rem;
   }
   #main-content p.page-figure,
   #main-content p.founder-dash-figure {
-    font-size: max(12.2412px, 1.16358100rem);
+    font-size: max(12.2412px, 1.11703776rem);
     line-height: 1.73551823rem;
   }
   #main-content h3.page-section.page-section--compact,
   #main-content [data-rail-content] h3.page-section,
   #main-content [data-rail-content] h3.founder-dash-section {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
     line-height: 1.58460366rem;
   }
 }
@@ -2978,20 +3051,20 @@ h3.page-section.page-section--compact,
 #main-content .type-ui.text-base,
 #main-content .type-ui.sm\:text-sm,
 #main-content input.type-ui {
-  font-size: 0.82054294rem;
+  font-size: 0.80413208rem;
   line-height: 1.35;
 }
 #main-content .type-identity,
 #main-content .type-identity.text-sm,
 #main-content .type-identity.text-xs {
-  font-size: 0.88366163rem;
+  font-size: 0.86598840rem;
   line-height: 1.3;
 }
 #main-content .type-page,
 #main-content .type-page.text-xl,
 #main-content .type-page.text-2xl,
 #main-content h1.type-page {
-  font-size: 1.11375rem;
+  font-size: 1.047816rem;
   line-height: 1.3;
 }
 @media (min-width: 1024px) {
@@ -3013,18 +3086,18 @@ h3.page-section.page-section--compact,
   #main-content .type-ui.text-base,
   #main-content .type-ui.sm\:text-sm,
   #main-content input.type-ui {
-    font-size: 1.00066212rem;
+    font-size: 0.98064888rem;
   }
   #main-content .type-identity,
   #main-content .type-identity.text-sm,
   #main-content .type-identity.text-xs {
-    font-size: 1.07763613rem;
+    font-size: 1.05608341rem;
   }
   #main-content .type-page,
   #main-content .type-page.text-xl,
   #main-content .type-page.text-2xl,
   #main-content h1.type-page {
-    font-size: 1.35823171rem;
+    font-size: 1.27782440rem;
   }
 }
 
@@ -3313,29 +3386,31 @@ textarea[class~="border-input"]:focus,
 
 /* ── Phone reading scale ─────────────────────────────────────────────────
    The product ladder above is the same pixels on a phone as on a desktop
-   (caption 12.24, body 14.14, title 17.82). That is a desk density. Below
+   (caption 12.24, body 13.86, title 16.77). That is a desk density. Below
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.044 · meta 14.406 · body 14.906 · lead 13.321 · figure 16.327 · section 14.984 · title 15.343
+     caption 13.044 · support 12.663 · body 13.603 · lead 12.921 · figure 14.899 · section 13.263 · title 13.582
 
-   Secondary text (.text-xs, .type-support: labels, meta, helper lines,
-   facts, badges) sits on the caption step, not the meta step. At 14.406 it
-   was half a pixel under the body (14.906) and a card's label, its sentence
-   and its title (section 14.984) read as one size, ranked by grey alone -
-   the "wall" a need card made on a phone (2026-10-09). The meta step stays
-   for controls (.type-ui, buttons, tabs, fields), whose labels the hand
-   aims at.
-
-   Every step is another 2% under the previous phone size (13.31 × 0.98,
-   14.7 × 0.98, 15.21 × 0.98, 14.013 × 0.98, 16.66 × 0.98, 15.29 × 0.98,
-   15.656 × 0.98), on every page. Fields such as Ask AI stay at 16.16px,
-   above the iOS zoom floor.
+   Captions, the line under a page title, and the body subtitle stay put.
+   The support step (chips, dimension rows, in-card actions, labels, facts
+   and the muted sentence under a title) is 12.663, a little under that
+   subtitle. Steps above the lead are another 4% smaller, toward that lead;
+   the lead, caption and support step are unchanged. Previously another 2% under the phone
+   size: body 14.459 × 0.98, the root and figures 15.837 × 0.98, stat
+   numbers 14.883 × 0.98, the page title 14.437 × 0.98, section headings
+   14.098 × 0.98. The same steps apply on every page. Search bars, Ask AI
+   and other text fields are 12.410, one step under the field subtitle
+   (12.663) and under the field title (13.603). Card copy and stat figures
+   are not fields and stay on their own steps. A title with no size utility
+   that inherited the body step (14.899), the same size as Discover People,
+   sits on the text-base step (13.673).
 
    The dashboard is the phone standard for the same role on every page.
    text-xl through text-7xl, including pages and dialogs outside
-   #main-content, sit on the title step (15.343). The readiness gauge sits
-   on the figure step (16.327).
+   #main-content, sit on the title step (13.582). text-lg sits on the
+   section step (13.263). The readiness gauge sits on the figure step
+   (14.899).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3343,16 +3418,16 @@ textarea[class~="border-input"]:focus,
    those selectors outrank a plain class. */
 @media (max-width: 639.98px) {
   body {
-    font-size: 16.327px;
+    font-size: 14.899px;
     line-height: 1.5;
     letter-spacing: 0;
   }
 
   .text-2xs { font-size: 13.044px; line-height: 1.35; }
-  .text-xs { font-size: 13.044px; line-height: 1.4; }
-  .text-sm { font-size: 14.906px; line-height: 1.45; }
-  .text-base { font-size: 16.327px; line-height: 1.5; }
-  .text-lg { font-size: 14.984px; line-height: 1.4; }
+  .text-xs { font-size: 12.663px; line-height: 1.4; }
+  .text-sm { font-size: 13.603px; line-height: 1.45; }
+  .text-base { font-size: 14.899px; line-height: 1.5; }
+  .text-lg { font-size: 13.263px; line-height: 1.4; }
 
   .bilingual-secondary,
   .bilingual-separator {
@@ -3393,11 +3468,12 @@ textarea[class~="border-input"]:focus,
   #main-content .type-support.type-caption,
   #main-content .type-support.text-xs,
   #main-content .type-support.text-sm {
-    font-size: 13.044px;
+    font-size: 12.663px;
     line-height: 1.4;
   }
 
-  /* Controls keep the meta step: a button, tab or field set in text-xs. */
+  /* A button or tab set in text-xs stays on the support step, under the
+     title. A text field is pinned under that step, at 12.410, above. */
   .text-xs[data-slot='button'],
   button.text-xs,
   [role='button'].text-xs,
@@ -3418,7 +3494,7 @@ textarea[class~="border-input"]:focus,
   #main-content .type-ui.text-sm,
   #main-content .type-ui.text-base,
   #main-content .type-ui.sm\:text-sm {
-    font-size: 14.406px;
+    font-size: 12.663px;
     line-height: 1.4;
   }
 
@@ -3427,68 +3503,142 @@ textarea[class~="border-input"]:focus,
   #main-content .type-identity,
   #main-content .type-identity.text-sm,
   #main-content .type-identity.text-xs,
-  #main-content [data-rail-content] .text-base,
-  #main-content [data-rail-content] .text-lg,
-  #main-content [data-rail-content] .text-xl,
-  #main-content [data-rail-content] .text-2xl,
-  #main-content [data-rail-content] .text-3xl,
-  #main-content h3.page-section.page-section--compact,
-  #main-content [data-rail-content] h3.page-section,
-  #main-content [data-rail-content] h3.founder-dash-section,
-  h3.page-section.page-section--compact {
-    font-size: 14.906px;
+  #main-content [data-rail-content] .text-base {
+    font-size: 13.603px;
     line-height: 1.45;
+  }
+
+  /* In-card actions such as Startup readiness and Open Builder use the body
+     step and sat level with the title. On a phone they join the support
+     step, under the subtitle. A text-sm paragraph (the greeting and the
+     score tier) is the subtitle and stays on the body step. */
+  #main-content button.text-sm,
+  #main-content a.text-sm,
+  #main-content [role='button'].text-sm,
+  #main-content button.text-xs,
+  #main-content [role='button'].text-xs,
+  [role='dialog'] button.text-sm,
+  [role='dialog'] a.text-sm,
+  [role='dialog'] [role='button'].text-sm,
+  [role='dialog'] button.text-xs,
+  [role='dialog'] [role='button'].text-xs,
+  [role='alertdialog'] button.text-sm,
+  [role='alertdialog'] a.text-sm,
+  [role='alertdialog'] [role='button'].text-sm,
+  [role='alertdialog'] button.text-xs,
+  [role='alertdialog'] [role='button'].text-xs {
+    font-size: 12.663px;
+    line-height: 1.35;
   }
 
   #main-content p.page-figure,
   #main-content p.founder-dash-figure,
   p.page-figure,
   p.founder-dash-figure {
-    font-size: 16.327px;
+    font-size: 14.899px;
     line-height: 1.35;
   }
 
   #main-content .score-emblem-figure {
-    font-size: 16.327px;
+    font-size: 14.899px;
     line-height: 1;
   }
 
-  #main-content .text-base,
-  #main-content .text-lg,
+  /* Body copy that uses the text-base utility. Section headings used to
+     share this rule; they are 3% smaller than this step now. */
+  #main-content .text-base {
+    font-size: 13.673px;
+    line-height: 1.35;
+  }
+
+  .text-lg,
+  #main-content .text-lg {
+    font-size: 13.263px;
+    line-height: 1.35;
+  }
+
+  /* A section label on the member directory is the support step.
+     Every page section heading including text-lg sections uses it. */
   #main-content p.page-section,
   #main-content h2.page-section,
   #main-content h3.page-section,
   #main-content h3.founder-dash-section,
+  #main-content h2.uppercase,
   h3.page-section,
-  h3.founder-dash-section {
-    font-size: 14.984px;
-    line-height: 1.35;
+  h3.founder-dash-section,
+  #main-content h2.text-lg,
+  #main-content h3.text-lg {
+    font-size: 12.663px;
+    line-height: 1.4;
   }
 
-  /* A card's own title sits on the title step, a notch over the rows and
-     sentences it holds (text-sm, 14.906): at the section step (14.984) a
-     card's rows read as loud as its name. The rail keeps its compact step. */
+  /* Compact and rail headings stay under the section label. The rail's
+     own display type is unchanged. */
+  #main-content [data-rail-content] .text-lg,
+  #main-content [data-rail-content] .text-xl,
+  #main-content [data-rail-content] .text-2xl,
+  #main-content [data-rail-content] .text-3xl {
+    font-size: 13.745px;
+    line-height: 1.45;
+  }
+  #main-content h3.page-section.page-section--compact,
+  #main-content [data-rail-content] h3.page-section,
+  #main-content [data-rail-content] h3.founder-dash-section,
+  h3.page-section.page-section--compact {
+    font-size: 12.410px;
+    line-height: 1.4;
+  }
+
+  /* A card's own title sits on the member-name step (13.582), the same
+     step as the page title, over the rows and sentences it holds. The
+     rail's card title sits on the member-subtitle step so a side card
+     never outranks the page. */
   #main-content [data-card] h2.page-section,
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
-    font-size: 15.343px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
   #main-content [data-rail-content] [data-card] h3.page-section {
-    font-size: 14.906px;
+    font-size: 13.044px;
     line-height: 1.45;
   }
 
-  /* The line under the page title, on every page. Another 3% under
-     13.733px. */
+  /* The line under the page title, on every page. */
   #main-content p.page-lead,
   p.page-lead {
-    font-size: 13.321px;
+    font-size: 12.921px;
+    line-height: 1.45;
+  }
+
+  /* The explanatory sentence under a title or a subtitle ("Weighted across
+     6 dimensions…", "Investor and accelerator readiness…", and the same
+     muted line on every page). It was on the meta step, 14.406, level with
+     the page title (13.582) and above the subtitle (12.921). On a phone it
+     sits a little under that subtitle: 12.921 × 0.98. A one-line label
+     (truncate, line-clamp-1), a flex meta row, the subtitle itself, stat
+     labels, and every larger step stay where they are. */
+  #main-content :is(p, li, span, a).text-xs.text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.page-lead):not(.page-stat-label):not(.page-stat-meta):not(.founder-dash-stat-label):not(.founder-dash-stat-meta):not(.person-subtitle),
+  #main-content div.text-xs.text-muted-foreground:is(.leading-snug, .leading-relaxed):not(.flex):not(.inline-flex):not(.font-semibold):not(.font-medium),
+  #main-content :is(div, ol, ul).text-xs.text-muted-foreground li,
+  #main-content :is(p, li).text-xs :is(span, a).text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.bilingual-secondary):not(.font-semibold):not(.font-medium),
+  #main-content :is(p, li, span).type-ui.text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.flex):not(.inline-flex),
+  #main-content :is(p, li, span).type-support.text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.flex):not(.inline-flex),
+  [role='dialog'] :is(p, li, span, a).text-xs.text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.page-lead),
+  [role='dialog'] div.text-xs.text-muted-foreground:is(.leading-snug, .leading-relaxed):not(.flex):not(.inline-flex):not(.font-semibold):not(.font-medium),
+  [role='dialog'] :is(div, ol, ul).text-xs.text-muted-foreground li,
+  [role='dialog'] :is(p, li, span).type-ui.text-muted-foreground:not(.truncate):not(.line-clamp-1),
+  [role='dialog'] :is(p, li, span).type-support.text-muted-foreground:not(.truncate):not(.line-clamp-1),
+  [role='alertdialog'] :is(p, li, span, a).text-xs.text-muted-foreground:not(.truncate):not(.line-clamp-1):not(.page-lead),
+  [role='alertdialog'] :is(div, ol, ul).text-xs.text-muted-foreground li {
+    font-size: 12.663px;
     line-height: 1.45;
   }
 
   #main-content .person-subtitle {
-    font-size: 14.459px;
+    /* The line under a featured member's name ("Founder & CEO at Harbor")
+       is the caption step. A person subtitle on every page uses it. */
+    font-size: 13.044px;
     line-height: 1.4;
   }
 
@@ -3510,53 +3660,95 @@ textarea[class~="border-input"]:focus,
   #main-content .text-\[2\.75rem\],
   #main-content h1.page-title,
   #main-content h1.founder-dash-h1,
+  #main-content .type-page,
+  #main-content .type-page.text-xl,
+  #main-content .type-page.text-2xl,
+  #main-content h1.type-page,
+  h1.page-title,
+  h1.founder-dash-h1 {
+    font-size: 13.582px;
+    line-height: 1.3;
+  }
+
+  /* Stat numbers are 2% under 14.883. The page title is 13.582. */
   #main-content p.page-stat,
   #main-content h3.page-stat,
   #main-content span.page-stat,
   #main-content div.page-stat,
   #main-content dd.page-stat,
   #main-content p.founder-dash-stat,
-  #main-content .type-page,
-  #main-content .type-page.text-xl,
-  #main-content .type-page.text-2xl,
-  #main-content h1.type-page,
-  h1.page-title,
-  h1.founder-dash-h1,
   p.page-stat,
   h3.page-stat,
   span.page-stat,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 15.343px;
+    font-size: 14.002px;
     line-height: 1.3;
   }
 
   #main-content .person-name {
-    /* Inherited the body step (16.327) and sat above the page title.
-       On a phone it uses the title step. From 640px the inherited size
+    /* Inherited the body step and sat above the page title.
+       On a phone it uses the title step. A wrapped name needs 1.35,
+       the same leading as a card title. From 640px the inherited size
        stays, and that size is already under the title. */
-    font-size: 15.343px;
-    line-height: 1.3;
+    font-size: 13.582px;
+    line-height: 1.35;
   }
 
   input[data-filter-field]:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
   select[data-filter-field] {
-    /* The discover query and its sort control used the 16.16px field floor
-       and sat above the title. Every field now sits on the control step,
-       under its label ("Fields read under their labels"). */
-    font-size: 14.406px !important;
+    /* The discover query and its sort control sit on the field step
+       (12.410): under the field title (text-sm, 13.603) and under the
+       field subtitle (text-xs, 12.663). */
+    font-size: 12.410px !important;
   }
 
-  /* A paragraph a card cuts with an ellipsis wraps on a phone instead:
-     "Pre-seed Bootcamp · Spring 2027 · 1d" lost its age and a byline its
-     place (132 cut texts across 836 cards, 2026-10-09). Names and labels
-     inside a flex row (spans) keep their single line; from 640px the cut
-     returns where the row is wide enough to need it. */
-  #main-content [data-card] p.truncate {
+  /* A paragraph or a card title a card cuts with an ellipsis wraps on a
+     phone instead: "Pre-seed Bootcamp · Spring 2027 · 1d" lost its age and
+     a saved search was left as "Commerci…". Names and labels inside a flex
+     row (spans) keep their single line; from 640px the cut returns where
+     the row is wide enough to need it. */
+  #main-content [data-card] p.truncate,
+  #main-content [data-card] h3.truncate {
     white-space: normal;
     overflow: visible;
     text-overflow: clip;
+  }
+
+  /* The connection subtitle stays one line. Joined facts use this class
+     so a long line ellipsizes instead of stacking into a second card. */
+  #main-content [data-card] p.row-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Titles that inherit the body step (14.899) are the same size as
+     "Discover People". On a phone they sit on the text-base step (13.673)
+     so they stay under that body size and above a text-sm subtitle.
+     A sized utility a stat a lead or a person name does not match.
+     :where keeps this under the need-card title rule. */
+  #main-content p.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
+  #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
+  #main-content p.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)),
+  #main-content h3.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)) {
+    font-size: 13.673px;
+    line-height: 1.45;
+  }
+
+  /* Wrapped lines inside a card and a snug or tight line outside one use
+     the endorsement subtitle and the connection headline (1.45). A score
+     that asks for leading-none stays tight. */
+  #main-content p.leading-snug,
+  #main-content h3.leading-snug,
+  #main-content li.leading-snug,
+  #main-content p.leading-tight,
+  #main-content h3.leading-tight,
+  #main-content [data-card] p:not(.page-stat):not(.leading-none),
+  #main-content [data-card] h3:not(.page-stat):not(.leading-none),
+  #main-content [data-card] li:not(.page-stat):not(.leading-none) {
+    line-height: 1.45;
   }
 
   /* Long tokens and pictures stay inside the viewport. A wide table scrolls
@@ -3577,15 +3769,78 @@ textarea[class~="border-input"]:focus,
 
   [role='dialog'],
   [role='alertdialog'] {
-    font-size: 16.327px;
+    font-size: 14.899px;
     line-height: 1.5;
+  }
+
+  /* A need card's title and its sentences were a tenth of a pixel apart,
+     so the title, the ask, the offer and the facts all shouted at once.
+     The title takes the page-title step. The sentences sit on the subtitle
+     step, under it. Labels stay on the support step. */
+  #main-content [data-need-card] :is(h1, h2, h3) {
+    font-size: 13.582px;
+    line-height: 1.3;
+  }
+  /* A count line (evidence) keeps the caption step. Naming text-xs as a
+     class would fold this rule into that utility. */
+  #main-content [data-need-card] dd:not([class~='text-xs']),
+  #main-content [data-need-card] [data-need-offer] p.text-sm {
+    font-size: 12.663px;
+    line-height: 1.45;
+  }
+
+  /* A card's sentence sits on the support step (12.663), with the lines
+     already in the card, under the subtitle (13.044). From 640px it keeps
+     text-sm. */
+  #main-content [data-card] .card-copy,
+  #main-content [data-card] p.card-copy {
+    font-size: 12.663px;
+    line-height: 1.45;
+  }
+
+  /* A sentence under a card title used to shift back by the mark's width,
+     so it started a tab left of the title. It now stays on the title's
+     left edge, beside the circle, and cannot cover the circle or leave
+     the card. From 640px the class is unused. */
+  #main-content [data-card] .card-axis,
+  #main-content .card-axis {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  /* A round name and a milestone title used the section label (12.663)
+     while the money line and the description used text-sm (13.603).
+     The row title takes the member-name step. Section headings that are
+     not a row title stay on the section label. */
+  #main-content :is(h2, h3).page-section.page-section--row {
+    font-size: 13.582px;
+    line-height: 1.3;
+  }
+
+  /* In-card sentences sit on the support step, the same size on every
+     page and in the rail, under the card title and under the subtitle.
+     A pure stat, a member name and a control keep their own steps. */
+  #main-content [data-card] :is(p, div, span, li, dd, dt, ul, ol, label).text-sm:not(:is(.page-stat, .person-name, .card-copy, .page-stat-label, .page-stat-meta, button, a, [role='button'], [role='tab'], input, textarea, select)),
+  #main-content [data-card] :is(p, div, dd, li).text-base:not(:is(.page-stat, .page-figure, .person-name, .font-display, .card-title)),
+  #main-content [data-card] :is(p, dd, li).text-lg:not(.page-section),
+  #main-content [data-card] p.text-sm.italic,
+  #main-content [data-rail-content] [data-card] :is(p, div, span, li, dd, dt).text-sm {
+    font-size: 12.663px;
+    line-height: 1.45;
+  }
+
+  /* A sentence that opens in lowercase ("invests in…") reads as a label
+     that lost its capital. The first letter takes a capital; a stat figure
+     is not a sentence. */
+  #main-content [data-card] p:not(:is(.page-stat, .page-stat-label, .page-stat-meta))::first-letter {
+    text-transform: uppercase;
   }
 }
 
-/* Landing intro. On a phone the headline, the line under it, and the live
-   counts use the dashboard steps (title 15.343, lead 13.321, stat 15.343).
-   From 640px they keep the poster sizes. Pixels, not rem: the desktop root
-   is 82% and would shrink a rem a second time.
+/* Landing intro. On a phone the headline and the line under it use the
+   phone title and subtitle (13.582 and 12.921). The live counts use the
+   stat step (14.002). From 640px they keep the poster sizes. Pixels,
+   not rem: the desktop root is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
    another 5% (54.72px), so the lilac stays a shape. On a phone the
    poster column is 2% narrower than the full width; from 640px it is
@@ -3599,16 +3854,16 @@ textarea[class~="border-input"]:focus,
   }
 }
 #main-content h1.landing-display {
-  font-size: 15.343px;
+  font-size: 13.582px;
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
 #main-content p.landing-lead {
-  font-size: 13.321px;
+  font-size: 12.921px;
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 15.343px;
+  font-size: 14.002px;
   line-height: 1.2;
 }
 /* The hero headline's second language: a subtitle under the display line,
@@ -3717,10 +3972,10 @@ textarea[class~="border-input"]:focus,
    sentences, the facts:
 
      step            role                          phone     tablet/desktop
-     .card-title     name or title, semibold       15.343    16.32
-     .card-subtitle  the line under it, muted      14.906    14.28
-     .card-body      sentences, values, figures    14.406    13.77
-     meta            facts, dates, kinds (text-xs) 13.044    13.26
+     .card-title     name or title, semibold       13.582    15.36
+     .card-subtitle  the line under it, muted      13.044    14.00
+     .card-body      sentences, values, figures    12.663    13.49
+     meta            facts, dates, kinds (text-xs) 12.663    12.87
 
    The body sits a notch under the subtitle and the title, so a thesis never
    reads as loud as the byline and a figure inside a round card ("$375K
@@ -3729,40 +3984,248 @@ textarea[class~="border-input"]:focus,
    Rem against the 16px root, restated against the 82% desktop root, and px
    on a phone like the reading scale; `.probes/card_audit.mjs` measures it. */
 .card-title {
-  font-size: 1.0201rem;
+  font-size: 0.959710rem;
   line-height: 1.35;
   font-weight: 600;
 }
 .card-subtitle {
-  font-size: 0.8925875rem;
+  font-size: 0.87473575rem;
   line-height: 1.45;
   color: hsl(var(--muted-foreground));
 }
+/* The person under a card title (a need card's author). Same size as the
+   subtitle step, in the foreground and medium, so the name sits between the
+   title and the sentences without a new size. */
+.card-subtitle.card-byline {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
 .card-body {
-  font-size: 0.8606rem;
+  font-size: 0.843388rem;
   line-height: 1.55;
 }
 @media (min-width: 1024px) {
-  .card-title { font-size: 1.24402439rem; }
-  .card-subtitle { font-size: 1.08852134rem; }
-  .card-body { font-size: 1.04954268rem; }
+  .card-title { font-size: 1.17037814rem; }
+  .card-subtitle { font-size: 1.06675091rem; }
+  .card-body { font-size: 1.02855183rem; }
 }
 @media (max-width: 639.98px) {
+  /* Members page on a phone: the name is the page-title step, the line
+     under it is the member subtitle, and a sentence ("Who you are looking
+     for…", "Invests in Mediterranean…") sits on the lead step, under both.
+     A stat figure keeps .page-stat and is not these classes. */
   .card-title,
   #main-content .card-title {
-    font-size: 15.343px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
   .card-subtitle,
   #main-content .card-subtitle {
-    font-size: 14.906px;
+    font-size: 13.044px;
     line-height: 1.45;
   }
   .card-body,
   #main-content .card-body {
-    font-size: 14.406px;
+    font-size: 12.663px;
+    line-height: 1.45;
+  }
+
+  /* A muted sentence ("Search our knowledge base or browse topics below",
+     and the same line under a heading on every page) was text-sm at
+     13.603, level with or above a title that sits at 13.582. It takes the
+     lead step, under that title. A subtitle, a stat, a one-line label and
+     a semibold value stay on their own steps. */
+  #main-content p[class~='text-sm'][class~='text-muted-foreground']:not([class~='page-stat']):not([class~='page-stat-label']):not([class~='page-stat-meta']):not([class~='founder-dash-stat']):not([class~='founder-dash-stat-label']):not([class~='founder-dash-stat-meta']):not([class~='person-subtitle']):not([class~='card-subtitle']):not([class~='card-title']):not([class~='truncate']):not([class~='line-clamp-1']):not([class~='row-ellipsis']):not([class~='font-semibold']):not([class~='font-medium']),
+  #main-content :is(h1, h2, h3) + p[class~='text-base'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']):not([class~='page-stat']),
+  [role='dialog'] p[class~='text-sm'][class~='text-muted-foreground']:not([class~='page-stat']):not([class~='card-subtitle']):not([class~='truncate']):not([class~='line-clamp-1']):not([class~='font-semibold']):not([class~='font-medium']),
+  [role='alertdialog'] p[class~='text-sm'][class~='text-muted-foreground']:not([class~='page-stat']):not([class~='card-subtitle']):not([class~='truncate']):not([class~='line-clamp-1']):not([class~='font-semibold']):not([class~='font-medium']) {
+    font-size: 12.921px;
     line-height: 1.5;
   }
+}
+
+/* The sentence under a heading, on tablet and desktop. The phone reading
+   scale puts the same paragraphs on the lead step. Attribute selectors,
+   so the rule is not folded into Tailwind's text-sm utility. At 1024 the
+   82% root would shrink a rem under the caption floor, so the size is
+   restated in the same rem the card body uses. */
+#main-content :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='card-subtitle']):not([class~='person-subtitle']):not([class~='font-semibold']):not([class~='font-medium']),
+#main-content :is(h1, h2, h3) + p[class~='text-base'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']),
+[role='dialog'] :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']),
+[role='alertdialog'] :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']) {
+  font-size: 0.843388rem;
+  line-height: 1.55;
+}
+@media (min-width: 1024px) {
+  #main-content :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='card-subtitle']):not([class~='person-subtitle']):not([class~='font-semibold']):not([class~='font-medium']),
+  #main-content :is(h1, h2, h3) + p[class~='text-base'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']),
+  [role='dialog'] :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']),
+  [role='alertdialog'] :is(h1, h2, h3) + p[class~='text-sm'][class~='text-muted-foreground']:not([class~='font-semibold']):not([class~='font-medium']) {
+    font-size: 1.02855183rem;
+  }
+}
+
+/* A profile circle that is showing initials, inside a card, is 3% under
+   the size the card set. A loaded photo keeps that size. An organisation
+   mark adds a rounded square and is not this circle. */
+#main-content [data-card] [class~='rounded-full']:not([class~='rounded-md']):not([class~='rounded-lg']):not([class~='rounded-xl']):not([class~='rounded-2xl']):has(> .avatar-initials) {
+  scale: 0.97;
+}
+
+/* Mint only. Bay stays the deep green. Filled green buttons, the chat
+   launcher, a green outline, a pastel ring and a sent message use
+   #588578 (rgb(88, 133, 120)). White letters on that fill are 4.17:1. */
+html[data-theme="minimal"] [data-logotype] [class~='text-primary'] {
+  color: hsl(var(--primary));
+}
+html[data-theme="minimal"] [class~='rounded-full'][class*='ring-primary'] {
+  --tw-ring-color: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] :not(button):not(a)[class~='rounded-full'][class~='bg-primary'] {
+  background-color: hsl(var(--mint-mark));
+}
+html[data-theme="minimal"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80'], [class*='bg-status-success-mark'], [class*='bg-status-warning-mark']) {
+  background-color: hsl(var(--meter-apricot));
+}
+html[data-theme="minimal"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+html[data-theme="minimal"] #main-content [data-meter='lilac'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+
+/* Achievement meters borrow the other themes' lively accents and never the
+   accent of the theme they sit in. Mint already does this above (apricot
+   for ordinary bars, lilac for data-meter="lilac") and is left as it is.
+   Light is lilac #765fe7, so its bars are mint, apricot and cyan.
+   Apricot's bars are mint, lilac and cyan. Cyan's bars are mint, apricot
+   and lilac. Slots 0, 1 and 2 are those three colours in that order.
+   Type sizes and the space between lines are not part of these rules. */
+:root {
+  --meter-mint: 138.7 30.3% 56.2%;      /* #6db183, the Mint mark */
+  --meter-apricot: 22.6 81.4% 68.5%;    /* #f09f6d, the Apricot accent */
+  --meter-lilac: 250 74% 63.9%;         /* #765fe7, the Light lilac */
+  --meter-cyan: 198.05 67.21% 64.12%;   /* #66bce1, the Cyan accent */
+}
+html.light:not([data-theme]) #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-cyan));
+}
+html.light:not([data-theme]) :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-cyan));
+}
+html[data-theme="apricot"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-cyan));
+}
+html[data-theme="apricot"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="alliance"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="alliance"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-apricot));
+}
+html[data-theme="minimal"] .avatar-initials[class*='bg-primary/10'] {
+  background-color: hsl(var(--mint-mark) / 0.38);
+}
+html[data-theme="minimal"] .avatar-initials[class*='bg-primary/15'] {
+  background-color: hsl(var(--mint-mark) / 0.53);
+}
+html[data-theme="minimal"] .avatar-initials[class*='bg-primary/20'] {
+  background-color: hsl(var(--mint-mark) / 0.68);
+}
+html[data-theme="minimal"] :is([class~='h-6'], [class~='h-7'], [class~='h-8']) > .avatar-initials[class*='bg-primary/10'] {
+  background-color: hsl(var(--mint-mark) / 0.55);
+}
+html[data-theme="minimal"] :is([class~='h-6'], [class~='h-7'], [class~='h-8']) > .avatar-initials[class*='bg-primary/15'] {
+  background-color: hsl(var(--mint-mark) / 0.77);
+}
+html[data-theme="minimal"] :is([class~='h-6'], [class~='h-7'], [class~='h-8']) > .avatar-initials[class*='bg-primary/20'] {
+  background-color: hsl(var(--mint-mark) / 0.99);
+}
+/* A circle whose edge is the green, not a filled button: the help book,
+   and the same border on a profile-sized mark. The edge is #588578.
+   Filled buttons use the same green with white letters, set below. */
+html[data-theme="minimal"] [class~='rounded-full']:is([class~='border-primary'], [class~='border-primary/15'], [class~='border-primary/20'], [class~='border-primary/30']):not([class~='bg-primary']),
+html[data-theme="minimal"] #main-content [class~='rounded-full']:is([class~='border-primary'], [class~='border-primary/15'], [class~='border-primary/20'], [class~='border-primary/30']):not([class~='bg-primary']) {
+  border-color: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] [class~='rounded-full']:is([class~='border-primary'], [class~='border-primary/15'], [class~='border-primary/20'], [class~='border-primary/30']):not([class~='bg-primary']):is([class~='h-7'], [class~='h-8'], [class~='h-9'], [class~='h-11'], [class~='w-7'], [class~='w-8'], [class~='w-9'], [class~='w-11']),
+html[data-theme="minimal"] #main-content [class~='rounded-full']:is([class~='border-primary'], [class~='border-primary/15'], [class~='border-primary/20'], [class~='border-primary/30']):not([class~='bg-primary']):is([class~='h-7'], [class~='h-8'], [class~='h-9'], [class~='h-11'], [class~='w-7'], [class~='w-8'], [class~='w-9'], [class~='w-11']) {
+  border-color: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] circle.stroke-primary {
+  stroke: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] [class~='rounded-full']:is([class~='border-primary'], [class~='border-primary/15'], [class~='border-primary/20'], [class~='border-primary/30']):not([class~='bg-primary']) [class~='text-primary'] {
+  color: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] [data-card-mark] circle[stroke='hsl(var(--primary))'] {
+  stroke: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] [data-card-mark] circle[stroke*='0.45'] {
+  stroke: hsl(var(--mint-ring));
+}
+/* Every filled green button, including the chat launcher, uses #588578
+   with white letters. White on that fill is 4.17:1. Hover darkens it. */
+html[data-theme="minimal"] :is(button, a, [role='button'], [data-slot='button'])[class~='bg-primary'] {
+  background-color: hsl(var(--mint-ring));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--mint-ring));
+}
+html[data-theme="minimal"] :is(button, a, [role='button'], [data-slot='button'])[class~='bg-primary']:hover {
+  background-color: color-mix(in hsl, hsl(var(--mint-ring)) 86%, black);
+  color: hsl(var(--primary-foreground));
+  border-color: color-mix(in hsl, hsl(var(--mint-ring)) 86%, black);
+}
+html[data-theme="minimal"] [data-own-message] {
+  background-color: hsl(var(--mint-ring));
+  color: hsl(var(--primary-foreground));
+}
+
+/* A chip whose words already say the thing does not need a wash behind
+   them. On the cream card those fills read as a stain. The words stay.
+   Avatar marks, pressed controls and block callouts keep their surface. */
+#main-content :is(span, a):is(
+  [class*='bg-status-success-bg'],
+  [class*='bg-status-warning-bg'],
+  [class*='bg-status-danger-bg'],
+  [class*='bg-status-info-bg'],
+  [class*='bg-status-accent-bg'],
+  [class*='bg-status-neutral-bg'],
+  [class~='bg-secondary'],
+  [class~='bg-muted'],
+  [class*='bg-muted/']
+):not(.avatar-initials):not([aria-pressed='true']):not([data-state='active']),
+#main-content button[class*='rounded-full']:is([class~='bg-secondary'], [class~='bg-secondary/30'], [class~='bg-muted'], [class~='bg-muted/30'], [class~='bg-muted/40'], [class~='bg-primary/5'], [class~='bg-primary/10'], [class~='bg-primary/15'], [class~='bg-primary/20']) {
+  background-color: transparent;
 }
 
 /* A description inside a card (a muted sentence that clamps or reads
@@ -3774,7 +4237,7 @@ textarea[class~="border-input"]:focus,
 [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class~='leading-relaxed'],
 #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class*='line-clamp-'],
 #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class~='leading-relaxed'] {
-  font-size: 0.8606rem;
+  font-size: 0.843388rem;
   line-height: 1.55;
 }
 /* #main-content restates .text-sm from 1024px up at (1,1,0); the id keeps
@@ -3784,14 +4247,14 @@ textarea[class~="border-input"]:focus,
   [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class~='leading-relaxed'],
   #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class*='line-clamp-'],
   #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class~='leading-relaxed'] {
-    font-size: 1.04954268rem;
+    font-size: 1.02855183rem;
   }
 }
 @media (max-width: 639.98px) {
   #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class*='line-clamp-'],
   #main-content [data-card] p[class~='text-sm'][class~='text-muted-foreground'][class~='leading-relaxed'] {
-    font-size: 14.406px;
-    line-height: 1.5;
+    font-size: 12.663px;
+    line-height: 1.45;
   }
 }
 
@@ -3802,7 +4265,7 @@ textarea[class~="border-input"]:focus,
 [data-card] span[class='font-medium'],
 #main-content [data-card] p[class='font-medium'],
 #main-content [data-card] span[class='font-medium'] {
-  font-size: 0.8925875rem;
+  font-size: 0.87473575rem;
   line-height: 1.45;
 }
 @media (min-width: 1024px) {
@@ -3810,13 +4273,13 @@ textarea[class~="border-input"]:focus,
   [data-card] span[class='font-medium'],
   #main-content [data-card] p[class='font-medium'],
   #main-content [data-card] span[class='font-medium'] {
-    font-size: 1.08852134rem;
+    font-size: 1.06675091rem;
   }
 }
 @media (max-width: 639.98px) {
   #main-content [data-card] p[class='font-medium'],
   #main-content [data-card] span[class='font-medium'] {
-    font-size: 14.906px;
+    font-size: 13.044px;
   }
 }
 
@@ -3830,7 +4293,7 @@ textarea[class~="border-input"]:focus,
   #main-content [data-card] h4.text-base,
   #main-content [data-card] h2.text-lg,
   #main-content [data-card] h3.text-lg {
-    font-size: 15.343px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
 }
@@ -3861,21 +4324,134 @@ input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='
 select,
 textarea,
 button[role='combobox'] {
-  font-size: 0.8606rem !important;
+  font-size: 0.843388rem !important;
 }
 @media (min-width: 1024px) {
   input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
   select,
   textarea,
   button[role='combobox'] {
-    font-size: 1.04954268rem !important;
+    font-size: 1.02855183rem !important;
   }
 }
 @media (max-width: 639.98px) {
+  /* Under the field title (text-sm, 13.603) and under a field subtitle
+     (text-xs, 12.663). iOS focus-zoom is stopped by IosFieldZoom. */
   input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
   select,
   textarea,
   button[role='combobox'] {
-    font-size: 14.406px !important;
+    font-size: 12.410px !important;
+  }
+}
+
+/* Search fields share the Member Directory search: Input h-11,
+   calc(2.75rem * --chrome-y). At the 82% desktop root that is 35.72px;
+   at a 16px root it is 43.56px. h-8 and h-9 searches take the same box.
+   Ask AI is a composer, not a search field. Buttons keep their own height. */
+/* On a phone the assistant opens as the screen, not as a card floating
+   over the tab bar. Drag still runs; the sheet stays put. */
+@media (max-width: 639.98px) {
+  [data-chat-popup] {
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    bottom: 0 !important;
+    right: 0 !important;
+  }
+}
+
+input[type='search'],
+input:is(
+  [placeholder*='Search'],
+  [placeholder*='search'],
+  [placeholder*='Αναζήτηση'],
+  [placeholder*='αναζήτηση'],
+  [aria-label*='Search'],
+  [aria-label*='search'],
+  [aria-label*='Αναζήτηση'],
+  [aria-label*='αναζήτηση']
+):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
+  height: calc(2.75rem * var(--chrome-y));
+  min-height: calc(2.75rem * var(--chrome-y));
+}
+/* Phones only: the same search fields, 5% shorter. Desktop stays the
+   directory height above. Ask AI is still not a search field. */
+@media (max-width: 639.98px) {
+  input[type='search'],
+  input:is(
+    [placeholder*='Search'],
+    [placeholder*='search'],
+    [placeholder*='Αναζήτηση'],
+    [placeholder*='αναζήτηση'],
+    [aria-label*='Search'],
+    [aria-label*='search'],
+    [aria-label*='Αναζήτηση'],
+    [aria-label*='αναζήτηση']
+  ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
+    height: calc(2.75rem * var(--chrome-y) * 0.95);
+    min-height: calc(2.75rem * var(--chrome-y) * 0.95);
+  }
+}
+
+/* Left drawer only: the account row, the three section buttons, the
+   language chips, the Language label and the Dashboard heading are 2%
+   shorter. Every other nav row, and the desktop sidebar, stay as they are.
+   The phone floor and the mint primary cut are more specific, so these
+   selectors repeat their classes and come last. */
+@media (max-width: 639.98px) {
+  a[data-sidebar-control='account'] {
+    padding-top: 11.354px;
+    padding-bottom: 11.354px;
+  }
+  :is(button)[data-sidebar-control='mode']:is(.min-h-11),
+  :is(button)[data-sidebar-control='language']:is(.min-h-10):not([class~='bg-primary']) {
+    min-height: 29.849px;
+  }
+  :is(button)[data-sidebar-control='language'][class~='bg-primary']:is(.min-h-10) {
+    min-height: 28.36px;
+  }
+  [data-sidebar-control='language-label'] {
+    line-height: 1.323;
+  }
+  [data-sidebar-control='section'] {
+    padding-bottom: 3.604px;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  a[data-sidebar-control='account'] {
+    padding-top: 11.354px;
+    padding-bottom: 11.354px;
+  }
+  :is(button)[data-sidebar-control='mode']:is(.min-h-11):not(.h-auto):not(.min-h-14):not(.min-h-16),
+  :is(button)[data-sidebar-control='language']:is(.min-h-10):not(.h-auto):not(.min-h-14):not(.min-h-16) {
+    min-height: 32.337px;
+  }
+}
+
+/* Phone page tools: the same icon, at the same height, as the one beside
+   the three dots in a message thread. That icon is centered on the avatar
+   row, 10px under the top bar, and its right edge lines up with the account
+   mark. A header line that would pass under it is handled in PageRail, which
+   writes `top` a little higher or lower. The word stays for the tablet pill. */
+@media (max-width: 639.98px) {
+  button[data-page-tools].h-11 {
+    top: calc(3rem * var(--chrome-y) + 10px + (2.5rem * var(--chrome-y) - 28.939px) / 2);
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    bottom: auto;
+    left: auto;
+    width: 30.458px;
+    min-width: 30.458px;
+    height: 28.939px;
+    min-height: 28.939px;
+    padding: 0;
+    border-radius: 0.75rem;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    color: hsl(var(--foreground) / 0.7);
   }
 }

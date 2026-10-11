@@ -1238,7 +1238,7 @@ export default function FounderDashboardContent() {
       <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled && !restFolded} />
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground">
           <BilingualText
             en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
             el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
@@ -1288,6 +1288,7 @@ export default function FounderDashboardContent() {
           {/* Stats */}
           <div className="grid min-w-0 grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4" data-tour="founder-stats">
             <MetricTile
+              align="center"
               glyph="profile"
               label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
               value={userMetrics?.profileViews ?? '—'}
@@ -1297,12 +1298,14 @@ export default function FounderDashboardContent() {
             {/* No endpoint reports a week-over-week change for matches, so this
                 tile carried a literal 3 as its arrow. It shows the count alone. */}
             <MetricTile
+              align="center"
               glyph="matches"
               label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
               value={stats?.matchesThisWeek ?? '—'}
               href="/matches"
             />
             <MetricTile
+              align="center"
               glyph="messages"
               label={dashboardEn('unread_messages')} labelEl={dashboardEl('unread_messages')}
               value={unreadMessages}
@@ -1311,6 +1314,7 @@ export default function FounderDashboardContent() {
               captionEl={messageCaption.el}
             />
             <MetricTile
+              align="center"
               glyph="flag"
               label={dashboardEn('milestones')} labelEl={dashboardEl('milestones')}
               value={`${completedMilestoneCount}/${milestones.length}`}

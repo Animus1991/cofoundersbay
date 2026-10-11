@@ -220,7 +220,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         </div>
 
         <ul className={cn('space-y-2.5', compact && 'hidden')}>
-          {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
+          {vrs.dimensions.filter((dim) => dim?.href).map((dim, index) => {
             const { color, bar } = scoreTier(dim.score);
             return (
               <li key={dim.key}>
@@ -241,7 +241,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                     </span>
                     <span className={cn('shrink-0 font-semibold tabular-nums', color)}>{dim.score}%</span>
                   </div>
-                  <Progress value={dim.score} label={dim.label} className={cn('h-2 transition-all', bar)} />
+                  <Progress value={dim.score} label={dim.label} data-meter="lilac" data-meter-slot={index % 3} className={cn('h-2 transition-all', bar)} />
                 </Link>
               </li>
             );
