@@ -88,11 +88,13 @@ describe('page chrome type harmony', () => {
     const figure = toPx(firstFontSize(desk, 'p.page-figure'), DESKTOP_ROOT_PX);
     const label = toPx(firstFontSize(desk, 'p.page-stat-label'), DESKTOP_ROOT_PX);
     const tighten = 0.99;
+    // Large chrome (title, section, figure) sits 4% closer to the caption floor.
+    const ease = 0.96;
 
-    expect(title).toBeCloseTo(18 * tighten * 0.98, 1);
+    expect(title).toBeCloseTo(18 * tighten * 0.98 * ease, 1);
     expect(stat).toBeCloseTo(title, 5);
-    expect(section).toBeCloseTo(FLOOR_PX * RATIO ** 4 * tighten, 1);
-    expect(figure).toBeCloseTo(FLOOR_PX * RATIO ** 3 * tighten, 1);
+    expect(section).toBeCloseTo(FLOOR_PX * RATIO ** 4 * tighten * ease, 1);
+    expect(figure).toBeCloseTo(FLOOR_PX * RATIO ** 3 * tighten * ease, 1);
     expect(label).toBeCloseTo(FLOOR_PX, 2);
     expect(title).toBeGreaterThan(section);
     expect(section).toBeGreaterThan(figure);
@@ -113,7 +115,7 @@ describe('page chrome type harmony', () => {
 
     const twoXl = toPx(firstFontSize(desk, '#main-content .text-2xl'), DESKTOP_ROOT_PX);
 
-    expect(twoXl).toBeCloseTo(18 * 0.99 * 0.98, 1);
+    expect(twoXl).toBeCloseTo(18 * 0.99 * 0.98 * 0.96, 1);
     expect(block).toMatch(/#main-content \.text-\\\[11px\\\][\s\S]*?font-size:\s*12\.2412px/);
     expect(CSS).toMatch(/#main-content \[data-rail-content\] \.text-2xl/);
   });
@@ -124,7 +126,7 @@ describe('page chrome type harmony', () => {
     const block = CSS.slice(from);
     const deskStart = block.indexOf('@media (min-width: 1024px)');
     const figure = toPx(firstFontSize(block.slice(deskStart), '#main-content p.page-figure'), DESKTOP_ROOT_PX);
-    expect(figure).toBeCloseTo(FLOOR_PX * RATIO ** 3 * 0.99, 1);
+    expect(figure).toBeCloseTo(FLOOR_PX * RATIO ** 3 * 0.99 * 0.96, 1);
     expect(figure).toBeLessThan(18);
   });
 });

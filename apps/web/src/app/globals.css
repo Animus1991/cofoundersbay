@@ -2597,7 +2597,7 @@ span.page-stat,
 div.page-stat,
 dd.page-stat,
 p.founder-dash-stat {
-  font-size: max(12.2412px, 1.091475rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 p.page-stat-label,
@@ -2612,7 +2612,7 @@ p.founder-dash-stat-meta {
 }
 h3.page-section,
 h3.founder-dash-section {
-  font-size: max(12.2412px, 1.03046733rem);
+  font-size: max(12.2412px, 0.98924864rem);
   line-height: 1.485rem;
 }
 /* Glyph in the title row = 1.08 × that title, not a fixed 16px next to 16.65. */
@@ -2627,7 +2627,7 @@ h3.founder-dash-section svg.lucide {
 }
 p.page-figure,
 p.founder-dash-figure {
-  font-size: max(12.2412px, 0.95413642rem);
+  font-size: max(12.2412px, 0.91597096rem);
   line-height: 1.423125rem;
 }
 @media (min-width: 640px) {
@@ -2639,7 +2639,7 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.091475rem);
+    font-size: max(12.2412px, 1.047816rem);
     line-height: 1.60875rem;
   }
   p.page-stat-label,
@@ -2654,7 +2654,7 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.03046733rem);
+    font-size: max(12.2412px, 0.98924864rem);
     line-height: 1.485rem;
   }
 }
@@ -2667,7 +2667,7 @@ p.founder-dash-figure {
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: max(12.2412px, 1.33106708rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   p.page-stat-label,
@@ -2682,12 +2682,12 @@ p.founder-dash-figure {
   }
   h3.page-section,
   h3.founder-dash-section {
-    font-size: max(12.2412px, 1.25666748rem);
+    font-size: max(12.2412px, 1.20640078rem);
     line-height: 1.81097561rem;
   }
   p.page-figure,
   p.founder-dash-figure {
-    font-size: max(12.2412px, 1.16358100rem);
+    font-size: max(12.2412px, 1.11703776rem);
     line-height: 1.73551823rem;
   }
 }
@@ -2737,9 +2737,9 @@ h3.page-section.page-section--compact,
      caption 12.24   2xs, stat labels, the bilingual floor
      meta    12.87   xs, tabs, small buttons, chips
      body    13.86   sm, copy, rail card titles
-     figure  15.27   in-card figures ($375K)
-     section 16.49   card and section titles, base, lg
-     title   17.46   h1, stat figures, xl and above (ceiling below)
+     figure  14.66   in-card figures ($375K)
+     section 15.83   card and section titles, base, lg
+     title   16.77   h1, stat figures, xl and above (ceiling below)
 
    The readiness gauge (32px) is the one display figure. Same pixels on
    phone and desktop. The left SideNav keeps its own chrome ladder.
@@ -2763,7 +2763,7 @@ h3.page-section.page-section--compact,
 #main-content .text-lg,
 #main-content p.page-section,
 #main-content h2.page-section {
-  font-size: 1.03046733rem;
+  font-size: 0.98924864rem;
   line-height: 1.485rem;
 }
 /* Responsive variants after the plain steps, so `text-base sm:text-sm`
@@ -2778,13 +2778,13 @@ h3.page-section.page-section--compact,
     line-height: 1.299375rem;
   }
   #main-content .sm\:text-lg {
-    font-size: 1.03046733rem;
+    font-size: 0.98924864rem;
     line-height: 1.485rem;
   }
 }
 @media (min-width: 768px) {
   #main-content .md\:text-lg {
-    font-size: 1.03046733rem;
+    font-size: 0.98924864rem;
     line-height: 1.485rem;
   }
 }
@@ -2819,7 +2819,7 @@ h3.page-section.page-section--compact,
   #main-content .text-lg,
   #main-content p.page-section,
   #main-content h2.page-section {
-    font-size: 1.25666748rem;
+    font-size: 1.20640078rem;
     line-height: 1.81097561rem;
   }
   #main-content .sm\:text-xs,
@@ -2833,7 +2833,7 @@ h3.page-section.page-section--compact,
   }
   #main-content .sm\:text-lg,
   #main-content .md\:text-lg {
-    font-size: 1.25666748rem;
+    font-size: 1.20640078rem;
     line-height: 1.81097561rem;
   }
   #main-content [role='tab'] {
@@ -2873,7 +2873,7 @@ h3.page-section.page-section--compact,
 #main-content .text-6xl,
 #main-content .text-7xl,
 #main-content .text-\[2\.75rem\] {
-  font-size: max(12.2412px, 1.091475rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 #main-content .text-\[11px\],
@@ -2908,7 +2908,7 @@ h3.page-section.page-section--compact,
   #main-content .text-6xl,
   #main-content .text-7xl,
   #main-content .text-\[2\.75rem\] {
-    font-size: max(12.2412px, 1.33106708rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   #main-content [data-rail-content] .text-xl,
@@ -2932,7 +2932,7 @@ h3.page-section.page-section--compact,
 #main-content div.page-stat,
 #main-content dd.page-stat,
 #main-content p.founder-dash-stat {
-  font-size: max(12.2412px, 1.091475rem);
+  font-size: max(12.2412px, 1.047816rem);
   line-height: 1.60875rem;
 }
 #main-content p.page-stat-label,
@@ -2947,12 +2947,12 @@ h3.page-section.page-section--compact,
 }
 #main-content h3.page-section,
 #main-content h3.founder-dash-section {
-  font-size: max(12.2412px, 1.03046733rem);
+  font-size: max(12.2412px, 0.98924864rem);
   line-height: 1.485rem;
 }
 #main-content p.page-figure,
 #main-content p.founder-dash-figure {
-  font-size: max(12.2412px, 0.95413642rem);
+  font-size: max(12.2412px, 0.91597096rem);
   line-height: 1.423125rem;
 }
 #main-content h3.page-section.page-section--compact,
@@ -2970,7 +2970,7 @@ h3.page-section.page-section--compact,
   #main-content div.page-stat,
   #main-content dd.page-stat,
   #main-content p.founder-dash-stat {
-    font-size: max(12.2412px, 1.33106708rem);
+    font-size: max(12.2412px, 1.27782440rem);
     line-height: 1.96189025rem;
   }
   #main-content p.page-stat-label,
@@ -2985,12 +2985,12 @@ h3.page-section.page-section--compact,
   }
   #main-content h3.page-section,
   #main-content h3.founder-dash-section {
-    font-size: max(12.2412px, 1.25666748rem);
+    font-size: max(12.2412px, 1.20640078rem);
     line-height: 1.81097561rem;
   }
   #main-content p.page-figure,
   #main-content p.founder-dash-figure {
-    font-size: max(12.2412px, 1.16358100rem);
+    font-size: max(12.2412px, 1.11703776rem);
     line-height: 1.73551823rem;
   }
   #main-content h3.page-section.page-section--compact,
@@ -3056,7 +3056,7 @@ h3.page-section.page-section--compact,
 #main-content .type-page.text-xl,
 #main-content .type-page.text-2xl,
 #main-content h1.type-page {
-  font-size: 1.091475rem;
+  font-size: 1.047816rem;
   line-height: 1.3;
 }
 @media (min-width: 1024px) {
@@ -3089,7 +3089,7 @@ h3.page-section.page-section--compact,
   #main-content .type-page.text-xl,
   #main-content .type-page.text-2xl,
   #main-content h1.type-page {
-    font-size: 1.33106708rem;
+    font-size: 1.27782440rem;
   }
 }
 
@@ -3378,30 +3378,31 @@ textarea[class~="border-input"]:focus,
 
 /* ── Phone reading scale ─────────────────────────────────────────────────
    The product ladder above is the same pixels on a phone as on a desktop
-   (caption 12.24, body 13.86, title 17.46). That is a desk density. Below
+   (caption 12.24, body 13.86, title 16.77). That is a desk density. Below
    640px the steps move up to sizes a hand-held screen can read, and the
    line-height opens for Greek accents:
 
-     caption 13.044 · support 12.663 · body 14.170 · lead 12.921 · figure 15.520 · section 13.816 · title 14.148
+     caption 13.044 · support 12.663 · body 13.603 · lead 12.921 · figure 14.899 · section 13.263 · title 13.582
 
    Captions, the line under a page title, and the body subtitle stay put.
    The support step (chips, dimension rows, in-card actions, labels, facts
    and the muted sentence under a title) is 12.663, a little under that
-   subtitle. Every larger phone step is another 2% under the previous phone
+   subtitle. Steps above the lead are another 4% smaller, toward that lead;
+   the lead, caption and support step are unchanged. Previously another 2% under the phone
    size: body 14.459 × 0.98, the root and figures 15.837 × 0.98, stat
    numbers 14.883 × 0.98, the page title 14.437 × 0.98, section headings
    14.098 × 0.98. The same steps apply on every page. Search bars, Ask AI
    and other text fields are 12.410, one step under the field subtitle
-   (12.663) and under the field title (14.170). Card copy and stat figures
+   (12.663) and under the field title (13.603). Card copy and stat figures
    are not fields and stay on their own steps. A title with no size utility
-   that inherited the body step (15.520), the same size as Discover People,
-   sits on the text-base step (14.243).
+   that inherited the body step (14.899), the same size as Discover People,
+   sits on the text-base step (13.673).
 
    The dashboard is the phone standard for the same role on every page.
    text-xl through text-7xl, including pages and dialogs outside
-   #main-content, sit on the title step (14.148). text-lg sits on the
-   section step (13.816). The readiness gauge sits on the figure step
-   (15.520).
+   #main-content, sit on the title step (13.582). text-lg sits on the
+   section step (13.263). The readiness gauge sits on the figure step
+   (14.899).
 
    Tablet (640–1023) and desktop (1024+, 82% root) do not match this query,
    so their ladders stay. Dialogs portal outside #main-content, so the plain
@@ -3409,16 +3410,16 @@ textarea[class~="border-input"]:focus,
    those selectors outrank a plain class. */
 @media (max-width: 639.98px) {
   body {
-    font-size: 15.520px;
+    font-size: 14.899px;
     line-height: 1.5;
     letter-spacing: 0;
   }
 
   .text-2xs { font-size: 13.044px; line-height: 1.35; }
   .text-xs { font-size: 12.663px; line-height: 1.4; }
-  .text-sm { font-size: 14.170px; line-height: 1.45; }
-  .text-base { font-size: 15.520px; line-height: 1.5; }
-  .text-lg { font-size: 13.816px; line-height: 1.4; }
+  .text-sm { font-size: 13.603px; line-height: 1.45; }
+  .text-base { font-size: 14.899px; line-height: 1.5; }
+  .text-lg { font-size: 13.263px; line-height: 1.4; }
 
   .bilingual-secondary,
   .bilingual-separator {
@@ -3495,7 +3496,7 @@ textarea[class~="border-input"]:focus,
   #main-content .type-identity.text-sm,
   #main-content .type-identity.text-xs,
   #main-content [data-rail-content] .text-base {
-    font-size: 14.170px;
+    font-size: 13.603px;
     line-height: 1.45;
   }
 
@@ -3526,25 +3527,25 @@ textarea[class~="border-input"]:focus,
   #main-content p.founder-dash-figure,
   p.page-figure,
   p.founder-dash-figure {
-    font-size: 15.520px;
+    font-size: 14.899px;
     line-height: 1.35;
   }
 
   #main-content .score-emblem-figure {
-    font-size: 15.520px;
+    font-size: 14.899px;
     line-height: 1;
   }
 
   /* Body copy that uses the text-base utility. Section headings used to
      share this rule; they are 3% smaller than this step now. */
   #main-content .text-base {
-    font-size: 14.243px;
+    font-size: 13.673px;
     line-height: 1.35;
   }
 
   .text-lg,
   #main-content .text-lg {
-    font-size: 13.816px;
+    font-size: 13.263px;
     line-height: 1.35;
   }
 
@@ -3580,13 +3581,13 @@ textarea[class~="border-input"]:focus,
     line-height: 1.4;
   }
 
-  /* A card's own title sits on the member-name step (14.148), the same
+  /* A card's own title sits on the member-name step (13.582), the same
      step as the page title, over the rows and sentences it holds. The
      rail's card title sits on the member-subtitle step so a side card
      never outranks the page. */
   #main-content [data-card] h2.page-section,
   #main-content [data-card] h3.page-section:not(.page-section--compact) {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
   #main-content [data-rail-content] [data-card] h2.page-section,
@@ -3605,7 +3606,7 @@ textarea[class~="border-input"]:focus,
   /* The explanatory sentence under a title or a subtitle ("Weighted across
      6 dimensions…", "Investor and accelerator readiness…", and the same
      muted line on every page). It was on the meta step, 14.406, level with
-     the page title (14.148) and above the subtitle (12.921). On a phone it
+     the page title (13.582) and above the subtitle (12.921). On a phone it
      sits a little under that subtitle: 12.921 × 0.98. A one-line label
      (truncate, line-clamp-1), a flex meta row, the subtitle itself, stat
      labels, and every larger step stay where they are. */
@@ -3657,11 +3658,11 @@ textarea[class~="border-input"]:focus,
   #main-content h1.type-page,
   h1.page-title,
   h1.founder-dash-h1 {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.3;
   }
 
-  /* Stat numbers are 2% under 14.883. The page title is 14.148. */
+  /* Stat numbers are 2% under 14.883. The page title is 13.582. */
   #main-content p.page-stat,
   #main-content h3.page-stat,
   #main-content span.page-stat,
@@ -3674,7 +3675,7 @@ textarea[class~="border-input"]:focus,
   div.page-stat,
   dd.page-stat,
   p.founder-dash-stat {
-    font-size: 14.585px;
+    font-size: 14.002px;
     line-height: 1.3;
   }
 
@@ -3683,14 +3684,14 @@ textarea[class~="border-input"]:focus,
        On a phone it uses the title step. A wrapped name needs 1.35,
        the same leading as a card title. From 640px the inherited size
        stays, and that size is already under the title. */
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
 
   input[data-filter-field]:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
   select[data-filter-field] {
     /* The discover query and its sort control sit on the field step
-       (12.410): under the field title (text-sm, 14.170) and under the
+       (12.410): under the field title (text-sm, 13.603) and under the
        field subtitle (text-xs, 12.663). */
     font-size: 12.410px !important;
   }
@@ -3715,8 +3716,8 @@ textarea[class~="border-input"]:focus,
     text-overflow: ellipsis;
   }
 
-  /* Titles that inherit the body step (15.520) are the same size as
-     "Discover People". On a phone they sit on the text-base step (14.243)
+  /* Titles that inherit the body step (14.899) are the same size as
+     "Discover People". On a phone they sit on the text-base step (13.673)
      so they stay under that body size and above a text-sm subtitle.
      A sized utility a stat a lead or a person name does not match.
      :where keeps this under the need-card title rule. */
@@ -3724,7 +3725,7 @@ textarea[class~="border-input"]:focus,
   #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
   #main-content p.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)),
   #main-content h3.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)) {
-    font-size: 14.243px;
+    font-size: 13.673px;
     line-height: 1.45;
   }
 
@@ -3760,7 +3761,7 @@ textarea[class~="border-input"]:focus,
 
   [role='dialog'],
   [role='alertdialog'] {
-    font-size: 15.520px;
+    font-size: 14.899px;
     line-height: 1.5;
   }
 
@@ -3769,7 +3770,7 @@ textarea[class~="border-input"]:focus,
      The title takes the page-title step. The sentences sit on the subtitle
      step, under it. Labels stay on the support step. */
   #main-content [data-need-card] :is(h1, h2, h3) {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.3;
   }
   /* A count line (evidence) keeps the caption step. Naming text-xs as a
@@ -3801,11 +3802,11 @@ textarea[class~="border-input"]:focus,
   }
 
   /* A round name and a milestone title used the section label (12.663)
-     while the money line and the description used text-sm (14.170).
+     while the money line and the description used text-sm (13.603).
      The row title takes the member-name step. Section headings that are
      not a row title stay on the section label. */
   #main-content :is(h2, h3).page-section.page-section--row {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.3;
   }
 
@@ -3825,7 +3826,7 @@ textarea[class~="border-input"]:focus,
     line-height: 1.45;
   }
   #main-content [data-rail-content] [data-card] :is(p, div, span, li, dd, dt).text-sm {
-    font-size: 14.170px;
+    font-size: 13.603px;
     line-height: 1.45;
   }
 
@@ -3838,8 +3839,8 @@ textarea[class~="border-input"]:focus,
 }
 
 /* Landing intro. On a phone the headline and the line under it use the
-   phone title and subtitle (14.148 and 12.921). The live counts use the
-   stat step (14.585). From 640px they keep the poster sizes. Pixels,
+   phone title and subtitle (13.582 and 12.921). The live counts use the
+   stat step (14.002). From 640px they keep the poster sizes. Pixels,
    not rem: the desktop root is 82% and would shrink a rem a second time.
    The wash started at blur-3xl (64px), then 10% less (57.6px), then
    another 5% (54.72px), so the lilac stays a shape. On a phone the
@@ -3854,7 +3855,7 @@ textarea[class~="border-input"]:focus,
   }
 }
 #main-content h1.landing-display {
-  font-size: 14.148px;
+  font-size: 13.582px;
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
@@ -3863,7 +3864,7 @@ textarea[class~="border-input"]:focus,
   line-height: 1.5;
 }
 #main-content p.landing-stat {
-  font-size: 14.585px;
+  font-size: 14.002px;
   line-height: 1.2;
 }
 /* The hero headline's second language: a subtitle under the display line,
@@ -3972,7 +3973,7 @@ textarea[class~="border-input"]:focus,
    sentences, the facts:
 
      step            role                          phone     tablet/desktop
-     .card-title     name or title, semibold       14.148    16.00
+     .card-title     name or title, semibold       13.582    15.36
      .card-subtitle  the line under it, muted      13.044    14.00
      .card-body      sentences, values, figures    12.921    13.49
      meta            facts, dates, kinds (text-xs) 12.663    12.87
@@ -3984,7 +3985,7 @@ textarea[class~="border-input"]:focus,
    Rem against the 16px root, restated against the 82% desktop root, and px
    on a phone like the reading scale; `.probes/card_audit.mjs` measures it. */
 .card-title {
-  font-size: 0.999698rem;
+  font-size: 0.959710rem;
   line-height: 1.35;
   font-weight: 600;
 }
@@ -4005,7 +4006,7 @@ textarea[class~="border-input"]:focus,
   line-height: 1.55;
 }
 @media (min-width: 1024px) {
-  .card-title { font-size: 1.21914390rem; }
+  .card-title { font-size: 1.17037814rem; }
   .card-subtitle { font-size: 1.06675091rem; }
   .card-body { font-size: 1.02855183rem; }
 }
@@ -4016,7 +4017,7 @@ textarea[class~="border-input"]:focus,
      A stat figure keeps .page-stat and is not these classes. */
   .card-title,
   #main-content .card-title {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
   .card-subtitle,
@@ -4032,7 +4033,7 @@ textarea[class~="border-input"]:focus,
 
   /* A muted sentence ("Search our knowledge base or browse topics below",
      and the same line under a heading on every page) was text-sm at
-     14.170, level with or above a title that sits at 14.148. It takes the
+     13.603, level with or above a title that sits at 13.582. It takes the
      lead step, under that title. A subtitle, a stat, a one-line label and
      a semibold value stay on their own steps. */
   #main-content p[class~='text-sm'][class~='text-muted-foreground']:not([class~='page-stat']):not([class~='page-stat-label']):not([class~='page-stat-meta']):not([class~='founder-dash-stat']):not([class~='founder-dash-stat-label']):not([class~='founder-dash-stat-meta']):not([class~='person-subtitle']):not([class~='card-subtitle']):not([class~='card-title']):not([class~='truncate']):not([class~='line-clamp-1']):not([class~='row-ellipsis']):not([class~='font-semibold']):not([class~='font-medium']),
@@ -4234,7 +4235,7 @@ html[data-theme="minimal"] [data-own-message] {
   #main-content [data-card] h4.text-base,
   #main-content [data-card] h2.text-lg,
   #main-content [data-card] h3.text-lg {
-    font-size: 14.148px;
+    font-size: 13.582px;
     line-height: 1.35;
   }
 }
@@ -4276,7 +4277,7 @@ button[role='combobox'] {
   }
 }
 @media (max-width: 639.98px) {
-  /* Under the field title (text-sm, 14.170) and under a field subtitle
+  /* Under the field title (text-sm, 13.603) and under a field subtitle
      (text-xs, 12.663). iOS focus-zoom is stopped by IosFieldZoom. */
   input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
   select,

@@ -23,7 +23,7 @@
 //   centered    centred text in a card that is not a stat card.
 //   loneRight   a right-aligned line with nothing to its left.
 // Anatomy (the Endorsements/Connections card, measured 2026-10-10: 16px
-// inset on a phone and 24px from 640px, a 2.5rem mark, title 14.148/15.995
+// inset on a phone and 24px from 640px, a 2.5rem mark, title 13.582/15.355
 // (the Members name on a phone), the line under it no louder than
 // 13.044/14.28):
 //   titleStep   the card's head title is off the card-title step by >0.4px
@@ -328,7 +328,7 @@ for (const route of routes) {
       // Anatomy against the Endorsements/Connections card.
       if (!stat && titleEl && tg) {
         const root = parseFloat(getComputedStyle(document.documentElement).fontSize);
-        const TITLE = W < 640 ? 14.148 : 15.995;
+        const TITLE = W < 640 ? 13.582 : 15.355;
         const SUB = W < 640 ? 13.044 : 13.996;
         const display = titleEl.closest('h1') || card.matches('[data-card-hero]') || card.querySelector('h1');
         const head = tg.top - inner.top < 90;
