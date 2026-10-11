@@ -179,8 +179,11 @@ function LanguageCard() {
         />
         {mounted && pairs && (
           <fieldset className="mt-5 space-y-2 border-t border-border pt-4">
-            <legend className="text-sm font-medium text-foreground">
-              <BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" />
+            {/* The size sits on the inner span: a phone sets an in-card
+                text-sm label under the card's title, and a legend is not in
+                that rule. */}
+            <legend className="font-medium text-foreground">
+              <span className="text-sm"><BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" /></span>
             </legend>
             <div className="flex flex-wrap gap-2">
               {DISPLAY_CHOICES.map((choice) => {
@@ -656,8 +659,10 @@ export default function SettingsPage() {
                     </div>
                   ) : (
                     <div>
-                      <p className="card-body font-medium text-foreground">
-                        {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
+                      {/* Weight on the inner span: a phone sets a medium
+                          paragraph on the 13.673 step, over the card's title. */}
+                      <p className="card-body text-foreground">
+                        <span className="font-medium">{isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}</span>
                       </p>
                       <p className="card-body mt-1 text-muted-foreground">
                         <BilingualText en="Mentor booking payments, file attachments, and advanced discovery filters." el="Πληρωμές κρατήσεων μεντόρων, συνημμένα αρχεία και προχωρημένα φίλτρα ανακάλυψης." wrap />
