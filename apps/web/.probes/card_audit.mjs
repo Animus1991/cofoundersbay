@@ -130,7 +130,7 @@ for (const route of routes) {
     const isAvatarBox = (n) => {
       if (n.tagName.toLowerCase() === 'svg' || n.closest('svg')) return false;
       const q = n.getBoundingClientRect();
-      if (q.width < 20 || q.width > 112 || Math.abs(q.width - q.height) > 2) return false;
+      if (q.width < 18 || q.width > 112 || Math.abs(q.width - q.height) > 2) return false;
       const cs = getComputedStyle(n);
       return cs.overflow === 'hidden' || n.matches('[data-slot=avatar],img') || parseFloat(cs.borderTopLeftRadius) >= q.width * 0.2;
     };

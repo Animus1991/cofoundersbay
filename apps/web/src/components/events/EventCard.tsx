@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Calendar,
-  Clock,
   MapPin,
   Users,
   Video,
@@ -116,61 +115,55 @@ export function EventCard({
   if (variant === 'compact') {
     return (
       <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
-        <CardContent>
-          <div className="flex gap-4">
-            {/* Date box */}
-            <div data-card-mark="" className="flex h-12 w-12 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-muted leading-none">
-              <span className="text-2xs text-primary-accessible">
-                {fmtDate(event.startDate, { month: 'short' })}
-              </span>
-              <span className="mt-0.5 text-base font-bold tabular-nums text-primary-accessible">
-                {event.startDate.getDate()}
-              </span>
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <Link
-                href={`/events/${event.id}`}
-                className="card-title text-foreground hover:text-primary-accessible transition-colors line-clamp-2"
-              >
-                {event.title}
-              </Link>
-              <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="icon-sm" />
-                {formatEventTime(event.startDate, event.endDate)}
-              </div>
-              <div className="mt-1 flex items-center gap-2">
-                <Badge variant="outline" className="text-xs gap-1">
-                  <EventTypeIcon type={event.type} />
-                  <EventTypeLabel type={event.type} />
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  <BilingualText en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />
+        {/* The default card's head, compact: the date mark, the title and
+            when beside it, the kind and the count under it on the mark's
+            edge, RSVP at the right. It was a column beside the date. */}
+        <CardContent className="space-y-2">
+          <CardHead
+            mark={(
+              <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-muted leading-none">
+                <span className="text-2xs text-primary-accessible">
+                  {fmtDate(event.startDate, { month: 'short' })}
+                </span>
+                <span className="mt-0.5 text-sm font-bold tabular-nums text-primary-accessible">
+                  {event.startDate.getDate()}
                 </span>
               </div>
-            </div>
-            
-            {/* RSVP */}
-            <Button
-              size="sm"
-              variant={rsvped ? 'secondary' : 'default'}
-              onClick={handleRsvp}
-              disabled={isFull && !rsvped}
-              className="flex-shrink-0"
-            >
-              {rsvped ? (
-                <>
-                  <CheckCircle className="icon-sm mr-1" />
-                  <BilingualText en="Going" el="Θα έρθω" compact />
-                </>
-              ) : isFull ? (
-                <BilingualText en="Full" el="Πλήρες" compact />
-              ) : (
-                <BilingualText en="RSVP" el="Δήλωση συμμετοχής" compact />
-              )}
-            </Button>
-          </div>
+            )}
+            title={(
+              <Link href={`/events/${event.id}`} className="line-clamp-2 transition-colors hover:text-primary-accessible">
+                {event.title}
+              </Link>
+            )}
+            subtitle={formatEventTime(event.startDate, event.endDate)}
+            asideStays
+            aside={(
+              <Button
+                size="sm"
+                variant={rsvped ? 'secondary' : 'default'}
+                onClick={handleRsvp}
+                disabled={isFull && !rsvped}
+                className="flex-shrink-0"
+              >
+                {rsvped ? (
+                  <>
+                    <CheckCircle className="icon-sm mr-1" />
+                    <BilingualText en="Going" el="Θα έρθω" compact />
+                  </>
+                ) : isFull ? (
+                  <BilingualText en="Full" el="Πλήρες" compact />
+                ) : (
+                  <BilingualText en="RSVP" el="Δήλωση συμμετοχής" compact />
+                )}
+              </Button>
+            )}
+          />
+          <FactLine
+            items={[
+              <EventTypeLabel key="kind" type={event.type} />,
+              <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
+            ]}
+          />
         </CardContent>
       </Card>
     );
@@ -304,11 +297,11 @@ export function EventCard({
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <div data-card-mark="" className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-muted leading-none">
+            <div data-card-mark="" className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-muted leading-none">
               <span className="text-2xs text-primary-accessible">
                 {fmtDate(event.startDate, { month: 'short' })}
               </span>
-              <span className="mt-0.5 text-base font-bold tabular-nums text-primary-accessible">
+              <span className="mt-0.5 text-sm font-bold tabular-nums text-primary-accessible">
                 {event.startDate.getDate()}
               </span>
             </div>
@@ -332,22 +325,15 @@ export function EventCard({
           )}
         />
 
-        {/* Host & attendees */}
-        <div className="flex min-w-0 items-center gap-2">
-          <Avatar className="h-6 w-6 shrink-0">
-            <AvatarImage src={event.hostAvatar || undefined} />
-            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs">
-              {initialsOf(event.hostName)}
-            </AvatarFallback>
-          </Avatar>
-          <FactLine
-            className="min-w-0"
-            items={[
-              <BilingualText key="host" en={`By ${event.hostName}`} el={`Από ${event.hostName}`} compact />,
-              <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
-            ]}
-          />
-        </div>
+        {/* Host and attendees as facts on the mark's edge: a 24px host
+            avatar in front of them put the line 26px off the card's axis. */}
+        <FactLine
+          className="min-w-0"
+          items={[
+            <BilingualText key="host" en={`By ${event.hostName}`} el={`Από ${event.hostName}`} compact />,
+            <BilingualText key="count" en={`${event.attendeesCount} attending`} el={`${event.attendeesCount} συμμετέχουν`} compact />,
+          ]}
+        />
 
         {/* Actions, on the card's axis. */}
         <div className="flex items-center gap-2 pt-3 border-t border-border">
