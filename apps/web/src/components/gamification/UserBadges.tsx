@@ -261,7 +261,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                 <span className="font-medium tabular-nums text-foreground">{completionPercentage.toFixed(0)}%</span>
               </span>
             </div>
-            <Progress value={completionPercentage} className="h-2" />
+            <Progress value={completionPercentage} data-meter-slot={0} className="h-2" />
           </div>
         </CardContent>
       </Card>
@@ -290,7 +290,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
 
         <TabsContent value={selectedCategory} className="mt-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredBadges.map((badge) => {
+            {filteredBadges.map((badge, index) => {
               const Icon = badge.icon;
               const hasProgress = typeof badge.progress === 'number' && typeof badge.requirement === 'number';
               const progressPercentage = hasProgress 
@@ -343,7 +343,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                             {badge.progress}/{badge.requirement}
                           </span>
                         </div>
-                        <Progress value={progressPercentage} className="h-2" />
+                        <Progress value={progressPercentage} data-meter-slot={index % 3} className="h-2" />
                       </div>
                     ) : null}
 

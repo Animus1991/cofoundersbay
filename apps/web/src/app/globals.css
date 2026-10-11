@@ -4085,6 +4085,65 @@ html[data-theme="minimal"] #main-content [role='progressbar'] > * {
 html[data-theme="minimal"] #main-content [data-meter='lilac'][role='progressbar'] > * {
   background-color: hsl(var(--meter-lilac));
 }
+
+/* Achievement meters borrow the other themes' lively accents and never the
+   accent of the theme they sit in. Mint already does this above (apricot
+   for ordinary bars, lilac for data-meter="lilac") and is left as it is.
+   Light is lilac #765fe7, so its bars are mint, apricot and cyan.
+   Apricot's bars are mint, lilac and cyan. Cyan's bars are mint, apricot
+   and lilac. Slots 0, 1 and 2 are those three colours in that order.
+   Type sizes and the space between lines are not part of these rules. */
+:root {
+  --meter-mint: 138.7 30.3% 56.2%;      /* #6db183, the Mint mark */
+  --meter-apricot: 22.6 81.4% 68.5%;    /* #f09f6d, the Apricot accent */
+  --meter-lilac: 250 74% 63.9%;         /* #765fe7, the Light lilac */
+  --meter-cyan: 198.05 67.21% 64.12%;   /* #66bce1, the Cyan accent */
+}
+html.light:not([data-theme]) #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+html.light:not([data-theme]) #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-cyan));
+}
+html.light:not([data-theme]) :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-cyan));
+}
+html[data-theme="apricot"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="apricot"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-cyan));
+}
+html[data-theme="apricot"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="alliance"] #main-content [role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='0'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-mint));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='1'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-apricot));
+}
+html[data-theme="alliance"] #main-content [data-meter-slot='2'][role='progressbar'] > * {
+  background-color: hsl(var(--meter-lilac));
+}
+html[data-theme="alliance"] :not(button):not(a)[class~='h-full']:is([class~='bg-primary'], [class~='bg-primary/50'], [class~='bg-primary/60'], [class~='bg-primary/70'], [class~='bg-primary/80']) {
+  background-color: hsl(var(--meter-apricot));
+}
 html[data-theme="minimal"] .avatar-initials[class*='bg-primary/10'] {
   background-color: hsl(var(--mint-mark) / 0.38);
 }

@@ -235,7 +235,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                   />
                 </span>
               </div>
-              <Progress value={levelProgress} className="h-3" />
+              <Progress value={levelProgress} data-meter-slot={0} className="h-3" />
             </div>
           )}
 
