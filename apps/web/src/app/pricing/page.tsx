@@ -297,17 +297,18 @@ export default function PricingPage() {
                         </span>
                       )
                     }
-                    meta={
-                      !isEnterprise && !isFree && annual && savings > 0 ? (
-                        <span className="font-medium text-status-success"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></span>
-                      ) : !isEnterprise && !isFree && !annual ? (
-                        <BilingualText en={`Save ${savings}% with annual billing`} el={`Εξοικονόμηση ${savings}% με ετήσια χρέωση`} compact />
-                      ) : undefined
-                    }
                     aside={plan.popular ? (
                       <Badge className="bg-primary text-primary-foreground"><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
                     ) : undefined}
                   />
+                  {/* The saving reads under the head across the card's width: in
+                      a four-column row the title column beside "Most popular"
+                      is too narrow for it. */}
+                  {!isEnterprise && !isFree && annual && savings > 0 ? (
+                    <p className="text-xs font-medium text-status-success"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></p>
+                  ) : !isEnterprise && !isFree && !annual ? (
+                    <p className="text-xs text-muted-foreground"><BilingualText en={`Save ${savings}% with annual billing`} el={`Εξοικονόμηση ${savings}% με ετήσια χρέωση`} compact /></p>
+                  ) : null}
                   <p className="card-body text-muted-foreground"><BilingualText en={plan.description} el={plan.descriptionEl} wrap /></p>
 
                   {/* Features */}

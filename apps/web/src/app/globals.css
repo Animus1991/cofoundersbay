@@ -3729,8 +3729,8 @@ textarea[class~="border-input"]:focus,
      so they stay under that body size and above a text-sm subtitle.
      A sized utility a stat a lead or a person name does not match.
      :where keeps this under the need-card title rule. */
-  #main-content p.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
-  #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
+  #main-content p.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label:not(.card-title):not(.card-subtitle):not(.card-body))),
+  #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label:not(.card-title):not(.card-subtitle):not(.card-body))),
   #main-content p.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)),
   #main-content h3.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)) {
     font-size: 13.673px;
@@ -3820,7 +3820,7 @@ textarea[class~="border-input"]:focus,
   /* In-card sentences sit on the support step, the same size on every
      page and in the rail, under the card title and under the subtitle.
      A pure stat, a member name and a control keep their own steps. */
-  #main-content [data-card] :is(p, div, span, li, dd, dt, ul, ol, label).text-sm:not(:is(.page-stat, .person-name, .card-copy, .page-stat-label, .page-stat-meta, button, a, [role='button'], [role='tab'], input, textarea, select)),
+  #main-content [data-card] :is(p, div, span, li, dd, dt, ul, ol, label, legend, h3, h4).text-sm:not(:is(.page-stat, .person-name, .card-copy, .page-stat-label, .page-stat-meta, button, a, [role='button'], [role='tab'], input, textarea, select)),
   #main-content [data-card] :is(p, div, dd, li).text-base:not(:is(.page-stat, .page-figure, .person-name, .font-display, .card-title)),
   #main-content [data-card] :is(p, dd, li).text-lg:not(.page-section),
   #main-content [data-card] p.text-sm.italic,
