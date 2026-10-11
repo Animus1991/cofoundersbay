@@ -1,6 +1,7 @@
 // Card anatomy audit: does every card read like the Endorsements and
 // Connections cards? Measured in a real browser, per innermost [data-card].
 //   node .probes/card_audit.mjs <routes.txt> [width=390] [out.json]
+// A route line may carry steps: "/admin @@tab:Users" (see below).
 // Env: BASE (default http://localhost:3000), ROLE (demo role cookie, default
 // existing_founder), STATE=stub (sample data off), LANG_PREF (default en).
 //
@@ -75,17 +76,32 @@ const rows = [];
 for (const route of routes) {
   let status = 0;
   try {
-    const res = await page.goto(BASE + route, { waitUntil: 'networkidle', timeout: 60000 });
+    const res = await page.goto(BASE + route.split(' @@')[0], { waitUntil: 'networkidle', timeout: 60000 });
     status = res?.status() ?? 0;
   } catch { /* measured as is */ }
   await page.waitForTimeout(700);
+  // Steps after the path open what the default view hides: a tab, a
+  // filled field, a button ("/admin @@tab:Users", "@@fill:Search=ana",
+  // "@@btn:Show details", "@@text:Assets"). Tabbed pages were measured on
+  // their first tab only before 2026-10-11, and three admin tabs that fell
+  // to the error screen went unseen.
+  for (const step of route.split(' @@').slice(1)) {
+    const [kind, ...rest] = step.split(':'); const name = rest.join(':');
+    try {
+      if (kind === 'tab') await page.getByRole('tab', { name: new RegExp(name) }).first().click({ timeout: 8000 });
+      else if (kind === 'fill') { const [ph, val] = name.split('='); await page.getByPlaceholder(new RegExp(ph)).first().fill(val, { timeout: 8000 }); }
+      else if (kind === 'btn') await page.getByRole('button', { name: new RegExp(name) }).first().click({ timeout: 8000 });
+      else await page.getByText(name).first().click({ timeout: 8000 });
+    } catch (e) { console.log(`${route} | step failed: ${step} ${String(e).slice(0, 80)}`); }
+    await page.waitForTimeout(1500);
+  }
   // A page that navigates on its own after load (a redirect, a guard)
   // destroys the context mid-measure: settle and measure once more.
   const measure = () => page.evaluate((W) => {
     const main = document.querySelector('main#main-content') ?? document.querySelector('main, [role="main"]') ?? document.body;
     const shown = (el) => el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true;
     const FLOAT = '[role=dialog],[role=alertdialog],[role=menu],[role=listbox],[role=tooltip],[data-radix-popper-content-wrapper],[data-sonner-toaster],[data-rail-surface]';
-    const CONTROL = 'button,input,select,textarea,[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],[role=option],[role=menuitem],[role=slider],[contenteditable=true]';
+    const CONTROL = 'button,a[data-slot=button],input,select,textarea,[role=button],[role=tab],[role=switch],[role=checkbox],[role=radio],[role=option],[role=menuitem],[role=slider],[contenteditable=true]';
     const fs = (el) => parseFloat(getComputedStyle(el).fontSize);
     const label = (el) => {
       const cls = typeof el.className === 'string' ? el.className.split(/\s+/).filter(Boolean).slice(0, 3).join('.') : '';
