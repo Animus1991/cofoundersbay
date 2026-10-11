@@ -119,8 +119,8 @@ function MetricCard({
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
       {/* Stretched by the sparkline card's row, a plain tile centres its
           figure instead of leaving a dead band at the bottom. */}
-      <CardContent className="flex h-full flex-col justify-center">
-        <div className="mb-3 flex items-start justify-between gap-3">
+      <CardContent className="flex h-full flex-col items-center justify-center text-center">
+        <div className="mb-3 flex items-center justify-center gap-2">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
@@ -136,14 +136,14 @@ function MetricCard({
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </span>
         </div>
-        <h3 className="page-stat mb-1 font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
-        <p className="page-stat-label leading-snug text-muted-foreground">
+        <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
+        <p className="page-stat-label text-center leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
         {sparkValues && sparkValues.length > 1 && (
-          <div className="mt-3">
+          <div className="mt-3 flex w-full flex-col items-center">
             <Sparkline values={sparkValues} />
-            <p className="page-stat-label mt-1 text-muted-foreground">
+            <p className="page-stat-label mt-1 text-center text-muted-foreground">
               <BilingualText en={analyticsEn('spark_caption')} el={analyticsEl('spark_caption')} wrap />
             </p>
           </div>
@@ -161,7 +161,7 @@ function MetricCard({
   }
   if (tab && onOpenTab) {
     return (
-      <button type="button" className="block h-full min-w-0 rounded-2xl text-left focus-ring" onClick={() => onOpenTab(tab)}>
+      <button type="button" className="block h-full min-w-0 rounded-2xl text-center focus-ring" onClick={() => onOpenTab(tab)}>
         {body}
       </button>
     );
@@ -180,7 +180,7 @@ function Sparkline({ values, color = 'hsl(var(--primary))' }: { values: number[]
     return `${x},${y}`;
   }).join(' ');
   return (
-    <svg width={w} height={h} className="opacity-60">
+    <svg width={w} height={h} className="mx-auto opacity-60">
       <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={pts} />
     </svg>
   );

@@ -4318,3 +4318,21 @@ input:is(
   height: calc(2.75rem * var(--chrome-y));
   min-height: calc(2.75rem * var(--chrome-y));
 }
+/* Phones only: the same search fields, 5% shorter. Desktop stays the
+   directory height above. Ask AI is still not a search field. */
+@media (max-width: 639.98px) {
+  input[type='search'],
+  input:is(
+    [placeholder*='Search'],
+    [placeholder*='search'],
+    [placeholder*='Αναζήτηση'],
+    [placeholder*='αναζήτηση'],
+    [aria-label*='Search'],
+    [aria-label*='search'],
+    [aria-label*='Αναζήτηση'],
+    [aria-label*='αναζήτηση']
+  ):not([type='checkbox']):not([type='radio']):not([type='hidden']):not([type='file']) {
+    height: calc(2.75rem * var(--chrome-y) * 0.95);
+    min-height: calc(2.75rem * var(--chrome-y) * 0.95);
+  }
+}
