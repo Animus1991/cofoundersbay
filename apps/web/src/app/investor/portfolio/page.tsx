@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Briefcase, TrendingUp, TrendingDown, DollarSign,
-  MoreVertical, ExternalLink, Users, PieChart, Download,
+  MoreVertical, ExternalLink, PieChart, Download,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,6 +31,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { downloadCsv } from '@/lib/csv';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -192,86 +194,89 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
   const isPositive = investment.returnPct >= 0;
 
+  // The Opportunities card: the company's mark and name with its state, the
+  // sector and stage under it, the menu at the right; the four figures and
+  // the facts start on the mark's left edge.
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-12 w-12 rounded-lg">
-            <AvatarImage src={investment.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
-              {investment.name[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Link href={`/startups/${investment.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
-                    {investment.name}
-                  </Link>
-                  <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
-                    <StatusText value={investment.status} />
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">{investment.industry} · {investment.stage}</p>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${investment.name}`}>
-                    <MoreVertical className="icon-sm" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/startups/${investment.id}`}><BilingualText en="View Startup" el="Προβολή startup" compact /></Link>
-                  </DropdownMenuItem>
-                  {/* These three had no handler. Updates are events on the
-                      deal, added from its page; the report is this row. */}
-                  <UnavailableMenuItem
-                    en="View Documents"
-                    el="Έγγραφα"
-                    reasonEn="Portfolio documents have no storage yet."
-                    reasonEl="Τα έγγραφα χαρτοφυλακίου δεν έχουν ακόμη αποθήκευση."
-                  />
-                  <DropdownMenuItem asChild>
-                    <Link href={`/startups/${investment.id}`}><BilingualText en="Add Update" el="Προσθήκη ενημέρωσης" compact /></Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => exportInvestment(investment)}><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact /></DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={investment.logoUrl} alt="" />
+              <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                {investment.name[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <Link href={`/startups/${investment.id}`} className="transition-colors hover:text-primary-accessible">
+                {investment.name}
+              </Link>
+              <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
+                <StatusText value={investment.status} />
+              </Badge>
+            </span>
+          )}
+          subtitle={<FactLine className="text-sm" items={[investment.industry, investment.stage]} />}
+          asideStays
+          aside={(
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${investment.name}`}>
+                  <MoreVertical className="icon-sm" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/startups/${investment.id}`}><BilingualText en="View Startup" el="Προβολή startup" compact /></Link>
+                </DropdownMenuItem>
+                {/* These three had no handler. Updates are events on the
+                    deal, added from its page; the report is this row. */}
+                <UnavailableMenuItem
+                  en="View Documents"
+                  el="Έγγραφα"
+                  reasonEn="Portfolio documents have no storage yet."
+                  reasonEl="Τα έγγραφα χαρτοφυλακίου δεν έχουν ακόμη αποθήκευση."
+                />
+                <DropdownMenuItem asChild>
+                  <Link href={`/startups/${investment.id}`}><BilingualText en="Add Update" el="Προσθήκη ενημέρωσης" compact /></Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => exportInvestment(investment)}><BilingualText en="Export Report" el="Εξαγωγή αναφοράς" compact /></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        />
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επενδύθηκαν" compact /></p>
-                <p className="text-sm font-medium">{investment.amount}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Current Value" el="Τρέχουσα αξία" compact /></p>
-                <p className="text-sm font-medium">{investment.currentValue}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Return" el="Απόδοση" compact /></p>
-                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-status-success' : 'text-status-danger')}>
-                  {isPositive ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
-                  {isPositive ? '+' : ''}{investment.returnPct}%
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επενδύθηκαν" compact /></p>
-                <p className="text-sm font-medium">{investment.investedAt}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
-                {investment.teamSize} team members
-              </span>
-              <span>Last update: <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>
-            </div>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
+          <div>
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Invested" el="Επενδύθηκαν" compact /></dt>
+            <dd className="card-body font-medium tabular-nums">{investment.amount}</dd>
           </div>
-        </div>
+          <div>
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Current Value" el="Τρέχουσα αξία" compact /></dt>
+            <dd className="card-body font-medium tabular-nums">{investment.currentValue}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Return" el="Απόδοση" compact /></dt>
+            <dd className={cn('card-body flex items-center gap-1 font-medium tabular-nums', isPositive ? 'text-status-success' : 'text-status-danger')}>
+              {isPositive ? <TrendingUp className="icon-sm" aria-hidden="true" /> : <TrendingDown className="icon-sm" aria-hidden="true" />}
+              {isPositive ? '+' : ''}{investment.returnPct}%
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground"><BilingualText en="Invested on" el="Ημερομηνία επένδυσης" compact /></dt>
+            <dd className="card-body font-medium tabular-nums">{investment.investedAt}</dd>
+          </div>
+        </dl>
+
+        <FactLine
+          items={[
+            <BilingualText key="team" en={`${investment.teamSize} team members`} el={`${investment.teamSize} μέλη ομάδας`} compact />,
+            <span key="update"><BilingualText en="Last update:" el="Τελευταία ενημέρωση:" compact /> <RelativeTime date={investment.lastUpdate} format={formatRelativeTime} /></span>,
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -430,7 +435,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="performance">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm"><BilingualText en="Portfolio value (€K)" el="Αξία portfolio (χιλ. €)" compact /></CardTitle>
+                <CardTitle><BilingualText en="Portfolio value (€K)" el="Αξία portfolio (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <PortfolioValueChart data={valueHistory} />
@@ -440,7 +445,7 @@ export default function InvestorPortfolioPage() {
           <TabsContent value="sectors">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm"><BilingualText en="Invested by sector (€K)" el="Επενδύσεις ανά κλάδο (χιλ. €)" compact /></CardTitle>
+                <CardTitle><BilingualText en="Invested by sector (€K)" el="Επενδύσεις ανά κλάδο (χιλ. €)" compact /></CardTitle>
               </CardHeader>
               <CardContent>
                 <SectorMixChart data={sectorData} />

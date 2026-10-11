@@ -143,6 +143,7 @@ export function MobileNav() {
           {user && (
             <OptimizedLink
               href="/profile"
+              data-sidebar-control="account"
               className="flex items-center gap-3 border-b border-border px-4 py-3 hover:bg-secondary/50 focus-ring"
             >
               <Avatar className="h-10 w-10 shrink-0">
@@ -165,13 +166,16 @@ export function MobileNav() {
           <ModeSwitcher currentMode={mode} onModeChange={setMode} variant="row" />
 
           <div className="border-b border-border px-3 py-3">
-            <LanguagePanel />
+            <LanguagePanel sidebar />
           </div>
 
           <nav className="px-2 py-3" data-keep-icon="" aria-label={t('Primary mobile navigation')}>
             {sections.map(({ section, links }, sectionIndex) => (
               <div key={section} className="mb-3">
-                <p className="px-3 pb-1 text-xs text-muted-foreground">
+                <p
+                  className="px-3 pb-1 text-xs text-muted-foreground"
+                  data-sidebar-control={section === 'Dashboard' ? 'section' : undefined}
+                >
                   <BilingualText
                     en={section}
                     el={getNavSectionEl(section)}

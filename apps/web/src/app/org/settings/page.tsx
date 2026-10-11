@@ -39,6 +39,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { initialsOf } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 /*
@@ -303,7 +306,7 @@ export default function OrgSettingsPage() {
                   onClick={() => saveProfile.mutate()}
                 >
                   <Save className="mr-2 icon-sm" aria-hidden="true" />
-                  {saveProfile.isPending ? 'Saving…' : 'Save Changes'}
+                  {saveProfile.isPending ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Changes" el="Αποθήκευση αλλαγών" compact />}
                 </Button>
               </CardContent>
             </Card>
@@ -342,6 +345,7 @@ export default function OrgSettingsPage() {
                       className="w-16 h-10 p-1"
                     />
                     <Input
+                      aria-label={bilingualAria('Primary colour code', 'Κωδικός κύριου χρώματος')}
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
                       className="flex-1"
@@ -367,7 +371,7 @@ export default function OrgSettingsPage() {
                     onClick={() => saveBranding.mutate()}
                   >
                     <Save className="mr-2 icon-sm" aria-hidden="true" />
-                    {saveBranding.isPending ? 'Saving…' : 'Save Branding'}
+                    {saveBranding.isPending ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save Branding" el="Αποθήκευση εμφάνισης" compact />}
                   </Button>
                   <p className="text-xs text-muted-foreground">
                     <BilingualText en="Saves the primary colour. Logo and domain are not stored yet." el="Αποθηκεύεται το κύριο χρώμα. Λογότυπο και τομέας δεν αποθηκεύονται ακόμα." wrap />
@@ -393,20 +397,30 @@ export default function OrgSettingsPage() {
                 <div className="flex justify-between items-center">
                   <p className="text-sm text-muted-foreground">
                     {membersQuery.data
-                      ? `${membersQuery.data.length} team member${membersQuery.data.length === 1 ? '' : 's'}`
-                      : 'Members could not be loaded'}
+                      ? <BilingualText en={`${membersQuery.data.length} team member${membersQuery.data.length === 1 ? '' : 's'}`} el={`${membersQuery.data.length} ${membersQuery.data.length === 1 ? 'μέλος' : 'μέλη'} ομάδας`} compact />
+                      : <BilingualText en="Members could not be loaded" el="Δεν ήταν δυνατή η φόρτωση των μελών" compact />}
                   </p>
                   <Button asChild>
                     <Link href={slug ? `/org/${slug}/admin` : '/org/dashboard'}><BilingualText en="Invite Member" el="Πρόσκληση μέλους" compact /></Link>
                   </Button>
                 </div>
-                <div className="space-y-2">
+                {/* Rows of the section card: the person, their address under
+                    the name, the role at the right. A row's name sits a step
+                    under the card's title. */}
+                <div className="card-rows">
                   {(membersQuery.data ?? []).map((member) => (
-                    <div key={member.id} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">{memberName(member)}</p>
-                        <p className="text-sm text-muted-foreground">{member.user?.email}</p>
-                      </div>
+                    <RowHead
+                      key={member.id}
+                      titleAs="h4"
+                      mark={(
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={member.user?.profile?.avatarUrl ?? undefined} alt="" />
+                          <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(memberName(member))}</AvatarFallback>
+                        </Avatar>
+                      )}
+                      title={memberName(member)}
+                      subtitle={member.user?.email ? <span className="block truncate">{member.user.email}</span> : undefined}
+                      aside={(
                       <Select
                         value={member.role}
                         onValueChange={(role) =>
@@ -425,12 +439,12 @@ export default function OrgSettingsPage() {
                           <SelectItem value="member"><BilingualText en="Member" el="Μέλος" compact /></SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                      )}
+                    />
                   ))}
                   {!membersQuery.data && (
                     <p className="text-xs text-muted-foreground">
-                      The member list lives under the organisation&apos;s admin page until the
-                      directory responds.
+                      <BilingualText en="The member list lives under the organisation's admin page until the directory responds." el="Η λίστα μελών βρίσκεται στη σελίδα διαχείρισης του οργανισμού μέχρι να απαντήσει ο κατάλογος." wrap />
                     </p>
                   )}
                 </div>
@@ -452,18 +466,18 @@ export default function OrgSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { key: 'publicProfile', label: 'Public Profile', hint: 'Allow your organization to be discovered publicly' },
-                  { key: 'openApplications', label: 'Open Applications', hint: 'Accept applications from any startup' },
-                  { key: 'mentorSelfRegistration', label: 'Mentor Self-Registration', hint: 'Allow mentors to request to join your pool' },
-                  { key: 'workspaceAccess', label: 'Startup Workspace Access', hint: 'Org admins can view all startup workspaces' },
+                  { key: 'publicProfile', label: 'Public Profile', labelEl: 'Δημόσιο προφίλ', hint: 'Allow your organization to be discovered publicly', hintEl: 'Ο οργανισμός σας εμφανίζεται δημόσια στην αναζήτηση' },
+                  { key: 'openApplications', label: 'Open Applications', labelEl: 'Ανοιχτές αιτήσεις', hint: 'Accept applications from any startup', hintEl: 'Δεχτείτε αιτήσεις από οποιαδήποτε startup' },
+                  { key: 'mentorSelfRegistration', label: 'Mentor Self-Registration', labelEl: 'Αυτοεγγραφή μεντόρων', hint: 'Allow mentors to request to join your pool', hintEl: 'Οι μέντορες μπορούν να ζητήσουν ένταξη στη δεξαμενή σας' },
+                  { key: 'workspaceAccess', label: 'Startup Workspace Access', labelEl: 'Πρόσβαση στους χώρους startups', hint: 'Org admins can view all startup workspaces', hintEl: 'Οι διαχειριστές βλέπουν όλους τους χώρους εργασίας των startups' },
                 ].map((p) => (
-                  <div key={p.key} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{p.label}</p>
-                      <p className="text-sm text-muted-foreground">{p.hint}</p>
+                  <div key={p.key} className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium"><BilingualText en={p.label} el={p.labelEl} compact wrap /></p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={p.hint} el={p.hintEl} wrap /></p>
                     </div>
                     <Switch
-                      aria-label={p.label}
+                      aria-label={bilingualAria(p.label, p.labelEl)}
                       checked={policies[p.key]}
                       onCheckedChange={(v) => setPolicy(p.key, v)}
                       disabled={!organizationId || savePolicies.isPending}
@@ -488,44 +502,40 @@ export default function OrgSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  Plan and payment details are illustrative — billing is not connected to the
-                  organisation yet.
+                  <BilingualText en="Plan and payment details are illustrative — billing is not connected to the organisation yet." el="Τα στοιχεία πλάνου και πληρωμής είναι ενδεικτικά — οι χρεώσεις δεν έχουν συνδεθεί ακόμη με τον οργανισμό." wrap />
                 </p>
-                <div className="p-4 rounded-lg border bg-primary/5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">Organization Pro</p>
-                      <p className="text-sm text-muted-foreground">$299/month · Billed annually</p>
-                    </div>
-                    <Button variant="outline" disabled title="Billing is not connected yet"><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>
+                {/* The plan, the usage and the payment method as rows of the
+                    card, not as cards drawn inside it. */}
+                <div className="card-rows">
+                  <RowHead
+                    titleAs="h4"
+                    title="Organization Pro"
+                    subtitle={<BilingualText en="$299/month · Billed annually" el="$299/μήνα · Ετήσια χρέωση" compact />}
+                    aside={<Button size="sm" variant="outline" disabled title="Billing is not connected yet"><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>}
+                  />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
+                    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div>
+                        <dt className="text-xs text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></dt>
+                        <dd className="card-body font-semibold tabular-nums">32 / 50</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></dt>
+                        <dd className="card-body font-semibold tabular-nums">5 / 10</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></dt>
+                        <dd className="card-body font-semibold tabular-nums">4 / <BilingualText en="Unlimited" el="Απεριόριστα" compact /></dd>
+                      </div>
+                    </dl>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground"><BilingualText en="Startups" el="Startups" compact /></p>
-                      <p className="page-stat text-xl font-bold">32 / 50</p>
-                    </div>
-                    <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground"><BilingualText en="Team Members" el="Μέλη ομάδας" compact /></p>
-                      <p className="page-stat text-xl font-bold">5 / 10</p>
-                    </div>
-                    <div className="p-3 rounded-lg border">
-                      <p className="text-sm text-muted-foreground"><BilingualText en="Programs" el="Προγράμματα" compact /></p>
-                      <p className="page-stat text-xl font-bold">4 / Unlimited</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-medium"><BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact /></p>
-                  <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="icon-md" aria-hidden="true" />
-                      <span>•••• •••• •••• 4242</span>
-                    </div>
-                    <Button variant="ghost" size="sm" disabled title="Billing is not connected yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
-                  </div>
+                  <RowHead
+                    titleAs="h4"
+                    title={<BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact />}
+                    subtitle={<span className="tabular-nums">•••• •••• •••• 4242</span>}
+                    aside={<Button variant="outline" size="sm" disabled title="Billing is not connected yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>}
+                  />
                 </div>
               </CardContent>
             </Card>

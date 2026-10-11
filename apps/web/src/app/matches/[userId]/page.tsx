@@ -27,6 +27,7 @@ import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-c
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
+import { StatusText } from '@/components/common/StatusText';
 import {
   getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
@@ -52,7 +53,7 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
 // ── Friction Icon helper ───────────────────────────────────────────────────────
 
 function FrictionIcon({ icon }: { icon: string }) {
-  const cls = 'icon-sm';
+  const cls = 'icon-sm shrink-0';
   if (icon === 'schedule') return <Clock className={cls} aria-hidden="true" />;
   if (icon === 'trending_up') return <TrendingUp className={cls} aria-hidden="true" />;
   return <AlertTriangle className={cls} aria-hidden="true" />;
@@ -99,9 +100,10 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
           </text>
         ))}
       </svg>
-      <figcaption className="mt-3 flex justify-center gap-6 text-xs text-muted-foreground">
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-success-mark" aria-hidden="true" />You</span>
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-info-mark" aria-hidden="true" />Match</span>
+      {/* The legend starts on the card's axis, like every line in it. */}
+      <figcaption className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2"><svg width={20} height={4} className="shrink-0" aria-hidden="true"><rect y={1} width={20} height={2} rx={1} fill="hsl(var(--status-success-mark))" /></svg>You</span>
+        <span className="flex items-center gap-2"><svg width={20} height={4} className="shrink-0" aria-hidden="true"><rect y={1} width={20} height={2} rx={1} fill="hsl(var(--status-info-mark))" /></svg>Match</span>
       </figcaption>
     </figure>
   );
@@ -151,7 +153,7 @@ function PersonBlock({ name, role, avatarUrl, href, accent }: { name: string; ro
         ) : (
           <p className="text-sm font-semibold text-foreground">{name}</p>
         )}
-        <p className="text-xs capitalize text-muted-foreground">{role}</p>
+        <p className="text-xs text-muted-foreground"><StatusText value={role} /></p>
       </div>
     </div>
   );
@@ -344,22 +346,25 @@ export default function MatchDetailPage() {
           <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Back">
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
-          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+          {/* A 12rem basis: with `flex-1` alone the line's basis was 0, so on
+              a phone the buttons kept the row and the words stood one
+              letter per line. Now the buttons wrap under it instead. */}
+          <p className="min-w-0 flex-1 basis-48 text-sm text-muted-foreground">
             <BilingualText en={`You and ${targetProfile.displayName}`} el={`Εσείς και ${targetProfile.displayName}`} />
           </p>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => void handleShortlist()} aria-pressed={shortlisted}>
             <Bookmark className={cn('icon-sm', shortlisted && 'fill-current text-status-warning')} aria-hidden="true" />
-            {shortlisted ? 'Saved' : 'Shortlist'}
+            {shortlisted ? <BilingualText en="Saved" el="Αποθηκεύτηκε" compact /> : <BilingualText en="Shortlist" el="Λίστα" compact />}
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <Link href={`/messages?to=${targetUserId}`}>
               <MessageCircle className="icon-sm" aria-hidden="true" />
-              Message
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </Link>
           </Button>
           <Button size="sm" className="gap-1.5" onClick={() => void handlePropose()} disabled={connectMutation.isPending}>
             <Send className="icon-sm" aria-hidden="true" />
-            Collaborate
+            <BilingualText en="Collaborate" el="Συνεργασία" compact />
           </Button>
           {/* Hand someone the link, or open the full profile. */}
           <DropdownMenu>
@@ -383,8 +388,9 @@ export default function MatchDetailPage() {
           </DropdownMenu>
         </div>
 
-        {/* Summary: the two of you, the score between you, how sure it is. */}
-        <div className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
+        {/* Summary: the two of you, the score between you, how sure it is. A
+            chart card (two marks and a donut), so it stays centred. */}
+        <div data-card-chart="" className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
           <div className="flex items-center justify-between gap-4">
             <PersonBlock name={sourceProfile.displayName} role={sourceProfile.role} avatarUrl={sourceProfile.avatarUrl} />
             <DonutScore score={overall.score} />
@@ -420,7 +426,7 @@ export default function MatchDetailPage() {
             {data.reasons.length > 0 && (
               <SectionCard title="Why this match" titleEl="Γιατί ταιριάζετε" icon={ThumbsUp} contentClassName="space-y-3">
                 {data.reasons.map((r) => (
-                  <p key={r} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <p key={r} className="card-body flex items-start gap-2.5 text-muted-foreground">
                     <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
                     <span>{r}</span>
                   </p>
@@ -440,14 +446,17 @@ export default function MatchDetailPage() {
               </SectionCard>
             )}
             {frictionPoints.length > 0 && (
-              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-3">
+              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-0 divide-y divide-border">
+                {/* Rows on the card, not warning tiles in it: the glyph in
+                    front of the title, the advice under it on the card's
+                    axis. */}
                 {frictionPoints.map((point) => (
-                  <div key={point.title} className="flex gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
-                    <span className="mt-0.5 shrink-0 text-status-warning"><FrictionIcon icon={point.icon} /></span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-status-warning">{point.title}</p>
-                      <p className="text-sm text-foreground">{point.description}</p>
-                    </div>
+                  <div key={point.title} className="space-y-1 py-3 first:pt-0 last:pb-0">
+                    <p className="flex items-center gap-2 text-sm font-medium text-status-warning">
+                      <FrictionIcon icon={point.icon} />
+                      <span className="min-w-0">{point.title}</span>
+                    </p>
+                    <p className="card-body text-muted-foreground">{point.description}</p>
                   </div>
                 ))}
               </SectionCard>

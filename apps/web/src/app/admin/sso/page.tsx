@@ -39,7 +39,12 @@ import {
   type SSODomainMapping,
 } from '@/lib/api';
 import { bilingualInline } from '@/lib/i18n/format';
-import { statusEl } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { bilingualAria } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
 
 import { pressableProps } from '@/lib/pressable';
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
@@ -118,7 +123,7 @@ export default function SSOAdminPage() {
               <p className="text-sm"><BilingualText en="No tenants yet — create one in the Tenants admin page." el="Δεν υπάρχουν οργανισμοί ακόμα — δημιουργήστε έναν στη διαχείριση οργανισμών." wrap /></p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border">
               {tenants.map(tenant => (
                 <TenantSSORow
                   key={tenant.id}
@@ -164,7 +169,7 @@ export default function SSOAdminPage() {
               <p className="text-sm"><BilingualText en="No SSO events yet" el="Δεν υπάρχουν συμβάντα SSO ακόμα" compact /></p>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="divide-y divide-border">
               {events.map(ev => <SSOEventRow key={ev.id} event={ev} />)}
             </div>
           )}
@@ -180,50 +185,62 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
     queryFn: () => getTenantSSOConfig(tenant.id),
   });
 
+  // A row of the list, not a framed tile inside the card: the
+  // organisation's rounded square, the name over its address, the SSO mode
+  // and the provider at the right.
   return (
     <div
-      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
+      className="axis-row cursor-pointer rounded-md py-3 transition-colors hover:bg-accent"
       onClick={onClick}
       {...pressableProps()}
     >
-      <div className="flex items-center gap-4">
-        {tenant.logoUrl ? (
-          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+      <RowHead
+        titleAs="h3"
+        mark={tenant.logoUrl ? (
+          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-xl object-cover" />
         ) : (
-          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-            <Building2 className="icon-md text-muted-foreground" />
+          <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <Building2 className="icon-md" aria-hidden="true" />
           </div>
         )}
-        <div>
-          <h3 className="font-medium">{tenant.displayName || tenant.name}</h3>
-          <p className="text-xs text-muted-foreground">{tenant.slug}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <SSOModeBadge mode={config?.ssoMode} />
-        {config?.identityProvider && (
-          <span className="text-xs text-muted-foreground">{config.identityProvider.providerName}</span>
+        title={tenant.displayName || tenant.name}
+        subtitle={<span translate="no">/{tenant.slug}</span>}
+        asideStays
+        aside={(
+          <>
+            <SSOModeBadge mode={config?.ssoMode} />
+            {config?.identityProvider && (
+              <span className="hidden text-xs text-muted-foreground sm:inline">{config.identityProvider.providerName}</span>
+            )}
+            <ChevronRight className="icon-sm text-muted-foreground" aria-hidden="true" />
+          </>
         )}
-        <ChevronRight className="icon-sm text-muted-foreground" />
-      </div>
+      />
     </div>
   );
 }
 
 function SSOEventRow({ event }: { event: SSOAuthEvent }) {
   const isSuccess = !event.errorCode;
+  const fmtDate = useDateFormat();
+  const when = fmtDate(event.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  // A row of the log: the outcome's mark, the event over who and where,
+  // the time at the right, an error under it on the mark's edge.
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
-      {isSuccess
-        ? <ShieldCheck className="icon-sm text-status-success shrink-0" />
-        : <ShieldOff className="icon-sm text-destructive-accessible shrink-0" />}
-      <div className="flex-1 min-w-0">
-        <span className="font-medium">{event.eventType}</span>
-        {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
-      </div>
-      <span className="text-xs text-muted-foreground shrink-0">{event.identityProvider.tenant.name}</span>
-      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
-      {event.errorMessage && <span className="text-xs text-destructive-accessible truncate max-w-[160px]">{event.errorMessage}</span>}
+    <div className="space-y-1 py-3">
+      <RowHead
+        mark={(
+          <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', isSuccess ? 'bg-status-success-bg text-status-success' : 'bg-status-danger-bg text-destructive-accessible')}>
+            {isSuccess
+              ? <ShieldCheck className="icon-sm" aria-label={bilingualAria('Succeeded', 'Επιτυχία')} />
+              : <ShieldOff className="icon-sm" aria-label={bilingualAria('Failed', 'Αποτυχία')} />}
+          </div>
+        )}
+        title={<StatusText value={event.eventType} />}
+        subtitle={<FactLine items={[event.email ? <span key="email" translate="no">{event.email}</span> : null, event.identityProvider?.tenant?.name]} />}
+        aside={when}
+      />
+      {event.errorMessage && <p className="break-words text-xs text-destructive-accessible">{event.errorMessage}</p>}
     </div>
   );
 }
@@ -474,27 +491,27 @@ function SSOConfigPanel({
                   ))}
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="sso-providerName" className="text-xs font-medium">Provider Name *</label>
+                  <label htmlFor="sso-providerName" className="text-sm font-medium">Provider Name *</label>
                   <Input id="sso-providerName" value={newProvider.providerName} onChange={e => setNewProvider(p => ({ ...p, providerName: e.target.value }))} placeholder="e.g., University SSO" />
                 </div>
                 {(providerType === 'oidc' || providerType === 'oauth2') && (
                   <>
                     <div className="space-y-2">
-                      <label htmlFor="sso-issuerUrl" className="text-xs font-medium">Issuer URL *</label>
+                      <label htmlFor="sso-issuerUrl" className="text-sm font-medium">Issuer URL *</label>
                       <Input id="sso-issuerUrl" value={newProvider.oidcIssuerUrl} onChange={e => setNewProvider(p => ({ ...p, oidcIssuerUrl: e.target.value }))} placeholder="https://accounts.google.com" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label htmlFor="sso-clientId" className="text-xs font-medium">Client ID *</label>
+                        <label htmlFor="sso-clientId" className="text-sm font-medium">Client ID *</label>
                         <Input id="sso-clientId" value={newProvider.oidcClientId} onChange={e => setNewProvider(p => ({ ...p, oidcClientId: e.target.value }))} placeholder="client-id" />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="sso-clientSecret" className="text-xs font-medium"><BilingualText en="Client Secret" el="Client secret" compact /></label>
+                        <label htmlFor="sso-clientSecret" className="text-sm font-medium"><BilingualText en="Client Secret" el="Client secret" compact /></label>
                         <Input id="sso-clientSecret" type="password" value={newProvider.oidcClientSecret} onChange={e => setNewProvider(p => ({ ...p, oidcClientSecret: e.target.value }))} placeholder="••••••••" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="sso-scopes" className="text-xs font-medium">Scopes</label>
+                      <label htmlFor="sso-scopes" className="text-sm font-medium">Scopes</label>
                       <Input id="sso-scopes" value={newProvider.oidcScopes} onChange={e => setNewProvider(p => ({ ...p, oidcScopes: e.target.value }))} placeholder="openid profile email" />
                     </div>
                   </>
@@ -502,27 +519,27 @@ function SSOConfigPanel({
                 {providerType === 'saml' && (
                   <>
                     <div className="space-y-2">
-                      <label htmlFor="sso-metadataUrl" className="text-xs font-medium"><BilingualText en="Metadata URL (optional)" el="URL metadata (προαιρετικό)" compact /></label>
+                      <label htmlFor="sso-metadataUrl" className="text-sm font-medium"><BilingualText en="Metadata URL (optional)" el="URL metadata (προαιρετικό)" compact /></label>
                       <Input id="sso-metadataUrl" value={newProvider.samlMetadataUrl} onChange={e => setNewProvider(p => ({ ...p, samlMetadataUrl: e.target.value }))} placeholder="https://idp.example.com/metadata.xml" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <label htmlFor="sso-entryPoint" className="text-xs font-medium"><BilingualText en="SSO Entry Point" el="Σημείο εισόδου SSO" compact /></label>
+                        <label htmlFor="sso-entryPoint" className="text-sm font-medium"><BilingualText en="SSO Entry Point" el="Σημείο εισόδου SSO" compact /></label>
                         <Input id="sso-entryPoint" value={newProvider.samlEntryPoint} onChange={e => setNewProvider(p => ({ ...p, samlEntryPoint: e.target.value }))} placeholder="https://idp.example.com/sso" />
                       </div>
                       <div className="space-y-2">
-                        <label htmlFor="sso-entityId" className="text-xs font-medium"><BilingualText en="Issuer / Entity ID" el="Εκδότης / Entity ID" compact /></label>
+                        <label htmlFor="sso-entityId" className="text-sm font-medium"><BilingualText en="Issuer / Entity ID" el="Εκδότης / Entity ID" compact /></label>
                         <Input id="sso-entityId" value={newProvider.samlIssuer} onChange={e => setNewProvider(p => ({ ...p, samlIssuer: e.target.value }))} placeholder="urn:example:idp" />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="sso-cert" className="text-xs font-medium"><BilingualText en="Public Certificate (PEM)" el="Δημόσιο πιστοποιητικό (PEM)" compact /></label>
+                      <label htmlFor="sso-cert" className="text-sm font-medium"><BilingualText en="Public Certificate (PEM)" el="Δημόσιο πιστοποιητικό (PEM)" compact /></label>
                       <textarea id="sso-cert" value={newProvider.samlCert} onChange={e => setNewProvider(p => ({ ...p, samlCert: e.target.value }))} placeholder="-----BEGIN CERTIFICATE-----\n..." className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-xs font-mono resize-none" />
                     </div>
                   </>
                 )}
                 <div className="space-y-2">
-                  <label htmlFor="sso-loginButtonText" className="text-xs font-medium"><BilingualText en="Login Button Text" el="Κείμενο κουμπιού σύνδεσης" compact /></label>
+                  <label htmlFor="sso-loginButtonText" className="text-sm font-medium"><BilingualText en="Login Button Text" el="Κείμενο κουμπιού σύνδεσης" compact /></label>
                   <Input id="sso-loginButtonText" value={newProvider.loginButtonText} onChange={e => setNewProvider(p => ({ ...p, loginButtonText: e.target.value }))} placeholder="Continue with SSO" />
                 </div>
                 <div className="flex justify-end">
@@ -559,7 +576,7 @@ function SSOConfigPanel({
             {ssoMode !== 'disabled' && (
               <>
                 <div className="space-y-2">
-                  <label htmlFor="sso-selectedProvider" className="text-xs font-medium"><BilingualText en="Identity Provider" el="Πάροχος ταυτότητας" compact /></label>
+                  <label htmlFor="sso-selectedProvider" className="text-sm font-medium"><BilingualText en="Identity Provider" el="Πάροχος ταυτότητας" compact /></label>
                   <select id="sso-selectedProvider" value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
                     className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                     <option value="">— None selected —</option>
@@ -568,21 +585,21 @@ function SSOConfigPanel({
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="sso-allowedDomains" className="text-xs font-medium"><BilingualText en="Allowed Email Domains" el="Επιτρεπόμενοι τομείς email" compact /></label>
+                  <label htmlFor="sso-allowedDomains" className="text-sm font-medium"><BilingualText en="Allowed Email Domains" el="Επιτρεπόμενοι τομείς email" compact /></label>
                   <Input id="sso-allowedDomains" value={allowedDomains} onChange={e => setAllowedDomains(e.target.value)} placeholder="uoa.gr, di.uoa.gr (comma-separated)" />
                   <p className="text-xs text-muted-foreground"><BilingualText en="Leave empty to allow all domains" el="Αφήστε κενό για όλους τους τομείς" compact /></p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="sso-defaultRole" className="text-xs font-medium"><BilingualText en="Default Role for new users" el="Προεπιλεγμένος ρόλος νέων χρηστών" compact /></label>
+                    <label htmlFor="sso-defaultRole" className="text-sm font-medium"><BilingualText en="Default Role for new users" el="Προεπιλεγμένος ρόλος νέων χρηστών" compact /></label>
                     <select id="sso-defaultRole" value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
                       className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
                       {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{bilingualInline(r.charAt(0).toUpperCase() + r.slice(1), statusEl(r))}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label htmlFor="sso-sessionDuration" className="text-xs font-medium"><BilingualText en="Session Duration (hours)" el="Διάρκεια συνεδρίας (ώρες)" compact /></label>
+                    <label htmlFor="sso-sessionDuration" className="text-sm font-medium"><BilingualText en="Session Duration (hours)" el="Διάρκεια συνεδρίας (ώρες)" compact /></label>
                     <Input id="sso-sessionDuration" type="number" min={1} max={720} value={sessionDurationHours} onChange={e => setSessionDurationHours(Number(e.target.value))} />
                   </div>
                 </div>

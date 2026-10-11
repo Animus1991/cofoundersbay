@@ -29,24 +29,29 @@ import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { StatusText } from '@/components/common/StatusText';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
 function ColorField({
   label,
+  labelEl,
   value,
   onChange,
   description,
+  descriptionEl,
 }: {
   label: string;
+  labelEl: string;
   value: string;
   onChange: (v: string) => void;
   description?: string;
+  descriptionEl?: string;
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={`color-${label}`}>{label}</Label>
+      <Label htmlFor={`color-${label}`}><BilingualText en={label} el={labelEl} compact /></Label>
       <div className="flex items-center gap-2">
         <div className="relative">
           <input
@@ -63,15 +68,15 @@ function ColorField({
           />
         </div>
         <Input
-          aria-label={`${label} hex code`}
+          aria-label={bilingualAria(`${label} hex code`, `${labelEl}: κωδικός hex`)}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="#6756dc"
-          className="flex-1 font-mono text-sm"
+          className="flex-1 font-mono"
           maxLength={7}
         />
       </div>
-      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+      {description && <p className="text-xs text-muted-foreground"><BilingualText en={description} el={descriptionEl ?? description} wrap /></p>}
     </div>
   );
 }
@@ -83,10 +88,10 @@ const GOOGLE_FONTS = [
 ];
 
 const BG_STYLES = [
-  { value: 'gradient', label: 'Gradient' },
-  { value: 'flat', label: 'Flat' },
-  { value: 'image', label: 'Hero Image' },
-  { value: 'dark', label: 'Dark' },
+  { value: 'gradient', label: 'Gradient', labelEl: 'Διαβάθμιση' },
+  { value: 'flat', label: 'Flat', labelEl: 'Επίπεδο' },
+  { value: 'image', label: 'Hero Image', labelEl: 'Κεντρική εικόνα' },
+  { value: 'dark', label: 'Dark', labelEl: 'Σκούρο' },
 ];
 
 type FormState = Omit<TenantBranding, 'id' | 'tenantId' | 'publishedAt' | 'updatedAt' | 'isBrandingActive'>;
@@ -311,39 +316,46 @@ export default function TenantBrandingPage() {
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <ColorField
                       label="Primary Color"
+                      labelEl="Κύριο χρώμα"
                       value={form.primaryColor ?? '#6756dc'}
                       onChange={(v) => setField('primaryColor', v)}
                       description="Buttons, links, accents"
+                      descriptionEl="Κουμπιά, σύνδεσμοι, εμφάσεις"
                     />
                     <ColorField
                       label="Secondary Color"
+                      labelEl="Δευτερεύον χρώμα"
                       value={form.secondaryColor ?? '#8b5cf6'}
                       onChange={(v) => setField('secondaryColor', v)}
                       description="Secondary actions, hover states"
+                      descriptionEl="Δευτερεύουσες ενέργειες, καταστάσεις hover"
                     />
                     <ColorField
                       label="Accent Color"
+                      labelEl="Χρώμα έμφασης"
                       value={form.accentColor ?? '#22d3ee'}
                       onChange={(v) => setField('accentColor', v)}
                       description="Highlights, badges, tags"
+                      descriptionEl="Επισημάνσεις, σήματα, ετικέτες"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Background Style" el="Στυλ φόντου" compact /></p>
+                    <p id="page-cap1-cap" className="text-sm font-medium"><BilingualText en="Background Style" el="Στυλ φόντου" compact /></p>
                     <div role="group" aria-labelledby="page-cap1-cap" className="flex flex-wrap gap-2">
                       {BG_STYLES.map((s) => (
                         <button
                           key={s.value}
                           type="button"
                           onClick={() => setField('backgroundStyle', s.value)}
+                          aria-pressed={form.backgroundStyle === s.value}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                             form.backgroundStyle === s.value
                               ? 'border-primary bg-primary/10 text-primary-accessible'
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
-                          {s.label}
+                          <BilingualText en={s.label} el={s.labelEl} compact />
                         </button>
                       ))}
                     </div>
@@ -390,14 +402,19 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-6">
                   {(['headingFont', 'bodyFont'] as const).map((key) => (
                     <div key={key} className="space-y-2">
-                      <p id="page-cap2-cap" className="text-sm font-medium leading-tight">{key === 'headingFont' ? 'Heading Font' : 'Body Font'}</p>
-                      <div role="group" aria-labelledby="page-cap2-cap" className="flex flex-wrap gap-2">
+                      <p id={`page-cap2-${key}`} className="text-sm font-medium">
+                        {key === 'headingFont'
+                          ? <BilingualText en="Heading Font" el="Γραμματοσειρά τίτλων" compact />
+                          : <BilingualText en="Body Font" el="Γραμματοσειρά κειμένου" compact />}
+                      </p>
+                      <div role="group" aria-labelledby={`page-cap2-${key}`} className="flex flex-wrap gap-2">
                         {GOOGLE_FONTS.map((font) => (
                           <button
                             key={font}
                             type="button"
                             onClick={() => setField(key, font)}
-                            className={`px-3 py-1.5 rounded-xl border text-sm transition-colors ${
+                            aria-pressed={form[key] === font}
+                            className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${
                               form[key] === font
                                 ? 'border-primary bg-primary/10 text-primary-accessible font-medium'
                                 : 'border-border hover:border-primary/50'
@@ -410,6 +427,7 @@ export default function TenantBrandingPage() {
                       <Input
                         value={form[key] ?? ''}
                         onChange={(e) => setField(key, e.target.value)}
+                        aria-labelledby={`page-cap2-${key}`}
                         placeholder={bilingualInline("Custom font name…", "Όνομα προσαρμοσμένης γραμματοσειράς…")}
                         className="mt-2 max-w-sm"
                       />
@@ -417,11 +435,13 @@ export default function TenantBrandingPage() {
                   ))}
                   <div className="rounded-lg border p-5">
                     <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Preview" el="Προεπισκόπηση" compact /></p>
-                    <p className="text-2xl font-bold mb-1" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
-                      {activeTenant?.displayName ?? activeTenant?.name ?? 'Organization Name'}
+                    {/* The faces, previewed a step under the card's own title:
+                        a preview never sits level with the section's heading. */}
+                    <p className="mb-1 text-sm font-semibold" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
+                      {activeTenant?.displayName ?? activeTenant?.name ?? <BilingualText en="Organization Name" el="Όνομα οργανισμού" compact />}
                     </p>
-                    <p className="text-muted-foreground" style={{ fontFamily: form.bodyFont ?? 'Inter' }}>
-                      Empowering founders to build the future. Your mission starts here.
+                    <p className="card-body text-muted-foreground" style={{ fontFamily: form.bodyFont ?? 'Inter' }}>
+                      <BilingualText en="Empowering founders to build the future. Your mission starts here." el="Δίνουμε δύναμη στους ιδρυτές να χτίσουν το μέλλον. Η αποστολή σας ξεκινά εδώ." wrap />
                     </p>
                   </div>
                 </CardContent>
@@ -438,7 +458,7 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-5">
                   {/* Logo Upload */}
                   <div className="space-y-3">
-                    <p id="page-cap3-cap" className="text-sm font-medium leading-tight"><BilingualText en="Organization Logo" el="Λογότυπο οργανισμού" compact /></p>
+                    <p id="page-cap3-cap" className="text-sm font-medium"><BilingualText en="Organization Logo" el="Λογότυπο οργανισμού" compact /></p>
                     <div role="group" aria-labelledby="page-cap3-cap" className="flex items-start gap-4">
                       <ImageCropperTrigger
                         cropShape="rect"
@@ -463,7 +483,7 @@ export default function TenantBrandingPage() {
                               className="h-16 w-32 rounded-lg border border-border object-contain bg-background/50"
                             />
                           ) : (
-                            <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
+                            <div data-keep-icon="" className="h-16 w-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
                               <Image className="icon-lg text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
@@ -474,6 +494,7 @@ export default function TenantBrandingPage() {
                       </ImageCropperTrigger>
                       <div className="flex-1">
                         <Input
+                          aria-labelledby="page-cap3-cap"
                           value={form.logoUrl ?? ''}
                           onChange={(e) => setField('logoUrl', e.target.value)}
                           placeholder="https://..."
@@ -486,64 +507,69 @@ export default function TenantBrandingPage() {
 
                   {/* Favicon Upload */}
                   <div className="space-y-3">
-                    <p id="page-cap4-cap" className="text-sm font-medium leading-tight"><BilingualText en="Favicon" el="Favicon" compact /></p>
-                    <div role="group" aria-labelledby="page-cap4-cap" className="flex items-start gap-4">
-                      <ImageCropperTrigger
-                        cropShape="circle"
-                        aspectRatio={1}
-                        outputSize={64}
-                        title="Crop Favicon"
-                        onCrop={async (blob, dataUrl) => {
-                          try {
-                            const file = new File([blob], 'favicon.ico', { type: 'image/png' });
-                            const { upload } = await uploadAvatar(file);
-                            setField('faviconUrl', upload.url);
-                          } catch {
-                            // Handle error silently or show toast
-                          }
-                        }}
-                      >
-                        <div className="relative group cursor-pointer">
-                          {form.faviconUrl ? (
-                            <img
-                              src={form.faviconUrl}
-                              alt="Favicon preview"
-                              className="h-8 w-8 rounded-md border border-border object-contain bg-background/50"
-                            />
-                          ) : (
-                            <div className="h-8 w-8 rounded-md border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
-                              <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
+                    <p id="page-cap4-cap" className="text-sm font-medium"><BilingualText en="Favicon" el="Favicon" compact /></p>
+                    {/* The hint runs under the whole row, on the card's axis:
+                        beside a 32px preview it started a line of its own,
+                        indented past the preview. */}
+                    <div role="group" aria-labelledby="page-cap4-cap" className="space-y-1">
+                      <div className="flex items-center gap-4">
+                        <ImageCropperTrigger
+                          cropShape="circle"
+                          aspectRatio={1}
+                          outputSize={64}
+                          title="Crop Favicon"
+                          onCrop={async (blob, dataUrl) => {
+                            try {
+                              const file = new File([blob], 'favicon.ico', { type: 'image/png' });
+                              const { upload } = await uploadAvatar(file);
+                              setField('faviconUrl', upload.url);
+                            } catch {
+                              // Handle error silently or show toast
+                            }
+                          }}
+                        >
+                          <div className="relative group cursor-pointer">
+                            {form.faviconUrl ? (
+                              <img
+                                src={form.faviconUrl}
+                                alt="Favicon preview"
+                                className="h-8 w-8 rounded-md border border-border object-contain bg-background/50"
+                              />
+                            ) : (
+                              <div data-keep-icon="" className="h-8 w-8 rounded-md border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
+                                <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                              <Camera className="icon-sm text-white" />
                             </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                            <Camera className="icon-sm text-white" />
                           </div>
+                        </ImageCropperTrigger>
+                        <div className="flex-1">
+                          <Input
+                            aria-labelledby="page-cap4-cap"
+                            value={form.faviconUrl ?? ''}
+                            onChange={(e) => setField('faviconUrl', e.target.value)}
+                            placeholder="https://..."
+                          />
                         </div>
-                      </ImageCropperTrigger>
-                      <div className="flex-1">
-                        <Input
-                          value={form.faviconUrl ?? ''}
-                          onChange={(e) => setField('faviconUrl', e.target.value)}
-                          placeholder="https://..."
-                          className="mb-1"
-                        />
-                        <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. 64×64px, square format." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. 64×64px, τετράγωνο." wrap /></p>
                       </div>
+                      <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. 64×64px, square format." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. 64×64px, τετράγωνο." wrap /></p>
                     </div>
                   </div>
 
                   {[
-                    { key: 'heroImageUrl' as const, label: 'Hero / Banner Image URL', hint: 'Displayed on the public landing page. Recommended: 1920×1080px.' },
-                    { key: 'emailLogoUrl' as const, label: 'Email Logo URL', hint: 'Shown in email headers. Transparent PNG recommended.' },
-                  ].map(({ key, label, hint }) => (
+                    { key: 'heroImageUrl' as const, label: 'Hero / Banner Image URL', labelEl: 'URL κεντρικής εικόνας / banner', hint: 'Displayed on the public landing page. Recommended: 1920×1080px.', hintEl: 'Εμφανίζεται στη δημόσια σελίδα. Προτείνεται: 1920×1080px.' },
+                    { key: 'emailLogoUrl' as const, label: 'Email Logo URL', labelEl: 'URL λογοτύπου email', hint: 'Shown in email headers. Transparent PNG recommended.', hintEl: 'Εμφανίζεται στην κεφαλίδα των email. Προτείνεται διαφανές PNG.' },
+                  ].map(({ key, label, labelEl, hint, hintEl }) => (
                     <div key={key} className="space-y-2">
-                      <Label htmlFor="page-f5">{label}</Label>
-                      <Input id="page-f5"
+                      <Label htmlFor={`page-f5-${key}`}><BilingualText en={label} el={labelEl} compact /></Label>
+                      <Input id={`page-f5-${key}`}
                         value={form[key] ?? ''}
                         onChange={(e) => setField(key, e.target.value)}
                         placeholder="https://..."
                       />
-                      <p className="text-xs text-muted-foreground">{hint}</p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={hint} el={hintEl} wrap /></p>
                       {form[key] && (
                         <img
                           src={form[key] as string}
@@ -655,7 +681,7 @@ export default function TenantBrandingPage() {
                       onChange={(e) => setField('communityNaming', e.target.value)}
                       placeholder={bilingualInline("Community (default)", "Κοινότητα (προεπιλογή)")}
                     />
-                    <p className="text-xs text-muted-foreground">Replace "Community" with e.g. "Program", "Cohort", "Circle".</p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en={'Replace "Community" with e.g. "Program", "Cohort", "Circle".'} el="Αντικαταστήστε το «Κοινότητα» με π.χ. «Πρόγραμμα», «Κύκλος», «Ομάδα»." wrap /></p>
                   </div>
                 </CardContent>
               </Card>
@@ -672,9 +698,10 @@ export default function TenantBrandingPage() {
                     { role: 'member', default: 'Member' },
                   ].map(({ role, default: def }) => (
                     <div key={role} className="flex items-center gap-3">
-                      <span className="w-20 text-sm text-muted-foreground capitalize">{def}</span>
-                      <span className="text-muted-foreground">→</span>
+                      <span id={`role-label-${role}`} className="w-20 text-sm text-muted-foreground"><StatusText value={role} /></span>
+                      <span className="text-muted-foreground" aria-hidden="true">→</span>
                       <Input
+                        aria-labelledby={`role-label-${role}`}
                         className="flex-1 max-w-xs"
                         value={roleLabels[role] ?? ''}
                         onChange={(e) => setRoleLabel(role, e.target.value)}
@@ -695,15 +722,15 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {[
-                      { key: 'supportEmail' as const, label: 'Support Email', placeholder: 'support@yourorg.com', type: 'email' },
-                      { key: 'websiteUrl' as const, label: 'Organization Website', placeholder: 'https://yourorg.com', type: 'url' },
-                      { key: 'privacyPolicyUrl' as const, label: 'Privacy Policy URL', placeholder: 'https://...', type: 'url' },
-                      { key: 'termsUrl' as const, label: 'Terms of Service URL', placeholder: 'https://...', type: 'url' },
-                      { key: 'cookiePolicyUrl' as const, label: 'Cookie Policy URL', placeholder: 'https://...', type: 'url' },
-                    ].map(({ key, label, placeholder }) => (
+                      { key: 'supportEmail' as const, label: 'Support Email', labelEl: 'Email υποστήριξης', placeholder: 'support@yourorg.com', type: 'email' },
+                      { key: 'websiteUrl' as const, label: 'Organization Website', labelEl: 'Ιστότοπος οργανισμού', placeholder: 'https://yourorg.com', type: 'url' },
+                      { key: 'privacyPolicyUrl' as const, label: 'Privacy Policy URL', labelEl: 'URL πολιτικής απορρήτου', placeholder: 'https://...', type: 'url' },
+                      { key: 'termsUrl' as const, label: 'Terms of Service URL', labelEl: 'URL όρων χρήσης', placeholder: 'https://...', type: 'url' },
+                      { key: 'cookiePolicyUrl' as const, label: 'Cookie Policy URL', labelEl: 'URL πολιτικής cookies', placeholder: 'https://...', type: 'url' },
+                    ].map(({ key, label, labelEl, placeholder }) => (
                       <div key={key} className="space-y-2">
-                        <Label htmlFor="page-f14">{label}</Label>
-                        <Input id="page-f14"
+                        <Label htmlFor={`page-f14-${key}`}><BilingualText en={label} el={labelEl} compact /></Label>
+                        <Input id={`page-f14-${key}`}
                           value={form[key] ?? ''}
                           onChange={(e) => setField(key, e.target.value)}
                           placeholder={placeholder}
@@ -720,16 +747,16 @@ export default function TenantBrandingPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {[
-                      { key: 'linkedinUrl' as const, label: 'LinkedIn', placeholder: 'https://linkedin.com/company/...' },
-                      { key: 'twitterUrl' as const, label: 'Twitter / X', placeholder: 'https://twitter.com/...' },
-                      { key: 'instagramUrl' as const, label: 'Instagram', placeholder: 'https://instagram.com/...' },
-                      { key: 'websiteFooterUrl' as const, label: 'Footer Website', placeholder: 'https://...' },
-                    ].map(({ key, label, placeholder }) => (
+                      { key: 'linkedinUrl' as const, label: 'LinkedIn', labelEl: 'LinkedIn', placeholder: 'https://linkedin.com/company/...' },
+                      { key: 'twitterUrl' as const, label: 'Twitter / X', labelEl: 'Twitter / X', placeholder: 'https://twitter.com/...' },
+                      { key: 'instagramUrl' as const, label: 'Instagram', labelEl: 'Instagram', placeholder: 'https://instagram.com/...' },
+                      { key: 'websiteFooterUrl' as const, label: 'Footer Website', labelEl: 'Ιστότοπος υποσέλιδου', placeholder: 'https://...' },
+                    ].map(({ key, label, labelEl, placeholder }) => (
                       <div key={key} className="space-y-2">
-                        <Label htmlFor="page-f15">{label}</Label>
+                        <Label htmlFor={`page-f15-${key}`}><BilingualText en={label} el={labelEl} compact /></Label>
                         <div className="flex items-center gap-2">
                           <Link2 className="icon-sm text-muted-foreground shrink-0" />
-                          <Input id="page-f15"
+                          <Input id={`page-f15-${key}`}
                             value={form[key] ?? ''}
                             onChange={(e) => setField(key, e.target.value)}
                             placeholder={placeholder}
@@ -758,7 +785,7 @@ export default function TenantBrandingPage() {
                         onChange={(e) => setField('emailFromName', e.target.value)}
                         placeholder="TechHub Accelerator"
                       />
-                      <p className="text-xs text-muted-foreground">Shown as "From" in emails.</p>
+                      <p className="text-xs text-muted-foreground"><BilingualText en={'Shown as "From" in emails.'} el="Εμφανίζεται ως «Από» στα email." wrap /></p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="page-f17"><BilingualText en="Email Logo URL" el="URL λογοτύπου email" compact /></Label>
@@ -801,17 +828,20 @@ export default function TenantBrandingPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between rounded-lg border p-4">
-                    <div>
-                      <p className="font-medium"><BilingualText en="Branding Status" el="Κατάσταση εμφάνισης" compact /></p>
-                      <p className="text-sm text-muted-foreground">
+                  {/* The status is a setting row of the card, not a box in it. */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium"><BilingualText en="Branding Status" el="Κατάσταση εμφάνισης" compact /></p>
+                      <p className="text-xs text-muted-foreground">
                         {branding?.isBrandingActive
-                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}`
-                          : 'Not yet published — save changes first, then publish.'}
+                          ? (branding.publishedAt
+                            ? <BilingualText en={`Published on ${new Date(branding.publishedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`} el={`Δημοσιεύτηκε στις ${new Date(branding.publishedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`} compact />
+                            : <BilingualText en="Published" el="Δημοσιευμένη" compact />)
+                          : <BilingualText en="Not yet published — save changes first, then publish." el="Δεν έχει δημοσιευτεί — αποθηκεύστε πρώτα και μετά δημοσιεύστε." wrap />}
                       </p>
                     </div>
                     <Switch
-                      aria-label="Branding Status"
+                      aria-label={bilingualAria('Branding Status', 'Κατάσταση εμφάνισης')}
                       checked={branding?.isBrandingActive ?? false}
                       onCheckedChange={(checked) => {
                         if (checked) publishMutation.mutate();
@@ -821,7 +851,7 @@ export default function TenantBrandingPage() {
                     />
                   </div>
 
-                  <div className="rounded-lg border p-4 space-y-3">
+                  <div className="space-y-3">
                     <p className="text-sm font-medium"><BilingualText en="Safeguards" el="Δικλίδες" compact /></p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
@@ -858,7 +888,7 @@ export default function TenantBrandingPage() {
                       ) : (
                         <Save className="mr-2 icon-sm" />
                       )}
-                      Save Draft
+                      <BilingualText en="Save Draft" el="Αποθήκευση πρόχειρου" compact />
                     </Button>
                     {!branding?.isBrandingActive && (
                       <Button

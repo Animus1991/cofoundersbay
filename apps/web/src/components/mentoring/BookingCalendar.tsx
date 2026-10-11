@@ -177,13 +177,15 @@ export function BookingCalendar({
                   <h2 className="text-xl font-semibold text-foreground">{mentor.displayName}</h2>
                   <RoleBadge role="mentor" size="sm" />
                 </div>
+                <div className="mt-1 space-y-2">
                 {mentor.headline && (
-                  <p className="text-sm text-muted-foreground mt-1">{mentor.headline}</p>
+                  <p className="text-sm text-muted-foreground">{mentor.headline}</p>
                 )}
                 <FactLine className="mt-3" items={mentor.expertise.slice(0, 4)} />
                 {mentor.hourlyRate && (
                   <p className="mt-3 text-sm font-medium text-primary-accessible">{mentor.hourlyRate}</p>
                 )}
+                </div>
               </div>
             </div>
           </CardContent>

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Users, Settings, BarChart3, Shield, Mail,
   UserPlus, MoreVertical, Search, Filter, Download,
-  CheckCircle2, XCircle, Clock, TrendingUp, Calendar,
+  CheckCircle2, XCircle, Clock, Calendar,
   Building2, Globe, Edit, Trash2, Crown, UserMinus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AppShell } from '@/components/layout/AppShell';
+import { EmptyLine } from '@/components/dashboard/SectionCard';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -202,8 +203,9 @@ function memberStatusChip(status: string) {
   return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
 }
 
-function StatCard({ title, value, change, icon: Icon, trend }: {
+function StatCard({ title, titleEl, value, change, icon: Icon, trend }: {
   title: string;
+  titleEl: string;
   value: string | number;
   change?: string;
   icon: React.ElementType;
@@ -214,7 +216,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
       <CardContent>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en={title} el={titleEl} compact wrap /></p>
             <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
             {change && (
               <p className={cn(
@@ -452,10 +454,10 @@ export default function OrgAdminPage() {
       badge: stats.suspended || null,
       content: (
         <div className="space-y-2">
-          <StatCard title="Total Members" value={stats.totalMembers} icon={Users} />
-          <StatCard title="Active Members" value={stats.activeMembers} icon={CheckCircle2} />
-          <StatCard title="Suspended" value={stats.suspended} icon={XCircle} />
-          <StatCard title="Programs" value={stats.totalProjects} icon={Building2} />
+          <StatCard title="Total Members" titleEl="Σύνολο μελών" value={stats.totalMembers} icon={Users} />
+          <StatCard title="Active Members" titleEl="Ενεργά μέλη" value={stats.activeMembers} icon={CheckCircle2} />
+          <StatCard title="Suspended" titleEl="Σε αναστολή" value={stats.suspended} icon={XCircle} />
+          <StatCard title="Programs" titleEl="Προγράμματα" value={stats.totalProjects} icon={Building2} />
         </div>
       ),
     },
@@ -565,15 +567,15 @@ export default function OrgAdminPage() {
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           <div className="flex min-w-0 flex-1 items-center gap-4">
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-12 w-12 rounded-xl">
               <AvatarImage src={org.logo} />
-              <AvatarFallback className="bg-primary/10 text-primary-accessible text-lg">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible text-lg">
                 {org.name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
               <h1 className="break-words text-2xl sm:text-3xl font-semibold text-foreground">{org.name}</h1>
-              <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact wrap /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact wrap /></p>
             </div>
           </div>
           <Button variant="outline" asChild>
@@ -725,18 +727,17 @@ export default function OrgAdminPage() {
           <TabsContent value="invites">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
+                <CardTitle><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
                 <CardDescription><BilingualText en="Manage pending member invitations" el="Διαχείριση εκκρεμών προσκλήσεων" wrap /></CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
-                  <p><BilingualText en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" compact /></p>
-                  <Button className="mt-4" onClick={() => setInviteOpen(true)}>
-                    <UserPlus className="icon-sm mr-2" aria-hidden="true" />
-                    <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
-                  </Button>
-                </div>
+              {/* An empty line on the card's axis, not a centred block whose
+                  sentence (on the body step) was as loud as the card's title. */}
+              <CardContent className="space-y-3">
+                <EmptyLine en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" />
+                <Button size="sm" onClick={() => setInviteOpen(true)}>
+                  <UserPlus className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -745,24 +746,18 @@ export default function OrgAdminPage() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base"><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
+                  <CardTitle><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." compact wrap /></p>
-                  </div>
+                  <EmptyLine en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." />
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base"><BilingualText en="Activity Overview" el="Επισκόπηση δραστηριότητας" compact /></CardTitle>
+                  <CardTitle><BilingualText en="Activity Overview" el="Επισκόπηση δραστηριότητας" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." compact wrap /></p>
-                  </div>
+                  <EmptyLine en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." />
                 </CardContent>
               </Card>
             </div>
@@ -771,7 +766,7 @@ export default function OrgAdminPage() {
           <TabsContent value="permissions">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Role Permissions" el="Δικαιώματα ρόλων" compact /></CardTitle>
+                <CardTitle><BilingualText en="Role Permissions" el="Δικαιώματα ρόλων" compact /></CardTitle>
                 <CardDescription><BilingualText en="What each role can do" el="Τι μπορεί να κάνει κάθε ρόλος" compact wrap /></CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -780,25 +775,25 @@ export default function OrgAdminPage() {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn('capitalize border', roleChip(role))}>
                         {role === 'owner' && <Crown className="icon-sm mr-1" />}
-                        {role}
+                        <StatusText value={role} />
                       </Badge>
                     </div>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 text-sm">
                       {[
-                        'Invite members',
-                        'Remove members',
-                        'Manage roles',
-                        'Edit organization',
-                        'View analytics',
-                        'Manage projects',
+                        { en: 'Invite members', el: 'Πρόσκληση μελών' },
+                        { en: 'Remove members', el: 'Αφαίρεση μελών' },
+                        { en: 'Manage roles', el: 'Διαχείριση ρόλων' },
+                        { en: 'Edit organization', el: 'Επεξεργασία οργανισμού' },
+                        { en: 'View analytics', el: 'Προβολή αναλυτικών' },
+                        { en: 'Manage projects', el: 'Διαχείριση έργων' },
                       ].map((perm, i) => (
-                        <div key={perm} className="flex items-center gap-2">
+                        <div key={perm.en} className="flex items-center gap-2">
                           {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
                             <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
                           ) : (
                             <XCircle className="icon-sm text-muted-foreground" aria-hidden="true" />
                           )}
-                          <span className="text-muted-foreground">{perm}</span>
+                          <span className="min-w-0 text-muted-foreground"><BilingualText en={perm.en} el={perm.el} compact wrap /></span>
                         </div>
                       ))}
                     </div>
@@ -820,7 +815,7 @@ export default function OrgAdminPage() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label htmlFor="invite-user-id" className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></label>
+              <label htmlFor="invite-user-id" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="User ID" el="Αναγνωριστικό χρήστη" compact /></label>
               <Input
                 id="invite-user-id"
                 value={inviteUserId}
@@ -830,7 +825,7 @@ export default function OrgAdminPage() {
               />
             </div>
             <div>
-              <label htmlFor="invite-role" className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></label>
+              <label htmlFor="invite-role" className="block text-sm font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></label>
               <Select value={inviteRole} onValueChange={setInviteRole}>
                 <SelectTrigger id="invite-role" aria-label="Role" className="mt-2">
                   <SelectValue />

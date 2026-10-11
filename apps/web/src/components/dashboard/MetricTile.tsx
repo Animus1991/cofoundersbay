@@ -40,26 +40,34 @@ export type MetricTileProps = {
   labelClassName?: string;
   valueClassName?: string;
   metaClassName?: string;
+  /**
+   * Centre the label, figure and caption in the tile. Off everywhere except
+   * the four founder-dashboard figures that were asked to sit in the middle.
+   */
+  align?: 'start' | 'center';
 };
 
-export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName }: MetricTileProps) {
+export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, captionEl, trend, href, className, labelClassName, valueClassName, metaClassName, align = 'start' }: MetricTileProps) {
+  const centered = align === 'center';
+  const mark = glyph ? (
+    <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
+  ) : Icon ? (
+    <Icon className="icon-sm shrink-0 text-muted-foreground/70" aria-hidden="true" />
+  ) : null;
   const content = (
     <Card className={cn('relative h-full min-w-0 overflow-hidden transition-colors group-hover:border-primary/30', className)}>
-      <CardContent className="flex h-full flex-col">
-        <div className="flex w-full items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-1.5">
+      <CardContent className={cn('flex h-full flex-col', centered && 'items-center text-center')}>
+        <div className={cn('flex w-full items-start gap-3', centered ? 'flex-col items-center' : 'justify-between')}>
+          {centered ? mark : null}
+          <div className={cn('min-w-0 flex-1 space-y-1.5', centered && 'w-full')}>
             <p className={cn('page-stat-label leading-snug text-muted-foreground', labelClassName)}>
               <BilingualText en={label} el={labelEl} stacked wrap />
             </p>
             <p className={cn('page-stat font-semibold tabular-nums tracking-tight', valueClassName)}>{value}</p>
           </div>
-          {glyph ? (
-            <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground/70" />
-          ) : Icon ? (
-            <Icon className="icon-sm shrink-0 text-muted-foreground/70" aria-hidden="true" />
-          ) : null}
+          {centered ? null : mark}
         </div>
-        <div className="mt-auto min-h-[2.75rem] pt-2">
+        <div className={cn('mt-auto min-h-[2.75rem] pt-2', centered && 'w-full')}>
           {trend ? (
             <div className="space-y-0.5">
               <p className={cn('page-stat-meta font-medium tabular-nums leading-snug', trend.positive ? TREND.up : TREND.down, metaClassName)}>

@@ -27,10 +27,14 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailOptions } from '@/components/layout/RailParts';
 import { BilingualText } from '@/components/common/BilingualText';
+import { FactLine } from '@/components/common/FactLine';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -93,14 +97,6 @@ const TIER_BG = {
   silver: 'bg-muted',
   gold: 'bg-status-warning-bg',
   platinum: 'bg-status-info-bg',
-};
-
-const CATEGORY_ICONS = {
-  networking: Users,
-  engagement: Heart,
-  profile: Star,
-  activity: Zap,
-  special: Crown,
 };
 
 const ICON_MAP: Record<string, typeof Award> = {
@@ -265,96 +261,97 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
 ];
 
 
-function AchievementCard({ achievement }: { achievement: Achievement }) {
+/** "gold" → "Gold": the tier and category keys are lower-case words. */
+const cap = (value: string) => (value ? value.charAt(0).toUpperCase() + value.slice(1) : value);
+
+function AchievementCard({ achievement, meterSlot = 0 }: { achievement: Achievement; meterSlot?: number }) {
   const Icon = achievement.icon;
-  const CategoryIcon = CATEGORY_ICONS[achievement.category];
   const progressPercentage = (achievement.progress / achievement.total) * 100;
 
+  // The card every other card is: the badge as the mark, the title and the
+  // line under it (category · tier), the points at the head's right, then the
+  // sentence, the progress and the facts on the badge's left edge. The badge
+  // used to stand in a column of its own, so every line below the title
+  // started 72px in from the card's axis.
   return (
     <Card
       className={cn(
-        'transition-all shadow-sm border-border',
+        'transition-all hover:border-primary/20',
         achievement.unlocked && 'hover:border-primary/30'
       )}
     >
-      <CardContent>
-        <div className="flex items-start gap-4">
-          {/* The badge is the achievement, not decoration beside it. */}
-          <div
-            data-keep-icon
-            className={cn(
-              'relative p-3 rounded-xl shrink-0',
-              TIER_BG[achievement.tier],
-              achievement.unlocked ? 'ring-2 ring-primary/20' : ''
-            )}
-          >
-            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} aria-hidden="true" />
-            {achievement.unlocked && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success-mark flex items-center justify-center">
-                <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
-              </div>
-            )}
-            {achievement.unlocked === false && achievement.progress === 0 && (
-              <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <h3 className="font-semibold text-base mb-1">{achievement.title}</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {achievement.description}
-                </p>
-              </div>
-              <Badge variant="secondary" className="shrink-0">
-                {achievement.points} pts
-              </Badge>
-            </div>
-
-            {achievement.unlocked === null && <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Eligibility not yet verified" el="Η επιλεξιμότητα δεν έχει ακόμη επαληθευτεί" compact /></p>}
-            {achievement.unlocked === false && (
-              <div className="space-y-1.5 mb-3">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span><BilingualText en={achievementsEn('progress')} el={achievementsEl('progress')} compact /></span>
-                  <span>
-                    {achievement.progress} / {achievement.total}
-                  </span>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            /* The badge is the achievement, not decoration beside it. */
+            <div
+              data-keep-icon
+              data-card-mark=""
+              className={cn(
+                'relative flex h-10 w-10 items-center justify-center rounded-xl',
+                TIER_BG[achievement.tier],
+                achievement.unlocked ? 'ring-2 ring-primary/20' : ''
+              )}
+            >
+              <Icon className={cn('icon-md', TIER_COLORS[achievement.tier])} aria-hidden="true" />
+              {achievement.unlocked && (
+                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-status-success-mark flex items-center justify-center">
+                  <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
                 </div>
-                <Progress value={progressPercentage} className="h-2" />
-              </div>
-            )}
-
-            {/* flex-wrap: four items (two badges, the rarity note and the unlock
-                date) needed 375px on a 334px card and had nowhere to go, so this
-                row was what made /achievements the one page that scrolled
-                horizontally on a phone — the fixed bottom nav then stretched with
-                the grown layout viewport, which made it look like the nav's fault. */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
-              <Badge variant="outline" className="gap-1">
-                <CategoryIcon className="icon-sm" />
-                {achievement.category}
-              </Badge>
-              <Badge
-                variant="outline"
-                className={cn('gap-1', TIER_COLORS[achievement.tier])}
-              >
-                <Medal className="icon-sm" aria-hidden="true" />
-                {achievement.tier}
-              </Badge>
-              <span className="text-muted-foreground">
-                {achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact />
-              </span>
-              {achievement.unlocked && achievement.unlockedAt && (
-                <span className="text-muted-foreground ml-auto">
-                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
-                </span>
+              )}
+              {achievement.unlocked === false && achievement.progress === 0 && (
+                <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
+                  <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
+                </div>
               )}
             </div>
+          )}
+          title={achievement.title}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <BilingualText key="cat" en={cap(achievementsEn(`cat_${achievement.category}`))} el={cap(achievementsEl(`cat_${achievement.category}`))} compact />,
+                <span key="tier" className={TIER_COLORS[achievement.tier]}>
+                  <BilingualText en={cap(achievementsEn(`tier_${achievement.tier}`))} el={cap(achievementsEl(`tier_${achievement.tier}`))} compact />
+                </span>,
+              ]}
+            />
+          )}
+          aside={(
+            <Badge variant="secondary" className="shrink-0">
+              <BilingualText en={`${achievement.points} pts`} el={`${achievement.points} πόντοι`} compact />
+            </Badge>
+          )}
+        />
+
+        {achievement.description ? (
+          <p className="card-body text-muted-foreground first-letter:uppercase">{achievement.description}</p>
+        ) : null}
+
+        {achievement.unlocked === null && <p className="text-xs text-muted-foreground"><BilingualText en="Eligibility not yet verified" el="Η επιλεξιμότητα δεν έχει ακόμη επαληθευτεί" compact /></p>}
+        {achievement.unlocked === false && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span><BilingualText en={achievementsEn('progress')} el={achievementsEl('progress')} compact /></span>
+              <span className="tabular-nums">
+                {achievement.progress} / {achievement.total}
+              </span>
+            </div>
+            <Progress value={progressPercentage} data-meter-slot={meterSlot % 3} className="h-2" />
           </div>
-        </div>
+        )}
+
+        {/* Rarity and the unlock date: facts, one wrapping line (a row of
+            four items once made /achievements scroll sideways on a phone). */}
+        <FactLine
+          items={[
+            <span key="rarity">{achievement.rarity}% <BilingualText en={achievementsEn('have_this')} el={achievementsEl('have_this')} compact /></span>,
+            achievement.unlocked && achievement.unlockedAt
+              ? <BilingualText key="unlocked" en={`Unlocked ${new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`} el={`Ξεκλειδώθηκε ${new Date(achievement.unlockedAt).toLocaleDateString('el-GR', { timeZone: 'UTC' })}`} compact />
+              : null,
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -389,7 +386,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
                   {stats.totalPoints} / {stats.nextLevelPoints} pts
                 </span>
               </div>
-              <Progress value={levelProgress} className="h-2" />
+              <Progress value={levelProgress} data-meter-slot={0} className="h-2" />
             </div>
 
             <div className="flex items-center gap-2">
@@ -398,7 +395,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
                 {stats.rank}
               </Badge>
               <span className="text-sm text-muted-foreground">
-                Top {100 - stats.percentile}%
+                <BilingualText en={`Top ${100 - stats.percentile}%`} el={`Κορυφαίο ${100 - stats.percentile}%`} compact />
               </span>
             </div>
           </div>
@@ -669,14 +666,14 @@ export default function AchievementsPage() {
               {activeTab === 'all' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2" data-tour="achievements-list">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
                       <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
+                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_achievements_found')} el={achievementsEl('no_achievements_found')} /></h3>
                       <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('try_adjusting_filters')} el={achievementsEl('try_adjusting_filters')} /></p>
                     </CardContent>
                   </Card>
@@ -687,14 +684,14 @@ export default function AchievementsPage() {
               {activeTab === 'unlocked' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
                       <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                      <h3 className="text-lg font-semibold mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
+                      <h3 className="card-title mb-2"><BilingualText en={achievementsEn('no_unlocked_achievements')} el={achievementsEl('no_unlocked_achievements')} /></h3>
                       <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('start_engaging')} el={achievementsEl('start_engaging')} /></p>
                     </CardContent>
                   </Card>
@@ -705,8 +702,8 @@ export default function AchievementsPage() {
               {activeTab === 'locked' && (
               <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
-                  filteredAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  filteredAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} meterSlot={index % 3} />
                   ))
                 ) : (
                   <Card>
@@ -721,91 +718,118 @@ export default function AchievementsPage() {
 
               {activeTab === 'leaderboard' && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 animate-in fade-in slide-in-from-bottom-2">
-                  {/* Leaderboard table */}
+                  {/* Leaderboard: one row per person, set as every person in
+                      a card is (the round mark, the name, the line under it),
+                      parted by hairlines rather than framed one by one. */}
                   <div className="sm:col-span-2">
                     <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm flex items-center gap-2">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
                           <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-1">
-                        {LEADERBOARD.map((user) => (
-                          <div
-                            key={user.rank}
-                            className={cn(
-                              'flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
-                              (user as any).isMe ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50',
-                            )}
-                          >
-                            <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
-                              {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
-                            </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                              {user.name[0]}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary-accessible')}>
-                                {user.name}{(user as any).isMe && ' (You)'}
-                              </p>
-                              <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>
-                            </div>
-                            <div className="text-right shrink-0">
-                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString('en-GB')}</p>
-                              <p className="text-xs text-muted-foreground">pts</p>
-                            </div>
-                          </div>
-                        ))}
+                      <CardContent>
+                        <ol className="divide-y divide-border">
+                          {LEADERBOARD.map((user) => {
+                            const isMe = (user as { isMe?: boolean }).isMe === true;
+                            return (
+                              <li
+                                key={user.rank}
+                                aria-current={isMe ? 'true' : undefined}
+                                className="py-3 first:pt-0 last:pb-0"
+                              >
+                                <RowHead
+                                  mark={(
+                                    <Avatar className={cn('h-10 w-10', isMe && 'ring-2 ring-primary/20')}>
+                                      <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{user.name[0]}</AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                  title={isMe
+                                    ? <span className="text-primary-accessible"><BilingualText en={user.name === 'You' ? 'You' : `${user.name} (You)`} el={user.name === 'You' ? 'Εσείς' : `${user.name} (Εσείς)`} compact /></span>
+                                    : user.name}
+                                  subtitle={(
+                                    <FactLine
+                                      items={[
+                                        <span key="rank" className={cn('tabular-nums', RANK_COLORS[user.rank])}>
+                                          {user.rank <= 3 ? `${['🥇', '🥈', '🥉'][user.rank - 1]} ` : ''}#{user.rank}
+                                        </span>,
+                                        <BilingualText key="level" en={`Level ${user.level}`} el={`Επίπεδο ${user.level}`} compact />,
+                                        user.badge,
+                                      ]}
+                                    />
+                                  )}
+                                  asideStays
+                                  aside={(
+                                    <span className="card-body font-semibold tabular-nums text-foreground">
+                                      {user.points.toLocaleString('en-GB')}{' '}
+                                      <span className="text-xs font-normal text-muted-foreground"><BilingualText en="pts" el="πόντοι" compact /></span>
+                                    </span>
+                                  )}
+                                />
+                              </li>
+                            );
+                          })}
+                        </ol>
                       </CardContent>
                     </Card>
                   </div>
 
                   {/* Recent unlocks */}
-                  <div>
+                  <div className="space-y-4">
                     <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm flex items-center gap-2">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
                           <Zap className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('recently_unlocked')} el={achievementsEl('recently_unlocked')} compact />
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
-                        {RECENT_UNLOCKS.length > 0 ? RECENT_UNLOCKS.map((a) => {
-                          const Icon = a.icon;
-                          return (
-                            <div key={a.id} className="flex items-center gap-2.5">
-                              <div data-keep-icon className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
-                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} aria-hidden="true" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium truncate">{a.title}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {a.unlockedAt ? fmtDate(a.unlockedAt, { day: 'numeric', month: 'short' }) : null}
-                                </p>
-                              </div>
-                              <Badge variant="secondary" size="sm" className="px-1.5 shrink-0">{a.points}pts</Badge>
-                            </div>
-                          );
-                        }) : (
+                      <CardContent>
+                        {RECENT_UNLOCKS.length > 0 ? (
+                          <ul className="divide-y divide-border">
+                            {RECENT_UNLOCKS.map((a) => {
+                              const Icon = a.icon;
+                              return (
+                                <li key={a.id} className="py-3 first:pt-0 last:pb-0">
+                                  <RowHead
+                                    mark={(
+                                      <div data-keep-icon data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', TIER_BG[a.tier])}>
+                                        <Icon className={cn('icon-md', TIER_COLORS[a.tier])} aria-hidden="true" />
+                                      </div>
+                                    )}
+                                    title={a.title}
+                                    subtitle={a.unlockedAt ? fmtDate(a.unlockedAt, { day: 'numeric', month: 'short' }) : undefined}
+                                    aside={(
+                                      <Badge variant="secondary" size="sm" className="px-1.5">
+                                        <BilingualText en={`${a.points} pts`} el={`${a.points} πόντοι`} compact />
+                                      </Badge>
+                                    )}
+                                  />
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : (
                           <p className="text-xs text-muted-foreground text-center py-4"><BilingualText en={achievementsEn('no_unlocks_yet')} el={achievementsEl('no_unlocks_yet')} /></p>
                         )}
                       </CardContent>
                     </Card>
 
                     {/* Tier breakdown */}
-                    <Card className="mt-4">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm"><BilingualText en={achievementsEn('tier_breakdown')} el={achievementsEl('tier_breakdown')} compact /></CardTitle>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle><BilingualText en={achievementsEn('tier_breakdown')} el={achievementsEl('tier_breakdown')} compact /></CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-2">
-                        {(['platinum','gold','silver','bronze'] as const).map((tier) => {
+                        {(['platinum','gold','silver','bronze'] as const).map((tier, index) => {
                           const count = achievements.filter((a) => a.tier === tier && a.unlocked).length;
                           const total = achievements.filter((a) => a.tier === tier).length;
                           return (
                             <div key={tier} className="flex items-center gap-2">
                               <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} aria-hidden="true" />
-                              <span className="text-xs capitalize text-muted-foreground w-16">{tier}</span>
-                              <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
-                              <span className="text-xs text-muted-foreground w-8 text-right">{count}/{total}</span>
+                              <span className="w-20 text-xs text-muted-foreground">
+                                <BilingualText en={cap(achievementsEn(`tier_${tier}`))} el={cap(achievementsEl(`tier_${tier}`))} compact />
+                              </span>
+                              <Progress value={total ? (count / total) * 100 : 0} data-meter-slot={index % 3} className="flex-1 h-1.5" />
+                              <span className="text-xs text-muted-foreground w-8 text-right tabular-nums">{count}/{total}</span>
                             </div>
                           );
                         })}

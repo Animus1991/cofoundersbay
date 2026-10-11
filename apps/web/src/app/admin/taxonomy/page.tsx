@@ -1,10 +1,11 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Tags,
   Search,
   Plus,
   MoreVertical,
@@ -20,7 +21,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -61,7 +62,6 @@ function slugify(str: string) {
 function SkillRowSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 sm:px-6 py-2 border-b last:border-b-0">
-      <div className="w-6" />
       <Skeleton className="icon-sm rounded" />
       <Skeleton className="h-4 flex-1 max-w-[160px]" />
       <Skeleton className="h-4 w-24" />
@@ -81,34 +81,44 @@ function SkillRow({
   onDelete: (skill: AdminSkillItem) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-6 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
-      <div className="w-6" />
-      <Hash className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
-      <span className="flex-1 font-medium truncate">{skill.name}</span>
-      <div className="ml-auto flex items-center gap-3">
-      <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
-      {skill.category && (
-        <Badge variant="outline" className="text-xs hidden md:flex"><StatusText value={skill.category} /></Badge>
-      )}
-      <Badge variant="secondary" className="text-xs">{skill.count}</Badge>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <MoreVertical className="icon-sm" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => onEdit(skill)}>
-            <Edit className="mr-2 icon-sm" aria-hidden="true" />
-            <BilingualText en="Edit" el="Επεξεργασία" compact />
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
-            <Trash2 className="mr-2 icon-sm" />
-            <BilingualText en="Delete" el="Διαγραφή" compact />
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      </div>
+    // A row of the list on the card's axis, set like every row in a section
+    // card: the skill over its address and category, how many profiles use
+    // it and the menu at the right.
+    <div className="border-b px-4 py-2 transition-colors last:border-b-0 hover:bg-muted/50 sm:px-6">
+      <RowHead
+        title={skill.name}
+        subtitle={(
+          <FactLine
+            items={[
+              <code key="slug" className="font-mono" translate="no">{skill.slug}</code>,
+              skill.category ? <StatusText key="category" value={skill.category} /> : null,
+            ]}
+          />
+        )}
+        asideStays
+        aside={(
+          <>
+            <span className="tabular-nums" title={bilingualInline('Profiles using it', 'Προφίλ που τη χρησιμοποιούν')}>{skill.count}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(skill)}>
+                    <Edit className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="Edit" el="Επεξεργασία" compact />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive-accessible" onClick={() => onDelete(skill)}>
+                    <Trash2 className="mr-2 icon-sm" />
+                    <BilingualText en="Delete" el="Διαγραφή" compact />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+          </>
+        )}
+      />
     </div>
   );
 }
@@ -351,7 +361,7 @@ export default function AdminTaxonomyPage() {
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <Folder className="icon-md text-muted-foreground" />
-                <CardTitle className="text-lg"><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
+                <CardTitle><BilingualText en="Skills" el="Δεξιότητες" compact /></CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
               <Button size="sm" onClick={() => setEditTarget('new')}>
@@ -359,7 +369,7 @@ export default function AdminTaxonomyPage() {
                 <BilingualText en="Add Skill" el="Προσθήκη δεξιότητας" compact />
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground"><BilingualText en="Skills and expertise tags used across profiles" el="Ετικέτες δεξιοτήτων και εξειδίκευσης σε όλα τα προφίλ" wrap /></p>
+            <CardDescription><BilingualText en="Skills and expertise tags used across profiles" el="Ετικέτες δεξιοτήτων και εξειδίκευσης σε όλα τα προφίλ" wrap /></CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {/* Filters */}
@@ -408,12 +418,11 @@ export default function AdminTaxonomyPage() {
               {!isLoading && !isError && (
                 <div className="max-h-[480px] overflow-y-auto">
                   {skills.length === 0 && (
-                    <div className="py-12 text-center">
-                      <Tags className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" aria-hidden="true" />
-                      <p className="text-muted-foreground text-sm">
-                        {search || categoryFilter ? 'No skills match your filter' : 'No skills yet — add your first skill'}
-                      </p>
-                    </div>
+                    <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6">
+                      {search || categoryFilter
+                        ? <BilingualText en="No skills match your filter" el="Καμία δεξιότητα δεν ταιριάζει με το φίλτρο" wrap />
+                        : <BilingualText en="No skills yet — add your first skill" el="Δεν υπάρχουν δεξιότητες ακόμα — προσθέστε την πρώτη" wrap />}
+                    </p>
                   )}
                   {/* Grouped by category */}
                   {!categoryFilter && !search && Object.entries(groupedByCategory).map(([cat, items]) => (
@@ -434,7 +443,7 @@ export default function AdminTaxonomyPage() {
                   {!categoryFilter && !search && uncategorized.length > 0 && (
                     <div>
                       <div className="px-4 sm:px-6 py-1.5 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        <span>Uncategorized ({uncategorized.length})</span>
+                        <BilingualText en={`Uncategorized (${uncategorized.length})`} el={`Χωρίς κατηγορία (${uncategorized.length})`} compact />
                       </div>
                       {uncategorized.map((skill) => (
                         <SkillRow key={skill.id} skill={skill} onEdit={setEditTarget} onDelete={(sk) => void deleteSkill(sk)} />

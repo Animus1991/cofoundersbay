@@ -101,7 +101,7 @@ export function ListEmptyState({
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
       {description ? (
-        <div className="text-sm text-muted-foreground max-w-md mt-1.5">{description}</div>
+        <div className="card-body text-muted-foreground max-w-md mt-1.5">{description}</div>
       ) : null}
       {(action || secondary) && (
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
@@ -259,7 +259,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
         <Users className={cn('icon-xl', STATUS.accent.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No connections yet" el="Δεν υπάρχουν συνδέσεις ακόμα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Start building your network by discovering founders, mentors, and investors who share your interests." el="Χτίστε το δίκτυό σας βρίσκοντας ιδρυτές, μέντορες και επενδυτές με κοινά ενδιαφέροντα." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -282,7 +282,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
         <MessageCircle className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No conversations" el="Δεν υπάρχουν συνομιλίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Connect with someone to start a conversation. Your messages will appear here." el="Συνδεθείτε με κάποιον για να ξεκινήσετε συνομιλία. Τα μηνύματά σας θα εμφανίζονται εδώ." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -305,7 +305,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
         <Calendar className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No upcoming events" el="Δεν υπάρχουν επερχόμενες εκδηλώσεις" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no events scheduled right now. Check back later or create your own event." el="Δεν υπάρχουν προγραμματισμένες εκδηλώσεις. Ελέγξτε αργότερα ή δημιουργήστε τη δική σας." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -328,7 +328,7 @@ export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps &
         <Briefcase className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No jobs posted" el="Δεν υπάρχουν αγγελίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no job listings at the moment. Post a job to find your next team member." el="Δεν υπάρχουν αγγελίες αυτή τη στιγμή. Δημοσιεύστε μία για να βρείτε το επόμενο μέλος της ομάδας σας." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -349,7 +349,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
         <Users className={cn('icon-xl', STATUS.success.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No groups joined" el="Δεν έχετε γίνει μέλος σε κοινότητες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Join groups to connect with like-minded founders and participate in discussions." el="Γίνετε μέλος σε κοινότητες για να γνωρίσετε ιδρυτές με κοινά ενδιαφέροντα και να συμμετέχετε σε συζητήσεις." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -372,7 +372,7 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
         <Bell className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="All caught up!" el="Είστε ενημερωμένοι!" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="You have no new notifications. We&apos;ll let you know when something happens." el="Δεν έχετε νέες ειδοποιήσεις. Θα σας ενημερώσουμε όταν συμβεί κάτι." wrap />
       </p>
       <AskAiLink prompt="I am all caught up on notifications. What should I do next on CoFounderBay?" />
@@ -387,7 +387,7 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
         <Search className="icon-xl text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         {query 
           ? `We couldn't find anything matching "${query}". Try different keywords.`
           : 'Try adjusting your search or filters to find what you\'re looking for.'}
@@ -415,7 +415,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
         <BookOpen className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No resources yet" el="Δεν υπάρχουν πόροι ακόμα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Learning resources will appear here. Check back soon for new content." el="Οι πόροι μάθησης θα εμφανίζονται εδώ. Ελέγξτε σύντομα για νέο περιεχόμενο." wrap />
       </p>
       <AskAiLink prompt="There are no learning resources yet. What should I study next given my venture readiness?" />
@@ -430,7 +430,7 @@ export function EmptyMarketplace({ className, actionHref, onAction }: EmptyState
         <ShoppingBag className="icon-xl text-status-accent" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No services listed" el="Δεν υπάρχουν υπηρεσίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="The marketplace is empty. Be the first to offer your services to the community." el="Η αγορά είναι άδεια. Γίνετε οι πρώτοι που προσφέρουν υπηρεσίες στην κοινότητα." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
@@ -451,7 +451,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
         <Users className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No sessions booked" el="Δεν υπάρχουν κρατήσεις" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Book a session with a mentor to get personalized guidance for your startup journey." el="Κλείστε συνεδρία με μέντορα για εξατομικευμένη καθοδήγηση." wrap />
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">

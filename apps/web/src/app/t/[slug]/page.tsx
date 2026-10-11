@@ -155,7 +155,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
               </div>
               <div>
                 <h2 className="text-xl font-semibold mb-3"><BilingualText en={`About ${tenantName}`} el={`Σχετικά με ${tenantName}`} wrap /></h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground sm:text-lg">
                   {b?.aboutText || tenant.aboutText}
                 </p>
               </div>
@@ -172,13 +172,15 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
             { icon: Sparkles, title: 'AI Matching', titleEl: 'Αντιστοίχιση με AI', desc: 'Smart compatibility scoring for better teams', descEl: 'Έξυπνη βαθμολόγηση συμβατότητας για καλύτερες ομάδες' },
             { icon: Shield, title: 'Trusted Network', titleEl: 'Αξιόπιστο δίκτυο', desc: 'Verified profiles and moderated community', descEl: 'Επαληθευμένα προφίλ και κοινότητα με εποπτεία' },
           ].map((f) => (
-            <Card key={f.title} className="text-center border-border hover:border-primary/30 transition-colors">
-              <CardContent className="pt-6 pb-6">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-                  <f.icon className="h-6 w-6 text-primary-accessible" />
+            <Card key={f.title} className="border-border hover:border-primary/30 transition-colors">
+              <CardContent>
+                {/* Left-aligned like every card: the mark, then the title and
+                    its sentence on the mark's edge. */}
+                <div data-keep-icon="" className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                  <f.icon className="icon-md text-primary-accessible" />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1"><BilingualText en={f.title} el={f.titleEl} wrap /></h3>
-                <p className="text-sm text-muted-foreground"><BilingualText en={f.desc} el={f.descEl} wrap /></p>
+                <h3 className="card-title text-foreground"><BilingualText en={f.title} el={f.titleEl} wrap /></h3>
+                <p className="card-body mt-1 text-muted-foreground"><BilingualText en={f.desc} el={f.descEl} wrap /></p>
               </CardContent>
             </Card>
           ))}
@@ -186,24 +188,25 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
       </section>
 
       {/* CTA band */}
-      <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
+      <section className="mx-auto max-w-3xl px-6 pb-16">
         <Card className="bg-primary/5 border-primary/15">
-          <CardContent className="pt-8 pb-8">
-            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
-            <h2 className="text-2xl font-semibold mb-2">
+          <CardContent>
+            <h2 className="card-title mb-1">
               {b?.dashboardWelcomeText || <BilingualText en={`Ready to join ${tenantName}?`} el={`Έτοιμοι να μπείτε στο ${tenantName};`} wrap />}
             </h2>
-            <p className="text-muted-foreground mb-6">
+            <p className="card-body text-muted-foreground mb-4">
               <BilingualText en="Connect with the right people and build something great." el="Συνδεθείτε με τους σωστούς ανθρώπους και φτιάξτε κάτι σπουδαίο." wrap />
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap gap-3">
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
                   <Building2 className="icon-sm" />
                   {sso.provider?.loginButtonText || <BilingualText en="SSO Login" el="Σύνδεση SSO" compact />}
                 </Button>
               )}
-              <Button size="lg" className="gap-2" asChild>
+              {/* Default size: a large button's label outranked the card's
+                  own title. */}
+              <Button className="gap-2" asChild>
                 <Link href={b?.ctaUrl || '/register'}>
                   {b?.ctaLabel || <BilingualText en="Join Now" el="Εγγραφή τώρα" compact />}
                   <ChevronRight className="icon-sm" />
@@ -317,7 +320,7 @@ export default function TenantPage() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground"><BilingualText en="Organization not found" el="Ο οργανισμός δεν βρέθηκε" compact /></h1>
-        <p className="text-muted-foreground max-w-sm"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
+        <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en="The ecosystem you&apos;re looking for doesn&apos;t exist or is not active." el="Το οικοσύστημα που ψάχνετε δεν υπάρχει ή δεν είναι ενεργό." wrap /></p>
         <Button variant="outline" asChild>
           <Link href="/"><BilingualText en="Back to CoFounderBay" el="Επιστροφή στο CoFounderBay" compact /></Link>
         </Button>

@@ -57,6 +57,9 @@ type ConversationValidationProps = {
   otherUserName: string;
   validationState: ConversationValidationState;
   onModeChange?: (mode: ValidationMode) => void;
+  /** Full-width row that names the mode. The header keeps an icon on wider screens. */
+  labeled?: boolean;
+  className?: string;
 };
 
 const MODE_CONFIG: Record<ValidationMode, {
@@ -135,6 +138,8 @@ export function ConversationValidationMenu({
   otherUserName,
   validationState,
   onModeChange,
+  labeled = false,
+  className,
 }: ConversationValidationProps) {
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
@@ -218,12 +223,27 @@ export function ConversationValidationMenu({
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-9 w-9 rounded-xl"
+            size={labeled ? 'sm' : 'icon'}
+            className={cn(
+              labeled
+                ? 'h-auto w-full justify-between gap-2 rounded-xl bg-muted/40 px-3 text-foreground hover:bg-muted'
+                : 'h-9 w-9 rounded-xl',
+              className,
+            )}
             title={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
             aria-label={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
           >
-            <Icon className={cn('icon-sm', config.color)} />
+            <Icon className={cn('icon-sm shrink-0', config.color)} />
+            {labeled && (
+              <>
+                <span className="min-w-0 flex-1 truncate text-left text-sm font-medium text-foreground">
+                  <BilingualText en={messagesEn(config.labelKey)} el={messagesEl(config.labelKey)} compact />
+                </span>
+                <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                  <BilingualText en={messagesEn('val_change')} el={messagesEl('val_change')} compact />
+                </span>
+              </>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -263,7 +283,9 @@ export function ConversationValidationMenu({
                 ) : (
                   <Hash className="mr-2 icon-sm" />
                 )}
-                {copied ? 'Hash copied!' : 'Copy validation hash'}
+                {copied
+                  ? <BilingualText en="Hash copied!" el="Το hash αντιγράφηκε!" compact />
+                  : <BilingualText en="Copy validation hash" el="Αντιγραφή hash επικύρωσης" compact />}
               </DropdownMenuItem>
             </>
           )}
@@ -277,7 +299,11 @@ export function ConversationValidationMenu({
             <ShieldAlert className="icon-md shrink-0 text-status-warning mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
-                {otherUserName} requested two-party validation
+                <BilingualText
+                  en={`${otherUserName} requested two-party validation`}
+                  el={`${otherUserName}: αίτημα για επικύρωση δύο μερών`}
+                  wrap
+                />
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 <BilingualText en="Both parties will be able to save and verify the conversation transcript" el="Και τα δύο μέρη θα μπορούν να αποθηκεύσουν και να επαληθεύσουν το αντίγραφο της συνομιλίας" wrap />
@@ -294,7 +320,7 @@ export function ConversationValidationMenu({
                   ) : (
                     <Check className="icon-sm mr-1" />
                   )}
-                  Accept
+                  <BilingualText en="Accept" el="Αποδοχή" compact />
                 </Button>
                 <Button
                   size="sm"
@@ -347,20 +373,25 @@ export function ConversationValidationMenu({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">
+                        <p className="text-sm font-medium text-foreground">
                           <BilingualText en={messagesEn(modeConfig.labelKey)} el={messagesEl(modeConfig.labelKey)} compact />
                         </p>
                         {isActive && (
                           <Badge variant="secondary" className="text-xs"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                         )}
                       </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} />
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} wrap />
                       </p>
                       {mode === 'two_party' && (
                         <p className="text-xs text-status-warning mt-1 flex items-center gap-1">
                           <AlertTriangle className="icon-sm" />
-                          Requires acceptance from {otherUserName}
+                          <BilingualText
+                            en={`Requires acceptance from ${otherUserName}`}
+                            el={`Χρειάζεται την αποδοχή του χρήστη ${otherUserName}`}
+                            compact
+                            wrap
+                          />
                         </p>
                       )}
                     </div>
@@ -376,9 +407,9 @@ export function ConversationValidationMenu({
               <div className="text-xs text-muted-foreground">
                 <p className="font-medium text-foreground mb-1"><BilingualText en="About validation modes" el="Σχετικά με τις λειτουργίες επικύρωσης" compact /></p>
                 <ul className="space-y-1">
-                  <li><strong>Casual:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
-                  <li><strong>One-Party:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
-                  <li><strong>Two-Party:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_casual')} el={messagesEl('val_casual')} compact />:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_one')} el={messagesEl('val_one')} compact />:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_two')} el={messagesEl('val_two')} compact />:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
                 </ul>
               </div>
             </div>
@@ -426,13 +457,13 @@ export function TranscriptExportButton({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" disabled={isExporting}>
+        <Button variant="outline" size="sm" className="hidden h-8 gap-1.5 text-xs sm:inline-flex" disabled={isExporting}>
           {isExporting ? (
             <Loader2 className="icon-sm animate-spin" />
           ) : (
             <Download className="icon-sm" />
           )}
-          Save Transcript
+          <BilingualText en={messagesEn('val_save_transcript')} el={messagesEl('val_save_transcript')} compact />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

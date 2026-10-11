@@ -99,9 +99,12 @@ export function LanguageSwitcher({ className, iconOnly = false }: { className?: 
 export function LanguageChipGrid({
   value,
   onChange,
+  sidebar = false,
 }: {
   value: string;
   onChange: (next: string) => void;
+  /** Marks the chips in the left drawer, the only place their height is shortened. */
+  sidebar?: boolean;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -112,6 +115,7 @@ export function LanguageChipGrid({
             key={lang.value}
             type="button"
             aria-pressed={isActive}
+            data-sidebar-control={sidebar ? 'language' : undefined}
             onClick={() => onChange(lang.value)}
             className={cn(
               'inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
@@ -129,7 +133,7 @@ export function LanguageChipGrid({
 }
 
 /** Full chip picker for sheets / settings — works without a dropdown. */
-export function LanguagePanel({ compact = false }: { compact?: boolean }) {
+export function LanguagePanel({ compact = false, sidebar = false }: { compact?: boolean; sidebar?: boolean }) {
   const { locale, setLocale, mounted } = useAppLocale();
   const { t } = useI18n();
 
@@ -138,11 +142,15 @@ export function LanguagePanel({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-2">
       {!compact && (
-        <p className="px-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/80">
+        <p
+          className="px-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/80"
+          data-sidebar-control={sidebar ? 'language-label' : undefined}
+        >
           {t('Language')}
         </p>
       )}
       <LanguageChipGrid
+        sidebar={sidebar}
         value={locale}
         onChange={(next) => {
           const code = APP_LOCALES.some((l) => l.value === next) ? (next as AppLocale) : 'en';

@@ -91,7 +91,7 @@ function ProjectBlurb({ project, clamp }: { project: DemoProject; clamp: 'line-c
   const en = project.tagline || project.description;
   const el = project.taglineEl || project.descriptionEl;
   return (
-    <p className={cn('text-sm text-muted-foreground', clamp)}>
+    <p className={cn('card-copy text-sm text-muted-foreground', clamp)}>
       {el ? <BilingualText en={en} el={el} compact={clamp === 'line-clamp-1'} wrap={clamp === 'line-clamp-2'} /> : en}
     </p>
   );
@@ -270,7 +270,7 @@ function ProjectCard({
               </p>
               {/* The roles are what the card is looking for: body text under
                   their caption, not accent pills. */}
-              <FactLine className="text-sm text-foreground" items={project.rolesNeeded.map((role) => roleLabel(role))} />
+              <FactLine className="text-foreground sm:text-sm" items={project.rolesNeeded.map((role) => roleLabel(role))} />
             </div>
           )}
         </div>

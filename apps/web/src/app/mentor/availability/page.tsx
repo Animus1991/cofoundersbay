@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,6 +26,7 @@ import { getMeProfile, listMentorAvailability, replaceMentorAvailability } from 
 import { qk, queryKeys } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -324,22 +324,27 @@ export default function MentorAvailabilityPage() {
                 const daySlots = slots.filter(s => s.weekday === day.key);
                 return (
                   <Card key={day.key}>
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-semibold w-24">{day.label}</span>
-                          {daySlots.length > 0 ? (
-                            <Badge variant="secondary" className="text-xs">
-                              {daySlots.length} slot{daySlots.length > 1 ? 's' : ''}
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs text-muted-foreground"><BilingualText en="Unavailable" el="Μη διαθέσιμο" compact /></Badge>
-                          )}
-                        </div>
-                        <Button size="sm" variant="ghost" onClick={() => addSlot(day.key)}>
-                          <Plus className="icon-sm mr-1" /> <BilingualText en="Add" el="Προσθήκη" compact />
-                        </Button>
-                      </div>
+                    <CardContent className="space-y-3">
+                      {/* A day is a card head with its count under it and Add
+                          at the right; the slots start on the day's edge. */}
+                      <CardHead
+                        title={<BilingualText en={day.label} el={DAY_EL[day.key]} compact />}
+                        meta={daySlots.length > 0 ? (
+                          <BilingualText
+                            en={`${daySlots.length} slot${daySlots.length > 1 ? 's' : ''}`}
+                            el={`${daySlots.length} ${daySlots.length > 1 ? 'χρονοθυρίδες' : 'χρονοθυρίδα'}`}
+                            compact
+                          />
+                        ) : (
+                          <BilingualText en="Unavailable" el="Μη διαθέσιμο" compact />
+                        )}
+                        asideStays
+                        aside={(
+                          <Button size="sm" variant="ghost" onClick={() => addSlot(day.key)}>
+                            <Plus className="icon-sm mr-1" aria-hidden="true" /> <BilingualText en="Add" el="Προσθήκη" compact />
+                          </Button>
+                        )}
+                      />
                       {daySlots.length > 0 && (
                         <div className="space-y-2">
                           {daySlots.map(slot => (
@@ -354,7 +359,7 @@ export default function MentorAvailabilityPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <span className="text-muted-foreground text-xs">to</span>
+                              <span className="text-muted-foreground text-xs"><BilingualText en="to" el="έως" compact /></span>
                               <Select value={slot.endTime} onValueChange={v => updateSlot(slot.id, 'endTime', v)}>
                                 <SelectTrigger aria-label={`${day.label} end time`} className="w-32 h-8 text-xs">
                                   <SelectValue />
@@ -388,15 +393,15 @@ export default function MentorAvailabilityPage() {
           <TabsContent value="preferences" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle>
-                <p className="text-xs text-muted-foreground">
+                <CardTitle><BilingualText en="Session Settings" el="Ρυθμίσεις συνεδριών" compact /></CardTitle>
+                <CardDescription>
                   <BilingualText
                     en="Only the weekly hours and time zone are saved today; length, buffer and notice are not stored yet."
                     el="Σήμερα αποθηκεύονται μόνο οι εβδομαδιαίες ώρες και η ζώνη ώρας· διάρκεια, διάλειμμα και προειδοποίηση δεν αποθηκεύονται ακόμη."
                     compact
                     wrap
                   />
-                </p>
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

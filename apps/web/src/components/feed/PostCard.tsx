@@ -141,7 +141,7 @@ export function PostCard({
                 <span className="text-xs text-muted-foreground"><RelativeTime date={createdAt} short absoluteAfterDays={7} /></span>
               </div>
               {author.headline && (
-                <p className="text-xs text-muted-foreground truncate">{author.headline}</p>
+                <p className="mt-1 text-xs text-muted-foreground truncate">{author.headline}</p>
               )}
             </div>
           </div>
@@ -199,7 +199,7 @@ export function PostCard({
 
         {/* Content */}
         <div className="mt-4">
-          <p className="text-foreground whitespace-pre-wrap leading-relaxed">{content}</p>
+          <p className="card-body text-foreground whitespace-pre-wrap">{content}</p>
         </div>
 
         {/* Tags */}

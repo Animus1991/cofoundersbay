@@ -16,6 +16,9 @@ import {
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
 import { BilingualText } from '@/components/common/BilingualText';
+import { StatusText } from '@/components/common/StatusText';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 /**
  * Badge rarity is an ordinal domain ramp, not a chart series: the tiers carry
@@ -40,14 +43,16 @@ const rarityMark = (rarity: string) =>
 function StatCard({
   icon: Icon,
   label,
+  labelEl,
   value,
   sub,
   color = 'indigo',
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  labelEl: string;
   value: string | number;
-  sub?: string;
+  sub?: React.ReactNode;
   color?: 'indigo' | 'green' | 'amber' | 'rose';
 }) {
   const colorMap = {
@@ -57,16 +62,19 @@ function StatCard({
     rose: 'bg-status-danger-bg text-status-danger',
   };
   return (
-    <div className="bg-white rounded-xl border border-border p-5 flex items-start gap-4">
-      <div className={`rounded-lg p-2.5 ${colorMap[color]}`}>
-        <Icon className="icon-md" />
-      </div>
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-2xl font-semibold text-foreground">{value}</p>
-        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
-      </div>
-    </div>
+    // A stat card: the figure under its label, the tone's mark in front.
+    <Card>
+      <CardContent className="flex items-start gap-3">
+        <div data-card-mark="" className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', colorMap[color])}>
+          <Icon className="icon-md" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
+          <p className="page-stat text-2xl font-semibold tabular-nums text-foreground">{value}</p>
+          {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -85,8 +93,10 @@ export function AdminAnalyticsDashboard() {
         adminGetXPDistribution(),
         adminGetBadgeUnlockRates(),
       ]);
-      setXpDist(xp);
-      setBadgeRates(badges);
+      // A partial payload (the demo answers with an object) threw on
+      // `.reduce` and blanked the whole console behind its error boundary.
+      setXpDist(Array.isArray(xp) ? xp : []);
+      setBadgeRates(Array.isArray(badges) ? badges : []);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -122,6 +132,8 @@ export function AdminAnalyticsDashboard() {
     return meanXp > 0 ? parseFloat((sumNumer / (2 * n * n * meanXp)).toFixed(3)) : 0;
   })();
 
+  const sharePct = totalUsers > 0 ? ((usersWithXP / totalUsers) * 100).toFixed(1) : 0;
+
   // Badge pie chart — top 6 by unlock rate
   const topBadges = [...badgeRates]
     .sort((a, b) => b.unlockCount - a.unlockCount)
@@ -150,8 +162,8 @@ export function AdminAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Gamification Analytics" el="Αναλυτικά gamification" compact /></h2>
-          <p className="text-sm text-muted-foreground mt-0.5"><BilingualText en="Platform-wide scoring health and engagement metrics" el="Υγεία βαθμολόγησης και μετρήσεις συμμετοχής σε όλη την πλατφόρμα" wrap /></p>
+          <h2 className="text-base font-semibold text-foreground"><BilingualText en="Gamification Analytics" el="Αναλυτικά gamification" compact /></h2>
+          <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en="Platform-wide scoring health and engagement metrics" el="Υγεία βαθμολόγησης και μετρήσεις συμμετοχής σε όλη την πλατφόρμα" wrap /></p>
         </div>
         <button
           type="button"
@@ -165,33 +177,50 @@ export function AdminAnalyticsDashboard() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Total Users" value={totalUsers} color="indigo" />
+        <StatCard icon={Users} label="Total Users" labelEl="Σύνολο χρηστών" value={totalUsers} color="indigo" />
         <StatCard
           icon={TrendingUp}
           label="Users with XP"
+          labelEl="Χρήστες με XP"
           value={usersWithXP}
-          sub={`${totalUsers > 0 ? ((usersWithXP / totalUsers) * 100).toFixed(1) : 0}% of total`}
+          sub={<BilingualText en={`${sharePct}% of total`} el={`${sharePct}% του συνόλου`} compact wrap />}
           color="green"
         />
         <StatCard
           icon={Award}
           label="Total Badge Unlocks"
+          labelEl="Αποκτήσεις διακρίσεων"
           value={totalBadgeUnlocks}
-          sub={`Avg rate ${avgBadgeRate}%`}
+          sub={<BilingualText en={`Avg rate ${avgBadgeRate}%`} el={`Μέσο ποσοστό ${avgBadgeRate}%`} compact wrap />}
           color="amber"
         />
         <StatCard
           icon={Zap}
           label="XP Gini Coefficient"
+          labelEl="Συντελεστής Gini (XP)"
           value={gini}
-          sub={gini < 0.4 ? 'Healthy distribution' : gini < 0.6 ? 'Moderate inequality' : 'High inequality'}
+          sub={gini < 0.4
+            ? <BilingualText en="Healthy distribution" el="Υγιής κατανομή" compact wrap />
+            : gini < 0.6
+              ? <BilingualText en="Moderate inequality" el="Μέτρια ανισότητα" compact wrap />
+              : <BilingualText en="High inequality" el="Υψηλή ανισότητα" compact wrap />}
           color={gini < 0.4 ? 'green' : gini < 0.6 ? 'amber' : 'rose'}
         />
       </div>
 
       {/* XP Distribution Histogram */}
-      <div className="bg-white rounded-xl border border-border p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4"><BilingualText en="XP Distribution Histogram" el="Κατανομή XP" compact /></h3>
+      <Card>
+        <CardHeader>
+          <CardTitle><BilingualText en="XP Distribution Histogram" el="Κατανομή XP" compact /></CardTitle>
+          <CardDescription>
+            <BilingualText
+              en="Each bar shows how many users fall within that XP range. A healthy platform shows a gradual right-tail, not a spike at 0."
+              el="Κάθε στήλη δείχνει πόσοι χρήστες βρίσκονται σε αυτό το εύρος XP. Μια υγιής πλατφόρμα δείχνει σταδιακή ουρά προς τα δεξιά, όχι αιχμή στο 0."
+              wrap
+            />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={xpDist} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
             <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
@@ -203,18 +232,18 @@ export function AdminAnalyticsDashboard() {
             <Bar dataKey="count" fill={theme.series[0]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
-        <p className="text-xs text-muted-foreground mt-2">
-          Each bar shows how many users fall within that XP range.
-          A healthy platform shows a gradual right-tail, not a spike at 0.
-        </p>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Badge Unlock Rates */}
-        <div className="bg-white rounded-xl border border-border p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4"><BilingualText en="Badge Unlock Rates (Top 6)" el="Ποσοστά απόκτησης διακρίσεων (κορυφαίες 6)" compact /></h3>
+        <Card>
+          <CardHeader>
+            <CardTitle><BilingualText en="Badge Unlock Rates (Top 6)" el="Ποσοστά απόκτησης διακρίσεων (κορυφαίες 6)" compact /></CardTitle>
+          </CardHeader>
+          <CardContent>
           {topBadges.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8"><BilingualText en="No badges defined yet." el="Δεν έχουν οριστεί διακρίσεις ακόμα." compact wrap /></p>
+            <p className="text-sm text-muted-foreground"><BilingualText en="No badges defined yet." el="Δεν έχουν οριστεί διακρίσεις ακόμα." compact wrap /></p>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -245,12 +274,16 @@ export function AdminAnalyticsDashboard() {
               </PieChart>
             </ResponsiveContainer>
           )}
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Badge Rate Table */}
-        <div className="bg-white rounded-xl border border-border p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-3"><BilingualText en="All Badge Rates" el="Όλα τα ποσοστά διακρίσεων" compact /></h3>
-          <div className="overflow-auto max-h-[220px]">
+        <Card>
+          <CardHeader>
+            <CardTitle><BilingualText en="All Badge Rates" el="Όλα τα ποσοστά διακρίσεων" compact /></CardTitle>
+          </CardHeader>
+          <CardContent>
+          <div className="relative overflow-auto max-h-[220px]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b border-border">
@@ -277,7 +310,7 @@ export function AdminAnalyticsDashboard() {
                             color: rarityText(b.rarity),
                           }}
                         >
-                          {b.rarity}
+                          <StatusText value={b.rarity} />
                         </span>
                       </td>
                       <td className="py-1.5 text-right tabular-nums">{b.unlockCount}</td>
@@ -290,17 +323,19 @@ export function AdminAnalyticsDashboard() {
               </tbody>
             </table>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Shield indicator */}
       <div className="flex items-start gap-3 bg-status-accent-bg border border-status-accent-border rounded-xl p-4 text-sm text-status-accent">
-        <Shield className="icon-sm mt-0.5 shrink-0" />
-        <div>
-          <span className="font-semibold">Explainability note: </span>
-          All scores are computed from real user actions — no synthetic inflation.
-          Gini coefficient &lt; 0.4 indicates healthy distribution. XP histogram
-          should show a gradual right-tail for a healthy active community.
+        <Shield className="icon-sm mt-0.5 shrink-0" aria-hidden="true" />
+        <div className="min-w-0">
+          <BilingualText
+            en="Explainability note: all scores are computed from real user actions, with no synthetic inflation. A Gini coefficient under 0.4 indicates a healthy distribution; the XP histogram should show a gradual right-tail for a healthy active community."
+            el="Σημείωση επεξηγησιμότητας: όλες οι βαθμολογίες υπολογίζονται από πραγματικές ενέργειες χρηστών, χωρίς τεχνητή διόγκωση. Συντελεστής Gini κάτω από 0,4 δείχνει υγιή κατανομή· το ιστόγραμμα XP πρέπει να δείχνει σταδιακή ουρά προς τα δεξιά σε μια υγιή, ενεργή κοινότητα."
+            wrap
+          />
         </div>
       </div>
     </div>

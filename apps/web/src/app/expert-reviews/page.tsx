@@ -54,6 +54,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -262,127 +263,108 @@ function ReviewCard({ review }: { review: ExpertReview }) {
   const status = STATUS_CONFIG[review.status];
   const type = REVIEW_TYPE_CONFIG[review.reviewType];
   const StatusIcon = status.icon;
-  const TypeIcon = type.icon;
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
-              {initialsOf(review.expertName)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
-              </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
-                <StatusIcon className="icon-sm" />
-                <BilingualText en={status.label} el={status.labelEl} compact />
-              </span>
-            </div>
+    <Card className="overflow-hidden">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+                {initialsOf(review.expertName)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={review.expertName}
+          subtitle={review.expertTitle}
+          aside={(
+            <Badge variant="outline" className="gap-1 text-xs">
+              <StatusIcon className={cn('icon-sm', STATUS[status.tone].icon)} aria-hidden="true" />
+              <BilingualText en={status.label} el={status.labelEl} compact />
+            </Badge>
+          )}
+        />
 
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
-                <TypeIcon className="icon-sm" />
-                <BilingualText en={type.label} el={type.labelEl} compact />
+        {/* What was asked, what it costs and when it is due: facts on the
+            avatar's edge, one muted line. The kind was a tinted pill. */}
+        <FactLine
+          items={[
+            <BilingualText key="type" en={type.label} el={type.labelEl} compact />,
+            review.isPaid && review.agreedFee ? <span key="fee" className="tabular-nums">€{review.agreedFee}</span> : null,
+            !review.isPaid ? <BilingualText key="free" en="Free" el="Δωρεάν" compact /> : null,
+            review.dueDate && review.status !== 'submitted' ? (
+              <span key="due" className={STATUS.warning.icon}>
+                {/* Pinned to UTC on both sides so the server pass and
+                    hydration agree on the day. */}
+                <BilingualText
+                  en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                  el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                  compact
+                />
               </span>
-              {review.isPaid && review.agreedFee && (
-                <span className="text-2xs text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="icon-sm" /> €{review.agreedFee}
-                </span>
-              )}
-              {!review.isPaid && (
-                <Badge variant="outline" className="text-2xs h-4 px-1.5">
-                  <BilingualText en="Free" el="Δωρεάν" compact />
-                </Badge>
-              )}
-              {review.dueDate && review.status !== 'submitted' && (
-                <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
-                  <Clock className="icon-sm" />
-                  {/* Pinned to UTC on both sides so the server pass and
-                      hydration agree on the day. */}
-                  <BilingualText
-                    en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
-                    el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
-                    compact
-                  />
-                </span>
-              )}
-            </div>
+            ) : null,
+          ]}
+        />
 
-            {/* Score */}
-            {review.scoreOverall && (
-              <div className="mt-2 flex items-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted-foreground">
-                    <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />
-                  </span>
-                  <span className={cn('text-sm font-bold', scoreTenPointClass(review.scoreOverall))}>
-                    {review.scoreOverall}/10
-                  </span>
-                </div>
-                {review.rating && (
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} />
-                    ))}
-                  </div>
-                )}
+        {/* Score: a figure in the body's step, never louder than the name. */}
+        {review.scoreOverall && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />{' '}
+              <span className={cn('card-body font-semibold tabular-nums', scoreTenPointClass(review.scoreOverall))}>
+                {review.scoreOverall}/10
+              </span>
+            </p>
+            {review.rating && (
+              <div data-keep-icon="" className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`Rated ${review.rating} of 5`, `Βαθμολογία ${review.rating} από 5`)}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={cn('icon-sm', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} aria-hidden="true" />
+                ))}
               </div>
             )}
-
-            {review.summaryFeedback && (
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2 italic">
-                "{review.summaryFeedback}"
-              </p>
-            )}
-
-            <div className="mt-3 flex items-center justify-between">
-              <div className="flex gap-2">
-                {/* A review carries the expert's name but no user id, so there
-                    is no conversation to open. Disabled and labelled beats a
-                    button that looks live. */}
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 gap-1 text-xs"
-                  disabled
-                  title={MESSAGE_HINT}
-                  aria-label={MESSAGE_HINT}
-                >
-                  <MessageCircle className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
-                </Button>
-                {/* "View full review" is gone rather than wired: the control
-                    immediately to its right — "See feedback" — already expands
-                    the full review in place, and did so while this one did
-                    nothing. Two buttons for one action is the defect. */}
-              </div>
-              {review.strengthsJson || review.improvementsJson ? (
-                <button
-                  onClick={() => setExpanded((v) => !v)}
-                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
-                >
-                  <BilingualText
-                    en={expanded ? 'Collapse' : 'See feedback'}
-                    el={expanded ? 'Σύμπτυξη' : 'Δείτε την ανατροφοδότηση'}
-                    compact
-                  />
-                  <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
-                </button>
-              ) : null}
-            </div>
           </div>
-        </div>
-      </div>
+        )}
+
+        {review.summaryFeedback && (
+          <p className="card-body line-clamp-2 italic text-muted-foreground">
+            “{review.summaryFeedback}”
+          </p>
+        )}
+
+        <CardFoot>
+          {/* A review carries the expert's name but no user id, so there
+              is no conversation to open. Disabled and labelled beats a
+              button that looks live. */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            disabled
+            title={MESSAGE_HINT}
+            aria-label={MESSAGE_HINT}
+          >
+            <MessageCircle className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
+          </Button>
+          {/* "View full review" is gone rather than wired: "See feedback"
+              already expands the full review in place, and did so while
+              that one did nothing. Two buttons for one action is the defect. */}
+          {review.strengthsJson || review.improvementsJson ? (
+            <Button size="sm" variant="ghost" className="gap-0.5" onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+              <BilingualText
+                en={expanded ? 'Collapse' : 'See feedback'}
+                el={expanded ? 'Σύμπτυξη' : 'Δείτε την ανατροφοδότηση'}
+                compact
+              />
+              <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
+            </Button>
+          ) : null}
+        </CardFoot>
+      </CardContent>
 
       {/* Expanded feedback */}
       {expanded && (review.strengthsJson || review.improvementsJson || review.scoresByArea) && (
-        <div className="border-t border-border bg-muted/30 p-4 space-y-4">
+        <div className="space-y-4 border-t border-border bg-muted/30 p-4 sm:p-6">
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
@@ -419,7 +401,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
+              <p className={cn('mb-2 flex items-center gap-1 text-2xs font-semibold uppercase tracking-wider', STATUS.warning.icon)}><Lightbulb className="h-3 w-3" aria-hidden="true" /><BilingualText en="Recommendations" el="Προτάσεις" compact /></p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -432,96 +414,98 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
 function ExpertCard({ expert }: { expert: ExpertProfile }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4 hover:shadow-sm hover:border-border transition-all">
-      <div className="flex items-start gap-3">
-        <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
-            {initialsOf(expert.name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-sm font-semibold text-foreground">{expert.name}</p>
-                {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20"><BilingualText en="Verified" el="Επαληθευμένος" compact /></Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">{expert.title}</p>
-              <FactLine className="mt-0.5" items={expert.badges ?? []} />
-            </div>
-            {expert.feeFrom != null && (
-              <p className="text-sm font-semibold text-foreground shrink-0">
-                {/* The euro sign used to be written in, whatever the expert
-                    charges in. */}
-                <BilingualText en="From" el="Από" compact />{' '}
-                {new Intl.NumberFormat('en-GB', {
-                  style: 'currency',
-                  currency: expert.currency || 'USD',
-                  maximumFractionDigits: 0,
-                }).format(expert.feeFrom)}
-              </p>
-            )}
-          </div>
-
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2">{expert.bio}</p>
-
-          <div className="mt-2 flex flex-wrap gap-1">
-            {expert.domains.slice(0, 3).map((d) => {
-              const cfg = REVIEW_TYPE_CONFIG[d];
-              return (
-                <span key={d} className={cn('rounded-full px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
-                  <BilingualText en={cfg.label} el={cfg.labelEl} compact />
-                </span>
-              );
-            })}
-          </div>
-
-          <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} />{' '}
-              {expert.rating ?? '\u2014'}{' '}
-              <BilingualText
-                en={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'review' : 'reviews'})`}
-                el={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'})`}
-                compact
-              />
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+                {initialsOf(expert.name)}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <span>{expert.name}</span>
+              {expert.isVerified && (
+                <Badge size="sm" className="rounded-full border-primary/20 bg-primary/10 px-1.5 text-primary-accessible">
+                  <BilingualText en="Verified" el="Επαληθευμένος" compact />
+                </Badge>
+              )}
             </span>
-            {expert.responseTime && (
-              <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />{' '}
-                <BilingualText en="Turnaround:" el="Χρόνος παράδοσης:" compact /> {expert.responseTime}
-              </span>
-            )}
-          </div>
+          )}
+          subtitle={expert.title}
+          meta={expert.badges?.length ? <FactLine items={expert.badges} /> : undefined}
+          aside={expert.feeFrom != null ? (
+            <span className="font-semibold tabular-nums text-foreground">
+              {/* The euro sign used to be written in, whatever the expert
+                  charges in. */}
+              <BilingualText en="From" el="Από" compact />{' '}
+              {new Intl.NumberFormat('en-GB', {
+                style: 'currency',
+                currency: expert.currency || 'USD',
+                maximumFractionDigits: 0,
+              }).format(expert.feeFrom)}
+            </span>
+          ) : undefined}
+        />
 
-          {/* These experts are constants. Mentors are real, bookable and
-              messageable, and a structured review is one of the things they
-              do — so that is where both buttons lead. */}
-          <div className="mt-3 flex gap-2">
-            <Button size="sm" className="h-auto min-h-7 flex-1 gap-1 py-1 text-xs leading-snug" asChild>
-              <Link href="/mentoring">
-                <Plus className="icon-sm shrink-0" aria-hidden="true" />
-                <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
-              </Link>
-            </Button>
-            <Button size="sm" variant="outline" className="h-auto min-h-7 gap-1 py-1 text-xs leading-snug" asChild>
-              <Link href="/mentoring">
-                <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
-                <BilingualText en="Browse" el="Περιήγηση" compact wrap />
-              </Link>
-            </Button>
-          </div>
+        <p className="card-body line-clamp-2 text-muted-foreground">{expert.bio}</p>
+
+        {/* What they review, then how they are rated and how fast: facts,
+            not tinted pills. */}
+        <div className="space-y-1">
+          <FactLine
+            items={(expert.domains ?? []).slice(0, 3).map((d) => {
+              const cfg = REVIEW_TYPE_CONFIG[d];
+              return <BilingualText key={d} en={cfg.label} el={cfg.labelEl} compact />;
+            })}
+          />
+          <FactLine
+            items={[
+              <span key="rating" data-keep-icon="" className="inline-flex items-center gap-1">
+                <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} aria-hidden="true" />
+                {expert.rating ?? '—'}{' '}
+                <BilingualText
+                  en={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'review' : 'reviews'})`}
+                  el={`(${expert.completedReviews} ${expert.completedReviews === 1 ? 'αξιολόγηση' : 'αξιολογήσεις'})`}
+                  compact
+                />
+              </span>,
+              expert.responseTime ? (
+                <span key="turnaround">
+                  <BilingualText en="Turnaround:" el="Χρόνος παράδοσης:" compact /> {expert.responseTime}
+                </span>
+              ) : null,
+            ]}
+          />
         </div>
-      </div>
-    </div>
+
+        {/* These experts are constants. Mentors are real, bookable and
+            messageable, and a structured review is one of the things they
+            do — so that is where both buttons lead. */}
+        <CardFoot>
+          <Button size="sm" className="gap-1" asChild>
+            <Link href="/mentoring">
+              <Plus className="icon-sm shrink-0" aria-hidden="true" />
+              <BilingualText en="Request a review" el="Αίτημα αξιολόγησης" compact wrap />
+            </Link>
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1" asChild>
+            <Link href="/mentoring">
+              <MessageCircle className="icon-sm shrink-0" aria-hidden="true" />
+              <BilingualText en="Browse" el="Περιήγηση" compact wrap />
+            </Link>
+          </Button>
+        </CardFoot>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -894,7 +878,7 @@ export default function ExpertReviewsPage() {
                 {submitted.filter((r) => r.scoresByArea).map((r) => (
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2">
                         <BarChart3 className="icon-sm text-muted-foreground" />
                         <BilingualText
                           en={`${REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores`}
@@ -909,7 +893,7 @@ export default function ExpertReviewsPage() {
                           <span className="text-xs text-muted-foreground capitalize w-28 shrink-0">{area}</span>
                           <Progress value={score * 10} className="flex-1 h-2" />
                           <span className={cn(
-                            'text-xs font-bold w-8 text-right',
+                            'w-8 text-right text-xs font-bold tabular-nums',
                             scoreTenPointClass(score),
                           )}>
                             {score}/10
@@ -924,16 +908,18 @@ export default function ExpertReviewsPage() {
                 {submitted.filter((r) => r.improvementsJson?.length).length > 0 && (
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2">
                         <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> <BilingualText en="Top Recommendations" el="Κορυφαίες προτάσεις" compact />
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    {/* One row per recommendation, hairlines between them: each
+                        was a warning-tinted box inside the card. */}
+                    <CardContent className="card-rows">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
-                        <div key={`${r.id}-${i}`} className={cn('flex gap-2 rounded-lg border px-3 py-2', STATUS.warning.border, STATUS.warning.bg)}>
-                          <AlertTriangle className={cn('icon-sm shrink-0 mt-0.5', STATUS.warning.icon)} />
-                          <div>
-                            <p className="text-xs font-semibold text-foreground">{imp.area}</p>
+                        <div key={`${r.id}-${i}`} className="flex gap-2">
+                          <AlertTriangle className={cn('icon-sm shrink-0 mt-0.5', STATUS.warning.icon)} aria-hidden="true" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>
                           </div>
                         </div>

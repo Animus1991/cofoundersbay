@@ -22,7 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { bilingualInline } from '@/lib/i18n/format';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn, initialsOf } from '@/lib/utils';
@@ -55,68 +56,93 @@ function sessionWhen(iso: string, locale: 'en-GB' | 'el-GR' = 'en-GB'): string {
 
 function MenteeRowItem({ mentee }: { mentee: MenteeRow }) {
   return (
-    <div className="flex items-center gap-3">
-      <Avatar className="h-10 w-10 shrink-0">
-        <AvatarImage src={mentee.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(mentee.name)}</AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{mentee.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{mentee.startup || 'No startup yet'}</p>
-      </div>
-      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-        {mentee.sessionsCompleted} {mentee.sessionsCompleted === 1 ? 'session' : 'sessions'}
-      </span>
-      {/* Named per mentee: three unnamed icon buttons read as "button" three
-          times, and axe reported button-name (critical). */}
-      <Button variant="ghost" size="icon" aria-label={`Message ${mentee.name}`} asChild>
-        <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
-          <MessageCircle className="icon-sm" aria-hidden="true" />
-        </Link>
-      </Button>
-    </div>
+    <RowHead
+      mark={(
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={mentee.avatarUrl ?? undefined} alt="" />
+          <AvatarFallback className="bg-primary/10 text-primary-accessible">{initialsOf(mentee.name)}</AvatarFallback>
+        </Avatar>
+      )}
+      title={<span className="block truncate">{mentee.name}</span>}
+      subtitle={(
+        <span className="block truncate">
+          {mentee.startup || <BilingualText en="No startup yet" el="Χωρίς startup ακόμη" compact />}
+        </span>
+      )}
+      asideStays
+      aside={(
+        <>
+          <span className="tabular-nums">
+            <BilingualText
+              en={`${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'session' : 'sessions'}`}
+              el={`${mentee.sessionsCompleted} ${mentee.sessionsCompleted === 1 ? 'συνεδρία' : 'συνεδρίες'}`}
+              compact
+            />
+          </span>
+          {/* Named per mentee: three unnamed icon buttons read as "button" three
+              times, and axe reported button-name (critical). */}
+          <Button variant="ghost" size="icon" aria-label={bilingualInline(`Message ${mentee.name}`, `Μήνυμα σε ${mentee.name}`)} asChild>
+            <Link href={mentee.id ? `/messages?to=${mentee.id}` : '/messages'}>
+              <MessageCircle className="icon-sm" aria-hidden="true" />
+            </Link>
+          </Button>
+        </>
+      )}
+    />
   );
 }
 
 /** The next session stands out by its filled Join button; the rest are a quiet list. */
 function SessionRowItem({ session, next }: { session: SessionRow; next: boolean }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className={cn('shrink-0 rounded-full p-2', next ? 'bg-primary/10' : 'bg-muted')}>
-        <Video className={cn('icon-sm', next ? 'text-primary-accessible' : 'text-muted-foreground')} aria-hidden="true" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{session.menteeName}</p>
-        <p className="text-xs tabular-nums text-muted-foreground">
-          {sessionWhen(session.scheduledAt)} · {session.duration} min
-        </p>
-      </div>
-      <Button size="sm" variant={next ? 'default' : 'outline'} className="shrink-0" asChild>
-        {session.meetingUrl ? (
-          <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">Join</a>
-        ) : (
-          <Link href="/mentor/sessions">Join</Link>
-        )}
-      </Button>
-    </div>
+    <RowHead
+      mark={(
+        <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', next ? 'bg-primary/10 text-primary-accessible' : 'bg-muted text-muted-foreground')}>
+          <Video className="icon-md" aria-hidden="true" />
+        </div>
+      )}
+      title={<span className="block truncate">{session.menteeName}</span>}
+      subtitle={(
+        <span className="tabular-nums">
+          <BilingualText
+            en={`${sessionWhen(session.scheduledAt)} · ${session.duration} min`}
+            el={`${sessionWhen(session.scheduledAt, 'el-GR')} · ${session.duration} λεπτά`}
+            compact
+          />
+        </span>
+      )}
+      asideStays
+      aside={(
+        <Button size="sm" variant={next ? 'default' : 'outline'} asChild>
+          {session.meetingUrl ? (
+            <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Join" el="Σύνδεση" compact /></a>
+          ) : (
+            <Link href="/mentor/sessions"><BilingualText en="Join" el="Σύνδεση" compact /></Link>
+          )}
+        </Button>
+      )}
+    />
   );
 }
 
 function RequestRowItem({ request }: { request: RequestRow }) {
   return (
-    <div className="flex items-start gap-3">
-      <Avatar className="h-10 w-10 shrink-0">
-        <AvatarImage src={request.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-muted text-foreground">{initialsOf(request.name)}</AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{request.name}</p>
-        {request.message ? <p className="line-clamp-2 text-sm text-muted-foreground">{request.message}</p> : null}
-      </div>
-      <Button size="sm" variant="outline" className="shrink-0" asChild>
-        <Link href="/mentor/requests">Review</Link>
-      </Button>
-    </div>
+    <RowHead
+      mark={(
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={request.avatarUrl ?? undefined} alt="" />
+          <AvatarFallback className="bg-muted text-foreground">{initialsOf(request.name)}</AvatarFallback>
+        </Avatar>
+      )}
+      title={request.name}
+      subtitle={request.message ? <span className="line-clamp-2 first-letter:uppercase">{request.message}</span> : undefined}
+      asideStays
+      aside={(
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/mentor/requests"><BilingualText en="Review" el="Εξέταση" compact /></Link>
+        </Button>
+      )}
+    />
   );
 }
 
@@ -400,13 +426,17 @@ export default function MentorDashboard() {
                 <span className="text-sm">
                   <BilingualText en="Accepting requests" el="Δέχεστε αιτήματα" />
                 </span>
-                <Badge variant="success">Active</Badge>
+                <Badge variant="success"><BilingualText en="Active" el="Ενεργό" compact /></Badge>
               </div>
               <p className="text-xs text-muted-foreground">
-                Founders can request you while this is on. Set the hours you offer on the availability page.
+                <BilingualText
+                  en="Founders can request you while this is on. Set the hours you offer on the availability page."
+                  el="Οι ιδρυτές μπορούν να σας στείλουν αίτημα όσο είναι ενεργό. Ορίστε τις ώρες σας στη σελίδα διαθεσιμότητας."
+                  wrap
+                />
               </p>
               <Button variant="secondary" size="sm" className="w-full" asChild>
-                <Link href="/mentor/availability">Manage availability</Link>
+                <Link href="/mentor/availability"><BilingualText en="Manage availability" el="Διαχείριση διαθεσιμότητας" compact /></Link>
               </Button>
             </SectionCard>
           </div>

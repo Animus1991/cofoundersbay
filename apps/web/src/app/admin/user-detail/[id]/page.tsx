@@ -20,7 +20,9 @@ import { HelpCallout } from '@/components/common/HelpCallout';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -263,22 +265,30 @@ export default function AdminUserDetailPage() {
 
       {user && status && (
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+          {/* The person's card: the circle, the name over the address, the
+              state at the right; the role, the actions and the record under
+              it on the circle's edge. */}
           <Card>
-            <CardContent className="flex flex-col items-start gap-3">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={user.profile?.avatarUrl ?? undefined} alt={name} />
-                <AvatarFallback className="text-lg">{initialsOf(name)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold">{name}</h2>
-                <p className="break-all text-sm text-muted-foreground">{user.email}</p>
-              </div>
-              <Badge variant={status.variant}>
-                <BilingualText en={status.en} el={status.el} compact />
-              </Badge>
+            <CardContent className="space-y-3">
+              <CardHead
+                titleAs="h2"
+                mark={(
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.profile?.avatarUrl ?? undefined} alt={name} />
+                    <AvatarFallback>{initialsOf(name)}</AvatarFallback>
+                  </Avatar>
+                )}
+                title={name}
+                subtitle={<span className="break-all" translate="no">{user.email}</span>}
+                aside={(
+                  <Badge variant={status.variant}>
+                    <BilingualText en={status.en} el={status.el} compact />
+                  </Badge>
+                )}
+              />
 
-              <div className="mt-2 w-full space-y-1.5 text-left">
-                <label htmlFor="user-role" className="text-xs font-medium text-muted-foreground">
+              <div className="w-full space-y-1.5 text-left">
+                <label htmlFor="user-role" className="text-sm font-medium text-muted-foreground">
                   <BilingualText en="Role" el="Ρόλος" compact />
                 </label>
                 <Select value={user.role} onValueChange={(v) => { if (v !== user.role) role.mutate(v); }} disabled={role.isPending}>
@@ -293,7 +303,7 @@ export default function AdminUserDetailPage() {
                 </Select>
               </div>
 
-              <div className="mt-2 flex w-full flex-col gap-2">
+              <div className="flex w-full flex-col gap-2">
                 <Button size="sm" variant="outline" className="w-full" asChild>
                   <a href={`mailto:${user.email}`}>
                     <Mail className="icon-sm mr-2" aria-hidden="true" />
@@ -319,7 +329,7 @@ export default function AdminUserDetailPage() {
                 )}
               </div>
 
-              <dl className="mt-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t border-border pt-3 text-left text-xs">
+              <dl className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t border-border pt-3 text-left text-xs">
                 <dt className="min-w-0 text-muted-foreground"><BilingualText en="Joined" el="Εγγραφή" stacked wrap /></dt>
                 <dd className="whitespace-nowrap text-right"><RelativeTime date={user.createdAt} format={formatRelativeTime} /></dd>
                 <dt className="min-w-0 text-muted-foreground"><BilingualText en="Last seen" el="Τελευταία παρουσία" stacked wrap /></dt>
@@ -337,18 +347,27 @@ export default function AdminUserDetailPage() {
               <MetricTile icon={ScrollText} label="Admin actions" labelEl="Διαχειριστικές ενέργειες" value={auditData ? history.length : dash} href="/admin/audit-log" />
             </div>
 
-            <SectionCard title="Reports about this account" titleEl="Αναφορές για αυτόν τον λογαριασμό" icon={Flag} action={{ href: '/admin/reports', label: 'All reports', labelEl: 'Όλες οι αναφορές' }}>
+            <SectionCard title="Reports about this account" titleEl="Αναφορές για αυτόν τον λογαριασμό" icon={Flag} contentClassName="card-rows" action={{ href: '/admin/reports', label: 'All reports', labelEl: 'Όλες οι αναφορές' }}>
               {against.map((r) => (
-                <div key={r.id} className="rounded-lg border border-border p-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm" className="capitalize"><StatusText value={r.status} /></Badge>
-                    <span className="text-xs capitalize text-muted-foreground"><StatusText value={r.type} /></span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      <RelativeTime date={r.createdAt} format={formatRelativeTime} />
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-sm">{r.reason}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Reported by {r.reporter?.name ?? r.reporter?.email ?? 'someone'}</p>
+                // A row of the section, not a framed tile: the kind of report
+                // over who filed it and when, the state at the right, the
+                // reason on the row's edge.
+                <div key={r.id} className="space-y-1.5">
+                  <RowHead
+                    title={<StatusText value={r.type} />}
+                    subtitle={(
+                      <FactLine
+                        items={[
+                          r.reporter?.name || r.reporter?.email
+                            ? <BilingualText key="by" en={`Reported by ${r.reporter?.name ?? r.reporter?.email}`} el={`Αναφορά από ${r.reporter?.name ?? r.reporter?.email}`} compact />
+                            : <BilingualText key="by" en="Reported by someone" el="Αναφορά από κάποιον" compact />,
+                          <RelativeTime key="when" date={r.createdAt} format={formatRelativeTime} />,
+                        ]}
+                      />
+                    )}
+                    aside={<Badge variant={REPORT_STATUS[r.status] ?? 'secondary'} size="sm"><StatusText value={r.status} /></Badge>}
+                  />
+                  {r.reason ? <p className="text-sm text-muted-foreground first-letter:uppercase">{r.reason}</p> : null}
                 </div>
               ))}
               {reportsData && against.length === 0 && (
@@ -356,18 +375,14 @@ export default function AdminUserDetailPage() {
               )}
             </SectionCard>
 
-            <SectionCard title="Admin history" titleEl="Ιστορικό διαχείρισης" icon={Shield} action={{ href: '/admin/audit-log', label: 'Audit log', labelEl: 'Αρχείο ελέγχου' }}>
+            <SectionCard title="Admin history" titleEl="Ιστορικό διαχείρισης" icon={Shield} contentClassName="card-rows" action={{ href: '/admin/audit-log', label: 'Audit log', labelEl: 'Αρχείο ελέγχου' }}>
               {history.map((l) => (
-                <div key={l.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 border-b border-border py-2 text-sm last:border-b-0">
-                  <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{l.action}</code>
-                  <span className="min-w-0 flex-1 text-muted-foreground">
-                    {l.actorEmail}
-                    {typeof l.meta?.reason === 'string' ? ` · ${l.meta.reason}` : ''}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    <RelativeTime date={l.createdAt} format={formatRelativeTime} />
-                  </span>
-                </div>
+                <RowHead
+                  key={l.id}
+                  title={<code className="font-mono" translate="no">{l.action}</code>}
+                  subtitle={<FactLine items={[<span key="actor" translate="no">{l.actorEmail}</span>, typeof l.meta?.reason === 'string' ? l.meta.reason : null]} />}
+                  aside={<RelativeTime date={l.createdAt} format={formatRelativeTime} />}
+                />
               ))}
               {auditData && history.length === 0 && (
                 <EmptyLine en="No admin action has been taken on this account." el="Δεν έχει γίνει διαχειριστική ενέργεια σε αυτόν τον λογαριασμό." />

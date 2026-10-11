@@ -32,6 +32,8 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
@@ -85,72 +87,75 @@ type DealActions = {
 function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
   const next = nextStage(deal.pipelineStage);
   return (
-    <div className="p-3 rounded-lg border bg-card hover:border-primary/30 transition-colors cursor-pointer group">
-      <div className="flex items-start gap-3">
-        <Avatar className="h-10 w-10 rounded-lg">
-          <AvatarImage src={deal.logoUrl} />
-          <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold text-sm">
-            {deal.name[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-sm truncate">{deal.name}</span>
-            {deal.starred && <Star className="icon-sm text-status-warning fill-status-warning" />}
-          </div>
-          <p className="text-xs text-muted-foreground">{deal.industry}</p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" aria-label={`Open actions for ${deal.name}`}>
-              <MoreVertical className="icon-sm" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/startups/${deal.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-            </DropdownMenuItem>
-            {/* Four items here had no handler. Move and Pass write the
-                deal's stage; notes live on the deal page, which also has
-                the full history. */}
-            <DropdownMenuItem
-              disabled={!onMove || !next}
-              onSelect={() => { if (onMove && next) onMove(deal, next); }}
-            >
-              Move to Next Stage{next ? ` (${next.replace('_', ' ')})` : ''}
-            </DropdownMenuItem>
-            <UnavailableMenuItem
-              en="Schedule Meeting"
-              el="Προγραμματισμός συνάντησης"
-              reasonEn="Meetings with founders are not scheduled in-app yet - message them from the deal page."
-              reasonEl="Οι συναντήσεις με ιδρυτές δεν προγραμματίζονται ακόμη εδώ - στείλτε μήνυμα από τη σελίδα της συμφωνίας."
-            />
-            <DropdownMenuItem asChild>
-              <Link href={`/startups/${deal.id}`}><BilingualText en="Add Note" el="Προσθήκη σημείωσης" compact /></Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive-accessible"
-              disabled={!onMove || deal.pipelineStage === 'passed'}
-              onSelect={() => onMove?.(deal, 'passed')}
-            >
-              <BilingualText en="Pass" el="Απόρριψη" compact />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="flex items-center gap-2 mt-2">
-        <Badge variant="secondary" className="text-2xs"><StatusText value={deal.stage} /></Badge>
-        {deal.readinessScore != null && (
-          <span className="text-2xs text-muted-foreground"><BilingualText en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /></span>
+    // A board tile: the row head every list uses (mark, name, the sector
+    // under it, the menu at the right), then the facts on the mark's edge.
+    <div className="group cursor-pointer space-y-2 rounded-lg border bg-card p-3 transition-colors hover:border-primary/30">
+      <RowHead
+        mark={(
+          <Avatar className="h-10 w-10 rounded-xl">
+            <AvatarImage src={deal.logoUrl} alt="" />
+            <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+              {deal.name[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         )}
-        {deal.askAmount ? (
-          <span className="text-2xs font-medium text-status-success ml-auto">
-            {formatAsk(deal.askAmount, deal.currency)}
+        title={(
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="truncate">{deal.name}</span>
+            {deal.starred && <Star className="icon-sm shrink-0 text-status-warning fill-status-warning" aria-label={bilingualInline('Starred', 'Με αστέρι')} />}
           </span>
-        ) : null}
-      </div>
+        )}
+        subtitle={deal.industry}
+        asideStays
+        aside={(
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" aria-label={`Open actions for ${deal.name}`}>
+                <MoreVertical className="icon-sm" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/startups/${deal.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
+              </DropdownMenuItem>
+              {/* Four items here had no handler. Move and Pass write the
+                  deal's stage; notes live on the deal page, which also has
+                  the full history. */}
+              <DropdownMenuItem
+                disabled={!onMove || !next}
+                onSelect={() => { if (onMove && next) onMove(deal, next); }}
+              >
+                Move to Next Stage{next ? ` (${next.replace('_', ' ')})` : ''}
+              </DropdownMenuItem>
+              <UnavailableMenuItem
+                en="Schedule Meeting"
+                el="Προγραμματισμός συνάντησης"
+                reasonEn="Meetings with founders are not scheduled in-app yet - message them from the deal page."
+                reasonEl="Οι συναντήσεις με ιδρυτές δεν προγραμματίζονται ακόμη εδώ - στείλτε μήνυμα από τη σελίδα της συμφωνίας."
+              />
+              <DropdownMenuItem asChild>
+                <Link href={`/startups/${deal.id}`}><BilingualText en="Add Note" el="Προσθήκη σημείωσης" compact /></Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-destructive-accessible"
+                disabled={!onMove || deal.pipelineStage === 'passed'}
+                onSelect={() => onMove?.(deal, 'passed')}
+              >
+                <BilingualText en="Pass" el="Απόρριψη" compact />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      />
+      <FactLine
+        items={[
+          <StatusText key="stage" value={deal.stage} />,
+          deal.readinessScore != null ? <BilingualText key="ready" en={`${deal.readinessScore}% ready`} el={`${deal.readinessScore}% έτοιμη`} compact /> : null,
+          deal.askAmount ? <span key="ask" className="font-medium tabular-nums text-status-success">{formatAsk(deal.askAmount, deal.currency)}</span> : null,
+        ]}
+      />
       {deal.founderName && (
-        <p className="text-2xs text-muted-foreground mt-1.5 flex min-w-0 items-center gap-1">
+        <p className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <span className="min-w-0 truncate">👤 {deal.founderName}</span>
           {/* A count and an icon: "3 team · ομάδα 3" broke the founder's
               name across two lines in a 288px column. */}
@@ -165,7 +170,7 @@ function DealCard({ deal, onMove }: { deal: Deal } & DealActions) {
           )}
         </p>
       )}
-      <p className="text-2xs text-muted-foreground mt-1">
+      <p className="text-xs text-muted-foreground">
         <RelativeTime date={deal.lastActivity} format={formatRelativeTime} />
       </p>
     </div>
@@ -462,7 +467,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
+            <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /> <BilingualText en="Pipeline Conversion" el="Μετατροπή ανά στάδιο" compact /></CardTitle>
           </CardHeader>
           <CardContent>
             {/* Seven stages do not fit one row on a phone: a 4-column grid

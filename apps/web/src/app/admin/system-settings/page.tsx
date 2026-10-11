@@ -51,7 +51,7 @@ export default function SystemSettingsPage() {
         <TabsContent value="general" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 <Settings className="icon-sm" /> <BilingualText en="Branding & access" el="Εμφάνιση & πρόσβαση" compact />
               </CardTitle>
               <CardDescription><BilingualText en="Visible to all users on public pages and emails." el="Ορατό σε όλους στις δημόσιες σελίδες και τα email." wrap /></CardDescription>
@@ -67,14 +67,14 @@ export default function SystemSettingsPage() {
               </div>
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div>
-                  <p className="font-medium"><BilingualText en="Maintenance mode" el="Λειτουργία συντήρησης" compact /></p>
+                  <p className="text-sm font-medium"><BilingualText en="Maintenance mode" el="Λειτουργία συντήρησης" compact /></p>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Temporarily limit access for upgrades" el="Προσωρινός περιορισμός πρόσβασης για αναβαθμίσεις" wrap /></p>
                 </div>
                 <Switch checked={maintenance} onCheckedChange={setMaintenance} aria-label="Maintenance mode" />
               </div>
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div>
-                  <p className="font-medium"><BilingualText en="Open registration" el="Ανοιχτές εγγραφές" compact /></p>
+                  <p className="text-sm font-medium"><BilingualText en="Open registration" el="Ανοιχτές εγγραφές" compact /></p>
                   <p className="text-sm text-muted-foreground"><BilingualText en="Allow new account signups" el="Να επιτρέπονται νέοι λογαριασμοί" compact /></p>
                 </div>
                 <Switch checked={signupOpen} onCheckedChange={setSignupOpen} aria-label="Open registration" />
@@ -86,13 +86,13 @@ export default function SystemSettingsPage() {
         <TabsContent value="security" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 <Shield className="icon-sm" /> <BilingualText en="Security defaults" el="Προεπιλογές ασφάλειας" compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p><BilingualText en="Session timeout: 7 days (refresh token rotation enabled)" el="Λήξη συνεδρίας: 7 ημέρες (με εναλλαγή refresh token)" wrap /></p>
-              <p>2FA: optional for users, required for platform admins</p>
+              <p><BilingualText en="2FA: optional for users, required for platform admins" el="2FA: προαιρετικό για τους χρήστες, υποχρεωτικό για τους διαχειριστές πλατφόρμας" wrap /></p>
               <p><BilingualText en="Rate limiting: 100 req/min per IP on auth routes" el="Όριο αιτημάτων: 100/λεπτό ανά IP στις διαδρομές σύνδεσης" wrap /></p>
             </CardContent>
           </Card>
@@ -101,7 +101,7 @@ export default function SystemSettingsPage() {
         <TabsContent value="email" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 <Mail className="icon-sm" /> <BilingualText en="Email delivery" el="Αποστολή email" compact />
               </CardTitle>
             </CardHeader>

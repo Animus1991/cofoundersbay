@@ -84,6 +84,7 @@ export function ModeSwitcher({ currentMode, onModeChange, variant }: ModeSwitche
                 type="button"
                 onClick={() => onModeChange(mode.id)}
                 data-keep-icon={variant === 'list' ? '' : undefined}
+                data-sidebar-control={variant === 'row' ? 'mode' : undefined}
                 className={cn(
                   'flex min-w-0 items-center transition-colors duration-150',
                   variant === 'rail' && 'h-9 w-9 justify-center rounded-lg lg:h-[36px] lg:w-[36px]',
