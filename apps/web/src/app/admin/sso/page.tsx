@@ -39,7 +39,12 @@ import {
   type SSODomainMapping,
 } from '@/lib/api';
 import { bilingualInline } from '@/lib/i18n/format';
-import { statusEl } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { bilingualAria } from '@/lib/i18n/format';
+import { cn } from '@/lib/utils';
 
 import { pressableProps } from '@/lib/pressable';
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
@@ -118,7 +123,7 @@ export default function SSOAdminPage() {
               <p className="text-sm"><BilingualText en="No tenants yet — create one in the Tenants admin page." el="Δεν υπάρχουν οργανισμοί ακόμα — δημιουργήστε έναν στη διαχείριση οργανισμών." wrap /></p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-border">
               {tenants.map(tenant => (
                 <TenantSSORow
                   key={tenant.id}
@@ -164,7 +169,7 @@ export default function SSOAdminPage() {
               <p className="text-sm"><BilingualText en="No SSO events yet" el="Δεν υπάρχουν συμβάντα SSO ακόμα" compact /></p>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="divide-y divide-border">
               {events.map(ev => <SSOEventRow key={ev.id} event={ev} />)}
             </div>
           )}
@@ -180,50 +185,62 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
     queryFn: () => getTenantSSOConfig(tenant.id),
   });
 
+  // A row of the list, not a framed tile inside the card: the
+  // organisation's rounded square, the name over its address, the SSO mode
+  // and the provider at the right.
   return (
     <div
-      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/30 transition-colors cursor-pointer"
+      className="axis-row cursor-pointer rounded-md py-3 transition-colors hover:bg-accent"
       onClick={onClick}
       {...pressableProps()}
     >
-      <div className="flex items-center gap-4">
-        {tenant.logoUrl ? (
-          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+      <RowHead
+        titleAs="h3"
+        mark={tenant.logoUrl ? (
+          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-xl object-cover" />
         ) : (
-          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-            <Building2 className="icon-md text-muted-foreground" />
+          <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <Building2 className="icon-md" aria-hidden="true" />
           </div>
         )}
-        <div>
-          <h3 className="font-medium">{tenant.displayName || tenant.name}</h3>
-          <p className="text-xs text-muted-foreground">{tenant.slug}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <SSOModeBadge mode={config?.ssoMode} />
-        {config?.identityProvider && (
-          <span className="text-xs text-muted-foreground">{config.identityProvider.providerName}</span>
+        title={tenant.displayName || tenant.name}
+        subtitle={<span translate="no">/{tenant.slug}</span>}
+        asideStays
+        aside={(
+          <>
+            <SSOModeBadge mode={config?.ssoMode} />
+            {config?.identityProvider && (
+              <span className="hidden text-xs text-muted-foreground sm:inline">{config.identityProvider.providerName}</span>
+            )}
+            <ChevronRight className="icon-sm text-muted-foreground" aria-hidden="true" />
+          </>
         )}
-        <ChevronRight className="icon-sm text-muted-foreground" />
-      </div>
+      />
     </div>
   );
 }
 
 function SSOEventRow({ event }: { event: SSOAuthEvent }) {
   const isSuccess = !event.errorCode;
+  const fmtDate = useDateFormat();
+  const when = fmtDate(event.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  // A row of the log: the outcome's mark, the event over who and where,
+  // the time at the right, an error under it on the mark's edge.
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
-      {isSuccess
-        ? <ShieldCheck className="icon-sm text-status-success shrink-0" />
-        : <ShieldOff className="icon-sm text-destructive-accessible shrink-0" />}
-      <div className="flex-1 min-w-0">
-        <span className="font-medium">{event.eventType}</span>
-        {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
-      </div>
-      <span className="text-xs text-muted-foreground shrink-0">{event.identityProvider.tenant.name}</span>
-      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
-      {event.errorMessage && <span className="text-xs text-destructive-accessible truncate max-w-[160px]">{event.errorMessage}</span>}
+    <div className="space-y-1 py-3">
+      <RowHead
+        mark={(
+          <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', isSuccess ? 'bg-status-success-bg text-status-success' : 'bg-status-danger-bg text-destructive-accessible')}>
+            {isSuccess
+              ? <ShieldCheck className="icon-sm" aria-label={bilingualAria('Succeeded', 'Επιτυχία')} />
+              : <ShieldOff className="icon-sm" aria-label={bilingualAria('Failed', 'Αποτυχία')} />}
+          </div>
+        )}
+        title={<StatusText value={event.eventType} />}
+        subtitle={<FactLine items={[event.email ? <span key="email" translate="no">{event.email}</span> : null, event.identityProvider?.tenant?.name]} />}
+        aside={when}
+      />
+      {event.errorMessage && <p className="break-words text-xs text-destructive-accessible">{event.errorMessage}</p>}
     </div>
   );
 }

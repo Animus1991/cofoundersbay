@@ -27,22 +27,26 @@ import { useChartTheme } from '@/lib/chart-theme';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { FactLine } from '@/components/common/FactLine';
+import { StatusText } from '@/components/common/StatusText';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
-const STATE_LABELS: Record<string, { label: string; color: string }> = {
-  newly_onboarded:    { label: 'New Onboard',      color: 'bg-primary' },
-  profile_incomplete: { label: 'Profile Incomplete', color: 'bg-status-warning-mark' },
-  exploring:          { label: 'Exploring',         color: 'bg-status-info-mark' },
-  matching_focused:   { label: 'Matching',          color: 'bg-status-accent-mark' },
-  artifact_building:  { label: 'Building',          color: 'bg-status-success-mark' },
-  stuck:              { label: 'Stuck',             color: 'bg-status-danger-mark' },
-  feedback_processing:{ label: 'Feedback',          color: 'bg-status-warning-mark' },
-  high_momentum:      { label: 'High Momentum',     color: 'bg-status-success-mark' },
-  review_ready:       { label: 'Review Ready',      color: 'bg-status-success-mark' },
-  readiness_plateaued:{ label: 'Plateaued',         color: 'bg-muted' },
+const STATE_LABELS: Record<string, { label: string; labelEl: string; color: string }> = {
+  newly_onboarded:    { label: 'New Onboard', labelEl: 'Νέα εγγραφή', color: 'bg-primary' },
+  profile_incomplete: { label: 'Profile Incomplete', labelEl: 'Ελλιπές προφίλ', color: 'bg-status-warning-mark' },
+  exploring:          { label: 'Exploring', labelEl: 'Εξερεύνηση', color: 'bg-status-info-mark' },
+  matching_focused:   { label: 'Matching', labelEl: 'Αντιστοίχιση', color: 'bg-status-accent-mark' },
+  artifact_building:  { label: 'Building', labelEl: 'Κατασκευή', color: 'bg-status-success-mark' },
+  stuck:              { label: 'Stuck', labelEl: 'Σε αδιέξοδο', color: 'bg-status-danger-mark' },
+  feedback_processing:{ label: 'Feedback', labelEl: 'Ανατροφοδότηση', color: 'bg-status-warning-mark' },
+  high_momentum:      { label: 'High Momentum', labelEl: 'Υψηλή δυναμική', color: 'bg-status-success-mark' },
+  review_ready:       { label: 'Review Ready', labelEl: 'Έτοιμος για αξιολόγηση', color: 'bg-status-success-mark' },
+  readiness_plateaued:{ label: 'Plateaued', labelEl: 'Σε στασιμότητα', color: 'bg-muted' },
 };
 
-function KPICard({ title, value, sub, icon: Icon, color }: {
-  title: string; value: string | number; sub?: string;
+function KPICard({ title, titleEl, value, sub, icon: Icon, color }: {
+  title: string; titleEl: string; value: string | number; sub?: string;
   icon: React.ElementType; color: string;
 }) {
   return (
@@ -52,7 +56,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
           <Icon className="icon-md text-ink" />
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">{title}</p>
+          <p className="text-xs text-muted-foreground"><BilingualText en={title} el={titleEl} compact wrap /></p>
           <p className="page-stat text-xl font-bold text-foreground">{value}</p>
           {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
         </div>
@@ -64,10 +68,12 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
 function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; isLoading: boolean }) {
   const theme = useChartTheme();
   if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (!stats) return <div className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No stats yet." el="Δεν υπάρχουν στατιστικά ακόμα." compact /></div>;
+  if (!stats) return <div className="py-8 text-sm text-muted-foreground"><BilingualText en="No stats yet." el="Δεν υπάρχουν στατιστικά ακόμα." compact /></div>;
 
-  const chartData = stats.byKey.map(k => ({
-    name: k.key.replace(/_/g, ' '),
+  // A partial payload (the demo answers without `byKey` or the totals) blanked
+  // the whole console behind its error boundary.
+  const chartData = (stats?.byKey ?? []).map(k => ({
+    name: (k?.key ?? '').replace(/_/g, ' '),
     shown: k.shown,
     converted: k.converted,
     dismissed: k.dismissed,
@@ -76,15 +82,15 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <KPICard title="Total Shown" value={stats.totalShown} icon={Target} color="bg-primary" />
-        <KPICard title="Dismissed" value={stats.totalDismissed} sub={`${stats.dismissalRate}%`} icon={XCircle} color="bg-status-danger-mark" />
-        <KPICard title="Converted" value={stats.totalConverted} sub={`${stats.conversionRate}%`} icon={CheckCircle} color="bg-status-success-mark" />
-        <KPICard title="Conv. Rate" value={`${stats.conversionRate}%`} icon={TrendingUp} color="bg-status-accent-mark" />
+        <KPICard title="Total Shown" titleEl="Εμφανίσεις" value={stats.totalShown ?? 0} icon={Target} color="bg-primary" />
+        <KPICard title="Dismissed" titleEl="Απορρίφθηκαν" value={stats.totalDismissed ?? 0} sub={`${stats.dismissalRate ?? 0}%`} icon={XCircle} color="bg-status-danger-mark" />
+        <KPICard title="Converted" titleEl="Μετατράπηκαν" value={stats.totalConverted ?? 0} sub={`${stats.conversionRate ?? 0}%`} icon={CheckCircle} color="bg-status-success-mark" />
+        <KPICard title="Conv. Rate" titleEl="Ποσοστό μετατροπής" value={`${stats.conversionRate ?? 0}%`} icon={TrendingUp} color="bg-status-accent-mark" />
       </div>
 
       {chartData.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm"><BilingualText en="Nudge Performance by Key" el="Απόδοση υπενθυμίσεων ανά κλειδί" compact /></CardTitle></CardHeader>
+          <CardHeader><CardTitle><BilingualText en="Nudge Performance by Key" el="Απόδοση υπενθυμίσεων ανά κλειδί" compact /></CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
@@ -122,6 +128,7 @@ function UserClassifyTab() {
   });
 
   const stateInfo = data ? STATE_LABELS[data.state] : null;
+  const fmtDate = useDateFormat();
 
   return (
     <div className="space-y-4">
@@ -141,25 +148,29 @@ function UserClassifyTab() {
 
       {data && stateInfo && (
         <Card>
+          {/* The state over its reason, the confidence at the right; the
+              signals are figures under it on the title's axis, not boxed. */}
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className={cn('h-3 w-3 rounded-full', stateInfo.color)} />
-              <CardTitle className="text-base">{stateInfo.label}</CardTitle>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <CardTitle className="inline-flex items-center gap-2">
+                <span aria-hidden="true" className={cn('h-3 w-3 shrink-0 rounded-full', stateInfo.color)} />
+                <BilingualText en={stateInfo.label} el={stateInfo.labelEl} compact />
+              </CardTitle>
               <Badge variant="outline" className="ml-auto">
-                {Math.round((data.confidence ?? 0) * 100)}% confidence
+                <BilingualText en={`${Math.round((data.confidence ?? 0) * 100)}% confidence`} el={`Βεβαιότητα ${Math.round((data.confidence ?? 0) * 100)}%`} compact />
               </Badge>
             </div>
-            <CardDescription>{data.reason}</CardDescription>
+            {data.reason ? <CardDescription className="first-letter:uppercase">{data.reason}</CardDescription> : null}
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
-              {Object.entries(data.signals).filter(([k]) => k !== 'userId').map(([k, v]) => (
-                <div key={k} className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2">
-                  <span className="text-xs text-muted-foreground capitalize">{k.replace(/([A-Z])/g, ' $1')}</span>
-                  <span className="text-xs font-semibold tabular-nums">{String(v)}</span>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-3">
+              {Object.entries(data.signals ?? {}).filter(([k]) => k !== 'userId').map(([k, v]) => (
+                <div key={k} className="min-w-0">
+                  <dt className="text-xs text-muted-foreground first-letter:uppercase">{k.replace(/([A-Z])/g, ' $1').toLowerCase()}</dt>
+                  <dd className="card-body font-medium tabular-nums text-foreground">{String(v)}</dd>
                 </div>
               ))}
-            </div>
+            </dl>
           </CardContent>
         </Card>
       )}
@@ -167,16 +178,21 @@ function UserClassifyTab() {
       {logsLoading && <Skeleton className="h-32 w-full" />}
       {Array.isArray(logs) && logs.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm"><BilingualText en="Recent Nudge Logs" el="Πρόσφατες υπενθυμίσεις" compact /></CardTitle></CardHeader>
+          <CardHeader><CardTitle><BilingualText en="Recent Nudge Logs" el="Πρόσφατες υπενθυμίσεις" compact /></CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
               {logs.map((log) => (
-                <div key={log.id} className="flex items-center gap-3 px-4 sm:px-6 py-2 text-xs">
-                  <span className="font-mono text-muted-foreground">{log.nudgeKey}</span>
-                  <Badge variant="outline" className="text-xs">{log.surface}</Badge>
-                  {log.converted && <Badge className="bg-status-success-mark text-xs text-ink">converted</Badge>}
-                  {log.dismissed && <Badge className="bg-status-danger-mark text-xs text-ink">dismissed</Badge>}
-                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
+                <div key={log.id} className="px-4 py-3 sm:px-6">
+                  <RowHead
+                    title={<span className="font-mono" translate="no">{log.nudgeKey}</span>}
+                    subtitle={<FactLine items={[log.surface ? <StatusText key="surface" value={log.surface} /> : null, fmtDate(log.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })]} />}
+                    aside={log.converted || log.dismissed ? (
+                      <>
+                        {log.converted && <Badge className="bg-status-success-mark text-xs text-ink"><BilingualText en="Converted" el="Μετατράπηκε" compact /></Badge>}
+                        {log.dismissed && <Badge className="bg-status-danger-mark text-xs text-ink"><BilingualText en="Dismissed" el="Απορρίφθηκε" compact /></Badge>}
+                      </>
+                    ) : undefined}
+                  />
                 </div>
               ))}
             </div>
@@ -198,7 +214,7 @@ export function BehaviorAdminPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
             <Brain className="icon-md text-muted-foreground" /> <BilingualText en="Behavioral AI Optimizer" el="Βελτιστοποιητής συμπεριφοράς AI" compact />
           </h2>
           <p className="text-sm text-muted-foreground">

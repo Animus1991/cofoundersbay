@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Shield, Lock, Activity, Search } from 'lucide-react';
+import { AlertTriangle, Lock, Activity, Search } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +29,9 @@ import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { StatusText } from '@/components/common/StatusText';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
 import { BilingualText } from '@/components/common/BilingualText';
 
 type SecurityEvent = {
@@ -209,23 +212,31 @@ export default function SecurityMonitoringPage() {
 
       <Card className="mt-4">
         {filtered.length === 0 && (
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
+          <CardContent className="text-sm text-muted-foreground">
             <BilingualText en="No security events match." el="Κανένα συμβάν ασφαλείας δεν ταιριάζει." wrap />
           </CardContent>
         )}
         {filtered.map((e) => (
-          <div key={e.id} className="flex flex-wrap items-start gap-3 border-b px-4 py-3 last:border-b-0">
-            <Shield className="icon-sm mt-0.5 text-muted-foreground shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">{e.message}</p>
-              <p className="text-xs text-muted-foreground">
-                {e.category} ·{' '}
-                {isLive
-                  ? <RelativeTime date={e.time} format={formatRelativeTime} />
-                  : e.time}
-              </p>
-            </div>
-            <Badge variant="outline" className={cn('border capitalize', STATUS[LEVEL_TONE[e.level]].chip)}><BilingualText en={e.level} el={LEVELS.find((l) => l.value === e.level)?.el} compact /></Badge>
+          // A row of the log, set like every row in a section card: the
+          // event over its category and time (a step under the page's
+          // title), the level at the right.
+          <div key={e.id} className="border-b px-4 py-3 last:border-b-0 sm:px-6">
+            <RowHead
+              title={<span className="block first-letter:uppercase">{e.message}</span>}
+              subtitle={(
+                <FactLine
+                  items={[
+                    e.category ? <StatusText key="category" value={e.category} /> : null,
+                    isLive ? <RelativeTime key="time" date={e.time} format={formatRelativeTime} /> : <span key="time">{e.time}</span>,
+                  ]}
+                />
+              )}
+              aside={(
+                <Badge variant="outline" className={cn('border', STATUS[LEVEL_TONE[e.level]].chip)}>
+                  <BilingualText en={e.level.charAt(0).toUpperCase() + e.level.slice(1)} el={LEVELS.find((l) => l.value === e.level)?.el} compact />
+                </Badge>
+              )}
+            />
           </div>
         ))}
       </Card>

@@ -74,6 +74,8 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 // The API's Role enum (schema.prisma). The page used to offer moderator,
@@ -676,85 +678,101 @@ export default function AdminUserManagementPage() {
                   .toUpperCase() || '??';
 
               return (
+                // A row of the list, set like every row in a section card:
+                // the person's circle, the name over the address and the
+                // role, the state and the actions at the right (under the
+                // address on a phone, on the name's edge), so nothing wraps
+                // back to the checkbox's column.
                 <div
                   key={user.id}
-                  className="flex flex-wrap items-center gap-3 border-b px-4 py-3 last:border-b-0 hover:bg-muted/40"
+                  className="flex items-start gap-3 border-b px-4 py-3 last:border-b-0 hover:bg-muted/40"
                 >
                   <Checkbox
                     checked={selectedIds.includes(user.id)}
                     onCheckedChange={(v) => toggleOne(user.id, Boolean(v))}
                     aria-label={`Select ${user.name}`}
+                    className="mt-3"
                   />
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                  {/* A basis, not just flex-1: without one the name shrank to a
-                      letter a line on a phone while the badges held the row.
-                      Now the badges and actions wrap under it instead. */}
-                  <div className="min-w-0 flex-1 basis-40">
-                    <div className="flex items-center gap-2">
-                      <Link href={`/admin/user-detail/${user.id}`} className="font-medium hover:text-primary-accessible">
-                        {user.name}
-                      </Link>
-                      {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" aria-label="Verified. Επαληθευμένος" />}
-                    </div>
-                    <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                  <Badge variant="outline" className="gap-1 capitalize">
-                    {ROLE_ICONS[user.role]}
-                    <BilingualText en={roleLabel(user.role)} el={ROLE_OPTIONS.find((r) => r.value === user.role)?.el} compact />
-                  </Badge>
-                  <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
-                    <StatusText value={user.status} />
-                  </Badge>
-                  <span className="hidden text-sm text-muted-foreground md:inline">
-                    {user.lastActive
-                      ? <RelativeTime date={user.lastActive} format={formatRelativeTime} />
-                      : '—'}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 gap-1 sm:w-auto sm:px-2" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
-                      <Eye className="icon-sm" />
-                      <span className="hidden sm:inline text-xs"><BilingualText en="Quick view" el="Γρήγορη προβολή" compact /></span>
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${user.name}`}>
-                          <MoreHorizontal className="icon-sm" />
+                  <RowHead
+                    className="min-w-0 flex-1"
+                    mark={(
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    title={(
+                      <span className="inline-flex max-w-full items-center gap-1.5">
+                        <Link href={`/admin/user-detail/${user.id}`} className="min-w-0 break-words hover:text-primary-accessible">
+                          {user.name}
+                        </Link>
+                        {user.verified && <CheckCircle2 className="icon-sm shrink-0 text-primary-accessible" aria-label="Verified. Επαληθευμένος" />}
+                      </span>
+                    )}
+                    subtitle={<span className="block truncate" translate="no">{user.email}</span>}
+                    meta={(
+                      <FactLine
+                        items={[
+                          <span key="role" className="inline-flex items-center gap-1">
+                            {ROLE_ICONS[user.role]}
+                            <BilingualText en={roleLabel(user.role)} el={ROLE_OPTIONS.find((r) => r.value === user.role)?.el} compact />
+                          </span>,
+                          user.lastActive ? (
+                            <span key="active"><BilingualText en="Seen" el="Τελευταία φορά" compact /> <RelativeTime date={user.lastActive} format={formatRelativeTime} /></span>
+                          ) : null,
+                        ]}
+                      />
+                    )}
+                    aside={(
+                      <>
+                      <Badge variant="outline" className={cn('capitalize', STATUS_STYLES[user.status])}>
+                        <StatusText value={user.status} />
+                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 gap-1 sm:w-auto sm:px-2" onClick={() => setDetailUser(user)} aria-label={`Quick view ${user.name}`}>
+                          <Eye className="icon-sm" />
+                          <span className="hidden sm:inline text-xs"><BilingualText en="Quick view" el="Γρήγορη προβολή" compact /></span>
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/admin/user-detail/${user.id}`}><BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact /></Link>
-                        </DropdownMenuItem>
-                        {/*
-                          * Verification has no field on the model and no
-                          * endpoint. The item stays, disabled with its reason,
-                          * rather than flipping a boolean nobody stores.
-                          */}
-                        <DropdownMenuItem disabled title="Verification is not recorded yet">
-                          {user.verified ? 'Remove verification' : 'Mark verified'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => void updateStatus(user.id, 'active')}>
-                          <CheckCircle2 className="mr-2 icon-sm" /> <BilingualText en="Set active" el="Ενεργοποίηση" compact />
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => void updateStatus(user.id, 'suspended')}>
-                          <Ban className="mr-2 icon-sm" /> <BilingualText en="Suspend" el="Αναστολή" compact />
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => void updateRole(user.id, 'admin')}>
-                          <Shield className="mr-2 icon-sm" /> <BilingualText en="Make admin" el="Ορισμός ως διαχειριστή" compact />
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive-accessible"
-                          onClick={() => void updateStatus(user.id, 'banned')}
-                        >
-                          <UserX className="mr-2 icon-sm" /> <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${user.name}`}>
+                              <MoreHorizontal className="icon-sm" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/user-detail/${user.id}`}><BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact /></Link>
+                            </DropdownMenuItem>
+                            {/*
+                              * Verification has no field on the model and no
+                              * endpoint. The item stays, disabled with its reason,
+                              * rather than flipping a boolean nobody stores.
+                              */}
+                            <DropdownMenuItem disabled title="Verification is not recorded yet">
+                              {user.verified ? 'Remove verification' : 'Mark verified'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => void updateStatus(user.id, 'active')}>
+                              <CheckCircle2 className="mr-2 icon-sm" /> <BilingualText en="Set active" el="Ενεργοποίηση" compact />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => void updateStatus(user.id, 'suspended')}>
+                              <Ban className="mr-2 icon-sm" /> <BilingualText en="Suspend" el="Αναστολή" compact />
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => void updateRole(user.id, 'admin')}>
+                              <Shield className="mr-2 icon-sm" /> <BilingualText en="Make admin" el="Ορισμός ως διαχειριστή" compact />
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive-accessible"
+                              onClick={() => void updateStatus(user.id, 'banned')}
+                            >
+                              <UserX className="mr-2 icon-sm" /> <BilingualText en="Ban user" el="Αποκλεισμός χρήστη" compact />
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      </>
+                    )}
+                  />
                 </div>
               );
             })}

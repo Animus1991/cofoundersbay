@@ -353,15 +353,15 @@ export function ConversationValidationMenu({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">
+                        <p className="text-sm font-medium text-foreground">
                           <BilingualText en={messagesEn(modeConfig.labelKey)} el={messagesEl(modeConfig.labelKey)} compact />
                         </p>
                         {isActive && (
                           <Badge variant="secondary" className="text-xs"><BilingualText en="Current" el="Τρέχουσα" compact /></Badge>
                         )}
                       </div>
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} />
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} wrap />
                       </p>
                       {mode === 'two_party' && (
                         <p className="text-xs text-status-warning mt-1 flex items-center gap-1">
@@ -387,9 +387,9 @@ export function ConversationValidationMenu({
               <div className="text-xs text-muted-foreground">
                 <p className="font-medium text-foreground mb-1"><BilingualText en="About validation modes" el="Σχετικά με τις λειτουργίες επικύρωσης" compact /></p>
                 <ul className="space-y-1">
-                  <li><strong>Casual:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
-                  <li><strong>One-Party:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
-                  <li><strong>Two-Party:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_casual')} el={messagesEl('val_casual')} compact />:</strong> <BilingualText en="Standard messaging, no records saved" el="Απλά μηνύματα, χωρίς αποθήκευση αρχείου" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_one')} el={messagesEl('val_one')} compact />:</strong> <BilingualText en="You can save transcripts; other party is notified" el="Μπορείτε να αποθηκεύετε αντίγραφα· ο άλλος ειδοποιείται" wrap /></li>
+                  <li><strong><BilingualText en={messagesEn('val_two')} el={messagesEl('val_two')} compact />:</strong> <BilingualText en="Both agree to validated, verifiable transcript" el="Και οι δύο συμφωνούν σε επικυρωμένο, επαληθεύσιμο αντίγραφο" wrap /></li>
                 </ul>
               </div>
             </div>

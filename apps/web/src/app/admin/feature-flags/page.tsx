@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  Zap, Search, Plus, MoreVertical, Percent,
+  Search, Plus, MoreVertical, Percent,
   FlaskConical, CheckCircle2, XCircle, AlertTriangle,
   Edit, Trash2, Copy, RefreshCw, Info,
 } from 'lucide-react';
@@ -541,10 +541,11 @@ export default function AdminFeatureFlagsPage() {
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.length === 0 ? (
               <Card>
-                <CardContent className="py-12 text-center">
-                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                  <p className="font-medium"><BilingualText en="No flags found" el="Δεν βρέθηκαν σημαίες" compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact /></p>
+                <CardContent>
+                  <CardHead
+                    title={<BilingualText en="No flags found" el="Δεν βρέθηκαν σημαίες" compact wrap />}
+                    subtitle={<BilingualText en="Try adjusting your search" el="Δοκιμάστε άλλη αναζήτηση" compact wrap />}
+                  />
                 </CardContent>
               </Card>
             ) : (

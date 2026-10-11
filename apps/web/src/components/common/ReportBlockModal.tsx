@@ -221,7 +221,7 @@ export function ReportBlockModal({
                 <BilingualText en="What would you like to do?" el="Τι θέλετε να κάνετε;" compact wrap />
               </DialogTitle>
               <DialogDescription>
-                Choose an action for {userName}
+                <BilingualText en={`Choose an action for ${userName}`} el={`Επιλέξτε ενέργεια για: ${userName}`} compact wrap />
               </DialogDescription>
             </DialogHeader>
             

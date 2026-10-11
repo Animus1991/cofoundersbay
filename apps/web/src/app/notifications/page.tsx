@@ -166,7 +166,7 @@ const NotificationRow = memo(function NotificationRow({
             // decorative-icon rule spares only a glyph whose parent carries
             // it); the dot over it says the row is unread.
             <div className="relative">
-              <div data-card-mark="" data-keep-icon="" className={cn('flex h-10 w-10 items-center justify-center rounded-full', colorClass)}>
+              <div data-card-mark="" data-keep-icon="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', colorClass)}>
                 <Icon className="icon-md" aria-hidden="true" />
               </div>
               {isUnread && (

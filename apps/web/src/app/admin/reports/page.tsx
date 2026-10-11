@@ -1,6 +1,8 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { StatusText, statusEl } from '@/components/common/StatusText';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -36,7 +38,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
@@ -132,10 +133,12 @@ function ReportCard({
     dismissed: { color: 'bg-muted text-muted-foreground border-border', icon: <XCircle className="icon-sm" /> },
   };
 
-  const priorityColors: Record<string, string> = {
-    low: 'bg-muted text-muted-foreground',
-    medium: 'bg-status-warning-bg text-status-warning',
-    high: 'bg-status-danger-bg text-status-danger',
+  // Priority is a fact on the line under the reason, coloured by urgency;
+  // the report's state is the card's one pill.
+  const priorityText: Record<string, string> = {
+    low: 'text-muted-foreground',
+    medium: 'text-status-warning',
+    high: 'text-status-danger',
   };
 
   const typeIcons: Record<string, React.ReactNode> = {
@@ -148,89 +151,101 @@ function ReportCard({
   const config = statusConfig[report.status];
 
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <div className="p-2 rounded-lg bg-secondary h-fit">
-            {typeIcons[report.type]}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{report.reason}</span>
-                  <Badge variant="outline" className={cn('text-xs', priorityColors[report.priority])}>
-                    <StatusText value={report.priority} />
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Reported: <span className="font-medium">{report.targetName}</span> ({report.targetType})
-                </p>
-                {report.description && (
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                    {report.description}
-                  </p>
+    // The Endorsements card's anatomy: the kind of report's mark, the reason
+    // over what was reported, the state and the menu at the right, the
+    // description on the mark's edge, who reported it and when in the foot.
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-muted-foreground">
+              {typeIcons[report.type]}
+            </div>
+          )}
+          title={<span className="block first-letter:uppercase">{report.reason}</span>}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <BilingualText key="target" en={`Reported: ${report.targetName}`} el={`Αναφέρθηκε: ${report.targetName}`} compact wrap />,
+                report.targetType ? <StatusText key="type" value={report.targetType} /> : null,
+                report.priority ? (
+                  <span key="priority" className={cn('font-medium', priorityText[report.priority])}>
+                    <BilingualText
+                      en={`${report.priority.charAt(0).toUpperCase()}${report.priority.slice(1)} priority`}
+                      el={`Προτεραιότητα: ${statusEl(report.priority) ?? report.priority}`}
+                      compact
+                    />
+                  </span>
+                ) : null,
+              ]}
+            />
+          )}
+          asideStays
+          aside={(
+            <>
+              <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
+                {config.icon}
+                <StatusText value={report.status} />
+              </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {/* These three had no handler. */}
+                <DropdownMenuItem onSelect={() => onView(report)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
+                {report.targetId ? (
+                  <DropdownMenuItem asChild>
+                    <Link href={`/admin/user-detail/${report.targetId}`}><BilingualText en="View Target" el="Προβολή στόχου" compact /></Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem disabled><BilingualText en="View Target" el="Προβολή στόχου" compact /></DropdownMenuItem>
                 )}
-              </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs flex items-center gap-1', config.color)}>
-                  {config.icon}
-                  <StatusText value={report.status} />
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" aria-hidden="true" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {/* These three had no handler. */}
-                    <DropdownMenuItem onSelect={() => onView(report)}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></DropdownMenuItem>
-                    {report.targetId ? (
-                      <DropdownMenuItem asChild>
-                        <Link href={`/admin/user-detail/${report.targetId}`}><BilingualText en="View Target" el="Προβολή στόχου" compact /></Link>
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem disabled><BilingualText en="View Target" el="Προβολή στόχου" compact /></DropdownMenuItem>
-                    )}
-                    {report.reporterEmail ? (
-                      <DropdownMenuItem asChild>
-                        <a href={`mailto:${report.reporterEmail}?subject=${encodeURIComponent(`Your report: ${report.reason}`)}`}><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></a>
-                      </DropdownMenuItem>
-                    ) : (
-                      <DropdownMenuItem disabled><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem
-                      className="text-status-success"
-                      disabled={!onResolve || report.status === 'resolved'}
-                      onClick={() => onResolve?.(report, 'resolved')}
-                    >
-                      <BilingualText en="Mark Resolved" el="Σήμανση ως επιλυμένο" compact />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-muted-foreground"
-                      disabled={!onResolve || report.status === 'dismissed'}
-                      onClick={() => onResolve?.(report, 'dismissed')}
-                    >
-                      <BilingualText en="Dismiss" el="Απόρριψη" compact />
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+                {report.reporterEmail ? (
+                  <DropdownMenuItem asChild>
+                    <a href={`mailto:${report.reporterEmail}?subject=${encodeURIComponent(`Your report: ${report.reason}`)}`}><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></a>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem disabled><BilingualText en="Contact Reporter" el="Επικοινωνία με τον αναφέροντα" compact /></DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  className="text-status-success"
+                  disabled={!onResolve || report.status === 'resolved'}
+                  onClick={() => onResolve?.(report, 'resolved')}
+                >
+                  <BilingualText en="Mark Resolved" el="Σήμανση ως επιλυμένο" compact />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-muted-foreground"
+                  disabled={!onResolve || report.status === 'dismissed'}
+                  onClick={() => onResolve?.(report, 'dismissed')}
+                >
+                  <BilingualText en="Dismiss" el="Απόρριψη" compact />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            </>
+          )}
+        />
 
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Avatar className="icon-sm">
-                  <AvatarImage src={report.reporterAvatar} />
-                  <AvatarFallback className="text-2xs">{report.reporterName[0]}</AvatarFallback>
-                </Avatar>
-                {report.reporterName}
-              </span>
-              <span><RelativeTime date={report.createdAt} format={formatRelativeTime} /></span>
-            </div>
-          </div>
-        </div>
+        {report.description && (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">
+            {report.description}
+          </p>
+        )}
+
+        <CardFoot
+          meta={(
+            <span className="flex flex-wrap items-center gap-x-1.5">
+              <BilingualText en={`By ${report.reporterName}`} el={`Από ${report.reporterName}`} compact />
+              <span aria-hidden="true">·</span>
+              <RelativeTime date={report.createdAt} format={formatRelativeTime} />
+            </span>
+          )}
+        />
       </CardContent>
     </Card>
   );
@@ -606,14 +621,15 @@ export default function AdminReportsPage() {
           ))}
           {filteredReports.length === 0 && (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Flag className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No reports found" el="Δεν βρέθηκαν αναφορές" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {activeFilterCount > 0 ? 'Nothing in this tab matches the current filters.' : 'All caught up!'}
-                </p>
+              <CardContent className="space-y-3">
+                <CardHead
+                  title={<BilingualText en="No reports found" el="Δεν βρέθηκαν αναφορές" compact wrap />}
+                  subtitle={activeFilterCount > 0
+                    ? <BilingualText en="Nothing in this tab matches the current filters." el="Τίποτα σε αυτή την καρτέλα δεν ταιριάζει με τα τρέχοντα φίλτρα." wrap />
+                    : <BilingualText en="All caught up!" el="Όλα ενημερωμένα!" compact />}
+                />
                 {activeFilterCount > 0 && (
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                  <Button variant="outline" size="sm" onClick={() => openRailSection('filters')}>
                     <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                   </Button>
                 )}

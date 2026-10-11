@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Flag, Search, Shield, CheckCircle2, XCircle } from 'lucide-react';
+import { Search, CheckCircle2, XCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -17,6 +17,7 @@ import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
@@ -198,19 +199,22 @@ export default function ContentModerationPage() {
 
       <Card>
         {filtered.map((r) => (
-          <div key={r.id} className="flex flex-wrap items-center gap-3 border-b px-4 py-3 last:border-b-0">
-            <Flag className="icon-sm shrink-0 text-status-warning" aria-hidden="true" />
-            {/* basis-48: the decision buttons wrap under the report on a
-                phone instead of squeezing it to one word a line. */}
-            <div className="min-w-0 flex-1 basis-48">
-              <p className="font-medium"><span className="capitalize"><StatusText value={r.type} /></span> · {r.reason}</p>
-              <p className="text-xs text-muted-foreground">
-                <BilingualText en={`Reported by ${r.reporter}`} el={`Αναφορά από ${r.reporter}`} compact /> · <RelativeTime date={r.createdAt} format={formatRelativeTime} />
-              </p>
-            </div>
-            <Badge variant="outline" className="capitalize"><StatusText value={r.status} /></Badge>
+          // A row of the queue, set like every row in a section card: the
+          // kind of report over who reported it and when, the state at the
+          // right, the reason and the decision on the row's edge.
+          <div key={r.id} className="space-y-2 border-b px-4 py-3 last:border-b-0 sm:px-6">
+            <RowHead
+              title={<StatusText value={r.type} />}
+              subtitle={(
+                <>
+                  <BilingualText en={`Reported by ${r.reporter}`} el={`Αναφορά από ${r.reporter}`} compact /> · <RelativeTime date={r.createdAt} format={formatRelativeTime} />
+                </>
+              )}
+              aside={<Badge variant="outline"><StatusText value={r.status} /></Badge>}
+            />
+            {r.reason ? <p className="text-sm text-muted-foreground first-letter:uppercase">{r.reason}</p> : null}
             {r.status === 'open' && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" onClick={() => void resolve(r.id, 'resolved')}>
                   <CheckCircle2 className="icon-sm mr-1" aria-hidden="true" /> <BilingualText en="Resolve" el="Επίλυση" compact />
                 </Button>
@@ -222,9 +226,8 @@ export default function ContentModerationPage() {
           </div>
         ))}
         {filtered.length === 0 && (
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <Shield className="mx-auto icon-lg opacity-40" aria-hidden="true" />
-            <p className="mt-2"><BilingualText en="No reports in this queue" el="Καμία αναφορά σε αυτή την ουρά" wrap /></p>
+          <CardContent>
+            <p className="text-sm text-muted-foreground"><BilingualText en="No reports in this queue" el="Καμία αναφορά σε αυτή την ουρά" wrap /></p>
           </CardContent>
         )}
       </Card>

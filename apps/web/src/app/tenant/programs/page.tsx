@@ -52,6 +52,7 @@ import {
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { RailStats } from '@/components/layout/RailParts';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
@@ -421,14 +422,7 @@ export default function TenantProgramsPage() {
       labelEn: 'Program totals',
       labelEl: 'Σύνολα προγραμμάτων',
       content: (
-        <ul className="space-y-2">
-          {totals.map((t) => (
-            <li key={t.id} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
-              <span className="text-sm text-muted-foreground"><BilingualText en={t.en} el={t.el} compact wrap /></span>
-              <span className={cn('page-stat font-bold tabular-nums', t.tone)}>{t.value}</span>
-            </li>
-          ))}
-        </ul>
+        <RailStats items={totals.map((t) => ({ key: t.id, label: t.en, labelEl: t.el, value: t.tone ? <span className={t.tone}>{t.value}</span> : t.value }))} />
       ),
     },
     {

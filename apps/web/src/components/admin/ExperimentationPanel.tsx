@@ -16,13 +16,20 @@ import { useModalA11y } from '@/hooks/useModalA11y';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { cn } from '@/lib/utils';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function MetricDiff({
   labelA, labelB, valA, valB, unit = '',
 }: {
-  labelA: string; labelB: string;
+  labelA: React.ReactNode; labelB: React.ReactNode;
   valA: number; valB: number;
   unit?: string;
 }) {
@@ -32,11 +39,11 @@ function MetricDiff({
     <div className="flex items-center gap-3 text-sm">
       <div className="w-1/3">
         <p className="text-xs text-muted-foreground">{labelA}</p>
-        <p className="font-medium text-foreground">{valA.toFixed(1)}{unit}</p>
+        <p className="font-medium tabular-nums text-foreground">{(valA ?? 0).toFixed(1)}{unit}</p>
       </div>
       <div className="w-1/3">
         <p className="text-xs text-muted-foreground">{labelB}</p>
-        <p className="font-medium text-foreground">{valB.toFixed(1)}{unit}</p>
+        <p className="font-medium tabular-nums text-foreground">{(valB ?? 0).toFixed(1)}{unit}</p>
       </div>
       <div className="w-1/3 text-right">
         <p className="text-xs text-muted-foreground">Δ</p>
@@ -44,7 +51,7 @@ function MetricDiff({
           {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{unit}
           {' '}
           {pct !== '—' && (
-            <span className="text-xs opacity-70">({pct}%)</span>
+            <span className="text-xs font-normal text-muted-foreground">({pct}%)</span>
           )}
         </p>
       </div>
@@ -65,6 +72,7 @@ function ExperimentCard({
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [actLoading, setActLoading] = useState(false);
   const confirm = useConfirm();
+  const fmtDate = useDateFormat();
 
   const loadMetrics = async () => {
     setMetricsLoading(true);
@@ -93,61 +101,72 @@ function ExperimentCard({
     onRefresh();
   };
 
+  // The Endorsements card's anatomy: the experiment's name over its key and
+  // split, its state at the right, the sentence and the facts on one left
+  // axis, the actions in the foot; the metrics open under a hairline.
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-white">
-      <div className="px-5 py-4 flex items-center justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-foreground">{exp.name}</span>
-            <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{exp.key}</span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                exp.active ? 'bg-status-success-bg text-status-success' : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {exp.active ? 'Active' : 'Inactive'}
-            </span>
-          </div>
-          {exp.description && (
-            <p className="text-sm text-muted-foreground mt-0.5 truncate">{exp.description}</p>
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          title={exp.name}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <code key="key" className="font-mono text-xs" translate="no">{exp.key}</code>,
+                <BilingualText key="split" en={`Split ${Math.round((exp.splitRatio ?? 0) * 100)}% B`} el={`Κατανομή ${Math.round((exp.splitRatio ?? 0) * 100)}% B`} compact />,
+              ]}
+            />
           )}
-          <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
-            <span>Split {Math.round(exp.splitRatio * 100)}% B</span>
-            <span>A: {exp.variantACounts} users · B: {exp.variantBCounts} users</span>
-            {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>}
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={toggle}
-            disabled={actLoading}
-            className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-              exp.active
-                ? 'bg-status-danger-bg text-status-danger hover:bg-status-danger-bg'
-                : 'bg-status-success-bg text-status-success hover:bg-status-success-bg'
-            }`}
-          >
-            {exp.active ? <Square className="icon-sm" /> : <Play className="icon-sm" />}
-            {exp.active ? 'Stop' : 'Start'}
-          </button>
-          <button
+          aside={(
+            <Badge variant="outline" className={cn('text-xs', exp.active ? 'border-status-success-border bg-status-success-bg text-status-success' : 'bg-muted text-muted-foreground')}>
+              {exp.active ? <BilingualText en="Active" el="Ενεργό" compact /> : <BilingualText en="Inactive" el="Ανενεργό" compact />}
+            </Badge>
+          )}
+        />
+        {exp.description && (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{exp.description}</p>
+        )}
+        <FactLine
+          items={[
+            <BilingualText key="a" en={`A: ${exp.variantACounts ?? 0} users`} el={`A: ${exp.variantACounts ?? 0} χρήστες`} compact />,
+            <BilingualText key="b" en={`B: ${exp.variantBCounts ?? 0} users`} el={`B: ${exp.variantBCounts ?? 0} χρήστες`} compact />,
+            exp.startedAt ? (
+              <BilingualText
+                key="started"
+                en={`Started ${fmtDate(exp.startedAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                el={`Ξεκίνησε ${fmtDate(exp.startedAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                compact
+              />
+            ) : null,
+          ]}
+        />
+        <CardFoot>
+          <Button size="sm" variant="outline" className={cn('gap-1.5', exp.active ? 'text-status-danger' : 'text-status-success')} onClick={toggle} disabled={actLoading}>
+            {exp.active ? <Square className="icon-sm" aria-hidden="true" /> : <Play className="icon-sm" aria-hidden="true" />}
+            {exp.active ? <BilingualText en="Stop" el="Διακοπή" compact /> : <BilingualText en="Start" el="Έναρξη" compact />}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="gap-1"
+            aria-expanded={expanded}
             onClick={async () => {
               setExpanded(!expanded);
               if (!expanded && !metrics) await loadMetrics();
             }}
-            className="text-xs flex items-center gap-1 text-muted-foreground hover:text-muted-foreground px-2"
           >
-            <BarChart2 className="icon-sm" />
-            {expanded ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
-          </button>
-          <button aria-label="Delete experiment" onClick={del} className="text-muted-foreground hover:text-status-danger">
-            <Trash2 className="icon-sm" />
-          </button>
-        </div>
-      </div>
+            <BarChart2 className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Metrics" el="Μετρήσεις" compact />
+            {expanded ? <ChevronUp className="icon-sm" aria-hidden="true" /> : <ChevronDown className="icon-sm" aria-hidden="true" />}
+          </Button>
+          <Button aria-label={bilingualInline('Delete experiment', 'Διαγραφή πειράματος')} variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-status-danger" onClick={del}>
+            <Trash2 className="icon-sm" aria-hidden="true" />
+          </Button>
+        </CardFoot>
 
       {expanded && (
-        <div className="border-t border-border px-5 py-4 bg-muted">
+        <div className="border-t border-border pt-3">
           {metricsLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="icon-sm animate-spin" /> <BilingualText en="Loading metrics…" el="Φόρτωση μετρήσεων…" compact />
@@ -156,30 +175,30 @@ function ExperimentCard({
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <MetricDiff
-                  labelA="Variant A — Avg XP" labelB="Variant B — Avg XP"
+                  labelA={<BilingualText en="Variant A: avg XP" el="Εκδοχή A: μέσο XP" compact wrap />} labelB={<BilingualText en="Variant B: avg XP" el="Εκδοχή B: μέσο XP" compact wrap />}
                   valA={metrics.variantAXpAvg} valB={metrics.variantBXpAvg}
                 />
                 <MetricDiff
-                  labelA="A Badge Rate" labelB="B Badge Rate"
+                  labelA={<BilingualText en="A badge rate" el="A ποσοστό διακρίσεων" compact wrap />} labelB={<BilingualText en="B badge rate" el="B ποσοστό διακρίσεων" compact wrap />}
                   valA={metrics.variantABadgeRate} valB={metrics.variantBBadgeRate}
                   unit="%"
                 />
                 <MetricDiff
-                  labelA="A Retention 7d" labelB="B Retention 7d"
+                  labelA={<BilingualText en="A retention 7d" el="A διατήρηση 7 ημ." compact wrap />} labelB={<BilingualText en="B retention 7d" el="B διατήρηση 7 ημ." compact wrap />}
                   valA={metrics.variantARetention7d} valB={metrics.variantBRetention7d}
                   unit="%"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide"><BilingualText en="Variant A Config" el="Ρύθμιση εκδοχής A" compact /></p>
-                  <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground"><BilingualText en="Variant A Config" el="Ρύθμιση εκδοχής A" compact /></p>
+                  <pre className="max-h-28 overflow-auto rounded-md border border-border bg-muted/40 p-2 font-mono text-xs">
                     {JSON.stringify(exp.variantA, null, 2)}
                   </pre>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide"><BilingualText en="Variant B Config" el="Ρύθμιση εκδοχής B" compact /></p>
-                  <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
+                  <p className="mb-1 text-xs font-medium text-muted-foreground"><BilingualText en="Variant B Config" el="Ρύθμιση εκδοχής B" compact /></p>
+                  <pre className="max-h-28 overflow-auto rounded-md border border-border bg-muted/40 p-2 font-mono text-xs">
                     {JSON.stringify(exp.variantB, null, 2)}
                   </pre>
                 </div>
@@ -187,6 +206,7 @@ function ExperimentCard({
             </div>
           ) : (
             <button
+              type="button"
               onClick={loadMetrics}
               className="text-sm text-status-accent hover:underline"
             >
@@ -195,7 +215,8 @@ function ExperimentCard({
           )}
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -248,7 +269,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
         aria-modal="true"
         aria-labelledby="new-experiment-title"
         tabIndex={-1}
-        className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6"
+        className="bg-card rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6"
       >
         <h3 id="new-experiment-title" className="text-lg font-semibold text-foreground mb-4"><BilingualText en="New Experiment" el="Νέο πείραμα" compact /></h3>
         <div className="space-y-3">
@@ -321,11 +342,13 @@ function ConfigEditor() {
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [seedLoading, setSeedLoading] = useState(false);
+  const fmtDateTime = useDateFormat();
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const c = await adminListConfigs(category || undefined);
+      const res = await adminListConfigs(category || undefined);
+      const c = Array.isArray(res) ? res : [];
       setConfigs(c);
       const vals: Record<string, string> = {};
       c.forEach((cfg) => { vals[cfg.key] = JSON.stringify(cfg.value, null, 2); });
@@ -385,7 +408,7 @@ function ConfigEditor() {
           className="text-xs flex items-center gap-1.5 border border-dashed border-status-accent-border text-status-accent px-3 py-1.5 rounded-lg hover:bg-status-accent-bg"
         >
           <Settings className="icon-sm" />
-          {seedLoading ? 'Seeding…' : 'Seed Defaults'}
+          {seedLoading ? <BilingualText en="Seeding…" el="Φόρτωση προεπιλογών…" compact /> : <BilingualText en="Seed Defaults" el="Φόρτωση προεπιλογών" compact />}
         </button>
       </div>
 
@@ -399,44 +422,44 @@ function ConfigEditor() {
           <p className="text-sm"><BilingualText en="No config keys found. Seed defaults to get started." el="Δεν βρέθηκαν κλειδιά ρυθμίσεων. Φορτώστε τις προεπιλογές για να ξεκινήσετε." wrap /></p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {configs.map((cfg) => (
-            <div key={cfg.key} className="border border-border rounded-xl p-4 bg-white">
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-mono text-sm text-foreground">{cfg.key}</span>
-                    {cfg.category && (
-                      <span className="text-xs bg-status-accent-bg text-status-accent px-1.5 py-0.5 rounded">
-                        {cfg.category}
-                      </span>
-                    )}
-                  </div>
-                  {cfg.description && (
-                    <p className="text-xs text-muted-foreground mb-2">{cfg.description}</p>
-                  )}
-                  <textarea
-                    value={editValues[cfg.key] ?? ''}
-                    onChange={(e) =>
-                      setEditValues((v) => ({ ...v, [cfg.key]: e.target.value }))
-                    }
-                    rows={2}
-                    className="w-full text-xs font-mono border border-border rounded-xl px-3 py-2 focus:outline-none resize-none"
-                  />
-                </div>
-                <button
-                  disabled={saving === cfg.key}
-                  onClick={() => void save(cfg)}
-                  className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-status-accent-bg text-status-accent rounded-lg hover:bg-status-accent-bg disabled:opacity-50 disabled:cursor-not-allowed"
+            // A form card: the key over its description, the category at
+            // the right, the value's field on the key's axis, the save in
+            // the foot with when it last changed.
+            <Card key={cfg.key}>
+              <CardContent className="space-y-3">
+                <CardHead
+                  title={<span className="font-mono" translate="no">{cfg.key}</span>}
+                  subtitle={cfg.description ? <span className="block first-letter:uppercase">{cfg.description}</span> : undefined}
+                  aside={cfg.category ? <code className="font-mono" translate="no">{cfg.category}</code> : undefined}
+                />
+                <textarea
+                  aria-label={bilingualInline(`Value of ${cfg.key}`, `Τιμή του ${cfg.key}`)}
+                  value={editValues[cfg.key] ?? ''}
+                  onChange={(e) =>
+                    setEditValues((v) => ({ ...v, [cfg.key]: e.target.value }))
+                  }
+                  rows={2}
+                  className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus:outline-none"
+                />
+                <CardFoot
+                  meta={cfg.updatedAt ? (
+                    <BilingualText
+                      en={`Updated ${fmtDateTime(cfg.updatedAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                      el={`Ενημερώθηκε ${fmtDateTime(cfg.updatedAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                      compact
+                      wrap
+                    />
+                  ) : undefined}
                 >
-                  <Save className="icon-sm" />
-                  {saving === cfg.key ? 'Saving…' : 'Save'}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Updated {new Date(cfg.updatedAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
-              </p>
-            </div>
+                  <Button size="sm" variant="outline" className="gap-1.5" disabled={saving === cfg.key} onClick={() => void save(cfg)}>
+                    <Save className="icon-sm" aria-hidden="true" />
+                    {saving === cfg.key ? <BilingualText en="Saving…" el="Αποθήκευση…" compact /> : <BilingualText en="Save" el="Αποθήκευση" compact />}
+                  </Button>
+                </CardFoot>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -456,7 +479,9 @@ export function ExperimentationPanel() {
     setLoading(true);
     try {
       const res = await adminListExperiments();
-      setExperiments(res);
+      // A partial payload (the demo answers with an object) threw on `.map`
+      // and blanked the whole console behind its error boundary.
+      setExperiments(Array.isArray(res) ? res : []);
     } finally {
       setLoading(false);
     }
@@ -470,8 +495,8 @@ export function ExperimentationPanel() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Experimentation & Tuning" el="Πειράματα & ρυθμίσεις" compact /></h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h2 className="text-base font-semibold text-foreground"><BilingualText en="Experimentation & Tuning" el="Πειράματα & ρυθμίσεις" compact /></h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             <BilingualText en="A/B experiments with sticky variant assignment + live config weight tuning." el="Πειράματα A/B με σταθερή ανάθεση εκδοχής και ζωντανή ρύθμιση βαρών." wrap />
           </p>
         </div>
@@ -480,19 +505,19 @@ export function ExperimentationPanel() {
       {/* Tabs */}
       <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
         {([
-          { key: 'experiments', label: 'Experiments', icon: FlaskConical },
-          { key: 'config', label: 'System Config', icon: Settings },
-        ] as const).map(({ key, label, icon: Icon }) => (
+          { key: 'experiments', label: 'Experiments', labelEl: 'Πειράματα', icon: FlaskConical },
+          { key: 'config', label: 'System Config', labelEl: 'Ρυθμίσεις συστήματος', icon: Settings },
+        ] as const).map(({ key, label, labelEl, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
               tab === key
-                ? 'bg-white text-primary-accessible shadow-sm'
+                ? 'bg-card text-primary-accessible shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Icon className="icon-sm" /> {label}
+            <Icon className="icon-sm" /> <BilingualText en={label} el={labelEl} compact />
           </button>
         ))}
       </div>
@@ -500,7 +525,7 @@ export function ExperimentationPanel() {
       {tab === 'experiments' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{experiments.length} experiment{experiments.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-muted-foreground"><BilingualText en={`${experiments.length} experiment${experiments.length !== 1 ? 's' : ''}`} el={`${experiments.length} ${experiments.length !== 1 ? 'πειράματα' : 'πείραμα'}`} compact /></p>
             <div className="flex gap-2">
               <button aria-label="Refresh experiments"
                 onClick={loadExperiments}
@@ -522,16 +547,15 @@ export function ExperimentationPanel() {
               <RefreshCw className="icon-md animate-spin mr-2" /> <BilingualText en="Loading…" el="Φόρτωση…" compact />
             </div>
           ) : experiments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground border-2 border-dashed border-border rounded-xl">
-              <FlaskConical className="w-10 h-10 mb-2 opacity-30" />
-              <p className="text-sm"><BilingualText en="No experiments yet. Create one to start A/B testing." el="Δεν υπάρχουν πειράματα ακόμα. Δημιουργήστε ένα για δοκιμές A/B." wrap /></p>
-              <button
-                onClick={() => setShowCreate(true)}
-                className="mt-3 text-sm text-status-accent hover:underline"
-              >
-                + Create first experiment
-              </button>
-            </div>
+            <Card>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground"><BilingualText en="No experiments yet. Create one to start A/B testing." el="Δεν υπάρχουν πειράματα ακόμα. Δημιουργήστε ένα για δοκιμές A/B." wrap /></p>
+                <Button size="sm" variant="outline" onClick={() => setShowCreate(true)}>
+                  <Plus className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Create first experiment" el="Δημιουργία πρώτου πειράματος" compact />
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-3">
               {experiments.map((exp) => (

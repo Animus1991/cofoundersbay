@@ -9,7 +9,9 @@ import { HelpCallout } from '@/components/common/HelpCallout';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine } from '@/components/dashboard/SectionCard';
+import { EmptyLine, RowHead } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
+import { StatusText } from '@/components/common/StatusText';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -112,28 +114,41 @@ export default function CommunityManagementPage() {
           const privacy = PRIVACY_LABEL[g.privacy] ?? PRIVACY_LABEL.public;
           const ratio = g.memberCount ? g.postCount / g.memberCount : 0;
           return (
+            // A row of the list, set like every row in a section card: the
+            // name over its category and reach (a step under the page's
+            // title), the privacy at the right, the activity on the caption.
             <Link
               key={g.id}
               href={`/groups/${g.id}`}
-              className="group flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/30 focus-ring"
+              className="group block border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/30 focus-ring sm:px-6"
             >
-              <div className="min-w-0 flex-1 basis-56">
-                <p className="flex flex-wrap items-center gap-2 font-medium">
-                  {g.name}
-                  <Badge variant="outline" size="sm">
-                    <BilingualText en={privacy.en} el={privacy.el} compact />
-                  </Badge>
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {g.category ? `${g.category} · ` : ''}
-                  {g.memberCount.toLocaleString('en-GB')} members · {g.postCount.toLocaleString('en-GB')} posts · created{' '}
-                  <RelativeTime date={g.createdAt} format={formatRelativeTime} />
-                </p>
-              </div>
-              <span className="shrink-0 text-xs tabular-nums text-muted-foreground" title="Posts per member">
-                {ratio.toFixed(2)} posts / member
-              </span>
-              <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
+              <RowHead
+                title={g.name}
+                subtitle={(
+                  <FactLine
+                    items={[
+                      g.category ? <StatusText key="category" value={g.category} /> : null,
+                      <BilingualText key="members" en={`${g.memberCount.toLocaleString('en-GB')} members`} el={`${g.memberCount.toLocaleString('el-GR')} μέλη`} compact />,
+                      <BilingualText key="posts" en={`${g.postCount.toLocaleString('en-GB')} posts`} el={`${g.postCount.toLocaleString('el-GR')} αναρτήσεις`} compact />,
+                      <span key="created"><BilingualText en="Created" el="Δημιουργήθηκε" compact /> <RelativeTime date={g.createdAt} format={formatRelativeTime} /></span>,
+                    ]}
+                  />
+                )}
+                meta={(
+                  <span className="tabular-nums" title={bilingualInline('Posts per member', 'Αναρτήσεις ανά μέλος')}>
+                    <BilingualText en={`${ratio.toFixed(2)} posts / member`} el={`${ratio.toFixed(2)} αναρτήσεις / μέλος`} compact />
+                  </span>
+                )}
+                asideStays
+                aside={(
+                  <>
+                    <Badge variant="outline" size="sm">
+                      <BilingualText en={privacy.en} el={privacy.el} compact />
+                    </Badge>
+                    <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
+                  </>
+                )}
+              />
             </Link>
           );
         })}

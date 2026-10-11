@@ -384,10 +384,10 @@ export default function TenantAutomationPage() {
     // no explanation of why. It now uses the same EmptyState the rest of the app
     // does, says what automations are for, and offers a way out.
     return (
-      <AppShell title="Automation">
+      <AppShell title="Automation" titleEl="Αυτοματισμοί">
         <EmptyState
-          title="No organization selected"
-          description="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up."
+          title={<BilingualText en="No organization selected" el="Δεν έχει επιλεγεί οργανισμός" wrap />}
+          description={<BilingualText en="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up." el="Οι αυτοματισμοί λειτουργούν μέσα σε έναν οργανισμό — αντιδρούν σε συμβάντα όπως η ένταξη νέου μέλους ή η υποβολή μιας αίτησης. Επιλέξτε ή δημιουργήστε έναν οργανισμό για να τους ρυθμίσετε." wrap />}
           illustration="rocket"
           askAiPrompt="I opened organization automations without an organization selected. Help me pick or create one and explain what automation rules I should turn on first."
           action={
@@ -408,6 +408,7 @@ export default function TenantAutomationPage() {
   return (
     <AppShell
       title="Automation"
+      titleEl="Αυτοματισμοί"
       description="Event-driven workflows: triggers fire when events happen, conditions filter, actions notify or update data."
       descriptionEl="Ροές εργασιών βάσει συμβάντων: τα εναύσματα ενεργοποιούνται όταν συμβαίνει κάτι, οι συνθήκες φιλτράρουν και οι ενέργειες ειδοποιούν ή ενημερώνουν δεδομένα."
     >

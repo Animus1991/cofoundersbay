@@ -20,6 +20,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { usePageRail } from '@/components/layout/PageRailContext';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { BilingualText } from '@/components/common/BilingualText';
 import { downloadCsv } from '@/lib/csv';
 import { CANCELLED, choiceControl, ROW_GONE, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
@@ -135,7 +136,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary-accessible transition-colors">
+          <Link href={`/p/${user.id}`} className="text-sm font-medium hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
           {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}
@@ -158,10 +159,12 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
       </div>
       {/* Natural width: a fixed 96px cut "Suspended · Σε αναστολή". Below md
           the meta line under the email already says the status. */}
-      <Badge variant="outline" className={cn('hidden md:flex text-xs items-center gap-1 min-w-24 justify-center whitespace-nowrap', config.color)}>
-        {config.icon}
-        <StatusText value={user.status} />
-      </Badge>
+      <div className="hidden min-w-24 md:flex">
+        <Badge variant="outline" className={cn('flex items-center gap-1 whitespace-nowrap text-xs', config.color)}>
+          {config.icon}
+          <StatusText value={user.status} />
+        </Badge>
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
@@ -613,21 +616,20 @@ export default function AdminUsersPage() {
             <div className="w-24"><BilingualText en="Role" el="Ρόλος" compact /></div>
             <div className="hidden lg:block w-32"><BilingualText en="Tenant" el="Οργανισμός" compact /></div>
             <div className="w-28"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></div>
-            <div className="w-24 text-center"><BilingualText en="Status" el="Κατάσταση" compact /></div>
+            <div className="min-w-24"><BilingualText en="Status" el="Κατάσταση" compact /></div>
             <div className="w-8" />
           </div>
           {filteredUsers.map((user) => (
             <UserRow key={user.id} user={user} onModerate={moderate} onRole={assignRole} />
           ))}
           {filteredUsers.length === 0 && (
-            <CardContent className="py-12 text-center">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-              <h3 className="font-medium"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact /></h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
-              </p>
+            <CardContent className="space-y-3">
+              <CardHead
+                title={<BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact wrap />}
+                subtitle={<BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact wrap />}
+              />
               {activeFilterCount > 0 && (
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                <Button variant="outline" size="sm" onClick={() => openRailSection('filters')}>
                   <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                 </Button>
               )}

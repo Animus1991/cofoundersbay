@@ -435,9 +435,9 @@ export default function TenantBrandingPage() {
                   ))}
                   <div className="rounded-lg border p-5">
                     <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Preview" el="Προεπισκόπηση" compact /></p>
-                    {/* The faces, previewed on the card's own steps: a preview
-                        never outranks the card's title. */}
-                    <p className="card-title mb-1" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
+                    {/* The faces, previewed a step under the card's own title:
+                        a preview never sits level with the section's heading. */}
+                    <p className="mb-1 text-sm font-semibold" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
                       {activeTenant?.displayName ?? activeTenant?.name ?? <BilingualText en="Organization Name" el="Όνομα οργανισμού" compact />}
                     </p>
                     <p className="card-body text-muted-foreground" style={{ fontFamily: form.bodyFont ?? 'Inter' }}>
@@ -483,7 +483,7 @@ export default function TenantBrandingPage() {
                               className="h-16 w-32 rounded-lg border border-border object-contain bg-background/50"
                             />
                           ) : (
-                            <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
+                            <div data-keep-icon="" className="h-16 w-32 rounded-lg border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
                               <Image className="icon-lg text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
@@ -508,49 +508,53 @@ export default function TenantBrandingPage() {
                   {/* Favicon Upload */}
                   <div className="space-y-3">
                     <p id="page-cap4-cap" className="text-sm font-medium"><BilingualText en="Favicon" el="Favicon" compact /></p>
-                    <div role="group" aria-labelledby="page-cap4-cap" className="flex items-start gap-4">
-                      <ImageCropperTrigger
-                        cropShape="circle"
-                        aspectRatio={1}
-                        outputSize={64}
-                        title="Crop Favicon"
-                        onCrop={async (blob, dataUrl) => {
-                          try {
-                            const file = new File([blob], 'favicon.ico', { type: 'image/png' });
-                            const { upload } = await uploadAvatar(file);
-                            setField('faviconUrl', upload.url);
-                          } catch {
-                            // Handle error silently or show toast
-                          }
-                        }}
-                      >
-                        <div className="relative group cursor-pointer">
-                          {form.faviconUrl ? (
-                            <img
-                              src={form.faviconUrl}
-                              alt="Favicon preview"
-                              className="h-8 w-8 rounded-md border border-border object-contain bg-background/50"
-                            />
-                          ) : (
-                            <div className="h-8 w-8 rounded-md border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
-                              <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
+                    {/* The hint runs under the whole row, on the card's axis:
+                        beside a 32px preview it started a line of its own,
+                        indented past the preview. */}
+                    <div role="group" aria-labelledby="page-cap4-cap" className="space-y-1">
+                      <div className="flex items-center gap-4">
+                        <ImageCropperTrigger
+                          cropShape="circle"
+                          aspectRatio={1}
+                          outputSize={64}
+                          title="Crop Favicon"
+                          onCrop={async (blob, dataUrl) => {
+                            try {
+                              const file = new File([blob], 'favicon.ico', { type: 'image/png' });
+                              const { upload } = await uploadAvatar(file);
+                              setField('faviconUrl', upload.url);
+                            } catch {
+                              // Handle error silently or show toast
+                            }
+                          }}
+                        >
+                          <div className="relative group cursor-pointer">
+                            {form.faviconUrl ? (
+                              <img
+                                src={form.faviconUrl}
+                                alt="Favicon preview"
+                                className="h-8 w-8 rounded-md border border-border object-contain bg-background/50"
+                              />
+                            ) : (
+                              <div data-keep-icon="" className="h-8 w-8 rounded-md border-2 border-dashed border-border flex items-center justify-center bg-muted/20">
+                                <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                              <Camera className="icon-sm text-white" />
                             </div>
-                          )}
-                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                            <Camera className="icon-sm text-white" />
                           </div>
+                        </ImageCropperTrigger>
+                        <div className="flex-1">
+                          <Input
+                            aria-labelledby="page-cap4-cap"
+                            value={form.faviconUrl ?? ''}
+                            onChange={(e) => setField('faviconUrl', e.target.value)}
+                            placeholder="https://..."
+                          />
                         </div>
-                      </ImageCropperTrigger>
-                      <div className="flex-1">
-                        <Input
-                          aria-labelledby="page-cap4-cap"
-                          value={form.faviconUrl ?? ''}
-                          onChange={(e) => setField('faviconUrl', e.target.value)}
-                          placeholder="https://..."
-                          className="mb-1"
-                        />
-                        <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. 64×64px, square format." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. 64×64px, τετράγωνο." wrap /></p>
                       </div>
+                      <p className="text-xs text-muted-foreground"><BilingualText en="Click to crop & upload, or paste URL. 64×64px, square format." el="Πατήστε για περικοπή & μεταφόρτωση ή επικολλήστε URL. 64×64px, τετράγωνο." wrap /></p>
                     </div>
                   </div>
 

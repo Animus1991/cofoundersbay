@@ -7,7 +7,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, Users, Settings, BarChart3, Shield, Mail,
   UserPlus, MoreVertical, Search, Filter, Download,
-  CheckCircle2, XCircle, Clock, TrendingUp, Calendar,
+  CheckCircle2, XCircle, Clock, Calendar,
   Building2, Globe, Edit, Trash2, Crown, UserMinus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { AppShell } from '@/components/layout/AppShell';
+import { EmptyLine } from '@/components/dashboard/SectionCard';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -574,7 +575,7 @@ export default function OrgAdminPage() {
             </Avatar>
             <div className="min-w-0">
               <h1 className="break-words text-2xl sm:text-3xl font-semibold text-foreground">{org.name}</h1>
-              <p className="text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact wrap /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Organization Admin Dashboard" el="Πίνακας διαχείρισης οργανισμού" compact wrap /></p>
             </div>
           </div>
           <Button variant="outline" asChild>
@@ -729,15 +730,14 @@ export default function OrgAdminPage() {
                 <CardTitle><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
                 <CardDescription><BilingualText en="Manage pending member invitations" el="Διαχείριση εκκρεμών προσκλήσεων" wrap /></CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
-                  <p><BilingualText en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" compact /></p>
-                  <Button className="mt-4" onClick={() => setInviteOpen(true)}>
-                    <UserPlus className="icon-sm mr-2" aria-hidden="true" />
-                    <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
-                  </Button>
-                </div>
+              {/* An empty line on the card's axis, not a centred block whose
+                  sentence (on the body step) was as loud as the card's title. */}
+              <CardContent className="space-y-3">
+                <EmptyLine en="No pending invitations" el="Δεν υπάρχουν εκκρεμείς προσκλήσεις" />
+                <Button size="sm" onClick={() => setInviteOpen(true)}>
+                  <UserPlus className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Invite Members" el="Πρόσκληση μελών" compact />
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -749,10 +749,7 @@ export default function OrgAdminPage() {
                   <CardTitle><BilingualText en="Member Growth" el="Αύξηση μελών" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." compact wrap /></p>
-                  </div>
+                  <EmptyLine en="No growth data recorded yet." el="Δεν έχουν καταγραφεί δεδομένα αύξησης ακόμα." />
                 </CardContent>
               </Card>
               <Card>
@@ -760,10 +757,7 @@ export default function OrgAdminPage() {
                   <CardTitle><BilingualText en="Activity Overview" el="Επισκόπηση δραστηριότητας" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-[200px] flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
-                    <p className="text-sm"><BilingualText en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." compact wrap /></p>
-                  </div>
+                  <EmptyLine en="No activity data recorded yet." el="Δεν έχει καταγραφεί δραστηριότητα ακόμα." />
                 </CardContent>
               </Card>
             </div>

@@ -342,8 +342,8 @@ export default function OrgAnalyticsPage() {
             {loading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}
             {!loading && programMetrics.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No programmes yet. Each programme you run appears here with how full it is.{' '}
-                <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline">Create a programme</Link>
+                <BilingualText en="No programmes yet. Each programme you run appears here with how full it is." el="Δεν υπάρχουν ακόμη προγράμματα. Κάθε πρόγραμμα που τρέχετε εμφανίζεται εδώ με την πληρότητά του." wrap />{' '}
+                <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline"><BilingualText en="Create a programme" el="Δημιουργία προγράμματος" compact /></Link>
               </p>
             )}
             {programMetrics.map((program) => (
@@ -360,23 +360,23 @@ export default function OrgAnalyticsPage() {
           </SectionCard>
 
           <SectionCard title="Mentor activity" titleEl="Δραστηριότητα μεντόρων" action={{ href: '/org/mentors', label: 'Mentors', labelEl: 'Μέντορες' }}>
-            <dl className="grid grid-cols-2 gap-3">
+            {/* One row per figure on the card's axis: the label (and its
+                note under it) at the left, the figure at the right. In a 2x2
+                grid a note that wrapped in the right column started a line
+                of its own, off the axis. */}
+            <dl className="card-rows">
               {([
                 { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} / ${mentors.length}` : '—' },
-                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'last three months', noteEl: 'τελευταίοι τρεις μήνες' },
+                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'Last three months', noteEl: 'Τελευταίοι τρεις μήνες' },
                 { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined, noteEl: `${rated.length} αξιολογημένες συνεδρίες` },
                 { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined, noteEl: `${taken} από ${slots} θέσεις καθοδηγούμενων` },
               ] as { en: string; el: string; value: string | number; note?: string; noteEl?: string }[]).map((cell) => (
-                <div key={cell.en} className="min-w-0">
-                  <dt className="text-xs text-muted-foreground">
-                    <BilingualText en={cell.en} el={cell.el} stacked wrap />
+                <div key={cell.en} className="flex items-baseline justify-between gap-3">
+                  <dt className="min-w-0 text-sm text-muted-foreground">
+                    <BilingualText en={cell.en} el={cell.el} compact wrap />
+                    {cell.note ? <span className="mt-0.5 block text-xs"><BilingualText en={cell.note} el={cell.noteEl ?? cell.note} compact wrap /></span> : null}
                   </dt>
-                  {/* The note rides on the figure's line: under it, a note in
-                      the right column stood alone where the left had none. */}
-                  <dd className="mt-1">
-                    <span className="card-body font-semibold tabular-nums">{cell.value}</span>
-                    {cell.note ? <span className="text-xs text-muted-foreground"> · <BilingualText en={cell.note} el={cell.noteEl ?? cell.note} compact /></span> : null}
-                  </dd>
+                  <dd className="card-body shrink-0 font-semibold tabular-nums">{cell.value}</dd>
                 </div>
               ))}
             </dl>

@@ -8,7 +8,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { HelpCallout } from '@/components/common/HelpCallout';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { RowHead, EmptyLine, SectionCard } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -117,7 +118,7 @@ export default function MentorshipManagementPage() {
         />
       </div>
 
-      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-6" action={{ href: '/coaching', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
+      <SectionCard title="Mentor roster" titleEl="Κατάλογος μεντόρων" icon={GraduationCap} className="mt-6" contentClassName="card-rows" action={{ href: '/coaching', label: 'Public directory', labelEl: 'Δημόσιος κατάλογος' }}>
         {isLoading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
         {!isLoading && isError && mentors.length === 0 && (
           <EmptyLine en="The mentor directory could not be loaded." el="Ο κατάλογος μεντόρων δεν φορτώθηκε." />
@@ -128,31 +129,44 @@ export default function MentorshipManagementPage() {
         {sorted.map((m) => {
           const availability = AVAILABILITY[m.availabilityStatus] ?? AVAILABILITY.available;
           return (
+            // A row of the roster, not a framed tile: the person's circle,
+            // the name over the headline, the record on the caption line,
+            // the availability at the right.
             <Link
               key={m.id}
               href={`/profiles/${m.userId}`}
-              className="group flex flex-wrap items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/30 focus-ring sm:flex-nowrap"
+              className="axis-row group block rounded-md transition-colors hover:bg-muted/30 focus-ring"
             >
-              <Avatar className="h-10 w-10 shrink-0">
-                <AvatarFallback className="bg-muted text-foreground">{initialsOf(m.displayName)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1 basis-48">
-                <p className="truncate text-sm font-medium">{m.displayName}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {m.headline ?? m.skills?.slice(0, 3).join(' · ')}
-                </p>
-              </div>
-              <p className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                <BilingualText
-                  en={`${m.sessionCount ?? 0} sessions${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · free' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/h` : ''}`}
-                  el={`${m.sessionCount ?? 0} συνεδρίες${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · δωρεάν' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/ώρα` : ''}`}
-                  compact
-                />
-              </p>
-              <Badge variant={availability.variant} size="sm" className="shrink-0">
-                <BilingualText en={availability.en} el={availability.el} compact />
-              </Badge>
-              <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
+              <RowHead
+                mark={(
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarFallback className="bg-muted text-foreground">{initialsOf(m.displayName)}</AvatarFallback>
+                  </Avatar>
+                )}
+                title={m.displayName}
+                subtitle={m.headline
+                  ? <span className="block first-letter:uppercase">{m.headline}</span>
+                  : (m.skills?.length ? <FactLine items={m.skills.slice(0, 3)} /> : undefined)}
+                meta={(
+                  <span className="tabular-nums">
+                    <BilingualText
+                      en={`${m.sessionCount ?? 0} sessions${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · free' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/h` : ''}`}
+                      el={`${m.sessionCount ?? 0} συνεδρίες${m.rating != null && m.reviewCount > 0 ? ` · ${m.rating.toFixed(1)}★ (${m.reviewCount})` : ''}${m.isFree ? ' · δωρεάν' : m.hourlyRate ? ` · ${m.currency ?? 'EUR'} ${m.hourlyRate}/ώρα` : ''}`}
+                      compact
+                      wrap
+                    />
+                  </span>
+                )}
+                asideStays
+                aside={(
+                  <>
+                    <Badge variant={availability.variant} size="sm" className="shrink-0">
+                      <BilingualText en={availability.en} el={availability.el} compact />
+                    </Badge>
+                    <ChevronRight className="icon-sm shrink-0 text-muted-foreground/60 group-hover:text-foreground" aria-hidden="true" />
+                  </>
+                )}
+              />
             </Link>
           );
         })}
