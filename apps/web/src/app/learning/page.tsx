@@ -458,7 +458,11 @@ export default function LearningPage() {
   const regularResources = filteredResources.filter((r) => !recommendedShown.has(r.id) && !featuredShown.has(r.id));
   const listedAbove = recommendedShown.size + featuredShown.size > 0;
 
-  const inProgressPaths = LEARNING_PATHS.filter((p) => p.progress > 0 && p.progress < 100);
+  // Nothing records progress through a path yet, so the 33% and 60% are
+  // sample figures: shown with the sample data, and zero for everyone else
+  // (the paths stay, as shortcuts into their category).
+  const paths = showDemoData ? LEARNING_PATHS : LEARNING_PATHS.map((p) => ({ ...p, progress: 0 }));
+  const inProgressPaths = paths.filter((p) => p.progress > 0 && p.progress < 100);
   const totalResourceCount = allResources.length;
   const courseCount = allResources.filter((r) => r.type === 'course').length;
   const totalHours = Math.round(allResources.reduce((acc, r) => {
@@ -592,12 +596,12 @@ export default function LearningPage() {
                 renders every path. A count says something true in the space
                 the promise was occupying. */}
             <span className="text-xs tabular-nums text-muted-foreground">
-              {LEARNING_PATHS.length}{' '}
+              {paths.length}{' '}
               <BilingualText en="paths" el="μονοπάτια" compact />
             </span>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
-            {LEARNING_PATHS.map((path) => (
+            {paths.map((path) => (
               <LearningPathCard
                 key={path.id}
                 path={path}

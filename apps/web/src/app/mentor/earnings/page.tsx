@@ -406,10 +406,12 @@ export default function MentorEarningsPage() {
                     </li>
                   ))}
                 </ul>
+                {/* It promised payouts in 2-5 days and a 10% fee while every
+                    provider above is disabled: say what is true today. */}
                 <p className="text-xs text-muted-foreground">
                   <BilingualText
-                    en="Payouts are processed within 2–5 business days after session completion. Platform fee: 10% per transaction."
-                    el="Οι πληρωμές γίνονται εντός 2–5 εργάσιμων ημερών μετά την ολοκλήρωση της συνεδρίας. Προμήθεια πλατφόρμας: 10% ανά συναλλαγή."
+                    en="CoFounderBay does not collect session payments yet, so a paid session is settled between you and the founder. When payouts start, their timing and any platform fee will be stated here first."
+                    el="Το CoFounderBay δεν εισπράττει ακόμη πληρωμές συνεδριών, οπότε μια πληρωμένη συνεδρία διευθετείται ανάμεσα σε εσάς και τον ιδρυτή. Όταν ξεκινήσουν οι πληρωμές, ο χρόνος τους και τυχόν προμήθεια θα αναφέρονται πρώτα εδώ."
                     wrap
                   />
                 </p>
