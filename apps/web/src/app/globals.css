@@ -727,6 +727,15 @@ html {
     }
   }
 
+  /* Phone top bar is sticky at h-12. A fragment (#verification and the
+     rest) would land underneath it. Desktop has no sticky top bar, so the
+     offset stays on the phone and does not move anything in normal flow. */
+  @media (max-width: 639px) {
+    [id] {
+      scroll-margin-top: calc(3rem * var(--chrome-y) + 0.5rem);
+    }
+  }
+
   /* Custom scrollbar — thin & minimal */
   ::-webkit-scrollbar {
     width: 6px;

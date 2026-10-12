@@ -3,6 +3,7 @@ import { Home, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { NotFoundSuggestions } from '@/components/common/NotFoundSuggestions';
 
 export const metadata = {
   title: 'Page not found',
@@ -14,9 +15,17 @@ export default function NotFound() {
     <MainLandmark className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <Logo size="sm" />
       <p className="mt-8 text-6xl font-bold tracking-tight text-foreground">404</p>
-      <h1 className="mt-3 text-xl font-semibold text-foreground">Page not found</h1>
+      <h1 className="mt-3 text-xl font-semibold text-foreground">
+        Page not found
+        <span className="mt-1 block text-base font-normal text-muted-foreground" lang="el">
+          Η σελίδα δεν βρέθηκε
+        </span>
+      </h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        The page you are looking for does not exist, was moved, or is temporarily unavailable.
+        The link may be mistyped, or the page may have moved.
+      </p>
+      <p className="mt-1 max-w-md text-sm text-muted-foreground" lang="el">
+        Ο σύνδεσμος μπορεί να είναι ανορθόγραφος ή η σελίδα να μετακινήθηκε.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Button asChild>
@@ -32,6 +41,7 @@ export default function NotFound() {
           </Link>
         </Button>
       </div>
+      <NotFoundSuggestions />
     </MainLandmark>
   );
 }

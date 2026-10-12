@@ -14,6 +14,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualInline } from '@/lib/i18n/format';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { registerEmailError, registerPasswordError } from '@/lib/auth-fields';
 
 /**
  * Password strength presentation. Colour comes from the semantic status tokens,
@@ -81,6 +82,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>('founder');
   const [error, setError] = useState<Message | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
 
@@ -93,8 +96,9 @@ export default function RegisterPage() {
     e.preventDefault();
     if (submittingRef.current) return;
     setError(null);
-    if (!email.trim()) { setError({ en: 'Please enter your email.', el: 'Συμπληρώστε το email σας.' }); return; }
-    if (password.length < 8) { setError({ en: 'Password must be at least 8 characters.', el: 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.' }); return; }
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    if (registerEmailError(email) || registerPasswordError(password)) return;
     submittingRef.current = true;
     setLoading(true);
     try {
@@ -125,6 +129,9 @@ export default function RegisterPage() {
       setLoading(false);
     }
   }
+
+  const emailMessage = emailTouched ? registerEmailError(email) : null;
+  const passwordMessage = passwordTouched ? registerPasswordError(password) : null;
 
   return (
     <MainLandmark className="flex min-h-screen">
@@ -197,7 +204,7 @@ export default function RegisterPage() {
             )}
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             {error && (
               <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
@@ -212,10 +219,17 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                onBlur={() => setEmailTouched(true)}
                 autoComplete="email"
                 placeholder="you@startup.com"
+                aria-invalid={emailMessage ? true : undefined}
+                aria-describedby={emailMessage ? 'reg-email-error' : undefined}
               />
+              {emailMessage ? (
+                <p id="reg-email-error" className="text-xs text-destructive-accessible">
+                  <BilingualText en={emailMessage.en} el={emailMessage.el} compact />
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -226,9 +240,10 @@ export default function RegisterPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
+                  onBlur={() => setPasswordTouched(true)}
                   autoComplete="new-password"
+                  aria-invalid={passwordMessage ? true : undefined}
+                  aria-describedby={passwordMessage ? 'reg-password-error' : undefined}
                   placeholder={bilingualInline('Min 8 characters', 'Τουλάχιστον 8 χαρακτήρες')}
                   className="pr-24"
                 />
@@ -271,6 +286,11 @@ export default function RegisterPage() {
                   </div>
                 )}
               </div>
+              {passwordMessage ? (
+                <p id="reg-password-error" className="text-xs text-destructive-accessible">
+                  <BilingualText en={passwordMessage.en} el={passwordMessage.el} compact />
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-2">
