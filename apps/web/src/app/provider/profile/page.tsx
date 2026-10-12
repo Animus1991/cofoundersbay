@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Save, RefreshCw, DollarSign, Star, Building2,
 } from 'lucide-react';
@@ -28,7 +28,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
-import { getMeProfile, getProviderSummary } from '@/lib/api';
+import { getMeProfile, getMyProviderListing, getProviderSummary, saveMyProviderListing, type ProviderListing } from '@/lib/api';
+import { useFormDraft } from '@/lib/form-draft';
+import { FormDraftNotice } from '@/components/common/FormDraftNotice';
+import { centsToDollars, dollarsToCents, pickOptions, readNumber, snapToStep } from '@/lib/listing-form';
+import { SERVICE_PROVIDER_TYPES, PROVIDER_PRICING_MODELS, type ServiceProviderKind, type ProviderPricingModel } from '@cofounderbay/shared';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -36,24 +40,32 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { pressableProps } from '@/lib/pressable';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
-const SERVICE_TYPES = [
-  { value: 'legal', label: 'Legal' },
-  { value: 'accounting', label: 'Accounting & Finance' },
-  { value: 'development', label: 'Software Development' },
-  { value: 'design', label: 'Design & UX' },
-  { value: 'marketing', label: 'Marketing & Growth' },
-  { value: 'recruiting', label: 'Recruiting & HR' },
-  { value: 'consulting', label: 'Business Consulting' },
-  { value: 'coaching', label: 'Executive Coaching' },
+const SERVICE_TYPES: { value: ServiceProviderKind; label: string; labelEl: string }[] = [
+  { value: 'legal', label: 'Legal', labelEl: 'Νομικές υπηρεσίες' },
+  { value: 'accounting', label: 'Accounting & Finance', labelEl: 'Λογιστική & οικονομικά' },
+  { value: 'development', label: 'Software Development', labelEl: 'Ανάπτυξη λογισμικού' },
+  { value: 'design', label: 'Design & UX', labelEl: 'Σχεδιασμός & UX' },
+  { value: 'marketing', label: 'Marketing & Growth', labelEl: 'Μάρκετινγκ & ανάπτυξη' },
+  { value: 'recruiting', label: 'Recruiting & HR', labelEl: 'Προσλήψεις & HR' },
+  { value: 'consulting', label: 'Business Consulting', labelEl: 'Επιχειρηματική συμβουλευτική' },
+  { value: 'coaching', label: 'Executive Coaching', labelEl: 'Coaching στελεχών' },
 ];
 
-const PRICING_MODELS = [
-  { value: 'hourly', label: 'Hourly Rate' },
-  { value: 'project', label: 'Project-Based' },
-  { value: 'retainer', label: 'Monthly Retainer' },
-  { value: 'equity', label: 'Revenue Share / Equity' },
-  { value: 'mixed', label: 'Mixed' },
+const PRICING_MODELS: { value: ProviderPricingModel; label: string; labelEl: string }[] = [
+  { value: 'hourly', label: 'Hourly Rate', labelEl: 'Ωριαία χρέωση' },
+  { value: 'project', label: 'Project-Based', labelEl: 'Ανά έργο' },
+  { value: 'retainer', label: 'Monthly Retainer', labelEl: 'Μηνιαία σύμβαση' },
+  { value: 'equity', label: 'Revenue Share / Equity', labelEl: 'Μερίδιο εσόδων / equity' },
+  { value: 'mixed', label: 'Mixed', labelEl: 'Μικτό' },
 ];
+
+const YEARS_STEPS = [1, 2, 3, 5, 7, 10, 15, 20];
+const yearsToOption = (n: number | null | undefined) => {
+  const step = typeof n === 'number' ? snapToStep(n, YEARS_STEPS) : null;
+  return step === null ? '3' : step === 20 ? '20+' : String(step);
+};
+const isServiceType = (v: unknown): v is ServiceProviderKind => typeof v === 'string' && (SERVICE_PROVIDER_TYPES as readonly string[]).includes(v);
+const isPricingModel = (v: unknown): v is ProviderPricingModel => typeof v === 'string' && (PROVIDER_PRICING_MODELS as readonly string[]).includes(v);
 
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'E-commerce', 'Marketplace',
@@ -66,21 +78,23 @@ export default function ProviderProfilePage() {
   // The preview's check is the real verification, not a constant.
   const me = useStoredUser();
   const { hasSession, mounted } = useSession();
-  const { success } = useToast();
+  const { success, error } = useToast();
+  const queryClient = useQueryClient();
 
   const [isSaving, setIsSaving] = useState(false);
-  const [serviceType, setServiceType] = useState('consulting');
+  const [serviceType, setServiceType] = useState<ServiceProviderKind>('consulting');
   const [companyName, setCompanyName] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [headline, setHeadline] = useState('');
   const [description, setDescription] = useState('');
-  const [pricingModel, setPricingModel] = useState('project');
+  const [pricingModel, setPricingModel] = useState<ProviderPricingModel>('project');
   const [startingPrice, setStartingPrice] = useState('');
   const [yearsInBusiness, setYearsInBusiness] = useState('3');
   const [clientsServed, setClientsServed] = useState('');
   const [isAccepting, setIsAccepting] = useState(true);
-  const [selectedIndustries, setSelectedIndustries] = useState<string[]>(['SaaS', 'Fintech']);
-  const [selectedStages, setSelectedStages] = useState<string[]>(['Seed', 'Series A']);
+  // Empty until saved: the industries and stages served are the provider's to name.
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [selectedStages, setSelectedStages] = useState<string[]>([]);
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -104,11 +118,85 @@ export default function ProviderProfilePage() {
     setList(list.includes(val) ? list.filter(x => x !== val) : [...list, val]);
   }
 
+  // The saved listing fills the form once; later refetches leave edits alone.
+  const listing = useQuery({
+    queryKey: qk('provider', 'listing', 'me'),
+    queryFn: getMyProviderListing,
+    enabled: hasSession && mounted,
+    retry: 0,
+  });
+  const filledFromSaved = useRef(false);
+  useEffect(() => {
+    if (filledFromSaved.current || !listing.isFetched) return;
+    filledFromSaved.current = true;
+    const saved: ProviderListing | null | undefined = listing.data;
+    if (!saved) return;
+    if (isServiceType(saved.serviceType)) setServiceType(saved.serviceType);
+    setCompanyName(saved.companyName ?? '');
+    setCompanyWebsite(saved.companyWebsite ?? '');
+    setHeadline(saved.headline ?? '');
+    setDescription(saved.description ?? '');
+    if (isPricingModel(saved.pricingModel)) setPricingModel(saved.pricingModel);
+    setStartingPrice(centsToDollars(saved.startingPrice));
+    setYearsInBusiness(yearsToOption(saved.yearsInBusiness));
+    setClientsServed(typeof saved.clientsServed === 'number' ? String(saved.clientsServed) : '');
+    if (typeof saved.isAcceptingClients === 'boolean') setIsAccepting(saved.isAcceptingClients);
+    setSelectedIndustries(saved.industries ?? []);
+    setSelectedStages(saved.startupStages ?? []);
+  }, [listing.isFetched, listing.data]);
+
+  // The assistant's draft (draft_provider_listing) lands after the saved
+  // values; nothing is saved until Save.
+  const draft = useFormDraft(
+    'provider_listing',
+    (f) => {
+      if (isServiceType(f.serviceType)) setServiceType(f.serviceType);
+      if (typeof f.companyName === 'string') setCompanyName(f.companyName);
+      if (typeof f.companyWebsite === 'string') setCompanyWebsite(f.companyWebsite);
+      if (typeof f.headline === 'string') setHeadline(f.headline.slice(0, 120));
+      if (typeof f.description === 'string') setDescription(f.description);
+      if (isPricingModel(f.pricingModel)) setPricingModel(f.pricingModel);
+      const price = readNumber(f.startingPriceUsd);
+      if (price !== null && price >= 0) setStartingPrice(String(price));
+      const years = readNumber(f.yearsInBusiness);
+      if (years !== null) setYearsInBusiness(yearsToOption(years));
+      const clients = readNumber(f.clientsServed);
+      if (clients !== null && clients >= 0) setClientsServed(String(Math.round(clients)));
+      const industries = pickOptions(typeof f.industries === 'string' ? f.industries : undefined, INDUSTRIES);
+      if (industries.length) setSelectedIndustries(industries);
+      const stages = pickOptions(typeof f.stages === 'string' ? f.stages : undefined, STARTUP_STAGES);
+      if (stages.length) setSelectedStages(stages);
+    },
+    // Before mount the session is unknown: waiting keeps the saved values from landing on top of the draft.
+    mounted && (!hasSession || listing.isFetched),
+  );
+
   async function handleSave() {
     setIsSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    setIsSaving(false);
-    success('Profile updated', 'Your provider profile is now live.');
+    try {
+      const clients = readNumber(clientsServed);
+      await saveMyProviderListing({
+        serviceType,
+        companyName: companyName.trim() || null,
+        companyWebsite: companyWebsite.trim() || null,
+        headline: headline.trim() || null,
+        description: description.trim() || null,
+        pricingModel,
+        startingPrice: dollarsToCents(startingPrice),
+        yearsInBusiness: yearsInBusiness === '20+' ? 20 : Number(yearsInBusiness),
+        clientsServed: clients === null ? null : Math.max(0, Math.round(clients)),
+        isAcceptingClients: isAccepting,
+        industries: selectedIndustries,
+        startupStages: selectedStages,
+      });
+      await queryClient.invalidateQueries({ queryKey: qk('provider') });
+      draft.dismiss();
+      success('Provider listing saved', 'Founders browsing services see these details.');
+    } catch (err) {
+      error('Could not save your provider listing', err instanceof Error ? err.message : 'Try again in a moment.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (!mounted) {
@@ -122,20 +210,21 @@ export default function ProviderProfilePage() {
     );
   }
 
-  const serviceTypeLabel = SERVICE_TYPES.find(s => s.value === serviceType)?.label ?? serviceType;
+  const serviceTypeCopy = SERVICE_TYPES.find(s => s.value === serviceType);
 
   return (
     <AppShell
       actions={
         <>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
-            Save Profile
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
+            <BilingualText en="Save Profile" el="Αποθήκευση προφίλ" compact />
           </Button>
         </>
       }
     >
       <div className="space-y-6">
+        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         {/* The card others meet, on the card anatomy: the company's mark and
             name with the headline under it, the kind at the right, the facts
@@ -159,7 +248,7 @@ export default function ProviderProfilePage() {
                 </span>
               )}
               subtitle={headline || <BilingualText en="Add your service headline below..." el="Προσθέστε τον τίτλο της υπηρεσίας σας παρακάτω..." compact />}
-              aside={<Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>}
+              aside={<Badge variant="secondary" className="text-xs">{serviceTypeCopy ? <BilingualText en={serviceTypeCopy.label} el={serviceTypeCopy.labelEl} compact /> : serviceType}</Badge>}
             />
             <FactLine
               items={[
@@ -201,11 +290,11 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="serviceType"><BilingualText en="Service Type" el="Τύπος υπηρεσίας" compact /></Label>
-                  <Select value={serviceType} onValueChange={setServiceType}>
+                  <Select value={serviceType} onValueChange={(v) => { if (isServiceType(v)) setServiceType(v); }}>
                     <SelectTrigger id="serviceType" aria-label="Service Type"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SERVICE_TYPES.map(s => (
-                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        <SelectItem key={s.value} value={s.value}><BilingualText en={s.label} el={s.labelEl} compact /></SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -238,7 +327,7 @@ export default function ProviderProfilePage() {
                       <SelectTrigger id="yearsInBusiness" aria-label="Years in Business"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {['1', '2', '3', '5', '7', '10', '15', '20+'].map(v => (
-                          <SelectItem key={v} value={v}>{v} year{v !== '1' ? 's' : ''}</SelectItem>
+                          <SelectItem key={v} value={v}><BilingualText en={`${v} year${v !== '1' ? 's' : ''}`} el={`${v} ${v === '1' ? 'έτος' : 'έτη'}`} compact /></SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -328,7 +417,7 @@ export default function ProviderProfilePage() {
                         pricingModel === pm.value ? 'border-primary bg-primary/5' : 'hover:border-border'
                       )}
                     >
-                      <p className="text-sm font-medium">{pm.label}</p>
+                      <p className="text-sm font-medium"><BilingualText en={pm.label} el={pm.labelEl} compact /></p>
                       <div className={cn(
                         'w-4 h-4 rounded-full border-2 transition-all',
                         pricingModel === pm.value ? 'border-primary bg-primary' : 'border-border'
@@ -347,7 +436,7 @@ export default function ProviderProfilePage() {
                       placeholder="500"
                       className="w-36"
                     />
-                    <span className="text-sm text-muted-foreground">minimum engagement</span>
+                    <span className="text-sm text-muted-foreground"><BilingualText en="minimum engagement" el="ελάχιστη συνεργασία" compact /></span>
                   </div>
                 </div>
               </CardContent>

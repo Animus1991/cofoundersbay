@@ -11,6 +11,7 @@ import { previewUpdatesApi } from './demo/updates-world';
 import { previewSavedItemsApi } from './demo/saved-items-world';
 import { previewPerksApi } from './demo/perks-world';
 import { previewProfileViewersApi } from './demo/profile-viewers-world';
+import { previewListingsApi } from './demo/listings-world';
 import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
@@ -2705,6 +2706,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // Who viewed the demo founder's profile: reciprocal names, k-anonymous counts.
   const viewersAnswer = previewProfileViewersApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (viewersAnswer !== undefined) return viewersAnswer;
+  // The visitor's own mentor and provider listings, with the API's field rules.
+  const listingsAnswer = previewListingsApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (listingsAnswer !== undefined) return listingsAnswer;
   // "Open to" and warm introductions; accepting an introduction answers the
   // need card in the commitments world above.
   const openToAnswer = previewOpenToApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());

@@ -1,5 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
-import type { PublicStats, TransparencyReport } from '@cofounderbay/shared';
+import type { MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -2421,6 +2421,34 @@ export async function getUpcomingMentorshipSessions(): Promise<{ sessions: Mento
 
 export async function getMentorDashboardStats(): Promise<MentorDashboardStats> {
   return apiRequest('/api/mentorship/dashboard/mentor');
+}
+
+// --- Stakeholder listings (the cards members search) ---
+// The API keeps only the fields a member owns (`readMentorListing`,
+// `readProviderListing` in @cofounderbay/shared); ratings, counts and
+// verification stay with the platform. Money is in cents.
+
+export type MentorListing = MentorListingInput & { id?: string; avgRating?: number | null; totalReviews?: number; isVerified?: boolean };
+export type ProviderListing = ProviderListingInput & { id?: string; avgRating?: number | null; totalReviews?: number; isVerified?: boolean };
+
+/** The signed-in member's mentor listing, or null before the first save. */
+export async function getMyMentorListing(): Promise<MentorListing | null> {
+  const row = await apiRequest<MentorListing | null>('/api/roles/mentor-profile');
+  return row && typeof row === 'object' ? row : null;
+}
+
+export async function saveMyMentorListing(body: MentorListingInput): Promise<MentorListing> {
+  return apiRequest('/api/roles/mentor-profile', { method: 'POST', body: JSON.stringify(body) });
+}
+
+/** The signed-in member's service-provider listing, or null before the first save. */
+export async function getMyProviderListing(): Promise<ProviderListing | null> {
+  const row = await apiRequest<ProviderListing | null>('/api/roles/service-provider-profile');
+  return row && typeof row === 'object' ? row : null;
+}
+
+export async function saveMyProviderListing(body: ProviderListingInput): Promise<ProviderListing> {
+  return apiRequest('/api/roles/service-provider-profile', { method: 'POST', body: JSON.stringify(body) });
 }
 
 // --- Moderation / Admin ---

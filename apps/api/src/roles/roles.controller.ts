@@ -111,7 +111,7 @@ export class RolesController {
     @Request() req: { user: { id: string } },
     @Body() data: Record<string, unknown>,
   ) {
-    return this.rolesService.createOrUpdateMentorProfile(req.user.id, data as any);
+    return this.rolesService.createOrUpdateMentorProfile(req.user.id, data);
   }
 
   @Get('investor-profile')
@@ -124,7 +124,7 @@ export class RolesController {
     @Request() req: { user: { id: string } },
     @Body() data: Record<string, unknown>,
   ) {
-    return this.rolesService.createOrUpdateInvestorProfile(req.user.id, data as any);
+    return this.rolesService.createOrUpdateInvestorProfile(req.user.id, data);
   }
 
   @Get('service-provider-profile')
@@ -137,6 +137,6 @@ export class RolesController {
     @Request() req: { user: { id: string } },
     @Body() data: Record<string, unknown>,
   ) {
-    return this.rolesService.createOrUpdateServiceProviderProfile(req.user.id, data as any);
+    return this.rolesService.createOrUpdateServiceProviderProfile(req.user.id, data);
   }
 }

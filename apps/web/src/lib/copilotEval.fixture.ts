@@ -105,6 +105,11 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Υπάρχουν προσφορές συνεργατών ή εκπτώσεις για startups;', tool: 'get_perks', read: true },
   { message: 'Who viewed my profile this month?', tool: 'get_profile_viewers', read: true },
   { message: 'Ποιοι είδαν το προφίλ μου;', tool: 'get_profile_viewers', read: true },
+  // Listings members search (2026-10-12): the assistant fills the form, the person saves.
+  { message: 'Draft my mentor listing with the headline “Go-to-market mentor for seed founders”', tool: 'draft_mentor_listing', args: { headline: 'Go-to-market mentor for seed founders' } },
+  { message: 'Συμπλήρωσε την καταχώριση μέντορα με τίτλο «Μέντορας go-to-market για ιδρυτές seed»', tool: 'draft_mentor_listing', args: { headline: 'Μέντορας go-to-market για ιδρυτές seed' } },
+  { message: 'Prepare my provider listing: “Seed-stage legal for SaaS startups”', tool: 'draft_provider_listing', args: { headline: 'Seed-stage legal for SaaS startups' } },
+  { message: 'Ετοίμασε το προφίλ παρόχου «Νομική υποστήριξη για startups σε seed»', tool: 'draft_provider_listing', args: { headline: 'Νομική υποστήριξη για startups σε seed' } },
   { message: 'Ακολούθησε την Έλενα', tool: 'follow_person', args: { name: 'Elena' } },
   { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
   { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },

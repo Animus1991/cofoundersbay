@@ -1,6 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRoleType, RoleFacetScope, Prisma } from '@prisma/client';
+import {
+  LISTING_CREATE_REQUIRES,
+  readInvestorListing,
+  readMentorListing,
+  readProviderListing,
+  type ListingResult,
+} from '@cofounderbay/shared';
 
 // Dashboard configuration per role type
 export const ROLE_DASHBOARD_CONFIG: Record<UserRoleType, {
@@ -394,11 +401,12 @@ export class RolesService {
     });
   }
 
-  async createOrUpdateMentorProfile(userId: string, data: Prisma.MentorProfileUpdateInput) {
+  async createOrUpdateMentorProfile(userId: string, raw: unknown) {
+    const data = accepted(readMentorListing(raw));
     return this.prisma.mentorProfile.upsert({
       where: { userId },
-      create: { userId, ...data } as Prisma.MentorProfileCreateInput,
-      update: data,
+      create: { ...data, userId } as Prisma.MentorProfileUncheckedCreateInput,
+      update: data as Prisma.MentorProfileUncheckedUpdateInput,
     });
   }
 
@@ -408,11 +416,20 @@ export class RolesService {
     });
   }
 
-  async createOrUpdateInvestorProfile(userId: string, data: Prisma.InvestorProfileUpdateInput) {
+  async createOrUpdateInvestorProfile(userId: string, raw: unknown) {
+    const data = accepted(readInvestorListing(raw));
+    const existing = await this.prisma.investorProfile.findUnique({ where: { userId }, select: { checkSizeMin: true, checkSizeMax: true } });
+    if (!existing) requireOnCreate('investor', data);
+    // One bound may arrive alone; it still has to sit on the right side of the stored one.
+    const min = data.checkSizeMin !== undefined ? data.checkSizeMin : existing?.checkSizeMin;
+    const max = data.checkSizeMax !== undefined ? data.checkSizeMax : existing?.checkSizeMax;
+    if (typeof min === 'number' && typeof max === 'number' && min > max) {
+      throw listingRefusal('checkSizeMax', { en: 'The largest cheque is smaller than the smallest.', el: 'Το μεγαλύτερο ποσό είναι μικρότερο από το μικρότερο.' });
+    }
     return this.prisma.investorProfile.upsert({
       where: { userId },
-      create: { userId, ...data } as Prisma.InvestorProfileCreateInput,
-      update: data,
+      create: { ...data, userId } as Prisma.InvestorProfileUncheckedCreateInput,
+      update: data as Prisma.InvestorProfileUncheckedUpdateInput,
     });
   }
 
@@ -422,11 +439,42 @@ export class RolesService {
     });
   }
 
-  async createOrUpdateServiceProviderProfile(userId: string, data: Prisma.ServiceProviderProfileUpdateInput) {
+  async createOrUpdateServiceProviderProfile(userId: string, raw: unknown) {
+    const data = accepted(readProviderListing(raw));
+    const existing = await this.prisma.serviceProviderProfile.findUnique({ where: { userId }, select: { id: true } });
+    if (!existing) requireOnCreate('provider', data);
     return this.prisma.serviceProviderProfile.upsert({
       where: { userId },
-      create: { userId, ...data } as Prisma.ServiceProviderProfileCreateInput,
-      update: data,
+      create: { ...data, userId } as Prisma.ServiceProviderProfileUncheckedCreateInput,
+      update: data as Prisma.ServiceProviderProfileUncheckedUpdateInput,
     });
   }
 }
+
+/**
+ * The listing readers' refusal in the API's standard error shape, so the
+ * exception filter keeps `details` (the field and its Greek message).
+ */
+function listingRefusal(field: string, reason: { en: string; el: string }) {
+  return new BadRequestException({
+    success: false,
+    error: { code: 'VALIDATION_ERROR', message: reason.en, details: { reason: 'listing_invalid', field, messageEl: reason.el } },
+  });
+}
+
+function accepted<T>(read: ListingResult<T>): T {
+  if (!read.ok) throw listingRefusal(read.field, read.reason);
+  return read.value;
+}
+
+function requireOnCreate(kind: keyof typeof LISTING_CREATE_REQUIRES, data: object) {
+  for (const field of LISTING_CREATE_REQUIRES[kind]) {
+    if ((data as Record<string, unknown>)[field] === undefined) {
+      throw listingRefusal(field, {
+        en: `Choose ${field === 'serviceType' ? 'the kind of service' : 'the kind of investor'} before the first save.`,
+        el: `Επιλέξτε ${field === 'serviceType' ? 'το είδος της υπηρεσίας' : 'το είδος του επενδυτή'} πριν από την πρώτη αποθήκευση.`,
+      });
+    }
+  }
+}
+

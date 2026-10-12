@@ -285,6 +285,8 @@ const WAVE_C_WRITES = new Set<string>([
   // The planner proposed these two with no card to show for it: the rule path
   // only rendered what is listed here.
   'draft_need_card', 'draft_founder_update',
+  // The listings members search; the planner names the headline it read.
+  'draft_mentor_listing', 'draft_provider_listing',
 ]);
 
 export function actionsFromToolCalls(

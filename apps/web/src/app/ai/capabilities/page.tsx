@@ -97,6 +97,8 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   request_intro: { en: 'Ask Dr. Kim to introduce me to Nikos for my Athens card', el: 'Ζήτα από την Dr. Kim να με συστήσει στον Νίκο για την κάρτα μου' },
   run_scout: { en: 'Run my co-founder scout', el: 'Τρέξε τον ανιχνευτή συνιδρυτών' },
   draft_scout_brief: { en: 'Draft a scout brief for a technical co-founder in Athens', el: 'Ετοίμασε σημείωμα ανιχνευτή για τεχνικό συνιδρυτή στην Αθήνα' },
+  draft_mentor_listing: { en: 'Draft my mentor listing “Go-to-market mentor for seed founders”', el: 'Συμπλήρωσε την καταχώριση μέντορα «Μέντορας go-to-market για ιδρυτές seed»' },
+  draft_provider_listing: { en: 'Prepare my provider listing “Seed-stage legal for SaaS startups”', el: 'Ετοίμασε το προφίλ παρόχου «Νομική υποστήριξη για startups σε seed»' },
   link_skill_evidence: { en: 'Link my Market Analysis to my Growth skill', el: 'Σύνδεσε την Ανάλυση Αγοράς με τη δεξιότητα Growth' },
   set_open_to: { en: 'Mark me open to advising, visible to verified members', el: 'Δήλωσε ότι είμαι ανοιχτός σε συμβουλευτικό ρόλο, ορατό σε επαληθευμένους' },
   draft_founder_update: { en: 'Draft a founder update “September: twelve interviews”', el: 'Ετοίμασε ενημέρωση ιδρυτή «Σεπτέμβριος: δώδεκα συνεντεύξεις»' },

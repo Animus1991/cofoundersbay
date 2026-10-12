@@ -485,13 +485,18 @@ export const TOAST_EL: Record<string, string> = {
   "You have left the group.": "Αποχωρήσατε από την κοινότητα.",
   "Your changes have been saved successfully": "Οι αλλαγές σας αποθηκεύτηκαν",
   "Your email digest frequency is saved to your account.": "Η συχνότητα της σύνοψης email αποθηκεύτηκε στον λογαριασμό σας.",
-  "Your mentor profile is live.": "Το προφίλ μέντορα είναι πλέον ενεργό.",
   "Your opportunity is now live.": "Η ευκαιρία σας είναι πλέον ενεργή.",
   "Your photo has been cropped and uploaded": "Η φωτογραφία σας περικόπηκε και ανέβηκε",
-  "Your provider profile is now live.": "Το προφίλ παρόχου είναι πλέον ενεργό.",
   "Your schedule has been updated.": "Το πρόγραμμά σας ενημερώθηκε.",
   "Your screen is no longer visible": "Η οθόνη σας δεν είναι πλέον ορατή",
   "Your subscription will activate shortly.": "Η συνδρομή σας θα ενεργοποιηθεί σύντομα.",
+  "Could not save your mentor listing": "Η καταχώριση μέντορα δεν αποθηκεύτηκε",
+  "Could not save your provider listing": "Η καταχώριση παρόχου δεν αποθηκεύτηκε",
+  "Founders browsing services see these details.": "Αυτά τα στοιχεία βλέπουν οι ιδρυτές που αναζητούν υπηρεσίες.",
+  "Founders searching for mentors see these details.": "Αυτά τα στοιχεία βλέπουν οι ιδρυτές που αναζητούν μέντορα.",
+  "Mentor listing saved": "Η καταχώριση μέντορα αποθηκεύτηκε",
+  "Provider listing saved": "Η καταχώριση παρόχου αποθηκεύτηκε",
+  "Try again in a moment.": "Δοκιμάστε ξανά σε λίγο.",
 };
 
 const PREFIXES = Object.keys(TOAST_EL).filter((k) => k.endsWith(':'));

@@ -892,12 +892,26 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // A founder update, like a need card, is asked for with "write" as often as "draft".
   const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
   const scoutNoun = includesAny(message, ['scout brief', 'brief for the scout', 'σημείωμα ανιχνευτ', 'σημειωμα ανιχνευτ']);
+  // The listings other members search: a mentor's and a service provider's.
+  // Checked before the personal profile, whose nouns ("headline") they share.
+  const mentorListingNoun = includesAny(message, [
+    'mentor listing', 'mentor profile', 'mentoring listing', 'mentoring profile',
+    'καταχώριση μέντορα', 'καταχωριση μεντορα', 'καταχώρισή μου ως μέντορ', 'καταχωριση μου ως μεντορ', 'προφίλ μέντορα', 'προφιλ μεντορα',
+  ]);
+  const providerListingNoun = includesAny(message, [
+    'provider listing', 'provider profile', 'service listing', 'services listing',
+    'καταχώριση παρόχου', 'καταχωριση παροχου', 'προφίλ παρόχου', 'προφιλ παροχου', 'καταχώριση υπηρεσιών', 'καταχωριση υπηρεσιων',
+  ]);
   const draftKind = needCardNoun && needCardVerb
     ? 'draft_need_card'
     : scoutNoun && needCardVerb
     ? 'draft_scout_brief'
     : updateNoun && needCardVerb
     ? 'draft_founder_update'
+    : mentorListingNoun && needCardVerb
+    ? 'draft_mentor_listing'
+    : providerListingNoun && needCardVerb
+    ? 'draft_provider_listing'
     : !draftVerb
     ? null
     : includesAny(message, ['milestone', 'ορόσημ', 'οροσημ'])
@@ -927,6 +941,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     const isPublic = includesAny(message, ['public', 'linkedin', 'δημόσι', 'δημοσι']);
     add('draft_founder_update', { ...(quoted ? { title: quoted } : {}), ...(isPublic ? { visibility: 'public' } : {}) });
   }
+  if (draftKind === 'draft_mentor_listing') add('draft_mentor_listing', quoted ? { headline: quoted } : {});
+  if (draftKind === 'draft_provider_listing') add('draft_provider_listing', quoted ? { headline: quoted } : {});
   if (draftKind === 'draft_profile') {
     const field = includesAny(message, ['bio', 'βιογραφικ']) ? 'bio' : 'headline';
     add('draft_profile', quoted ? { [field]: quoted } : {});
@@ -939,6 +955,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ...(draftKind === 'draft_need_card' ? ['get_commitments'] : []),
     ...(draftKind === 'draft_founder_update' ? ['get_founder_updates'] : []),
     ...(draftKind === 'draft_scout_brief' ? ['get_scout'] : []),
+    // "mentor", "founders", "seed" in a listing's headline are its words, not a search.
+    ...(draftKind === 'draft_mentor_listing' || draftKind === 'draft_provider_listing' ? ['search_people'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),
