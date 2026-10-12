@@ -91,11 +91,13 @@ export function NeedCardsSection({
           <p className="text-xs text-muted-foreground"><BilingualText en={CMT.needs_cards_hint.en} el={CMT.needs_cards_hint.el} wrap /></p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="ghost" onClick={() => setAlertOpen(true)}>
-            <BilingualText en="Alert me about new cards" el="Ειδοποίησέ με για νέες κάρτες" compact />
-          </Button>
+          {/* Outline, not ghost: on a phone the pair wraps, and a ghost
+              button starting a row puts its padding in front of its letters. */}
           <Button size="sm" variant="outline" asChild>
             <Link href="/commitments/new"><BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact /></Link>
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setAlertOpen(true)}>
+            <BilingualText en="Alert me about new cards" el="Ειδοποίησέ με για νέες κάρτες" compact />
           </Button>
         </div>
       </div>

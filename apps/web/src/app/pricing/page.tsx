@@ -7,7 +7,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import {
   Check,
@@ -275,45 +276,45 @@ export default function PricingPage() {
                   plan.popular && 'border-primary ring-1 ring-primary/20'
                 )}
               >
-                <CardHeader className="pb-4">
-                  <div className={cn('mb-3 flex h-10 w-10 items-center justify-center rounded-lg', plan.bgColor)}>
-                    <Icon className={cn('icon-md', plan.color)} />
-                  </div>
-                  {/* The plan's name is the card's title and the price reads under
-                      it; "Most popular" sits beside the name inside the card, where
-                      it used to hang over the card's top edge. */}
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    {plan.popular && (
-                      <Badge className="bg-primary text-primary-foreground"><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
-                    )}
-                  </div>
-                  <CardDescription><BilingualText en={plan.description} el={plan.descriptionEl} wrap /></CardDescription>
-                </CardHeader>
-
-                <CardContent className="flex flex-1 flex-col">
-                  {/* Price */}
-                  <div className="mb-6">
-                    {isEnterprise ? (
-                      <div className="card-body font-semibold text-foreground"><BilingualText en="Custom" el="Κατά περίπτωση" compact /></div>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="card-body font-semibold tabular-nums text-foreground">${price}</span>
-                        <span className="text-sm text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
+                {/* The Opportunities card: the plan's mark and name, the
+                    price on the line under it (never louder than the name),
+                    "Most popular" as the one pill, the description as the
+                    body, the features on the same left axis. */}
+                <CardContent className="flex flex-1 flex-col gap-3">
+                  <CardHead
+                    mark={
+                      <div data-card-mark="" className={cn('flex h-10 w-10 items-center justify-center rounded-xl', plan.bgColor)}>
+                        <Icon className={cn('icon-md', plan.color)} aria-hidden="true" />
                       </div>
-                    )}
-                    {!isEnterprise && !isFree && annual && savings > 0 && (
-                      <p className="mt-1 text-xs text-status-success font-medium"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></p>
-                    )}
-                    {!isEnterprise && !isFree && !annual && (
-                      <p className="mt-1 text-xs text-muted-foreground"><BilingualText en={`Save ${savings}% with annual billing`} el={`Εξοικονόμηση ${savings}% με ετήσια χρέωση`} compact /></p>
-                    )}
-                  </div>
+                    }
+                    title={plan.name}
+                    subtitle={
+                      isEnterprise ? (
+                        <span className="font-medium text-foreground"><BilingualText en="Custom" el="Κατά περίπτωση" compact /></span>
+                      ) : (
+                        <span className="tabular-nums">
+                          <span className="font-semibold text-foreground">${price}</span>/{annual ? 'yr' : 'mo'}
+                        </span>
+                      )
+                    }
+                    aside={plan.popular ? (
+                      <Badge className="bg-primary text-primary-foreground"><BilingualText en="Most popular" el="Πιο δημοφιλές" compact /></Badge>
+                    ) : undefined}
+                  />
+                  {/* The saving reads under the head across the card's width: in
+                      a four-column row the title column beside "Most popular"
+                      is too narrow for it. */}
+                  {!isEnterprise && !isFree && annual && savings > 0 ? (
+                    <p className="text-xs font-medium text-status-success"><BilingualText en={`${savings}% off vs monthly`} el={`${savings}% φθηνότερα από το μηνιαίο`} compact /></p>
+                  ) : !isEnterprise && !isFree && !annual ? (
+                    <p className="text-xs text-muted-foreground"><BilingualText en={`Save ${savings}% with annual billing`} el={`Εξοικονόμηση ${savings}% με ετήσια χρέωση`} compact /></p>
+                  ) : null}
+                  <p className="card-body text-muted-foreground"><BilingualText en={plan.description} el={plan.descriptionEl} wrap /></p>
 
                   {/* Features */}
-                  <ul className="mb-6 flex-1 space-y-2.5">
+                  <ul className="mb-3 flex-1 space-y-2 border-t border-border pt-3">
                     {plan.features.map((feature) => (
-                      <li key={feature.en} className="flex items-start gap-2 text-sm">
+                      <li key={feature.en} className="card-body flex items-start gap-2">
                         <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
                         <span className="text-muted-foreground"><BilingualText en={feature.en} el={feature.el} wrap /></span>
                       </li>
@@ -449,7 +450,7 @@ export default function PricingPage() {
           <h2 className="font-display text-3xl font-semibold text-foreground">
             <BilingualText en="Ready to accelerate your startup journey?" el="Έτοιμοι να επιταχύνετε τη διαδρομή της startup σας;" wrap />
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+          <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-lg">
             <BilingualText en="Join founders, mentors, and investors building meaningful connections." el="Ελάτε μαζί με ιδρυτές, μέντορες και επενδυτές που χτίζουν ουσιαστικές συνδέσεις." wrap />
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">

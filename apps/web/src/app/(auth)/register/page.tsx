@@ -192,7 +192,7 @@ export default function RegisterPage() {
           <h1 className="font-display text-3xl font-semibold text-foreground">
             <BilingualText en="Create your account" el="Δημιουργήστε λογαριασμό" wrap />
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {activeTenant ? (
               <BilingualText
                 en={`Join ${activeTenant.displayName ?? activeTenant.name} in under 2 minutes.`}

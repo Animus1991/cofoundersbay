@@ -1407,6 +1407,7 @@ html {
   .text-7xl { font-size: 4.5rem; }
 
   @media (max-width: 1023.98px) {
+    .sm\:text-2xs { font-size: max(0.765075rem, 12.2412px); line-height: 1rem; }
     .sm\:text-xs  { font-size: 0.82883125rem; line-height: 1.25rem; }
     .sm\:text-sm  { font-size: 0.8925875rem; line-height: 1.3125rem; }
     .sm\:text-lg  { font-size: 1.125rem; line-height: 1.625rem; }
@@ -1490,6 +1491,13 @@ html {
 
     .text-7xl {
       font-size: 5.48780488rem;
+    }
+
+    /* The message composer's suggestion chips (ChatWindow) step down to
+       the caption from sm. */
+    .sm\:text-2xs {
+      font-size: max(0.93301829rem, 12.2412px);
+      line-height: max(1.24402439rem, 16.3216px);
     }
 
     .sm\:text-xs {
@@ -3306,9 +3314,12 @@ a[class~="inline-flex"].bg-destructive {
 }
 /* The data glyphs the rule above keeps (a trend arrow, a star) are only data
    beside a figure or a rating. Beside a section heading ("Featured
-   Providers") they are decoration like any other. Warnings and notes stay. */
+   Providers") they are decoration like any other, beside it or inside it
+   (a star in "Recent reviews" pushed the title 23px off the card's axis
+   once the card rule spared stars for ratings). Warnings and notes stay. */
 #main-content svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star):has(+ :is(h1, h2, h3, h4)),
-#main-content :is(h1, h2, h3, h4) + svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star) {
+#main-content :is(h1, h2, h3, h4) + svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star),
+#main-content :is(h1, h2, h3, h4) > svg:is(.lucide-trending-up, .lucide-trending-down, .lucide-star) {
   display: none;
 }
 
@@ -3730,8 +3741,8 @@ textarea[class~="border-input"]:focus,
      so they stay under that body size and above a text-sm subtitle.
      A sized utility a stat a lead or a person name does not match.
      :where keeps this under the need-card title rule. */
-  #main-content p.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
-  #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label)),
+  #main-content p.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label:not(.card-title):not(.card-subtitle):not(.card-body))),
+  #main-content h3.font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label:not(.card-title):not(.card-subtitle):not(.card-body))),
   #main-content p.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)),
   #main-content h3.font-semibold:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-stat-label):not(.person-name):not(.page-title):not(.card-title):not(.card-subtitle):not(.card-body)) {
     font-size: 13.673px;
@@ -3780,7 +3791,7 @@ textarea[class~="border-input"]:focus,
      step, under it. Labels stay on the support step. */
   #main-content [data-need-card] :is(h1, h2, h3) {
     font-size: 13.582px;
-    line-height: 1.3;
+    line-height: 1.35;
   }
   /* A count line (evidence) keeps the caption step. Naming text-xs as a
      class would fold this rule into that utility. */
@@ -3821,12 +3832,21 @@ textarea[class~="border-input"]:focus,
   /* In-card sentences sit on the support step, the same size on every
      page and in the rail, under the card title and under the subtitle.
      A pure stat, a member name and a control keep their own steps. */
-  #main-content [data-card] :is(p, div, span, li, dd, dt, ul, ol, label).text-sm:not(:is(.page-stat, .person-name, .card-copy, .page-stat-label, .page-stat-meta, button, a, [role='button'], [role='tab'], input, textarea, select)),
+  #main-content [data-card] :is(p, div, span, li, dl, dd, dt, ul, ol, label, legend, h3, h4).text-sm:not(:is(.page-stat, .person-name, .card-copy, .page-stat-label, .page-stat-meta, button, a, [role='button'], [role='tab'], input, textarea, select)),
   #main-content [data-card] :is(p, div, dd, li).text-base:not(:is(.page-stat, .page-figure, .person-name, .font-display, .card-title)),
   #main-content [data-card] :is(p, dd, li).text-lg:not(.page-section),
   #main-content [data-card] p.text-sm.italic,
   #main-content [data-rail-content] [data-card] :is(p, div, span, li, dd, dt).text-sm {
     font-size: 12.663px;
+    line-height: 1.45;
+  }
+
+  /* An unsized medium line inside a card (a rule's name in a group's
+     guidelines, "How it works:" over a list) took the 13.673 label step,
+     over the card's 13.582 title. Inside a card it sits on the subtitle
+     step, under the title. */
+  #main-content [data-card] :is(p, h3, h4).font-medium:where(:not([class*="text-xs"]):not([class*="text-sm"]):not([class*="text-base"]):not([class*="text-lg"]):not([class*="text-xl"]):not([class*="text-2xl"]):not([class*="text-2xs"]):not(.page-stat):not(.page-lead):not(.card-copy):not(.person-name):not(.page-stat-label):not(.card-title):not(.card-subtitle):not(.card-body)) {
+    font-size: 13.044px;
     line-height: 1.45;
   }
 
@@ -4009,6 +4029,34 @@ textarea[class~="border-input"]:focus,
   .card-title { font-size: 1.17037814rem; }
   .card-subtitle { font-size: 1.06675091rem; }
   .card-body { font-size: 1.02855183rem; }
+}
+/* A section card's own title (CardTitle renders h3.page-section) sits on
+   the card-title step from 640px up too, as it already does on a phone:
+   after the 2026-10-11 merge the section step was 15.83px over a 15.36px
+   card title, two title sizes in one column (card_audit titleStep 44 on
+   /builder alone). A card in the page rail keeps the rail's compact step. */
+@media (min-width: 640px) {
+  #main-content [data-card] h2.page-section,
+  #main-content [data-card] h3.page-section:not(.page-section--compact) {
+    font-size: 0.959710rem;
+    line-height: 1.35;
+  }
+  #main-content [data-rail-content] [data-card] h2.page-section,
+  #main-content [data-rail-content] [data-card] h3.page-section {
+    font-size: 0.86598840rem;
+    line-height: 1.299375rem;
+  }
+}
+@media (min-width: 1024px) {
+  #main-content [data-card] h2.page-section,
+  #main-content [data-card] h3.page-section:not(.page-section--compact) {
+    font-size: 1.17037814rem;
+  }
+  #main-content [data-rail-content] [data-card] h2.page-section,
+  #main-content [data-rail-content] [data-card] h3.page-section {
+    font-size: 1.05608341rem;
+    line-height: 1.58460366rem;
+  }
 }
 @media (max-width: 639.98px) {
   /* Members page on a phone: the name is the page-title step, the line
@@ -4227,6 +4275,41 @@ html[data-theme="minimal"] [data-own-message] {
 ):not(.avatar-initials):not([aria-pressed='true']):not([data-state='active']),
 #main-content button[class*='rounded-full']:is([class~='bg-secondary'], [class~='bg-secondary/30'], [class~='bg-muted'], [class~='bg-muted/30'], [class~='bg-muted/40'], [class~='bg-primary/5'], [class~='bg-primary/10'], [class~='bg-primary/15'], [class~='bg-primary/20']) {
   background-color: transparent;
+}
+
+/* A status chip that lost its wash and has no edge is a word, so its
+   letters, not its padding, sit on the card's axis: under the subtitle on
+   a phone, "Active" started 10px in from "Harbor $750K seed" (card_audit,
+   /fundraising, /programs, /projects, 2026-10-11). */
+#main-content .badge:is(
+  [class*='bg-status-success-bg'],
+  [class*='bg-status-warning-bg'],
+  [class*='bg-status-danger-bg'],
+  [class*='bg-status-info-bg'],
+  [class*='bg-status-accent-bg'],
+  [class*='bg-status-neutral-bg'],
+  [class~='bg-secondary'],
+  [class~='bg-muted']
+):is([class~='border-0'], [class~='border-transparent']):not([aria-pressed='true']):not([data-state='active']) {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* The same for a chip drawn as a rounded span with no edge at all (a
+   group's category, a match percentage, a session state): its wash is
+   gone, so its letters sit on the axis (/groups "Technology" 8px in). */
+#main-content [data-card] span:is(
+  [class*='bg-status-success-bg'],
+  [class*='bg-status-warning-bg'],
+  [class*='bg-status-danger-bg'],
+  [class*='bg-status-info-bg'],
+  [class*='bg-status-accent-bg'],
+  [class*='bg-status-neutral-bg'],
+  [class~='bg-secondary'],
+  [class~='bg-muted']
+):is([class~='rounded-full'], [class~='rounded-md']):is(:not([class~='border']), [class~='border-transparent'], [class~='border-0']):not(.avatar-initials):not([aria-pressed='true']):not([data-state='active']):not([data-slot='button']) {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* A description inside a card (a muted sentence that clamps or reads

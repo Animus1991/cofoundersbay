@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Save, RefreshCw } from 'lucide-react';
@@ -255,7 +255,7 @@ export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRe
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <CfbGlyph name={section.glyph} className="icon-sm shrink-0 text-muted-foreground" />
-              <CardTitle id={`${fieldId}-label`} className="truncate">
+              <CardTitle id={`${fieldId}-label`} className="min-w-0">
                 <BilingualText en={builderEn(section.titleKey)} el={builderEl(section.titleKey)} compact />
               </CardTitle>
             </div>
@@ -265,9 +265,9 @@ export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRe
               aria-label={bilingualAria(builderEn(confKey), builderEl(confKey))}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <CardDescription>
             <BilingualText en={builderEn(section.descKey)} el={builderEl(section.descKey)} />
-          </p>
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col pt-0">
           <Textarea
@@ -276,7 +276,7 @@ export function BusinessModelCanvas({ onSave, onGenerate, initialData, contentRe
             placeholder={t(builderEn('bmc_describe'), builderEl('bmc_describe'))}
             value={content}
             onChange={(e) => handleSectionChange(section.id, e.target.value)}
-            className="min-h-[80px] flex-1 resize-none rounded-xl"
+            className="min-h-[80px] flex-1 resize-none"
           />
         </CardContent>
       </Card>

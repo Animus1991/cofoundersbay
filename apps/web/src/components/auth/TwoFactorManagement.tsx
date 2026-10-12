@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
 interface TwoFactorManagementProps {
   isEnabled: boolean;
@@ -51,32 +52,24 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
   if (isEnabled) {
     return (
       <>
-        {/* Stacks below `sm`: icon 40 + gap 16 + a `flex-1` with no `min-w-0`
-            (so it could not shrink under its own text) + gap 16 + the button
-            put this row 4px past a 320px viewport and scrolled the page. */}
-        <div className="flex flex-col gap-3 rounded-lg border border-status-success-border bg-status-success-bg p-4 sm:flex-row sm:items-start sm:gap-4">
-          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-status-success-bg">
-              <ShieldCheck className="icon-md text-status-success " />
+        {/* One row on the card's axis, like every row in a settings card:
+            the mark carries the state, the button sits at the right and
+            drops under the line on a phone. */}
+        <RowHead
+          mark={
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success-bg text-status-success">
+              <ShieldCheck className="icon-md" aria-hidden="true" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h4 className="font-medium text-status-success ">
-                <BilingualText en="Two-factor authentication is enabled" el="Ο έλεγχος δύο παραγόντων είναι ενεργός" wrap />
-              </h4>
-              <p className="mt-1 text-sm text-status-success ">
-                <BilingualText en="Your account is protected with an additional layer of security." el="Ο λογαριασμός σας έχει ένα επιπλέον επίπεδο ασφάλειας." wrap />
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowDisable(true)}
-            className="shrink-0 self-start"
-          >
-            <ShieldOff className="mr-2 icon-sm" />
-            <BilingualText en="Disable" el="Απενεργοποίηση" compact />
-          </Button>
-        </div>
+          }
+          title={<BilingualText en="Two-factor authentication is enabled" el="Ο έλεγχος δύο παραγόντων είναι ενεργός" wrap />}
+          subtitle={<BilingualText en="Your account is protected with an additional layer of security." el="Ο λογαριασμός σας έχει ένα επιπλέον επίπεδο ασφάλειας." wrap />}
+          aside={
+            <Button variant="outline" size="sm" onClick={() => setShowDisable(true)}>
+              <ShieldOff className="mr-2 icon-sm" />
+              <BilingualText en="Disable" el="Απενεργοποίηση" compact />
+            </Button>
+          }
+        />
 
         <Dialog open={showDisable} onOpenChange={setShowDisable}>
           <DialogContent>
@@ -131,24 +124,21 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
   return (
     <>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-        <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-            <Shield className="icon-md text-muted-foreground" />
+      <RowHead
+        mark={
+          <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <Shield className="icon-md" aria-hidden="true" />
           </div>
-          <div className="min-w-0 flex-1">
-            <h4 className="font-medium"><BilingualText en="Two-factor authentication is disabled" el="Ο έλεγχος δύο παραγόντων είναι ανενεργός" wrap /></h4>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Add an extra layer of security by requiring a verification code from your phone
-              when signing in.
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setShowSetup(true)} className="shrink-0 self-start">
-          <Shield className="mr-2 icon-sm" />
-          <BilingualText en="Enable" el="Ενεργοποίηση" compact />
-        </Button>
-      </div>
+        }
+        title={<BilingualText en="Two-factor authentication is disabled" el="Ο έλεγχος δύο παραγόντων είναι ανενεργός" wrap />}
+        subtitle="Add an extra layer of security by requiring a verification code from your phone when signing in."
+        aside={
+          <Button size="sm" onClick={() => setShowSetup(true)}>
+            <Shield className="mr-2 icon-sm" />
+            <BilingualText en="Enable" el="Ενεργοποίηση" compact />
+          </Button>
+        }
+      />
 
       <Dialog open={showSetup} onOpenChange={setShowSetup}>
         <DialogContent className="max-w-md">

@@ -417,7 +417,7 @@ export function ResearchTemplateTile({
         <CfbGlyph name={glyph} className="icon-sm" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="page-section font-semibold leading-snug">
+        <div className="card-title">
           {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact wrap /> : template.name}
         </div>
         <div className="mt-1 text-xs leading-snug text-muted-foreground">

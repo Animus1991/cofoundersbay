@@ -4316,3 +4316,323 @@ tsc web 0· vitest web 1048/1048 (133 αρχεία)· οι σελίδες του
 - το `origin/main` ήταν πρόγονος του κλάδου.
 
 Το deploy στο Cloudflare αποτυγχάνει ακόμη στο βήμα «Check Cloudflare credentials». Θέλει τα secrets και Workers Paid, δηλαδή απόφαση του ιδιοκτήτη (§46).
+
+## 52. Γύρος 2026-10-10 — κάθε κάρτα στην ανατομία των Endorsements και Connections, μετρημένη σε κάθε σελίδα, στα 390 και στα 1440
+
+Αφορμή (ο ιδιοκτήτης, 2026-10-10): «οι μεγάλες, χαοτικές κάρτες (και του Programs και το "Apply now") να αντιγράφουν πιστά τις κάρτες του Opportunities· οι μικρότερες να ακολουθούν με πλήρη πιστότητα την εσωτερική οργάνωση, τις αποστάσεις, τη δομή, τη στοίχιση και την αρχιτεκτονική κειμένου των Endorsements και των Connections, μέσα και έξω από την κάρτα, και στο διάστιχο· τα μεγέθη γραμματοσειράς σε όλες τις σελίδες, και στο κινητό, να ακολουθούν τη σελίδα Members, ακόμη και στο fundraising». Μαζί: κείμενο μέσα στην κάρτα ελαφρώς μικρότερο από τίτλο και υπότιτλο· ένας αριστερός άξονας (ο τίτλος ή ο κύκλος του χρήστη/φορέα), χωρίς «tab» κάτω από τον τίτλο· στο κέντρο μόνο κάρτες με αριθμούς ή γραφήματα («Profile Views 248 ↑12% this week», «Top Matches 12», «Unread messages 1 · 1 waiting», «Milestones 5/12 · 7 open · 1 overdue»)· tags με το πρώτο γράμμα στον άξονα· στο κινητό κανένα κείμενο να μη βγαίνει πάνω αριστερά ή πάνω στον κύκλο, κανένα σφιχτό διάστιχο, κανένα περιεχόμενο να μην αρχίζει με μικρό· περιεχόμενο μεγαλύτερο από τον τίτλο της κάρτας να μικραίνει (Fundraising «Harbor $750K seed», Updates)· κείμενο πεδίων μικρότερο από τον τίτλο του πεδίου· τίποτα να μη χαθεί· στο τέλος ενεργό Cloudflare live preview.
+
+### 52.1 Βάση
+
+Το `claude/friendly-archimedes-xifgnj` έγινε fast-forward στο `d3943938` του `claude/project-audit-upgrade-y2ebnr` (που περιείχε ήδη τα οκτώ commits του προηγούμενου γύρου μας και τα `cursor/phone-fonts-minus-2-53e0`, `cursor/ui-upgrade-cloudflare-preview-53e0`). Κανένα commit δεν χάθηκε. Το `d3943938` είχε αφήσει τρία tests κόκκινα (`layoutGuards`, `optionalChainCoverage`, `factPills`), που δεν είχαν τρέξει· πράσινα ξανά στο `a5c1f46`.
+
+### 52.2 Μέτρο: το probe μαθαίνει την ανατομία
+
+Το `.probes/card_audit.mjs` μετρούσε ήδη άξονα, κείμενο πάνω από τον τίτλο, δυνατό σώμα, σφιχτό διάστιχο, μικρό αρχικό, διαφυγή, επικάλυψη, κεντράρισμα και πεδία. Δεν μετρούσε αν μια κάρτα **είναι** η κάρτα των Endorsements: μια κάρτα με τίτλο `span.font-semibold` στο μέγεθος του σώματος, avatar 48px και πλαισιωμένα πλακίδια μέσα της περνούσε καθαρή. Μετρήθηκαν οι κάρτες αναφοράς (`/endorsements`, `/connections`):
+
+| | κινητό 390 | tablet 768 | desktop 1440 |
+|---|---|---|---|
+| εσωτερικό περιθώριο | 16px | 24px | 24px |
+| γωνία | 14px | 14px | 14px |
+| κύκλος (mark) | 40px | 40px | 2.5rem = 33px |
+| τίτλος (`.card-title`, semibold) | 15.343 / 1.35 | 16.32 | 16.32 |
+| υπότιτλος (`.card-subtitle`) | 14.906 / 1.45 | 14.28 | 14.28 |
+| πρόταση (`.card-body`) | 14.406 / 1.5 | 13.77 | 13.77 |
+| γεγονότα, ημερομηνίες (`text-xs`) | 13.044 | 13.26 | 13.13 |
+| κεφαλή → σώμα | 12px | 12px | 12px |
+
+Μετά τη συγχώνευση του §52.5 η σκάλα έγινε μικρότερη, με την ίδια σειρά: κινητό τίτλος 13.582, γραμμή κάτω 13.044, πρόταση 12.663· desktop 15.36, 14.00, 13.49. Τα ονόματα των κλάσεων έμειναν ίδια και το probe μετρά με τις νέες τιμές.
+
+Πέντε νέες μετρήσεις, ανά κάρτα:
+- `titleStep`: ο τίτλος της κεφαλής εκτός της βαθμίδας τίτλου (>0.4px)· εξαιρούνται h1, hero και κάρτες αριθμών.
+- `subStep`: η γραμμή κάτω από τον τίτλο πιο δυνατή από τη βαθμίδα υποτίτλου.
+- `markSize`: ο κύκλος/τετράγωνο δίπλα στον τίτλο δεν είναι 2.5rem (εξαιρούνται τα avatar ≥3rem των hero).
+- `inset`: ο άξονας της κάρτας πάνω από 4px μακριά από το περιθώριό της (περνούν 12px για συμπαγείς γραμμές και 16–24px).
+- `tile`: πλαισιωμένο κουτί μέσα στην κάρτα που κρατά άνθρωπο (avatar και όνομα): κάρτα μέσα σε κάρτα.
+
+Επιπλέον, το probe αντέχει σελίδα που πλοηγείται μόνη της μετά τη φόρτωση (τρεις απόπειρες, αλλιώς «not measured»), ανοίγει ό,τι κρύβει η πρώτη όψη (`/admin @@tab:Users`, `@@fill:`, `@@btn:`, `@@text:`: έτσι βρέθηκαν τρεις καρτέλες της κονσόλας admin που έπεφταν στην οθόνη σφάλματος), και μετρά σωστά ένα avatar 24px στη ρίζα του desktop. Το νέο `.probes/title_inversion.mjs` βρίσκει κείμενο μεγαλύτερο από το h1 της σελίδας (στο κινητό μια παράγραφος χωρίς κλάση κληρονομεί 16.327 πάνω από τίτλο 13.582–15.343), και το `.probes/heading_census.mjs` τις επικεφαλίδες ενοτήτων απέναντι στους τίτλους των καρτών.
+
+### 52.3 Η προδιαγραφή που ακολούθησε κάθε σελίδα
+
+Ένα κείμενο προδιαγραφής (στο τοπικό scratchpad, συνοψίζεται εδώ):
+- **Κάρτα οντότητας** (άνθρωπος, οργανισμός, πρόγραμμα, αίτημα, συνεδρία, κράτηση, κριτική, υπηρεσία, θέση, έργο, startup, εκδήλωση, ομάδα, αίτηση, πρόσκληση): `CardContent space-y-3` → `CardHead` (mark 40px: άνθρωπος κύκλος, οργανισμός `rounded-xl`· τίτλος· υπότιτλος· meta· ένα aside) → μία-δύο προτάσεις `card-body line-clamp-2` → `FactLine` → `CardFoot` (hairline, ημερομηνία αριστερά, ενέργειες δεξιά). Όλα κάτω από την κεφαλή ξεκινούν στην αριστερή άκρη του mark· ποτέ σώμα σε `flex gap-4` στήλη δίπλα στο avatar.
+- **Κάρτα ενότητας**: `CardHeader`/`CardTitle`/`CardDescription` χωρίς κλάσεις μεγέθους· γραμμές μέσα της ως κεφαλές χωρίς δικό τους πλαίσιο.
+- **Κάρτα αριθμών/γραφήματος**: μένει κεντραρισμένη, κρατά το μέγεθος του αριθμού.
+- **Φόρμα**: ετικέτα `text-sm font-medium`, το κείμενο του πεδίου ήδη μία βαθμίδα κάτω.
+- **Διάλογοι**: η σύνοψη μιας οντότητας μέσα σε διάλογο με την ίδια `CardHead` (Programs → «Apply»).
+- Τίποτα δεν χάνεται: κάθε handler, link, μενού, page control, aria label και δίγλωσσο κείμενο μένει.
+
+### 52.4 Η δουλειά
+
+Δεκατρείς οικογένειες σελίδων, ένας εργάτης η καθεμιά, που μετρούσε τις διαδρομές του πριν και μετά στα 390 και στα 1440. Η δουλειά διακόπηκε τέσσερις φορές από όριο χρήσης και επανεκκίνηση του μηχανήματος· κάθε φορά οι μισές αλλαγές περνούσαν tsc και tests και αποθηκεύονταν ως «checkpoint», και ο επόμενος εργάτης συνέχιζε από εκεί, χωρίς να αναιρέσει τίποτα.
+
+| οικογένεια | σελίδες | commit |
+|---|---|---|
+| πίνακες ελέγχου | founder, investor, provider, incubator, η πρώτη κίνηση, What's new, LiveStats | `c89b0cf` |
+| κοινότητα | events, groups, jobs, feed, Updates, λεπτομέρεια προγράμματος, πρόσκληση | `c89b0cf` |
+| ανακάλυψη | matches, compare, search, discover, recommendations, shortlist, saved searches, intros, scout | `f09b9ec` |
+| προφίλ | /profile, /profile/edit, /profiles/[id], /p/[username], hero, sections, trust, evidence, LinkedIn import, οι κάρτες open-to και verification | `f09b9ec` |
+| επενδυτές, πάροχοι, δημόσιες | investor/*, investors, provider/*, startups, data room, share, pitch, /c, /u, /t, marketplace | `fb77808` |
+| καθοδήγηση | mentor/*, mentoring, mentor dashboard, calendar, learning, expert reviews, coaching | `fb77808` |
+| πρόοδος | achievements, activity, analytics, reputation, referrals, readiness, gamification | `fb77808` |
+| οργανισμοί και tenants | org/*, tenant/* | `f6d5602` |
+| admin | 22 διαδρομές και 17 καρτέλες της κονσόλας | `f6d5602` |
+| κοινά κομμάτια | empty states, μηνύματα, ειδοποιήσεις, βοηθός, chat | `f6d5602` |
+| έργα, δεσμεύσεις, ορόσημα | projects, commitments, milestones, research list | `3b97984`, `9b1d0a2` |
+| builder | workspace, applications, pitch deck | `c09cfb2` |
+| ρυθμίσεις, βοήθεια, τιμές, είσοδος | settings/*, help, api status, pricing, transparency, auth, onboarding test | `56cd9d5` |
+| αρχική, νομικά, αναφορές | landing, privacy, terms, Programs (Apply), People you may know | `5186cf7`, `645a6ae` |
+
+Ό,τι άλλαξε στο κοινό CSS και στα κοινά components, με την αιτία του:
+- `CardHead` κρατά το grid του μέσα στο rail (`data-rail-keep-layout`)· έχει βασικό πλήθος στηλών (`layoutGuards`).
+- `[data-card-mark]` εξαιρείται από τους κανόνες των διακοσμητικών εικονιδίων: το κρυμμένο εικονίδιο άφηνε άδεια στήλη που έσπρωχνε τον τίτλο 12px μέσα (/groups).
+- Τα αστέρια αξιολόγησης μέσα σε κάρτα μένουν (ο κανόνας της κάρτας δεν τα εξαιρούσε, ο κανόνας της σελίδας ναι).
+- `SessionDateTile`: 2.5rem όπως ένα avatar, η μέρα σε `text-sm`.
+- `RowHead` (`components/dashboard/SectionCard.tsx`): γραμμή μέσα σε κάρτα ενότητας, χωρίς δικό της πλαίσιο· ο τίτλος της στη βαθμίδα υποτίτλου (`card-subtitle card-byline`), γιατί στο `text-sm` (13.603 στο κινητό) στεκόταν ίσα με τον τίτλο της ενότητας (13.582).
+- Ο τίτλος μιας κάρτας ενότητας (`CardTitle`, `h3.page-section`) μέσα σε `[data-card]` παίρνει τη βαθμίδα του `.card-title` και από τα 640px και πάνω, όπως ήδη στο κινητό: μετά τη συγχώνευση ήταν 15.83px πάνω από τίτλο κάρτας 15.36px (titleStep 44 μόνο στο /builder).
+- Ένα chip κατάστασης χωρίς απόχρωση και χωρίς περίγραμμα (μετά το «drop chip washes» του Cursor) χάνει το πλευρικό padding του, ώστε τα γράμματά του να πατούν στον άξονα (10px μέσα στο /fundraising, /programs, /projects).
+- Στο κινητό: παράγραφος `font-medium` στη σκάλα της κάρτας κρατά τη βαθμίδα της· `legend`, `h3`, `h4` με `text-sm` μέσα σε κάρτα παίρνουν τη βαθμίδα υποστήριξης· ο τίτλος μιας κάρτας ανάγκης αναδιπλώνεται σε 1.35.
+- `sm:text-2xs` (τα chips προτάσεων του μηνύματος) δηλώνεται στη desktop κλίμακα (`typeScaleOrder`).
+- Στην αρχική, στις νομικές σελίδες, στο login/register, στο transparency και στο pricing τίποτα δεν ξεπερνά τον τίτλο της σελίδας στο κινητό (`.probes/title_inversion.mjs`).
+
+Λειτουργίες: κάθε handler, link, μενού, page control, aria label και δίγλωσσο κείμενο κρατήθηκε. Ορατές αλλαγές που αξίζει να δει κανείς: η κάρτα της αντιστοίχισης δείχνει δαχτυλίδι 20px με «92% Excellent» αντί για καντράν 44px· τα learning paths ανοίγουν από κουμπί στο πόδι και όχι από όλη την κάρτα· ένα chip ημερολογίου ανοίγει από τον τίτλο του· τρεις καρτέλες της κονσόλας admin που έπεφταν στην οθόνη σφάλματος ξαναδουλεύουν· οι στόχοι μεταφόρτωσης logo/favicon στο tenant branding φαίνονται ξανά (ήταν 0px). Νέα ελληνικά κείμενα (π.χ. «Μη συνδεδεμένος», «Τύπος ειδοποίησης», όροι billing και κατηγορίες αναφορών) θέλουν μια ματιά από φυσικό ομιλητή.
+
+### 52.5 Συγχώνευση όλων των branches (αίτημα 2026-10-11)
+
+Ελέγχθηκαν όλα τα branches των δύο αποθετηρίων, `Animus1991/cofoundersbay` (9) και `tasoasteritopeleven/cofoundersbay` (2), με πλήρες ιστορικό (`git fetch --unshallow`):
+- Νέα δουλειά είχε μόνο το `cursor/theme-meter-colors-1514`: 69 commits πάνω στο δικό μας `cf09f93`. Περιέχει ήδη το `main` του δεύτερου αποθετηρίου (το στιγμιότυπο του Emergent: scripts προεπισκόπησης, ο έλεγχος `docs/audit/d3943938`, `test_result.md`) και το `cursor/all-latest-upgrades-9f73`.
+- Τα `main`, `claude/project-audit-upgrade-y2ebnr`, `cursor/phone-fonts-minus-2-53e0`, `cursor/ui-upgrade-cloudflare-preview-53e0`, `cursor/ai-os-fullpage-chat-53e0`, `cursor/phone-component-sizes-53e0` και `integration/ai-platform-upgrade` περιέχονταν ήδη πλήρως.
+- Το `f897307e` συγχωνεύει το `cursor/theme-meter-colors-1514`: μικρότερη τυπογραφία στο κινητό (η σκάλα της κάρτας: τίτλος 13.582, γραμμή κάτω 13.044, πρόταση 12.663· desktop 15.36/14.00/13.49), συντομότερα κουμπιά, πεδία αναζήτησης στο ύψος του Member Directory, Mint και Cyan, μηνύματα και βοηθός ως οθόνη κινητού. Δύο συγκρούσεις (milestones, projects): κρατήθηκε η ανατομία μας (CardHead, CardFoot, ένας άξονας) με την πρόθεση της άλλης γραμμής από πάνω (χωρίς λωρίδα προτεραιότητας, χωρίς κουτί εικονιδίου κατάστασης, chip χωρίς απόχρωση· οι ρόλοι στη βαθμίδα υποστήριξης). Δεν χρειάστηκε cherry-pick.
+- Μετά τη συγχώνευση κανένα από τα 11 branches δεν έχει commit που να λείπει από το `claude/friendly-archimedes-xifgnj`. Στο `tasoasteritopeleven/cofoundersbay` αυτή η συνεδρία έχει μόνο ανάγνωση.
+- Το `.probes/card_audit.mjs` πήρε τις νέες τιμές της σκάλας από τη συγχώνευση και κράτησε τα «βήματα» μας (`@@tab:`, `@@fill:`, `@@btn:`, `@@text:`).
+
+### 52.6 Μέτρηση πριν και μετά, σε κάθε διαδρομή
+
+`.probes/card_audit.mjs` σε όλες τις 170 διαδρομές (`scripts/platform-sweep-routes.txt` και `platform-sweep-dynamic.txt`), ρόλος ιδρυτή, demo, αγγλικά. «Πριν» = το `d3943938` μετά το fast-forward (10 Οκτωβρίου, με τη σκάλα 15.343/14.906/14.406)· «μετά» = το `b6e26826` (11 Οκτωβρίου, με τη σκάλα της συγχώνευσης 13.582/13.044/12.663). Κάθε μέτρηση γίνεται απέναντι στη σκάλα που ισχύει εκείνη τη στιγμή, άρα οι δύο στήλες συγκρίνονται ως «πόσες κάρτες ξεφεύγουν από τη δική τους σκάλα». Οι οικογένειες μέτρησαν και με τον δικό τους ρόλο (mentor, angel_investor, service_provider, incubator_admin, platform_admin) και σε κάθε καρτέλα (`@@tab:`)· ο παρακάτω πίνακας είναι ο κοινός ρόλος ιδρυτή.
+
+| μέτρηση | 390 πριν | 390 μετά | 1440 πριν | 1440 μετά |
+|---|---|---|---|---|
+| κάρτες | 983 | 986 | 986 | 1002 |
+| `offAxis` | 80 | 0 | 72 | 6 |
+| `overTitle` | 15 | 1 | 28 | 0 |
+| `bodyLoud` | 4 | 0 | 3 | 0 |
+| `tight` | 0 | 0 | 2 | 0 |
+| `lower` | 5 | 0 | 5 | 0 |
+| `escape` | 1 | 0 | 0 | 0 |
+| `overlap` | 0 | 1 | 0 | 0 |
+| `centered` | 23 | 10 | 43 | 18 |
+| `loneRight` | 7 | 0 | 1 | 0 |
+| `titleStep` | 117 | 0 | 56 | 8 |
+| `subStep` | 0 | 0 | 0 | 0 |
+| `markSize` | 25 | 0 | 60 | 0 |
+| `inset` | 14 | 2 | 14 | 2 |
+| `tile` | 0 | 0 | 0 | 0 |
+| `fields` | 0 | 0 | 0 | 0 |
+
+| διαδρομή | κάρτες | 390 πριν → μετά | 1440 πριν → μετά |
+|---|---|---|---|
+| `/` | 8 | 3 → 0 | 0 → 0 |
+| `/achievements` | 11 | 0 → 0 | 0 → 0 |
+| `/activity` | 1 | 0 → 0 | 0 → 0 |
+| `/admin` | 2 | 0 → 0 | 0 → 0 |
+| `/admin/analytics` | 8 | 0 → 0 | 0 → 0 |
+| `/admin/audit-log` | 1 | 1 → 0 | 0 → 0 |
+| `/admin/automations` | 5 | 1 → 0 | 2 → 0 |
+| `/admin/billing` | 1 | 3 → 0 | 4 → 0 |
+| `/admin/communities` | 7 | 0 → 0 | 0 → 0 |
+| `/admin/community-management` | 5 | 0 → 0 | 0 → 0 |
+| `/admin/content-moderation` | 1 | 0 → 0 | 0 → 0 |
+| `/admin/dashboard` | 9 | 0 → 0 | 0 → 0 |
+| `/admin/domains` | 2 | 1 → 0 | 2 → 0 |
+| `/admin/feature-flags` | 12 | 8 → 0 | 0 → 0 |
+| `/admin/mentorship-management` | 5 | 0 → 0 | 0 → 0 |
+| `/admin/programs` | 3 | 0 → 0 | 0 → 0 |
+| `/admin/reports` | 2 | 0 → 0 | 0 → 0 |
+| `/admin/security-monitoring` | 4 | 0 → 0 | 0 → 0 |
+| `/admin/sso` | 6 | 1 → 0 | 1 → 0 |
+| `/admin/system-settings` | 1 | 0 → 0 | 0 → 0 |
+| `/admin/taxonomy` | 5 | 0 → 0 | 0 → 0 |
+| `/admin/tenants` | 1 | 1 → 0 | 1 → 0 |
+| `/admin/user-detail/preview-demo-user` | 6 | 0 → 0 | 0 → 0 |
+| `/admin/user-management` | 1 | 2 → 0 | 0 → 0 |
+| `/admin/users` | 1 | 0 → 0 | 1 → 0 |
+| `/ai` | 0 | 0 → 0 | 0 → 0 |
+| `/ai/capabilities` | 81 | 0 → 0 | 0 → 0 |
+| `/analytics` | 9 | 2 → 0 | 2 → 0 |
+| `/api-status` | 7 | 7 → 0 | 2 → 0 |
+| `/auth/oauth-callback` | 1 | 3 → 0 | 4 → 0 |
+| `/auth/sso-complete` | 0 | 0 → 0 | 0 → 0 |
+| `/auth/verify-email` | 1 | 0 → 0 | 0 → 0 |
+| `/builder` | 9 | 3 → 0 | 4 → 0 |
+| `/builder/applications` | 1 | 0 → 0 | 0 → 0 |
+| `/builder/pitch-deck` | 3 | 0 → 0 | 3 → 0 |
+| `/c/harbor-commercial-demo` | 2 | 0 → 0 | 0 → 0 |
+| `/calendar` | 3 | 0 → 0 | 0 → 0 |
+| `/coaching` | 5 | 2 → 0 | 6 → 0 |
+| `/commitments` | 1 | 0 → 0 | 0 → 0 |
+| `/commitments/need-athens-intros` | 3 | 2 → 1 | 3 → 2 |
+| `/commitments/need-harbor` | 2 | 3 → 1 | 5 → 2 |
+| `/commitments/new` | 6 | 1 → 0 | 1 → 0 |
+| `/compare` | 1 | 3 → 3 | 2 → 4 |
+| `/connections` | 2 | 0 → 0 | 0 → 0 |
+| `/dashboard` | 8 | 3 → 0 | 0 → 0 |
+| `/dashboard/founder` | 8 | 3 → 0 | 0 → 0 |
+| `/dashboard/incubator` | 11 | 0 → 0 | 0 → 0 |
+| `/dashboard/investor` | 11 | 0 → 0 | 0 → 0 |
+| `/dashboard/mentor` | 11 | 0 → 0 | 0 → 0 |
+| `/dashboard/provider` | 11 | 0 → 0 | 1 → 0 |
+| `/data-room/dr-harbor-seed` | 1 | 0 → 0 | 0 → 0 |
+| `/demo` | 8 | 3 → 0 | 0 → 0 |
+| `/discover` | 5 | 4 → 0 | 1 → 0 |
+| `/endorsements` | 4 | 0 → 0 | 0 → 0 |
+| `/events` | 6 | 1 → 0 | 5 → 0 |
+| `/events/create` | 6 | 0 → 0 | 1 → 0 |
+| `/events/ev-office-hours` | 4 | 1 → 0 | 1 → 0 |
+| `/expert-reviews` | 3 | 4 → 0 | 4 → 0 |
+| `/feed` | 3 | 0 → 0 | 0 → 0 |
+| `/forgot-password` | 0 | 0 → 0 | 0 → 0 |
+| `/fundraising` | 4 | 0 → 0 | 0 → 0 |
+| `/groups` | 7 | 35 → 0 | 38 → 0 |
+| `/groups/grp-athens-founders` | 7 | 11 → 0 | 11 → 0 |
+| `/groups/manage` | 4 | 3 → 0 | 0 → 0 |
+| `/groups/moderation` | 7 | 0 → 0 | 0 → 0 |
+| `/help` | 13 | 3 → 0 | 3 → 0 |
+| `/intros` | 1 | 0 → 0 | 0 → 0 |
+| `/investor/analytics` | 8 | 0 → 0 | 0 → 0 |
+| `/investor/dashboard` | 11 | 0 → 0 | 0 → 0 |
+| `/investor/pipeline` | 11 | 0 → 0 | 0 → 0 |
+| `/investor/portfolio` | 7 | 2 → 0 | 2 → 0 |
+| `/investor/scouting` | 8 | 14 → 0 | 7 → 0 |
+| `/investor/watchlist` | 5 | 1 → 0 | 0 → 0 |
+| `/investors` | 7 | 0 → 0 | 0 → 0 |
+| `/invite` | 6 | 1 → 0 | 0 → 0 |
+| `/jobs` | 6 | 16 → 0 | 6 → 0 |
+| `/learning` | 10 | 6 → 0 | 6 → 0 |
+| `/login` | 0 | 0 → 0 | 0 → 0 |
+| `/marketplace` | 9 | 1 → 0 | 0 → 0 |
+| `/matches` | 9 | 5 → 0 | 5 → 0 |
+| `/matches/compare` | 1 | 0 → 0 | 0 → 0 |
+| `/matches/user-elena` | 6 | 3 → 0 | 3 → 0 |
+| `/members` | 7 | 0 → 0 | 0 → 0 |
+| `/mentor/availability` | 10 | 7 → 0 | 7 → 0 |
+| `/mentor/dashboard` | 11 | 0 → 0 | 0 → 0 |
+| `/mentor/earnings` | 1 | 0 → 0 | 0 → 0 |
+| `/mentor/mentees` | 7 | 0 → 0 | 0 → 0 |
+| `/mentor/profile` | 2 | 0 → 0 | 1 → 0 |
+| `/mentor/requests` | 5 | 0 → 0 | 0 → 0 |
+| `/mentor/reviews` | 6 | 0 → 0 | 0 → 0 |
+| `/mentor/sessions` | 8 | 0 → 0 | 11 → 0 |
+| `/mentoring` | 3 | 3 → 0 | 3 → 0 |
+| `/messages` | 0 | 2 → 0 | 6 → 6 |
+| `/milestones` | 12 | 0 → 0 | 0 → 0 |
+| `/milestones/new` | 1 | 1 → 0 | 1 → 0 |
+| `/notifications` | 1 | 0 → 0 | 0 → 0 |
+| `/onboarding` | 10 | 1 → 0 | 0 → 0 |
+| `/opportunities` | 11 | 0 → 0 | 0 → 0 |
+| `/org/aegean-lab` | 5 | 0 → 0 | 2 → 0 |
+| `/org/aegean-lab/admin` | 1 | 0 → 0 | 0 → 0 |
+| `/org/analytics` | 11 | 1 → 0 | 6 → 0 |
+| `/org/applications` | 22 | 0 → 0 | 0 → 0 |
+| `/org/cohorts` | 8 | 4 → 0 | 0 → 0 |
+| `/org/cohorts/cohort-autumn-2026` | 7 | 1 → 0 | 1 → 0 |
+| `/org/dashboard` | 11 | 0 → 0 | 0 → 0 |
+| `/org/events` | 7 | 4 → 0 | 0 → 0 |
+| `/org/members` | 5 | 3 → 0 | 1 → 0 |
+| `/org/mentors` | 8 | 0 → 0 | 0 → 0 |
+| `/org/programs` | 8 | 4 → 0 | 0 → 0 |
+| `/org/settings` | 1 | 0 → 0 | 0 → 0 |
+| `/org/startups` | 14 | 0 → 0 | 0 → 0 |
+| `/p/preview-demo-user` | 11 | 2 → 0 | 0 → 0 |
+| `/pitch/demo` | 1 | 0 → 1 | 0 → 0 |
+| `/pricing` | 10 | 7 → 0 | 5 → 0 |
+| `/privacy` | 14 | 4 → 0 | 7 → 0 |
+| `/profile` | 10 | 1 → 0 | 0 → 0 |
+| `/profile/edit` | 6 | 0 → 0 | 0 → 0 |
+| `/profiles/user-elena` | 8 | 4 → 0 | 3 → 0 |
+| `/programs` | 3 | 0 → 0 | 0 → 0 |
+| `/programs/prog-seed-autumn-2026` | 4 | 0 → 0 | 0 → 0 |
+| `/projects` | 3 | 0 → 0 | 0 → 0 |
+| `/projects/1` | 6 | 1 → 0 | 1 → 0 |
+| `/projects/create` | 1 | 0 → 0 | 1 → 0 |
+| `/provider/analytics` | 8 | 1 → 0 | 1 → 0 |
+| `/provider/dashboard` | 0 | 0 → 0 | 1 → 0 |
+| `/provider/inquiries` | 10 | 0 → 0 | 0 → 0 |
+| `/provider/profile` | 2 | 0 → 0 | 1 → 0 |
+| `/provider/projects` | 1 | 0 → 0 | 2 → 0 |
+| `/provider/reviews` | 5 | 3 → 0 | 3 → 0 |
+| `/provider/services` | 7 | 6 → 0 | 0 → 0 |
+| `/readiness` | 9 | 0 → 0 | 2 → 0 |
+| `/recommendations` | 4 | 0 → 0 | 0 → 0 |
+| `/referrals` | 2 | 0 → 0 | 0 → 0 |
+| `/register` | 0 | 0 → 0 | 0 → 0 |
+| `/reputation` | 4 | 0 → 0 | 0 → 0 |
+| `/research` | 1 | 0 → 0 | 0 → 0 |
+| `/research/board-gtm` | 6 | 6 → 0 | 6 → 6 |
+| `/research/canvas` | 1 | 0 → 0 | 0 → 0 |
+| `/reset-password` | 1 | 2 → 0 | 2 → 0 |
+| `/saved-searches` | 3 | 5 → 0 | 2 → 0 |
+| `/scout` | 4 | 0 → 0 | 0 → 0 |
+| `/search` | 4 | 0 → 0 | 0 → 0 |
+| `/settings` | 11 | 3 → 0 | 2 → 0 |
+| `/settings/ai` | 6 | 1 → 0 | 1 → 0 |
+| `/settings/billing` | 5 | 0 → 0 | 0 → 0 |
+| `/settings/data-export` | 3 | 0 → 0 | 0 → 0 |
+| `/settings/notifications` | 3 | 0 → 0 | 1 → 0 |
+| `/share/data-room-seed` | 1 | 2 → 2 | 2 → 2 |
+| `/shortlist` | 1 | 1 → 0 | 1 → 0 |
+| `/startups/deal-harbor` | 5 | 0 → 0 | 0 → 0 |
+| `/t/aegean-lab` | 4 | 0 → 0 | 1 → 0 |
+| `/tenant/analytics` | 8 | 0 → 0 | 3 → 0 |
+| `/tenant/api-keys` | 4 | 0 → 0 | 0 → 0 |
+| `/tenant/automation` | 4 | 4 → 3 | 5 → 6 |
+| `/tenant/billing` | 2 | 0 → 0 | 0 → 0 |
+| `/tenant/branding` | 1 | 0 → 0 | 0 → 0 |
+| `/tenant/dashboard` | 9 | 0 → 0 | 1 → 0 |
+| `/tenant/domains` | 6 | 4 → 3 | 6 → 6 |
+| `/tenant/members` | 20 | 16 → 0 | 32 → 0 |
+| `/tenant/programs` | 4 | 4 → 0 | 0 → 0 |
+| `/tenant/settings` | 1 | 0 → 0 | 0 → 0 |
+| `/tenant/sso` | 2 | 2 → 0 | 0 → 0 |
+| `/tenant/webhooks` | 6 | 0 → 0 | 0 → 0 |
+| `/terms` | 12 | 4 → 0 | 7 → 0 |
+| `/test-onboarding` | 6 | 10 → 0 | 5 → 0 |
+| `/themes/alliance` | 10 | 0 → 0 | 4 → 0 |
+| `/transparency` | 3 | 0 → 0 | 0 → 0 |
+| `/u/demo-alex-sept` | 2 | 0 → 0 | 0 → 0 |
+| `/unauthorized` | 0 | 0 → 0 | 0 → 0 |
+| `/updates` | 3 | 0 → 0 | 0 → 0 |
+
+### 52.7 Τι μένει, και γιατί
+
+| διαδρομή | μέτρηση | γιατί μένει |
+|---|---|---|
+| `/compare` | centered 2/4, overlap 1 (390) | η κοινή κενή κατάσταση μένει κεντραρισμένη· το overlap είναι ο διακοσμητικός κύκλος πίσω της, όχι avatar |
+| `/tenant/automation`, `/tenant/domains` | centered, inset, titleStep (1440) | κενές καταστάσεις («Κανένας κανόνας ακόμη», «Κανένας τομέας ακόμη»), κεντραρισμένες |
+| `/share/data-room-seed` | centered 2 | η κάρτα σφάλματος «Link unavailable» |
+| `/commitments/need-*` | centered 1–2 | οι ετικέτες των βημάτων της κλίμακας (stepper) |
+| `/pitch/demo` | overTitle 1 (390) | το χάπι του εξωφύλλου της διαφάνειας: περιεχόμενο του deck, με τα δικά του μεγέθη |
+| `/messages` | offAxis 6 (1440) | ώρες στις φούσκες, διαχωριστικό ημερομηνίας, υπόδειξη του composer: έπιπλα της συζήτησης, όχι κάρτες |
+| `/research/board-gtm` | titleStep 6 (1440) | κόμβοι του καμβά έρευνας (εκτός πεδίου: δεδομένα του χρήστη) |
+
+### 52.8 Πύλες στο τελικό δέντρο (`b6e26826`)
+
+- web `tsc --noEmit`: 0 σφάλματα.
+- web vitest: 146 αρχεία, 1110/1110.
+- api vitest: 48 αρχεία, 475/475· api `tsc`: 0 σφάλματα.
+- `check-theme-contrast.py`: 0 αποτυχίες κάτω από 4.5:1.
+- `node --test scripts/deploy.test.cjs scripts/platform-inventory.test.cjs`: 12/12.
+- `title_inversion.mjs` (390): 0 στις δημόσιες σελίδες και στις οικογένειες που το έτρεξαν.
+
+### 52.9 Cloudflare live preview
+
+Δεν δόθηκε σύνδεσμος, για δύο λόγους που δεν λύνονται από τον κώδικα:
+- Το workflow `deploy-cloudflare.yml` (και με `workflow_dispatch` και στόχο `preview` σε οποιοδήποτε branch) αποτυγχάνει από το πρώτο του βήμα: λείπουν τα repository secrets `CLOUDFLARE_API_TOKEN` και `CLOUDFLARE_ACCOUNT_ID` (τελευταίο run 9 Οκτωβρίου: «Missing repository secrets»).
+- Ένα quick tunnel (`cloudflared tunnel --url http://localhost:3000`) από αυτό το περιβάλλον απορρίπτεται από την πολιτική δικτύου: το `api.trycloudflare.com` είναι εκτός επιτρεπόμενων (CONNECT 403).
+
+Με τα δύο secrets στο GitHub (Settings → Secrets and variables → Actions), το workflow τρέχει με `workflow_dispatch`, `target: preview`, στο `claude/friendly-archimedes-xifgnj`· εναλλακτικά, με τα `api.trycloudflare.com` και `*.argotunnel.com` στα επιτρεπόμενα του περιβάλλοντος, ένα quick tunnel δίνει διεύθυνση `*.trycloudflare.com`.
+
+### 52.10 Τι δεν αποδεικνύει αυτό το τμήμα
+
+- Το probe μετρά ένα ρόλο ανά τρέξιμο, demo δεδομένα, αγγλικά, δύο πλάτη, και ό,τι φαίνεται στη σελίδα χωρίς κλικ (εκτός από όσες διαδρομές οι οικογένειες μέτρησαν με `@@tab:`). Δεν μετρά το δεξί rail, τους διαλόγους, το tablet πλάτος, ούτε τα ελληνικά ως κύρια γλώσσα.
+- Δεν μετρά αν μια κάρτα «μοιάζει» με τις κάρτες αναφοράς πέρα από τα όρια που ορίζει (άξονας, βαθμίδες, mark, περιθώριο, κάρτα μέσα σε κάρτα)· στιγμιότυπα πάρθηκαν για τις αναφορές, τις κάρτες που αναφέρθηκαν ονομαστικά και τα υπόλοιπα που βρήκε η τελική μέτρηση, όχι για κάθε σελίδα.
+- Τα νέα ελληνικά κείμενα των εργατών (όροι billing, κατηγορίες αναφορών, «Μη συνδεδεμένος», «Τύπος ειδοποίησης») δεν τα έχει διαβάσει φυσικός ομιλητής.
+- Δεν έτρεξαν το e2e axe suite, το clock probe, το dialog sweep και το platform sweep σε αυτό το τμήμα· το `main` και το deploy δεν άγγιξαν.

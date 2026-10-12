@@ -9,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import {
   Sheet,
   SheetContent,
@@ -289,79 +292,79 @@ export function BranchPanel({
               </div>
             ) : openBranches.length > 0 ? (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Active Variants ({openBranches.length})
                 </p>
                 {openBranches.map(branch => {
                   const meta = branchStatusMeta(branch.status);
                   const StatusIcon = meta.icon;
                   return (
-                    <div
-                      key={branch.id}
-                      className="p-3 rounded-lg border border-border bg-card hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <GitBranch className="icon-sm text-muted-foreground shrink-0" />
-                            <span className="text-sm font-medium truncate">{branch.name}</span>
-                          </div>
-                          {branch.description && (
-                            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
+                    <Card key={branch.id} className="transition-all hover:border-primary/20">
+                      <CardContent className="space-y-3">
+                        <CardHead
+                          mark={(
+                            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                              <GitBranch className="icon-md" aria-hidden="true" />
+                            </div>
                           )}
-                          <div className="flex items-center gap-2 flex-wrap">
+                          title={branch.name}
+                          meta={(
+                            <FactLine
+                              items={[
+                                <BilingualText key="base" en={`Base v${branch.baseVersionNum}`} el={`Βάση v${branch.baseVersionNum}`} compact />,
+                                <RelativeTime key="created" date={branch.createdAt} />,
+                              ]}
+                            />
+                          )}
+                          aside={(
                             <Badge variant="outline" className={cn('text-xs', meta.color)}>
                               <StatusIcon className="h-2.5 w-2.5 mr-1" />
                               {meta.label}
                             </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              base v{branch.baseVersionNum}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              <RelativeTime date={branch.createdAt} />
-                            </span>
-                          </div>
-                        </div>
-
-                        {!readonly && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-label="Branch actions" variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
-                                <MoreHorizontal className="icon-sm" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {branch.status === 'open' && (
-                                <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
-                                  <GitPullRequest className="icon-sm mr-2" />
-                                  <BilingualText en="Submit Proposal" el="Υποβολή πρότασης" compact />
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive-accessible"
-                                onClick={() => handleClose(branch.id)}
-                              >
-                                <XCircle className="icon-sm mr-2" />
-                                <BilingualText en="Close Variant" el="Κλείσιμο εκδοχής" compact />
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          )}
+                        />
+                        {branch.description && (
+                          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{branch.description}</p>
                         )}
-                      </div>
-
-                      {!readonly && branch.status === 'open' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 w-full text-xs h-7"
-                          onClick={() => setProposalBranch(branch)}
-                        >
-                          <GitPullRequest className="icon-sm mr-1.5" />
-                          <BilingualText en="Submit as Change Proposal" el="Υποβολή ως πρόταση αλλαγής" compact />
-                        </Button>
-                      )}
-                    </div>
+                        {!readonly && (
+                          <CardFoot>
+                            {branch.status === 'open' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setProposalBranch(branch)}
+                              >
+                                <GitPullRequest className="icon-sm mr-1.5" />
+                                <BilingualText en="Submit as Change Proposal" el="Υποβολή ως πρόταση αλλαγής" compact />
+                              </Button>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button aria-label="Branch actions" variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
+                                  <MoreHorizontal className="icon-sm" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                {branch.status === 'open' && (
+                                  <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
+                                    <GitPullRequest className="icon-sm mr-2" />
+                                    <BilingualText en="Submit Proposal" el="Υποβολή πρότασης" compact />
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive-accessible"
+                                  onClick={() => handleClose(branch.id)}
+                                >
+                                  <XCircle className="icon-sm mr-2" />
+                                  <BilingualText en="Close Variant" el="Κλείσιμο εκδοχής" compact />
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </CardFoot>
+                        )}
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </div>
@@ -375,23 +378,20 @@ export function BranchPanel({
 
             {/* Closed/merged */}
             {closedBranches.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+              <div className="divide-y divide-border">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide pb-2">
                   Closed / Merged ({closedBranches.length})
                 </p>
                 {closedBranches.map(branch => {
                   const meta = branchStatusMeta(branch.status);
                   const StatusIcon = meta.icon;
                   return (
-                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border bg-muted/20">
-                      <div className="flex items-center gap-2">
-                        <GitBranch className="icon-sm text-muted-foreground/50" />
-                        <span className="text-xs text-muted-foreground truncate flex-1">{branch.name}</span>
-                        <Badge variant="outline" className={cn('text-xs', meta.color)}>
-                          <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                          {meta.label}
-                        </Badge>
-                      </div>
+                    <div key={branch.id} className="flex items-center gap-2 py-2">
+                      <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">{branch.name}</span>
+                      <Badge variant="outline" className={cn('text-xs', meta.color)}>
+                        <StatusIcon className="h-2.5 w-2.5 mr-1" />
+                        {meta.label}
+                      </Badge>
                     </div>
                   );
                 })}

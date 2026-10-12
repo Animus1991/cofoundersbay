@@ -104,7 +104,7 @@ export default function AllianceThemePage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap',
+                'flex items-center gap-2 px-6 py-3 rounded-full text-sm font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -122,9 +122,6 @@ export default function AllianceThemePage() {
               <Card key={person.name} className="overflow-hidden hover:border-foreground/20 transition-colors duration-300 border-border">
                 <div className={cn('h-32 bg-gradient-to-br relative', person.banner)}>
                   <div className="absolute inset-0 bg-black/20"></div>
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 hover:bg-white"><BilingualText en="Featured" el="Προβεβλημένο" compact /></Badge>
-                  </div>
                 </div>
                 <CardContent className="space-y-3">
                   {/* The avatar rides on the banner with Connect at the right;
@@ -134,10 +131,16 @@ export default function AllianceThemePage() {
                     <div className="relative z-10 -mt-12 flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full border-4 border-card bg-gradient-to-br from-blue-400 to-purple-400 text-lg font-semibold text-white" aria-hidden="true">
                       {person.name.replace(/^Dr\.\s*/, '').split(' ').map((w) => w[0]).slice(0, 2).join('')}
                     </div>
-                    <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="shrink-0 rounded-full">
-                      <Users className="icon-sm mr-2" />
-                      <BilingualText en="Connect" el="Σύνδεση" compact />
-                    </Button>
+                    {/* "Featured" is the card's one state, beside Connect on
+                        the head's line; on the banner it was the only text
+                        off the card's axis. */}
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge variant="outline"><BilingualText en="Featured" el="Προβεβλημένο" compact /></Badge>
+                      <Button tabIndex={-1} aria-hidden="true" variant="outline" size="sm" className="shrink-0 rounded-full">
+                        <Users className="icon-sm mr-2" />
+                        <BilingualText en="Connect" el="Σύνδεση" compact />
+                      </Button>
+                    </div>
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

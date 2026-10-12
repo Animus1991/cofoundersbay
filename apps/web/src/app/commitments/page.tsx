@@ -17,6 +17,8 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailOptions } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -81,45 +83,51 @@ function HistoryNote({ settled, now }: { settled: string | null; now: number }) 
   );
 }
 
+/** "by" opens the byline, so it takes a capital: content never starts lowercase. */
+function capitalised(word: string) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 function ResponseRow({ thread, now }: { thread: CommitmentThreadSummary; now: number }) {
   const next = nextAction(thread);
   const kind = kindCopy(thread.cardKind);
   return (
-    <Card>
+    <Card className="transition-all hover:border-primary/20">
       <CardContent className="space-y-3">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-          <span className="text-xs text-muted-foreground">
-            <BilingualText en={kind.en} el={kind.el} compact />
-          </span>
-          <StepChip step={thread.step} />
-          {thread.answeredVersion < thread.cardVersion ? (
-            <span className="rounded-full bg-status-info-bg px-2 py-0.5 text-2xs text-status-info">
-              v{thread.answeredVersion} → v{thread.cardVersion}
+        <CardHead
+          title={<Link href={threadHref(thread)} className="hover:underline">{thread.cardTitle}</Link>}
+          subtitle={(
+            <span className="block truncate">
+              <BilingualText en={capitalised(CMT.by.en)} el={capitalised(CMT.by.el)} compact /> {thread.counterpart.displayName}
+              {thread.counterpart.headline ? ` · ${thread.counterpart.headline}` : ''}
             </span>
-          ) : null}
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold text-foreground">
-            <Link href={threadHref(thread)} className="hover:underline">{thread.cardTitle}</Link>
-          </h3>
-          <p className="truncate text-xs text-muted-foreground">
-            <BilingualText en={CMT.by.en} el={CMT.by.el} compact /> {thread.counterpart.displayName}
-            {thread.counterpart.headline ? ` · ${thread.counterpart.headline}` : ''}
-          </p>
-        </div>
+          )}
+          meta={(
+            <FactLine
+              items={[
+                <BilingualText key="kind" en={kind.en} el={kind.el} compact />,
+                thread.answeredVersion < thread.cardVersion ? (
+                  <span key="version" className="tabular-nums text-status-info">v{thread.answeredVersion} → v{thread.cardVersion}</span>
+                ) : null,
+              ]}
+            />
+          )}
+          aside={<StepChip step={thread.step} />}
+        />
         {thread.step !== 'closed' ? <CommitmentLadder step={thread.step} myConfirmed={thread.myConfirmed} /> : null}
         {next ? (
-          <p className="text-sm font-medium text-foreground"><BilingualText en={next.en} el={next.el} wrap /></p>
+          <p className="card-body font-medium text-foreground"><BilingualText en={next.en} el={next.el} wrap /></p>
         ) : thread.step !== 'closed' && thread.step !== 'agreed' ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="card-body text-muted-foreground">
             <BilingualText en={`${CMT.waiting_on.en} ${thread.counterpart.displayName}`} el={`${CMT.waiting_on.el} ${thread.counterpart.displayName}`} wrap />
           </p>
         ) : null}
-        {thread.closedReason ? <p className="text-sm italic text-muted-foreground">“{thread.closedReason}”</p> : null}
-        <HistoryNote settled={settledAt(thread)} now={now} />
-        <Button size="sm" variant="outline" asChild>
-          <Link href={threadHref(thread)}><BilingualText en={CMT.open_board.en} el={CMT.open_board.el} compact /></Link>
-        </Button>
+        {thread.closedReason ? <p className="card-body italic text-muted-foreground first-letter:uppercase">“{thread.closedReason}”</p> : null}
+        <CardFoot meta={<HistoryNote settled={settledAt(thread)} now={now} />}>
+          <Button size="sm" variant="outline" asChild>
+            <Link href={threadHref(thread)}><BilingualText en={CMT.open_board.en} el={CMT.open_board.el} compact /></Link>
+          </Button>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -524,23 +532,28 @@ export default function CommitmentsPage() {
           ) : (
             <>
               {historyCards.map((card) => (
-                <Card key={card.id}>
-                  <CardContent className="flex flex-wrap items-center gap-3">
-                    <OutcomeChip outcome={card.outcome} reason={card.closedReason} />
-                    <Link href={`/commitments/${encodeURIComponent(card.id)}`} className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:underline">
-                      {card.title}
-                    </Link>
+                <Card key={card.id} className="transition-all hover:border-primary/20">
+                  <CardContent>
+                    <CardHead
+                      title={(
+                        <Link href={`/commitments/${encodeURIComponent(card.id)}`} className="hover:underline">
+                          {card.title}
+                        </Link>
+                      )}
+                      subtitle={<BilingualText en={kindCopy(card.kind).en} el={kindCopy(card.kind).el} compact />}
+                      aside={<OutcomeChip outcome={card.outcome} reason={card.closedReason} />}
+                    />
                   </CardContent>
                 </Card>
               ))}
               {historyResponses.map((thread) => (
-                <Card key={thread.id}>
-                  <CardContent className="flex flex-wrap items-center gap-3">
-                    <StepChip step={thread.step} />
-                    <Link href={threadHref(thread)} className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:underline">
-                      {thread.cardTitle}
-                    </Link>
-                    <span className="text-xs text-muted-foreground">{thread.counterpart.displayName}</span>
+                <Card key={thread.id} className="transition-all hover:border-primary/20">
+                  <CardContent>
+                    <CardHead
+                      title={<Link href={threadHref(thread)} className="hover:underline">{thread.cardTitle}</Link>}
+                      subtitle={thread.counterpart.displayName}
+                      aside={<StepChip step={thread.step} />}
+                    />
                   </CardContent>
                 </Card>
               ))}

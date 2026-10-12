@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -102,6 +103,19 @@ export function mvpCompletion(data: MVPData): number {
   ];
   return Math.round((parts.filter(Boolean).length / parts.length) * 100);
 }
+
+const PRIORITY_LABEL = {
+  'must-have': 'mvp_must',
+  'should-have': 'mvp_should',
+  'could-have': 'mvp_could',
+  'wont-have': 'mvp_wont',
+} as const;
+
+const IMPORTANCE_LABEL: Record<string, { en: string; el: string }> = {
+  critical: { en: 'Critical', el: 'Κρίσιμο' },
+  important: { en: 'Important', el: 'Σημαντικό' },
+  'nice-to-have': { en: 'Nice to have', el: 'Καλό να υπάρχει' },
+};
 
 export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
   const t = useBuilderPrimaryText();
@@ -450,26 +464,27 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             </CardHeader>
             <CardContent>
               {data.features.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyph name="sliders" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p><BilingualText en={builderEn('mvp_no_feat')} el={builderEl('mvp_no_feat')} /></p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('mvp_no_feat')} el={builderEl('mvp_no_feat')} wrap />
+                </p>
               ) : (
-                <div className="space-y-4">
-                  {['must-have', 'should-have', 'could-have', 'wont-have'].map(priority => {
+                <div className="space-y-6">
+                  {(['must-have', 'should-have', 'could-have', 'wont-have'] as const).map(priority => {
                     const priorityFeatures = data.features.filter(f => f.priority === priority);
                     if (priorityFeatures.length === 0) return null;
                     
                     return (
                       <div key={priority}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className={cn('w-3 h-3 rounded-full', getPriorityColor(priority as Feature['priority']))} />
-                          <h4 className="font-medium capitalize">{priority.replace('-', ' ')}</h4>
-                          <Badge variant="secondary">{priorityFeatures.length}</Badge>
+                        <div className="mb-1 flex items-center gap-2">
+                          <div className={cn('w-3 h-3 rounded-full', getPriorityColor(priority))} />
+                          <h4 className="text-sm font-medium text-foreground">
+                            <BilingualText en={builderEn(PRIORITY_LABEL[priority])} el={builderEl(PRIORITY_LABEL[priority])} compact />
+                          </h4>
+                          <span className="text-xs tabular-nums text-muted-foreground">{priorityFeatures.length}</span>
                         </div>
-                        <div className="space-y-2 ml-5">
+                        <div className="divide-y divide-border">
                           {priorityFeatures.map(feature => (
-                            <Card key={feature.id} className="p-4">
+                            <div key={feature.id} className="py-3 last:pb-0">
                               <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                                 <div className="md:col-span-2">
                                   <Input
@@ -489,7 +504,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <select
                                     value={feature.priority}
                                     onChange={(e) => updateFeature(feature.id, 'priority', e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-xl text-sm"
+                                    aria-label={bilingualInline('Priority', 'Προτεραιότητα')}
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                   >
                                     <option value="must-have">{t(builderEn('mvp_must'), builderEl('mvp_must'))}</option>
                                     <option value="should-have">{t(builderEn('mvp_should'), builderEl('mvp_should'))}</option>
@@ -499,7 +515,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <select
                                     value={feature.complexity}
                                     onChange={(e) => updateFeature(feature.id, 'complexity', e.target.value)}
-                                    className="w-full px-3 py-2 border rounded-xl text-sm"
+                                    aria-label={bilingualInline('Complexity', 'Πολυπλοκότητα')}
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                                   >
                                     <option value="low">{t(builderEn('mvp_low_c'), builderEl('mvp_low_c'))}</option>
                                     <option value="medium">{t(builderEn('mvp_med_c'), builderEl('mvp_med_c'))}</option>
@@ -517,7 +534,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   </div>
                                 </div>
                               </div>
-                            </Card>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -588,19 +605,18 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             </CardHeader>
             <CardContent>
               {data.sprints.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyph name="calendar" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p><BilingualText en={builderEn('mvp_no_sprint')} el={builderEl('mvp_no_sprint')} /></p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('mvp_no_sprint')} el={builderEl('mvp_no_sprint')} wrap />
+                </p>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y divide-border">
                   {data.sprints.map((sprint, index) => (
-                    <Card key={sprint.id} className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted text-muted-foreground font-bold">
-                          {index + 1}
-                        </div>
-                        <div className="flex-1 space-y-3">
+                    <div key={sprint.id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="space-y-3">
+                        <RowHead
+                          title={<span className="tabular-nums"><BilingualText en={`Sprint ${index + 1}`} el={`Sprint ${index + 1}`} compact /></span>}
+                        />
+                        <div className="space-y-3">
                           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <Input
                               value={sprint.name}
@@ -623,12 +639,16 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                             />
                           </div>
                           <div>
-                            <p id="goals-cap" className="text-xs text-muted-foreground">Goals</p>
-                            <div role="group" aria-labelledby="goals-cap" className="flex flex-wrap gap-2 mt-1">
+                            <p id={`goals-cap-${sprint.id}`} className="text-xs text-muted-foreground">
+                              <BilingualText en="Goals" el="Στόχοι" compact />
+                            </p>
+                            <div role="group" aria-labelledby={`goals-cap-${sprint.id}`} className="flex flex-wrap gap-2 mt-1">
                               {sprint.goals.map((goal, goalIndex) => (
                                 <Badge key={goalIndex} variant="secondary" className="gap-1">
                                   {goal}
                                   <button
+                                    type="button"
+                                    aria-label={bilingualInline(`Remove goal ${goal}`, `Αφαίρεση στόχου ${goal}`)}
                                     onClick={() => {
                                       const newSprints = [...data.sprints];
                                       newSprints[index] = {
@@ -662,7 +682,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                           </div>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               )}
@@ -681,30 +701,28 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             </CardHeader>
             <CardContent>
               {data.teamGaps.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  <CfbGlyph name="people" className="icon-xl mx-auto mb-2 opacity-50" />
-                  <p><BilingualText en={builderEn('mvp_no_gaps')} el={builderEl('mvp_no_gaps')} /></p>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('mvp_no_gaps')} el={builderEl('mvp_no_gaps')} wrap />
+                </p>
               ) : (
-                <div className="space-y-4">
+                <div className="divide-y divide-border">
                   {data.teamGaps.map((gap, index) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{gap.skill}</span>
-                          <Badge variant={
-                            gap.importance === 'critical' ? 'destructive' :
-                            gap.importance === 'important' ? 'default' : 'secondary'
-                          }>
-                            {gap.importance}
+                    <div key={index} className="space-y-2 py-4 first:pt-0 last:pb-0">
+                      <RowHead
+                        title={<span className="first-letter:uppercase">{gap.skill}</span>}
+                        meta={(
+                          <span className="tabular-nums">
+                            <BilingualText en={`${gap.currentCoverage}% covered`} el={`${gap.currentCoverage}% καλυμμένο`} compact />
+                          </span>
+                        )}
+                        aside={(
+                          <Badge variant="outline" className={cn('border', gap.importance === 'critical' ? STATUS.danger.chip : gap.importance === 'important' ? STATUS.warning.chip : undefined)}>
+                            <BilingualText en={IMPORTANCE_LABEL[gap.importance]?.en ?? gap.importance} el={IMPORTANCE_LABEL[gap.importance]?.el ?? gap.importance} compact />
                           </Badge>
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {gap.currentCoverage}% covered
-                        </span>
-                      </div>
-                      <Progress value={gap.currentCoverage} className="h-1.5 mb-3" />
-                      <p className="text-sm text-muted-foreground">{gap.recommendation}</p>
+                        )}
+                      />
+                      <Progress value={gap.currentCoverage} className="h-1.5" />
+                      {gap.recommendation ? <p className="text-sm text-muted-foreground first-letter:uppercase">{gap.recommendation}</p> : null}
                     </div>
                   ))}
                 </div>

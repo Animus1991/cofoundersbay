@@ -46,15 +46,21 @@ export default function ForgotPasswordPage() {
         </div>
 
         {sent ? (
-          <div className="rounded-xl border border-status-success-border bg-status-success-bg px-6 py-8 text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg">
-              <MailCheck className="icon-lg text-status-success " />
+          // The column stays centred; the card's text starts on one left
+          // axis, the mark beside the title like every other card.
+          <div className="space-y-3 rounded-xl border border-status-success-border bg-status-success-bg p-4 sm:p-6">
+            <div className="flex items-start gap-3">
+              <div data-card-mark="" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card text-status-success">
+                <MailCheck className="icon-md" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="card-title text-foreground">Check your inbox</h2>
+                <p className="card-subtitle mt-0.5">
+                  If <span className="break-all font-medium text-foreground">{email}</span> is registered,
+                  you&apos;ll receive a reset link within a few minutes.
+                </p>
+              </div>
             </div>
-            <h2 className="font-semibold text-foreground">Check your inbox</h2>
-            <p className="text-sm text-muted-foreground">
-              If <span className="font-medium text-foreground">{email}</span> is registered,
-              you&apos;ll receive a reset link within a few minutes.
-            </p>
             <p className="text-xs text-muted-foreground">Check your spam folder if you don&apos;t see it.</p>
           </div>
         ) : (

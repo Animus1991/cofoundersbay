@@ -36,6 +36,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { StatusText } from '@/components/common/StatusText';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
@@ -155,7 +157,7 @@ function LanguageCard() {
   return (
     <Card id="language" className="scroll-mt-16 shadow-sm border-border">
       <CardHeader className="border-b border-border">
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary-accessible" />
           {t('Language')}
         </CardTitle>
@@ -177,8 +179,11 @@ function LanguageCard() {
         />
         {mounted && pairs && (
           <fieldset className="mt-5 space-y-2 border-t border-border pt-4">
-            <legend className="text-sm font-medium text-foreground">
-              <BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" />
+            {/* The size sits on the inner span: a phone sets an in-card
+                text-sm label under the card's title, and a legend is not in
+                that rule. */}
+            <legend className="font-medium text-foreground">
+              <span className="text-sm"><BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" /></span>
             </legend>
             <div className="flex flex-wrap gap-2">
               {DISPLAY_CHOICES.map((choice) => {
@@ -303,7 +308,7 @@ function PrivacyCard() {
   return (
     <Card className="shadow-sm border-border">
       <CardHeader className="border-b border-border">
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
           <Globe className="icon-md text-muted-foreground" />
           {t('Privacy & Visibility')}
         </CardTitle>
@@ -473,7 +478,6 @@ export default function SettingsPage() {
   }, [searchParams]);
 
   const status = subscription?.status ?? 'free';
-  const statusLabel = status === 'free' ? 'Free' : status.replaceAll('_', ' ');
   const isPremium = ['trialing', 'active', 'past_due', 'paused'].includes(status);
 
   const startCheckout = async () => {
@@ -596,7 +600,7 @@ export default function SettingsPage() {
       {!hasToken && (
         <Card className="max-w-2xl">
           <CardHeader>
-            <CardTitle className="text-lg"><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
+            <CardTitle><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p><BilingualText en="To manage billing and preferences, please sign in." el="Συνδεθείτε για να διαχειριστείτε χρεώσεις και προτιμήσεις." wrap /></p>
@@ -630,7 +634,7 @@ export default function SettingsPage() {
               {/* Billing */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <CreditCard className="icon-md text-muted-foreground" />
                     {t('Billing')}
                   </CardTitle>
@@ -639,7 +643,7 @@ export default function SettingsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={isPremium ? 'default' : 'secondary'} className="gap-1.5">
                       {isPremium && <Crown className="icon-sm" />}
-                      {statusLabel}
+                      <StatusText value={status} />
                     </Badge>
                     {subscription?.currentPeriodEnd && (
                       <span className="text-xs text-muted-foreground">
@@ -649,16 +653,18 @@ export default function SettingsPage() {
                   </div>
 
                   {loading ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="card-body flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="icon-sm animate-spin" />
                       {t('Loading billing…')}
                     </div>
                   ) : (
-                    <div className="text-sm">
-                      <p className="font-medium text-foreground">
-                        {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
+                    <div>
+                      {/* Weight on the inner span: a phone sets a medium
+                          paragraph on the 13.673 step, over the card's title. */}
+                      <p className="card-body text-foreground">
+                        <span className="font-medium">{isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}</span>
                       </p>
-                      <p className="mt-1 text-muted-foreground">
+                      <p className="card-body mt-1 text-muted-foreground">
                         <BilingualText en="Mentor booking payments, file attachments, and advanced discovery filters." el="Πληρωμές κρατήσεων μεντόρων, συνημμένα αρχεία και προχωρημένα φίλτρα ανακάλυψης." wrap />
                       </p>
                     </div>
@@ -692,7 +698,7 @@ export default function SettingsPage() {
               {/* Password Change */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <KeyRound className="icon-md text-muted-foreground" />
                     <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
                   </CardTitle>
@@ -760,7 +766,7 @@ export default function SettingsPage() {
               {/* Connected accounts */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <Link2 className="icon-md text-muted-foreground" />
                     <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
                   </CardTitle>
@@ -768,7 +774,7 @@ export default function SettingsPage() {
                     <BilingualText en="Link Google or LinkedIn to sign in without a password." el="Συνδέστε Google ή LinkedIn για σύνδεση χωρίς κωδικό." wrap />
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="divide-y divide-border">
                   {[
                     {
                       key: 'google',
@@ -796,21 +802,17 @@ export default function SettingsPage() {
                       connectUrl: '/api/auth/linkedin',
                     },
                   ].map(({ key, label, icon, connected, connectUrl }) => (
-                    <div key={key} className="flex items-center justify-between gap-4 py-2.5">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 items-center justify-center" data-keep-icon="">
+                    <RowHead
+                      key={key}
+                      className="py-3 first:pt-0 last:pb-0"
+                      mark={
+                        <span data-card-mark="" data-keep-icon="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
                           {icon}
                         </span>
-                        <div>
-                          <p className="text-sm font-medium">{label}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {connected ? 'Connected' : 'Not connected'}
-                          </p>
-                        </div>
-                      </div>
-                      {connected ? (
-                        <Badge variant="secondary" className="text-xs"><BilingualText en="Connected" el="Συνδεδεμένος" compact /></Badge>
-                      ) : (
+                      }
+                      title={label}
+                      subtitle={connected ? <BilingualText en="Connected" el="Συνδεδεμένος" compact /> : <BilingualText en="Not connected" el="Μη συνδεδεμένος" compact />}
+                      aside={connected ? undefined : (
                         <Button
                           variant="outline"
                           size="sm"
@@ -819,7 +821,7 @@ export default function SettingsPage() {
                           <BilingualText en="Connect" el="Σύνδεση" compact />
                         </Button>
                       )}
-                    </div>
+                    />
                   ))}
                 </CardContent>
               </Card>
@@ -828,7 +830,7 @@ export default function SettingsPage() {
               {/* Account section */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <User className="icon-md text-muted-foreground" />
                     <BilingualText en="Account" el="Λογαριασμός" compact />
                   </CardTitle>
@@ -877,7 +879,7 @@ export default function SettingsPage() {
                 <CardHeader className="border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2">
                         <Bell className="icon-md text-muted-foreground" />
                         <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
                       </CardTitle>
@@ -945,7 +947,7 @@ export default function SettingsPage() {
               {/* Security — 2FA */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2">
                     <Shield className="icon-md text-muted-foreground" />
                     <BilingualText en="Security" el="Ασφάλεια" compact />
                   </CardTitle>
@@ -975,42 +977,47 @@ export default function SettingsPage() {
           {/* Danger Zone */}
           <Card className="border-destructive/30">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
+              <CardTitle className="flex items-center gap-2 text-destructive-accessible">
                 <AlertTriangle className="icon-md" />
                 <BilingualText en="Danger Zone" el="Επικίνδυνη ζώνη" compact />
               </CardTitle>
               <CardDescription><BilingualText en="Irreversible actions that affect your account permanently." el="Μη αναστρέψιμες ενέργειες που επηρεάζουν μόνιμα τον λογαριασμό σας." wrap /></CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap /></p>
-                </div>
-                {/* /settings/data-export has existed all along; this button
-                    simply never pointed at it. */}
-                <Button asChild variant="outline" size="sm" className="shrink-0 gap-2">
-                  <Link href="/settings/data-export">
-                    <Download className="icon-sm" />
-                    <BilingualText en="Export" el="Εξαγωγή" compact />
-                  </Link>
-                </Button>
-              </div>
-              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-medium text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap /></p>
-                </div>
-                {/* There is no self-serve deletion endpoint yet, so this was a
-                    destructive-looking button that only showed a toast. It now
-                    opens the request it always meant: an email to privacy,
-                    which section 7 of the privacy policy answers within 30 days. */}
-                <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
-                  <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
-                    <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
-                  </a>
-                </Button>
-              </div>
+            {/* Two rows on the card's axis. The card's red edge and title
+                already say "danger"; the delete row was a second red box
+                inside it, its text 16px in from everything else. */}
+            <CardContent className="divide-y divide-border">
+              <RowHead
+                className="pb-3"
+                title={<BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact />}
+                subtitle={<BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap />}
+                aside={
+                  /* /settings/data-export has existed all along; this button
+                     simply never pointed at it. */
+                  <Button asChild variant="outline" size="sm" className="shrink-0 gap-2">
+                    <Link href="/settings/data-export">
+                      <Download className="icon-sm" />
+                      <BilingualText en="Export" el="Εξαγωγή" compact />
+                    </Link>
+                  </Button>
+                }
+              />
+              {/* There is no self-serve deletion endpoint yet, so this was a
+                  destructive-looking button that only showed a toast. It now
+                  opens the request it always meant: an email to privacy,
+                  which section 7 of the privacy policy answers within 30 days. */}
+              <RowHead
+                className="pt-3"
+                title={<span className="text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></span>}
+                subtitle={<BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap />}
+                aside={
+                  <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
+                    <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
+                      <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
+                    </a>
+                  </Button>
+                }
+              />
             </CardContent>
           </Card>
         </div>

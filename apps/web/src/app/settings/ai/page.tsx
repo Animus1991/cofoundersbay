@@ -316,7 +316,7 @@ export default function AISettingsPage() {
                     />
                   )}
                   {!isAIAvailable && process.env.NODE_ENV !== 'production' && (
-                    <span className="mt-1 block font-mono text-xs">dev: ollama serve</span>
+                    <code className="mt-1 block font-mono text-xs">dev: ollama serve</code>
                   )}
                 </p>
               </div>

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import {
   ClipboardCheck, CheckCircle2, XCircle, AlertCircle, Clock,
-  GitBranch, Loader2, MessageSquare, ThumbsUp, ThumbsDown,
+  Loader2, ThumbsUp, ThumbsDown,
   RotateCcw, Star,
 } from 'lucide-react';
 import { cn, initialsOf } from '@/lib/utils';
@@ -134,10 +136,16 @@ function ReviewDecisionDialog({
           <DialogDescription>{decisionMeta.desc}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <div className="p-3 bg-muted rounded-lg text-sm">
-            <p className="font-medium">{proposal.title}</p>
+          {/* The proposal under review, set as a card head (title, the
+              variant it came from) with its sentence on the same edge. */}
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <CardHead
+              titleAs="p"
+              title={proposal.title}
+              subtitle={proposal.branch ? <>from variant &ldquo;{proposal.branch.name}&rdquo;</> : undefined}
+            />
             {proposal.description && (
-              <p className="text-muted-foreground mt-1 text-xs">{proposal.description}</p>
+              <p className="card-body line-clamp-3 text-muted-foreground first-letter:uppercase">{proposal.description}</p>
             )}
           </div>
 
@@ -294,99 +302,81 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                 const isPending = proposal.status === 'open' || proposal.status === 'changes_requested';
 
                 return (
-                  <div
+                  <Card
                     key={proposal.id}
-                    className={cn(
-                      'p-4 rounded-lg border transition-colors',
-                      isPending
-                        ? 'border-status-warning-border bg-status-warning-bg '
-                        : 'border-border bg-card',
-                    )}
+                    className={cn('transition-all hover:border-primary/20', isPending && 'border-status-warning-border')}
                   >
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <GitBranch className="icon-sm text-muted-foreground shrink-0" />
-                          <p className="text-sm font-medium truncate">{proposal.title}</p>
-                        </div>
-                        {proposal.branch && (
-                          <p className="text-xs text-muted-foreground">
-                            from variant &ldquo;{proposal.branch.name}&rdquo;
-                          </p>
+                    <CardContent className="space-y-3">
+                      <CardHead
+                        mark={(
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={proposal.createdBy?.avatarUrl} />
+                            <AvatarFallback>
+                              {initialsOf(proposal.createdBy?.displayName ?? 'U')}
+                            </AvatarFallback>
+                          </Avatar>
                         )}
-                      </div>
-                      <Badge variant="outline" className={cn('text-xs shrink-0', meta.color)}>
-                        <StatusIcon className="h-2.5 w-2.5 mr-1" />
-                        {meta.label}
-                      </Badge>
-                    </div>
+                        title={proposal.title}
+                        subtitle={proposal.branch ? <>from variant &ldquo;{proposal.branch.name}&rdquo;</> : undefined}
+                        meta={<>{proposal.createdBy?.displayName} · <RelativeTime date={proposal.createdAt} /></>}
+                        aside={(
+                          <Badge variant="outline" className={cn('text-xs shrink-0', meta.color)}>
+                            <StatusIcon className="h-2.5 w-2.5 mr-1" />
+                            {meta.label}
+                          </Badge>
+                        )}
+                      />
 
-                    {proposal.description && (
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-3">
-                        {proposal.description}
-                      </p>
-                    )}
+                      {proposal.description && (
+                        <p className="card-body line-clamp-3 text-muted-foreground first-letter:uppercase">
+                          {proposal.description}
+                        </p>
+                      )}
 
-                    {/* Author + time */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={proposal.createdBy.avatarUrl} />
-                        <AvatarFallback className="text-2xs">
-                          {initialsOf(proposal.createdBy?.displayName ?? 'U').charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-muted-foreground">
-                        {proposal.createdBy.displayName} · <RelativeTime date={proposal.createdAt} />
-                      </span>
-                    </div>
-
-                    {/* Action buttons */}
-                    {!readonly && isPending && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-7 text-xs border-status-success-border text-status-success hover:bg-status-success-bg"
-                          onClick={() =>
-                            setDecisionState({ proposal, decision: 'approved' })
-                          }
-                        >
-                          <ThumbsUp className="icon-sm mr-1.5" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-7 text-xs border-status-warning-border text-status-warning hover:bg-status-warning-bg"
-                          onClick={() =>
-                            setDecisionState({ proposal, decision: 'changes_requested' })
-                          }
-                        >
-                          <RotateCcw className="icon-sm mr-1.5" />
-                          Request Changes
-                        </Button>
-                        <Button aria-label="Reject"
-                          size="sm"
-                          variant="outline"
-                          className="h-7 w-7 p-0 text-xs border-status-danger-border text-status-danger hover:bg-status-danger-bg"
-                          onClick={() =>
-                            setDecisionState({ proposal, decision: 'closed' })
-                          }
-                        >
-                          <XCircle className="icon-sm" />
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Reviewer count */}
-                    {proposal.reviewerIds && proposal.reviewerIds.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                        <MessageSquare className="icon-sm" />
-                        {proposal.reviewerIds.length} reviewer{proposal.reviewerIds.length > 1 ? 's' : ''} assigned
-                      </div>
-                    )}
-                  </div>
+                      <CardFoot
+                        meta={proposal.reviewerIds && proposal.reviewerIds.length > 0 ? (
+                          <>{proposal.reviewerIds.length} reviewer{proposal.reviewerIds.length > 1 ? 's' : ''} assigned</>
+                        ) : undefined}
+                      >
+                        {!readonly && isPending && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-status-success-border text-status-success hover:bg-status-success-bg"
+                              onClick={() =>
+                                setDecisionState({ proposal, decision: 'approved' })
+                              }
+                            >
+                              <ThumbsUp className="icon-sm mr-1.5" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-status-warning-border text-status-warning hover:bg-status-warning-bg"
+                              onClick={() =>
+                                setDecisionState({ proposal, decision: 'changes_requested' })
+                              }
+                            >
+                              <RotateCcw className="icon-sm mr-1.5" />
+                              Request Changes
+                            </Button>
+                            <Button aria-label="Reject"
+                              size="sm"
+                              variant="outline"
+                              className="h-8 w-8 p-0 border-status-danger-border text-status-danger hover:bg-status-danger-bg"
+                              onClick={() =>
+                                setDecisionState({ proposal, decision: 'closed' })
+                              }
+                            >
+                              <XCircle className="icon-sm" />
+                            </Button>
+                          </>
+                        )}
+                      </CardFoot>
+                    </CardContent>
+                  </Card>
                 );
               })
             )}

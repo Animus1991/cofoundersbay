@@ -16,6 +16,8 @@ import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1024,69 +1026,62 @@ function BoardCard({
     </DropdownMenu>
   );
 
+  // An icon mark stands in for a board's logo, on the card's own axis.
+  const mark = (
+    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible">
+      <CfbGlyph name={glyph} className="icon-md" />
+    </div>
+  );
+  const count = (
+    <span key="count">
+      {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
+    </span>
+  );
+
   if (viewMode === 'list') {
     return (
-      <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
-        <CardContent className="flex items-center gap-4">
-          <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
-            <CfbGlyph name={glyph} className="icon-sm" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="page-section min-w-0 truncate font-semibold">{title(false)}</h3>
-              {pinnedMark}
-            </div>
-            {description && (
-              <p className="truncate text-xs text-muted-foreground">{description}</p>
+      <Card className="cursor-pointer transition-all hover:border-primary/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
+        <CardContent>
+          <CardHead
+            mark={mark}
+            title={<span className="inline-flex max-w-full items-center gap-1.5"><span className="min-w-0 truncate">{title(false)}</span>{pinnedMark}</span>}
+            subtitle={description ? <span className="block truncate">{description}</span> : undefined}
+            asideStays
+            aside={(
+              <>
+                <div className="hidden sm:block"><FactLine items={[count, <span key="updated">{updated}</span>]} /></div>
+                {menu}
+              </>
             )}
-          </div>
-          <div className="hidden shrink-0 text-xs text-muted-foreground sm:block">
-            {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
-          </div>
-          <div className="hidden shrink-0 text-xs text-muted-foreground md:block">{updated}</div>
-          {menu}
+          />
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="cursor-pointer transition-colors hover:border-border hover:bg-muted/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
+    <Card className="cursor-pointer transition-all hover:border-primary/20" onClick={onOpen} {...pressableProps({ role: 'link', label: board.title })}>
       <CardContent className="flex h-full flex-col gap-3">
-        <div className="flex items-start gap-3">
-          <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary-accessible">
-            <CfbGlyph name={glyph} className="icon-sm" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="page-section min-w-0 flex-1 font-semibold leading-snug">{title(true)}</h3>
-              <div className="flex shrink-0 items-center gap-1.5">
-                {pinnedMark}
-                {menu}
-              </div>
-            </div>
-            {description && (
-              <p className="mt-1 line-clamp-2 text-xs leading-snug text-muted-foreground">
-                {description}
-              </p>
-            )}
-          </div>
-        </div>
-        {board.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 text-2xs text-muted-foreground">
-            {board.tags.map((tag) => (
-              <span key={tag} className="rounded-md bg-muted/70 px-1.5 py-0.5">
-                <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
-              </span>
-            ))}
-          </div>
+        <CardHead
+          mark={mark}
+          title={title(true)}
+          asideStays
+          aside={(
+            <>
+              {pinnedMark}
+              {menu}
+            </>
+          )}
+        />
+        {description && (
+          <p className="card-body line-clamp-2 text-muted-foreground">
+            {description}
+          </p>
         )}
-        <div className="mt-auto flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
-          </span>
-          <span>{updated}</span>
-        </div>
+        {board.tags.length > 0 && (
+          <FactLine items={board.tags.map((tag) => <BilingualText key={tag} en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />)} />
+        )}
+        <CardFoot className="mt-auto" meta={<FactLine items={[count, <span key="updated">{updated}</span>]} />} />
       </CardContent>
     </Card>
   );

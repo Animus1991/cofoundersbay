@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/select';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useToast } from '@/components/ui/toast';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -229,10 +231,10 @@ export default function CreateProjectPage() {
         </p>
 
         {step === 1 && (
-          <Card className="rounded-xl">
+          <Card>
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('basics_title')} el={projectEl('basics_title')} /></CardTitle>
-              <CardDescription className="type-identity"><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
+              <CardDescription><BilingualText en={projectEn('basics_desc')} el={projectEl('basics_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -261,10 +263,10 @@ export default function CreateProjectPage() {
         )}
 
         {step === 2 && (
-          <Card className="rounded-xl">
+          <Card>
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('stage_title')} el={projectEl('stage_title')} /></CardTitle>
-              <CardDescription className="type-identity"><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
+              <CardDescription><BilingualText en={projectEn('stage_desc')} el={projectEl('stage_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -288,11 +290,11 @@ export default function CreateProjectPage() {
                         )}>
                           <CfbGlyph name={PROJECT_STATUS_GLYPH[opt.value]} className="icon-md" />
                         </div>
-                        <div>
-                          <p className="font-medium text-foreground">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground">
                             {fullKey ? <BilingualText en={projectEn(fullKey)} el={projectEl(fullKey)} compact /> : opt.value}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="mt-0.5 text-xs text-muted-foreground">
                             <BilingualText en={projectEn(opt.hintKey)} el={projectEl(opt.hintKey)} compact />
                           </p>
                         </div>
@@ -338,10 +340,10 @@ export default function CreateProjectPage() {
         )}
 
         {step === 3 && (
-          <Card className="rounded-xl">
+          <Card>
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('team_title')} el={projectEl('team_title')} /></CardTitle>
-              <CardDescription className="type-identity"><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
+              <CardDescription><BilingualText en={projectEn('team_desc')} el={projectEl('team_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
@@ -412,10 +414,10 @@ export default function CreateProjectPage() {
         )}
 
         {step === 4 && (
-          <Card className="rounded-xl">
+          <Card>
             <CardHeader>
               <CardTitle><BilingualText en={projectEn('review_title')} el={projectEl('review_title')} /></CardTitle>
-              <CardDescription className="type-identity"><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
+              <CardDescription><BilingualText en={projectEn('review_desc')} el={projectEl('review_desc')} /></CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
@@ -452,32 +454,33 @@ export default function CreateProjectPage() {
               </div>
 
               {/* The preview beside the form carries this summary on wide screens. */}
-              <div className="space-y-4 rounded-xl border border-border p-4 lg:hidden">
-                <h3 className="page-section font-semibold text-foreground">
+              <div className="space-y-3 border-t border-border pt-4 lg:hidden">
+                <h3 className="card-subtitle card-byline">
                   <BilingualText en={projectEn('review')} el={projectEl('review')} compact />
                 </h3>
-                <div className="grid grid-cols-1 gap-3 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground"><BilingualText en={projectEn('review_name')} el={projectEl('review_name')} compact /></span>
-                    <span className="font-medium">{name || '—'}</span>
+                {/* Label left, value right, on the preview card's steps. */}
+                <dl className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_name')} el={projectEl('review_name')} compact /></dt>
+                    <dd className="card-body min-w-0 break-words text-right font-medium">{name || '—'}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground"><BilingualText en={projectEn('review_stage')} el={projectEl('review_stage')} compact /></span>
-                    <span className="font-medium">{stageKey ? t(projectEn(stageKey), projectEl(stageKey)) : '—'}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_stage')} el={projectEl('review_stage')} compact /></dt>
+                    <dd className="card-body min-w-0 break-words text-right font-medium">{stageKey ? t(projectEn(stageKey), projectEl(stageKey)) : '—'}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground"><BilingualText en={projectEn('review_industry')} el={projectEl('review_industry')} compact /></span>
-                    <span className="font-medium">{industry || '—'}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_industry')} el={projectEl('review_industry')} compact /></dt>
+                    <dd className="card-body min-w-0 break-words text-right font-medium">{industry || '—'}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} compact /></span>
-                    <span className="font-medium">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} compact /></dt>
+                    <dd className="card-body min-w-0 break-words text-right font-medium tabular-nums">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-muted-foreground"><BilingualText en={projectEn('review_roles')} el={projectEl('review_roles')} compact /></span>
-                    <span className="font-medium">{rolesNeeded.length || 0}</span>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_roles')} el={projectEl('review_roles')} compact /></dt>
+                    <dd className="card-body min-w-0 break-words text-right font-medium tabular-nums">{rolesNeeded.length || 0}</dd>
                   </div>
-                </div>
+                </dl>
               </div>
             </CardContent>
           </Card>
@@ -506,54 +509,51 @@ export default function CreateProjectPage() {
 
         {/* How the listing will read, and what it still lacks. */}
         <aside aria-label={t(projectEn('preview'), projectEl('preview'))} className="hidden min-w-0 space-y-4 lg:sticky lg:top-24 lg:block">
-          <Card className="rounded-xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                <BilingualText en={projectEn('preview')} el={projectEl('preview')} />
-              </CardTitle>
-            </CardHeader>
+          {/* The preview's name sits above the card, which reads as the
+              listing will: a heading inside it outranked the project's own name. */}
+          <h2 className="text-base font-semibold text-foreground">
+            <BilingualText en={projectEn('preview')} el={projectEl('preview')} compact />
+          </h2>
+          <Card>
             <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-1.5">
-                <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary-accessible">
-                  {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : status}
-                </Badge>
-                {industry ? <Badge variant="outline" size="sm">{industry}</Badge> : null}
-              </div>
-              <p className={cn('text-lg font-semibold leading-snug break-words', !name.trim() && 'text-muted-foreground')}>
-                {name.trim() || <BilingualText en={projectEn('untitled')} el={projectEl('untitled')} />}
-              </p>
-              <p className={cn('text-sm leading-relaxed break-words', tagline.trim() ? 'text-foreground' : 'text-muted-foreground')}>
-                {tagline.trim() || <BilingualText en={projectEn('no_tagline')} el={projectEl('no_tagline')} wrap />}
-              </p>
+              <CardHead
+                mark={(
+                  <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                    <CfbGlyph name={PROJECT_STATUS_GLYPH[status]} className="icon-md" />
+                  </div>
+                )}
+                title={name.trim() || <BilingualText en={projectEn('untitled')} el={projectEl('untitled')} />}
+                titleClassName={cn(!name.trim() && 'text-muted-foreground')}
+                subtitle={tagline.trim() || <BilingualText en={projectEn('no_tagline')} el={projectEl('no_tagline')} wrap />}
+                aside={(
+                  <Badge variant="outline" size="sm">
+                    {stageKey ? <BilingualText en={projectEn(stageKey)} el={projectEl(stageKey)} compact /> : status}
+                  </Badge>
+                )}
+              />
               {description.trim() ? (
-                <p className="line-clamp-4 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{description.trim()}</p>
+                <p className="card-body line-clamp-4 text-muted-foreground first-letter:uppercase">{description.trim()}</p>
               ) : null}
-              <dl className="space-y-1.5 border-t border-border pt-3 text-sm">
+              <FactLine items={[industry || null, ...tags.map((tag) => `#${tag}`)]} />
+              <dl className="space-y-1.5 border-t border-border pt-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <dt className="min-w-0 text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} wrap /></dt>
-                  <dd className="shrink-0 font-medium tabular-nums">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</dd>
+                  <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_team')} el={projectEl('review_team')} wrap /></dt>
+                  <dd className="card-body shrink-0 font-medium tabular-nums">{maxTeamSize} {t(projectEn('n_members'), projectEl('n_members'))}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <dt className="min-w-0 text-muted-foreground"><BilingualText en={projectEn('review_roles')} el={projectEl('review_roles')} wrap /></dt>
-                  <dd className="shrink-0 font-medium tabular-nums">{rolesNeeded.length}</dd>
+                  <dt className="min-w-0 text-xs text-muted-foreground"><BilingualText en={projectEn('review_roles')} el={projectEl('review_roles')} wrap /></dt>
+                  <dd className="card-body shrink-0 font-medium tabular-nums">{rolesNeeded.length}</dd>
                 </div>
               </dl>
               {rolesNeeded.length > 0 ? (
-                <ul className="flex flex-wrap gap-1.5" aria-label={t(projectEn('roles_open'), projectEl('roles_open'))}>
-                  {rolesNeeded.map((role) => (
-                    <li key={role}><Badge variant="outline" size="sm">{role}</Badge></li>
-                  ))}
-                </ul>
-              ) : null}
-              {tags.length > 0 ? (
-                <p className="text-xs text-muted-foreground">{tags.map((tag) => `#${tag}`).join(' ')}</p>
+                <FactLine className="text-sm text-foreground" label={t(projectEn('roles_open'), projectEl('roles_open'))} items={rolesNeeded} />
               ) : null}
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+          <Card>
+            <CardHeader>
+              <CardTitle>
                 <BilingualText en={projectEn('before_publish')} el={projectEl('before_publish')} />
               </CardTitle>
             </CardHeader>

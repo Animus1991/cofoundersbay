@@ -138,7 +138,7 @@ export default function VerifyEmailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
-                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                <div>
                   <p className="text-sm font-medium text-foreground mb-2"><BilingualText en="Common reasons" el="Συνήθεις αιτίες" compact /></p>
                   <ul className="card-body text-muted-foreground space-y-1 list-disc pl-4">
                     <li><BilingualText en="The link has expired (valid for 24 hours)" el="Ο σύνδεσμος έληξε (ισχύει 24 ώρες)" wrap /></li>

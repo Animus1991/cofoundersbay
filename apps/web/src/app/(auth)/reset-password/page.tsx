@@ -88,14 +88,18 @@ export default function ResetPasswordPage() {
         </div>
 
         {done ? (
-          <div className="rounded-xl border border-status-success-border bg-status-success-bg px-6 py-8 text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg">
-              <CheckCircle2 className="icon-lg text-status-success " />
+          // The column stays centred; the card's text starts on one left
+          // axis, the mark beside the title like every other card.
+          <div className="flex items-start gap-3 rounded-xl border border-status-success-border bg-status-success-bg p-4 sm:p-6">
+            <div data-card-mark="" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-card text-status-success">
+              <CheckCircle2 className="icon-md" aria-hidden="true" />
             </div>
-            <h2 className="font-semibold text-foreground"><BilingualText en="Password updated!" el="Ο κωδικός ενημερώθηκε!" compact /></h2>
-            <p className="text-sm text-muted-foreground">
-              <BilingualText en="Your password has been reset. Redirecting you to sign in…" el="Ο κωδικός σας επαναφέρθηκε. Μεταφέρεστε στη σύνδεση…" wrap />
-            </p>
+            <div className="min-w-0">
+              <h2 className="card-title text-foreground"><BilingualText en="Password updated!" el="Ο κωδικός ενημερώθηκε!" compact /></h2>
+              <p className="card-subtitle mt-0.5">
+                <BilingualText en="Your password has been reset. Redirecting you to sign in…" el="Ο κωδικός σας επαναφέρθηκε. Μεταφέρεστε στη σύνδεση…" wrap />
+              </p>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
