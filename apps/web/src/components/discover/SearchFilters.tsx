@@ -1,7 +1,8 @@
 'use client';
 
 import { BilingualText } from '@/components/common/BilingualText';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { readNaturalSearch } from '@cofounderbay/shared';
 import {
   Filter,
   X,
@@ -173,6 +174,19 @@ export function SearchFilters({
   onSearchAsTyped,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // While typing, say what Enter will read as filters (debounced); only Enter
+  // applies it. Shown where Enter reads words at all (Discover passes
+  // onSearchAsTyped), and never beside a reading already applied.
+  const [preview, setPreview] = useState<NaturalFilter[]>([]);
+  useEffect(() => {
+    if (!onSearchAsTyped || interpreted?.length) {
+      setPreview([]);
+      return;
+    }
+    const timer = setTimeout(() => setPreview(filters.q.trim() ? readNaturalSearch(filters.q).understood : []), 300);
+    return () => clearTimeout(timer);
+  }, [filters.q, onSearchAsTyped, interpreted]);
 
   const updateFilter = <K extends keyof SearchFiltersValues>(
     key: K,
@@ -487,7 +501,7 @@ export function SearchFilters({
 
         <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
           <Search className="h-4 w-4 sm:hidden" />
-          {loading ? 'Searching...' : 'Search'}
+          {loading ? <BilingualText en="Searching…" el="Αναζήτηση…" compact /> : <BilingualText en="Search" el="Αναζήτηση" compact />}
         </Button>
         {onSaveSearch && (
           <Button variant="outline" onClick={onSaveSearch} className="min-h-10 w-full gap-2 sm:w-auto">
@@ -496,6 +510,16 @@ export function SearchFilters({
           </Button>
         )}
       </div>
+
+      {preview.length > 0 && (
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          <BilingualText
+            en={`Press Enter to read as filters: ${preview.map((f) => f.en).join(' · ')}`}
+            el={`Πατήστε Enter για ανάγνωση ως φίλτρα: ${preview.map((f) => f.el).join(' · ')}`}
+            wrap
+          />
+        </p>
+      )}
 
       {/* What Enter read out of the words typed, and the way back to them. */}
       {interpreted && interpreted.length > 0 && (
