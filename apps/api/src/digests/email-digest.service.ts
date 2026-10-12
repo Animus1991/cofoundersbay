@@ -1,12 +1,15 @@
 import {
+  Inject,
   Injectable,
   Logger,
   OnModuleInit,
   OnModuleDestroy,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailQueueService } from '../mailer/email-queue.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MatchingService } from '../matching/matching.service';
 
 export type DigestType = 'daily' | 'weekly' | 'monthly';
 export type DigestContentType =
@@ -15,7 +18,8 @@ export type DigestContentType =
   | 'opportunities'
   | 'events'
   | 'updates'
-  | 'searches';
+  | 'searches'
+  | 'matches';
 
 /**
  * Section headings for the sections whose generic "N New <Type>" would read
@@ -26,6 +30,7 @@ export type DigestContentType =
 const SECTION_TITLES: Partial<Record<DigestContentType, (count: number) => string>> = {
   updates: (n) => (n === 1 ? '1 update from a founder you follow' : `${n} updates from founders you follow`),
   searches: (n) => (n === 1 ? '1 saved search found something new' : `${n} saved searches found something new`),
+  matches: (n) => (n === 1 ? '1 person who complements you' : `${n} people who complement you`),
 };
 
 function sectionTitle(type: string, count: number): string {
@@ -56,6 +61,7 @@ interface DigestData {
     opportunities: boolean;
     events: boolean;
     updates: boolean;
+    matches: boolean;
   };
 }
 
@@ -148,6 +154,8 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
     private readonly config: ConfigService,
     private readonly emailQueue: EmailQueueService,
     private readonly prisma: PrismaService,
+    // Optional so a service built without matching (tests, a slim module) still sends the rest.
+    @Optional() @Inject(MatchingService) private readonly matching?: Pick<MatchingService, 'getRecommendations'>,
   ) {}
 
   onModuleInit() {
@@ -297,6 +305,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
                 'opportunities',
                 'events',
                 'updates',
+                'matches',
               ],
             },
           },
@@ -318,6 +327,9 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       // Founder updates from people the reader chose to follow: a source they
       // asked for, so on unless they turned the category off.
       updates: true,
+      // People who complement the reader, from the same recommendations
+      // /matches shows: the reason to come back, on unless turned off.
+      matches: true,
     };
     for (const channel of user.notificationChannels) {
       if (channel.category in digestPrefs) {
@@ -333,6 +345,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       events: undefined,
       updates: undefined,
       searches: undefined,
+      matches: undefined,
     };
 
     if (digestPrefs.connections) {
@@ -365,6 +378,10 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
       const searchesData = await this.getSavedSearchesDigest(userId);
       if (searchesData) content.searches = searchesData;
     }
+    if (digestPrefs.matches) {
+      const matchesData = await this.getMatchesDigest(userId);
+      if (matchesData) content.matches = matchesData;
+    }
 
     // Return null if no content
     if (!Object.values(content).some((section) => section && section.count > 0))
@@ -381,6 +398,7 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
         opportunities: digestPrefs.opportunities || false,
         events: digestPrefs.events || false,
         updates: digestPrefs.updates || false,
+        matches: digestPrefs.matches || false,
       },
     };
   }
@@ -577,6 +595,52 @@ export class EmailDigestService implements OnModuleInit, OnModuleDestroy {
           url: `/updates?update=${encodeURIComponent(u.id)}`,
           createdAt: u.createdAt,
         })),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Up to three people who complement the reader, from the recommendations
+   * /matches shows, leaving out anyone they already passed on, shortlisted or
+   * have a connection request with: a digest repeats nothing they decided.
+   * Names, headline and the first reason only; the comparison is on the site.
+   */
+  private async getMatchesDigest(userId: string): Promise<DigestContent | null> {
+    if (!this.matching) return null;
+    try {
+      const recs = await this.matching.getRecommendations(userId, 10);
+      if (!recs?.length) return null;
+      const ids = recs.map((r) => r.userId);
+      const [decided, saved, requests] = await Promise.all([
+        this.prisma.matchOutcome.findMany({ where: { sourceUserId: userId, targetUserId: { in: ids } }, select: { targetUserId: true } }) as Promise<Array<{ targetUserId: string }>>,
+        this.prisma.savedProfile.findMany({ where: { savedById: userId, userId: { in: ids } }, select: { userId: true } }) as Promise<Array<{ userId: string }>>,
+        this.prisma.connectionRequest.findMany({
+          where: { OR: [{ requesterId: userId, receiverId: { in: ids } }, { receiverId: userId, requesterId: { in: ids } }] },
+          select: { requesterId: true, receiverId: true },
+        }) as Promise<Array<{ requesterId: string; receiverId: string }>>,
+      ]);
+      const skip = new Set<string>([
+        ...decided.map((d) => d.targetUserId),
+        ...saved.map((s) => s.userId),
+        ...requests.flatMap((r) => [r.requesterId, r.receiverId]),
+      ]);
+      const fresh = recs.filter((r) => !skip.has(r.userId)).slice(0, 3);
+      if (!fresh.length) return null;
+      return {
+        type: 'matches',
+        count: fresh.length,
+        items: fresh.map((r) => {
+          const profile = (r.profile ?? {}) as { displayName?: string | null; headline?: string | null };
+          return {
+            id: r.userId,
+            title: `${profile.displayName ?? 'A member'} · ${Math.round(r.score * 100)}% match`,
+            description: [profile.headline, r.reasons?.[0]].filter(Boolean).join(' · ').substring(0, 120) || undefined,
+            url: `/matches/${encodeURIComponent(r.userId)}`,
+            createdAt: new Date(),
+          };
+        }),
       };
     } catch {
       return null;
