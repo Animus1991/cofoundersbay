@@ -434,6 +434,7 @@ export const exploreSections: NavSection[] = [
       { href: '/opportunities', label: 'Opportunities', icon: Target },
       { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
       { href: '/marketplace', label: 'Services', icon: Store },
+      { href: '/perks', label: 'Perks', icon: Gift },
     ],
   },
   {

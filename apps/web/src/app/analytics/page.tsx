@@ -13,6 +13,7 @@ import {
 import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { ProfileViewersCard } from '@/components/analytics/ProfileViewersCard';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -843,6 +844,7 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
+              <ProfileViewersCard />
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                 {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />

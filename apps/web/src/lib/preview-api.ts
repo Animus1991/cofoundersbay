@@ -9,6 +9,8 @@ import { previewSavedSearchesApi } from './demo/saved-searches-world';
 import { previewVerificationApi } from './demo/verification-world';
 import { previewUpdatesApi } from './demo/updates-world';
 import { previewSavedItemsApi } from './demo/saved-items-world';
+import { previewPerksApi } from './demo/perks-world';
+import { previewProfileViewersApi } from './demo/profile-viewers-world';
 import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
@@ -2691,6 +2693,18 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       : PREVIEW_JOBS.find((j) => j.id === itemId)?.title) ?? null,
   );
   if (savedItemsAnswer !== undefined) return savedItemsAnswer;
+  // Partner perks: invented partners, the API's claim rules.
+  const perksAnswer = previewPerksApi(
+    pathname,
+    new URLSearchParams(path.split('?')[1] ?? ''),
+    method,
+    (body ?? {}) as Record<string, unknown>,
+    previewNowMs(),
+  );
+  if (perksAnswer !== undefined) return perksAnswer;
+  // Who viewed the demo founder's profile: reciprocal names, k-anonymous counts.
+  const viewersAnswer = previewProfileViewersApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (viewersAnswer !== undefined) return viewersAnswer;
   // "Open to" and warm introductions; accepting an introduction answers the
   // need card in the commitments world above.
   const openToAnswer = previewOpenToApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());

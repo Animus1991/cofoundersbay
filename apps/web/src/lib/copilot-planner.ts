@@ -146,6 +146,17 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
     tool: 'get_intros',
   },
+  // Partner perks: «προσφορές» alone is a provider's own services, so the
+  // Greek keys carry «συνεργατ», «εκπτωσ» or «πιστωσ».
+  {
+    keys: ['perk*', 'partner offer*', 'partner discount*', 'startup credit*', 'cloud credit*', 'discount code*', 'προσφορες συνεργατ', 'προσφορα συνεργατ', 'εκπτωσεις', 'εκπτωση για', 'πιστωσεις'],
+    tool: 'get_perks',
+  },
+  // Who viewed my profile: asked as a person, not as a figure («προβολές» is analytics).
+  {
+    keys: ['who viewed', 'who has viewed', 'who looked at my profile', 'who visited my profile', 'viewed my profile', 'profile viewers', 'ποιος ειδε', 'ποιοι ειδαν', 'ποιος εχει δει', 'ειδαν το προφιλ', 'επισκεπτες του προφιλ'],
+    tool: 'get_profile_viewers',
+  },
   // The co-founder scout («ανιχνευτής συνιδρυτών»).
   { keys: ['co-founder scout', 'cofounder scout', 'my scout', 'the scout', 'ανιχνευτ'], tool: 'get_scout' },
   // Skills and the work that shows them.
@@ -258,6 +269,10 @@ export function detectAreaReads(message: string): AreaReadId[] {
     if (tool === 'get_analytics' && detectAnalyticsPeriod(lower) !== undefined) return false;
     // «Συστάσεις γνωριμίας» are introductions, not endorsements.
     if (tool === 'get_endorsements' && found.includes('get_intros') && !includesWord(lower, ['endorse*', 'προσυπογραφ'])) return false;
+    // "Who viewed my profile" is a question about people, not the profile or its view count.
+    if ((tool === 'get_profile' || tool === 'get_analytics') && found.includes('get_profile_viewers') && !includesWord(lower, ['analytics', 'stats', 'bio', 'headline', 'αναλυτικα', 'στατιστικα'])) return false;
+    // Perks asked about are partners' offers, not the reader's own services.
+    if (tool === 'get_services' && found.includes('get_perks')) return false;
     return true;
   });
 }

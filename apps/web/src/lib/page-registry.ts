@@ -82,6 +82,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Provider ──
   { path: '/dashboard/provider', title: 'Provider dashboard', description: 'Services, inquiries, and active client projects.', section: 'Work', audience: ['service_provider'], status: 'complete' },
+  { path: '/perks', title: 'Perks', description: 'Offers from partner companies: credits, discounts and free months. Claim one to see its code; partners never receive your details from us.', helpId: 'perks', helpTitle: 'How perks work', helpTitleEl: 'Πώς λειτουργούν οι προσφορές', section: 'Resources', status: 'complete' },
   { path: '/marketplace', title: 'Services marketplace', description: 'Browse legal, design, growth, and ops providers.', helpId: 'marketplace', helpTitle: 'How the marketplace works', helpTitleEl: 'Πώς δουλεύει η αγορά υπηρεσιών', section: 'Resources', status: 'complete' },
 
   // ── Organization ──

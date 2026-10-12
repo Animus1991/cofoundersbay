@@ -59,6 +59,8 @@ import { MilestonesModule } from './milestones/milestones.module';
 import { InvestorModule } from './investor/investor.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { SavedItemsModule } from './saved-items/saved-items.module';
+import { PerksModule } from './perks/perks.module';
+import { ProfileViewersModule } from './profile-viewers/profile-viewers.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { AccountExportModule } from './account-export/account-export.module';
 import { ResearchModule } from './research/research.module';
@@ -150,6 +152,8 @@ function findEnvFiles(): string[] {
     InvestorModule,
     ShortlistModule,
     SavedItemsModule,
+    PerksModule,
+    ProfileViewersModule,
     EndorsementsModule,
     AccountExportModule,
     ResearchModule,

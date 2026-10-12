@@ -8,6 +8,18 @@
  * key that is missing at runtime shows English only, never a wrong string.
  */
 export const TOAST_EL: Record<string, string> = {
+  "Code copied": "Ο κωδικός αντιγράφηκε",
+  "Could not copy the code": "Ο κωδικός δεν αντιγράφηκε",
+  "Select it and copy it by hand.": "Επιλέξτε τον και αντιγράψτε τον χειροκίνητα.",
+  "Perk claimed": "Η προσφορά διεκδικήθηκε",
+  "The code is on the card and under Claimed.": "Ο κωδικός είναι στην κάρτα και στις Διεκδικημένες.",
+  "The partner link is on the card and under Claimed.": "Ο σύνδεσμος του συνεργάτη είναι στην κάρτα και στις Διεκδικημένες.",
+  "Could not claim the perk": "Η προσφορά δεν διεκδικήθηκε",
+  "Perk switched on": "Η προσφορά ενεργοποιήθηκε",
+  "Perk switched off": "Η προσφορά απενεργοποιήθηκε",
+  "Could not change the perk": "Η προσφορά δεν άλλαξε",
+  "Perk added": "Η προσφορά προστέθηκε",
+  "Could not add the perk": "Η προσφορά δεν προστέθηκε",
   "Suggested post copied": "Το προτεινόμενο κείμενο αντιγράφηκε",
   "Paste it into your LinkedIn post; LinkedIn shows the preview from the link.": "Επικολλήστε το στην ανάρτησή σας στο LinkedIn· το LinkedIn δείχνει την προεπισκόπηση από τον σύνδεσμο.",
   "Need card alert saved": "Η ειδοποίηση για κάρτες ανάγκης αποθηκεύτηκε",

@@ -280,6 +280,36 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_perks',
+    kind: 'read',
+    label: { en: 'Read partner perks', el: 'Ανάγνωση προσφορών συνεργατών' },
+    description: {
+      en: 'Read the partner offers open to the signed-in member (partner, offer, category, the stages each suits, when it ends, whether they claimed it) and the ones they claimed. With stage, the offers named for that startup stage come first. Codes are not included: a member sees a code on the Perks page after claiming.',
+      el: 'Διαβάζει τις προσφορές συνεργατών που είναι ανοιχτές για το μέλος (συνεργάτης, προσφορά, κατηγορία, στάδια, πότε λήγει, αν τη διεκδίκησε) και όσες διεκδίκησε. Με stage, πρώτα οι προσφορές γι’ αυτό το στάδιο. Οι κωδικοί δεν περιλαμβάνονται: το μέλος βλέπει τον κωδικό στη σελίδα Προσφορές μετά τη διεκδίκηση.',
+    },
+    params: [
+      {
+        name: 'stage',
+        type: 'string',
+        required: false,
+        enumValues: ['idea', 'validating', 'building', 'launched', 'scaling'],
+        description: { en: 'Optional startup stage to put first.', el: 'Προαιρετικό στάδιο startup που μπαίνει πρώτο.' },
+      },
+    ],
+    writes: false,
+  },
+  {
+    id: 'get_profile_viewers',
+    kind: 'read',
+    label: { en: 'Read who viewed your profile', el: 'Ανάγνωση του ποιοι είδαν το προφίλ σας' },
+    description: {
+      en: 'Read who viewed the signed-in member\u2019s profile in the last 90 days: total views, distinct members, views from people not signed in, the viewers named to them (only people who show their name when they view, and only if the reader does too), and private viewers as a count, by role only for roles with at least three.',
+      el: 'Διαβάζει ποιοι είδαν το προφίλ του μέλους τις τελευταίες 90 ημέρες: συνολικές προβολές, διαφορετικά μέλη, προβολές χωρίς σύνδεση, όσους κατονομάζονται (μόνο όσοι δείχνουν το όνομά τους και μόνο αν το κάνει και ο αναγνώστης), και τους ιδιωτικούς ως πλήθος, ανά ρόλο μόνο για ρόλους με τουλάχιστον τρεις.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_shortlist',
     kind: 'read',
     label: { en: 'Read your saved profiles', el: 'Ανάγνωση των αποθηκευμένων προφίλ' },

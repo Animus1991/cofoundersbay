@@ -70,8 +70,12 @@ export const QUERY_ROOTS = [
   'open-to',
   'opportunities',
   'org',
+  // Partner offers and the reader's claims, one resource.
+  'perks',
   'pitch-deck',
   'polls',
+  // Who viewed the reader's profile, and whether they are named when they view.
+  'profile-viewers',
   'programs',
   'provider',
   'public-profile',

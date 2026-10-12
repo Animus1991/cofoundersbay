@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { useRecordProfileView } from '@/hooks/useRecordProfileView';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
@@ -147,6 +148,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     enabled: !!userId,
     retry: 1,
   });
+
+  // One view counted per visit, never the owner's (who viewed: Analytics).
+  useRecordProfileView(userId, Boolean(profile), true);
 
   const { data: connStatus } = useQuery({
     queryKey: qk('connection-status', userId),

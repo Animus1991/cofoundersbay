@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Logo } from '@/components/brand/Logo';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { useRecordProfileView } from '@/hooks/useRecordProfileView';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
 import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -139,6 +140,8 @@ export default function PublicProfilePage() {
   });
 
   const derived = profile ? deriveProfileFields(profile) : null;
+  // The public page counts signed-out readers too: as a number, never a name.
+  useRecordProfileView(profile?.userId, Boolean(profile));
 
   const { data: endorsementsData, isLoading: endorsementsLoading } = useQuery({
     queryKey: qk('endorsements', profile?.userId),

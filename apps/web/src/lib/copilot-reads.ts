@@ -77,6 +77,10 @@ import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
 import { getScout } from '@/lib/scout-api';
+import { listClaimedPerks, listPerks } from '@/lib/perks-api';
+import { getProfileViewers } from '@/lib/profile-viewers-api';
+import { statusEl } from '@/components/common/StatusText';
+import { isCardStage, PERK_CATEGORY_COPY } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -696,6 +700,44 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     const citations: CopilotCitation[] = proposed.map((p) => ({ type: 'person', id: p.person?.id ?? '', label: p.person?.displayName ?? '', href: `/profiles/${encodeURIComponent(p.person?.id ?? '')}` }));
     const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map(say).join('; ')}`);
     return { section: `${head}\n\n${t('The scout proposes:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_perks(args, { t, locale }) {
+    const stage = isCardStage(args.stage) ? args.stage : undefined;
+    const [open, claimed] = await Promise.all([listPerks(stage ? { stage } : {}), listClaimedPerks().catch(() => [])]);
+    const actions = [openArea(t, '/perks', t('Open perks'), t('Partner offers. Claim one to see its code.'))];
+    if (!open.length && !claimed.length) return { section: t('No partner offers are open right now.'), citations: [], actions };
+    const say = (en: string, el: string | null) => (locale === 'el' ? el ?? en : en);
+    const parts: string[] = [];
+    if (open.length) {
+      const lines = open.slice(0, LIMIT).map((p) => {
+        const cat = PERK_CATEGORY_COPY[p.category];
+        return `• **${p.partner}** — ${say(p.title, p.titleEl)}: ${say(p.value, p.valueEl)} (${cat ? say(cat.en, cat.el) : p.category}${p.claimed ? `, ${t('claimed')}` : ''}, id ${p.id})`;
+      });
+      parts.push(`${stage ? t('Open partner offers, the ones for your stage first:') : t('Open partner offers:')}\n${lines.join('\n')}`);
+      if (open.length > LIMIT) parts.push(t('{count} more on the Perks page.', { count: open.length - LIMIT }));
+    }
+    if (claimed.length) {
+      parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join('; ')}. ${t('Their codes are under Claimed on the Perks page.')}`);
+    }
+    return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
+  async get_profile_viewers(_args, { t, locale }) {
+    const v = await getProfileViewers();
+    const actions = [openArea(t, '/analytics?tab=growth', t('Open profile views'), t('Who viewed your profile in the last 90 days.'))];
+    if (!v.totalViews) return { section: t('Nobody has opened your profile in the last 90 days.'), citations: [], actions };
+    const parts = [t('In the last {days} days: {views} views from {members} members, and {out} from people not signed in.', { days: v.windowDays, views: v.totalViews, members: v.members, out: v.signedOutViews })];
+    const citations: CopilotCitation[] = v.named.slice(0, LIMIT).map((n) => ({ type: 'person', id: n.id, label: n.displayName, href: `/profiles/${encodeURIComponent(n.id)}` }));
+    if (v.named.length) {
+      parts.push(`${t('Named to you:')}\n${v.named.slice(0, LIMIT).map((n) => `• **${n.displayName}**${n.headline ? ` — ${n.headline}` : ''}`).join('\n')}`);
+    }
+    if (v.privateCount) {
+      const groups = v.privateByRole.map((g) => `${g.count} × ${locale === 'el' ? statusEl(g.role) ?? g.role : g.role}`).join(', ');
+      parts.push(groups ? t('{count} viewed privately, among them {groups}.', { count: v.privateCount, groups }) : t('{count} viewed privately.', { count: v.privateCount }));
+    }
+    if (!v.readerSharesName) parts.push(t('You view profiles privately, so you see counts, not names. Settings → Privacy changes that, and it is reciprocal.'));
+    return { section: parts.join('\n\n'), citations, actions };
   },
 
   async get_mentorship_sessions(_args, { t, locale }) {

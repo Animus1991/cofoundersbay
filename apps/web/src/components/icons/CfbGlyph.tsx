@@ -44,6 +44,9 @@ export const CFB_GLYPH_NAMES = [
   'update',
   'intro',
   'scout',
+  'perk',
+  'legal',
+  'captable',
   'more',
   'default',
 ] as const;
@@ -90,6 +93,9 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   connections: 'people',
   intros: 'intro',
   scout: 'scout',
+  perks: 'perk',
+  'legal-hub': 'legal',
+  'cap-table': 'captable',
   shortlist: 'bookmark',
   endorsements: 'award',
   compare: 'compare',
@@ -520,6 +526,29 @@ const GLYPHS: Record<CfbGlyphName, ReactNode> = {
       <circle cx="12" cy="12" r="4.4" />
       <path d="M12 12l5.6-5.6" />
       <circle cx="15.3" cy="15.6" r="1.15" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // A price tag with its hole: a partner's offer.
+  perk: (
+    <>
+      <path d="M12.6 4.2h6a1.2 1.2 0 0 1 1.2 1.2v6l-8.4 8.4a1.3 1.3 0 0 1-1.8 0l-5.4-5.4a1.3 1.3 0 0 1 0-1.8z" />
+      <circle cx="16.2" cy="7.8" r="1.2" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // Scales on a post: agreements and what each side owes.
+  legal: (
+    <>
+      <path d="M12 4.4v15.2M8.2 19.6h7.6M5.4 7.4h13.2" />
+      <path d="M5.4 7.4l-2.4 5.4a2.6 2.6 0 0 0 4.8 0zM18.6 7.4l-2.4 5.4a2.6 2.6 0 0 0 4.8 0z" />
+      <circle cx="12" cy="4.4" r="1.15" fill="currentColor" stroke="none" />
+    </>
+  ),
+  // A circle cut into shares, one slice lifted: who owns what after a round.
+  captable: (
+    <>
+      <path d="M11 5.2a7.4 7.4 0 1 0 7.8 7.8H11z" />
+      <path d="M13.6 3.4a7.2 7.2 0 0 1 7 7H13.6z" />
+      <circle cx="9.2" cy="15" r="1.15" fill="currentColor" stroke="none" />
     </>
   ),
   more: (

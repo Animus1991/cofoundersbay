@@ -11,6 +11,11 @@ type StoredUser = {
   avatarUrl?: string;
 } | null;
 
+/** The signed-in user as stored; call only from an effect or a handler, never during render. */
+export function readStoredUser(): StoredUser {
+  return readUser();
+}
+
 function readUser(): StoredUser {
   if (typeof window === 'undefined') return null;
   try {

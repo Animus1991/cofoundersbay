@@ -87,6 +87,13 @@ We process your data based on legitimate interests, contractual necessity, legal
 • Accounts whose role is investor or organisation need a work-email or LinkedIn workplace verification, or a role checked by the platform team, before they accept an introduction or answer an investor-introduction card.
 • A LinkedIn data export you choose to import is read in your browser. If you use LinkedIn's portability API instead, the selected fields wait on our server for at most 15 minutes and are deleted when your profile form reads them. Nothing reaches your profile until you press Save.
 
+**Profile views:**
+• When you open another member's profile we record that it was viewed, when, and by which account; a view from someone who is not signed in is recorded without an account. Opening your own profile is not counted.
+• The owner sees your name only if you turned on "Show my name when I view profiles" (Settings → Privacy; off by default) and they turned it on too. Otherwise you are part of a count, and a role is named only when at least three private viewers share it. Views older than 90 days are not shown.
+
+**Perks:**
+• Claiming a partner offer records the claim with your account so the code stays under "Claimed". We do not send partners a list of who claimed; a partner learns who you are only if you redeem on their own site.
+
 **Safety rules and the transparency report:**
 • Before two people have both confirmed, messages, notes, cards and briefs that contain contact details or promised returns are refused, not rewritten. Each refusal is recorded as its kind, where it happened and when, with no account and no text, and the counts are published per half year at /transparency together with the number of reports received and decided.
 

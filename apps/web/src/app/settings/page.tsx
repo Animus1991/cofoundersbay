@@ -45,6 +45,8 @@ import { VerificationCard } from '@/components/settings/VerificationCard';
 import { openCookieChoices } from '@/lib/cookie-consent';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
+import { getViewerSetting, setViewerSetting } from '@/lib/profile-viewers-api';
+import { PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
@@ -259,6 +261,55 @@ const PRIVACY_LIVE_COPY = {
   },
 } as const;
 
+/**
+ * "Show my name when I view profiles": off by default and reciprocal - a
+ * member who views privately sees counts, never names, on their own
+ * "Who viewed your profile" (Analytics). Anchored as `#profile-views`.
+ */
+function ProfileViewsRow() {
+  const queryClient = useQueryClient();
+  const { error: showError } = useToast();
+  const setting = useQuery({ queryKey: qk('profile-viewers', 'settings'), queryFn: getViewerSetting, staleTime: 60_000 });
+  const on = setting.data?.shareName === true;
+  const save = useMutation({
+    mutationFn: (shareName: boolean) => setViewerSetting(shareName),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: qk('profile-viewers') }),
+    onError: (err) => showError('Could not save the change', err instanceof Error ? err.message : undefined),
+  });
+  usePageControls([
+    {
+      id: 'set_show_name_when_viewing',
+      labelEn: PROFILE_VIEWERS_COPY.setting.en,
+      labelEl: PROFILE_VIEWERS_COPY.setting.el,
+      writes: true,
+      options: [{ value: 'on', labelEn: 'On', labelEl: 'Ναι' }, { value: 'off', labelEn: 'Off', labelEl: 'Όχι' }],
+      current: on ? 'on' : 'off',
+      unavailableEn: setting.data ? undefined : 'The setting has not loaded.',
+      unavailableEl: setting.data ? undefined : 'Η ρύθμιση δεν φορτώθηκε.',
+      run: async (v) => { await save.mutateAsync(v === 'on'); },
+      undo: () => ({ control: 'set_show_name_when_viewing', value: on ? 'on' : 'off' }),
+    },
+  ]);
+  return (
+    <div id="profile-views" className="flex scroll-mt-20 items-center justify-between gap-4 py-2.5">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">
+          <BilingualText en={PROFILE_VIEWERS_COPY.setting.en} el={PROFILE_VIEWERS_COPY.setting.el} compact wrap />
+        </p>
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={PROFILE_VIEWERS_COPY.settingHelp.en} el={PROFILE_VIEWERS_COPY.settingHelp.el} wrap />
+        </p>
+      </div>
+      <Switch
+        checked={on}
+        disabled={!setting.data || save.isPending}
+        aria-label={bilingualAria(PROFILE_VIEWERS_COPY.setting.en, PROFILE_VIEWERS_COPY.setting.el)}
+        onCheckedChange={(next) => void save.mutateAsync(next).catch(() => undefined)}
+      />
+    </div>
+  );
+}
+
 function PrivacyCard() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
@@ -354,6 +405,7 @@ function PrivacyCard() {
             </div>
           );
         })}
+        <ProfileViewsRow />
         <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground"><BilingualText en="Cookie choices" el="Επιλογές cookies" compact /></p>
@@ -372,7 +424,7 @@ function PrivacyCard() {
 
 export default function SettingsPage() {
   const searchParams = useSearchParams();
-  // `/settings#verification`, `#open-to`, `#language`: the cards mount after load.
+  // `/settings#verification`, `#open-to`, `#language`, `#profile-views`: the cards mount after load.
   useScrollToHash();
   const { success, error: showError } = useToast();
   const { t, locale } = useI18n();

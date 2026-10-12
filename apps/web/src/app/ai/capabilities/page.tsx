@@ -33,6 +33,8 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_intros: { en: 'Who could introduce me to Nikos?', el: 'Ποιος μπορεί να με συστήσει στον Νίκο;' },
   get_skill_evidence: { en: 'What evidence backs my skills?', el: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;' },
   get_scout: { en: 'What did my co-founder scout find?', el: 'Τι βρήκε ο ανιχνευτής συνιδρυτών;' },
+  get_perks: { en: 'Which perks fit my stage?', el: 'Ποιες προσφορές συνεργατών ταιριάζουν στο στάδιό μου;' },
+  get_profile_viewers: { en: 'Who viewed my profile?', el: 'Ποιος είδε το προφίλ μου;' },
   get_mentorship_sessions: { en: 'When is my next mentoring session?', el: 'Πότε είναι η επόμενη συνεδρία καθοδήγησής μου;' },
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
