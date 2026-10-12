@@ -64,6 +64,7 @@ import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
+import { profileEn, profileEl } from '@/lib/i18n/strings-profile';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { profilePost, useSuggestedPost } from '@/lib/share-text';
 import { linkedInShareUrl } from '@/lib/commitments-links';
