@@ -32,15 +32,64 @@ export const COPILOT_STARTERS: CopilotStarter[] = [
   { en: 'Connect with Elena', el: 'Στείλε αίτημα σύνδεσης στην Elena', kind: 'write', glyph: 'people' },
 ];
 
-export function copilotStartersFor(surface: 'page' | 'popup'): {
+/** A question about the page the reader is on, with the read it must plan. */
+export type PageStarter = CopilotStarter & { tool: string };
+
+const read = (en: string, el: string, glyph: CfbGlyphName, tool: string): PageStarter => ({ en, el, kind: 'read', glyph, tool });
+
+/**
+ * The same seven starters showed on every page ("How is my fundraising
+ * going?" on /profile). Opened from a page, the assistant now leads with
+ * questions about that page - each one a phrasing the eval fixture already
+ * holds, so the planner is known to answer it with the named read.
+ */
+export const PAGE_STARTERS: Record<string, PageStarter[]> = {
+  '/matches': [read('Why do I match with Elena?', 'Γιατί ταιριάζω με την Έλενα;', 'matches', 'get_match_detail')],
+  '/profile': [
+    read('Who viewed my profile this month?', 'Ποιοι είδαν το προφίλ μου;', 'people', 'get_profile_viewers'),
+    read('What evidence backs my skills?', 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;', 'award', 'get_skill_evidence'),
+  ],
+  '/analytics': [read('Who viewed my profile this month?', 'Ποιοι είδαν το προφίλ μου;', 'people', 'get_profile_viewers')],
+  '/commitments': [read('Where do my commitments stand and what is waiting on me?', 'Τι γίνεται με τις δεσμεύσεις μου;', 'pact', 'get_commitments')],
+  '/intros': [
+    read('Show my warm introductions', 'Δείξε μου τις συστάσεις γνωριμίας', 'intro', 'get_intros'),
+    read('Who could introduce me to Nikos?', 'Ποιος μπορεί να με συστήσει στον Νίκο;', 'intro', 'get_intros'),
+  ],
+  '/scout': [read('What did my co-founder scout find?', 'Τι βρήκε ο ανιχνευτής συνιδρυτών;', 'scout', 'get_scout')],
+  '/perks': [read('Are there any startup perks or cloud credits for us?', 'Υπάρχουν προσφορές συνεργατών ή εκπτώσεις για startups;', 'perk', 'get_perks')],
+  '/updates': [read('Any new founder updates from people I follow?', 'Τι νέες ενημερώσεις ιδρυτών έχω;', 'update', 'get_founder_updates')],
+  '/events': [read('What events are coming up this month?', 'Τι εκδηλώσεις έχει αυτόν τον μήνα;', 'calendar', 'get_events')],
+  '/milestones': [read('Which of my milestones are overdue?', 'Ποια ορόσημα έχουν καθυστερήσει;', 'flag', 'get_milestones')],
+  '/messages': [read('Do I have unread messages?', 'Έχω αδιάβαστα μηνύματα;', 'messages', 'get_messages')],
+  '/connections': [read('Any connection requests waiting for me?', 'Έχω αιτήματα σύνδεσης σε αναμονή;', 'people', 'get_connections')],
+  '/programs': [read('Which accelerator programmes are open right now?', 'Ποια προγράμματα επιτάχυνσης δέχονται αιτήσεις;', 'award', 'get_programs')],
+  '/jobs': [read('Are there any open jobs I could apply to?', 'Υπάρχουν αγγελίες για θέσεις εργασίας;', 'briefcase', 'get_jobs')],
+};
+
+/** The starters for a path: its own entry, or the nearest parent's ("/matches/u1" reads "/matches"). */
+export function pageStartersFor(pathname: string | null | undefined): PageStarter[] {
+  let path = (pathname ?? '').split('?')[0].replace(/\/+$/, '');
+  while (path) {
+    if (PAGE_STARTERS[path]) return PAGE_STARTERS[path];
+    path = path.slice(0, path.lastIndexOf('/'));
+  }
+  return [];
+}
+
+export function copilotStartersFor(surface: 'page' | 'popup', pathname?: string | null): {
   reads: CopilotStarter[];
   writes: CopilotStarter[];
 } {
   const visible = COPILOT_STARTERS.filter((starter) =>
     surface === 'popup' ? starter.popup !== false : starter.page !== false,
   );
+  const general = visible.filter((starter) => starter.kind === 'read');
+  const forPage = pageStartersFor(pathname);
   return {
-    reads: visible.filter((starter) => starter.kind === 'read'),
+    // The page's questions lead; the list keeps its length, so the popup stays compact.
+    reads: forPage.length
+      ? [...forPage, ...general.filter((g) => !forPage.some((p) => p.en === g.en))].slice(0, general.length)
+      : general,
     writes: visible.filter((starter) => starter.kind === 'write'),
   };
 }

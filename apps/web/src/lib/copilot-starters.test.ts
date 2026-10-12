@@ -4,8 +4,12 @@ import { describe, expect, it } from 'vitest';
 import {
   COPILOT_PRODUCT_LINKS,
   COPILOT_STARTERS,
+  PAGE_STARTERS,
   copilotStartersFor,
+  pageStartersFor,
 } from './copilot-starters';
+import { planCopilotTools } from './copilot-planner';
+import { EVAL_CASES } from './copilotEval.fixture';
 
 const EMPTY_STATE_SOURCE = readFileSync(
   join(__dirname, '..', 'components', 'ai', 'CopilotEmptyState.tsx'),
@@ -92,5 +96,27 @@ describe('copilot empty-state lockstep', () => {
     expect(WORKSPACE_SOURCE).not.toContain('type-plus-once');
     expect(WORKSPACE_SOURCE).not.toContain('type-plus-2');
     expect(WORKSPACE_SOURCE).not.toContain('flex-wrap gap-2');
+  });
+});
+
+describe('starters for the page the assistant was opened from', () => {
+  it('plans the named read for every page starter, in both languages', () => {
+    for (const starters of Object.values(PAGE_STARTERS)) {
+      for (const starter of starters) {
+        expect(planCopilotTools(starter.en).map((t) => t.name), starter.en).toContain(starter.tool);
+        expect(planCopilotTools(starter.el).map((t) => t.name), starter.el).toContain(starter.tool);
+        // Each one is an eval case already, so a planner change that breaks it fails twice.
+        expect(EVAL_CASES.some((c) => c.message === starter.en && c.tool === starter.tool), starter.en).toBe(true);
+      }
+    }
+  });
+
+  it('leads with the page\'s questions and keeps the list its usual length', () => {
+    const popup = copilotStartersFor('popup', '/matches/user-elena');
+    expect(popup.reads[0].en).toBe('Why do I match with Elena?');
+    expect(popup.reads).toHaveLength(copilotStartersFor('popup').reads.length);
+    expect(copilotStartersFor('popup', '/ai').reads).toEqual(copilotStartersFor('popup').reads);
+    expect(pageStartersFor('/profile/edit')).toEqual(PAGE_STARTERS['/profile']);
+    expect(pageStartersFor(null)).toEqual([]);
   });
 });

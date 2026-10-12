@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BilingualText } from '@/components/common/BilingualText';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
@@ -30,7 +31,9 @@ export function CopilotEmptyState({
 }) {
   const isPage = surface === 'page';
   const sayOne = useBilingualString();
-  const { reads, writes } = copilotStartersFor(surface);
+  // Opened from a page, the assistant leads with questions about that page.
+  const pathname = usePathname();
+  const { reads, writes } = copilotStartersFor(surface, pathname);
 
   return (
     <div
