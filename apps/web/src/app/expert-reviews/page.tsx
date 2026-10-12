@@ -266,64 +266,67 @@ function ReviewCard({ review }: { review: ExpertReview }) {
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
-                {initialsOf(review.expertName)}
-              </AvatarFallback>
-            </Avatar>
-          )}
-          title={review.expertName}
-          subtitle={review.expertTitle}
-          aside={(
-            <Badge variant="outline" className="gap-1 text-xs">
-              <StatusIcon className={cn('icon-sm', STATUS[status.tone].icon)} aria-hidden="true" />
-              <BilingualText en={status.label} el={status.labelEl} compact />
-            </Badge>
-          )}
-        />
-
-        {/* What was asked, what it costs and when it is due: facts on the
-            avatar's edge, one muted line. The kind was a tinted pill. */}
-        <FactLine
-          items={[
-            <BilingualText key="type" en={type.label} el={type.labelEl} compact />,
-            review.isPaid && review.agreedFee ? <span key="fee" className="tabular-nums">€{review.agreedFee}</span> : null,
-            !review.isPaid ? <BilingualText key="free" en="Free" el="Δωρεάν" compact /> : null,
-            review.dueDate && review.status !== 'submitted' ? (
-              <span key="due" className={STATUS.warning.icon}>
-                {/* Pinned to UTC on both sides so the server pass and
-                    hydration agree on the day. */}
-                <BilingualText
-                  en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
-                  el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
-                  compact
-                />
-              </span>
-            ) : null,
-          ]}
-        />
-
-        {/* Score: a figure in the body's step, never louder than the name. */}
-        {review.scoreOverall && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <p className="text-xs text-muted-foreground">
-              <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />{' '}
-              <span className={cn('card-body font-semibold tabular-nums', scoreTenPointClass(review.scoreOverall))}>
-                {review.scoreOverall}/10
-              </span>
-            </p>
-            {review.rating && (
-              <div data-keep-icon="" className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`Rated ${review.rating} of 5`, `Βαθμολογία ${review.rating} από 5`)}>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('icon-sm', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} aria-hidden="true" />
-                ))}
-              </div>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <CardHead
+            mark={(
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+                  {initialsOf(review.expertName)}
+                </AvatarFallback>
+              </Avatar>
             )}
+            title={review.expertName}
+            aside={(
+              <Badge variant="outline" className="gap-1 text-xs">
+                <StatusIcon className={cn('icon-sm', STATUS[status.tone].icon)} aria-hidden="true" />
+                <BilingualText en={status.label} el={status.labelEl} compact />
+              </Badge>
+            )}
+          />
+
+          {/* The role is short beside the status pill, so it takes the full
+              card width and stays one line. Kind, fee and score share the
+              next line: facts on the left, the figure on the right. */}
+          {review.expertTitle ? <p className="card-subtitle">{review.expertTitle}</p> : null}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <FactLine
+              items={[
+                <BilingualText key="type" en={type.label} el={type.labelEl} compact />,
+                review.isPaid && review.agreedFee ? <span key="fee" className="tabular-nums">€{review.agreedFee}</span> : null,
+                !review.isPaid ? <BilingualText key="free" en="Free" el="Δωρεάν" compact /> : null,
+                review.dueDate && review.status !== 'submitted' ? (
+                  <span key="due" className={STATUS.warning.icon}>
+                    {/* Pinned to UTC on both sides so the server pass and
+                        hydration agree on the day. */}
+                    <BilingualText
+                      en={`Due ${new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                      el={`Προθεσμία ${new Date(review.dueDate).toLocaleDateString('el-GR', { timeZone: 'UTC', day: 'numeric', month: 'short' })}`}
+                      compact
+                    />
+                  </span>
+                ) : null,
+              ]}
+            />
+            {review.scoreOverall ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText en="Overall score:" el="Συνολική βαθμολογία:" compact />{' '}
+                  <span className={cn('card-body font-semibold tabular-nums', scoreTenPointClass(review.scoreOverall))}>
+                    {review.scoreOverall}/10
+                  </span>
+                </p>
+                {review.rating ? (
+                  <div data-keep-icon="" className="flex items-center gap-0.5" role="img" aria-label={bilingualAria(`Rated ${review.rating} of 5`, `Βαθμολογία ${review.rating} από 5`)}>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={cn('icon-sm', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} aria-hidden="true" />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
-        )}
+        </div>
 
         {review.summaryFeedback && (
           <p className="card-body line-clamp-2 italic text-muted-foreground">
@@ -331,7 +334,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           </p>
         )}
 
-        <CardFoot>
+        <CardFoot end>
           {/* A review carries the expert's name but no user id, so there
               is no conversation to open. Disabled and labelled beats a
               button that looks live. */}
@@ -794,7 +797,7 @@ export default function ExpertReviewsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   <BilingualText en="Active Requests" el="Ενεργά αιτήματα" compact />
                 </p>
-                <div className="space-y-3">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
+                <div className="space-y-4">{pending.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {submitted.length > 0 && (
@@ -802,7 +805,7 @@ export default function ExpertReviewsPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   <BilingualText en="Completed Reviews" el="Ολοκληρωμένες αξιολογήσεις" compact />
                 </p>
-                <div className="space-y-3">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
+                <div className="space-y-4">{submitted.map((r) => <ReviewCard key={r.id} review={r} />)}</div>
               </div>
             )}
             {myReviews.length === 0 && (

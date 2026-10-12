@@ -83,14 +83,18 @@ export function CardFoot({
   meta,
   children,
   className,
+  end = false,
 }: {
   meta?: ReactNode;
   children?: ReactNode;
   className?: string;
+  /** Actions sit at the right when the card has no left caption and the
+   * body above is already a full-width sentence. */
+  end?: boolean;
 }) {
   if (!meta && !children) return null;
   return (
-    <div className={cn('flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-border pt-3', className)}>
+    <div className={cn('flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-3', end && !meta ? 'justify-end' : 'justify-between', className)}>
       {meta ? <div className="min-w-0 text-xs text-muted-foreground">{meta}</div> : null}
       {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
     </div>
