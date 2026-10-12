@@ -11,9 +11,12 @@ import { STATUS } from '@/lib/semantic-colors';
 type ProfileField = {
   id: string;
   label: string;
+  labelEl?: string;
   completed: boolean;
   weight: number; // contribution to overall score
   href?: string;
+  /** What the item changes, said where it is missing. */
+  reason?: { en: string; el: string };
 };
 
 type ProfileCompletionProps = {
@@ -208,27 +211,50 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
   );
 }
 
-// Helper to calculate profile fields from profile data
-export function calculateProfileCompletion(profile: Record<string, unknown> | null): ProfileField[] {
-  if (!profile) {
-    return [
-      { id: 'basic', label: 'Basic info', completed: false, weight: 20, href: '/onboarding' },
-      { id: 'skills', label: 'Skills', completed: false, weight: 20, href: '/profile/edit' },
-      { id: 'bio', label: 'Bio', completed: false, weight: 15, href: '/profile/edit' },
-      { id: 'headline', label: 'Headline', completed: false, weight: 15, href: '/profile/edit' },
-      { id: 'location', label: 'Location', completed: false, weight: 10, href: '/profile/edit' },
-      { id: 'avatar', label: 'Profile photo', completed: false, weight: 10, href: '/profile/edit' },
-      { id: 'links', label: 'Social links', completed: false, weight: 10, href: '/profile/edit' },
-    ];
-  }
+const EDIT = '/profile/edit';
 
-  return [
-    { id: 'basic', label: 'Basic info', completed: !!profile.displayName, weight: 20, href: '/profile/edit' },
-    { id: 'skills', label: 'Skills', completed: Array.isArray(profile.skills) && (profile.skills as unknown[]).length > 0, weight: 20, href: '/profile/edit' },
-    { id: 'bio', label: 'Bio', completed: !!profile.bio, weight: 15, href: '/profile/edit' },
-    { id: 'headline', label: 'Headline', completed: !!profile.headline, weight: 15, href: '/profile/edit' },
-    { id: 'location', label: 'Location', completed: !!profile.location, weight: 10, href: '/profile/edit' },
-    { id: 'avatar', label: 'Profile photo', completed: !!profile.avatarUrl, weight: 10, href: '/profile/edit' },
-    { id: 'links', label: 'Social links', completed: !!profile.linkedinUrl || !!profile.websiteUrl, weight: 10, href: '/profile/edit' },
+/** What each item changes for the member, said beside what is missing. */
+export const COMPLETION_REASONS: Record<string, { en: string; el: string }> = {
+  basic: { en: 'People connect with a name, not a handle.', el: 'Οι άνθρωποι συνδέονται με όνομα, όχι με ψευδώνυμο.' },
+  skills: { en: 'Skills are part of how matches are scored.', el: 'Οι δεξιότητες μετρούν στη βαθμολογία αντιστοίχισης.' },
+  bio: { en: 'Gives your matches and the assistant the context of what you build.', el: 'Δίνει στις αντιστοιχίσεις και στον βοηθό το πλαίσιο του τι φτιάχνετε.' },
+  headline: { en: 'The one line others read first in Discover and Matches.', el: 'Η μία γραμμή που διαβάζουν πρώτη οι άλλοι στην Εξερεύνηση και τις Αντιστοιχίσεις.' },
+  location: { en: 'A small tie-breaker in matching and a filter in Discover.', el: 'Μικρό κριτήριο στην αντιστοίχιση και φίλτρο στην Εξερεύνηση.' },
+  avatar: { en: 'A face builds trust before the first message.', el: 'Ένα πρόσωπο χτίζει εμπιστοσύνη πριν από το πρώτο μήνυμα.' },
+  links: { en: 'A LinkedIn or website lets people check who you are.', el: 'Ένα LinkedIn ή ιστότοπος επιτρέπει να δουν ποιος είστε.' },
+  commitment: { en: 'A different commitment shows as potential friction on both match pages.', el: 'Διαφορετική δέσμευση εμφανίζεται ως πιθανή τριβή και στις δύο σελίδες αντιστοίχισης.' },
+  lookingFor: { en: 'Matching reads it to put the people you want first.', el: 'Η αντιστοίχιση το διαβάζει για να φέρει πρώτους όσους θέλετε.' },
+};
+
+/**
+ * The weighted completeness list, read from a profile (`/profile`) or the
+ * edit form (flattened fields). Founders also count commitment and "Looking
+ * for", the two answers matching reads; each item links to its own field.
+ */
+export function calculateProfileCompletion(profile: Record<string, unknown> | null): ProfileField[] {
+  const p = profile ?? {};
+  const payload = (p.rolePayload && typeof p.rolePayload === 'object' ? p.rolePayload : {}) as Record<string, unknown>;
+  const lookingFor = p.lookingFor ?? payload.rolesSought;
+  const commitment = p.commitment ?? payload.commitment;
+  const links = (payload.links && typeof payload.links === 'object' ? payload.links : {}) as Record<string, unknown>;
+  const fields: ProfileField[] = [
+    { id: 'basic', label: 'Basic info', completed: !!p.displayName, weight: 20, href: profile ? `${EDIT}#profile-display-name` : '/onboarding' },
+    { id: 'skills', label: 'Skills', completed: Array.isArray(p.skills) && (p.skills as unknown[]).length > 0, weight: 20, href: `${EDIT}#skills` },
+    { id: 'bio', label: 'Bio', completed: !!p.bio, weight: 15, href: `${EDIT}#pe-f1` },
+    { id: 'headline', label: 'Headline', completed: !!p.headline, weight: 15, href: `${EDIT}#profile-headline` },
+    { id: 'location', label: 'Location', completed: !!p.location, weight: 10, href: `${EDIT}#profile-location` },
+    { id: 'avatar', label: 'Profile photo', completed: !!p.avatarUrl, weight: 10, href: `${EDIT}#photo` },
+    { id: 'links', label: 'Social links', completed: !!(p.linkedinUrl || p.websiteUrl || links.linkedinUrl || links.websiteUrl), weight: 10, href: `${EDIT}#links` },
   ];
+  if (p.role === 'founder') {
+    fields.push(
+      { id: 'commitment', label: 'Commitment', completed: typeof commitment === 'string' && commitment.trim() !== '', weight: 10, href: `${EDIT}#founder-details` },
+      { id: 'lookingFor', label: 'Looking for', completed: Array.isArray(lookingFor) && lookingFor.length > 0, weight: 10, href: `${EDIT}#founder-details` },
+    );
+  }
+  const el: Record<string, string> = {
+    basic: 'Βασικά στοιχεία', skills: 'Δεξιότητες', bio: 'Βιογραφικό', headline: 'Τίτλος', location: 'Τοποθεσία',
+    avatar: 'Φωτογραφία προφίλ', links: 'Σύνδεσμοι', commitment: 'Δέσμευση', lookingFor: 'Αναζητάτε',
+  };
+  return fields.map((f) => ({ ...f, labelEl: el[f.id], reason: COMPLETION_REASONS[f.id] }));
 }

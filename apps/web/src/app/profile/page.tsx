@@ -89,6 +89,8 @@ const COMPLETION_LABEL: Record<string, { en: string; el: string }> = {
   location: { en: profileEn('location'), el: profileEl('location') },
   avatar: { en: profileEn('avatar'), el: profileEl('avatar') },
   links: { en: 'Social links', el: 'Σύνδεσμοι' },
+  commitment: { en: profileEn('commitment'), el: profileEl('commitment') },
+  lookingFor: { en: profileEn('looking_for'), el: profileEl('looking_for') },
 };
 
 function completionOf(profile: NonNullable<ProfileData>) {
@@ -97,6 +99,8 @@ function completionOf(profile: NonNullable<ProfileData>) {
     done: f.completed,
     labelEn: COMPLETION_LABEL[f.id]?.en ?? f.label,
     labelEl: COMPLETION_LABEL[f.id]?.el ?? f.label,
+    href: f.href,
+    reason: f.reason,
   }));
   const total = fields.reduce((sum, f) => sum + f.weight, 0);
   const pct = total ? Math.round((fields.filter((f) => f.completed).reduce((sum, f) => sum + f.weight, 0) / total) * 100) : 0;
@@ -149,9 +153,18 @@ function ProfileCompletionPanel({ profile }: { profile: NonNullable<ProfileData>
             </div>
           ))}
         </div>
+        {(() => {
+          // The first missing item, why it matters, and a way straight to its field.
+          const next = items.find((i) => !i.done && i.reason);
+          return next?.reason ? (
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={`Next: ${next.labelEn}. ${next.reason.en}`} el={`Επόμενο: ${next.labelEl}. ${next.reason.el}`} wrap />
+            </p>
+          ) : null;
+        })()}
         {pct < 100 && (
           <Button size="sm" variant="secondary" className="w-full gap-2 mt-1" asChild>
-            <Link href="/profile/edit">
+            <Link href={items.find((i) => !i.done)?.href ?? '/profile/edit'}>
               <Edit className="icon-sm" />
               <BilingualText en={profileEn('complete_profile')} el={profileEl('complete_profile')} />
             </Link>

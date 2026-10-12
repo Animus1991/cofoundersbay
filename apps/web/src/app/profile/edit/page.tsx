@@ -445,6 +445,12 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [introVideoError, setIntroVideoError] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  // A link to a field on another tab (from the completeness list) opens that
+  // tab first; useScrollToHash then finds the field once it is mounted.
+  useEffect(() => {
+    const tab = ({ 'founder-details': 'role', links: 'links' } as Record<string, string>)[window.location.hash.slice(1)];
+    if (tab) setActiveTab(tab);
+  }, []);
   // Whether the saved profile had roles or schools, so removing the last one
   // still sends a payload (an empty one would otherwise keep the old list).
   const hadHistory = useRef(false);
@@ -786,7 +792,7 @@ export default function ProfileEditPage() {
             {/* Basic Info */}
             <TabsContent value="basic" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Avatar */}
-              <Card>
+              <Card id="photo" className="scroll-mt-20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Camera className="icon-md text-muted-foreground" />
@@ -1028,7 +1034,7 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Skills & Industries */}
-              <Card>
+              <Card id="skills" className="scroll-mt-20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="icon-md text-muted-foreground" />
@@ -1143,7 +1149,7 @@ export default function ProfileEditPage() {
 
               {/* Founder-specific */}
               {form.role === 'founder' && (
-                <Card>
+                <Card id="founder-details" className="scroll-mt-20">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Rocket className="icon-sm" />
@@ -1325,7 +1331,7 @@ export default function ProfileEditPage() {
             </TabsContent>
 
             {/* Social Links */}
-            <TabsContent value="links" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
+            <TabsContent id="links" value="links" className="scroll-mt-20 space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -1460,9 +1466,21 @@ export default function ProfileEditPage() {
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
-                      <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="icon-sm text-status-warning" />
-                        <span className="capitalize">{item.label}</span>
+                      <li key={item.id}>
+                        {/* Each missing item opens its tab and brings its field into view. */}
+                        <button
+                          type="button"
+                          className="flex items-center gap-2 text-left text-sm text-muted-foreground hover:text-foreground"
+                          title={item.reason ? bilingualInline(item.reason.en, item.reason.el) : undefined}
+                          onClick={() => {
+                            const anchor = item.href?.split('#')[1];
+                            setActiveTab(item.id === 'commitment' || item.id === 'lookingFor' ? 'role' : item.id === 'links' ? 'links' : 'basic');
+                            if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+                          }}
+                        >
+                          <ShieldAlert className="icon-sm text-status-warning" />
+                          <BilingualText en={item.label} el={item.labelEl} compact />
+                        </button>
                       </li>
                     ))
                   )}
