@@ -38,6 +38,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
+import { followUpsFor } from '@/lib/copilot-followups';
 
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -437,6 +438,23 @@ export function CopilotWorkspace({
               </div>
             ))
           )}
+          {(() => {
+            // What to ask next, under the latest answer only, and out of the
+            // way while the reader is typing.
+            const last = chat.messages[chat.messages.length - 1];
+            if (!last || last.role !== 'assistant' || last.isStreaming || input.trim()) return null;
+            const next = followUpsFor(last.usedTools, last.citations);
+            if (!next.length) return null;
+            return (
+              <div className="flex flex-col items-start gap-1.5 pl-9" aria-label={bilingualAria('Ask next', 'Ρωτήστε μετά')} role="group">
+                {next.map((f) => (
+                  <Button key={f.en} type="button" size="sm" variant="outline" onClick={() => void chat.sendMessage(f.en)}>
+                    <BilingualText en={f.en} el={f.el} compact wrap />
+                  </Button>
+                ))}
+              </div>
+            );
+          })()}
           <div ref={endRef} />
         </div>
 

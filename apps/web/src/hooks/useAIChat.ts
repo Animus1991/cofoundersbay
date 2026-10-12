@@ -46,6 +46,8 @@ export interface AIMessage {
   isStreaming?: boolean;
   actions?: CopilotAction[];
   citations?: CopilotCitation[];
+  /** The reads behind this answer, for the follow-up questions under it. */
+  usedTools?: string[];
 }
 
 export interface UseAIChatOptions {
@@ -451,6 +453,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
                     isStreaming: false,
                     actions: withReads.length ? withReads.slice(0, 6) : merged,
                     citations: allCitations.length ? allCitations.slice(0, 10) : citations,
+                    usedTools: [...(turn?.usedTools ?? []), ...modelReads.map((r) => r.name)],
                   }
                 : message,
             ),
@@ -459,7 +462,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           setMessages((prev) =>
             prev.map((message) =>
               message.id === assistantMessageId
-                ? { ...message, content: narrative, model: 'copilot', isStreaming: false, actions, citations }
+                ? { ...message, content: narrative, model: 'copilot', isStreaming: false, actions, citations, usedTools: turn?.usedTools ?? [] }
                 : message,
             ),
           );
