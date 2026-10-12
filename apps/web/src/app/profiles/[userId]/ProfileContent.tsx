@@ -11,7 +11,7 @@ import { FollowButton } from '@/components/updates/FollowButton';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { OpenToLine } from '@/components/intros/OpenToLine';
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
-import { ProfileHero } from '@/components/profile/ProfileHero';
+import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { ProfileActivity, ProfileExperience, ProfileRecommendations, SimilarProfiles } from '@/components/profile/ProfileSections';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import {
@@ -266,7 +266,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const RoleIcon = ROLE_ICONS[profile.role] ?? Briefcase;
 
   const rolePayloadNodes: React.ReactNode[] = Object.entries(rolePayload)
-    .filter(([k]) => k !== 'links' && k !== 'experience' && k !== 'education')
+    .filter(([k]) => k !== 'links' && k !== 'experience' && k !== 'education' && k !== 'introVideoUrl')
     .reduce<React.ReactNode[]>((acc, [key, val]) => {
       acc.push(<PayloadEntry key={key} entryKey={key} value={val} />);
       return acc;
@@ -471,8 +471,8 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <CardContent className="space-y-4">
               {/* Generic role payload display */}
               <>{rolePayloadNodes}</>
+              <IntroVideoLink raw={rolePayload.introVideoUrl} />
 
-              {/* Social links */}
               {rolePayload.links && typeof rolePayload.links === 'object' && (
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>

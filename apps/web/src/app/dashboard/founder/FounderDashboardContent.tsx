@@ -56,6 +56,7 @@ import {
   useFirstMoveState,
   useStoredFlag,
 } from '@/components/dashboard/FounderFirstMove';
+import { FounderPaths } from '@/components/dashboard/FounderPaths';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { nextAction as ladderNextAction, waitsOnMe } from '@/lib/commitments-next';
 import { MetricTile } from '@/components/dashboard/MetricTile';
@@ -1274,6 +1275,7 @@ export default function FounderDashboardContent() {
         <div id="founder-dashboard-rest" hidden={restFolded} className="min-w-0 space-y-6">
           {/* Getting-started checklist. */}
           <OnboardingChecklist steps={onboardingSteps} />
+          <FounderPaths />
 
           {/* One "what to do next" prompt at a time.
               The checklist already names the next incomplete step and links to it,

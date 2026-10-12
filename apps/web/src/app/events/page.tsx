@@ -240,6 +240,13 @@ export default function EventsPage() {
       }
     >
       <div className="space-y-6 pb-10">
+      <p className="text-sm text-muted-foreground">
+        <Link href="/events/create?kind=pitch-practice" className="text-primary-accessible">
+          <BilingualText en="Host a pitch practice" el="Διοργάνωση εξάσκησης παρουσίασης" compact />
+        </Link>
+        {' '}
+        <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
+      </p>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without

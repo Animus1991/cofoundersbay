@@ -2,7 +2,7 @@
 
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -29,6 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { isPitchPractice } from '@/lib/pitch-practice';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { CardHead } from '@/components/common/CardAnatomy';
 
@@ -85,6 +86,7 @@ export default function CreateEventPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [pitchPractice, setPitchPractice] = useState(false);
 
   const [form, setForm] = useState({
     title: '',
@@ -120,6 +122,13 @@ export default function CreateEventPage() {
       return next;
     });
   });
+
+  useEffect(() => {
+    const kind = new URLSearchParams(window.location.search).get('kind');
+    if (!isPitchPractice(kind)) return;
+    setPitchPractice(true);
+    setForm((prev) => (prev.title || prev.description ? prev : { ...prev, type: 'workshop', isOnline: true }));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,6 +191,15 @@ export default function CreateEventPage() {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
           <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+          {pitchPractice ? (
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en="This is a pitch practice. It is published as a workshop: founders present, then hear notes. Add a title and a start time, then press Create."
+                el="Αυτή είναι εξάσκηση παρουσίασης. Δημοσιεύεται ως εργαστήριο: οι ιδρυτές παρουσιάζουν και μετά ακούν σημειώσεις. Γράψτε τίτλο και ώρα έναρξης και πατήστε Δημιουργία."
+                wrap
+              />
+            </p>
+          ) : null}
           <FormSection icon={Calendar} title="Basic information" titleEl="Βασικά στοιχεία">
             <FormField htmlFor="event-title" required label={<BilingualText en="Event title" el="Τίτλος εκδήλωσης" compact />}>
               <Input

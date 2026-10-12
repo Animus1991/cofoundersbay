@@ -43,6 +43,8 @@ import {
   LayoutDashboard,
   ShieldAlert,
 } from 'lucide-react';
+import { safeWebUrl } from '@/lib/web-url';
+import { profileEl, profileEn } from '@/lib/i18n/strings-profile';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
@@ -82,6 +84,7 @@ type ProfileFormData = {
   linkedinUrl: string;
   githubUrl: string;
   twitterUrl: string;
+  introVideoUrl: string;
 
   // Skills & expertise
   skills: string[];
@@ -125,6 +128,7 @@ const defaultFormData: ProfileFormData = {
   linkedinUrl: '',
   githubUrl: '',
   twitterUrl: '',
+  introVideoUrl: '',
   skills: [],
   industries: [],
   languages: [],
@@ -424,6 +428,7 @@ export default function ProfileEditPage() {
   const [form, setForm] = useState<ProfileFormData>(defaultFormData);
   const [formInitialized, setFormInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [introVideoError, setIntroVideoError] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
   // Whether the saved profile had roles or schools, so removing the last one
   // still sends a payload (an empty one would otherwise keep the old list).
@@ -482,6 +487,7 @@ export default function ProfileEditPage() {
       linkedinUrl: (typeof links.linkedinUrl === 'string' ? links.linkedinUrl : '') ?? '',
       githubUrl: (typeof links.githubUrl === 'string' ? links.githubUrl : '') ?? '',
       twitterUrl: (typeof links.twitterUrl === 'string' ? links.twitterUrl : '') ?? '',
+      introVideoUrl: typeof rolePayload.introVideoUrl === 'string' ? rolePayload.introVideoUrl : '',
       skills: profile.skills?.map((s) => s.skillName) ?? [],
       industries: Array.isArray(rolePayload.industries)
         ? (rolePayload.industries as unknown[]).filter((x): x is string => typeof x === 'string')
@@ -564,6 +570,13 @@ export default function ProfileEditPage() {
         })
         .filter((id): id is string => typeof id === 'string');
 
+      const introVideo = safeWebUrl(form.introVideoUrl);
+      if (form.introVideoUrl.trim() && !introVideo) {
+        setIntroVideoError(true);
+        return;
+      }
+      setIntroVideoError(false);
+
       const links = {
         websiteUrl: form.websiteUrl.trim() || undefined,
         linkedinUrl: form.linkedinUrl.trim() || undefined,
@@ -574,6 +587,7 @@ export default function ProfileEditPage() {
       const rolePayload: Record<string, unknown> = {
         ...(Object.values(links).some(Boolean) ? { links } : {}),
         ...(form.industries.length ? { industries: form.industries, industry: form.industries[0] } : {}),
+        ...(introVideo ? { introVideoUrl: introVideo } : {}),
       };
 
       if (form.role === 'founder') {
@@ -1301,6 +1315,29 @@ export default function ProfileEditPage() {
                   <CardDescription><BilingualText en="Connect your other profiles so people can learn more about you" el="Συνδέστε τα άλλα προφίλ σας ώστε να σας γνωρίσουν καλύτερα" wrap /></CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <label htmlFor="pe-intro-video" className="text-sm font-medium">
+                      <BilingualText en={profileEn('intro_video')} el={profileEl('intro_video')} compact />
+                    </label>
+                    <Input
+                      id="pe-intro-video"
+                      value={form.introVideoUrl}
+                      onChange={(e) => {
+                        setIntroVideoError(false);
+                        updateField('introVideoUrl', e.target.value);
+                      }}
+                      placeholder="https://"
+                      aria-invalid={introVideoError}
+                      aria-describedby="pe-intro-video-hint"
+                    />
+                    <p id="pe-intro-video-hint" className={introVideoError ? 'text-xs text-destructive-accessible' : 'text-xs text-muted-foreground'}>
+                      <BilingualText
+                        en={introVideoError ? profileEn('intro_video_invalid') : profileEn('intro_video_hint')}
+                        el={introVideoError ? profileEl('intro_video_invalid') : profileEl('intro_video_hint')}
+                        wrap
+                      />
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label htmlFor="pe-f6" className="text-sm font-medium flex items-center gap-2">

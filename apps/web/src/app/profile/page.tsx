@@ -63,7 +63,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
-import { profileEn, profileEl } from '@/lib/i18n/strings-profile';
+import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { profilePost, useSuggestedPost } from '@/lib/share-text';
 import { linkedInShareUrl } from '@/lib/commitments-links';
@@ -641,6 +641,7 @@ export default function ProfilePage() {
                     </Button>
                   </div>
                 )}
+                <IntroVideoLink raw={rolePayload.introVideoUrl} />
               </CardContent>
             </Card>
 

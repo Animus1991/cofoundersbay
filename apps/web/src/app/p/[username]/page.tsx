@@ -23,6 +23,7 @@ import { Logo } from '@/components/brand/Logo';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
 import { PersonVerifiedBadge } from '@/components/commitments/PersonVerifiedBadge';
+import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { BilingualText } from '@/components/common/BilingualText';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { ProfileHero } from '@/components/profile/ProfileHero';
@@ -282,8 +283,7 @@ export default function PublicProfilePage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Looking For */}
+            <IntroVideoLink raw={(profile.rolePayload as Record<string, unknown> | null)?.introVideoUrl} />
             {lookingFor.length > 0 && (
               <Card>
                 <CardHeader>
