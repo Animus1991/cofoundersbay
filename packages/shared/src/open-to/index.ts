@@ -83,10 +83,52 @@ export function openToShownTo(
  * preference is looking for a co-founder first.
  */
 export function seekerWants(lookingForRoles: readonly string[] | null | undefined, seekerRole?: string | null): OpenToKind[] {
-  const map: Record<string, OpenToKind> = { cofounder: 'cofounder', 'co-founder': 'cofounder', advisor: 'advisor', investor: 'angel', angel: 'angel', mentor: 'mentor' };
+  // Profile edit's "Looking for" offers team roles (CTO, Designer, Marketing,
+  // Sales, Operations): each is someone to build the company with.
+  const map: Record<string, OpenToKind> = {
+    cofounder: 'cofounder', 'co-founder': 'cofounder', cto: 'cofounder', designer: 'cofounder', marketing: 'cofounder', sales: 'cofounder', operations: 'cofounder',
+    advisor: 'advisor', investor: 'angel', angel: 'angel', mentor: 'mentor',
+  };
   const wants = [...new Set((lookingForRoles ?? []).map((r) => map[String(r).toLowerCase()]).filter((k): k is OpenToKind => !!k))];
   if (wants.length) return wants;
   return seekerRole === 'founder' ? ['cofounder', 'advisor'] : [];
+}
+
+/** The platform role (`User.role`) a member must hold to be each thing a seeker wants. */
+const ROLE_FOR_KIND: Record<OpenToKind, string> = { cofounder: 'founder', advisor: 'mentor', mentor: 'mentor', angel: 'investor' };
+
+const ROLE_FIT: Record<string, Record<string, number>> = {
+  mentor: { founder: 0.9, mentor: 0.4, investor: 0.6, org: 0.8 },
+  investor: { founder: 0.8, mentor: 0.6, investor: 0.5, org: 0.9 },
+  org: { founder: 0.7, mentor: 0.8, investor: 0.9, org: 0.6 },
+};
+
+/**
+ * How well a candidate's role fits what the seeker is after, 0..1.
+ *
+ * A founder is scored on what they said they are looking for (`seekerWants`,
+ * co-founder and advisor when they said nothing): another founder is the
+ * co-founder they came for. Matching used to score founder-to-founder at 0.3
+ * and, worse, filtered a founder's candidates to mentors only, so a
+ * co-founder platform could not recommend a co-founder.
+ */
+export function roleFit(seekerRole: string | null | undefined, candidateRole: string | null | undefined, wants: readonly OpenToKind[]): number {
+  const seeker = String(seekerRole ?? '');
+  const candidate = String(candidateRole ?? '');
+  if (seeker !== 'founder') return ROLE_FIT[seeker]?.[candidate] ?? 0.5;
+  const wanted = (wants.length ? wants : (['cofounder', 'advisor'] as const)).map((k) => ROLE_FOR_KIND[k]);
+  if (wanted[0] === candidate) return 0.9;
+  if (wanted.includes(candidate)) return 0.8;
+  return 0.5;
+}
+
+/**
+ * The role a seeker's candidates are drawn from, or undefined for everyone.
+ * A founder's pool is everyone, ordered by `roleFit`; the other roles keep
+ * looking at founders, as before.
+ */
+export function candidateRoleFor(seekerRole: string | null | undefined): string | undefined {
+  return ({ mentor: 'founder', investor: 'founder', org: 'mentor' } as Record<string, string>)[String(seekerRole ?? '')];
 }
 
 /**
