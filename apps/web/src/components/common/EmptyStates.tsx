@@ -169,13 +169,13 @@ export function NoFilterResults({
           wrap
         />
       }
-      description={description ?? (
+      description={description ?? (onClear ? undefined : (
         <BilingualText
           en="Try a different search term, broaden your filters, or clear them to start over."
           el="Δοκιμάστε άλλη αναζήτηση, πιο ευρεία φίλτρα ή καθαρίστε τα για να ξεκινήσετε από την αρχή."
           wrap
         />
-      )}
+      ))}
       action={onClear ? (
         <Button variant="secondary" size="sm" onClick={onClear} className="gap-1.5">
           <X className="icon-sm" />

@@ -255,7 +255,7 @@ function PostingGuide() {
             <BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact />
           </span>
         </p>
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           <form onSubmit={submit} className="min-w-0 space-y-6" aria-label={bilingualAria(CMT.guide_title.en, CMT.guide_title.el)}>

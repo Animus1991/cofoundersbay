@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
 
@@ -30,23 +31,17 @@ export default function AuthError({
             <AlertTriangle className="icon-md text-destructive-accessible" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-lg sm:text-xl font-semibold text-foreground">Authentication error</h1>
-            <p className="text-sm text-muted-foreground">
-              Something went wrong while loading this page. This is usually transient — try again.
-            </p>
+            <h1 className="text-lg sm:text-xl font-semibold text-foreground">
+              <BilingualText en="Authentication could not load" el="Η ταυτοποίηση δεν φορτώθηκε" wrap />
+            </h1>
           </div>
-          {process.env.NODE_ENV !== 'production' && error?.message && (
-            <pre className="rounded-lg bg-muted p-3 text-left text-2xs text-muted-foreground overflow-auto max-h-32">
-              {error.message}
-            </pre>
-          )}
           <div className="flex items-center justify-center gap-3">
             <Button onClick={() => reset()} className="gap-2">
               <RefreshCw className="icon-sm" />
-              Try again
+              <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/">Go home</Link>
+              <Link href="/"><BilingualText en="Go home" el="Πίσω στην αρχική" compact /></Link>
             </Button>
           </div>
         </div>

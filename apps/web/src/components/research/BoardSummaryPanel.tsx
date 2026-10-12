@@ -421,26 +421,26 @@ export function BoardSummaryPanel({
                 <ul className="space-y-1">
                   {stats.nodeCount === 0 && (
                     <li className="text-2xs text-muted-foreground flex items-start gap-1">
-                      <span className="text-status-warning mt-0.5">•</span> Add nodes to begin your research
+                      <span className="mt-0.5">•</span> Add nodes to begin your research
                     </li>
                   )}
                   {stats.withContent < stats.nodeCount * 0.5 && stats.nodeCount > 0 && (
                     <li className="text-2xs text-muted-foreground flex items-start gap-1">
-                      <span className="text-status-warning mt-0.5">•</span> Add content to more nodes for richer analysis
+                      <span className="mt-0.5">•</span> Add content to more nodes for richer analysis
                     </li>
                   )}
                   {stats.uniqueTags < 3 && stats.nodeCount > 5 && (
                     <li className="text-2xs text-muted-foreground flex items-start gap-1">
-                      <span className="text-status-warning mt-0.5">•</span> Add tags to organize and categorize your research
+                      <span className="mt-0.5">•</span> Add tags to organize and categorize your research
                     </li>
                   )}
                   {stats.typeCount < 3 && stats.nodeCount > 5 && (
                     <li className="text-2xs text-muted-foreground flex items-start gap-1">
-                      <span className="text-status-info mt-0.5">•</span> Try different node types for diverse perspectives
+                      <span className="mt-0.5">•</span> Try different node types for diverse perspectives
                     </li>
                   )}
                   {stats.withContent >= stats.nodeCount * 0.8 && stats.nodeCount >= 5 && (
-                    <li className="text-2xs text-status-success flex items-start gap-1">
+                    <li className="text-2xs text-muted-foreground flex items-start gap-1">
                       <span className="mt-0.5">✓</span> Great content coverage! Ready for AI analysis.
                     </li>
                   )}

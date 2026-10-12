@@ -551,7 +551,12 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       pendingRef.current = action.id;
       setPendingActionId(action.id);
       try {
-        const result = await executeCopilotAction(action);
+        const ask = [...messages].reverse().find((m) => m.role === 'user')?.content?.trim();
+        const result = await executeCopilotAction(
+          ask && action.tool.startsWith('draft_')
+            ? { ...action, payload: { ...(action.payload ?? {}), __ask: ask } }
+            : action,
+        );
         // The reader said no in the page's own confirmation. Nothing was
         // written, so nothing is refreshed, filed or offered for Undo.
         if (result.cancelled) {
@@ -578,7 +583,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setPendingActionId(null);
       }
     },
-    [audit, invalidateFor, updateAction],
+    [audit, invalidateFor, messages, updateAction],
   );
 
   /**

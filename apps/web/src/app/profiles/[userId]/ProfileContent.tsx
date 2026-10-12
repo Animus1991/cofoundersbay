@@ -12,6 +12,7 @@ import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { OpenToLine } from '@/components/intros/OpenToLine';
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
 import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
+import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, ProfileRecommendations, SimilarProfiles } from '@/components/profile/ProfileSections';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import {

@@ -329,9 +329,7 @@ export default function EventsPage() {
                       : <BilingualText en="Sign in to view your event activity." el="Συνδεθείτε για να δείτε τις εκδηλώσεις σας." />
                     : filter !== 'all'
                       ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
-                      : searchQuery
-                        ? <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." />
-                        : <BilingualText en="No events are listed right now." el="Δεν υπάρχουν εκδηλώσεις αυτή τη στιγμή." />
+                      : undefined
                 }
                 illustration="calendar"
                 askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."

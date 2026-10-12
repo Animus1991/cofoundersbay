@@ -1033,16 +1033,16 @@ export function ResearchNodeCard({
                 {items.slice(0, 4).map((item) => (
                   <div key={item.id} className="flex items-center gap-1.5">
                     <div className={cn('w-3 h-3 rounded border shrink-0', item.checked ? 'bg-primary border-primary' : 'border-muted-foreground/40')} />
-                    <span className={cn('text-2xs truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
+                    <span className={cn('text-2xs truncate text-muted-foreground', item.checked && 'line-through')}>
                       {item.text || 'Untitled item'}
                     </span>
                   </div>
                 ))}
-                {items.length > 4 && <p className="text-2xs text-muted-foreground/50">+{items.length - 4} more</p>}
+                {items.length > 4 && <p className="text-2xs text-muted-foreground">+{items.length - 4} more</p>}
                 {items.length > 0 && (
-                  <p className="text-2xs text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
+                  <p className="text-2xs text-muted-foreground mt-1">{done}/{items.length} done</p>
                 )}
-                {items.length === 0 && <p className="text-2xs text-muted-foreground/50 italic">Empty checklist</p>}
+                {items.length === 0 && <p className="text-2xs text-muted-foreground italic">Empty checklist</p>}
               </div>
             );
           })()}

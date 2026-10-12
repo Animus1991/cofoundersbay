@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { BilingualText } from '@/components/common/BilingualText';
 import './globals.css';
 
 export default function GlobalError({
@@ -24,23 +25,22 @@ export default function GlobalError({
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-accessible text-xl" aria-hidden="true">
               !
             </div>
-            <h1 className="mt-4 text-xl font-semibold">Something went wrong</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              The application hit an unexpected error. You can try again or return home.
-            </p>
+            <h1 className="mt-4 text-xl font-semibold">
+              <BilingualText en="This page could not load" el="Αυτή η σελίδα δεν φορτώθηκε" wrap />
+            </h1>
             <div className="mt-6 flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => reset()}
                 className="inline-flex h-9 items-center rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground"
               >
-                Try again
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
               </button>
               <a
                 href="/"
                 className="inline-flex h-9 items-center rounded-xl border border-border bg-secondary px-4 text-sm font-medium"
               >
-                Go home
+                <BilingualText en="Go home" el="Πίσω στην αρχική" compact />
               </a>
             </div>
           </div>

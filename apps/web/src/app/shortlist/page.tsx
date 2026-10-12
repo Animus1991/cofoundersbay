@@ -640,13 +640,13 @@ export default function ShortlistPage() {
                   ? <BilingualText en="No saved profiles yet" el="Δεν υπάρχουν αποθηκευμένα προφίλ ακόμα" />
                   : <BilingualText en="No profiles match" el="Κανένα προφίλ δεν ταιριάζει" />}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {rawItems.length === 0
-                  ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
-                  : roleFilter !== 'all'
-                    ? <BilingualText en="The role filter in the side panel may be hiding people." el="Το φίλτρο ρόλου στο πλευρικό πάνελ ίσως κρύβει άτομα." wrap />
-                    : <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." wrap />}
-              </p>
+              {(rawItems.length === 0 || roleFilter !== 'all') && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {rawItems.length === 0
+                    ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
+                    : <BilingualText en="The role filter in the side panel may be hiding people." el="Το φίλτρο ρόλου στο πλευρικό πάνελ ίσως κρύβει άτομα." wrap />}
+                </p>
+              )}
             </div>
             {rawItems.length > 0 && (
               <div className="flex flex-wrap items-center justify-center gap-2">

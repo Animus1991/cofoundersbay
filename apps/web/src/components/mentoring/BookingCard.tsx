@@ -137,7 +137,7 @@ export function BookingCard({
         />
         <div>
             {isMentor && booking.status === 'requested' && (
-              <p className="mt-1 text-xs text-status-warning">
+              <p className="mt-1 text-xs text-muted-foreground">
                 <BilingualText en="Awaiting your confirmation" el="Περιμένει την επιβεβαίωσή σας" compact />
               </p>
             )}
