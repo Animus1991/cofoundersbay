@@ -2780,15 +2780,15 @@ export default function ResearchBoardPage() {
           />
         )}
 
-        {/* MiniMap — compact on phones, above the draw strip; from sm it sits
-            at bottom-10, and from lg it keeps that height but steps left of
-            the 52px chat bubble (right-6 + bubble + 0.75rem gap) so the Co
-            mark does not cover the map. z-[45] keeps it above the inspector
-            at the seam. */}
+        {/* MiniMap — compact on phones, above the draw strip; from sm it shares
+            the inspector's right edge (right-4) and sits in the gap that panel
+            leaves underneath, so the toolbox is directly above the map. The
+            chat mark lives in the page rail, outside this column. z-[45]
+            keeps the map above the inspector at the seam. */}
         {showMiniMap && board ? (
           <div
             data-canvas-chrome
-            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4 lg:right-[calc(2.25rem+52px)]"
+            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <BoardMiniMap
