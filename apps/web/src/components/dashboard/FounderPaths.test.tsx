@@ -9,5 +9,6 @@ describe('FounderPaths', () => {
       expect(screen.getByRole('link', { name: new RegExp(path.titleEn) }).getAttribute('href')).toBe(path.href);
     }
     expect(screen.getByText(/Nothing here promises funding/)).toBeTruthy();
+    expect(document.querySelectorAll('[data-card]')).toHaveLength(3);
   });
 });

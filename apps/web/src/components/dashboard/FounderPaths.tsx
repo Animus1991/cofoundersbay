@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 /**
  * The three doors a cofounder community is usually read through (start, grow,
@@ -33,29 +33,26 @@ export const FOUNDER_PATHS = [
 
 export function FounderPaths() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <BilingualText en="Start, grow, fund" el="Ξεκινήστε, αναπτυχθείτε, χρηματοδότηση" compact />
-        </CardTitle>
-        <CardDescription>
-          <BilingualText en="Three doors. Each one opens a tool you already have." el="Τρεις πόρτες. Η καθεμία ανοίγει ένα εργαλείο που ήδη έχετε." wrap />
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="card-rows">
-          {FOUNDER_PATHS.map((path) => (
-            <Link key={path.href} href={path.href} className="axis-row block px-4 py-3 sm:px-6">
-              <p className="text-sm font-medium text-foreground">
-                <BilingualText en={path.titleEn} el={path.titleEl} compact />
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <BilingualText en={path.bodyEn} el={path.bodyEl} wrap />
-              </p>
-            </Link>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <section className="space-y-3" aria-label="Start, grow, fund">
+      <p className="text-sm text-muted-foreground">
+        <BilingualText en="Three doors. Each one opens a tool you already have." el="Τρεις πόρτες. Η καθεμία ανοίγει ένα εργαλείο που ήδη έχετε." wrap />
+      </p>
+      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3">
+        {FOUNDER_PATHS.map((path) => (
+          <Link key={path.href} href={path.href} className="flex h-full min-w-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Card className="flex h-full w-full flex-col transition-colors hover:border-primary/30">
+              <CardContent className="flex flex-1 flex-col gap-1">
+                <p className="text-sm font-medium text-foreground">
+                  <BilingualText en={path.titleEn} el={path.titleEl} compact />
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  <BilingualText en={path.bodyEn} el={path.bodyEl} wrap />
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
