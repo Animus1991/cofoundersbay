@@ -2,6 +2,17 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "I could not find that person.": "Δεν βρήκα αυτό το πρόσωπο.",
+  "Tell me who: a name or a profile.": "Πείτε μου ποιον: ένα όνομα ή ένα προφίλ.",
+  "Open matches": "Άνοιγμα αντιστοιχίσεων",
+  "People who complement you, with the reasons.": "Άτομα που σας συμπληρώνουν, με τους λόγους.",
+  "Open the match": "Άνοιγμα της αντιστοίχισης",
+  "The full comparison, factor by factor.": "Η πλήρης σύγκριση, παράγοντα προς παράγοντα.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}: {score}% αντιστοίχιση, {confidence}% βεβαιότητα.",
+  "Why you match:": "Γιατί ταιριάζετε:",
+  "Worth discussing early:": "Αξίζει να συζητηθεί νωρίς:",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "Στις ερωτήσεις συνεργασίας που απαντήσατε και οι δύο ({shared} από {total}): {agree} συμφωνίες, {close} κοντά, {talk} για συζήτηση πρώτα.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Λιγότερες από 3 ερωτήσεις συνεργασίας έχουν απαντηθεί και από τους δύο· αν τις απαντήσετε στις Ρυθμίσεις, θα δείτε πού συμφωνείτε.",
   "Open the scout": "Άνοιγμα ανιχνευτή",
   "Open perks": "Άνοιγμα προσφορών",
   "Partner offers. Claim one to see its code.": "Προσφορές συνεργατών. Διεκδικήστε μία για να δείτε τον κωδικό της.",
@@ -796,6 +807,17 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "I could not find that person.": "No encontré a esa persona.",
+  "Tell me who: a name or a profile.": "Dime quién: un nombre o un perfil.",
+  "Open matches": "Abrir coincidencias",
+  "People who complement you, with the reasons.": "Personas que te complementan, con los motivos.",
+  "Open the match": "Abrir la coincidencia",
+  "The full comparison, factor by factor.": "La comparación completa, factor por factor.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}: {score}% de coincidencia, {confidence}% de confianza.",
+  "Why you match:": "Por qué coincidís:",
+  "Worth discussing early:": "Conviene hablarlo pronto:",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "En las preguntas de trabajo que ambos respondisteis ({shared} de {total}): {agree} de acuerdo, {close} cerca, {talk} para hablar primero.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Menos de 3 preguntas de trabajo están respondidas por ambos; respondiéndolas en Ajustes verás en qué coincidís.",
   "Open the scout": "Abrir el explorador",
   "Open perks": "Abrir ventajas",
   "Partner offers. Claim one to see its code.": "Ofertas de socios. Reclama una para ver su código.",
@@ -1325,6 +1347,17 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "I could not find that person.": "Je n’ai pas trouvé cette personne.",
+  "Tell me who: a name or a profile.": "Dites-moi qui : un nom ou un profil.",
+  "Open matches": "Ouvrir les correspondances",
+  "People who complement you, with the reasons.": "Les personnes qui vous complètent, avec les raisons.",
+  "Open the match": "Ouvrir la correspondance",
+  "The full comparison, factor by factor.": "La comparaison complète, critère par critère.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name} : {score} % de correspondance, {confidence} % de confiance.",
+  "Why you match:": "Pourquoi vous correspondez :",
+  "Worth discussing early:": "À discuter tôt :",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "Sur les questions de travail auxquelles vous avez tous deux répondu ({shared} sur {total}) : {agree} d’accord, {close} proches, {talk} à discuter d’abord.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Moins de 3 questions de travail ont une réponse de vous deux ; y répondre dans les Paramètres montre où vous êtes d’accord.",
   "Open the scout": "Ouvrir l’éclaireur",
   "Open perks": "Ouvrir les avantages",
   "Partner offers. Claim one to see its code.": "Offres partenaires. Réclamez-en une pour voir son code.",
@@ -1834,6 +1867,17 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "I could not find that person.": "Ich habe diese Person nicht gefunden.",
+  "Tell me who: a name or a profile.": "Sag mir, wen: einen Namen oder ein Profil.",
+  "Open matches": "Matches öffnen",
+  "People who complement you, with the reasons.": "Menschen, die dich ergänzen, mit den Gründen.",
+  "Open the match": "Match öffnen",
+  "The full comparison, factor by factor.": "Der vollständige Vergleich, Faktor für Faktor.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}: {score} % Übereinstimmung, {confidence} % Sicherheit.",
+  "Why you match:": "Warum ihr passt:",
+  "Worth discussing early:": "Früh zu besprechen:",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "Bei den Arbeitsfragen, die ihr beide beantwortet habt ({shared} von {total}): {agree} einig, {close} nah, {talk} zuerst besprechen.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Weniger als 3 Arbeitsfragen sind von euch beiden beantwortet; wer sie in den Einstellungen beantwortet, sieht, wo ihr übereinstimmt.",
   "Open the scout": "Scout öffnen",
   "Open perks": "Vorteile öffnen",
   "Partner offers. Claim one to see its code.": "Partnerangebote. Löse eins ein, um seinen Code zu sehen.",
@@ -2343,6 +2387,17 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "I could not find that person.": "Non ho trovato quella persona.",
+  "Tell me who: a name or a profile.": "Dimmi chi: un nome o un profilo.",
+  "Open matches": "Apri le corrispondenze",
+  "People who complement you, with the reasons.": "Persone che ti completano, con i motivi.",
+  "Open the match": "Apri la corrispondenza",
+  "The full comparison, factor by factor.": "Il confronto completo, fattore per fattore.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}: {score}% di corrispondenza, {confidence}% di affidabilità.",
+  "Why you match:": "Perché siete compatibili:",
+  "Worth discussing early:": "Da discutere presto:",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "Sulle domande di lavoro a cui avete risposto entrambi ({shared} su {total}): {agree} d’accordo, {close} vicini, {talk} da discutere prima.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Meno di 3 domande di lavoro hanno la risposta di entrambi; rispondendo nelle Impostazioni vedrete dove siete d’accordo.",
   "Open the scout": "Apri lo scout",
   "Open perks": "Apri i vantaggi",
   "Partner offers. Claim one to see its code.": "Offerte dei partner. Richiedine una per vederne il codice.",
@@ -2842,6 +2897,17 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "I could not find that person.": "Não encontrei essa pessoa.",
+  "Tell me who: a name or a profile.": "Diga-me quem: um nome ou um perfil.",
+  "Open matches": "Abrir correspondências",
+  "People who complement you, with the reasons.": "Pessoas que o complementam, com os motivos.",
+  "Open the match": "Abrir a correspondência",
+  "The full comparison, factor by factor.": "A comparação completa, fator a fator.",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}: {score}% de correspondência, {confidence}% de confiança.",
+  "Why you match:": "Por que combinam:",
+  "Worth discussing early:": "Vale discutir cedo:",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "Nas perguntas de trabalho que ambos responderam ({shared} de {total}): {agree} de acordo, {close} próximas, {talk} para conversar primeiro.",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "Menos de 3 perguntas de trabalho foram respondidas por ambos; respondê-las em Configurações mostra onde concordam.",
   "Open the scout": "Abrir o explorador",
   "Open perks": "Abrir vantagens",
   "Partner offers. Claim one to see its code.": "Ofertas de parceiros. Resgate uma para ver o código.",
@@ -3338,6 +3404,17 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "I could not find that person.": "我没有找到这个人。",
+  "Tell me who: a name or a profile.": "告诉我是谁：一个名字或一个个人资料。",
+  "Open matches": "打开匹配",
+  "People who complement you, with the reasons.": "与你互补的人，并附上原因。",
+  "Open the match": "打开这个匹配",
+  "The full comparison, factor by factor.": "完整的比较，逐项列出。",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}：匹配度 {score}%，置信度 {confidence}%。",
+  "Why you match:": "你们匹配的原因：",
+  "Worth discussing early:": "值得尽早讨论：",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "在你们都回答过的合作问题中（{total} 题中的 {shared} 题）：{agree} 项一致，{close} 项接近，{talk} 项需要先讨论。",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "你们共同回答的合作问题少于 3 个；在设置中回答后，就能看到你们在哪些方面一致。",
   "Open the scout": "打开联合创始人搜寻",
   "Open perks": "打开合作福利",
   "Partner offers. Claim one to see its code.": "合作伙伴优惠。领取后即可看到兑换码。",
@@ -3854,6 +3931,17 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "I could not find that person.": "その人が見つかりませんでした。",
+  "Tell me who: a name or a profile.": "誰のことか教えてください：名前かプロフィール。",
+  "Open matches": "マッチを開く",
+  "People who complement you, with the reasons.": "あなたを補完する人と、その理由。",
+  "Open the match": "このマッチを開く",
+  "The full comparison, factor by factor.": "要素ごとの詳しい比較。",
+  "{name}: {score}% match, {confidence}% confidence.": "{name}：マッチ度 {score}%、信頼度 {confidence}%。",
+  "Why you match:": "マッチする理由：",
+  "Worth discussing early:": "早めに話し合うべきこと：",
+  "On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.": "お二人とも回答した働き方の質問（{total} 問中 {shared} 問）：一致 {agree}、近い {close}、先に話し合う {talk}。",
+  "Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.": "お二人とも回答した働き方の質問は 3 問未満です。設定で回答すると、どこで一致しているかがわかります。",
   "Open the scout": "スカウトを開く",
   "Open perks": "特典を開く",
   "Partner offers. Claim one to see its code.": "パートナー特典。受け取るとコードが表示されます。",

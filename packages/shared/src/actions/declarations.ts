@@ -247,6 +247,19 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_match_detail',
+    kind: 'read',
+    label: { en: 'Explain one match', el: 'Εξήγηση μίας αντιστοίχισης' },
+    description: {
+      en: 'Read why the signed-in user and one person were matched: the score and its confidence, the reasons, potential friction worth discussing early, and - from the compatibility questions both answered - where they agree and what to talk about first (never the other person\u2019s answers). Pass the person\u2019s userId from a prior search or recommendation.',
+      el: 'Διαβάζει γιατί αντιστοιχίστηκαν ο χρήστης και ένα πρόσωπο: τη βαθμολογία και τη βεβαιότητά της, τους λόγους, πιθανές τριβές που αξίζει να συζητηθούν νωρίς, και - από τις ερωτήσεις συμβατότητας που απάντησαν και οι δύο - πού συμφωνούν και τι να συζητήσουν πρώτα (ποτέ τις απαντήσεις του άλλου). Δώστε το userId του προσώπου από προηγούμενη αναζήτηση ή πρόταση.',
+    },
+    params: [
+      { name: 'userId', type: 'string', required: false, description: { en: 'Id of the person, from a prior search or recommendation.', el: 'Το id του προσώπου, από προηγούμενη αναζήτηση ή πρόταση.' } },
+    ],
+    writes: false,
+  },
+  {
     id: 'get_skill_evidence',
     kind: 'read',
     label: { en: 'Read skills and their evidence', el: 'Ανάγνωση δεξιοτήτων και τεκμηρίων' },

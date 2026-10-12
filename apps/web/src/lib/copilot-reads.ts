@@ -68,6 +68,7 @@ import {
   type ResearchBoard,
   type ShortlistItem,
   searchProfiles,
+  getMatchVs,
 } from '@/lib/api';
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
@@ -663,6 +664,48 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
 
     if (!parts.length) {
       return { section: t('No introductions yet. Ask for one from the profile of someone you want to meet.'), citations: [], actions };
+    }
+    return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_match_detail(args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
+    // By id from a model, or by name from the rule planner.
+    let userId = typeof args?.userId === 'string' ? args.userId : '';
+    if (!userId && typeof args?.name === 'string' && args.name) {
+      const found = await searchProfiles({ q: args.name, limit: 1 }).catch(() => null);
+      userId = found?.hits?.[0]?.userId ?? '';
+    }
+    if (!userId) {
+      return {
+        section: typeof args?.name === 'string' && args.name ? t('I could not find that person.') : t('Tell me who: a name or a profile.'),
+        citations: [],
+        actions: [openArea(t, '/matches', t('Open matches'), t('People who complement you, with the reasons.'))],
+      };
+    }
+    const vs = await getMatchVs(userId);
+    const name = vs?.targetProfile?.displayName ?? '';
+    const href = `/matches/${encodeURIComponent(userId)}`;
+    const actions = [openArea(t, href, t('Open the match'), t('The full comparison, factor by factor.'))];
+    const citations: CopilotCitation[] = name ? [{ type: 'person', id: userId, label: name, href: `/profiles/${encodeURIComponent(userId)}` }] : [];
+    const parts = [t('{name}: {score}% match, {confidence}% confidence.', { name: name || userId, score: vs?.overall?.score ?? 0, confidence: vs?.overall?.confidence ?? 0 })];
+    const reasons = asList<string>(vs?.reasons).slice(0, LIMIT);
+    if (reasons.length) parts.push(`${t('Why you match:')}\n${reasons.map((r) => `• ${r}`).join('\n')}`);
+    const compat = vs?.compatibility;
+    const talks = asList<{ verdict: string; question: { en: string; el: string }; talk?: { en: string; el: string } }>(compat?.items)
+      .filter((i) => i.verdict === 'talk' && i.talk);
+    const friction = asList<{ title: string; description: string }>(vs?.frictionPoints);
+    const early = [
+      ...talks.map((i) => `• **${say(i.question)}** — ${say(i.talk!)}`),
+      ...friction.map((f) => `• **${f.title}** — ${f.description}`),
+    ].slice(0, LIMIT);
+    if (early.length) parts.push(`${t('Worth discussing early:')}\n${early.join('\n')}`);
+    if (compat && typeof compat.shared === 'number' && compat.shared >= 3) {
+      parts.push(t('On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.', {
+        shared: compat.shared, total: compat.total, agree: compat.agree, close: compat.close, talk: compat.talk,
+      }));
+    } else {
+      parts.push(t('Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.'));
     }
     return { section: parts.join('\n\n'), citations, actions };
   },

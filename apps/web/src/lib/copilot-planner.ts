@@ -140,6 +140,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
   { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
+  // One match explained: "why do I match with Elena", «γιατί ταιριάζω με την Έλενα».
+  {
+    keys: ['why do i match', 'why we match', 'why are we matched', 'how well do i fit', 'how well do we fit', 'how do we fit', 'compatibility with', 'my match with', 'γιατι ταιριαζ', 'ποσο ταιριαζ', 'πως ταιριαζουμε', 'συμβατοτητα με'],
+    tool: 'get_match_detail',
+  },
   // Warm introductions. «Συστάσεις» alone is endorsements here, so the Greek
   // keys carry «γνωριμ»; "introduce me" alone is a connection request.
   {
@@ -637,7 +642,9 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'investor',
   ]);
 
-  const wantsMatches = includesAny(message, [
+  // A question about one match ("why do I match with Elena") is that match's
+  // read, not the whole list.
+  const wantsMatches = !areaReads.includes('get_match_detail') && includesAny(message, [
     'match',
     'recommend',
     'αντιστοίχισ',
@@ -788,7 +795,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (wantsNotifications) add('get_notifications');
 
   // "Who could introduce me to Nikos" reads the paths to that person.
-  for (const read of areaReads) add(read, read === 'get_intros' && person ? { name: person } : {});
+  for (const read of areaReads) add(read, (read === 'get_intros' || read === 'get_match_detail') && person ? { name: person } : {});
 
   if (wantsShortlistRemove) {
     const args: Record<string, string> = {};
