@@ -147,38 +147,105 @@ const defaultFormData: ProfileFormData = {
   education: [],
 };
 
-const roleOptions: { value: Role; label: string; icon: React.ElementType; description: string }[] = [
-  { value: 'founder', label: 'Founder', icon: Rocket, description: 'Building or looking to build a startup' },
-  { value: 'mentor', label: 'Mentor', icon: GraduationCap, description: 'Helping founders grow' },
-  { value: 'investor', label: 'Investor', icon: TrendingUp, description: 'Investing in startups' },
-  { value: 'org', label: 'Organization', icon: Building2, description: 'Accelerator, incubator, or hub' },
+const roleOptions: { value: Role; label: string; labelEl: string; icon: React.ElementType; description: string; descriptionEl: string }[] = [
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής', icon: Rocket, description: 'Building or looking to build a startup', descriptionEl: 'Χτίζει ή θέλει να χτίσει ένα startup' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας', icon: GraduationCap, description: 'Helping founders grow', descriptionEl: 'Βοηθά ιδρυτές να αναπτυχθούν' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής', icon: TrendingUp, description: 'Investing in startups', descriptionEl: 'Επενδύει σε startups' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός', icon: Building2, description: 'Accelerator, incubator, or hub', descriptionEl: 'Επιταχυντής, θερμοκοιτίδα ή κόμβος' },
 ];
 
 const startupStages = [
-  { value: 'idea', label: 'Idea' },
-  { value: 'mvp', label: 'MVP' },
-  { value: 'traction', label: 'Traction' },
-  { value: 'scaling', label: 'Scaling' },
+  { value: 'idea', label: 'Idea', labelEl: 'Ιδέα' },
+  { value: 'mvp', label: 'MVP', labelEl: 'MVP' },
+  { value: 'traction', label: 'Traction', labelEl: 'Traction' },
+  { value: 'scaling', label: 'Scaling', labelEl: 'Κλιμάκωση' },
 ];
 const commitmentLevels = [
-  { value: 'full-time', label: 'Full-time' },
-  { value: 'part-time', label: 'Part-time' },
-  { value: 'weekends', label: 'Weekends only' },
-  { value: 'flexible', label: 'Flexible' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
 ];
-const lookingForOptions = ['Co-founder', 'CTO', 'Designer', 'Marketing', 'Sales', 'Operations', 'Other'];
+const lookingForOptions = [
+  { value: 'Co-founder', label: 'Co-founder', labelEl: 'Συνιδρυτής' },
+  { value: 'CTO', label: 'CTO', labelEl: 'CTO' },
+  { value: 'Designer', label: 'Designer', labelEl: 'Σχεδιαστής' },
+  { value: 'Marketing', label: 'Marketing', labelEl: 'Μάρκετινγκ' },
+  { value: 'Sales', label: 'Sales', labelEl: 'Πωλήσεις' },
+  { value: 'Operations', label: 'Operations', labelEl: 'Λειτουργίες' },
+  { value: 'Other', label: 'Other', labelEl: 'Άλλο' },
+];
 const industryOptions = ['AI/ML', 'Fintech', 'Healthtech', 'E-commerce', 'SaaS', 'Marketplace', 'Gaming', 'Education', 'Climate', 'Web3', 'Hardware', 'Consumer', 'Enterprise', 'Other'];
+const industryEl: Record<string, string> = {
+  'E-commerce': 'Ηλεκτρονικό εμπόριο',
+  Marketplace: 'Αγορά',
+  Gaming: 'Παιχνίδια',
+  Education: 'Εκπαίδευση',
+  Climate: 'Κλίμα',
+  Hardware: 'Υλικό',
+  Consumer: 'Καταναλωτικά',
+  Enterprise: 'Επιχειρήσεις',
+  Other: 'Άλλο',
+};
 const expertiseOptions = ['Product', 'Engineering', 'Design', 'Marketing', 'Sales', 'Operations', 'Finance', 'Legal', 'HR', 'Fundraising', 'Growth', 'Strategy'];
-const availabilityOptions = ['1-2 hours/week', '3-5 hours/week', '5-10 hours/week', 'On-demand'];
-const investmentStageOptions = [
-  { value: 'pre-seed', label: 'Pre-seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B+' },
-  { value: 'bootstrapped', label: 'Bootstrapped' },
+const expertiseEl: Record<string, string> = {
+  Product: 'Προϊόν',
+  Engineering: 'Μηχανική λογισμικού',
+  Design: 'Σχεδιασμός',
+  Marketing: 'Μάρκετινγκ',
+  Sales: 'Πωλήσεις',
+  Operations: 'Λειτουργίες',
+  Finance: 'Οικονομικά',
+  Legal: 'Νομικά',
+  HR: 'Ανθρώπινο δυναμικό',
+  Fundraising: 'Χρηματοδότηση',
+  Growth: 'Ανάπτυξη',
+  Strategy: 'Στρατηγική',
+};
+const languageSuggestions = ['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese'];
+const languageEl: Record<string, string> = {
+  English: 'Αγγλικά',
+  Greek: 'Ελληνικά',
+  Spanish: 'Ισπανικά',
+  French: 'Γαλλικά',
+  German: 'Γερμανικά',
+  Chinese: 'Κινεζικά',
+};
+const availabilityOptions = [
+  { value: '1-2 hours/week', label: '1-2 hours/week', labelEl: '1-2 ώρες/εβδομάδα' },
+  { value: '3-5 hours/week', label: '3-5 hours/week', labelEl: '3-5 ώρες/εβδομάδα' },
+  { value: '5-10 hours/week', label: '5-10 hours/week', labelEl: '5-10 ώρες/εβδομάδα' },
+  { value: 'On-demand', label: 'On-demand', labelEl: 'Κατ’ απαίτηση' },
 ];
-const orgTypeOptions = ['Accelerator', 'Incubator', 'Hub', 'University', 'Corporate', 'Government'];
-const programOptions = ['Acceleration', 'Incubation', 'Mentorship', 'Funding', 'Office space', 'Events'];
+const investmentStageOptions = [
+  { value: 'pre-seed', label: 'Pre-seed', labelEl: 'Προ-seed' },
+  { value: 'seed', label: 'Seed', labelEl: 'Seed' },
+  { value: 'series-a', label: 'Series A', labelEl: 'Σειρά A' },
+  { value: 'series-b', label: 'Series B+', labelEl: 'Σειρά B+' },
+  { value: 'bootstrapped', label: 'Bootstrapped', labelEl: 'Αυτοχρηματοδοτούμενο' },
+];
+const orgTypeOptions = [
+  { value: 'Accelerator', label: 'Accelerator', labelEl: 'Επιταχυντής' },
+  { value: 'Incubator', label: 'Incubator', labelEl: 'Θερμοκοιτίδα' },
+  { value: 'Hub', label: 'Hub', labelEl: 'Κόμβος' },
+  { value: 'University', label: 'University', labelEl: 'Πανεπιστήμιο' },
+  { value: 'Corporate', label: 'Corporate', labelEl: 'Επιχείρηση' },
+  { value: 'Government', label: 'Government', labelEl: 'Δημόσιος φορέας' },
+];
+const programOptions = [
+  { value: 'Acceleration', label: 'Acceleration', labelEl: 'Επιτάχυνση' },
+  { value: 'Incubation', label: 'Incubation', labelEl: 'Επώαση' },
+  { value: 'Mentorship', label: 'Mentorship', labelEl: 'Καθοδήγηση' },
+  { value: 'Funding', label: 'Funding', labelEl: 'Χρηματοδότηση' },
+  { value: 'Office space', label: 'Office space', labelEl: 'Χώρος γραφείου' },
+  { value: 'Events', label: 'Events', labelEl: 'Εκδηλώσεις' },
+];
+const regionSuggestions = ['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM'];
+const regionEl: Record<string, string> = {
+  Global: 'Παγκοσμίως',
+  Europe: 'Ευρώπη',
+  Asia: 'Ασία',
+};
 
 function normalizeFounderStage(input: string): string {
   const s = input.trim().toLowerCase();
@@ -213,16 +280,20 @@ function normalizeInvestmentStage(input: string): string {
 
 function TagInput({
   label,
+  labelEl,
   value,
   onChange,
   suggestions,
+  suggestionEl,
   placeholder,
   max = 10,
 }: {
   label: string;
+  labelEl?: string;
   value: string[];
   onChange: (value: string[]) => void;
   suggestions: string[];
+  suggestionEl?: Record<string, string>;
   placeholder?: string;
   max?: number;
 }) {
@@ -243,12 +314,12 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
+      <label htmlFor={inputId} className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></label>
       <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-background/50 min-h-[60px]">
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
-            {tag}
-            <button aria-label={`Remove ${tag}`} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+            <BilingualText en={tag} el={suggestionEl?.[tag]} compact />
+            <button aria-label={bilingualAria(`Remove ${tag}`, suggestionEl?.[tag] ? `Αφαίρεση: ${suggestionEl[tag]}` : `Αφαίρεση: ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
               <X className="icon-sm" />
             </button>
           </Badge>
@@ -264,7 +335,7 @@ function TagInput({
               addTag(input);
             }
           }}
-          placeholder={value.length < max ? placeholder : `Max ${max} reached`}
+          placeholder={value.length < max ? placeholder : bilingualInline(`Max ${max} reached`, `Όριο ${max}`)}
           disabled={value.length >= max}
           className="flex-1 min-w-[120px] bg-transparent text-sm outline-none"
         />
@@ -280,7 +351,7 @@ function TagInput({
               onClick={() => addTag(s)}
               className="text-xs px-2 py-1 rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
-              + {s}
+              + <BilingualText en={s} el={suggestionEl?.[s]} compact />
             </button>
           ))}
       </div>
@@ -290,15 +361,17 @@ function TagInput({
 
 function SelectButtons({
   label,
+  labelEl,
   value,
   onChange,
   options,
   multiple = false,
 }: {
   label: string;
+  labelEl?: string;
   value: string | string[];
   onChange: (value: string | string[]) => void;
-  options: ({ value: string; label: string } | string)[];
+  options: ({ value: string; label: string; labelEl?: string } | string)[];
   multiple?: boolean;
 }) {
   const normalized = options.map((opt) => (typeof opt === 'string' ? { value: opt, label: opt } : opt));
@@ -320,7 +393,7 @@ function SelectButtons({
   const groupId = useId();
   return (
     <div className="space-y-2">
-      <p id={groupId} className="text-sm font-medium text-foreground">{label}</p>
+      <p id={groupId} className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></p>
       <div className="flex flex-wrap gap-2" role="group" aria-labelledby={groupId}>
         {normalized.map((opt) => (
           <button
@@ -335,7 +408,7 @@ function SelectButtons({
                 : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
-            {opt.label}
+            <BilingualText en={opt.label} el={'labelEl' in opt ? opt.labelEl : undefined} compact />
           </button>
         ))}
       </div>
@@ -797,7 +870,7 @@ export default function ProfileEditPage() {
                       id="profile-display-name"
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
-                      placeholder="e.g. Jane Doe"
+                      placeholder={bilingualInline('e.g. Jane Doe', 'π.χ. Μαρία Παπαδοπούλου')}
                       className="max-w-md"
                     />
                   </div>
@@ -807,7 +880,7 @@ export default function ProfileEditPage() {
                       id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
-                      placeholder="e.g., 3x Founder | Building AI SaaS | Former product lead"
+                      placeholder={bilingualInline('e.g., 3x Founder | Building AI SaaS | Former product lead', 'π.χ. Ιδρύτρια | Φτιάχνω AI SaaS | Πρώην product lead')}
                     />
                     <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
@@ -910,7 +983,7 @@ export default function ProfileEditPage() {
                       id="profile-location"
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
-                      placeholder="e.g., Athens, Greece"
+                      placeholder={bilingualInline('e.g., Athens, Greece', 'π.χ. Αθήνα, Ελλάδα')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -919,7 +992,7 @@ export default function ProfileEditPage() {
                       id="profile-timezone"
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
-                      placeholder="e.g., Europe/Athens"
+                      placeholder={bilingualInline('e.g., Europe/Athens', 'π.χ. Europe/Athens')}
                     />
                   </div>
                 </CardContent>
@@ -937,27 +1010,33 @@ export default function ProfileEditPage() {
                 <CardContent className="space-y-6">
                   <TagInput
                     label="Core Skills (Max 15)"
+                    labelEl="Βασικές δεξιότητες (έως 15)"
                     value={form.skills}
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
+                    suggestionEl={skillCatalog.length ? undefined : expertiseEl}
                     placeholder={bilingualInline("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
                     max={15}
                   />
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <TagInput
                       label="Industries"
+                      labelEl="Κλάδοι"
                       value={form.industries}
                       onChange={(v) => updateField('industries', v)}
                       suggestions={industryOptions}
-                      placeholder="e.g. Fintech, AI..."
+                      suggestionEl={industryEl}
+                      placeholder={bilingualInline('e.g. Fintech, AI...', 'π.χ. Fintech, AI...')}
                       max={5}
                     />
                     <TagInput
                       label="Languages"
+                      labelEl="Γλώσσες"
                       value={form.languages}
                       onChange={(v) => updateField('languages', v)}
-                      suggestions={['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese']}
-                      placeholder="e.g. English, Greek..."
+                      suggestions={languageSuggestions}
+                      suggestionEl={languageEl}
+                      placeholder={bilingualInline('e.g. English, Greek...', 'π.χ. Αγγλικά, Ελληνικά...')}
                       max={5}
                     />
                   </div>
@@ -1023,8 +1102,8 @@ export default function ProfileEditPage() {
                             <Icon className="icon-md" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-foreground">{opt.label}</p>
-                            <p className="text-xs text-muted-foreground">{opt.description}</p>
+                            <p className="text-sm font-medium text-foreground"><BilingualText en={opt.label} el={opt.labelEl} compact /></p>
+                            <p className="text-xs text-muted-foreground"><BilingualText en={opt.description} el={opt.descriptionEl} compact wrap /></p>
                           </div>
                         </button>
                       );
@@ -1045,18 +1124,21 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Startup Stage"
+                      labelEl="Στάδιο startup"
                       value={form.startupStage}
                       onChange={(v) => updateField('startupStage', v as string)}
                       options={startupStages}
                     />
                     <SelectButtons
                       label="Commitment Level"
+                      labelEl="Επίπεδο δέσμευσης"
                       value={form.commitment}
                       onChange={(v) => updateField('commitment', v as string)}
                       options={commitmentLevels}
                     />
                     <SelectButtons
                       label="Looking For"
+                      labelEl="Αναζητάτε"
                       value={form.lookingFor}
                       onChange={(v) => updateField('lookingFor', v as string[])}
                       options={lookingForOptions}
@@ -1078,14 +1160,17 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <TagInput
                       label="Expertise Areas"
+                      labelEl="Τομείς εξειδίκευσης"
                       value={form.expertiseAreas}
                       onChange={(v) => updateField('expertiseAreas', v)}
                       suggestions={expertiseOptions}
+                      suggestionEl={expertiseEl}
                       placeholder={bilingualInline("Add expertise…", "Προσθήκη εξειδίκευσης…")}
                       max={10}
                     />
                     <SelectButtons
                       label="Availability"
+                      labelEl="Διαθεσιμότητα"
                       value={form.availability}
                       onChange={(v) => updateField('availability', v as string)}
                       options={availabilityOptions}
@@ -1109,7 +1194,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f3"
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
-                          placeholder="e.g., $100/hour or Free"
+                          placeholder={bilingualInline('e.g., $100/hour or Free', 'π.χ. 100$/ώρα ή Δωρεάν')}
                         />
                       </div>
                     </div>
@@ -1129,13 +1214,15 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Investment Focus"
+                      labelEl="Επενδυτική εστίαση"
                       value={form.investmentFocus}
                       onChange={(v) => updateField('investmentFocus', v as string[])}
-                      options={industryOptions}
+                      options={industryOptions.map((value) => ({ value, label: value, labelEl: industryEl[value] }))}
                       multiple
                     />
                     <SelectButtons
                       label="Investment Stages"
+                      labelEl="Στάδια επένδυσης"
                       value={form.investmentStages}
                       onChange={(v) => updateField('investmentStages', v as string[])}
                       options={investmentStageOptions}
@@ -1147,7 +1234,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f4"
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
-                          placeholder="e.g., $25K"
+                          placeholder={bilingualInline('e.g., $25K', 'π.χ. 25.000$')}
                         />
                       </div>
                       <div className="space-y-2">
@@ -1155,15 +1242,17 @@ export default function ProfileEditPage() {
                         <Input id="pe-f5"
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
-                          placeholder="e.g., $500K"
+                          placeholder={bilingualInline('e.g., $500K', 'π.χ. 500.000$')}
                         />
                       </div>
                     </div>
                     <TagInput
                       label="Geography Focus"
+                      labelEl="Γεωγραφική εστίαση"
                       value={form.geography}
                       onChange={(v) => updateField('geography', v)}
-                      suggestions={['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM']}
+                      suggestions={regionSuggestions}
+                      suggestionEl={regionEl}
                       placeholder={bilingualInline("Add region…", "Προσθήκη περιοχής…")}
                       max={5}
                     />
@@ -1183,12 +1272,14 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Organization Type"
+                      labelEl="Τύπος οργανισμού"
                       value={form.orgType}
                       onChange={(v) => updateField('orgType', v as string)}
                       options={orgTypeOptions}
                     />
                     <SelectButtons
                       label="Programs Offered"
+                      labelEl="Προγράμματα"
                       value={form.programTypes}
                       onChange={(v) => updateField('programTypes', v as string[])}
                       options={programOptions}

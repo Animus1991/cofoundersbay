@@ -71,7 +71,7 @@ const CAT_CONFIG: Record<string, { label: string; labelEl: string; icon: React.E
   development: { label: 'Development', labelEl: 'Ανάπτυξη λογισμικού', icon: Code2, color: 'text-status-accent' },
   design: { label: 'Design', labelEl: 'Σχεδιασμός', icon: Brush, color: 'text-status-accent' },
   consulting: { label: 'Consulting', labelEl: 'Συμβουλευτική', icon: BrainCircuit, color: 'text-status-warning' },
-  coaching: { label: 'Coaching', labelEl: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
+  coaching: { label: 'Coaching', labelEl: 'Καθοδήγηση', icon: GraduationCap, color: 'text-status-success' },
   other: { label: 'Other', labelEl: 'Άλλο', icon: Globe, color: 'text-muted-foreground' },
 };
 
@@ -385,7 +385,7 @@ export default function MarketplacePage() {
   // through the same setters the rail and chips use.
   const CATEGORY_EL: Record<string, string> = {
     All: 'Όλες οι υπηρεσίες', legal: 'Νομικά', finance: 'Οικονομικά', marketing: 'Μάρκετινγκ', development: 'Ανάπτυξη',
-    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Coaching', other: 'Άλλο',
+    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Καθοδήγηση', other: 'Άλλο',
   };
   usePageControls([
     choiceControl('category', 'Service category', 'Κατηγορία υπηρεσίας', CATEGORIES.map((c) => ({ value: c, en: CAT_CONFIG[c].label, el: CATEGORY_EL[c] ?? CAT_CONFIG[c].label })), selectedCategory, setSelectedCategory),

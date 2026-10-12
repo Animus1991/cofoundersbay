@@ -74,7 +74,7 @@ const STEP_META: Record<InputStep, { labelEn: string; labelEl: string; whyEn: st
 
 const ROLE_OPTIONS: { value: Role; label: string; labelEl: string; desc: string; descEl: string; icon: React.ElementType }[] = [
   { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής', desc: 'Building and leading a startup', descEl: 'Χτίζει και οδηγεί ένα startup', icon: Rocket },
-  { value: 'mentor', label: 'Mentor', labelEl: 'Mentor', desc: 'Coaching and guiding teams', descEl: 'Καθοδηγεί ομάδες', icon: User },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας', desc: 'Coaching and guiding teams', descEl: 'Καθοδηγεί ομάδες', icon: User },
   { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής', desc: 'Backing early-stage teams', descEl: 'Στηρίζει ομάδες πρώιμου σταδίου', icon: Zap },
   { value: 'org', label: 'Organization', labelEl: 'Οργανισμός', desc: 'Representing a company or institution', descEl: 'Εκπροσωπεί εταιρεία ή φορέα', icon: Briefcase },
 ];
