@@ -445,7 +445,7 @@ export class CommitmentsService {
     input: { kinds?: string; remote?: boolean; q?: string; category?: string; place?: string; stage?: string; commitment?: string } = {},
   ) {
     await this.expireQuietCards();
-    const asked = (input.kinds ?? '').split(',').map((k) => k.trim()).filter((k) => (COMMITMENT_KINDS as readonly string[]).includes(k));
+    const asked = (input.kinds ?? '').split(',').map((k) => k.trim()).filter(isCommitmentKind);
     const kinds = asked.length ? asked : [...COMMITMENT_KINDS];
     const rows = await this.prisma.commitmentCard.findMany({
       where: { kind: { in: kinds }, status: { in: ['open', 'in_discussion', 'agreed'] } },
