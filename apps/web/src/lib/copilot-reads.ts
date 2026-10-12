@@ -1,4 +1,5 @@
 import type { ReadActionId } from '@cofounderbay/shared';
+import { TEAM_AREAS, teamGaps, type TeamArea } from '@/lib/team-gaps';
 import {
   acceptsApplications,
   discoverMentors,
@@ -708,6 +709,39 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
       parts.push(t('Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.'));
     }
     return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_team_gaps(_args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : c.en);
+    const me = await getMeProfile().catch(() => null);
+    const profile = me?.profile;
+    if (!profile) {
+      return {
+        section: t('Your profile is not set up yet — finish onboarding and it becomes the page the network sees.'),
+        citations: [],
+        actions: [openArea(t, '/profile/edit', t('Set up your profile'), t('Name, headline and what you are looking for.'))],
+      };
+    }
+    const skills = asList<{ skillName?: string | null }>(profile.skills).map((s) => s.skillName ?? '').filter(Boolean);
+    const payload = (profile.rolePayload ?? {}) as Record<string, unknown>;
+    const sought = Array.isArray(payload.rolesSought) ? (payload.rolesSought as unknown[]).filter((x): x is string => typeof x === 'string') : [];
+    const { covered, gaps } = teamGaps(skills);
+    const names = (areas: TeamArea[]) => areas.map((a) => say(TEAM_AREAS[a])).join(', ');
+    const parts: string[] = [];
+    if (!skills.length) parts.push(t('Your profile lists no skills yet, so I cannot tell what you cover.'));
+    else if (covered.length) parts.push(t('From your own skills, you cover: {areas}.', { areas: names(covered) }));
+    if (gaps.length) {
+      parts.push(`${t('Not covered yet:')}\n${gaps.map((a) => `• **${say(TEAM_AREAS[a])}** — ${say(TEAM_AREAS[a].role)}`).join('\n')}`);
+    } else {
+      parts.push(t('Your skills touch all four areas; the question is time, not coverage.'));
+    }
+    parts.push(sought.length
+      ? t('Your profile says you are looking for: {roles}.', { roles: sought.join(', ') })
+      : t('Your profile does not say whom you are looking for; matching reads it.'));
+    parts.push(t('I only see your profile, not your co-founders’ skills.'));
+    const actions = [openArea(t, '/scout', t('Brief the scout'), t('It proposes people for a role and never contacts anyone.'))];
+    if (!sought.length) actions.push(openArea(t, '/profile/edit#founder-details', t('Say whom you are looking for'), t('Matching reads it to put the people you want first.')));
+    return { section: parts.join('\n\n'), citations: [], actions };
   },
 
   async get_skill_evidence(_args, { t, locale }) {

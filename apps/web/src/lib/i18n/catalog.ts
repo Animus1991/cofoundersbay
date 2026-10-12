@@ -2,6 +2,17 @@ import type { AppLocale } from '@/lib/locale';
 
 /** English UI copy is the lookup key. Missing keys fall back to English. */
 const el: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Το προφίλ σας δεν αναφέρει ακόμη δεξιότητες, οπότε δεν μπορώ να πω τι καλύπτετε.",
+  "From your own skills, you cover: {areas}.": "Από τις δικές σας δεξιότητες καλύπτετε: {areas}.",
+  "Not covered yet:": "Δεν καλύπτονται ακόμη:",
+  "Your skills touch all four areas; the question is time, not coverage.": "Οι δεξιότητές σας αγγίζουν και τους τέσσερις τομείς· το ζήτημα είναι ο χρόνος, όχι η κάλυψη.",
+  "Your profile says you are looking for: {roles}.": "Το προφίλ σας λέει ότι αναζητάτε: {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Το προφίλ σας δεν λέει ποιον αναζητάτε· η αντιστοίχιση το διαβάζει.",
+  "I only see your profile, not your co-founders’ skills.": "Βλέπω μόνο το δικό σας προφίλ, όχι τις δεξιότητες των συνιδρυτών σας.",
+  "Brief the scout": "Σημείωμα στον ανιχνευτή",
+  "It proposes people for a role and never contacts anyone.": "Προτείνει ανθρώπους για έναν ρόλο και δεν επικοινωνεί ποτέ με κανέναν.",
+  "Say whom you are looking for": "Πείτε ποιον αναζητάτε",
+  "Matching reads it to put the people you want first.": "Η αντιστοίχιση το διαβάζει για να φέρει πρώτους όσους θέλετε.",
   "I could not find that person.": "Δεν βρήκα αυτό το πρόσωπο.",
   "Tell me who: a name or a profile.": "Πείτε μου ποιον: ένα όνομα ή ένα προφίλ.",
   "Open matches": "Άνοιγμα αντιστοιχίσεων",
@@ -807,6 +818,17 @@ const el: Record<string, string> = {
 };
 
 const es: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Tu perfil aún no indica habilidades, así que no puedo saber qué cubres.",
+  "From your own skills, you cover: {areas}.": "Con tus propias habilidades cubres: {areas}.",
+  "Not covered yet:": "Aún sin cubrir:",
+  "Your skills touch all four areas; the question is time, not coverage.": "Tus habilidades tocan las cuatro áreas; la cuestión es el tiempo, no la cobertura.",
+  "Your profile says you are looking for: {roles}.": "Tu perfil dice que buscas: {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Tu perfil no dice a quién buscas; el emparejamiento lo lee.",
+  "I only see your profile, not your co-founders’ skills.": "Solo veo tu perfil, no las habilidades de tus cofundadores.",
+  "Brief the scout": "Encargar al buscador",
+  "It proposes people for a role and never contacts anyone.": "Propone personas para un rol y nunca contacta a nadie.",
+  "Say whom you are looking for": "Di a quién buscas",
+  "Matching reads it to put the people you want first.": "El emparejamiento lo lee para mostrar primero a quien quieres.",
   "I could not find that person.": "No encontré a esa persona.",
   "Tell me who: a name or a profile.": "Dime quién: un nombre o un perfil.",
   "Open matches": "Abrir coincidencias",
@@ -1347,6 +1369,17 @@ const es: Record<string, string> = {
 };
 
 const fr: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Votre profil n’indique pas encore de compétences, je ne peux donc pas dire ce que vous couvrez.",
+  "From your own skills, you cover: {areas}.": "Avec vos propres compétences, vous couvrez : {areas}.",
+  "Not covered yet:": "Pas encore couvert :",
+  "Your skills touch all four areas; the question is time, not coverage.": "Vos compétences touchent les quatre domaines ; la question est le temps, pas la couverture.",
+  "Your profile says you are looking for: {roles}.": "Votre profil indique que vous cherchez : {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Votre profil ne dit pas qui vous cherchez ; la mise en relation le lit.",
+  "I only see your profile, not your co-founders’ skills.": "Je ne vois que votre profil, pas les compétences de vos cofondateurs.",
+  "Brief the scout": "Briefer l’éclaireur",
+  "It proposes people for a role and never contacts anyone.": "Il propose des personnes pour un rôle et ne contacte jamais personne.",
+  "Say whom you are looking for": "Dites qui vous cherchez",
+  "Matching reads it to put the people you want first.": "La mise en relation le lit pour mettre en avant les personnes voulues.",
   "I could not find that person.": "Je n’ai pas trouvé cette personne.",
   "Tell me who: a name or a profile.": "Dites-moi qui : un nom ou un profil.",
   "Open matches": "Ouvrir les correspondances",
@@ -1867,6 +1900,17 @@ const fr: Record<string, string> = {
 };
 
 const de: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Dein Profil nennt noch keine Fähigkeiten, daher kann ich nicht sagen, was du abdeckst.",
+  "From your own skills, you cover: {areas}.": "Mit deinen eigenen Fähigkeiten deckst du ab: {areas}.",
+  "Not covered yet:": "Noch nicht abgedeckt:",
+  "Your skills touch all four areas; the question is time, not coverage.": "Deine Fähigkeiten berühren alle vier Bereiche; die Frage ist Zeit, nicht Abdeckung.",
+  "Your profile says you are looking for: {roles}.": "Laut deinem Profil suchst du: {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Dein Profil sagt nicht, wen du suchst; das Matching liest es.",
+  "I only see your profile, not your co-founders’ skills.": "Ich sehe nur dein Profil, nicht die Fähigkeiten deiner Mitgründer.",
+  "Brief the scout": "Den Scout beauftragen",
+  "It proposes people for a role and never contacts anyone.": "Er schlägt Menschen für eine Rolle vor und kontaktiert nie jemanden.",
+  "Say whom you are looking for": "Sag, wen du suchst",
+  "Matching reads it to put the people you want first.": "Das Matching liest es, um die gewünschten Menschen zuerst zu zeigen.",
   "I could not find that person.": "Ich habe diese Person nicht gefunden.",
   "Tell me who: a name or a profile.": "Sag mir, wen: einen Namen oder ein Profil.",
   "Open matches": "Matches öffnen",
@@ -2387,6 +2431,17 @@ const de: Record<string, string> = {
 };
 
 const it: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Il tuo profilo non indica ancora competenze, quindi non posso dire cosa copri.",
+  "From your own skills, you cover: {areas}.": "Con le tue competenze copri: {areas}.",
+  "Not covered yet:": "Non ancora coperto:",
+  "Your skills touch all four areas; the question is time, not coverage.": "Le tue competenze toccano tutte e quattro le aree; la questione è il tempo, non la copertura.",
+  "Your profile says you are looking for: {roles}.": "Il tuo profilo dice che cerchi: {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Il tuo profilo non dice chi cerchi; l’abbinamento lo legge.",
+  "I only see your profile, not your co-founders’ skills.": "Vedo solo il tuo profilo, non le competenze dei tuoi cofondatori.",
+  "Brief the scout": "Istruisci lo scout",
+  "It proposes people for a role and never contacts anyone.": "Propone persone per un ruolo e non contatta mai nessuno.",
+  "Say whom you are looking for": "Di’ chi cerchi",
+  "Matching reads it to put the people you want first.": "L’abbinamento lo legge per mostrare prima le persone che vuoi.",
   "I could not find that person.": "Non ho trovato quella persona.",
   "Tell me who: a name or a profile.": "Dimmi chi: un nome o un profilo.",
   "Open matches": "Apri le corrispondenze",
@@ -2897,6 +2952,17 @@ const it: Record<string, string> = {
 };
 
 const pt: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "Seu perfil ainda não lista competências, então não sei dizer o que você cobre.",
+  "From your own skills, you cover: {areas}.": "Com suas próprias competências, você cobre: {areas}.",
+  "Not covered yet:": "Ainda não coberto:",
+  "Your skills touch all four areas; the question is time, not coverage.": "Suas competências tocam as quatro áreas; a questão é tempo, não cobertura.",
+  "Your profile says you are looking for: {roles}.": "Seu perfil diz que você procura: {roles}.",
+  "Your profile does not say whom you are looking for; matching reads it.": "Seu perfil não diz quem você procura; a correspondência lê isso.",
+  "I only see your profile, not your co-founders’ skills.": "Só vejo seu perfil, não as competências dos seus cofundadores.",
+  "Brief the scout": "Orientar o batedor",
+  "It proposes people for a role and never contacts anyone.": "Ele propõe pessoas para um papel e nunca contata ninguém.",
+  "Say whom you are looking for": "Diga quem você procura",
+  "Matching reads it to put the people you want first.": "A correspondência lê isso para mostrar primeiro quem você quer.",
   "I could not find that person.": "Não encontrei essa pessoa.",
   "Tell me who: a name or a profile.": "Diga-me quem: um nome ou um perfil.",
   "Open matches": "Abrir correspondências",
@@ -3404,6 +3470,17 @@ const pt: Record<string, string> = {
 };
 
 const zh: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "你的资料还没有列出技能，所以我无法判断你覆盖了哪些方面。",
+  "From your own skills, you cover: {areas}.": "根据你自己的技能，你覆盖了：{areas}。",
+  "Not covered yet:": "尚未覆盖：",
+  "Your skills touch all four areas; the question is time, not coverage.": "你的技能涉及全部四个方面；问题在于时间，而不是覆盖面。",
+  "Your profile says you are looking for: {roles}.": "你的资料显示你在寻找：{roles}。",
+  "Your profile does not say whom you are looking for; matching reads it.": "你的资料没有说明你在寻找谁；匹配会读取这一项。",
+  "I only see your profile, not your co-founders’ skills.": "我只能看到你的资料，看不到你联合创始人的技能。",
+  "Brief the scout": "向侦察员说明需求",
+  "It proposes people for a role and never contacts anyone.": "它为一个角色推荐人选，从不联系任何人。",
+  "Say whom you are looking for": "说明你在寻找谁",
+  "Matching reads it to put the people you want first.": "匹配会读取它，把你想找的人放在前面。",
   "I could not find that person.": "我没有找到这个人。",
   "Tell me who: a name or a profile.": "告诉我是谁：一个名字或一个个人资料。",
   "Open matches": "打开匹配",
@@ -3931,6 +4008,17 @@ const zh: Record<string, string> = {
 };
 
 const ja: Record<string, string> = {
+  "Your profile lists no skills yet, so I cannot tell what you cover.": "プロフィールにまだスキルがないため、カバーしている分野がわかりません。",
+  "From your own skills, you cover: {areas}.": "あなた自身のスキルでカバーしているのは：{areas}。",
+  "Not covered yet:": "まだカバーされていない分野：",
+  "Your skills touch all four areas; the question is time, not coverage.": "あなたのスキルは4つの分野すべてに触れています。問題はカバー範囲ではなく時間です。",
+  "Your profile says you are looking for: {roles}.": "プロフィールによると、探しているのは：{roles}。",
+  "Your profile does not say whom you are looking for; matching reads it.": "プロフィールに探している人が書かれていません。マッチングはこれを読みます。",
+  "I only see your profile, not your co-founders’ skills.": "見えるのはあなたのプロフィールだけで、共同創業者のスキルは見えません。",
+  "Brief the scout": "スカウトに依頼する",
+  "It proposes people for a role and never contacts anyone.": "役割に合う人を提案し、誰にも連絡しません。",
+  "Say whom you are looking for": "探している人を伝える",
+  "Matching reads it to put the people you want first.": "マッチングはこれを読んで、希望する人を先に表示します。",
   "I could not find that person.": "その人が見つかりませんでした。",
   "Tell me who: a name or a profile.": "誰のことか教えてください：名前かプロフィール。",
   "Open matches": "マッチを開く",

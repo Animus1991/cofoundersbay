@@ -140,6 +140,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
   { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
+  // What the founding team lacks: "what skills is my team missing".
+  {
+    keys: ['team missing', 'my team missing', 'missing skills', 'skill gap*', 'gaps in my team', 'gap in my team', 'what roles do i need', 'who should i add to my team', 'λειπουν απο την ομαδα', 'λειπει απο την ομαδα', 'κενα στην ομαδα', 'κενο στην ομαδα', 'τι ρολους χρειαζομαι'],
+    tool: 'get_team_gaps',
+  },
   // One match explained: "why do I match with Elena", «γιατί ταιριάζω με την Έλενα».
   {
     keys: ['why do i match', 'why we match', 'why are we matched', 'how well do i fit', 'how well do we fit', 'how do we fit', 'compatibility with', 'my match with', 'γιατι ταιριαζ', 'ποσο ταιριαζ', 'πως ταιριαζουμε', 'συμβατοτητα με'],

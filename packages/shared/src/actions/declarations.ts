@@ -260,6 +260,17 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_team_gaps',
+    kind: 'read',
+    label: { en: 'Read what the founding team lacks', el: 'Ανάγνωση του τι λείπει από την ιδρυτική ομάδα' },
+    description: {
+      en: 'Read which of the four areas an early team needs (building the product, design, bringing it to market, running the company) the signed-in founder\u2019s own skills cover, which are gaps and the role that fills each, and whom their profile says they are looking for. It sees only their own profile.',
+      el: 'Διαβάζει ποιους από τους τέσσερις τομείς που χρειάζεται μια νέα ομάδα (κατασκευή προϊόντος, σχεδιασμός, φέρνοντάς το στην αγορά, λειτουργία της εταιρείας) καλύπτουν οι δεξιότητες του ιδρυτή, ποια είναι τα κενά και ποιος ρόλος καλύπτει το καθένα, και ποιον λέει το προφίλ του ότι αναζητά. Βλέπει μόνο το δικό του προφίλ.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_skill_evidence',
     kind: 'read',
     label: { en: 'Read skills and their evidence', el: 'Ανάγνωση δεξιοτήτων και τεκμηρίων' },

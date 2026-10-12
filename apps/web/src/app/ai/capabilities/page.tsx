@@ -32,6 +32,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_founder_updates: { en: 'Any new founder updates?', el: 'Υπάρχουν νέες ενημερώσεις ιδρυτών;' },
   get_intros: { en: 'Who could introduce me to Nikos?', el: 'Ποιος μπορεί να με συστήσει στον Νίκο;' },
   get_match_detail: { en: 'Why do I match with Elena?', el: 'Γιατί ταιριάζω με την Έλενα;' },
+  get_team_gaps: { en: 'What skills is my team missing?', el: 'Τι δεξιότητες λείπουν από την ομάδα μου;' },
   get_skill_evidence: { en: 'What evidence backs my skills?', el: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;' },
   get_scout: { en: 'What did my co-founder scout find?', el: 'Τι βρήκε ο ανιχνευτής συνιδρυτών;' },
   get_perks: { en: 'Which perks fit my stage?', el: 'Ποιες προσφορές συνεργατών ταιριάζουν στο στάδιό μου;' },

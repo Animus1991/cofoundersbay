@@ -105,6 +105,9 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Υπάρχουν προσφορές συνεργατών ή εκπτώσεις για startups;', tool: 'get_perks', read: true },
   { message: 'Who viewed my profile this month?', tool: 'get_profile_viewers', read: true },
   { message: 'Ποιοι είδαν το προφίλ μου;', tool: 'get_profile_viewers', read: true },
+  // What the founding team lacks (2026-10-12), read from the founder's own skills.
+  { message: 'What skills is my team missing?', tool: 'get_team_gaps', read: true },
+  { message: 'Τι δεξιότητες λείπουν από την ομάδα μου;', tool: 'get_team_gaps', read: true },
   // One match explained (2026-10-12): reasons, friction, where the questions agree.
   { message: 'Why do I match with Elena?', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
   { message: 'Γιατί ταιριάζω με την Έλενα;', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
