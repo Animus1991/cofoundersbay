@@ -4259,6 +4259,23 @@ html[data-theme="minimal"] [data-own-message] {
   }
 }
 
+/* Marketplace provider cards only. Font sizes stay on the card ladder.
+   A phone rule sets every card heading and sentence to 1.45, which is
+   what made these listings read as one block. These lines sit a little
+   further apart, and nowhere else. */
+#main-content [data-card][data-provider-card] h3.card-title {
+  line-height: 1.55;
+}
+#main-content [data-card][data-provider-card] .card-subtitle {
+  line-height: 1.65;
+}
+#main-content [data-card][data-provider-card] p.card-body {
+  line-height: 1.65;
+}
+#main-content [data-card][data-provider-card] .facts-dotted > li {
+  line-height: 1.6;
+}
+
 /* A row label inside a card written as a bare `font-medium` paragraph
    inherited the body size (16.33px) and stood over the card's own title.
    It takes the subtitle step, the size of a field label. */

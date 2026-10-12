@@ -166,11 +166,14 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
   const CatIcon = catCfg.icon;
 
   return (
-    <Card className={cn(
-      'group flex flex-col transition-all hover:border-primary/30',
-      featured && 'border-primary/15 bg-primary/[0.03]',
-      !provider.isAvailable && 'surface-inactive',
-    )}>
+    <Card
+      data-provider-card=""
+      className={cn(
+        'group flex flex-col transition-all hover:border-primary/30',
+        featured && 'border-primary/15 bg-primary/[0.03]',
+        !provider.isAvailable && 'surface-inactive',
+      )}
+    >
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The Opportunities card: the service is the title, its provider the
             line under it; the sentence, the facts and the foot start on the
@@ -185,8 +188,9 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             </Avatar>
           )}
           title={provider.title}
+          roomy
           subtitle={(
-            <span className="inline-flex flex-wrap items-center gap-x-1.5">
+            <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
               <span className="font-medium text-foreground">{provider.providerName}</span>
               {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {/* "Growth Marketing Strategist" wraps rather than losing the
@@ -221,10 +225,10 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
         <p className="card-body line-clamp-2 text-muted-foreground">{provider.description}</p>
 
-        <div className="space-y-1">
+        <div className="space-y-2">
           {/* Category, then specialties: facts, one line each. */}
-          <FactLine items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
-          <FactLine
+          <FactLine className="gap-y-1.5" items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
+          <FactLine className="gap-y-1.5"
             items={[
               provider.responseTime,
               <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
@@ -242,10 +246,10 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         <CardFoot
           className="mt-auto"
           meta={(
-            <>
+            <div className="space-y-1">
               <p><BilingualText en="Starting at" el="Από" compact /></p>
               <p className="card-body truncate font-semibold tabular-nums text-foreground">{priceForDisplay(provider.pricing, primary)}</p>
-            </>
+            </div>
           )}
         >
             {/* Neither had a handler. A listing carries its provider's own

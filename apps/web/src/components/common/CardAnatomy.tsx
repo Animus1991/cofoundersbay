@@ -24,6 +24,8 @@ export function CardHead({
   titleAs: Title = 'h3',
   titleClassName,
   className,
+  /** A little more air between the title, the line under it, and the caption. */
+  roomy = false,
 }: {
   /** An Avatar (h-10 w-10; people round, organisations rounded-xl), or nothing. */
   mark?: ReactNode;
@@ -44,6 +46,7 @@ export function CardHead({
   titleAs?: 'h2' | 'h3' | 'h4' | 'p';
   titleClassName?: string;
   className?: string;
+  roomy?: boolean;
 }) {
   // The title's column keeps at least half the head: an aside of two pills
   // in a narrow card once left the title a 10px column.
@@ -60,8 +63,8 @@ export function CardHead({
       {mark ? <div className={cn('col-start-1 row-start-1 shrink-0', aside && !asideStays && 'row-span-2 sm:row-span-1')}>{mark}</div> : null}
       <div className={cn('min-w-0 row-start-1', mark ? 'col-start-2' : 'col-start-1')}>
         <Title className={cn('card-title break-words text-foreground', titleClassName)}>{title}</Title>
-        {subtitle ? <div className="card-subtitle mt-0.5 break-words">{subtitle}</div> : null}
-        {meta ? <div className="mt-0.5 text-xs text-muted-foreground">{meta}</div> : null}
+        {subtitle ? <div className={cn('card-subtitle break-words', roomy ? 'mt-1.5' : 'mt-0.5')}>{subtitle}</div> : null}
+        {meta ? <div className={cn('text-xs text-muted-foreground', roomy ? 'mt-1.5' : 'mt-0.5')}>{meta}</div> : null}
       </div>
       {aside ? (
         <div className={cn('flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground sm:justify-end', asidePlace, asideStays && 'justify-end pt-0.5', asideClassName)}>{aside}</div>
