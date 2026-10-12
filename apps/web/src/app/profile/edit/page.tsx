@@ -165,10 +165,10 @@ const startupStages = [
   { value: 'scaling', label: 'Scaling', labelEl: 'Κλιμάκωση' },
 ];
 const commitmentLevels = [
-  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση' },
-  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση' },
-  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα' },
-  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση', hint: 'This is your main work.', hintEl: 'Είναι η κύρια δουλειά σας.' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση', hint: 'Alongside a job or studies.', hintEl: 'Παράλληλα με δουλειά ή σπουδές.' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα', hint: 'Weekends only, for now.', hintEl: 'Μόνο Σαββατοκύριακα, προς το παρόν.' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα', hint: 'It varies from week to week.', hintEl: 'Αλλάζει από εβδομάδα σε εβδομάδα.' },
 ];
 const lookingForOptions = [
   { value: 'Co-founder', label: 'Co-founder', labelEl: 'Συνιδρυτής' },
@@ -370,13 +370,16 @@ function SelectButtons({
   onChange,
   options,
   multiple = false,
+  help,
 }: {
   label: string;
   labelEl?: string;
   value: string | string[];
   onChange: (value: string | string[]) => void;
-  options: ({ value: string; label: string; labelEl?: string } | string)[];
+  options: ({ value: string; label: string; labelEl?: string; hint?: string; hintEl?: string } | string)[];
   multiple?: boolean;
+  /** What the answer changes, said under the choices. */
+  help?: { en: string; el: string };
 }) {
   const normalized = options.map((opt) => (typeof opt === 'string' ? { value: opt, label: opt } : opt));
   const selected = Array.isArray(value) ? value : [value].filter(Boolean);
@@ -416,6 +419,18 @@ function SelectButtons({
           </button>
         ))}
       </div>
+      {(() => {
+        // The chosen option's meaning, then what the answer changes.
+        const chosen = normalized.find((o) => selected.includes(o.value) && 'hint' in o && o.hint) as { hint?: string; hintEl?: string } | undefined;
+        if (!chosen?.hint && !help) return null;
+        return (
+          <p className="text-xs text-muted-foreground">
+            {chosen?.hint ? <BilingualText en={chosen.hint} el={chosen.hintEl} wrap /> : null}
+            {chosen?.hint && help ? ' ' : null}
+            {help ? <BilingualText en={help.en} el={help.el} wrap /> : null}
+          </p>
+        );
+      })()}
     </div>
   );
 }
@@ -1149,6 +1164,7 @@ export default function ProfileEditPage() {
                       value={form.commitment}
                       onChange={(v) => updateField('commitment', v as string)}
                       options={commitmentLevels}
+                      help={{ en: 'A different commitment shows as potential friction on both match pages.', el: 'Διαφορετική δέσμευση εμφανίζεται ως πιθανή τριβή και στις δύο σελίδες αντιστοίχισης.' }}
                     />
                     <SelectButtons
                       label="Looking For"
@@ -1157,6 +1173,10 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('lookingFor', v as string[])}
                       options={lookingForOptions}
                       multiple
+                      help={{
+                        en: 'Matching reads this: a co-founder or a team role puts other founders first; nothing chosen means a co-founder, then advisors.',
+                        el: 'Η αντιστοίχιση το διαβάζει: ένας συνιδρυτής ή ρόλος ομάδας φέρνει πρώτους άλλους ιδρυτές· χωρίς επιλογή σημαίνει συνιδρυτή και μετά συμβούλους.',
+                      }}
                     />
                   </CardContent>
                 </Card>

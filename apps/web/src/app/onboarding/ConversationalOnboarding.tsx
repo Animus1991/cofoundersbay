@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { takeReturnTo } from '@/lib/return-to';
+import { peekReturnTo, takeReturnTo } from '@/lib/return-to';
+import { readStoredUser } from '@/hooks/useStoredUser';
+import { clearOnboardingProgress, loadOnboardingProgress, saveOnboardingProgress, stepsBefore } from '@/lib/onboarding-progress';
 import { User, Briefcase, Zap, ArrowRight, Check, Loader2, Bot, Rocket, HelpCircle } from 'lucide-react';
 import { createProfile, listSkills, type Skill } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -91,7 +93,10 @@ const BOT_QUESTIONS: Record<Step, { en: string; el: string }> = {
   bio: { en: "Tell us a bit about yourself — what you're working on and what you're looking for.", el: 'Πείτε μας λίγα λόγια — πάνω σε τι δουλεύετε και τι ψάχνετε.' },
   skills: { en: 'Last step: what are your key skills? Select all that apply.', el: 'Τελευταίο βήμα: ποιες είναι οι βασικές σας δεξιότητες; Επιλέξτε όσες ισχύουν.' },
   submitting: { en: 'Creating your profile…', el: 'Δημιουργία του προφίλ σας…' },
-  done: { en: 'Your profile is ready! Welcome to CoFounderBay.', el: 'Το προφίλ σας είναι έτοιμο! Καλώς ήρθατε στο CoFounderBay.' },
+  done: {
+    en: 'Your profile is ready. Next: Matches lists people who complement you, with the reasons, and nothing is sent until you press Connect. Ten short questions on how you like to work show where you and a match agree.',
+    el: 'Το προφίλ σας είναι έτοιμο. Επόμενο: στις Αντιστοιχίσεις βλέπετε ανθρώπους που σας συμπληρώνουν, με τους λόγους, και τίποτα δεν στέλνεται μέχρι να πατήσετε Σύνδεση. Δέκα σύντομες ερωτήσεις για το πώς σας αρέσει να δουλεύετε δείχνουν πού συμφωνείτε με μια αντιστοίχιση.',
+  },
 };
 
 function TypingIndicator() {
@@ -189,12 +194,40 @@ export function ConversationalOnboarding() {
     ]);
   }, []);
 
-  // Init: show welcome message
+  // Init: show welcome message, or pick up the answers a reload interrupted.
   useEffect(() => {
-    void addBotMessage(say(BOT_QUESTIONS.welcome), 800).then(() => {
-      setTimeout(() => void addBotMessage(say(BOT_QUESTIONS.name), 400), 200);
-      setStep('name');
-    });
+    const saved = loadOnboardingProgress(readStoredUser()?.id);
+    if (saved && saved.step !== 'name') {
+      form.current = { ...saved.form };
+      setSelectedSkills(saved.form.skillIds);
+      const roleOption = ROLE_OPTIONS.find((r) => r.value === saved.form.role);
+      if (stepsBefore(saved.step).includes('role')) setSelectedRole(saved.form.role);
+      const answer = (id: InputStep): string => {
+        const f = saved.form;
+        if (id === 'name') return f.displayName;
+        if (id === 'role') return roleOption ? say({ en: roleOption.label, el: roleOption.labelEl }) : f.role;
+        if (id === 'headline') return f.headline;
+        if (id === 'location') return f.location || say({ en: 'Not specified', el: 'Δεν προσδιορίστηκε' });
+        if (id === 'bio') return f.bio ? (f.bio.length > 60 ? f.bio.slice(0, 57) + '...' : f.bio) : say({ en: 'Skipped', el: 'Παραλείφθηκε' });
+        return '';
+      };
+      const now = new Date();
+      setMessages([
+        { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS.welcome), timestamp: now },
+        ...stepsBefore(saved.step).flatMap((id) => [
+          { id: crypto.randomUUID(), from: 'bot' as const, content: say(BOT_QUESTIONS[id]), timestamp: now },
+          { id: crypto.randomUUID(), from: 'user' as const, content: answer(id), timestamp: now },
+        ]),
+        { id: crypto.randomUUID(), from: 'bot', content: say({ en: 'Picked up where you left off.', el: 'Συνεχίζετε από εκεί που σταματήσατε.' }), timestamp: now },
+        { id: crypto.randomUUID(), from: 'bot', content: say(BOT_QUESTIONS[saved.step]), timestamp: now },
+      ]);
+      setStep(saved.step);
+    } else {
+      void addBotMessage(say(BOT_QUESTIONS.welcome), 800).then(() => {
+        setTimeout(() => void addBotMessage(say(BOT_QUESTIONS.name), 400), 200);
+        setStep('name');
+      });
+    }
     // Load skills in background
     listSkills().then(setSkills).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,6 +235,9 @@ export function ConversationalOnboarding() {
 
   const advanceTo = useCallback(async (nextStep: Step, userMsg?: string) => {
     if (userMsg) addUserMessage(userMsg);
+    if ((INPUT_STEPS as Step[]).includes(nextStep)) {
+      saveOnboardingProgress(readStoredUser()?.id, { step: nextStep as InputStep, form: { ...form.current, skillIds: [...form.current.skillIds] } });
+    }
     await addBotMessage(say(BOT_QUESTIONS[nextStep]), 700);
     setStep(nextStep);
     setInputValue('');
@@ -269,9 +305,12 @@ export function ConversationalOnboarding() {
         role: form.current.role,
         skillIds: form.current.skillIds.length ? form.current.skillIds : undefined,
       });
+      clearOnboardingProgress(readStoredUser()?.id);
       await addBotMessage(say(BOT_QUESTIONS.done), 500);
       setStep('done');
-      setTimeout(() => router.push(takeReturnTo('/')), 1500);
+      // A waiting return path (a public need card's board) is where this
+      // member was going; without one the finish stays to say what is next.
+      if (peekReturnTo()) setTimeout(() => router.push(takeReturnTo('/')), 1500);
     } catch {
       await addBotMessage(say({ en: 'Something went wrong saving your profile. Check your connection and try again.', el: 'Κάτι πήγε στραβά στην αποθήκευση του προφίλ. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.' }), 500);
       setSubmitting(false);
@@ -523,10 +562,18 @@ export function ConversationalOnboarding() {
           )}
 
           {step === 'done' && (
-            <Button className="w-full gap-2" onClick={() => router.push(takeReturnTo('/'))} data-testid="onboarding-explore-button">
-              <ArrowRight className="icon-sm" />
-              <BilingualText en="Explore CoFounderBay" el="Εξερευνήστε το CoFounderBay" compact />
-            </Button>
+            <div className="space-y-2">
+              <Button className="w-full gap-2" onClick={() => router.push(takeReturnTo('/matches'))} data-testid="onboarding-matches-button">
+                <ArrowRight className="icon-sm" />
+                <BilingualText en="See my matches" el="Δείτε τις αντιστοιχίσεις σας" compact />
+              </Button>
+              <Button variant="outline" className="w-full gap-2" onClick={() => router.push('/settings#how-you-work')}>
+                <BilingualText en="Answer the ten work questions" el="Απαντήστε στις δέκα ερωτήσεις συνεργασίας" compact />
+              </Button>
+              <Button variant="ghost" className="w-full gap-2" onClick={() => router.push(takeReturnTo('/'))} data-testid="onboarding-explore-button">
+                <BilingualText en="Explore CoFounderBay" el="Εξερευνήστε το CoFounderBay" compact />
+              </Button>
+            </div>
           )}
         </div>
       </div>

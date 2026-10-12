@@ -43,7 +43,7 @@ import {
   type CommitmentThread,
   type CommitmentTermsVersion,
 } from '@/lib/commitments-api';
-import { CMT } from '@/lib/i18n/strings-commitments';
+import { CMT, DEAL_ROOM_NEXT_STEPS } from '@/lib/i18n/strings-commitments';
 import { VerifiedBadge } from './VerifiedBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { CommitmentLadder } from './CommitmentLadder';
@@ -719,6 +719,15 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
             <BilingualText en={CMT.deal_room.en} el={CMT.deal_room.el} compact />
           </h3>
           <p className="card-body text-foreground"><BilingualText en={CMT.deal_room_open.en} el={CMT.deal_room_open.el} wrap /></p>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground"><BilingualText en={CMT.deal_room_next.en} el={CMT.deal_room_next.el} compact /></p>
+            <ol className="list-decimal space-y-0.5 pl-5 card-body text-muted-foreground">
+              {DEAL_ROOM_NEXT_STEPS.map((step) => (
+                <li key={step.en}><BilingualText en={step.en} el={step.el} wrap /></li>
+              ))}
+            </ol>
+            <p className="text-xs text-muted-foreground"><BilingualText en={CMT.deal_room_not_advice.en} el={CMT.deal_room_not_advice.el} compact /></p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" asChild>
               <Link href={`/data-room/${encodeURIComponent(thread.cardId)}`}>

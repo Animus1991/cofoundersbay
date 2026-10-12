@@ -35,3 +35,12 @@ export function takeReturnTo(fallback: string): string {
     return fallback;
   }
 }
+
+/** Whether a return path is waiting, without taking it. */
+export function peekReturnTo(): string | null {
+  try {
+    return safeInternalPath(window.sessionStorage.getItem(KEY));
+  } catch {
+    return null;
+  }
+}
