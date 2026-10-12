@@ -586,8 +586,8 @@ export default function DiscoverPage() {
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <p className="text-sm text-muted-foreground">
                 <BilingualText
-                  en={`No ${roleFilter.replace('_', ' ')}s in these results. Try clearing the role filter.`}
-                  el="Κανένα αποτέλεσμα με αυτόν τον ρόλο. Δοκιμάστε χωρίς το φίλτρο ρόλου."
+                  en={`No ${roleFilter.replace('_', ' ')}s in these results.`}
+                  el="Κανένα αποτέλεσμα με αυτόν τον ρόλο."
                   wrap
                 />
               </p>
@@ -598,7 +598,6 @@ export default function DiscoverPage() {
           {!loading && hits.length === 0 && (
             <EmptyState
               title={<BilingualText en="No profiles found" el="Δεν βρέθηκαν προφίλ" compact wrap />}
-              description={<BilingualText en="Try other filters, or search the words as typed." el="Δοκιμάστε άλλα φίλτρα ή αναζήτηση όπως γράφτηκε." wrap />}
               illustration="search"
               className="py-12"
               askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
@@ -705,7 +704,6 @@ export default function DiscoverPage() {
           {suggestionsLoaded && suggestions.length === 0 && (
             <EmptyState
               title={<BilingualText en="No suggestions yet" el="Καμία πρόταση ακόμη" compact wrap />}
-              description={<BilingualText en="Complete your profile to get personalized recommendations." el="Συμπληρώστε το προφίλ σας για εξατομικευμένες προτάσεις." wrap />}
               illustration="rocket"
               askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
               action={
@@ -783,7 +781,6 @@ export default function DiscoverPage() {
           {suggestionsLoaded && suggestions.length === 0 && (
             <EmptyState
               title={<BilingualText en="No matches yet" el="Καμία αντιστοίχιση ακόμη" compact wrap />}
-              description={<BilingualText en="Start by exploring profiles and indicating your interests." el="Ξεκινήστε εξερευνώντας προφίλ και δηλώνοντας τα ενδιαφέροντά σας." wrap />}
               illustration="connection"
               askAiPrompt="Discover matches tab is empty. Help me find complementary people from the network."
               action={

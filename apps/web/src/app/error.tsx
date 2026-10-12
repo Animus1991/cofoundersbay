@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 
 export default function Error({
@@ -24,17 +25,16 @@ export default function Error({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-accessible">
           <AlertTriangle className="icon-md" />
         </div>
-        <h1 className="mt-4 text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">This page hit an unexpected error</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The route failed safely instead of leaving the UI blank. Try the action again or return home.
-        </p>
+        <h1 className="mt-4 text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">
+          <BilingualText en="This page could not load" el="Αυτή η σελίδα δεν φορτώθηκε" wrap />
+        </h1>
         <div className="mt-6 flex items-center justify-center gap-3">
           <Button onClick={() => reset()} className="gap-2">
             <RefreshCw className="icon-sm" />
-            Try again
+            <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
           </Button>
           <Button variant="secondary" asChild>
-            <Link href="/">Go home</Link>
+            <Link href="/"><BilingualText en="Go home" el="Πίσω στην αρχική" compact /></Link>
           </Button>
         </div>
       </div>

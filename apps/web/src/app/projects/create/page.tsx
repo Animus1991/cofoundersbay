@@ -191,7 +191,7 @@ export default function CreateProjectPage() {
           </Button>
           <CfbGlyph name="briefcase" className="icon-md text-muted-foreground" />
         </div>
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <p className="text-sm text-muted-foreground">
           <BilingualText en={projectEn('link_into')} el={projectEl('link_into')} compact />
           {' · '}

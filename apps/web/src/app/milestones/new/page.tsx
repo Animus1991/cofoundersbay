@@ -113,7 +113,7 @@ export default function NewMilestonePage() {
         <p className="text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         <Card>
           <CardHeader>
             <CardTitle>

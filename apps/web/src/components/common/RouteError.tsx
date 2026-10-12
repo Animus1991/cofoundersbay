@@ -3,7 +3,84 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
+
+/** Section names passed by each route's error.tsx, in the reader's language. */
+const SECTION_EL: Record<string, string> = {
+  Updates: 'Ενημερώσεις',
+  Themes: 'Θέματα',
+  'Transparency report': 'Αναφορά διαφάνειας',
+  'Founder update': 'Ενημέρωση ιδρυτή',
+  'Terms of service': 'Όροι χρήσης',
+  'Onboarding preview': 'Προεπισκόπηση ένταξης',
+  Shortlist: 'Αποθηκευμένα προφίλ',
+  'Shared link': 'Κοινόχρηστος σύνδεσμος',
+  Workspace: 'Χώρος εργασίας',
+  'Workspace admin': 'Διαχείριση χώρου',
+  Settings: 'Ρυθμίσεις',
+  'Research boards': 'Πίνακες έρευνας',
+  'Readiness assessment': 'Αξιολόγηση ετοιμότητας',
+  Referrals: 'Προσκλήσεις',
+  'Co-founder scout': 'Ανιχνευτής συνιδρυτών',
+  'Saved searches': 'Αποθηκευμένες αναζητήσεις',
+  Recommendations: 'Προτάσεις',
+  Search: 'Αναζήτηση',
+  Reputation: 'Φήμη',
+  Profile: 'Προφίλ',
+  'Provider workspace': 'Χώρος παρόχου',
+  Pitch: 'Παρουσίαση',
+  Projects: 'Έργα',
+  Pricing: 'Τιμές',
+  'Privacy policy': 'Πολιτική απορρήτου',
+  Programs: 'Προγράμματα',
+  Onboarding: 'Ένταξη',
+  Notifications: 'Ειδοποιήσεις',
+  Opportunities: 'Ευκαιρίες',
+  'Organisation workspace': 'Χώρος οργανισμού',
+  Milestones: 'Ορόσημα',
+  Members: 'Μέλη',
+  Messages: 'Μηνύματα',
+  'Learning hub': 'Κέντρο μάθησης',
+  Mentoring: 'Καθοδήγηση',
+  Matches: 'Αντιστοιχίσεις',
+  'Mentor workspace': 'Χώρος μέντορα',
+  Marketplace: 'Αγορά',
+  'Investor directory': 'Κατάλογος επενδυτών',
+  Introductions: 'Συστάσεις',
+  Invites: 'Προσκλήσεις',
+  'Help centre': 'Κέντρο βοήθειας',
+  Jobs: 'Θέσεις',
+  'Investor workspace': 'Χώρος επενδυτή',
+  Demo: 'Επίδειξη',
+  Discover: 'Εξερεύνηση',
+  Groups: 'Ομάδες',
+  Fundraising: 'Χρηματοδότηση',
+  Events: 'Εκδηλώσεις',
+  'Expert reviews': 'Κρίσεις ειδικών',
+  Endorsements: 'Συστάσεις δεξιοτήτων',
+  Feed: 'Ροή',
+  Dashboard: 'Πίνακας',
+  Commitments: 'Δεσμεύσεις',
+  Comparison: 'Σύγκριση',
+  Connections: 'Συνδέσεις',
+  'Data room': 'Αίθουσα εγγράφων',
+  Coaching: 'Καθοδήγηση',
+  'Startup builder': 'Εργαλείο startup',
+  Calendar: 'Ημερολόγιο',
+  'Need card': 'Κάρτα ανάγκης',
+  Authentication: 'Ταυτοποίηση',
+  Analytics: 'Αναλυτικά',
+  'API status': 'Κατάσταση API',
+  Admin: 'Διαχείριση',
+  Activity: 'Δραστηριότητα',
+  Achievements: 'Επιτεύγματα',
+};
+
+const BACK_EL: Record<string, string> = {
+  'Back to dashboard': 'Πίσω στον πίνακα',
+  'Back to home': 'Πίσω στην αρχική',
+};
 
 export type RouteErrorProps = {
   error: Error & { digest?: string };
@@ -47,15 +124,15 @@ export function RouteError({
       </span>
 
       <h2 className="mt-4 text-lg font-semibold tracking-tight text-foreground">
-        {section ? `${section} could not load` : 'This page could not load'}
+        <BilingualText
+          en={section ? `${section} could not load` : 'This page could not load'}
+          el={section ? `${SECTION_EL[section] ?? section} δεν φορτώθηκε` : 'Αυτή η σελίδα δεν φορτώθηκε'}
+          wrap
+        />
       </h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground text-pretty">
-        Something went wrong while loading this section. The rest of the app is
-        unaffected — try again, or head somewhere else.
-      </p>
 
       {error.digest && (
-        <p className="mt-3 font-mono text-2xs text-muted-foreground/70">
+        <p className="mt-3 font-mono text-2xs text-muted-foreground">
           Reference: {error.digest}
         </p>
       )}
@@ -63,12 +140,12 @@ export function RouteError({
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
         <Button onClick={reset}>
           <RefreshCw className="icon-sm" aria-hidden="true" />
-          Try again
+          <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
         </Button>
         <Button asChild variant="secondary">
           <Link href={backHref}>
             <ArrowLeft className="icon-sm" aria-hidden="true" />
-            {backLabel}
+            <BilingualText en={backLabel} el={BACK_EL[backLabel] ?? backLabel} compact />
           </Link>
         </Button>
       </div>

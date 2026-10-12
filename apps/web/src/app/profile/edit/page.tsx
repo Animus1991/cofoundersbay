@@ -740,7 +740,7 @@ export default function ProfileEditPage() {
       <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
-          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
+          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} /></div>
           {importedNotice ? (
             <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="status">
               <BilingualText en="Filled from LinkedIn. Review the fields, then press Save; nothing is stored until you do." el="Συμπληρώθηκε από το LinkedIn. Ελέγξτε τα πεδία και πατήστε Αποθήκευση· τίποτα δεν αποθηκεύεται πριν το κάνετε." wrap />

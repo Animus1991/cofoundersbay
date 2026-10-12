@@ -57,6 +57,7 @@ import {
   useStoredFlag,
 } from '@/components/dashboard/FounderFirstMove';
 import { FounderPaths } from '@/components/dashboard/FounderPaths';
+import { FounderPhoneHome } from '@/components/dashboard/FounderPhoneHome';
 import { listCommitmentThreads } from '@/lib/commitments-api';
 import { nextAction as ladderNextAction, waitsOnMe } from '@/lib/commitments-next';
 import { MetricTile } from '@/components/dashboard/MetricTile';
@@ -1261,6 +1262,17 @@ export default function FounderDashboardContent() {
             }
           />
         )}
+
+        {/* Phone only. The column below stays for every width, so nothing
+            that lived here moves; this is the first screen under 640px. */}
+        <FounderPhoneHome
+          showResume={!showFirstMove}
+          matches={recommendations?.suggestions ?? []}
+          activity={activityItems}
+          milestone={nextOpenMilestone ?? null}
+          demoEvents={DEMO_EVENTS}
+          showDemoEvents={showDemoData}
+        />
 
         {restFoldable && (
           <RestOfDashboardToggle

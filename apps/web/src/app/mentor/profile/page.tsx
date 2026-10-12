@@ -233,7 +233,7 @@ export default function MentorProfilePage() {
       }
     >
       <div className="space-y-6">
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         <Card className="border-primary/15 bg-primary/[0.03]">
           <CardContent className="space-y-3">

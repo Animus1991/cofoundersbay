@@ -75,38 +75,42 @@ function IntroCard({
   // time, then the answers) on the avatar's edge.
   return (
     <Card id={`intro-${intro.id}`} className={highlight ? 'scroll-mt-20 border-primary/40' : 'scroll-mt-20'}>
-      <CardContent className="space-y-3">
-        <CardHead
-          mark={(
-            <Link href={`/profiles/${encodeURIComponent(person.id)}`} aria-label={bilingualAria(`Open ${person.displayName}'s profile`, `Άνοιγμα προφίλ: ${person.displayName}`)}>
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
-                <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
-              </Avatar>
-            </Link>
-          )}
-          title={(
-            <Link href={`/profiles/${encodeURIComponent(person.id)}`} className="transition-colors hover:text-primary-accessible">
-              {person.displayName}
-            </Link>
-          )}
-          subtitle={person.headline ?? undefined}
-          meta={(
-            // The path the introduction travels, the reader named as "you".
-            <span>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <CardHead
+            mark={(
+              <Link href={`/profiles/${encodeURIComponent(person.id)}`} aria-label={bilingualAria(`Open ${person.displayName}'s profile`, `Άνοιγμα προφίλ: ${person.displayName}`)}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
+            title={(
+              <Link href={`/profiles/${encodeURIComponent(person.id)}`} className="transition-colors hover:text-primary-accessible">
+                {person.displayName}
+              </Link>
+            )}
+            aside={(
+              <Badge variant="outline" className={statusTone(intro.status)}>
+                <BilingualText en={status.en} el={status.el} compact />
+              </Badge>
+            )}
+          />
+          {/* Headline and path are both short. Beside the status pill they
+              wrapped early; on the card's full width they share one line
+              and wrap only when the card itself is too narrow. */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            {person.headline ? <span className="card-subtitle">{person.headline}</span> : null}
+            <span className="text-xs text-muted-foreground">
               <span className="font-medium text-foreground">{intro.role === 'requester' ? <BilingualText en="You" el="Εσείς" compact /> : intro.requester.displayName}</span>
               <span aria-hidden="true"> → </span>
               <span className="font-medium text-foreground">{intro.role === 'intermediary' ? <BilingualText en="you" el="εσείς" compact /> : intro.intermediary.displayName}</span>
               <span aria-hidden="true"> → </span>
               <span className="font-medium text-foreground">{intro.role === 'target' ? <BilingualText en="you" el="εσείς" compact /> : intro.target.displayName}</span>
             </span>
-          )}
-          aside={(
-            <Badge variant="outline" className={statusTone(intro.status)}>
-              <BilingualText en={status.en} el={status.el} compact />
-            </Badge>
-          )}
-        />
+          </div>
+        </div>
         <p className="card-body text-muted-foreground">
           <BilingualText en="For the need card" el="Για την κάρτα ανάγκης" compact />{' '}
           <Link className="text-primary-accessible underline-offset-4 hover:underline" href={`/commitments/${encodeURIComponent(intro.card?.id ?? '')}`}>

@@ -184,7 +184,8 @@ function ShortlistCard({
       'group transition-all hover:shadow-sm',
       isSelected ? 'border-primary ring-1 ring-primary/30' : 'border-border',
     )}>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
         <CardHead
           mark={(
             <Link
@@ -206,15 +207,6 @@ function ShortlistCard({
               {profile?.displayName ?? 'Unknown'}
             </Link>
           )}
-          subtitle={profile?.headline ? <span className="line-clamp-1">{profile.headline}</span> : undefined}
-          meta={(profile?.role || profile?.location) ? (
-            <FactLine
-              items={[
-                profile?.role ? <StatusText key="role" value={profile.role} /> : null,
-                profile?.location,
-              ]}
-            />
-          ) : undefined}
           // The head's right holds states only: the compare tick, the
           // engine's score and the reader's own label. The quick actions
           // moved to the foot, where they no longer squeeze the name on a
@@ -262,11 +254,19 @@ function ShortlistCard({
             </>
           ) : undefined}
         />
-
-        {/* Skills */}
-        {profile?.skills && profile.skills.length > 0 && (
-          <FactLine items={[...profile.skills.slice(0, 5), profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null]} />
-        )}
+          {/* Headline, role, place and skills are short. Beside the match
+              they stacked in a narrow column; on the card's width they
+              share one line and wrap only when they no longer fit. */}
+          <FactLine
+            items={[
+              profile?.headline ? <span key="headline" className="card-subtitle">{profile.headline}</span> : null,
+              profile?.role ? <StatusText key="role" value={profile.role} /> : null,
+              profile?.location,
+              ...(profile?.skills?.slice(0, 5) ?? []),
+              profile?.skills && profile.skills.length > 5 ? `+${profile.skills.length - 5}` : null,
+            ]}
+          />
+        </div>
 
         {/* The reader's own label for this person, as a row of choices. */}
         <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={bilingualAria(shortlistEn('label'), shortlistEl('label'))}>
@@ -640,13 +640,13 @@ export default function ShortlistPage() {
                   ? <BilingualText en="No saved profiles yet" el="Δεν υπάρχουν αποθηκευμένα προφίλ ακόμα" />
                   : <BilingualText en="No profiles match" el="Κανένα προφίλ δεν ταιριάζει" />}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {rawItems.length === 0
-                  ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
-                  : roleFilter !== 'all'
-                    ? <BilingualText en="The role filter in the side panel may be hiding people." el="Το φίλτρο ρόλου στο πλευρικό πάνελ ίσως κρύβει άτομα." wrap />
-                    : <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." wrap />}
-              </p>
+              {(rawItems.length === 0 || roleFilter !== 'all') && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {rawItems.length === 0
+                    ? <BilingualText en="Save profiles from Matches or Members to revisit them here." el="Αποθηκεύστε προφίλ από τις Αντιστοιχίσεις ή τα Μέλη για να τα βρίσκετε εδώ." wrap />
+                    : <BilingualText en="The role filter in the side panel may be hiding people." el="Το φίλτρο ρόλου στο πλευρικό πάνελ ίσως κρύβει άτομα." wrap />}
+                </p>
+              )}
             </div>
             {rawItems.length > 0 && (
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -683,7 +683,7 @@ export default function ShortlistPage() {
                 compact
               />
             </p>
-            <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : 'space-y-3')}>
+            <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'space-y-4')}>
               {filtered.map((item) => (
                 <ShortlistCard
                   key={item.id}

@@ -1,7 +1,7 @@
 'use client';
 
 import { Component, ReactNode, useCallback } from 'react';
-import { AlertTriangle, RefreshCw, Home, Bug, MessageCircle, Copy, Check } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, MessageCircle, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useState } from 'react';
@@ -108,32 +108,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </div>
               
               <h2 className="mb-2 text-xl font-semibold text-foreground">
-                <BilingualText en="Something went wrong" el="Κάτι πήγε στραβά" compact />
+                <BilingualText en="This part could not load" el="Αυτό το τμήμα δεν φορτώθηκε" wrap />
               </h2>
-              <p className="mb-4 text-sm text-muted-foreground">
-                <BilingualText en="We encountered an unexpected error. Please try again or contact support if the problem persists." el="Παρουσιάστηκε απρόσμενο σφάλμα. Δοκιμάστε ξανά ή επικοινωνήστε με την υποστήριξη αν συνεχιστεί." wrap />
-              </p>
 
-              {/* Error ID for support */}
               {this.state.errorId && (
                 <p className="mb-6 text-xs text-muted-foreground">
-                  Error ID: <code className="bg-secondary/40 px-1.5 py-0.5 rounded">{this.state.errorId}</code>
+                  Reference: <code className="bg-secondary/40 px-1.5 py-0.5 rounded">{this.state.errorId}</code>
                 </p>
-              )}
-
-              {/* Error details (development only) */}
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="mb-6 text-left">
-                  <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
-                    <Bug className="icon-sm" />
-                    <BilingualText en="Error details" el="Λεπτομέρειες σφάλματος" compact />
-                  </summary>
-                  <pre className="mt-2 overflow-auto rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground max-h-48">
-                    {this.state.error.message}
-                    {'\n\n'}
-                    {this.state.errorInfo?.componentStack}
-                  </pre>
-                </details>
               )}
 
               {/* Actions */}

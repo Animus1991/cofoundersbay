@@ -238,21 +238,19 @@ export default function AISettingsPage() {
   ]);
   return (
     <AppShell>
-      <div className="max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
+      <div className="w-full min-w-0">
+        {/* Header. The page title lives in the shell header; a second, larger
+            "AI Assistant Settings" here made the page open with its own name
+            twice. The links beside it stay, on the width the sidebar leaves. */}
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/settings"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="icon-sm" />
             {t('Back to Settings')}
           </Link>
-          {/* The page title lives in the shell header; a second, larger
-              "AI Assistant Settings" here made the page open with its own name
-              twice. The links beside it stay. */}
-          <div className="flex items-center justify-end">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
               <Link href="/ai/capabilities">
                 <CfbGlyph name="spark" className="h-4 w-4" />
@@ -269,7 +267,6 @@ export default function AISettingsPage() {
               {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
-            </div>
           </div>
         </div>
 
@@ -324,7 +321,7 @@ export default function AISettingsPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
           {/* Model Settings */}
           <Card>
             <CardHeader>
@@ -407,50 +404,53 @@ export default function AISettingsPage() {
                 </div>
               </div>
 
-              {/* Temperature Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="prefs" className="flex items-center gap-2">
-                  <ThermometerSun className="icon-sm text-muted-foreground" />
-                  <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
-                </Label>
-                <Select
-                  value={String(prefs.temperature)}
-                  onValueChange={(v) => updatePref('temperature', parseFloat(v))}
-                >
-                  <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0.1">0.1 - Very Precise</SelectItem>
-                    <SelectItem value="0.3">0.3 - Focused</SelectItem>
-                    <SelectItem value="0.5">0.5 - Balanced</SelectItem>
-                    <SelectItem value="0.7">0.7 - Creative (Default)</SelectItem>
-                    <SelectItem value="0.9">0.9 - Very Creative</SelectItem>
-                    <SelectItem value="1.0">1.0 - Maximum Creativity</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText en="Higher values make responses more varied and creative" el="Υψηλότερες τιμές δίνουν πιο ποικίλες και δημιουργικές απαντήσεις" wrap />
-                </p>
-              </div>
+              {/* Temperature and length share the card width, the same way the
+                  model and agent selects do, so a half-width card does not
+                  leave a short control with an empty run beside it. */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="prefs" className="flex items-center gap-2">
+                    <ThermometerSun className="icon-sm text-muted-foreground" />
+                    <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
+                  </Label>
+                  <Select
+                    value={String(prefs.temperature)}
+                    onValueChange={(v) => updatePref('temperature', parseFloat(v))}
+                  >
+                    <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0.1">0.1 - Very Precise</SelectItem>
+                      <SelectItem value="0.3">0.3 - Focused</SelectItem>
+                      <SelectItem value="0.5">0.5 - Balanced</SelectItem>
+                      <SelectItem value="0.7">0.7 - Creative (Default)</SelectItem>
+                      <SelectItem value="0.9">0.9 - Very Creative</SelectItem>
+                      <SelectItem value="1.0">1.0 - Maximum Creativity</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText en="Higher values make responses more varied and creative" el="Υψηλότερες τιμές δίνουν πιο ποικίλες και δημιουργικές απαντήσεις" wrap />
+                  </p>
+                </div>
 
-              {/* Max Tokens */}
-              <div className="space-y-2">
-                <Label htmlFor="prefs-2"><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
-                <Select
-                  value={String(prefs.maxTokens)}
-                  onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
-                >
-                  <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="512"><BilingualText en="Short (512 tokens)" el="Σύντομη (512 tokens)" compact /></SelectItem>
-                    <SelectItem value="1024"><BilingualText en="Medium (1024 tokens)" el="Μεσαία (1024 tokens)" compact /></SelectItem>
-                    <SelectItem value="2048"><BilingualText en="Long (2048 tokens)" el="Μεγάλη (2048 tokens)" compact /></SelectItem>
-                    <SelectItem value="4096"><BilingualText en="Very Long (4096 tokens)" el="Πολύ μεγάλη (4096 tokens)" compact /></SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="prefs-2"><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
+                  <Select
+                    value={String(prefs.maxTokens)}
+                    onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
+                  >
+                    <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="512"><BilingualText en="Short (512 tokens)" el="Σύντομη (512 tokens)" compact /></SelectItem>
+                      <SelectItem value="1024"><BilingualText en="Medium (1024 tokens)" el="Μεσαία (1024 tokens)" compact /></SelectItem>
+                      <SelectItem value="2048"><BilingualText en="Long (2048 tokens)" el="Μεγάλη (2048 tokens)" compact /></SelectItem>
+                      <SelectItem value="4096"><BilingualText en="Very Long (4096 tokens)" el="Πολύ μεγάλη (4096 tokens)" compact /></SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -586,8 +586,9 @@ export default function AISettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Available Agents Info */}
-          <Card>
+          {/* Available Agents Info. Already a two-column catalogue, so it
+              takes the full width under the paired cards. */}
+          <Card className="xl:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CfbGlyph name="spark" className="icon-md text-muted-foreground" />

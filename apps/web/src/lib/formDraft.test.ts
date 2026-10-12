@@ -41,6 +41,19 @@ describe('the draft store', () => {
 });
 
 describe('useFormDraft', () => {
+  it('shows the sentence that asked, and does not write it into a field', async () => {
+    const outcome = await executeAction('draft_milestone', {
+      title: 'Close the pre-seed',
+      __ask: 'Draft a milestone for the pre-seed',
+    });
+    expect(outcome.ok).toBe(true);
+    const apply = vi.fn();
+    const { result } = renderHook(() => useFormDraft('milestone', apply));
+    expect(apply).toHaveBeenCalledWith({ title: 'Close the pre-seed' });
+    expect(result.current.prompt).toBe('Draft a milestone for the pre-seed');
+    expect(apply.mock.calls[0]?.[0]).not.toHaveProperty('__ask');
+  });
+
   it('fills a form that opens after the draft was made', () => {
     stashFormDraft('milestone', { title: 'Hire a first engineer', priority: 'high' });
     const apply = vi.fn();
@@ -49,6 +62,7 @@ describe('useFormDraft', () => {
     expect(result.current.filled).toEqual(['title', 'priority']);
     act(() => result.current.dismiss());
     expect(result.current.filled).toEqual([]);
+    expect(result.current.prompt).toBe('');
   });
 
   it('fills a form that is already open', () => {

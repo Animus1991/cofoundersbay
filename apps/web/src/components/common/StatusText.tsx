@@ -120,6 +120,11 @@ const STATUS_EL: Record<string, string> = {
   webinar: 'διαδικτυακό σεμινάριο',
   workshop: 'εργαστήριο',
   meetup: 'συνάντηση',
+  'demo day': 'ημέρα παρουσίασης',
+  networking: 'δικτύωση',
+  deadline: 'προθεσμία',
+  pitch: 'παρουσίαση',
+  event: 'εκδήλωση',
   // Startup stages (the projects catalogue's words)
   idea: 'ιδέα',
   validating: 'επικύρωση',

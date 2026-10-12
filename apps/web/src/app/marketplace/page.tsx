@@ -175,9 +175,12 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
       )}
     >
       <CardContent className="flex flex-1 flex-col gap-3">
-        {/* The Opportunities card: the service is the title, its provider the
-            line under it; the sentence, the facts and the foot start on the
-            mark's edge. */}
+        {/* The service is the title and the person sits beside the mark.
+            The specialism and the rating are their own lines: they start on
+            the mark's left edge, with the sentence, the facts and the price,
+            so a wrapped role is not indented under the name and the figure
+            is not pushed right by the star. */}
+        <div>
         <CardHead
           mark={(
             <Avatar className="h-10 w-10 rounded-xl">
@@ -193,19 +196,6 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
               <span className="font-medium text-foreground">{provider.providerName}</span>
               {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
-              {/* "Growth Marketing Strategist" wraps rather than losing the
-                  whole specialism to an ellipsis. */}
-              <span>· {provider.providerTitle}</span>
-            </span>
-          )}
-          meta={(
-            <span className="inline-flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center gap-1">
-                <Star className="icon-sm fill-status-warning text-status-warning" />
-                <span className="font-medium text-foreground">{provider.avgRating.toFixed(1)}</span>
-                <span>({provider.reviewCount})</span>
-              </span>
-              {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
             </span>
           )}
           asideStays
@@ -222,6 +212,16 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             </button>
           )}
         />
+        <p className="card-subtitle mt-1.5">{provider.providerTitle}</p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <span className="font-medium text-foreground">{provider.avgRating.toFixed(1)}</span>
+            <Star className="icon-sm fill-status-warning text-status-warning" />
+            <span>({provider.reviewCount})</span>
+          </span>
+          {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
+        </div>
+        </div>
 
         <p className="card-body line-clamp-2 text-muted-foreground">{provider.description}</p>
 

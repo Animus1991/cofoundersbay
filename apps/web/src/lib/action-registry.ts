@@ -715,7 +715,8 @@ async function openDraft(
   }
   if (required && !fields[required]) return { ok: false, error: `Missing ${required}` };
   if (Object.keys(fields).length === 0) return { ok: false, error: 'Nothing to fill in' };
-  stashFormDraft(id, fields);
+  const ask = typeof payload?.__ask === 'string' ? payload.__ask.trim() : '';
+  stashFormDraft(id, fields, ask || undefined);
   return { ok: true, href: FORM_DRAFT_ROUTES[id] };
 }
 

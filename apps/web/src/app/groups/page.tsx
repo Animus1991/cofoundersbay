@@ -586,7 +586,6 @@ export default function GroupsPage() {
                 icon={Users}
                 tone="primary"
                 title={<BilingualText en="You haven't joined any communities yet" el="Δεν έχετε ενταχθεί ακόμα σε κοινότητες" />}
-                description={<BilingualText en="Browse the Discover tab to find industry, stage, and role-based communities that match your goals — then join to follow the conversation." el="Περιηγηθείτε στην καρτέλα Ανακάλυψη για κοινότητες ανά κλάδο, στάδιο και ρόλο — και ενταχθείτε για να παρακολουθείτε τη συζήτηση." />}
                 action={(
                   <Button className="gap-2" onClick={() => setActiveTab('discover')}>
                     <Search className="icon-sm" />
@@ -600,7 +599,6 @@ export default function GroupsPage() {
               <ListEmptyState
                 icon={Search}
                 title={<BilingualText en="No communities match" el="Καμία κοινότητα δεν ταιριάζει" />}
-                description={<BilingualText en="Nothing matches your search and the filters in the side panel. Show everything, or start the community you're looking for." el="Τίποτα δεν ταιριάζει με την αναζήτηση και τα φίλτρα του πλευρικού πάνελ. Εμφανίστε τα πάντα ή ξεκινήστε την κοινότητα που ψάχνετε." />}
                 action={(
                   <div className="flex flex-wrap justify-center gap-2">
                     <Button variant="secondary" size="sm" className="gap-1.5" onClick={clearDiscoverFilters}>
@@ -621,7 +619,6 @@ export default function GroupsPage() {
                 icon={Sparkles}
                 tone="primary"
                 title={<BilingualText en="No communities yet" el="Δεν υπάρχουν κοινότητες ακόμα" />}
-                description={<BilingualText en="Be the first to start one. Bring founders, mentors, and operators together around a shared industry, stage, or goal." el="Γίνετε οι πρώτοι που δημιουργούν μία. Φέρτε ιδρυτές, μέντορες και operators κοντά γύρω από κοινό κλάδο, στάδιο ή στόχο." />}
                 action={(
                   <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
                     <Plus className="icon-sm" />

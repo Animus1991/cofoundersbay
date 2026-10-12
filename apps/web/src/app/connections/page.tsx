@@ -544,18 +544,12 @@ export default function ConnectionsPage() {
                   />
                 }
                 description={
-                  <BilingualText
-                    en={
-                      t === 'accepted' ? connectionsEn('start_connecting')
-                        : t === 'sent' ? connectionsEn('browse_profiles')
-                        : connectionsEn('when_people_send')
-                    }
-                    el={
-                      t === 'accepted' ? connectionsEl('start_connecting')
-                        : t === 'sent' ? connectionsEl('browse_profiles')
-                        : connectionsEl('when_people_send')
-                    }
-                  />
+                  t === 'received' ? (
+                    <BilingualText
+                      en={connectionsEn('when_people_send')}
+                      el={connectionsEl('when_people_send')}
+                    />
+                  ) : undefined
                 }
                 askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={

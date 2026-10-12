@@ -540,7 +540,10 @@ export function SearchFilters({
         </div>
       )}
 
-      {/* Quick role filters */}
+      {/* Role, stage and place stay in the filters sheet and the page rail.
+          This row repeats the role only once a search has named one, so the
+          field stays the first thing while it is still empty. */}
+      {(filters.role.length > 0 || filters.stage.length > 0 || filters.location.trim()) ? (
       <div className="flex flex-wrap items-center gap-2">
         {/* "Search only", not "Quick filter": the role chips above this row
             narrow the results on screen, while these change the query sent to
@@ -566,6 +569,7 @@ export function SearchFilters({
           </Button>
         ))}
       </div>
+      ) : null}
 
       {/* Active filter pills */}
       {activeFilterPills.length > 0 && (

@@ -297,7 +297,6 @@ export default function GroupsModerationPage() {
                   icon={Shield}
                   tone="neutral"
                   title={<BilingualText en="No reports here" el="Καμία αναφορά εδώ" wrap />}
-                  description={<BilingualText en="There are no reports in this view right now." el="Δεν υπάρχουν αναφορές σε αυτή την προβολή αυτή τη στιγμή." wrap />}
                 />
               )
             )}

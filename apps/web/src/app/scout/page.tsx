@@ -270,7 +270,7 @@ function ScoutContent() {
   return (
     <AppShell rail={rail}>
       <div className="space-y-6">
-        <div className="empty:hidden"><FormDraftNotice filled={formDraft.filled} onDismiss={formDraft.dismiss} /></div>
+        <div className="empty:hidden"><FormDraftNotice filled={formDraft.filled} prompt={formDraft.prompt} onDismiss={formDraft.dismiss} /></div>
         <Card>
           <CardHeader>
             <CardTitle><BilingualText en="Your brief" el="Το σημείωμά σας" compact /></CardTitle>

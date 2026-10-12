@@ -190,7 +190,7 @@ export default function CreateEventPage() {
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
-          <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+          <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
           {pitchPractice ? (
             <p className="text-sm text-muted-foreground">
               <BilingualText

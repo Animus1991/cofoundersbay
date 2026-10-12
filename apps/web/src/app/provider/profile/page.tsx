@@ -224,7 +224,7 @@ export default function ProviderProfilePage() {
       }
     >
       <div className="space-y-6">
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
         {/* The card others meet, on the card anatomy: the company's mark and
             name with the headline under it, the kind at the right, the facts

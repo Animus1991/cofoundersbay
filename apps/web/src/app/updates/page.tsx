@@ -244,7 +244,7 @@ function UpdatesContent() {
             )}
           </TabsContent>
           <TabsContent value="mine" className="space-y-4">
-            <div className="empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
+            <div className="empty:hidden"><FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} /></div>
             <Card>
               <CardContent>
                 <UpdateComposer initial={prefill} busy={send.isPending} onSend={async (d) => !!(await send.mutateAsync(d).catch(() => null))} />

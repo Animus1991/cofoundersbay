@@ -469,7 +469,6 @@ export default function HelpPage() {
             <CardContent>
               <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
               <h2 className="card-title mb-2 text-foreground"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h2>
-              <p className="card-body mb-4 text-muted-foreground"><BilingualText en="Try a different search term or browse all topics" el="Δοκιμάστε άλλον όρο ή δείτε όλα τα θέματα" wrap /></p>
               <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
                 <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
               </Button>
