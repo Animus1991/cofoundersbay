@@ -41,6 +41,7 @@ import { VerificationModule } from './verification/verification.module';
 import { ProfileImportModule } from './profile-import/profile-import.module';
 import { FounderUpdatesModule } from './founder-updates/founder-updates.module';
 import { OpenToModule } from './open-to/open-to.module';
+import { CompatibilityModule } from './compatibility/compatibility.module';
 import { IntrosModule } from './intros/intros.module';
 import { SkillEvidenceModule } from './skill-evidence/skill-evidence.module';
 import { ScoutModule } from './scout/scout.module';
@@ -134,6 +135,7 @@ function findEnvFiles(): string[] {
     ProfileImportModule,
     FounderUpdatesModule,
     OpenToModule,
+    CompatibilityModule,
     IntrosModule,
     SkillEvidenceModule,
     ScoutModule,

@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { OPEN_TO_COPY, openToBoost, openToShownTo, seekerWants, isHiddenFromSearch } from '@cofounderbay/shared';
+import { OPEN_TO_COPY, compareCompatAnswers, openToBoost, openToShownTo, seekerWants, isHiddenFromSearch } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
 import { OpenToService } from '../open-to/open-to.service';
@@ -331,18 +331,18 @@ export class MatchingService {
       });
     }
 
-    // ── Work style comparison data (5-axis: Risk, Speed, Vision, Technical, Social) ────
-    const workStyleAxes = ['Risk', 'Speed', 'Vision', 'Technical', 'Social'];
-    const extractWorkStyle = (user: any, vec: any): number[] => {
-      const p = user.profile?.rolePayload as any;
-      const risk = p?.riskTolerance === 'high' ? 85 : p?.riskTolerance === 'medium' ? 55 : 30;
-      const speed = p?.commitment === 'full_time' ? 90 : p?.commitment === 'part_time' ? 55 : 40;
-      const vision = Math.round((vec.goalKeywords?.length ?? 0) / 20 * 100);
-      const skillNames = (user.profile?.skills ?? []).map((s: any) => (s.skill?.name ?? '').toLowerCase());
-      const techScore = Math.min(100, skillNames.filter((n: string) => ['code', 'engineer', 'data', 'tech', 'dev'].some(t => n.includes(t))).length * 25);
-      const social = Math.round(Math.min(100, (vec.activityScore ?? 0.5) * 100));
-      return [risk, speed, Math.max(20, Math.min(100, vision)), techScore, social];
-    };
+    // ── How you would work together ─────────────────────────────────────────
+    // Asked, not guessed: the five-axis chart that stood here read a risk
+    // field nothing wrote (every member scored 30), a commitment spelling
+    // profile edit never saves, and keyword counts. The compatibility
+    // questions answer it; only the per-question agreement leaves the server.
+    const prefs = await this.prisma.userPreference.findMany({
+      where: { userId: { in: [sourceUserId, targetUserId] } },
+      select: { userId: true, workStyle: true, showInMatching: true },
+    });
+    const compatOf = (id: string) => (prefs.find((p) => p.userId === id)?.workStyle as { compat?: unknown } | null)?.compat;
+    const targetListed = prefs.find((p) => p.userId === targetUserId)?.showInMatching !== false;
+    const compatibility = targetListed ? compareCompatAnswers(compatOf(sourceUserId), compatOf(targetUserId)) : compareCompatAnswers(null, null);
 
     return {
       overall: { score: Math.round(matchScore.score * 100), confidence: Math.round(matchScore.confidence * 100) },
@@ -357,11 +357,7 @@ export class MatchingService {
       badges: badges.slice(0, 3),
       sharedStrengths,
       frictionPoints: frictionPoints.slice(0, 3),
-      workStyle: {
-        axes: workStyleAxes,
-        source: extractWorkStyle(source, sourceVec),
-        target: extractWorkStyle(target, targetVec),
-      },
+      compatibility,
       reasons: matchScore.reasons,
       sourceProfile: {
         id: source.id,

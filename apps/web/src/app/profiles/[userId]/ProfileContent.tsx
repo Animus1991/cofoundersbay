@@ -406,6 +406,16 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <FollowButton userId={userId} />
                 <AskIntroButton targetId={userId} targetName={profile.displayName} />
                 {viewerId ? (
+                  // The full comparison - match reasons, and where the two of
+                  // you agree on the compatibility questions - lives on the
+                  // match page; from a profile it is one step away.
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/matches/${encodeURIComponent(userId)}`}>
+                      <BilingualText en="How we fit" el="Πώς ταιριάζουμε" compact />
+                    </Link>
+                  </Button>
+                ) : null}
+                {viewerId ? (
                   <AIInsightButton
                     prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
                     agentId="matching"

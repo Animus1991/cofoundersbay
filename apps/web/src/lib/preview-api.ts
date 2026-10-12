@@ -12,6 +12,7 @@ import { previewSavedItemsApi } from './demo/saved-items-world';
 import { previewPerksApi } from './demo/perks-world';
 import { previewProfileViewersApi } from './demo/profile-viewers-world';
 import { previewListingsApi } from './demo/listings-world';
+import { demoCompatibilityWith, previewCompatibilityApi } from './demo/compatibility-world';
 import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
@@ -2709,6 +2710,9 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // The visitor's own mentor and provider listings, with the API's field rules.
   const listingsAnswer = previewListingsApi(pathname, method, (body ?? {}) as Record<string, unknown>);
   if (listingsAnswer !== undefined) return listingsAnswer;
+  // The compatibility questions: the visitor's answers and the comparison only.
+  const compatibilityAnswer = previewCompatibilityApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (compatibilityAnswer !== undefined) return compatibilityAnswer;
   // "Open to" and warm introductions; accepting an introduction answers the
   // need card in the commitments world above.
   const openToAnswer = previewOpenToApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
@@ -2968,11 +2972,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
           description: 'Plan a fixed weekly overlap so decisions do not wait a day.',
         },
       ],
-      workStyle: {
-        axes: ['Pace', 'Structure', 'Risk', 'Detail', 'Autonomy'],
-        source: [78, 62, 70, 55, 80],
-        target: [70, 74, 58, 72, 66],
-      },
+      // The same comparison /compatibility/with answers: agreement only.
+      compatibility: demoCompatibilityWith(target.userId),
       reasons: target.matchReasons ?? ['Complementary skills'],
       sourceProfile: {
         id: ME_ID,

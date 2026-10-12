@@ -27,9 +27,10 @@ import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-c
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
+import { CompatibilityList } from '@/components/matches/CompatibilityList';
 import { StatusText } from '@/components/common/StatusText';
 import {
-  getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
+  getMatchVs, getMyCompatibility, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
   type MatchVsResult, type MatchVsBreakdownItem,
 } from '@/lib/api';
@@ -57,56 +58,6 @@ function FrictionIcon({ icon }: { icon: string }) {
   if (icon === 'schedule') return <Clock className={cls} aria-hidden="true" />;
   if (icon === 'trending_up') return <TrendingUp className={cls} aria-hidden="true" />;
   return <AlertTriangle className={cls} aria-hidden="true" />;
-}
-
-// ── Work Style — smooth SVG line chart ────────────────────────────────────────
-
-function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
-  const { axes, source, target } = data;
-  const n = axes.length;
-  const W = 300, H = 160;
-  const PAD = { top: 14, bottom: 30, left: 10, right: 10 };
-  const cW = W - PAD.left - PAD.right;
-  const cH = H - PAD.top - PAD.bottom;
-
-  const xAt = (i: number) => PAD.left + (n > 1 ? (i / (n - 1)) * cW : cW / 2);
-  const yAt = (v: number) => PAD.top + cH - (Math.min(Math.max(v, 0), 100) / 100) * cH;
-
-  const smoothPath = (vals: number[]) => {
-    if (!vals.length) return '';
-    if (vals.length === 1) return `M ${xAt(0)} ${yAt(vals[0])}`;
-    const pts = vals.map((v, i) => [xAt(i), yAt(v)] as [number, number]);
-    let d = `M ${pts[0][0]} ${pts[0][1]}`;
-    for (let i = 1; i < pts.length; i++) {
-      const cpx = (pts[i - 1][0] + pts[i][0]) / 2;
-      d += ` C ${cpx} ${pts[i - 1][1]}, ${cpx} ${pts[i][1]}, ${pts[i][0]} ${pts[i][1]}`;
-    }
-    return d;
-  };
-
-  return (
-    <figure className="w-full">
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ overflow: 'visible' }} role="img" aria-label="Work style: yours against your match's">
-        {[0, 25, 50, 75, 100].map((pct) => (
-          <line key={pct} x1={PAD.left} y1={yAt(pct)} x2={W - PAD.right} y2={yAt(pct)} stroke="hsl(var(--border))" strokeWidth={1} />
-        ))}
-        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        {source.map((v, i) => <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-success-mark))" />)}
-        {target.map((v, i) => <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-info-mark))" />)}
-        {axes.map((axis, i) => (
-          <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="hsl(var(--muted-foreground))">
-            {axis}
-          </text>
-        ))}
-      </svg>
-      {/* The legend starts on the card's axis, like every line in it. */}
-      <figcaption className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
-        <span className="flex items-center gap-2"><svg width={20} height={4} className="shrink-0" aria-hidden="true"><rect y={1} width={20} height={2} rx={1} fill="hsl(var(--status-success-mark))" /></svg>You</span>
-        <span className="flex items-center gap-2"><svg width={20} height={4} className="shrink-0" aria-hidden="true"><rect y={1} width={20} height={2} rx={1} fill="hsl(var(--status-info-mark))" /></svg>Match</span>
-      </figcaption>
-    </figure>
-  );
 }
 
 // ── Donut Score ───────────────────────────────────────────────────────────────
@@ -198,6 +149,8 @@ export default function MatchDetailPage() {
     queryFn: () => getMatchVs(targetUserId),
     enabled: !!targetUserId,
   });
+  // How many of the questions the reader answered, for the link when too few are shared.
+  const myCompat = useQuery({ queryKey: qk('compatibility', 'me'), queryFn: getMyCompatibility, retry: 0 });
 
   const connectMutation = useMutation({
     mutationFn: (msg: string) => sendConnectionRequest({ receiverId: targetUserId, message: msg }),
@@ -319,7 +272,7 @@ export default function MatchDetailPage() {
     );
   }
 
-  const { overall, breakdown, badges, sharedStrengths, frictionPoints, workStyle, targetProfile, sourceProfile } = data;
+  const { overall, breakdown, badges, sharedStrengths, frictionPoints, compatibility, targetProfile, sourceProfile } = data;
 
   const copyLink = async () => {
     try {
@@ -418,8 +371,10 @@ export default function MatchDetailPage() {
             <SectionCard title="Core compatibility" titleEl="Βασική συμβατότητα" icon={ListChecks} contentClassName="space-y-4">
               {breakdown.map((item) => <FactorRow key={item.key} item={item} />)}
             </SectionCard>
-            <SectionCard title="Work style overlap" titleEl="Στυλ εργασίας" icon={Activity}>
-              <WorkStyleLineChart data={workStyle} />
+            {/* Asked, not guessed: the chart that stood here was drawn from
+                fields nothing wrote. Agreement only; never their answers. */}
+            <SectionCard title="Where you agree, and what to talk about first" titleEl="Πού συμφωνείτε, και τι να συζητήσετε πρώτα" icon={Activity}>
+              <CompatibilityList comparison={compatibility} answeredByYou={myCompat.data?.answered} />
             </SectionCard>
           </div>
           <div className="space-y-6">

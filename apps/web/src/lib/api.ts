@@ -1,5 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
-import type { MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
+import type { CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -4625,11 +4625,6 @@ export interface MatchVsFrictionPoint {
   description: string;
 }
 
-export interface MatchVsWorkStyle {
-  axes: string[];
-  source: number[];
-  target: number[];
-}
 
 export interface MatchVsProfile {
   id: string;
@@ -4646,10 +4641,35 @@ export interface MatchVsResult {
   badges: string[];
   sharedStrengths: MatchVsStrength[];
   frictionPoints: MatchVsFrictionPoint[];
-  workStyle: MatchVsWorkStyle;
+  /** Agreement per compatibility question both answered; never the other person's answers. */
+  compatibility: CompatComparison;
   reasons: string[];
   sourceProfile: MatchVsProfile;
   targetProfile: MatchVsProfile;
+}
+
+// --- Compatibility questions (packages/shared/src/compatibility) ---
+
+export type MyCompatibility = { answers: CompatAnswers; answered: number; total: number };
+export type CompatibilityWith =
+  | { available: false; answeredByYou: number }
+  | ({ available: true; answeredByYou: number; answeredByThem: number } & CompatComparison);
+
+/** The reader's own answers; an empty set before the first save. */
+export async function getMyCompatibility(): Promise<MyCompatibility> {
+  const r = await apiRequest<Partial<MyCompatibility> | null>('/api/compatibility/me');
+  const answers = r?.answers && typeof r.answers === 'object' ? r.answers : {};
+  return { answers, answered: typeof r?.answered === 'number' ? r.answered : Object.keys(answers).length, total: typeof r?.total === 'number' ? r.total : 10 };
+}
+
+/** Saves some answers; a question sent as '' is cleared. */
+export async function saveMyCompatibility(answers: CompatAnswers): Promise<MyCompatibility> {
+  return apiRequest('/api/compatibility/me', { method: 'PUT', body: JSON.stringify({ answers }) });
+}
+
+/** Agreement with one member, per question both answered. */
+export async function getCompatibilityWith(userId: string): Promise<CompatibilityWith> {
+  return apiRequest(`/api/compatibility/with/${encodeURIComponent(userId)}`);
 }
 
 /** Get detailed two-user compatibility breakdown for the match detail page */

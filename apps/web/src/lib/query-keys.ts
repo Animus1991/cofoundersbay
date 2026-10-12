@@ -33,6 +33,8 @@ export const QUERY_ROOTS = [
   'builder',
   // Need cards, the commitment ladder and public cards (one resource).
   'commitments',
+  // The reader's compatibility answers and the comparison with one member.
+  'compatibility',
   'connection-status',
   'connections',
   'conversations',

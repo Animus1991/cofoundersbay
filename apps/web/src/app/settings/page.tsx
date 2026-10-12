@@ -45,6 +45,7 @@ import { VerificationCard } from '@/components/settings/VerificationCard';
 import { openCookieChoices } from '@/lib/cookie-consent';
 import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
+import { CompatibilityCard } from '@/components/settings/CompatibilityCard';
 import { getViewerSetting, setViewerSetting } from '@/lib/profile-viewers-api';
 import { PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
@@ -1021,6 +1022,9 @@ export default function SettingsPage() {
 
               {/* Open to: a quiet signal that feeds matching */}
               <OpenToCard />
+
+              {/* How you like to work: the compatibility questions a match is compared on */}
+              <CompatibilityCard />
 
               {/* Privacy & Visibility */}
               <PrivacyCard />

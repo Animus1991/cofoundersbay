@@ -94,7 +94,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: 'What does the compatibility score mean?',
-        answer: 'The compatibility score (0-100%) indicates how well you might work together based on complementary skills, shared values, and aligned goals. Higher scores suggest stronger potential partnerships.',
+        answer: 'The match score (0-100%) weighs complementary roles and skills, industry, location, what each of you wrote about your goals, and recent activity; each match lists its reasons. Separately, if you both answer the ten "How you like to work" questions in Settings, the match page shows where you agree and what to talk about first. Neither is a promise that a partnership will work.',
       },
       {
         question: 'How do I send a connection request?',
