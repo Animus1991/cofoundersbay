@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { DashboardGreeting } from '@/components/dashboard/DashboardGreeting';
@@ -163,6 +164,14 @@ export default function IncubatorDashboard() {
     .slice(0, 4);
 
   const loading = orgLoading || programsLoading;
+  const nextApplication = waiting[0];
+  const nextApplicantName = nextApplication?.row.user.profile?.displayName ?? 'Applicant';
+  const nextApplicantStartup = nextApplication
+    ? startupOf(nextApplication.row.user.profile?.headline)
+    : null;
+  const nextApplicationTitle = nextApplicantStartup
+    ? `${nextApplicantStartup} · ${nextApplicantName}`
+    : nextApplicantName;
   const acceptance = decided.length ? Math.round((accepted.length / decided.length) * 100) : null;
   const fill = seats ? Math.round((filled / seats) * 100) : null;
 
@@ -201,6 +210,17 @@ export default function IncubatorDashboard() {
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
         <WhatsNewPanel audience="org" />
+
+        {!loading && nextApplication ? (
+          <HomeNextStep
+            kickerEn="Application waiting"
+            kickerEl="Αίτηση σε αναμονή"
+            title={nextApplicationTitle}
+            href="/org/applications"
+            actionEn="Review"
+            actionEl="Αξιολόγηση"
+          />
+        ) : null}
 
         {isNone && (
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">

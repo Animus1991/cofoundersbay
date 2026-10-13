@@ -1240,7 +1240,7 @@ export default function FounderDashboardContent() {
       <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled && !restFolded} />
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText
             en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
             el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
@@ -1263,8 +1263,9 @@ export default function FounderDashboardContent() {
           />
         )}
 
-        {/* Phone only. The column below stays for every width, so nothing
-            that lived here moves; this is the first screen under 640px. */}
+        {/* The unfinished thing and the next people lead at every width.
+            Activity, the first person, the milestone and the calendar stay
+            under 640px. The column below still holds the full lists. */}
         <FounderPhoneHome
           showResume={!showFirstMove}
           matches={recommendations?.suggestions ?? []}

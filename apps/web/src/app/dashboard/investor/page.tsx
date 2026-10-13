@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -221,6 +222,17 @@ export default function InvestorDashboard() {
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
         <WhatsNewPanel audience="investor" />
+
+        {!dealsLoading && active[0] ? (
+          <HomeNextStep
+            kickerEn="Active deal"
+            kickerEl="Ενεργή συμφωνία"
+            title={active[0].name}
+            href="/investor/pipeline"
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
