@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { TREND } from '@/lib/semantic-colors';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
 /**
@@ -88,8 +89,11 @@ export function MetricTile({ label, labelEl, value, icon: Icon, glyph, caption, 
       </CardContent>
     </Card>
   );
+  const destination = href && caption
+    ? bilingualAria(caption, captionEl)
+    : undefined;
   return href ? (
-    <Link href={href} className="group block h-full min-w-0 w-full rounded-2xl focus-ring">
+    <Link href={href} title={destination} className="group block h-full min-w-0 w-full rounded-2xl focus-ring">
       {content}
     </Link>
   ) : (

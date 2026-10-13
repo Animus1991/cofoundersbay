@@ -247,7 +247,15 @@ function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 
-function EmptyState({ query, category }: { query: string; category: SearchCategory }) {
+function EmptyState({
+  query,
+  category,
+  onClear,
+}: {
+  query: string;
+  category: SearchCategory;
+  onClear?: () => void;
+}) {
   const idle = !query;
   const { ask } = usePopupChat();
   const askPrompt = query
@@ -287,6 +295,11 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
         )}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
+        {onClear ? (
+          <Button type="button" variant="outline" size="sm" onClick={onClear}>
+            <BilingualText en={searchEn('clear_search')} el={searchEl('clear_search')} compact secondaryFrom="lg" />
+          </Button>
+        ) : null}
         <Button variant="outline" size="sm" className="gap-2" asChild>
           <Link href="/discover">
             <Users className="icon-sm" />
@@ -598,7 +611,15 @@ export default function SearchPage() {
               </Button>
             </div>
           ) : results.length === 0 ? (
-            <EmptyState query={debouncedQuery} category={category} />
+            <EmptyState
+              query={debouncedQuery}
+              category={category}
+              onClear={() => {
+                setQuery('');
+                setDebouncedQuery('');
+                setCategory('all');
+              }}
+            />
           ) : (
             <>
               <div className="flex items-center justify-between mb-4">

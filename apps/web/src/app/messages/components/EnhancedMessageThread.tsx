@@ -25,6 +25,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -482,15 +483,17 @@ export function EnhancedMessageThread({
               className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />
-            <Button aria-label="Add emoji"
-              disabled
-              title="Emoji picker is not available here yet"
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 bottom-2"
-            >
-              <Smile className="icon-md" />
-            </Button>
+            <WithDisabledReason reasonEn="Emoji picker is not available here yet" reasonEl="Η επιλογή emoji δεν είναι ακόμη διαθέσιμη εδώ">
+              <Button
+                aria-label="Add emoji"
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 bottom-2"
+                disabled
+              >
+                <Smile className="icon-md" />
+              </Button>
+            </WithDisabledReason>
           </div>
 
           <Button aria-label="Send message"

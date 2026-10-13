@@ -17,6 +17,7 @@ import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -392,17 +393,21 @@ export default function MentorEarningsPage() {
                     <p className="text-sm font-medium"><BilingualText en="No payout method connected" el="Δεν έχει συνδεθεί τρόπος πληρωμής" compact /></p>
                     <p className="text-xs text-muted-foreground"><BilingualText en="Connect Stripe or bank account to receive payouts" el="Συνδέστε Stripe ή τραπεζικό λογαριασμό για να πληρώνεστε" wrap /></p>
                   </div>
-                  <Button size="sm" disabled title={bilingualInline('Payout providers are not connected yet', 'Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη')}>
-                    <ArrowUpRight className="mr-2 icon-sm" />
-                    <BilingualText en="Connect" el="Σύνδεση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="Payout providers are not connected yet" reasonEl="Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη">
+                    <Button size="sm" disabled>
+                      <ArrowUpRight className="mr-2 icon-sm" />
+                      <BilingualText en="Connect" el="Σύνδεση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
                 {/* The methods are rows on the card's axis, not framed tiles. */}
                 <ul className="card-rows">
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
                     <li key={method} className="flex items-center justify-between gap-3">
                       <span className="text-sm font-medium">{method}</span>
-                      <Button variant="outline" size="sm" disabled title={bilingualInline('Payout providers are not connected yet', 'Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη')}><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
+                      <WithDisabledReason reasonEn="Payout providers are not connected yet" reasonEl="Οι πάροχοι πληρωμών δεν έχουν συνδεθεί ακόμη">
+                        <Button variant="outline" size="sm" disabled><BilingualText en="Connect" el="Σύνδεση" compact /></Button>
+                      </WithDisabledReason>
                     </li>
                   ))}
                 </ul>

@@ -78,10 +78,10 @@ export default function CommunityManagementPage() {
       </HelpCallout>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <MetricTile icon={Layers} label="Communities" labelEl="Κοινότητες" value={isLoading ? dash : groups.length} href="/admin/communities" />
+        <MetricTile icon={Layers} label="Communities" labelEl="Κοινότητες" value={isLoading ? dash : groups.length} caption="Groups on the platform. Opens communities" captionEl="Ομάδες στην πλατφόρμα. Ανοίγει τις κοινότητες" href="/admin/communities" />
         <MetricTile icon={Users} label="Memberships" labelEl="Συμμετοχές" value={isLoading ? dash : members.toLocaleString('en-GB')} caption="A person in two groups counts twice" captionEl="Όποιος είναι σε δύο ομάδες μετρά δύο φορές" />
-        <MetricTile icon={MessageSquare} label="Posts" labelEl="Αναρτήσεις" value={isLoading ? dash : posts.toLocaleString('en-GB')} />
-        <MetricTile icon={Lock} label="Private or secret" labelEl="Ιδιωτικές ή μυστικές" value={isLoading ? dash : closed} />
+        <MetricTile icon={MessageSquare} label="Posts" labelEl="Αναρτήσεις" value={isLoading ? dash : posts.toLocaleString('en-GB')} caption="Posts across communities" captionEl="Αναρτήσεις σε όλες τις κοινότητες" />
+        <MetricTile icon={Lock} label="Private or secret" labelEl="Ιδιωτικές ή μυστικές" value={isLoading ? dash : closed} caption="Communities that are not public" captionEl="Κοινότητες που δεν είναι δημόσιες" />
       </div>
 
       <div className="relative mt-4 max-w-md">

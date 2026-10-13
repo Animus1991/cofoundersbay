@@ -26,6 +26,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
@@ -748,9 +749,12 @@ export default function AdminUserManagementPage() {
                               * endpoint. The item stays, disabled with its reason,
                               * rather than flipping a boolean nobody stores.
                               */}
-                            <DropdownMenuItem disabled title="Verification is not recorded yet">
-                              {user.verified ? 'Remove verification' : 'Mark verified'}
-                            </DropdownMenuItem>
+                            <UnavailableMenuItem
+                              en={user.verified ? 'Remove verification' : 'Mark verified'}
+                              el={user.verified ? 'Αφαίρεση επαλήθευσης' : 'Σήμανση ως επαληθευμένου'}
+                              reasonEn="Verification is not recorded yet"
+                              reasonEl="Η επαλήθευση δεν καταγράφεται ακόμη"
+                            />
                             <DropdownMenuItem onClick={() => void updateStatus(user.id, 'active')}>
                               <CheckCircle2 className="mr-2 icon-sm" /> <BilingualText en="Set active" el="Ενεργοποίηση" compact />
                             </DropdownMenuItem>

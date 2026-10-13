@@ -25,6 +25,7 @@ import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } f
 import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -171,7 +172,9 @@ function InquiryCard({
                     <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" disabled title={bilingualInline('This client has no profile to open', 'Ο πελάτης δεν έχει προφίλ για προβολή')}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                  <WithDisabledReason reasonEn="This client has no profile to open" reasonEl="Ο πελάτης δεν έχει προφίλ για προβολή">
+                    <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                  </WithDisabledReason>
                 )}
           </CardFoot>
         )}

@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -236,10 +237,12 @@ export function ScheduleCallModal({
                     <BilingualText en="Sync with Google Calendar or Outlook for automatic availability" el="Συγχρονισμός με Google Calendar ή Outlook για αυτόματη διαθεσιμότητα" wrap />
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0" disabled title="Calendar sync is not available yet">
-                  <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
-                  <BilingualText en="Connect" el="Σύνδεση" compact />
-                </Button>
+                <WithDisabledReason reasonEn="Calendar sync is not available yet" reasonEl="Ο συγχρονισμός ημερολογίου δεν είναι ακόμη διαθέσιμος">
+                  <Button variant="outline" size="sm" className="shrink-0" disabled>
+                    <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
+                    <BilingualText en="Connect" el="Σύνδεση" compact />
+                  </Button>
+                </WithDisabledReason>
               </CardContent>
             </Card>
           </div>

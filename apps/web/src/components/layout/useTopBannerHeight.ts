@@ -6,9 +6,8 @@ import { useLayoutEffect, useRef } from 'react';
  * Publishes a fixed top banner's measured height as a CSS variable on <html>
  * so the sticky header and content column can offset by the live stack height.
  *
- * Adopted from origin/claude/project-audit-upgrade-y2ebnr (977a87d). Their
- * line still had a second `fixed` demo bar; ours uses a TopBar badge instead,
- * so `--banner-demo` stays 0 unless a future surface publishes it.
+ * The demo session banner publishes `--banner-demo` while a preview is open.
+ * The network banner publishes `--banner-network`. Either is 0 when absent.
  *
  * Heights are measured rather than hard-coded because the network banner wraps
  * to two lines on a narrow viewport.

@@ -9,6 +9,7 @@ import {
 import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -143,10 +144,12 @@ function ProfileColumn({
             </a>
           </Button>
         ) : profile.connectionStatus === 'pending' ? (
-          <Button variant="outline" size="sm" disabled title="Request sent · Το αίτημα στάλθηκε">
-            <Clock className="icon-sm mr-1" aria-hidden="true" />
-            <BilingualText en="Pending" el="Σε αναμονή" compact />
-          </Button>
+          <WithDisabledReason reasonEn="Request sent" reasonEl="Το αίτημα στάλθηκε">
+            <Button variant="outline" size="sm" disabled>
+              <Clock className="icon-sm mr-1" aria-hidden="true" />
+              <BilingualText en="Pending" el="Σε αναμονή" compact />
+            </Button>
+          </WithDisabledReason>
         ) : (
           <Button
             variant="default"

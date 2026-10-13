@@ -17,6 +17,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FactLine } from '@/components/common/FactLine';
@@ -217,7 +218,6 @@ function InvestorCard({
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
   const place = investor.geographies.length ? investor.geographies.slice(0, 2).join(', ') : investor.location;
-  const sampleReason = bilingualInline('Sample investor: there is no profile or inbox behind it', 'Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα');
   const facts = [
     investor.portfolioCount != null && { key: 'portfolio', icon: Briefcase, en: `${investor.portfolioCount} investments`, el: `${investor.portfolioCount} επενδύσεις` },
     investor.dealsThisYear != null && { key: 'deals', icon: BarChart3, en: `${investor.dealsThisYear} deals this year`, el: `${investor.dealsThisYear} συμφωνίες φέτος` },
@@ -312,14 +312,18 @@ function InvestorCard({
         >
           {investor.sample ? (
             <>
-              <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
-                <Eye className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Profile" el="Προφίλ" compact />
-              </Button>
-              <Button size="sm" className="h-7 gap-1 text-xs" disabled title={sampleReason}>
-                <UserPlus className="icon-sm" aria-hidden="true" />
-                <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
+                <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled>
+                  <Eye className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Profile" el="Προφίλ" compact />
+                </Button>
+              </WithDisabledReason>
+              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
+                <Button size="sm" className="h-7 gap-1 text-xs" disabled>
+                  <UserPlus className="icon-sm" aria-hidden="true" />
+                  <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
+                </Button>
+              </WithDisabledReason>
             </>
           ) : (
             <>

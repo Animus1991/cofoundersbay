@@ -39,6 +39,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RowHead } from '@/components/dashboard/SectionCard';
@@ -875,9 +876,11 @@ export default function DataRoomPage() {
                       <BilingualText en="Require investors to sign NDA before accessing" el="Οι επενδυτές υπογράφουν NDA πριν την πρόσβαση" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Configure" el="Ρύθμιση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Configure" el="Ρύθμιση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -886,9 +889,11 @@ export default function DataRoomPage() {
                       <BilingualText en="Notify when documents are accessed or downloaded" el="Ειδοποίηση όταν τα έγγραφα ανοίγονται ή κατεβαίνουν" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Configure" el="Ρύθμιση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Configure" el="Ρύθμιση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -897,9 +902,11 @@ export default function DataRoomPage() {
                       <BilingualText en="Add investor email watermark to downloaded PDFs" el="Υδατογράφημα με το email του επενδυτή στα PDF που κατεβαίνουν" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Enable" el="Ενεργοποίηση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Enable" el="Ενεργοποίηση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
               </CardContent>
             </Card>
@@ -922,10 +929,12 @@ export default function DataRoomPage() {
                   <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
                 </div>
                 <div className="pt-4 border-t">
-                  <Button variant="destructive" size="sm" disabled title="The data room has no storage backend yet">
-                    <Trash2 className="icon-sm mr-2" aria-hidden="true" />
-                    <BilingualText en="Delete Room" el="Διαγραφή χώρου" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="destructive" size="sm" disabled>
+                      <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                      <BilingualText en="Delete Room" el="Διαγραφή χώρου" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
               </CardContent>
             </Card>
@@ -974,7 +983,9 @@ export default function DataRoomPage() {
             <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
               <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
-            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Upload" el="Μεταφόρτωση" compact /></Button>
+            <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+              <Button disabled><BilingualText en="Upload" el="Μεταφόρτωση" compact /></Button>
+            </WithDisabledReason>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1014,7 +1025,9 @@ export default function DataRoomPage() {
             </Button>
             {/* Every button that would write here had no handler; with no
                 storage behind the room they say so rather than pretend. */}
-            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Send Invite" el="Αποστολή πρόσκλησης" compact /></Button>
+            <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+              <Button disabled><BilingualText en="Send Invite" el="Αποστολή πρόσκλησης" compact /></Button>
+            </WithDisabledReason>
           </DialogFooter>
         </DialogContent>
       </Dialog>

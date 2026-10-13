@@ -34,6 +34,7 @@ import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates
 import { cn } from '@/lib/utils';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -134,11 +135,11 @@ function ReportCard({ report }: { report: ModerationReport }) {
                     {/* The queue is sample data (see the notice above the list):
                         there is no group-report store behind it, so none of
                         these can act, and each says so. */}
-                    <UnavailableMenuItem icon={<Eye className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Content" el="Προβολή περιεχομένου" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem icon={<CheckCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Mark Resolved" el="Επίλυση" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem icon={<XCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Dismiss" el="Απόρριψη" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem icon={<UserX className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Remove Member" el="Αφαίρεση μέλους" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
-                    <UnavailableMenuItem className="text-destructive-accessible" icon={<Ban className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Ban User" el="Αποκλεισμός χρήστη" reasonEn="Sample report - group reports have no queue yet." reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+                    <UnavailableMenuItem icon={<Eye className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="View Content" el="Προβολή περιεχομένου" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+                    <UnavailableMenuItem icon={<CheckCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Mark Resolved" el="Επίλυση" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+                    <UnavailableMenuItem icon={<XCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Dismiss" el="Απόρριψη" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+                    <UnavailableMenuItem icon={<UserX className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Remove Member" el="Αφαίρεση μέλους" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
+                    <UnavailableMenuItem className="text-destructive-accessible" icon={<Ban className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />} en="Ban User" el="Αποκλεισμός χρήστη" reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά." />
                   </DropdownMenuContent>
                 </DropdownMenu>
             </>
@@ -159,9 +160,15 @@ function ReportCard({ report }: { report: ModerationReport }) {
         <CardFoot meta={<BilingualText en={ageLabel(report.reportedHoursAgo).en} el={ageLabel(report.reportedHoursAgo).el} compact />}>
           {report.status === 'pending' && (
             <>
-              <Button size="sm" variant="default" disabled title="Sample report - group reports have no queue yet"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Resolve" el="Επίλυση" compact /></Button>
-              <Button size="sm" variant="outline" disabled title="Sample report - group reports have no queue yet"><XCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
-              <Button size="sm" variant="outline" className="border-destructive/30 text-destructive-accessible" disabled title="Sample report - group reports have no queue yet"><Ban className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact /></Button>
+              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
+                <Button size="sm" disabled><CheckCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Resolve" el="Επίλυση" compact /></Button>
+              </WithDisabledReason>
+              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
+                <Button size="sm" variant="outline" disabled><XCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Dismiss" el="Απόρριψη" compact /></Button>
+              </WithDisabledReason>
+              <WithDisabledReason reasonEn="Sample report - group reports have no queue yet" reasonEl="Δείγμα - οι αναφορές ομάδων δεν έχουν ακόμη ουρά.">
+                <Button size="sm" variant="outline" className="border-destructive/30 text-destructive-accessible" disabled><Ban className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Ban User" el="Αποκλεισμός χρήστη" compact /></Button>
+              </WithDisabledReason>
             </>
           )}
         </CardFoot>

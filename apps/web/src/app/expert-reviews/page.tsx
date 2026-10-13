@@ -39,6 +39,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -338,17 +339,21 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* A review carries the expert's name but no user id, so there
               is no conversation to open. Disabled and labelled beats a
               button that looks live. */}
+          <WithDisabledReason
+            reasonEn="A conversation opens once expert reviews are live"
+            reasonEl="Η συνομιλία θα είναι διαθέσιμη όταν ενεργοποιηθούν οι αξιολογήσεις ειδικών"
+          >
           <Button
             size="sm"
             variant="outline"
             className="gap-1"
-            disabled
-            title={MESSAGE_HINT}
             aria-label={MESSAGE_HINT}
+            disabled
           >
             <MessageCircle className="icon-sm" aria-hidden="true" />
             <BilingualText en="Message expert" el="Μήνυμα στον ειδικό" compact wrap />
           </Button>
+          </WithDisabledReason>
           {/* "View full review" is gone rather than wired: "See feedback"
               already expands the full review in place, and did so while
               that one did nothing. Two buttons for one action is the defect. */}

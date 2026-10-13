@@ -14,6 +14,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -83,14 +84,18 @@ function ReviewCard({ review }: { review: Review }) {
         <CardFoot meta={review.date || undefined}>
           {/* Neither had a handler, and reviews have no helpful count or
               reply field to write - the same as on the provider side. */}
-          <Button variant="ghost" size="sm" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
-            <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
-            <BilingualText en={`Helpful (${review.helpful})`} el={`Χρήσιμο (${review.helpful})`} compact />
-          </Button>
-          <Button variant="ghost" size="sm" disabled title={bilingualInline('Replies to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
-            <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-            <BilingualText en="Reply" el="Απάντηση" compact />
-          </Button>
+          <WithDisabledReason reasonEn="Reviews cannot be marked helpful yet" reasonEl="Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες">
+            <Button variant="ghost" size="sm" disabled>
+              <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en={`Helpful (${review.helpful})`} el={`Χρήσιμο (${review.helpful})`} compact />
+            </Button>
+          </WithDisabledReason>
+          <WithDisabledReason reasonEn="Replies to reviews are not stored yet" reasonEl="Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη">
+            <Button variant="ghost" size="sm" disabled>
+              <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en="Reply" el="Απάντηση" compact />
+            </Button>
+          </WithDisabledReason>
         </CardFoot>
       </CardContent>
     </Card>

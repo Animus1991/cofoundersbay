@@ -16,6 +16,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -86,17 +87,21 @@ function ReviewCard({ review }: { review: Review }) {
         )}
 
         <CardFoot meta={<RelativeTime date={review.date} format={formatRelativeTime} />}>
-          <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Reviews cannot be marked helpful yet', 'Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες')}>
-            <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
-            {/* Nobody can mark a review helpful — there is no field
-                and no endpoint — so the count is not shown. */}
-            <BilingualText en="Helpful" el="Χρήσιμο" compact />
-          </Button>
-          {!review.response && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs" disabled title={bilingualInline('Responses to reviews are not stored yet', 'Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη')}>
-              <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-              <BilingualText en="Respond" el="Απάντηση" compact />
+          <WithDisabledReason reasonEn="Reviews cannot be marked helpful yet" reasonEl="Οι αξιολογήσεις δεν μπορούν ακόμη να σημειωθούν ως χρήσιμες">
+            <Button variant="ghost" size="sm" className="h-8 text-xs" disabled>
+              <ThumbsUp className="mr-1 icon-sm" aria-hidden="true" />
+              {/* Nobody can mark a review helpful — there is no field
+                  and no endpoint — so the count is not shown. */}
+              <BilingualText en="Helpful" el="Χρήσιμο" compact />
             </Button>
+          </WithDisabledReason>
+          {!review.response && (
+            <WithDisabledReason reasonEn="Responses to reviews are not stored yet" reasonEl="Οι απαντήσεις σε αξιολογήσεις δεν αποθηκεύονται ακόμη">
+              <Button variant="ghost" size="sm" className="h-8 text-xs" disabled>
+                <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Respond" el="Απάντηση" compact />
+              </Button>
+            </WithDisabledReason>
           )}
         </CardFoot>
       </CardContent>

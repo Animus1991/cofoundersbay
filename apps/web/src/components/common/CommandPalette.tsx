@@ -26,12 +26,15 @@ import { useTheme } from '@/components/layout/RoleTheme';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { Button } from '@/components/ui/button';
+import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
 type CommandItem = {
   id: string;
   label: string;
   description?: string;
+  descriptionEl?: string;
   icon: React.ComponentType<{ className?: string }>;
   shortcut?: string[];
   action: () => void;
@@ -57,6 +60,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'home',
       label: 'Go to Home',
       description: 'Return to homepage',
+      descriptionEl: 'Επιστροφή στην αρχική',
       icon: Home,
       shortcut: ['G', 'H'],
       action: () => router.push('/'),
@@ -66,6 +70,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'discover',
       label: 'Go to Discover',
       description: 'Find founders, mentors, investors',
+      descriptionEl: 'Ιδρυτές, μέντορες και επενδυτές',
       icon: Compass,
       shortcut: ['G', 'D'],
       action: () => router.push('/discover'),
@@ -75,6 +80,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'profile',
       label: 'Go to Profile',
       description: 'View your profile',
+      descriptionEl: 'Το προφίλ σας',
       icon: User,
       shortcut: ['G', 'P'],
       action: () => router.push('/profile'),
@@ -84,6 +90,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'ai-assistant',
       label: 'Go to AI Assistant',
       description: 'Full-page copilot workspace',
+      descriptionEl: 'Ο βοηθός σε πλήρη σελίδα',
       icon: Sparkles,
       shortcut: ['G', 'A'],
       action: () => router.push('/ai'),
@@ -93,6 +100,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'messages',
       label: 'Go to Messages',
       description: 'View your conversations',
+      descriptionEl: 'Οι συνομιλίες σας',
       icon: MessageCircle,
       shortcut: ['G', 'M'],
       action: () => router.push('/messages'),
@@ -102,6 +110,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'settings',
       label: 'Go to Settings',
       description: 'Manage your account',
+      descriptionEl: 'Ο λογαριασμός σας',
       icon: Settings,
       shortcut: ['G', 'S'],
       action: () => router.push('/settings'),
@@ -113,6 +122,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'ask-ai',
       label: 'Ask AI…',
       description: 'Start a new assistant conversation',
+      descriptionEl: 'Νέα συνομιλία με τον βοηθό',
       icon: Sparkles,
       action: () => router.push('/ai'),
       category: 'actions',
@@ -121,6 +131,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'search',
       label: 'Search profiles',
       description: 'Find people by name or skills',
+      descriptionEl: 'Άτομα με όνομα ή δεξιότητες',
       icon: Search,
       shortcut: ['/'],
       action: () => router.push('/discover'),
@@ -130,6 +141,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'matches',
       label: 'View matches',
       description: 'See your compatibility matches',
+      descriptionEl: 'Οι αντιστοιχίσεις σας',
       icon: Users,
       action: () => router.push('/matches'),
       category: 'actions',
@@ -138,6 +150,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'recommendations',
       label: 'Get recommendations',
       description: 'AI-powered suggestions',
+      descriptionEl: 'Προτάσεις του βοηθού',
       icon: Sparkles,
       action: () => router.push('/recommendations'),
       category: 'actions',
@@ -146,6 +159,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'shortlist',
       label: 'Open saved profiles',
       description: 'People you shortlisted',
+      descriptionEl: 'Προφίλ που αποθηκεύσατε',
       icon: Users,
       action: () => router.push('/shortlist'),
       category: 'actions',
@@ -170,6 +184,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'logout',
       label: 'Sign out',
       description: 'Log out of your account',
+      descriptionEl: 'Έξοδος από τον λογαριασμό',
       icon: LogOut,
       action: () => {
         clearPreviewDemoSession();
@@ -183,6 +198,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'shortcuts',
       label: 'Keyboard shortcuts',
       description: 'View all shortcuts',
+      descriptionEl: 'Όλες οι συντομεύσεις',
       icon: Keyboard,
       shortcut: ['?'],
       action: () => onOpenShortcuts?.(),
@@ -192,6 +208,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       id: 'help',
       label: 'Help & Support',
       description: 'Get help with CoFounderBay',
+      descriptionEl: 'Βοήθεια για το CoFounderBay',
       icon: HelpCircle,
       action: () => router.push('/help'),
       category: 'help',
@@ -205,7 +222,8 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
     return commands.filter(
       (cmd) =>
         cmd.label.toLowerCase().includes(lower) ||
-        cmd.description?.toLowerCase().includes(lower)
+        cmd.description?.toLowerCase().includes(lower) ||
+        cmd.descriptionEl?.toLowerCase().includes(lower)
     );
   }, [commands, search]);
 
@@ -300,8 +318,13 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         {/* Command list */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {filteredCommands.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              No commands found
+            <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
+              <p>
+                <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
+                <BilingualText en="Clear search" el="Εκκαθάριση αναζήτησης" compact />
+              </Button>
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, items]) => {
@@ -333,7 +356,9 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
                         <div className="min-w-0 flex-1 text-left">
                           <p className="font-medium">{cmd.label}</p>
                           {cmd.description && (
-                            <p className="text-xs text-muted-foreground">{cmd.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              <BilingualText en={cmd.description} el={cmd.descriptionEl} compact />
+                            </p>
                           )}
                         </div>
                         {cmd.shortcut && (

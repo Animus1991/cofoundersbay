@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap } from 'lucide-react';
@@ -356,6 +356,7 @@ function backendToResource(r: LearningResourceItem): Resource {
 }
 
 export default function LearningPage() {
+  const completedReasonId = useId();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -641,10 +642,18 @@ export default function LearningPage() {
           {/* Nothing records a resource as completed yet, so the tab cannot
               list any; it stays visible and says why rather than showing
               every resource under "Completed". */}
-          <TabsTrigger value="completed" disabled title="Completion is not recorded yet">
+          <TabsTrigger
+            value="completed"
+            disabled
+            title={bilingualAria('Completion is not recorded yet', 'Η ολοκλήρωση δεν καταγράφεται ακόμη')}
+            aria-describedby={completedReasonId}
+          >
             <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
           </TabsTrigger>
         </TabsList>
+        <span id={completedReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+          <BilingualText en="Completion is not recorded yet" el="Η ολοκλήρωση δεν καταγράφεται ακόμη" compact wrap />
+        </span>
 
         <TabsContent value={activeTab} className="space-y-4">
           {/* Search & Filters */}

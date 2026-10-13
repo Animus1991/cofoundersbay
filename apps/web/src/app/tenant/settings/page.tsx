@@ -20,6 +20,7 @@ import { useTenant } from '@/components/providers/TenantContext';
 import { updateTenant, type TenantSettings } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -291,11 +292,13 @@ export default function TenantSettingsPage() {
                     subtitle={<BilingualText en={integration.description} el={integration.descriptionEl} wrap />}
                     asideStays
                     aside={(
-                      <Button variant={integration.connected ? 'outline' : 'default'} size="sm" disabled title="Third-party integrations are not available yet · Οι συνδέσεις με τρίτες υπηρεσίες δεν είναι ακόμη διαθέσιμες">
-                        {integration.connected
-                          ? <BilingualText en="Disconnect" el="Αποσύνδεση" compact />
-                          : <BilingualText en="Connect" el="Σύνδεση" compact />}
-                      </Button>
+                      <WithDisabledReason reasonEn="Third-party integrations are not available yet" reasonEl="Οι συνδέσεις με τρίτες υπηρεσίες δεν είναι ακόμη διαθέσιμες">
+                        <Button variant={integration.connected ? 'outline' : 'default'} size="sm" disabled>
+                          {integration.connected
+                            ? <BilingualText en="Disconnect" el="Αποσύνδεση" compact />
+                            : <BilingualText en="Connect" el="Σύνδεση" compact />}
+                        </Button>
+                      </WithDisabledReason>
                     )}
                   />
                 ))}

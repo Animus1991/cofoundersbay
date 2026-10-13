@@ -13,6 +13,7 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -592,16 +593,20 @@ function DataRoomView({
                           <Link href={doc.href}><Download className="icon-sm" /></Link>
                         </Button>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={cn('h-7 w-7 p-0', BUILDER_BTN)}
-                          aria-label={bilingualAria(fundraisingEn('download'), fundraisingEl('download'))}
-                          title={bilingualAria(fundraisingEn('no_file'), fundraisingEl('no_file'))}
-                          disabled
+                        <WithDisabledReason
+                          reasonEn="No file is stored for this document yet; open it from its link or the data room."
+                          reasonEl="Δεν έχει αποθηκευτεί αρχείο για αυτό το έγγραφο ακόμη· ανοίξτε το από τον σύνδεσμό του ή την αίθουσα δεδομένων."
                         >
-                          <Download className="icon-sm" />
-                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn('h-7 w-7 p-0', BUILDER_BTN)}
+                            aria-label={bilingualAria(fundraisingEn('download'), fundraisingEl('download'))}
+                            disabled
+                          >
+                            <Download className="icon-sm" />
+                          </Button>
+                        </WithDisabledReason>
                       )}
                     </div>
                   </div>

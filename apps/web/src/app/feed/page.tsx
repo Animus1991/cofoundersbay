@@ -22,6 +22,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -363,17 +364,11 @@ function PostCard({
                 className="min-h-[60px] resize-none"
                 disabled
               />
-              <Button aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')}
-                size="sm"
-                disabled
-                title="Comments on feed posts are not saved yet"
-                onClick={() => {
-                  onComment();
-                  setCommentText('');
-                }}
-              >
-                <Send className="icon-sm" />
-              </Button>
+              <WithDisabledReason reasonEn="Comments on feed posts are not saved yet" reasonEl="Τα σχόλια σε δημοσιεύσεις δεν αποθηκεύονται ακόμη">
+                <Button aria-label={bilingualAria('Post comment', 'Δημοσίευση σχολίου')} size="sm" disabled>
+                  <Send className="icon-sm" />
+                </Button>
+              </WithDisabledReason>
             </div>
           </div>
         )}

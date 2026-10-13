@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import Link from 'next/link';
 import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 import { isPreviewDemo } from '@/lib/preview-demo';
+import { commonEl, commonEn } from '@/lib/i18n/strings-common';
 import { useTopBannerHeight } from '@/components/layout/useTopBannerHeight';
 
 // Network status context
@@ -173,6 +176,59 @@ export function OfflineBanner() {
             )}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The one notice that a demo session saves nothing, in the banner slot the
+ * header already offsets for. The way out is the existing register page.
+ * It is not a second banner: the network banner, when it shows, stays above it.
+ */
+export function DemoSessionBanner() {
+  const [previewDemo, setPreviewDemo] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setPreviewDemo(isPreviewDemo());
+    sync();
+    window.addEventListener('cfb:login', sync);
+    window.addEventListener('cfb:user', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('cfb:login', sync);
+      window.removeEventListener('cfb:user', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  const bannerRef = useTopBannerHeight<HTMLDivElement>('--banner-demo', previewDemo);
+  if (!previewDemo) return null;
+
+  return (
+    <div
+      ref={bannerRef}
+      role="status"
+      className="fixed inset-x-0 z-40 border-b border-border bg-card text-foreground"
+      style={{ top: 'var(--banner-network, 0px)' }}
+    >
+      <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2 px-3 py-1.5 sm:px-4">
+        <p className="min-w-0 text-xs font-medium">
+          <BilingualText
+            en={commonEn('demo_mode_banner')}
+            el={commonEl('demo_mode_banner')}
+            compact
+            secondaryFrom="lg"
+          />
+        </p>
+        <Link href="/register" className="shrink-0 text-xs font-medium underline underline-offset-2">
+          <BilingualText
+            en={commonEn('create_free_account')}
+            el={commonEl('create_free_account')}
+            compact
+            secondaryFrom="lg"
+          />
+        </Link>
       </div>
     </div>
   );

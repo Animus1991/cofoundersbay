@@ -1,12 +1,14 @@
 'use client';
 
+import { useId } from 'react';
 import Link from 'next/link';
 import { Mail, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export type NewsletterItem = {
   id: string;
@@ -31,6 +33,9 @@ export function DashboardNewsletter({
   className,
 }: DashboardNewsletterProps) {
   const list = items ?? defaultAnnouncements;
+  const reasonId = useId();
+  const reasonEn = 'The newsletter has no subscription service yet';
+  const reasonEl = 'Το ενημερωτικό δελτίο δεν έχει ακόμη υπηρεσία εγγραφής';
 
   return (
     <Card className={cn('', className)}>
@@ -61,18 +66,32 @@ export function DashboardNewsletter({
             </li>
           ))}
         </ul>
-        <div className="flex gap-2">
-          <Input
-            placeholder={bilingualInline("Your email", "Το email σας")}
-            className="flex-1 text-sm"
-            type="email"
-            aria-label="Newsletter email"
-            disabled
-            title="The newsletter has no subscription service yet"
-          />
-          <Button aria-label="Subscribe" size="sm" className="shrink-0" disabled title="The newsletter has no subscription service yet">
-            <ArrowRight className="icon-sm" />
-          </Button>
+        <div className="inline-flex max-w-full flex-col items-start">
+          <div className="flex gap-2">
+            <Input
+              placeholder={bilingualInline("Your email", "Το email σας")}
+              className="flex-1 text-sm"
+              type="email"
+              aria-label="Newsletter email"
+              disabled
+              title={bilingualAria(reasonEn, reasonEl)}
+              aria-describedby={reasonId}
+            />
+            <Button
+              aria-label={bilingualAria('Subscribe', 'Εγγραφή')}
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              disabled
+              title={bilingualAria(reasonEn, reasonEl)}
+              aria-describedby={reasonId}
+            >
+              <ArrowRight className="icon-sm" />
+            </Button>
+          </div>
+          <span id={reasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+            <BilingualText en={reasonEn} el={reasonEl} compact wrap />
+          </span>
         </div>
       </CardContent>
     </Card>

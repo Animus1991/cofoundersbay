@@ -343,8 +343,8 @@ export default function AdminUserDetailPage() {
           <div className="min-w-0 space-y-6">
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
               <MetricTile icon={Flag} label="Open reports about them" labelEl="Ανοιχτές αναφορές γι' αυτόν" value={reportsData ? openAgainst.length : dash} caption={reportsData ? `${against.length} in total` : undefined} captionEl={reportsData ? `${against.length} συνολικά` : undefined} href="/admin/reports" />
-              <MetricTile icon={Flag} label="Reports they filed" labelEl="Αναφορές που υπέβαλε" value={reportsData ? filed.length : dash} />
-              <MetricTile icon={ScrollText} label="Admin actions" labelEl="Διαχειριστικές ενέργειες" value={auditData ? history.length : dash} href="/admin/audit-log" />
+              <MetricTile icon={Flag} label="Reports they filed" labelEl="Αναφορές που υπέβαλε" value={reportsData ? filed.length : dash} caption="Reports this member submitted" captionEl="Αναφορές που υπέβαλε αυτό το μέλος" />
+              <MetricTile icon={ScrollText} label="Admin actions" labelEl="Διαχειριστικές ενέργειες" value={auditData ? history.length : dash} caption="Actions recorded for this member. Opens the audit log" captionEl="Ενέργειες για αυτό το μέλος. Ανοίγει το αρχείο ελέγχου" href="/admin/audit-log" />
             </div>
 
             <SectionCard title="Reports about this account" titleEl="Αναφορές για αυτόν τον λογαριασμό" icon={Flag} contentClassName="card-rows" action={{ href: '/admin/reports', label: 'All reports', labelEl: 'Όλες οι αναφορές' }}>
