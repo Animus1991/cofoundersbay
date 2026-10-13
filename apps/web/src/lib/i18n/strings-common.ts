@@ -14,6 +14,10 @@ export const COMMON_STRINGS: Record<string, BilingualPair> = {
     en: 'Create free account',
     el: 'Δημιουργία δωρεάν λογαριασμού',
   },
+  demo_exit: {
+    en: 'Exit',
+    el: 'Έξοδος',
+  },
   main_navigation: {
     en: 'Main navigation',
     el: 'Κύρια πλοήγηση',

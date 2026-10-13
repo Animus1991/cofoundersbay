@@ -6,8 +6,8 @@ import { useLayoutEffect, useRef } from 'react';
  * Publishes a fixed top banner's measured height as a CSS variable on <html>
  * so the sticky header and content column can offset by the live stack height.
  *
- * The demo session banner publishes `--banner-demo` while a preview is open.
- * The network banner publishes `--banner-network`. Either is 0 when absent.
+ * The network banner publishes `--banner-network`. The demo session no longer
+ * takes a strip: its exit control sits in a corner and leaves `--banner-demo` at 0.
  *
  * Heights are measured rather than hard-coded because the network banner wraps
  * to two lines on a narrow viewport.

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, useId, createContext, useContext, ReactNode } from 'react';
 import Link from 'next/link';
 import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 import { isPreviewDemo } from '@/lib/preview-demo';
@@ -182,11 +183,26 @@ export function OfflineBanner() {
 }
 
 /**
- * The one notice that a demo session saves nothing, in the banner slot the
- * header already offsets for. The way out is the existing register page.
- * It is not a second banner: the network banner, when it shows, stays above it.
+ * A demo session saves nothing. The notice used to be a strip across the top.
+ * It is now one Exit control in a corner, so the top of the page stays clear.
+ * The explanation and the way out (the existing register page) show when the
+ * pointer rests on that control. It does not publish `--banner-demo`.
  */
+function DemoNotice() {
+  return (
+    <>
+      <p>
+        <BilingualText en={commonEn('demo_mode_banner')} el={commonEl('demo_mode_banner')} wrap />
+      </p>
+      <p className="mt-1 font-medium">
+        <BilingualText en={commonEn('create_free_account')} el={commonEl('create_free_account')} wrap />
+      </p>
+    </>
+  );
+}
+
 export function DemoSessionBanner() {
+  const noticeId = useId();
   const [previewDemo, setPreviewDemo] = useState(false);
 
   useEffect(() => {
@@ -202,35 +218,33 @@ export function DemoSessionBanner() {
     };
   }, []);
 
-  const bannerRef = useTopBannerHeight<HTMLDivElement>('--banner-demo', previewDemo);
   if (!previewDemo) return null;
 
   return (
-    <div
-      ref={bannerRef}
-      role="status"
-      className="fixed inset-x-0 z-40 border-b border-border bg-card text-foreground"
-      style={{ top: 'var(--banner-network, 0px)' }}
-    >
-      <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2 px-3 py-1.5 sm:px-4">
-        <p className="min-w-0 text-xs font-medium">
-          <BilingualText
-            en={commonEn('demo_mode_banner')}
-            el={commonEl('demo_mode_banner')}
-            compact
-            secondaryFrom="lg"
-          />
-        </p>
-        <Link href="/register" className="shrink-0 text-xs font-medium underline underline-offset-2">
-          <BilingualText
-            en={commonEn('create_free_account')}
-            el={commonEl('create_free_account')}
-            compact
-            secondaryFrom="lg"
-          />
-        </Link>
-      </div>
-    </div>
+    <>
+      <p id={noticeId} className="sr-only">
+        <DemoNotice />
+      </p>
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="fixed z-40 left-3 bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-4 sm:left-[calc(4.25rem+0.75rem)] lg:left-[calc(15rem+0.75rem)]"
+            >
+              <Link href="/register" aria-describedby={noticeId}>
+                <BilingualText en={commonEn('demo_exit')} el={commonEl('demo_exit')} compact />
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" align="start" className="max-w-sm text-xs">
+            <DemoNotice />
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </>
   );
 }
 
