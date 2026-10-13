@@ -221,7 +221,6 @@ export default function InvestorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
-        <WhatsNewPanel audience="investor" />
 
         {!dealsLoading && active[0] ? (
           <HomeNextStep
@@ -233,6 +232,8 @@ export default function InvestorDashboard() {
             actionEl="Άνοιγμα"
           />
         ) : null}
+
+        <WhatsNewPanel audience="investor" />
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">

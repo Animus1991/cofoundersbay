@@ -209,7 +209,6 @@ export default function IncubatorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('incubator_lead'), el: dashboardEl('incubator_lead') }} />
-        <WhatsNewPanel audience="org" />
 
         {!loading && nextApplication ? (
           <HomeNextStep
@@ -221,6 +220,8 @@ export default function IncubatorDashboard() {
             actionEl="Αξιολόγηση"
           />
         ) : null}
+
+        <WhatsNewPanel audience="org" />
 
         {isNone && (
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">

@@ -252,7 +252,6 @@ export default function ProviderDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
-        <WhatsNewPanel audience="provider" />
 
         {!inquiriesLoading && waiting[0] ? (
           <HomeNextStep
@@ -264,6 +263,8 @@ export default function ProviderDashboard() {
             actionEl="Απάντηση"
           />
         ) : null}
+
+        <WhatsNewPanel audience="provider" />
 
         {/* Four figures, each linking to the page that lists what it counts. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">

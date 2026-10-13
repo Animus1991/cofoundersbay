@@ -290,9 +290,8 @@ export default function MentorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
-        <WhatsNewPanel audience="mentor" />
 
-        {/* One next step, before the figures. Within the hour it stays the
+        {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}
         {sessionSoon && nextSession ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
@@ -337,6 +336,8 @@ export default function MentorDashboard() {
             actionEl="Εξέταση"
           />
         ) : null}
+
+        <WhatsNewPanel audience="mentor" />
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
