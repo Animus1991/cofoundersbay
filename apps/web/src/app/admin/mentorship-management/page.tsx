@@ -98,7 +98,7 @@ export default function MentorshipManagementPage() {
       </HelpCallout>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={isLoading ? dash : mentors.length} href="/coaching" />
+        <MetricTile icon={GraduationCap} label="Mentors" labelEl="Μέντορες" value={isLoading ? dash : mentors.length} caption="Listed mentors. Opens coaching" captionEl="Καταχωρημένοι μέντορες. Ανοίγει την καθοδήγηση" href="/coaching" />
         <MetricTile icon={Calendar} label="Sessions held" labelEl="Συνεδρίες" value={isLoading ? dash : sessions} caption="All time, across the directory" captionEl="Συνολικά, σε όλο τον κατάλογο" />
         <MetricTile
           icon={Star}

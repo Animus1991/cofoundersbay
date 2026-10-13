@@ -60,7 +60,7 @@ const coMarkFont = Manrope({
 });
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
-import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
+import { DemoSessionBanner, NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoleProvider } from '@/contexts/RoleContext';
@@ -174,6 +174,7 @@ export default function RootLayout({
                                           reads it. */}
                                       <PageSnapshotProvider>
                                       <OfflineBanner />
+                                      <DemoSessionBanner />
                                       {children}
                                       <GlobalFloatingUi />
                                       <Suspense fallback={null}>

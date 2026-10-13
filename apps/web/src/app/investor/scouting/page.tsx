@@ -36,6 +36,7 @@ import {
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -267,9 +268,11 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
           <Button size="sm" variant="outline" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
             <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Pipeline" el="Pipeline" compact />
           </Button>
-          <Button size="sm" variant="outline" disabled title="Scouted startups are not linked to founder accounts yet">
-            <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
-          </Button>
+          <WithDisabledReason reasonEn="Scouted startups are not linked to founder accounts yet" reasonEl="Οι νεοφυείς επιχειρήσεις της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών">
+            <Button size="sm" variant="outline" disabled>
+              <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
+            </Button>
+          </WithDisabledReason>
         </CardFoot>
       </CardContent>
     </Card>

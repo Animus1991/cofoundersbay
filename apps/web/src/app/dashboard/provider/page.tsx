@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
@@ -251,6 +252,18 @@ export default function ProviderDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
+
+        {!inquiriesLoading && waiting[0] ? (
+          <HomeNextStep
+            kickerEn="Waiting on you"
+            kickerEl="Σας περιμένει"
+            title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}
+            href="/provider/inquiries"
+            actionEn="Reply"
+            actionEl="Απάντηση"
+          />
+        ) : null}
+
         <WhatsNewPanel audience="provider" />
 
         {/* Four figures, each linking to the page that lists what it counts. */}

@@ -24,6 +24,7 @@ import { useHydrated } from '@/components/common/RelativeTime';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -327,9 +328,11 @@ export default function OrgCohortsPage() {
       descriptionEl="Διαχειριστείτε τους κύκλους και τους συμμετέχοντες των προγραμμάτων"
       actions={
         // Had no handler; cohorts are created on the platform-admin route.
-        <Button className="gap-1.5" disabled title="Cohorts are created by platform administrators for now">
-          <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέος κύκλος" compact />
-        </Button>
+        <WithDisabledReason reasonEn="Cohorts are created by platform administrators for now" reasonEl="Τους κύκλους δημιουργούν προς το παρόν οι διαχειριστές της πλατφόρμας">
+          <Button className="gap-1.5" disabled>
+            <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέος κύκλος" compact />
+          </Button>
+        </WithDisabledReason>
       }
     >
       <div className="space-y-6">

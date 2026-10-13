@@ -192,10 +192,11 @@ export default function NotificationPreferencesPage() {
           />
         </p>
 
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Delivery */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
               <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
               <BilingualText en="Delivery" el="Παράδοση" compact />
             </CardTitle>
@@ -265,10 +266,43 @@ export default function NotificationPreferencesPage() {
           </CardContent>
         </Card>
 
+        {/* Automated messages */}
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
+              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
+            </CardTitle>
+            <CardDescription>
+              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/40">
+            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
+              <div key={key} className="flex items-center justify-between gap-4 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
+                  </div>
+                </div>
+                <Switch
+                  checked={prefs.automation[key]}
+                  onCheckedChange={(val) => setAutomation(key, val)}
+                  aria-label={en}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        </div>
+
         {/* Notification types: one matrix, the channels as columns. */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="text-base flex items-center gap-2">
               <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
               <BilingualText en="What you are notified about" el="Για τι ειδοποιείστε" compact />
             </CardTitle>
@@ -278,18 +312,13 @@ export default function NotificationPreferencesPage() {
           </CardHeader>
           <CardContent className="p-0">
             {/* Column heads, from sm up; below sm each switch carries its own icon. */}
-            {/* The strip names its first column too, so it starts on the
-                card's axis like every row under it. */}
-            <div className="hidden items-end justify-between gap-4 border-b border-border px-4 py-2 sm:px-6 text-xs font-medium text-muted-foreground sm:flex">
-              <span className="min-w-0"><BilingualText en="Notification type" el="Τύπος ειδοποίησης" compact /></span>
-              <div className="flex shrink-0 items-center gap-4">
-                {CHANNELS.map((ch) => (
-                  <span key={ch.id} className="flex w-16 flex-col items-center gap-0.5 text-center">
-                    <ch.icon className="icon-sm" aria-hidden="true" />
-                    <BilingualText en={ch.en} el={ch.el} compact />
-                  </span>
-                ))}
-              </div>
+            <div className="hidden items-center justify-end gap-4 border-b border-border px-4 py-2 sm:px-6 text-xs font-medium text-muted-foreground sm:flex">
+              {CHANNELS.map((ch) => (
+                <span key={ch.id} className="flex w-16 flex-col items-center gap-0.5 text-center">
+                  <ch.icon className="icon-sm" aria-hidden="true" />
+                  <BilingualText en={ch.en} el={ch.el} compact />
+                </span>
+              ))}
             </div>
             {NOTIFICATION_CATEGORIES.map((category) => {
               const Icon = CATEGORY_ICONS[category.id];
@@ -297,15 +326,12 @@ export default function NotificationPreferencesPage() {
                 <section key={category.id} className="border-b border-border last:border-b-0" aria-labelledby={`cat-${category.id}`}>
                   <div className="flex flex-col gap-3 px-4 py-3 sm:px-6 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div data-card-mark="" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                        <Icon className="icon-md" aria-hidden="true" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <Icon className="icon-sm text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div className="min-w-0">
-                        {/* The size sits on the inner span: a phone sets an
-                            in-card text-sm line on the support step, under
-                            the card's title, and a heading is not in that rule. */}
-                        <h3 id={`cat-${category.id}`} className="font-semibold text-foreground">
-                          <span className="text-sm"><BilingualText en={category.titleEn} el={category.titleEl} compact /></span>
+                        <h3 id={`cat-${category.id}`} className="text-sm font-semibold text-foreground">
+                          <BilingualText en={category.titleEn} el={category.titleEl} compact />
                         </h3>
                         <p className="text-xs text-muted-foreground">
                           <BilingualText en={category.descriptionEn} el={category.descriptionEl} compact wrap />
@@ -342,37 +368,6 @@ export default function NotificationPreferencesPage() {
                 </section>
               );
             })}
-          </CardContent>
-        </Card>
-
-        {/* Automated messages */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="border-b border-border">
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
-              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
-            </CardTitle>
-            <CardDescription>
-              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/40">
-            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
-              <div key={key} className="flex items-center justify-between gap-4 py-3">
-                <div className="flex min-w-0 items-start gap-3">
-                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
-                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
-                  </div>
-                </div>
-                <Switch
-                  checked={prefs.automation[key]}
-                  onCheckedChange={(val) => setAutomation(key, val)}
-                  aria-label={en}
-                />
-              </div>
-            ))}
           </CardContent>
         </Card>
 

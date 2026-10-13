@@ -1,11 +1,54 @@
 'use client';
 
-import { useId } from 'react';
+import { cloneElement, isValidElement, useId, type ReactElement } from 'react';
 import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+
+type ReasonChild = ReactElement<{
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive' | 'link';
+  title?: string;
+  'aria-describedby'?: string;
+  disabled?: boolean;
+}>;
+
+/**
+ * The reason an existing control cannot do what its label says.
+ *
+ * The button keeps its size and classes. A filled primary becomes outline,
+ * because it is not the page's next step. The reason is the accessible
+ * description, and below `sm` — where hover does not exist — it is printed
+ * under the control in the caption size this product already uses.
+ */
+export function WithDisabledReason({
+  reasonEn,
+  reasonEl,
+  children,
+}: {
+  reasonEn: string;
+  reasonEl: string;
+  children: ReasonChild;
+}) {
+  const reasonId = useId();
+  if (!isValidElement(children)) return children;
+  const variant = children.props.variant;
+  const honestVariant = variant == null || variant === 'default' ? 'outline' : variant;
+  return (
+    <span className="inline-flex max-w-full shrink-0 flex-col items-start">
+      {cloneElement(children, {
+        variant: honestVariant,
+        disabled: true,
+        title: bilingualAria(reasonEn, reasonEl),
+        'aria-describedby': reasonId,
+      })}
+      <span id={reasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+        <BilingualText en={reasonEn} el={reasonEl} compact wrap />
+      </span>
+    </span>
+  );
+}
 
 /**
  * A page action that exists but cannot run here yet, and says why.

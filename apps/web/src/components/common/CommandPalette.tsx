@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTheme } from '@/components/layout/RoleTheme';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -376,8 +377,13 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         {/* Command list */}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
           {filteredCommands.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
-              <BilingualText en="No commands found" el="Δεν βρέθηκαν εντολές" compact />
+            <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
+              <p>
+                <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
+                <BilingualText en="Clear search" el="Εκκαθάριση αναζήτησης" compact />
+              </Button>
             </div>
           ) : (
             Object.entries(groupedCommands).map(([category, items]) => {

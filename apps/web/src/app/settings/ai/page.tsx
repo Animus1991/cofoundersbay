@@ -586,8 +586,8 @@ export default function AISettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Available Agents Info. Already a two-column catalogue, so it
-              takes the full width under the paired cards. */}
+          {/* Available Agents Info. A two-column catalogue from sm, three from
+              xl, so it takes the full width under the paired cards. */}
           <Card className="xl:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -599,7 +599,7 @@ export default function AISettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
                 {(agents.length > 0 ? agents : [
                   { id: 'general', name: 'General Assistant', description: 'Platform help and FAQs' },
                   { id: 'matching', name: 'Co-Founder Matching', description: 'Find the right co-founder' },

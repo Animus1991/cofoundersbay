@@ -168,7 +168,7 @@ export default function DataExportPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-6 space-y-3">
+            <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {DATA_CATEGORIES.map((category) => {
                 const Icon = category.icon;
                 const isSelected = selectedCategories.has(category.id);

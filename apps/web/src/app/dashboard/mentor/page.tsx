@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { BilingualText } from '@/components/common/BilingualText';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
@@ -257,6 +258,9 @@ export default function MentorDashboard() {
   const nextSessionMinsAway = nextSession
     ? Math.round((new Date(nextSession.scheduledAt).getTime() - Date.now()) / 60000)
     : null;
+  const sessionSoon = Boolean(
+    nextSession && nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0,
+  );
 
   if (!mounted) {
     return (
@@ -286,24 +290,54 @@ export default function MentorDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('mentor_lead'), el: dashboardEl('mentor_lead') }} />
-        <WhatsNewPanel audience="mentor" />
 
-        {/* Within the hour, the next session is the one thing on this page. */}
-        {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && nextSession && (
+        {/* One next step, before everything else. Within the hour it stays the
+            status line; otherwise the next session, or the first request. */}
+        {sessionSoon && nextSession ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
             <p className="flex items-center gap-2 text-sm font-medium">
               <Video className="icon-sm text-status-info" aria-hidden="true" />
-              Session with {nextSession.menteeName} in {nextSessionMinsAway} min
+              <BilingualText
+                en={`Session with ${nextSession.menteeName} in ${nextSessionMinsAway} min`}
+                el={`Συνεδρία με ${nextSession.menteeName} σε ${nextSessionMinsAway} λεπ.`}
+                compact
+                wrap
+              />
             </p>
             <Button size="sm" variant="outline" asChild>
               {nextSession.meetingUrl ? (
-                <a href={nextSession.meetingUrl} target="_blank" rel="noopener noreferrer">Join now</a>
+                <a href={nextSession.meetingUrl} target="_blank" rel="noopener noreferrer">
+                  <BilingualText en="Join now" el="Συμμετοχή τώρα" compact />
+                </a>
               ) : (
-                <Link href="/mentor/sessions">Join now</Link>
+                <Link href="/mentor/sessions">
+                  <BilingualText en="Join now" el="Συμμετοχή τώρα" compact />
+                </Link>
               )}
             </Button>
           </div>
-        )}
+        ) : nextSession ? (
+          <HomeNextStep
+            kickerEn="Next session"
+            kickerEl="Επόμενη συνεδρία"
+            title={nextSession.menteeName}
+            href={nextSession.meetingUrl || '/mentor/sessions'}
+            external={Boolean(nextSession.meetingUrl)}
+            actionEn="Join"
+            actionEl="Συμμετοχή"
+          />
+        ) : pendingRequests[0] ? (
+          <HomeNextStep
+            kickerEn="Mentorship request"
+            kickerEl="Αίτημα καθοδήγησης"
+            title={pendingRequests[0].name}
+            href="/mentor/requests"
+            actionEn="Review"
+            actionEl="Εξέταση"
+          />
+        ) : null}
+
+        <WhatsNewPanel audience="mentor" />
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}

@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { Award, Image as ImageIcon, Link2, MessageCircle, Send, Sparkles, Target, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
@@ -107,24 +108,26 @@ export function FeedPostComposer({ onPost }: Props) {
               {/* An image and a link need somewhere to upload to, and the
                   feed has no server yet. Disabled and labelled, rather
                   than looking available and doing nothing. */}
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled
-                aria-label={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
-                title={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
-              >
-                <ImageIcon className="icon-sm" aria-hidden="true" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled
-                aria-label={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
-                title={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
-              >
-                <Link2 className="icon-sm" aria-hidden="true" />
-              </Button>
+              <WithDisabledReason reasonEn="Image attachments are not available yet" reasonEl="Η επισύναψη εικόνας δεν είναι ακόμη διαθέσιμη">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={bilingualAria('Attach an image', 'Επισύναψη εικόνας')}
+                  disabled
+                >
+                  <ImageIcon className="icon-sm" aria-hidden="true" />
+                </Button>
+              </WithDisabledReason>
+              <WithDisabledReason reasonEn="Link attachments are not available yet" reasonEl="Η επισύναψη συνδέσμου δεν είναι ακόμη διαθέσιμη">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label={bilingualAria('Attach a link', 'Επισύναψη συνδέσμου')}
+                  disabled
+                >
+                  <Link2 className="icon-sm" aria-hidden="true" />
+                </Button>
+              </WithDisabledReason>
               <Button size="sm" onClick={handleSubmit} disabled={!content.trim() || busy} aria-busy={busy || undefined}>
                 <Send className="icon-sm mr-1" aria-hidden="true" />
                 {busy ? <BilingualText en="Posting…" el="Δημοσίευση…" /> : <BilingualText en="Post" el="Δημοσίευση" />}

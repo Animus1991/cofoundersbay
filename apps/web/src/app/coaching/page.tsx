@@ -26,6 +26,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -344,10 +345,12 @@ function SessionCard({ session }: { session: CoachingSession }) {
           <div className="flex flex-wrap gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
               isSample ? (
-                <Button size="sm" className="gap-1" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
-                  <Video className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
-                </Button>
+                <WithDisabledReason reasonEn="Sample session - there is no meeting to join" reasonEl="Δείγμα συνεδρίας - δεν υπάρχει συνάντηση για σύνδεση">
+                  <Button size="sm" className="gap-1" aria-label={JOIN_HINT} disabled>
+                    <Video className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Join session" el="Σύνδεση στη συνεδρία" compact wrap />
+                  </Button>
+                </WithDisabledReason>
               ) : (
                 <Button size="sm" className="gap-1" asChild>
                   <a href={session.meetingUrl} target="_blank" rel="noopener noreferrer">
@@ -359,10 +362,12 @@ function SessionCard({ session }: { session: CoachingSession }) {
             )}
             {session.status === 'completed' && !session.rating && (
               isSample ? (
-                <Button size="sm" variant="outline" className="gap-1" disabled title={RATE_HINT} aria-label={RATE_HINT}>
-                  <Star className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
-                </Button>
+                <WithDisabledReason reasonEn="Sample session - there is nothing to rate" reasonEl="Δείγμα συνεδρίας - δεν υπάρχει τίποτα προς βαθμολόγηση">
+                  <Button size="sm" variant="outline" className="gap-1" aria-label={RATE_HINT} disabled>
+                    <Star className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Rate session" el="Βαθμολόγηση" compact wrap />
+                  </Button>
+                </WithDisabledReason>
               ) : rating ? (
                 /* Five buttons rather than a dialog: the whole interaction is
                    one click, and a dialog would be three. */
@@ -968,10 +973,12 @@ export default function CoachingPage() {
               </div>
               {nextUrl && (
                 isDemoSessionId(nextId) ? (
-                  <Button size="sm" className="shrink-0 gap-1.5" disabled title={JOIN_HINT} aria-label={JOIN_HINT}>
-                    <Video className="icon-sm" aria-hidden="true" />
-                    <BilingualText en="Join" el="Σύνδεση" compact wrap />
-                  </Button>
+                  <WithDisabledReason reasonEn="Sample session - there is no meeting to join" reasonEl="Δείγμα συνεδρίας - δεν υπάρχει συνάντηση για σύνδεση">
+                    <Button size="sm" className="shrink-0 gap-1.5" aria-label={JOIN_HINT} disabled>
+                      <Video className="icon-sm" aria-hidden="true" />
+                      <BilingualText en="Join" el="Σύνδεση" compact wrap />
+                    </Button>
+                  </WithDisabledReason>
                 ) : (
                   <Button size="sm" className="shrink-0 gap-1.5" asChild>
                     <a href={nextUrl} target="_blank" rel="noopener noreferrer">

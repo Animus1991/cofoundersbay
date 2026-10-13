@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -499,10 +500,15 @@ export default function CohortDetailPage() {
               </a>
             </Button>
           ) : (
-            <Button size="sm" variant="outline" disabled title={isSample ? 'Sample people have no real address to write to' : 'Nobody in this cohort has an email address on file'}>
-              <Mail className="icon-sm mr-2" aria-hidden="true" />
-              <BilingualText en="Email all" el="Email σε όλους" compact />
-            </Button>
+            <WithDisabledReason
+              reasonEn={isSample ? 'Sample people have no real address to write to' : 'Nobody in this cohort has an email address on file'}
+              reasonEl={isSample ? 'Τα ενδεικτικά άτομα δεν έχουν πραγματική διεύθυνση' : 'Κανείς σε αυτόν τον κύκλο δεν έχει καταχωρισμένο email'}
+            >
+              <Button size="sm" variant="outline" disabled>
+                <Mail className="icon-sm mr-2" aria-hidden="true" />
+                <BilingualText en="Email all" el="Email σε όλους" compact />
+              </Button>
+            </WithDisabledReason>
           )}
         </div>
       }
@@ -741,10 +747,12 @@ export default function CohortDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle><BilingualText en="All Participants" el="Όλοι οι συμμετέχοντες" compact /></CardTitle>
-              <Button size="sm" disabled title="Cohort membership is managed by platform administrators for now">
-                <Users className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Add Participant" el="Προσθήκη συμμετέχοντα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="Cohort membership is managed by platform administrators for now" reasonEl="Τη συμμετοχή διαχειρίζονται προς το παρόν οι διαχειριστές της πλατφόρμας">
+                <Button size="sm" disabled>
+                  <Users className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Add Participant" el="Προσθήκη συμμετέχοντα" compact />
+                </Button>
+              </WithDisabledReason>
             </CardHeader>
             <CardContent>
               <Table>

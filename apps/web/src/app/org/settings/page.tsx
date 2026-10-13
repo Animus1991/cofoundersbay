@@ -25,6 +25,7 @@ import {
 } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -331,7 +332,9 @@ export default function OrgSettingsPage() {
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
                       <Building2 className="icon-xl text-muted-foreground" />
                     </div>
-                    <Button variant="outline" disabled title="Logo storage is not connected yet"><BilingualText en="Upload Logo" el="Μεταφόρτωση λογοτύπου" compact /></Button>
+                    <WithDisabledReason reasonEn="Logo storage is not connected yet" reasonEl="Ο χώρος αποθήκευσης λογοτύπου δεν έχει συνδεθεί ακόμη">
+                      <Button variant="outline" disabled><BilingualText en="Upload Logo" el="Μεταφόρτωση λογοτύπου" compact /></Button>
+                    </WithDisabledReason>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -356,7 +359,9 @@ export default function OrgSettingsPage() {
                   <Label htmlFor="page-f2"><BilingualText en="Custom Domain" el="Προσαρμοσμένος τομέας" compact /></Label>
                   <div className="flex items-center gap-2">
                     <Input id="page-f2" placeholder="accelerator.yourdomain.com" />
-                    <Button variant="outline" disabled title="Custom domains are not connected yet"><BilingualText en="Verify" el="Επαλήθευση" compact /></Button>
+                    <WithDisabledReason reasonEn="Custom domains are not connected yet" reasonEl="Οι προσαρμοσμένοι τομείς δεν έχουν συνδεθεί ακόμη">
+                      <Button variant="outline" disabled><BilingualText en="Verify" el="Επαλήθευση" compact /></Button>
+                    </WithDisabledReason>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     <BilingualText en="Set up a custom domain for your organization's portal" el="Ορίστε προσαρμοσμένο τομέα για την πύλη του οργανισμού σας" wrap />
@@ -511,7 +516,11 @@ export default function OrgSettingsPage() {
                     titleAs="h4"
                     title="Organization Pro"
                     subtitle={<BilingualText en="$299/month · Billed annually" el="$299/μήνα · Ετήσια χρέωση" compact />}
-                    aside={<Button size="sm" variant="outline" disabled title="Billing is not connected yet"><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>}
+                    aside={(
+                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
+                        <Button size="sm" variant="outline" disabled><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Button>
+                      </WithDisabledReason>
+                    )}
                   />
                   <div className="space-y-2">
                     <p className="text-sm font-medium"><BilingualText en="Usage" el="Χρήση" compact /></p>
@@ -534,7 +543,11 @@ export default function OrgSettingsPage() {
                     titleAs="h4"
                     title={<BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact />}
                     subtitle={<span className="tabular-nums">•••• •••• •••• 4242</span>}
-                    aside={<Button variant="outline" size="sm" disabled title="Billing is not connected yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>}
+                    aside={(
+                      <WithDisabledReason reasonEn="Billing is not connected yet" reasonEl="Η χρέωση δεν έχει συνδεθεί ακόμη">
+                        <Button variant="outline" size="sm" disabled><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
+                      </WithDisabledReason>
+                    )}
                   />
                 </div>
               </CardContent>

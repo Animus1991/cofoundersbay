@@ -27,6 +27,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -199,12 +200,16 @@ function ProjectCard({ project, onView, onComplete }: { project: Project } & Pro
               </Link>
             </Button>
           ) : (
-            <Button size="sm" variant="outline" disabled title={bilingualInline('This client has no account to message', 'Ο πελάτης δεν έχει λογαριασμό για μήνυμα')}>
-              <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
-              <BilingualText en="Message" el="Μήνυμα" compact />
-            </Button>
+            <WithDisabledReason reasonEn="This client has no account to message" reasonEl="Ο πελάτης δεν έχει λογαριασμό για μήνυμα">
+              <Button size="sm" variant="outline" disabled>
+                <MessageSquare className="mr-1 icon-sm" aria-hidden="true" />
+                <BilingualText en="Message" el="Μήνυμα" compact />
+              </Button>
+            </WithDisabledReason>
           )}
-          <Button size="sm" disabled title="Projects do not track progress yet"><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
+          <WithDisabledReason reasonEn="Projects do not track progress yet" reasonEl="Τα έργα δεν καταγράφουν ακόμη πρόοδο">
+            <Button size="sm" disabled><BilingualText en="Update" el="Ενημέρωση" compact /></Button>
+          </WithDisabledReason>
         </CardFoot>
       </CardContent>
     </Card>

@@ -36,8 +36,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { StatusText } from '@/components/common/StatusText';
-import { RowHead } from '@/components/dashboard/SectionCard';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, getNotificationPreferences, updateNotificationPreferences, getMeProfile, updateProfile, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
@@ -50,11 +48,14 @@ import { getViewerSetting, setViewerSetting } from '@/lib/profile-viewers-api';
 import { PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
 import { useLanguagePreference, type LanguageDisplayMode } from '@/lib/i18n/LanguagePreferenceContext';
+import { translate } from '@/lib/i18n/translate';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
@@ -160,7 +161,7 @@ function LanguageCard() {
   return (
     <Card id="language" className="scroll-mt-16 shadow-sm border-border">
       <CardHeader className="border-b border-border">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary-accessible" />
           {t('Language')}
         </CardTitle>
@@ -182,13 +183,12 @@ function LanguageCard() {
         />
         {mounted && pairs && (
           <fieldset className="mt-5 space-y-2 border-t border-border pt-4">
-            {/* The size sits on the inner span: a phone sets an in-card
-                text-sm label under the card's title, and a legend is not in
-                that rule. */}
-            <legend className="font-medium text-foreground">
-              <span className="text-sm"><BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" /></span>
+            <legend className="text-sm font-medium text-foreground">
+              <BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" />
             </legend>
-            <div className="flex flex-wrap gap-2">
+            {/* Both explanations stay visible, side by side, so the card
+                uses the column instead of one chip row and a single hint. */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {DISPLAY_CHOICES.map((choice) => {
                 const active = displayMode === choice.value;
                 return (
@@ -201,29 +201,145 @@ function LanguageCard() {
                       success(t('Display updated'));
                     }}
                     className={cn(
-                      'chip inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
+                      'flex min-h-10 flex-col items-start gap-1 rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors',
                       active
                         ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                        : 'border-border bg-card text-foreground hover:border-primary/50',
                     )}
                   >
                     <BilingualText en={choice.en} el={choice.el} compact />
+                    <span className={cn('text-xs font-normal', active ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                      <BilingualText en={choice.hintEn} el={choice.hintEl} wrap />
+                    </span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {(() => {
-                const current = DISPLAY_CHOICES.find((c) => c.value === displayMode) ?? DISPLAY_CHOICES[0];
-                return <BilingualText en={current.hintEn} el={current.hintEl} wrap />;
-              })()}
-            </p>
           </fieldset>
         )}
       </CardContent>
     </Card>
   );
 }
+
+/**
+ * The seven themes already live in the account menu, inside a dropdown that
+ * closes. They belong on this page too, where the rest of the account choices
+ * are, and where the list can use the width of the column. Both call
+ * `applyTheme`; there is still one stored theme.
+ */
+function AppearanceCard() {
+  const { success } = useToast();
+  const { t } = useI18n();
+  const [theme, setTheme] = useState<ThemeName>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+    setMounted(true);
+  }, []);
+
+  const choose = (name: ThemeName) => {
+    setTheme(name);
+    applyTheme(name);
+    success(t('Display updated'));
+  };
+
+  usePageControls([
+    choiceControl(
+      'theme',
+      'Theme',
+      'Θέμα',
+      THEME_OPTIONS.map((option) => ({ value: option.name, en: option.label, el: translate('el', option.label) })),
+      theme,
+      (value) => choose(value as ThemeName),
+    ),
+  ]);
+
+  return (
+    <Card className="shadow-sm border-border">
+      <CardHeader className="border-b border-border">
+        <CardTitle className="text-lg">
+          <BilingualText en="Appearance" el="Εμφάνιση" compact />
+        </CardTitle>
+        <CardDescription>
+          <BilingualText
+            en="The colour of every page. The same list is in the account menu."
+            el="Το χρώμα κάθε σελίδας. Η ίδια λίστα είναι στο μενού λογαριασμού."
+            wrap
+          />
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {THEME_OPTIONS.map((option) => {
+            const active = mounted && theme === option.name;
+            return (
+              <button
+                key={option.name}
+                type="button"
+                aria-pressed={active}
+                onClick={() => choose(option.name)}
+                className={cn(
+                  'flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors',
+                  active
+                    ? 'border-primary bg-primary/[0.03]'
+                    : 'border-border bg-card hover:border-primary/50',
+                )}
+              >
+                <span className="flex h-7 w-9 shrink-0 overflow-hidden rounded-md border border-border" aria-hidden="true">
+                  <span style={{ background: option.swatch[0], flex: 1 }} />
+                  <span style={{ background: option.swatch[1], width: 8 }} />
+                  <span style={{ background: option.swatch[2], width: 8 }} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-foreground">
+                    <BilingualText en={option.label} el={translate('el', option.label)} compact />
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    <BilingualText en={option.description} el={translate('el', option.description)} wrap />
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Pages that hold a setting this screen only points at. Copy is the nav sentence for each route. */
+const MORE_SETTINGS = [
+  {
+    href: '/settings/ai',
+    en: 'AI assistant',
+    el: 'Βοηθός AI',
+    descEn: 'The model and agent that answer you',
+    descEl: 'Το μοντέλο και ο βοηθός που σας απαντούν',
+  },
+  {
+    href: '/settings/billing',
+    en: 'Plan & billing',
+    el: 'Πλάνο & χρεώσεις',
+    descEn: 'Your plan and where invoices go',
+    descEl: 'Το πακέτο σας και πού στέλνονται τα τιμολόγια',
+  },
+  {
+    href: '/settings/notifications',
+    en: 'Notification preferences',
+    el: 'Προτιμήσεις ειδοποιήσεων',
+    descEn: 'Which emails reach you, and how often',
+    descEl: 'Ποια email λαμβάνετε και πόσο συχνά',
+  },
+  {
+    href: '/settings/data-export',
+    en: 'Data export',
+    el: 'Εξαγωγή δεδομένων',
+    descEn: 'Download your profile, messages and activity',
+    descEl: 'Λήψη του προφίλ, των μηνυμάτων και της δραστηριότητάς σας',
+  },
+] as const;
 
 /*
  * Two of these hold everywhere they apply and are real switches now
@@ -261,6 +377,7 @@ const PRIVACY_LIVE_COPY = {
     el: 'Όχι: φεύγετε από την αναζήτηση των άλλων, τον κατάλογο, τις προτάσεις, το «Ίσως γνωρίζετε» και τον ανιχνευτή. Όσοι σας γνωρίζουν ήδη σας βρίσκουν κανονικά.',
   },
 } as const;
+
 
 /**
  * "Show my name when I view profiles": off by default and reciprocal - a
@@ -360,7 +477,7 @@ function PrivacyCard() {
   return (
     <Card className="shadow-sm border-border">
       <CardHeader className="border-b border-border">
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="icon-md text-muted-foreground" />
           {t('Privacy & Visibility')}
         </CardTitle>
@@ -373,7 +490,8 @@ function PrivacyCard() {
           />
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-1">
+      <CardContent>
+        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         {PRIVACY_ITEMS.map(({ id, label, desc }) => {
           const readOnly = PRIVACY_READ_ONLY[id];
           const checked = readOnly ? readOnly.value : values[id as 'publicProfile' | 'searchable'];
@@ -406,8 +524,9 @@ function PrivacyCard() {
             </div>
           );
         })}
+        </div>
         <ProfileViewsRow />
-        <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
+        <div className="mt-1 flex items-center justify-between gap-4 border-t border-border pt-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground"><BilingualText en="Cookie choices" el="Επιλογές cookies" compact /></p>
             <p className="text-xs text-muted-foreground">
@@ -531,6 +650,7 @@ export default function SettingsPage() {
   }, [searchParams]);
 
   const status = subscription?.status ?? 'free';
+  const statusLabel = status === 'free' ? 'Free' : status.replaceAll('_', ' ');
   const isPremium = ['trialing', 'active', 'past_due', 'paused'].includes(status);
 
   const startCheckout = async () => {
@@ -646,14 +766,14 @@ export default function SettingsPage() {
   return (
     <AppShell
       title="Settings"
-      description="Manage billing, notifications, and integrations."
-      descriptionEl="Διαχειριστείτε χρεώσεις, ειδοποιήσεις και ενσωματώσεις."
+      description="Language, appearance, billing, notifications, security and privacy."
+      descriptionEl="Γλώσσα, εμφάνιση, χρεώσεις, ειδοποιήσεις, ασφάλεια και ιδιωτικότητα."
       showHelp
     >
       {!hasToken && (
-        <Card className="max-w-2xl">
+        <Card>
           <CardHeader>
-            <CardTitle><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
+            <CardTitle className="text-lg"><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p><BilingualText en="To manage billing and preferences, please sign in." el="Συνδεθείτε για να διαχειριστείτε χρεώσεις και προτιμήσεις." wrap /></p>
@@ -667,27 +787,46 @@ export default function SettingsPage() {
       {hasToken && (
         <div className="space-y-6 pb-10">
           <LanguageCard />
-          {/* Settings, in two columns.
-
-              In one column at 1191px this ran 2224px: billing carried 223px of
-              content and stretched to 518px beside the notification list, the
-              password form is `max-w-sm` and left 800px of card empty beside
-              it, and a reader scrolled past eight sections to reach the last.
-              Two columns put the tall list opposite the short cards, which
-              closes the 295px void under billing without inventing anything to
-              put in it, and takes the page to roughly 1560px.
-
-              Explicit column elements rather than letting the grid flow: a
-              grid fills row by row, so the second card would land beside the
-              first and every row would take the height of its taller half —
-              the same defect, six times over. Danger Zone stays full width
-              below, where a destructive section belongs. */}
+          <AppearanceCard />
+          <Card className="shadow-sm border-border">
+            <CardHeader className="border-b border-border">
+              <CardTitle className="text-lg">
+                <BilingualText en="On their own pages" el="Σε δικές τους σελίδες" compact />
+              </CardTitle>
+              <CardDescription>
+                <BilingualText
+                  en="Each of these is edited on its own page, so a choice is made in one place."
+                  el="Καθεμία ρυθμίζεται στη δική της σελίδα, ώστε η επιλογή να γίνεται σε ένα σημείο."
+                  wrap
+                />
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-4">
+                {MORE_SETTINGS.map((item) => (
+                  <Link key={item.href} href={item.href} className="block min-w-0 rounded-md hover:bg-accent">
+                    <p className="text-sm font-medium text-foreground">
+                      <BilingualText en={item.en} el={item.el} compact />
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText en={item.descEn} el={item.descEl} wrap />
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          {/* Short account cards in two explicit columns. A flowing grid would
+              stretch every row to its taller half. The long sections
+              (notifications, verification, open to, privacy, danger zone)
+              sit full width under them so they use the column the sidebar
+              leaves, instead of a max-w-sm form beside an empty card. */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="text-lg flex items-center gap-2">
                     <CreditCard className="icon-md text-muted-foreground" />
                     {t('Billing')}
                   </CardTitle>
@@ -696,7 +835,7 @@ export default function SettingsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={isPremium ? 'default' : 'secondary'} className="gap-1.5">
                       {isPremium && <Crown className="icon-sm" />}
-                      <StatusText value={status} />
+                      {statusLabel}
                     </Badge>
                     {subscription?.currentPeriodEnd && (
                       <span className="text-xs text-muted-foreground">
@@ -706,24 +845,22 @@ export default function SettingsPage() {
                   </div>
 
                   {loading ? (
-                    <div className="card-body flex items-center gap-2 text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="icon-sm animate-spin" />
                       {t('Loading billing…')}
                     </div>
                   ) : (
-                    <div>
-                      {/* Weight on the inner span: a phone sets a medium
-                          paragraph on the 13.673 step, over the card's title. */}
-                      <p className="card-body text-foreground">
-                        <span className="font-medium">{isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}</span>
+                    <div className="text-sm">
+                      <p className="font-medium text-foreground">
+                        {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
                       </p>
-                      <p className="card-body mt-1 text-muted-foreground">
+                      <p className="mt-1 text-muted-foreground">
                         <BilingualText en="Mentor booking payments, file attachments, and advanced discovery filters." el="Πληρωμές κρατήσεων μεντόρων, συνημμένα αρχεία και προχωρημένα φίλτρα ανακάλυψης." wrap />
                       </p>
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Button
                       className="gap-2"
                       disabled={working !== null || isPremium}
@@ -743,23 +880,147 @@ export default function SettingsPage() {
                         Manage subscription
                       </Button>
                     )}
+                    <Button variant="outline" asChild>
+                      <Link href="/settings/billing">
+                        <BilingualText en="Plan and invoices" el="Πλάνο και τιμολόγια" compact />
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
 
+              {/* Connected accounts */}
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Link2 className="icon-md text-muted-foreground" />
+                    <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
+                  </CardTitle>
+                  <CardDescription>
+                    <BilingualText en="Link Google or LinkedIn to sign in without a password." el="Συνδέστε Google ή LinkedIn για σύνδεση χωρίς κωδικό." wrap />
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+                  {[
+                    {
+                      key: 'google',
+                      label: 'Google',
+                      icon: (
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                      ),
+                      connected: !!(linkedAccountsData as { google?: boolean; linkedin?: boolean } | undefined)?.google,
+                      connectUrl: '/api/auth/google',
+                    },
+                    {
+                      key: 'linkedin',
+                      label: 'LinkedIn',
+                      icon: (
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#0A66C2">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      ),
+                      connected: !!(linkedAccountsData as { google?: boolean; linkedin?: boolean } | undefined)?.linkedin,
+                      connectUrl: '/api/auth/linkedin',
+                    },
+                  ].map(({ key, label, icon, connected, connectUrl }) => (
+                    <div key={key} className="flex items-center justify-between gap-4 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-8 w-8 items-center justify-center" data-keep-icon="">
+                          {icon}
+                        </span>
+                        <div>
+                          <p className="text-sm font-medium">{label}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {connected
+                              ? <BilingualText en="Connected" el="Συνδεδεμένος" compact />
+                              : <BilingualText en="Not connected" el="Μη συνδεδεμένος" compact />}
+                          </p>
+                        </div>
+                      </div>
+                      {connected ? (
+                        <Badge variant="secondary" className="text-xs"><BilingualText en="Connected" el="Συνδεδεμένος" compact /></Badge>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { window.location.href = connectUrl; }}
+                        >
+                          <BilingualText en="Connect" el="Σύνδεση" compact />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+
+              {/* Account section */}
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="icon-md text-muted-foreground" />
+                    <BilingualText en="Account" el="Λογαριασμός" compact />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button variant="secondary" className="gap-2" asChild>
+                      <Link href="/profile/edit">
+                        <User className="icon-sm" />
+                        <BilingualText en="Edit profile" el="Επεξεργασία προφίλ" compact />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="gap-2" asChild>
+                      <Link href="/profile">
+                        <Shield className="icon-sm" />
+                        <BilingualText en="View public profile" el="Προβολή δημόσιου προφίλ" compact />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="gap-2 text-destructive-accessible hover:text-destructive-accessible hover:bg-destructive/10"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="icon-sm" />
+                      <BilingualText en="Sign out" el="Αποσύνδεση" compact />
+                    </Button>
+                  </div>
+                  {/* Export is self-service (/settings/data-export); only
+                      deletion goes through support. The old line sent both
+                      to support while the Danger Zone below offered Export. */}
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText
+                      en="Data export and account deletion are under Danger Zone, below."
+                      el="Η εξαγωγή δεδομένων και η διαγραφή λογαριασμού βρίσκονται παρακάτω, στη Ζώνη κινδύνου."
+                      wrap
+                    />
+                  </p>
+                </CardContent>
+              </Card>
+
+            </div>
+
+            <div className="min-w-0 space-y-6">
               {/* Password Change */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="text-lg flex items-center gap-2">
                     <KeyRound className="icon-md text-muted-foreground" />
                     <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
                   </CardTitle>
-                  <CardDescription><BilingualText en="Leave blank to keep your current password." el="Αφήστε κενό για να κρατήσετε τον τρέχοντα κωδικό." wrap /></CardDescription>
+                  <CardDescription><BilingualText en="At least 8 characters. Saving signs you out of every other session." el="Τουλάχιστον 8 χαρακτήρες. Η αποθήκευση σας αποσυνδέει από κάθε άλλη συνεδρία." wrap /></CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
-                    <div className="relative">
+                  <form onSubmit={handleChangePassword} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="relative sm:col-span-2">
                       <label htmlFor="settings-current-password" className="sr-only"><BilingualText en="Current password" el="Τρέχων κωδικός" compact /></label>
                       <Input
                         id="settings-current-password"
@@ -807,132 +1068,45 @@ export default function SettingsPage() {
                       required
                       autoComplete="new-password"
                     />
+                    <div className="sm:col-span-2">
                     <Button type="submit" disabled={pwWorking} className="gap-2">
                       {pwWorking ? <Loader2 className="icon-sm animate-spin" /> : <KeyRound className="icon-sm" />}
                       Update password
                     </Button>
+                    </div>
                   </form>
                 </CardContent>
               </Card>
 
 
-              {/* Connected accounts */}
+              {/* Security — 2FA */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center gap-2">
-                    <Link2 className="icon-md text-muted-foreground" />
-                    <BilingualText en="Connected accounts" el="Συνδεδεμένοι λογαριασμοί" compact />
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Shield className="icon-md text-muted-foreground" />
+                    <BilingualText en="Security" el="Ασφάλεια" compact />
                   </CardTitle>
-                  <CardDescription>
-                    <BilingualText en="Link Google or LinkedIn to sign in without a password." el="Συνδέστε Google ή LinkedIn για σύνδεση χωρίς κωδικό." wrap />
-                  </CardDescription>
+                  <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
                 </CardHeader>
-                <CardContent className="divide-y divide-border">
-                  {[
-                    {
-                      key: 'google',
-                      label: 'Google',
-                      icon: (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                      ),
-                      connected: !!(linkedAccountsData as { google?: boolean; linkedin?: boolean } | undefined)?.google,
-                      connectUrl: '/api/auth/google',
-                    },
-                    {
-                      key: 'linkedin',
-                      label: 'LinkedIn',
-                      icon: (
-                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="#0A66C2">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                      ),
-                      connected: !!(linkedAccountsData as { google?: boolean; linkedin?: boolean } | undefined)?.linkedin,
-                      connectUrl: '/api/auth/linkedin',
-                    },
-                  ].map(({ key, label, icon, connected, connectUrl }) => (
-                    <RowHead
-                      key={key}
-                      className="py-3 first:pt-0 last:pb-0"
-                      mark={
-                        <span data-card-mark="" data-keep-icon="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                          {icon}
-                        </span>
-                      }
-                      title={label}
-                      subtitle={connected ? <BilingualText en="Connected" el="Συνδεδεμένος" compact /> : <BilingualText en="Not connected" el="Μη συνδεδεμένος" compact />}
-                      aside={connected ? undefined : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => { window.location.href = connectUrl; }}
-                        >
-                          <BilingualText en="Connect" el="Σύνδεση" compact />
-                        </Button>
-                      )}
-                    />
-                  ))}
+                <CardContent className="space-y-4">
+                  <TwoFactorManagement
+                    isEnabled={twoFaEnabled}
+                    onStatusChange={(enabled) =>
+                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
+                    }
+                  />
                 </CardContent>
               </Card>
 
-
-              {/* Account section */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="icon-md text-muted-foreground" />
-                    <BilingualText en="Account" el="Λογαριασμός" compact />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button variant="secondary" className="gap-2" asChild>
-                      <Link href="/profile/edit">
-                        <User className="icon-sm" />
-                        <BilingualText en="Edit profile" el="Επεξεργασία προφίλ" compact />
-                      </Link>
-                    </Button>
-                    <Button variant="outline" className="gap-2" asChild>
-                      <Link href="/profile">
-                        <Shield className="icon-sm" />
-                        <BilingualText en="View public profile" el="Προβολή δημόσιου προφίλ" compact />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="gap-2 text-destructive-accessible hover:text-destructive-accessible hover:bg-destructive/10"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="icon-sm" />
-                      <BilingualText en="Sign out" el="Αποσύνδεση" compact />
-                    </Button>
-                  </div>
-                  {/* Export is self-service (/settings/data-export); only
-                      deletion goes through support. The old line sent both
-                      to support while the Danger Zone below offered Export. */}
-                  <p className="text-xs text-muted-foreground">
-                    <BilingualText
-                      en="Data export and account deletion are under Danger Zone, below."
-                      el="Η εξαγωγή δεδομένων και η διαγραφή λογαριασμού βρίσκονται παρακάτω, στη Ζώνη κινδύνου."
-                      wrap
-                    />
-                  </p>
-                </CardContent>
-              </Card>
 
             </div>
-
-            <div className="min-w-0 space-y-6">
+          </div>
               {/* Notifications: the quick view of /settings/notifications. */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
-                      <CardTitle className="flex items-center gap-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
                         <Bell className="icon-md text-muted-foreground" />
                         <BilingualText en="Notifications" el="Ειδοποιήσεις" compact />
                       </CardTitle>
@@ -952,7 +1126,8 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-1">
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-3">
                   {quickCategories.map((category) => {
                     return (
                       <div
@@ -994,86 +1169,57 @@ export default function SettingsPage() {
                       onChange={(v) => saveDigest.mutate(v)}
                     />
                   </div>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Security — 2FA */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="icon-md text-muted-foreground" />
-                    <BilingualText en="Security" el="Ασφάλεια" compact />
-                  </CardTitle>
-                  <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <TwoFactorManagement
-                    isEnabled={twoFaEnabled}
-                    onStatusChange={(enabled) =>
-                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
-                    }
-                  />
-                </CardContent>
-              </Card>
-
-
-              {/* Verification: what opens terms on the commitments ladder */}
-              <VerificationCard />
-
-              {/* Open to: a quiet signal that feeds matching */}
-              <OpenToCard />
-
-              {/* How you like to work: the compatibility questions a match is compared on */}
-              <CompatibilityCard />
-
-              {/* Privacy & Visibility */}
-              <PrivacyCard />
-            </div>
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <VerificationCard />
+            <OpenToCard />
+            <CompatibilityCard />
           </div>
+          <PrivacyCard />
           {/* Danger Zone */}
           <Card className="border-destructive/30">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive-accessible">
+              <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
                 <AlertTriangle className="icon-md" />
                 <BilingualText en="Danger Zone" el="Επικίνδυνη ζώνη" compact />
               </CardTitle>
               <CardDescription><BilingualText en="Irreversible actions that affect your account permanently." el="Μη αναστρέψιμες ενέργειες που επηρεάζουν μόνιμα τον λογαριασμό σας." wrap /></CardDescription>
             </CardHeader>
-            {/* Two rows on the card's axis. The card's red edge and title
-                already say "danger"; the delete row was a second red box
-                inside it, its text 16px in from everything else. */}
-            <CardContent className="divide-y divide-border">
-              <RowHead
-                className="pb-3"
-                title={<BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact />}
-                subtitle={<BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap />}
-                aside={
-                  /* /settings/data-export has existed all along; this button
-                     simply never pointed at it. */
-                  <Button asChild variant="outline" size="sm" className="shrink-0 gap-2">
-                    <Link href="/settings/data-export">
-                      <Download className="icon-sm" />
-                      <BilingualText en="Export" el="Εξαγωγή" compact />
-                    </Link>
-                  </Button>
-                }
-              />
-              {/* There is no self-serve deletion endpoint yet, so this was a
-                  destructive-looking button that only showed a toast. It now
-                  opens the request it always meant: an email to privacy,
-                  which section 7 of the privacy policy answers within 30 days. */}
-              <RowHead
-                className="pt-3"
-                title={<span className="text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></span>}
-                subtitle={<BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap />}
-                aside={
-                  <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
-                    <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
-                      <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
-                    </a>
-                  </Button>
-                }
-              />
+            <CardContent>
+              <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="A JSON file of the categories you choose on the export page. Nothing is stored after the download." el="Αρχείο JSON με τις κατηγορίες που διαλέγετε στη σελίδα εξαγωγής. Τίποτα δεν φυλάσσεται μετά τη λήψη." wrap /></p>
+                </div>
+                {/* /settings/data-export has existed all along; this button
+                    simply never pointed at it. */}
+                <Button asChild variant="outline" size="sm" className="shrink-0 gap-2">
+                  <Link href="/settings/data-export">
+                    <Download className="icon-sm" />
+                    <BilingualText en="Export" el="Εξαγωγή" compact />
+                  </Link>
+                </Button>
+              </div>
+              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-destructive-accessible"><BilingualText en="Delete account" el="Διαγραφή λογαριασμού" compact /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="Permanently remove your account and its data. Send the request from the email you signed up with; it is answered within 30 days and cannot be undone." el="Οριστική διαγραφή του λογαριασμού σας και των δεδομένων του. Στείλτε το αίτημα από το email της εγγραφής σας· απαντάται μέσα σε 30 ημέρες και δεν αναιρείται." wrap /></p>
+                </div>
+                {/* There is no self-serve deletion endpoint yet, so this was a
+                    destructive-looking button that only showed a toast. It now
+                    opens the request it always meant: an email to privacy,
+                    which section 7 of the privacy policy answers within 30 days. */}
+                <Button variant="destructive" size="sm" className="shrink-0 gap-2" asChild>
+                  <a href="mailto:privacy@cofounderbay.com?subject=Account%20deletion%20request">
+                    <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
+                  </a>
+                </Button>
+              </div>
+              </div>
             </CardContent>
           </Card>
         </div>

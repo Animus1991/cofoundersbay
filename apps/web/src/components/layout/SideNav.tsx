@@ -375,6 +375,10 @@ export function SideNav() {
               className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
               onClick={() => router.push('/search')}
               aria-label={bilingualAria('Search', 'Αναζήτηση')}
+              title={bilingualAria(
+                NAV_LINK_DESCRIPTIONS['/search'],
+                getNavDescriptionEl('/search'),
+              )}
             >
               <CfbGlyph name="search" className={chromeIcon} />
             </Button>

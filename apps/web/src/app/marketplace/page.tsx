@@ -32,6 +32,7 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
@@ -261,20 +262,25 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 </a>
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title={bilingualInline('This provider has not listed a contact link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο επικοινωνίας')}>
-                <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="This provider has not listed a contact link" reasonEl="Ο πάροχος δεν έχει δηλώσει σύνδεσμο επικοινωνίας">
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled>
+                  <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
             {provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
               <Button size="sm" className="h-8 text-xs" asChild>
                 <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Request" el="Αίτημα" compact /></a>
               </Button>
             ) : (
-              <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable
-                ? bilingualInline('This provider has not listed a request link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο αιτήματος')
-                : bilingualInline('Not taking new clients', 'Δεν δέχεται νέους πελάτες')}>
-                <BilingualText en="Request" el="Αίτημα" compact />
-              </Button>
+              <WithDisabledReason
+                reasonEn={provider.isAvailable ? 'This provider has not listed a request link' : 'Not taking new clients'}
+                reasonEl={provider.isAvailable ? 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο αιτήματος' : 'Δεν δέχεται νέους πελάτες'}
+              >
+                <Button size="sm" className="h-8 text-xs" disabled>
+                  <BilingualText en="Request" el="Αίτημα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
         </CardFoot>
       </CardContent>

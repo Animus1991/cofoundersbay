@@ -436,6 +436,15 @@ export default function FounderDashboardContent() {
     typeof change === 'number'
       ? { value: Math.abs(change), positive: change >= 0, en: dashboardEn('this_week'), el: dashboardEl('this_week') }
       : undefined;
+  const profileViewsTrend = (() => {
+    const trend = trendOf(userMetrics?.profileViewsChange);
+    if (!trend) return undefined;
+    return {
+      ...trend,
+      en: `${trend.en}. Opens analytics`,
+      el: `${trend.el}. Ανοίγει τα αναλυτικά`,
+    };
+  })();
 
   const { data: recommendations } = useQuery({
     queryKey: queryKeys.recommendations,
@@ -1240,7 +1249,7 @@ export default function FounderDashboardContent() {
       <FirstRunTour tourId="founder-dashboard" steps={FOUNDER_TOUR} ready={mounted && firstMove.settled && !restFolded} />
       <div className="min-w-0 space-y-6 overflow-x-clip">
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           <BilingualText
             en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
             el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
@@ -1263,8 +1272,9 @@ export default function FounderDashboardContent() {
           />
         )}
 
-        {/* Phone only. The column below stays for every width, so nothing
-            that lived here moves; this is the first screen under 640px. */}
+        {/* The unfinished thing and the next people lead at every width.
+            Activity, the first person, the milestone and the calendar stay
+            under 640px. The column below still holds the full lists. */}
         <FounderPhoneHome
           showResume={!showFirstMove}
           matches={recommendations?.suggestions ?? []}
@@ -1306,7 +1316,9 @@ export default function FounderDashboardContent() {
               glyph="profile"
               label={dashboardEn('profile_views')} labelEl={dashboardEl('profile_views')}
               value={userMetrics?.profileViews ?? '—'}
-              trend={trendOf(userMetrics?.profileViewsChange)}
+              trend={profileViewsTrend}
+              caption={profileViewsTrend ? undefined : 'People who opened your profile. Opens analytics'}
+              captionEl={profileViewsTrend ? undefined : 'Άτομα που άνοιξαν το προφίλ σας. Ανοίγει τα αναλυτικά'}
               href="/analytics"
             />
             {/* No endpoint reports a week-over-week change for matches, so this
@@ -1316,6 +1328,8 @@ export default function FounderDashboardContent() {
               glyph="matches"
               label={dashboardEn('top_matches')} labelEl={dashboardEl('top_matches')}
               value={stats?.matchesThisWeek ?? '—'}
+              caption="Suggestions this week. Opens matches"
+              captionEl="Προτάσεις αυτής της εβδομάδας. Ανοίγει τις αντιστοιχίσεις"
               href="/matches"
             />
             <MetricTile

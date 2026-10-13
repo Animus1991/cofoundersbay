@@ -8,6 +8,7 @@ import {
   Briefcase, GraduationCap, ExternalLink, type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -117,10 +118,12 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                   </a>
                 </Button>
               ) : (
-                <Button size="sm" variant="outline" className="gap-1.5" disabled title="This organisation has not listed a contact · Ο οργανισμός δεν έχει δηλώσει στοιχεία επικοινωνίας">
-                  <Mail className="icon-sm" aria-hidden="true" />
-                  <BilingualText en="Contact" el="Επικοινωνία" compact />
-                </Button>
+                <WithDisabledReason reasonEn="This organisation has not listed a contact" reasonEl="Ο οργανισμός δεν έχει δηλώσει στοιχεία επικοινωνίας">
+                  <Button size="sm" variant="outline" className="gap-1.5" disabled>
+                    <Mail className="icon-sm" aria-hidden="true" />
+                    <BilingualText en="Contact" el="Επικοινωνία" compact />
+                  </Button>
+                </WithDisabledReason>
               )}
             </>
           }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { FactLine } from '@/components/common/FactLine';
@@ -102,12 +103,12 @@ function seenToday(lastSeenAt?: number | null): boolean {
 }
 
 /**
- * The founder's phone home, under 640px.
+ * The founder's first glance.
  *
- * One unfinished thing, the next people, what just happened, the first person
- * to answer, the next milestone, then the calendar. The wider dashboard stays
- * as it is; this only leads the narrow screen, and every control opens a page
- * that already exists.
+ * The unfinished thing and the next people lead at every width. What just
+ * happened, the first person to answer, the milestone bar and the calendar
+ * stay under 640px, where the column below is folded. Every control opens a
+ * page that already exists. The wider column still holds the full lists.
  */
 export function FounderPhoneHome({
   showResume,
@@ -168,44 +169,37 @@ export function FounderPhoneHome({
   const days = milestone?.dueDate ? daysUntil(milestone.dueDate) : null;
   const resumeIsMilestone = showResume && !boards.isLoading && !latestBoard && !!milestone;
 
+  const hasResume = Boolean(
+    (showResume && latestBoard) || (showResume && !latestBoard && !boards.isLoading && milestone),
+  );
+  const hasLead = hasResume || people.length > 0;
+
   return (
-    <div className="min-w-0 space-y-6 sm:hidden">
+    <>
+    {hasLead ? (
+    <div className="min-w-0 space-y-6">
       {showResume && latestBoard ? (
-        <Card>
-          <CardContent className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">
-                <BilingualText en="Research" el="Έρευνα" compact />
-              </p>
-              <p className="text-sm font-medium text-foreground">{latestBoard.title}</p>
-            </div>
-            <Button asChild size="sm" className="shrink-0">
-              <Link href={`/research/${latestBoard.id}`}>
-                <BilingualText en="Continue" el="Συνέχεια" compact />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <HomeNextStep
+          kickerEn="Research"
+          kickerEl="Έρευνα"
+          title={latestBoard.title}
+          href={`/research/${latestBoard.id}`}
+          actionEn="Continue"
+          actionEl="Συνέχεια"
+        />
       ) : null}
 
       {showResume && !latestBoard && !boards.isLoading && milestone ? (
-        <Card>
-          <CardContent className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">
-                <BilingualText en="Next milestone" el="Επόμενο ορόσημο" compact />
-              </p>
-              <p className="text-sm font-medium text-foreground">
-                <BilingualText en={milestone.titleEn} el={milestone.titleEl} compact wrap />
-              </p>
-            </div>
-            <Button asChild size="sm" variant="outline" className="shrink-0">
-              <Link href="/milestones">
-                <BilingualText en="Continue" el="Συνέχεια" compact />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <HomeNextStep
+          kickerEn="Next milestone"
+          kickerEl="Επόμενο ορόσημο"
+          titleEn={milestone.titleEn}
+          titleEl={milestone.titleEl}
+          href="/milestones"
+          actionEn="Continue"
+          actionEl="Συνέχεια"
+          actionVariant="outline"
+        />
       ) : null}
 
       {people.length > 0 ? (
@@ -236,7 +230,10 @@ export function FounderPhoneHome({
           </CardContent>
         </Card>
       ) : null}
+    </div>
+    ) : null}
 
+    <div className="min-w-0 space-y-6 sm:hidden">
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -428,5 +425,6 @@ export function FounderPhoneHome({
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

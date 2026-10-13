@@ -32,6 +32,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -348,9 +349,11 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
             ) : (
               /* A sample name has no thread to open; the control says so
                  rather than looking available. */
-              <Button size="sm" variant="outline" disabled title={bilingualInline('Sample connection', 'Ενδεικτική επαφή')}>
-                <BilingualText en="Ask" el="Αίτημα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="Sample connection" reasonEl="Ενδεικτική επαφή">
+                <Button size="sm" variant="outline" disabled>
+                  <BilingualText en="Ask" el="Αίτημα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
           </li>
         ))}

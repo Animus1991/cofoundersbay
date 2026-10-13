@@ -32,6 +32,7 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -327,10 +328,12 @@ function ProgramCard({
           {isEnrolled && (
             // A state, not an action: it looked like a button and did
             // nothing. Disabled, so it reads as "Applied, unavailable".
-            <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40" disabled title={bilingualAria('Your application is in', 'Η αίτησή σας έχει υποβληθεί')}>
-              <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
-              <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
-            </Button>
+            <WithDisabledReason reasonEn="Your application has been submitted" reasonEl="Η αίτησή σας έχει υποβληθεί">
+              <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40" disabled>
+                <CheckCircle2 className="icon-sm mr-1.5" aria-hidden="true" />
+                <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
+              </Button>
+            </WithDisabledReason>
           )}
           <Button size="sm" variant="outline" asChild>
             <Link href={`/programs/${program.id}`}>
