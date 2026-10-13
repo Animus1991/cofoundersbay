@@ -348,6 +348,7 @@ export default function UserBillingPage() {
           </CardContent>
         </Card>
 
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Billing Contact */}
         <Card className="border-border shadow-none">
           <CardHeader className="pb-3 border-b border-border">
@@ -490,6 +491,7 @@ export default function UserBillingPage() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </AppShell>
   );

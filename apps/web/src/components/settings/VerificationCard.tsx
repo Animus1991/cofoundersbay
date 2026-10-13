@@ -130,6 +130,7 @@ export function VerificationCard() {
           <p className="text-sm text-muted-foreground"><BilingualText en="Not verified yet." el="Δεν έχετε επαληθευτεί ακόμη." compact /></p>
         )}
 
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         {!hasWorkEmail ? (
           <div className="space-y-3">
             <p className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -206,6 +207,7 @@ export function VerificationCard() {
           >
             <BilingualText en="Continue with LinkedIn" el="Συνέχεια με LinkedIn" compact />
           </Button>
+        </div>
         </div>
       </CardContent>
     </Card>

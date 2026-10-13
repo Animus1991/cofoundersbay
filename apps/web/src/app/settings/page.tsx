@@ -45,11 +45,14 @@ import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
 import { useLanguagePreference, type LanguageDisplayMode } from '@/lib/i18n/LanguagePreferenceContext';
+import { translate } from '@/lib/i18n/translate';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
+import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
@@ -180,7 +183,9 @@ function LanguageCard() {
             <legend className="text-sm font-medium text-foreground">
               <BilingualText en="How many languages on screen" el="Πόσες γλώσσες στην οθόνη" />
             </legend>
-            <div className="flex flex-wrap gap-2">
+            {/* Both explanations stay visible, side by side, so the card
+                uses the column instead of one chip row and a single hint. */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {DISPLAY_CHOICES.map((choice) => {
                 const active = displayMode === choice.value;
                 return (
@@ -193,29 +198,145 @@ function LanguageCard() {
                       success(t('Display updated'));
                     }}
                     className={cn(
-                      'chip inline-flex min-h-10 items-center rounded-full border px-3 text-sm font-medium transition-colors',
+                      'flex min-h-10 flex-col items-start gap-1 rounded-md border px-3 py-2 text-left text-sm font-medium transition-colors',
                       active
                         ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                        : 'border-border bg-card text-foreground hover:border-primary/50',
                     )}
                   >
                     <BilingualText en={choice.en} el={choice.el} compact />
+                    <span className={cn('text-xs font-normal', active ? 'text-primary-foreground' : 'text-muted-foreground')}>
+                      <BilingualText en={choice.hintEn} el={choice.hintEl} wrap />
+                    </span>
                   </button>
                 );
               })}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {(() => {
-                const current = DISPLAY_CHOICES.find((c) => c.value === displayMode) ?? DISPLAY_CHOICES[0];
-                return <BilingualText en={current.hintEn} el={current.hintEl} wrap />;
-              })()}
-            </p>
           </fieldset>
         )}
       </CardContent>
     </Card>
   );
 }
+
+/**
+ * The seven themes already live in the account menu, inside a dropdown that
+ * closes. They belong on this page too, where the rest of the account choices
+ * are, and where the list can use the width of the column. Both call
+ * `applyTheme`; there is still one stored theme.
+ */
+function AppearanceCard() {
+  const { success } = useToast();
+  const { t } = useI18n();
+  const [theme, setTheme] = useState<ThemeName>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setTheme(getStoredTheme());
+    setMounted(true);
+  }, []);
+
+  const choose = (name: ThemeName) => {
+    setTheme(name);
+    applyTheme(name);
+    success(t('Display updated'));
+  };
+
+  usePageControls([
+    choiceControl(
+      'theme',
+      'Theme',
+      'Θέμα',
+      THEME_OPTIONS.map((option) => ({ value: option.name, en: option.label, el: translate('el', option.label) })),
+      theme,
+      (value) => choose(value as ThemeName),
+    ),
+  ]);
+
+  return (
+    <Card className="shadow-sm border-border">
+      <CardHeader className="border-b border-border">
+        <CardTitle className="text-lg">
+          <BilingualText en="Appearance" el="Εμφάνιση" compact />
+        </CardTitle>
+        <CardDescription>
+          <BilingualText
+            en="The colour of every page. The same list is in the account menu."
+            el="Το χρώμα κάθε σελίδας. Η ίδια λίστα είναι στο μενού λογαριασμού."
+            wrap
+          />
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {THEME_OPTIONS.map((option) => {
+            const active = mounted && theme === option.name;
+            return (
+              <button
+                key={option.name}
+                type="button"
+                aria-pressed={active}
+                onClick={() => choose(option.name)}
+                className={cn(
+                  'flex min-h-10 items-center gap-3 rounded-md border px-3 py-2 text-left transition-colors',
+                  active
+                    ? 'border-primary bg-primary/[0.03]'
+                    : 'border-border bg-card hover:border-primary/50',
+                )}
+              >
+                <span className="flex h-7 w-9 shrink-0 overflow-hidden rounded-md border border-border" aria-hidden="true">
+                  <span style={{ background: option.swatch[0], flex: 1 }} />
+                  <span style={{ background: option.swatch[1], width: 8 }} />
+                  <span style={{ background: option.swatch[2], width: 8 }} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-foreground">
+                    <BilingualText en={option.label} el={translate('el', option.label)} compact />
+                  </span>
+                  <span className="block text-xs text-muted-foreground">
+                    <BilingualText en={option.description} el={translate('el', option.description)} wrap />
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/** Pages that hold a setting this screen only points at. Copy is the nav sentence for each route. */
+const MORE_SETTINGS = [
+  {
+    href: '/settings/ai',
+    en: 'AI assistant',
+    el: 'Βοηθός AI',
+    descEn: 'The model and agent that answer you',
+    descEl: 'Το μοντέλο και ο βοηθός που σας απαντούν',
+  },
+  {
+    href: '/settings/billing',
+    en: 'Plan & billing',
+    el: 'Πλάνο & χρεώσεις',
+    descEn: 'Your plan and where invoices go',
+    descEl: 'Το πακέτο σας και πού στέλνονται τα τιμολόγια',
+  },
+  {
+    href: '/settings/notifications',
+    en: 'Notification preferences',
+    el: 'Προτιμήσεις ειδοποιήσεων',
+    descEn: 'Which emails reach you, and how often',
+    descEl: 'Ποια email λαμβάνετε και πόσο συχνά',
+  },
+  {
+    href: '/settings/data-export',
+    en: 'Data export',
+    el: 'Εξαγωγή δεδομένων',
+    descEn: 'Download your profile, messages and activity',
+    descEl: 'Λήψη του προφίλ, των μηνυμάτων και της δραστηριότητάς σας',
+  },
+] as const;
 
 /*
  * Two of these hold everywhere they apply and are real switches now
@@ -316,7 +437,8 @@ function PrivacyCard() {
           />
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-1">
+      <CardContent>
+        <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
         {PRIVACY_ITEMS.map(({ id, label, desc }) => {
           const readOnly = PRIVACY_READ_ONLY[id];
           const checked = readOnly ? readOnly.value : values[id as 'publicProfile' | 'searchable'];
@@ -349,7 +471,8 @@ function PrivacyCard() {
             </div>
           );
         })}
-        <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
+        </div>
+        <div className="mt-1 flex items-center justify-between gap-4 border-t border-border pt-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground"><BilingualText en="Cookie choices" el="Επιλογές cookies" compact /></p>
             <p className="text-xs text-muted-foreground">
@@ -589,12 +712,12 @@ export default function SettingsPage() {
   return (
     <AppShell
       title="Settings"
-      description="Manage billing, notifications, and integrations."
-      descriptionEl="Διαχειριστείτε χρεώσεις, ειδοποιήσεις και ενσωματώσεις."
+      description="Language, appearance, billing, notifications, security and privacy."
+      descriptionEl="Γλώσσα, εμφάνιση, χρεώσεις, ειδοποιήσεις, ασφάλεια και ιδιωτικότητα."
       showHelp
     >
       {!hasToken && (
-        <Card className="max-w-2xl">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg"><BilingualText en="Sign in required" el="Απαιτείται σύνδεση" compact /></CardTitle>
           </CardHeader>
@@ -610,21 +733,40 @@ export default function SettingsPage() {
       {hasToken && (
         <div className="space-y-6 pb-10">
           <LanguageCard />
-          {/* Settings, in two columns.
-
-              In one column at 1191px this ran 2224px: billing carried 223px of
-              content and stretched to 518px beside the notification list, the
-              password form is `max-w-sm` and left 800px of card empty beside
-              it, and a reader scrolled past eight sections to reach the last.
-              Two columns put the tall list opposite the short cards, which
-              closes the 295px void under billing without inventing anything to
-              put in it, and takes the page to roughly 1560px.
-
-              Explicit column elements rather than letting the grid flow: a
-              grid fills row by row, so the second card would land beside the
-              first and every row would take the height of its taller half —
-              the same defect, six times over. Danger Zone stays full width
-              below, where a destructive section belongs. */}
+          <AppearanceCard />
+          <Card className="shadow-sm border-border">
+            <CardHeader className="border-b border-border">
+              <CardTitle className="text-lg">
+                <BilingualText en="On their own pages" el="Σε δικές τους σελίδες" compact />
+              </CardTitle>
+              <CardDescription>
+                <BilingualText
+                  en="Each of these is edited on its own page, so a choice is made in one place."
+                  el="Καθεμία ρυθμίζεται στη δική της σελίδα, ώστε η επιλογή να γίνεται σε ένα σημείο."
+                  wrap
+                />
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-4">
+                {MORE_SETTINGS.map((item) => (
+                  <Link key={item.href} href={item.href} className="block min-w-0 rounded-md hover:bg-accent">
+                    <p className="text-sm font-medium text-foreground">
+                      <BilingualText en={item.en} el={item.el} compact />
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText en={item.descEn} el={item.descEl} wrap />
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          {/* Short account cards in two explicit columns. A flowing grid would
+              stretch every row to its taller half. The long sections
+              (notifications, verification, open to, privacy, danger zone)
+              sit full width under them so they use the column the sidebar
+              leaves, instead of a max-w-sm form beside an empty card. */}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
@@ -664,7 +806,7 @@ export default function SettingsPage() {
                     </div>
                   )}
 
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                     <Button
                       className="gap-2"
                       disabled={working !== null || isPremium}
@@ -684,75 +826,12 @@ export default function SettingsPage() {
                         Manage subscription
                       </Button>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-
-
-              {/* Password Change */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <KeyRound className="icon-md text-muted-foreground" />
-                    <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
-                  </CardTitle>
-                  <CardDescription><BilingualText en="Leave blank to keep your current password." el="Αφήστε κενό για να κρατήσετε τον τρέχοντα κωδικό." wrap /></CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
-                    <div className="relative">
-                      <label htmlFor="settings-current-password" className="sr-only"><BilingualText en="Current password" el="Τρέχων κωδικός" compact /></label>
-                      <Input
-                        id="settings-current-password"
-                        type={showPw ? 'text' : 'password'}
-                        placeholder={bilingualInline("Current password", "Τρέχων κωδικός")}
-                        value={pwForm.current}
-                        onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
-                        required
-                        autoComplete="current-password"
-                        className="pr-10"
-                      />
-                      {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
-                      <button
-                        type="button"
-                        onClick={() => setShowPw((v) => !v)}
-                        // The icon flips between Eye and EyeOff, and so does the
-                        // name: a static "Show password" would announce the
-                        // wrong thing half the time. `aria-pressed` carries the
-                        // state so the control reads as a toggle, not a command.
-                        aria-label={showPw ? 'Hide password' : 'Show password'}
-                        aria-pressed={showPw}
-                        className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        {showPw ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
-                      </button>
-                    </div>
-                    <label htmlFor="settings-new-password" className="sr-only"><BilingualText en="New password" el="Νέος κωδικός" compact /></label>
-                    <Input
-                      id="settings-new-password"
-                      type={showPw ? 'text' : 'password'}
-                      placeholder={bilingualInline("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
-                      value={pwForm.next}
-                      onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
-                      required
-                      minLength={8}
-                      autoComplete="new-password"
-                    />
-                    <label htmlFor="settings-confirm-password" className="sr-only"><BilingualText en="Confirm new password" el="Επιβεβαίωση νέου κωδικού" compact /></label>
-                    <Input
-                      id="settings-confirm-password"
-                      type={showPw ? 'text' : 'password'}
-                      placeholder={bilingualInline("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
-                      value={pwForm.confirm}
-                      onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
-                      required
-                      autoComplete="new-password"
-                    />
-                    <Button type="submit" disabled={pwWorking} className="gap-2">
-                      {pwWorking ? <Loader2 className="icon-sm animate-spin" /> : <KeyRound className="icon-sm" />}
-                      Update password
+                    <Button variant="outline" asChild>
+                      <Link href="/settings/billing">
+                        <BilingualText en="Plan and invoices" el="Πλάνο και τιμολόγια" compact />
+                      </Link>
                     </Button>
-                  </form>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -768,7 +847,8 @@ export default function SettingsPage() {
                     <BilingualText en="Link Google or LinkedIn to sign in without a password." el="Συνδέστε Google ή LinkedIn για σύνδεση χωρίς κωδικό." wrap />
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
                   {[
                     {
                       key: 'google',
@@ -804,7 +884,9 @@ export default function SettingsPage() {
                         <div>
                           <p className="text-sm font-medium">{label}</p>
                           <p className="text-xs text-muted-foreground">
-                            {connected ? 'Connected' : 'Not connected'}
+                            {connected
+                              ? <BilingualText en="Connected" el="Συνδεδεμένος" compact />
+                              : <BilingualText en="Not connected" el="Μη συνδεδεμένος" compact />}
                           </p>
                         </div>
                       </div>
@@ -821,6 +903,7 @@ export default function SettingsPage() {
                       )}
                     </div>
                   ))}
+                  </div>
                 </CardContent>
               </Card>
 
@@ -872,6 +955,98 @@ export default function SettingsPage() {
             </div>
 
             <div className="min-w-0 space-y-6">
+              {/* Password Change */}
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <KeyRound className="icon-md text-muted-foreground" />
+                    <BilingualText en="Change password" el="Αλλαγή κωδικού" compact />
+                  </CardTitle>
+                  <CardDescription><BilingualText en="At least 8 characters. Saving signs you out of every other session." el="Τουλάχιστον 8 χαρακτήρες. Η αποθήκευση σας αποσυνδέει από κάθε άλλη συνεδρία." wrap /></CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleChangePassword} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="relative sm:col-span-2">
+                      <label htmlFor="settings-current-password" className="sr-only"><BilingualText en="Current password" el="Τρέχων κωδικός" compact /></label>
+                      <Input
+                        id="settings-current-password"
+                        type={showPw ? 'text' : 'password'}
+                        placeholder={bilingualInline("Current password", "Τρέχων κωδικός")}
+                        value={pwForm.current}
+                        onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
+                        required
+                        autoComplete="current-password"
+                        className="pr-10"
+                      />
+                      {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
+                      <button
+                        type="button"
+                        onClick={() => setShowPw((v) => !v)}
+                        // The icon flips between Eye and EyeOff, and so does the
+                        // name: a static "Show password" would announce the
+                        // wrong thing half the time. `aria-pressed` carries the
+                        // state so the control reads as a toggle, not a command.
+                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                        aria-pressed={showPw}
+                        className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {showPw ? <EyeOff className="icon-sm" aria-hidden="true" /> : <Eye className="icon-sm" aria-hidden="true" />}
+                      </button>
+                    </div>
+                    <label htmlFor="settings-new-password" className="sr-only"><BilingualText en="New password" el="Νέος κωδικός" compact /></label>
+                    <Input
+                      id="settings-new-password"
+                      type={showPw ? 'text' : 'password'}
+                      placeholder={bilingualInline("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
+                      value={pwForm.next}
+                      onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                    />
+                    <label htmlFor="settings-confirm-password" className="sr-only"><BilingualText en="Confirm new password" el="Επιβεβαίωση νέου κωδικού" compact /></label>
+                    <Input
+                      id="settings-confirm-password"
+                      type={showPw ? 'text' : 'password'}
+                      placeholder={bilingualInline("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
+                      value={pwForm.confirm}
+                      onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
+                      required
+                      autoComplete="new-password"
+                    />
+                    <div className="sm:col-span-2">
+                    <Button type="submit" disabled={pwWorking} className="gap-2">
+                      {pwWorking ? <Loader2 className="icon-sm animate-spin" /> : <KeyRound className="icon-sm" />}
+                      Update password
+                    </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+
+              {/* Security — 2FA */}
+              <Card className="shadow-sm border-border">
+                <CardHeader className="border-b border-border">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Shield className="icon-md text-muted-foreground" />
+                    <BilingualText en="Security" el="Ασφάλεια" compact />
+                  </CardTitle>
+                  <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <TwoFactorManagement
+                    isEnabled={twoFaEnabled}
+                    onStatusChange={(enabled) =>
+                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
+                    }
+                  />
+                </CardContent>
+              </Card>
+
+
+            </div>
+          </div>
               {/* Notifications: the quick view of /settings/notifications. */}
               <Card className="shadow-sm border-border">
                 <CardHeader className="border-b border-border">
@@ -897,7 +1072,8 @@ export default function SettingsPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-1">
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-x-8 sm:grid-cols-2 xl:grid-cols-3">
                   {quickCategories.map((category) => {
                     return (
                       <div
@@ -939,39 +1115,15 @@ export default function SettingsPage() {
                       onChange={(v) => saveDigest.mutate(v)}
                     />
                   </div>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Security — 2FA */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Shield className="icon-md text-muted-foreground" />
-                    <BilingualText en="Security" el="Ασφάλεια" compact />
-                  </CardTitle>
-                  <CardDescription><BilingualText en="Two-factor authentication and account security." el="Έλεγχος ταυτότητας δύο παραγόντων και ασφάλεια λογαριασμού." wrap /></CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <TwoFactorManagement
-                    isEnabled={twoFaEnabled}
-                    onStatusChange={(enabled) =>
-                      queryClient.setQueryData(qk('auth', '2fa', 'status'), { enabled })
-                    }
-                  />
-                </CardContent>
-              </Card>
-
-
-              {/* Verification: what opens terms on the commitments ladder */}
-              <VerificationCard />
-
-              {/* Open to: a quiet signal that feeds matching */}
-              <OpenToCard />
-
-              {/* Privacy & Visibility */}
-              <PrivacyCard />
-            </div>
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+            <VerificationCard />
+            <OpenToCard />
           </div>
+          <PrivacyCard />
           {/* Danger Zone */}
           <Card className="border-destructive/30">
             <CardHeader>
@@ -981,11 +1133,12 @@ export default function SettingsPage() {
               </CardTitle>
               <CardDescription><BilingualText en="Irreversible actions that affect your account permanently." el="Μη αναστρέψιμες ενέργειες που επηρεάζουν μόνιμα τον λογαριασμό σας." wrap /></CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent>
+              <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-foreground"><BilingualText en="Export your data" el="Εξαγωγή των δεδομένων σας" compact /></p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Download all your profile, connections, and activity data as a ZIP archive." el="Κατεβάστε όλα τα δεδομένα προφίλ, συνδέσεων και δραστηριότητας σε αρχείο ZIP." wrap /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en="A JSON file of the categories you choose on the export page. Nothing is stored after the download." el="Αρχείο JSON με τις κατηγορίες που διαλέγετε στη σελίδα εξαγωγής. Τίποτα δεν φυλάσσεται μετά τη λήψη." wrap /></p>
                 </div>
                 {/* /settings/data-export has existed all along; this button
                     simply never pointed at it. */}
@@ -1010,6 +1163,7 @@ export default function SettingsPage() {
                     <Trash2 className="icon-sm" /><BilingualText en="Request deletion" el="Αίτημα διαγραφής" compact />
                   </a>
                 </Button>
+              </div>
               </div>
             </CardContent>
           </Card>

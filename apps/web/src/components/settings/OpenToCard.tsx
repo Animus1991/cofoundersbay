@@ -102,7 +102,7 @@ export function OpenToCard() {
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground"><BilingualText en="Who sees it" el="Ποιος το βλέπει" compact /></legend>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {OPEN_TO_VISIBILITIES.map((v) => (
               <label key={v} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 has-[:checked]:border-primary/40">
                 <input type="radio" name="open-to-visibility" className="mt-1" checked={visibility === v} onChange={() => setVisibility(v)} />

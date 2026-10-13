@@ -192,6 +192,7 @@ export default function NotificationPreferencesPage() {
           />
         </p>
 
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Delivery */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
@@ -265,6 +266,39 @@ export default function NotificationPreferencesPage() {
           </CardContent>
         </Card>
 
+        {/* Automated messages */}
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
+              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
+            </CardTitle>
+            <CardDescription>
+              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/40">
+            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
+              <div key={key} className="flex items-center justify-between gap-4 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
+                  </div>
+                </div>
+                <Switch
+                  checked={prefs.automation[key]}
+                  onCheckedChange={(val) => setAutomation(key, val)}
+                  aria-label={en}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        </div>
+
         {/* Notification types: one matrix, the channels as columns. */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
@@ -334,37 +368,6 @@ export default function NotificationPreferencesPage() {
                 </section>
               );
             })}
-          </CardContent>
-        </Card>
-
-        {/* Automated messages */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="border-b border-border">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
-              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
-            </CardTitle>
-            <CardDescription>
-              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/40">
-            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
-              <div key={key} className="flex items-center justify-between gap-4 py-3">
-                <div className="flex min-w-0 items-start gap-3">
-                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
-                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
-                  </div>
-                </div>
-                <Switch
-                  checked={prefs.automation[key]}
-                  onCheckedChange={(val) => setAutomation(key, val)}
-                  aria-label={en}
-                />
-              </div>
-            ))}
           </CardContent>
         </Card>
 
