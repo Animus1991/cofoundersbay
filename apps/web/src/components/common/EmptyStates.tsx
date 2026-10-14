@@ -489,14 +489,39 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
  *  Each accepts `filtersActive` to render the filtered variant.
  * ──────────────────────────────────────────────────────────── */
 
+export type NamedFilter = { en: string; el: string };
+
+/** The words someone typed, quoted the way the empty sentence reads them. */
+export function namedQuery(value: string): NamedFilter | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return { en: `“${trimmed}”`, el: `«${trimmed}»` };
+}
+
+/** A chosen option, omitted while it still means “everything”. */
+export function namedChoice(
+  value: string,
+  idle: string,
+  labels: Record<string, NamedFilter>,
+): NamedFilter | null {
+  if (!value || value === idle) return null;
+  return labels[value] ?? { en: value, el: value };
+}
+
+export function namedFilters(...items: Array<NamedFilter | null | undefined | false>): NamedFilter[] {
+  return items.filter((item): item is NamedFilter => Boolean(item));
+}
+
 type FilterAwareEmptyProps = {
   filtersActive?: boolean;
   onClearFilters?: () => void;
+  /** The filters that emptied the list, in the reader's words. */
+  active?: NamedFilter[];
   className?: string;
 };
 
-export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} className={className} />;
+export function EmptyOrgPrograms({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Layers}
@@ -515,8 +540,8 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
   );
 }
 
-export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="cohorts" onClear={onClearFilters} className={className} />;
+export function EmptyOrgCohorts({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="cohorts" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -533,8 +558,8 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, acti
   );
 }
 
-export function EmptyOrgApplications({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="applications" onClear={onClearFilters} className={className} />;
+export function EmptyOrgApplications({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="applications" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={FileText}
@@ -551,8 +576,8 @@ export function EmptyOrgApplications({ filtersActive, onClearFilters, className 
   );
 }
 
-export function EmptyOrgMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
+export function EmptyOrgMembers({ filtersActive, onClearFilters, active, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -569,8 +594,8 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className, acti
   );
 }
 
-export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="mentors" onClear={onClearFilters} className={className} />;
+export function EmptyOrgMentors({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="mentors" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={GraduationCap}
@@ -594,8 +619,8 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
   );
 }
 
-export function EmptyOrgStartups({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="startups" onClear={onClearFilters} className={className} />;
+export function EmptyOrgStartups({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="startups" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Rocket}
@@ -612,8 +637,8 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className, act
   );
 }
 
-export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="events" onClear={onClearFilters} className={className} />;
+export function EmptyOrgEvents({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="events" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Calendar}
@@ -632,8 +657,8 @@ export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: Fil
   );
 }
 
-export function EmptyTenantMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
+export function EmptyTenantMembers({ filtersActive, onClearFilters, active, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -650,8 +675,8 @@ export function EmptyTenantMembers({ filtersActive, onClearFilters, className, a
   );
 }
 
-export function EmptyTenantPrograms({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} className={className} />;
+export function EmptyTenantPrograms({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Award}

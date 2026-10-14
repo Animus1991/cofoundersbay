@@ -42,7 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
+import { EmptyOrgCohorts, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
@@ -390,6 +390,11 @@ export default function OrgCohortsPage() {
             <EmptyOrgCohorts
               filtersActive={!!search || statusFilter !== 'all'}
               onClearFilters={() => { setSearch(''); setStatusFilter('all'); }}
+              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
+                recruiting: { en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
+                active: { en: 'Active', el: 'Ενεργές' },
+                completed: { en: 'Completed', el: 'Ολοκληρωμένες' },
+              }))}
             />
           )}
         </div>

@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgStartups } from '@/components/common/EmptyStates';
+import { EmptyOrgStartups, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
@@ -437,7 +437,20 @@ export default function OrgStartupsPage() {
             <StartupCard key={startup.id} startup={startup} />
           ))}
           {filteredStartups.length === 0 && (
-            <EmptyOrgStartups filtersActive={filtersActive} onClearFilters={clearFilters} />
+            <EmptyOrgStartups
+              filtersActive={filtersActive}
+              onClearFilters={clearFilters}
+              active={namedFilters(
+                namedQuery(search),
+                program !== 'all' ? { en: program, el: program } : null,
+                namedChoice(status, 'all', {
+                  active: { en: 'Active', el: 'Ενεργά' },
+                  graduated: { en: 'Graduated', el: 'Αποφοίτησαν' },
+                  paused: { en: 'Paused', el: 'Σε παύση' },
+                  dropped: { en: 'Dropped', el: 'Αποχώρησαν' },
+                }),
+              )}
+            />
           )}
         </div>
       </div>

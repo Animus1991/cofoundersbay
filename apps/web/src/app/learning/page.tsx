@@ -755,8 +755,24 @@ export default function LearningPage() {
                   <p className="font-medium text-foreground">
                     <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
+                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                    {searchQuery.trim() || typeFilter !== 'all' || selectedCategory !== 'All' ? (
+                      <BilingualText
+                        en={`Nothing matched ${[
+                          searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
+                        el={`Τίποτα δεν ταιριάζει με ${[
+                          searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
+                        wrap
+                      />
+                    ) : (
+                      <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} wrap />
+                    )}
                   </p>
                   {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
                     <div className="mt-4 flex flex-wrap justify-center gap-2">

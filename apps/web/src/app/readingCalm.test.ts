@@ -28,4 +28,12 @@ describe('calm reading', () => {
   it('measures reading text at 75 characters, including a card body', () => {
     expect(CSS).toMatch(/main p\.card-body, main \.card-body p\) \{\s*max-width: 75ch;/);
   });
+
+  it('keeps a search bar focus as a hairline, not the brand frame', () => {
+    const rule = CSS.slice(CSS.indexOf('input[data-search-field]:focus'));
+    expect(rule.startsWith('input[data-search-field]:focus')).toBe(true);
+    expect(rule.slice(0, 280)).toMatch(/outline: 1px solid hsl\(var\(--foreground\) \/ 0\.28\) !important;/);
+    expect(rule.slice(0, 280)).toMatch(/outline-offset: 0 !important;/);
+    expect(rule.slice(0, 280)).not.toMatch(/var\(--ring\)/);
+  });
 });

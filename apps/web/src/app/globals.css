@@ -3420,6 +3420,21 @@ textarea[class~="border-input"]:focus,
   border-color: hsl(var(--ring));
 }
 
+/* A search bar already has a border and a glyph. The shared 2px brand
+   outline, offset by another 2px, drew a second bright frame the moment
+   the field was tapped (the search page on a phone). The focused search
+   bar keeps a 1px hairline in the text colour, sitting on the edge. */
+input[data-search-field]:focus,
+input[data-search-field]:focus-visible {
+  outline: 1px solid hsl(var(--foreground) / 0.28) !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+input[data-search-field][class~="border-input"]:focus,
+input[data-search-field][class~="border-input"]:focus-visible {
+  border-color: hsl(var(--foreground) / 0.28);
+}
+
 /* ── Explicit zeros win ─────────────────────────────────────────────────
    `p-0`/`px-0`/`pt-0` on a card part used to lose twice: `.card-comfortable`
    is emitted after Tailwind's utilities in the same layer, and the

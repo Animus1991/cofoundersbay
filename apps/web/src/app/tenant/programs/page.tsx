@@ -42,7 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyTenantPrograms } from '@/components/common/EmptyStates';
+import { EmptyTenantPrograms, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
 import {
   createProgram,
@@ -528,6 +528,12 @@ export default function TenantProgramsPage() {
             <EmptyTenantPrograms
               filtersActive={!!search || statusFilterOn}
               onClearFilters={() => { setSearch(''); setStatusFilter('current'); }}
+              active={namedFilters(
+                namedQuery(search),
+                statusFilterOn && activeStatusLabel
+                  ? { en: activeStatusLabel.en, el: activeStatusLabel.el }
+                  : null,
+              )}
             />
           )}
         </div>

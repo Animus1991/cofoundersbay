@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgEvents } from '@/components/common/EmptyStates';
+import { EmptyOrgEvents, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -440,7 +440,14 @@ export default function OrgEventsPage() {
               <EventCard key={event.id} event={event} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
             {filtered.length === 0 && (
-              <EmptyOrgEvents filtersActive={filtersActive} onClearFilters={clearFilters} />
+              <EmptyOrgEvents
+                filtersActive={filtersActive}
+                onClearFilters={clearFilters}
+                active={namedFilters(namedQuery(search), namedChoice(activeTab, 'all', {
+                  active: { en: 'Active', el: 'Ενεργές' },
+                  completed: { en: 'Completed', el: 'Ολοκληρωμένες' },
+                }))}
+              />
             )}
           </TabsContent>
         </Tabs>

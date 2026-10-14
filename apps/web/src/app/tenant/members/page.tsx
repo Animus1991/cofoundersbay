@@ -45,7 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EmptyTenantMembers } from '@/components/common/EmptyStates';
+import { EmptyTenantMembers, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import {
@@ -511,6 +511,15 @@ export default function TenantMembersPage() {
                 <EmptyTenantMembers
                   filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
                   onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
+                  active={namedFilters(
+                    namedQuery(search),
+                    roleFilter !== 'all' ? { en: roleFilter, el: statusEl(roleFilter) ?? roleFilter } : null,
+                    namedChoice(statusFilter, 'all', {
+                      active: { en: 'Active', el: 'Ενεργό' },
+                      pending: { en: 'Pending', el: 'Σε αναμονή' },
+                      suspended: { en: 'Suspended', el: 'Σε αναστολή' },
+                    }),
+                  )}
                 />
               )}
             </div>

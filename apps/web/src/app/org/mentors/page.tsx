@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgMentors } from '@/components/common/EmptyStates';
+import { EmptyOrgMentors, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
@@ -339,7 +339,7 @@ export default function OrgMentorsPage() {
             <MentorCard key={mentor.id} mentor={mentor} />
           ))}
           {filteredMentors.length === 0 && (
-            <EmptyOrgMentors filtersActive={!!search} onClearFilters={() => setSearch('')} />
+            <EmptyOrgMentors filtersActive={!!search} onClearFilters={() => setSearch('')} active={namedFilters(namedQuery(search))} />
           )}
         </div>
       </div>
