@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
             <BilingualText en="Set a new password" el="Ορίστε νέο κωδικό" compact />
           </h1>
           <p className="text-muted-foreground text-sm">
-            <BilingualText en="Choose a strong password to secure your account." el="Επιλέξτε ισχυρό κωδικό για την ασφάλεια του λογαριασμού σας." wrap />
+            <BilingualText en="The link from your email works once. Saving replaces the previous password." el="Ο σύνδεσμος από το email ισχύει μία φορά. Η αποθήκευση αντικαθιστά τον προηγούμενο κωδικό." wrap />
           </p>
         </div>
 

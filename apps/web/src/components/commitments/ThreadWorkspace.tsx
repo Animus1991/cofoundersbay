@@ -485,6 +485,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
     const ok = await confirm({
       title: <BilingualText en={`Decline ${name}’s interest?`} el={`Απόρριψη του ενδιαφέροντος από ${name};`} />,
       description: <BilingualText en="They are told the card’s author stepped back." el="Ενημερώνονται ότι ο συντάκτης αποχώρησε." />,
+      confirmLabel: <BilingualText en="Decline interest" el="Απόρριψη ενδιαφέροντος" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentThread(threadId), 'Interest declined');
@@ -494,6 +495,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
     const ok = await confirm({
       title: <BilingualText en={`Step back from this commitment with ${name}?`} el={`Αποχώρηση από αυτή τη δέσμευση με ${name};`} />,
       description: <BilingualText en="The conversation closes for both of you and they are told. It cannot be reopened." el="Η συζήτηση κλείνει και για τους δύο και ενημερώνονται. Δεν ανοίγει ξανά." />,
+      confirmLabel: <BilingualText en="Step back" el="Αποχώρηση" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentThread(threadId), 'You stepped back');
@@ -508,6 +510,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
           el="Η συμφωνία αναστέλλεται και οι όροι ανοίγουν ξανά για αναθεώρηση. Θα χρειαστεί να αποδεχτείτε ξανά μια έκδοση και οι δύο."
         />
       ),
+      confirmLabel: <BilingualText en="Close deal room" el="Κλείσιμο αίθουσας" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentDealRoom(threadId), 'Deal room closed');

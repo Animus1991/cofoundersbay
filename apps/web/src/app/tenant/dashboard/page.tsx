@@ -22,6 +22,7 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { getTenantMembers, listEvents, listOrganizationPrograms } from '@/lib/api';
 import { useCurrentOrg } from '@/hooks/useCurrentOrg';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
@@ -138,8 +139,8 @@ export default function TenantDashboardPage() {
     <AppShell
       title="Tenant Dashboard"
       titleEl="Πίνακας οργανισμού"
-      description="Manage your organization on CoFounderBay"
-      descriptionEl="Διαχειριστείτε τον οργανισμό σας στο CoFounderBay"
+      description="Members, running programs and the next event for this workspace."
+      descriptionEl="Μέλη, ενεργά προγράμματα και η επόμενη εκδήλωση αυτού του χώρου."
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>
@@ -152,6 +153,26 @@ export default function TenantDashboardPage() {
       }
     >
       <div className="space-y-6">
+        {upcomingEvents[0] ? (
+          <HomeNextStep
+            kickerEn="Next event"
+            kickerEl="Επόμενη εκδήλωση"
+            title={upcomingEvents[0].name}
+            href={`/events/${upcomingEvents[0].id}`}
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : !programsLoading && runningOrNext.length === 0 ? (
+          <HomeNextStep
+            kickerEn="Next step"
+            kickerEl="Επόμενο βήμα"
+            titleEn="No program is running yet"
+            titleEl="Κανένα πρόγραμμα δεν τρέχει ακόμη"
+            href="/tenant/programs"
+            actionEn="Open programs"
+            actionEl="Προγράμματα"
+          />
+        ) : null}
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile icon={Users} label="Members" labelEl="Μέλη" value={membersData ? stats.totalMembers : '\u2014'} caption="Everyone with a seat" captionEl="Όσοι έχουν θέση" href="/tenant/members" />

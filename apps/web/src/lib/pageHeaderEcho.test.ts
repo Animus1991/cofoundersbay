@@ -9,9 +9,12 @@ describe('a page title is said once', () => {
     expect(lineEchoesHeading('Commitments', 'Need cards and the ladder from interest to agreed terms: a protected first conversation, separate confirmations, versioned terms.')).toBe(false);
   });
 
-  it('omits an echoing registry subtitle from the header', () => {
-    expect(resolvePageHeader('/share/[token]').description).toBeUndefined();
-    expect(resolvePageHeader('/reset-password').description).toBeUndefined();
+  it('keeps a fact under the title and drops a line that only repeats it', () => {
+    expect(resolvePageHeader('/share/[token]').description).toMatch(/No account/);
+    expect(resolvePageHeader('/reset-password').description).toMatch(/email works once/);
+    expect(lineEchoesHeading('Shared link', resolvePageHeader('/share/[token]').description ?? '')).toBe(false);
+    expect(lineEchoesHeading('Set a new password', resolvePageHeader('/reset-password').description ?? '')).toBe(false);
+    expect(resolvePageHeader('/commitments', { description: 'Your commitments' }).description).toBeUndefined();
     expect(resolvePageHeader('/commitments').description).toMatch(/Need cards/);
   });
 });

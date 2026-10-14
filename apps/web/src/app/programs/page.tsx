@@ -477,6 +477,23 @@ export default function ProgramsPage() {
    * Refresh stays in the header: it is this page's recalculation.
    */
   const listingFilters = (programType !== 'all' ? 1 : 0) + (status !== 'all' ? 1 : 0);
+  const namedFilter = (prefix: 'type' | 'status', value: string): { en: string; el: string } | null => {
+    const key = `${prefix}_${value}`;
+    if (!(key in PROGRAMS_STRINGS)) return null;
+    const typed = key as keyof typeof PROGRAMS_STRINGS;
+    return { en: programsEn(typed), el: programsEl(typed) };
+  };
+  const activeFilterBits = [
+    programType !== 'all' ? namedFilter('type', programType) : null,
+    status !== 'all' ? namedFilter('status', status) : null,
+    search.trim() ? { en: `“${search.trim()}”`, el: `«${search.trim()}»` } : null,
+  ].filter((bit): bit is { en: string; el: string } => bit !== null);
+  const activeFilterLine = activeFilterBits.length > 0
+    ? {
+        en: `Nothing matched ${activeFilterBits.map((bit) => bit.en).join(', ')}. Clear them to see every program.`,
+        el: `Τίποτα δεν ταιριάζει με ${activeFilterBits.map((bit) => bit.el).join(', ')}. Καθαρίστε τα για να δείτε όλα τα προγράμματα.`,
+      }
+    : null;
   const rail: PageRailSection[] = [
     {
       id: 'summary',
@@ -627,19 +644,27 @@ export default function ProgramsPage() {
               </div>
             ) : filtered.length === 0 ? (
               <Card>
-                <CardContent className="py-16 text-center">
-                  <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-                  <p className="font-medium text-lg"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
-                  <p className="text-sm text-muted-foreground mt-1"><BilingualText en={programsEn('none_found_hint')} el={programsEl('none_found_hint')} wrap /></p>
-                  {listingFilters > 0 ? (
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
-                      <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
-                    </Button>
-                  ) : search ? (
-                    <Button variant="outline" size="sm" className="mt-4" onClick={() => setSearch('')}>
-                      <BilingualText en="Clear search" el="Καθαρισμός αναζήτησης" compact />
-                    </Button>
-                  ) : null}
+                <CardContent className="py-8">
+                  <p className="font-medium"><BilingualText en={programsEn('none_found')} el={programsEl('none_found')} compact /></p>
+                  <p className="mt-1 max-w-prose text-sm text-muted-foreground">
+                    <BilingualText
+                      en={activeFilterLine?.en ?? programsEn('none_found_hint')}
+                      el={activeFilterLine?.el ?? programsEl('none_found_hint')}
+                      wrap
+                    />
+                  </p>
+                  {(listingFilters > 0 || search) && (
+                    <div className="mt-4 flex flex-wrap gap-2" data-actions="">
+                      <Button variant="secondary" size="sm" onClick={() => { setProgramType('all'); setStatus('all'); setSearch(''); }}>
+                        <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+                      </Button>
+                      {listingFilters > 0 && (
+                        <Button variant="outline" size="sm" onClick={() => openRailSection('filters')}>
+                          <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ) : (

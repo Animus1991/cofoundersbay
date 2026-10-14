@@ -335,7 +335,7 @@ export default function ManageGroupsPage() {
           ))}
           {filtered.length === 0 && (
             search ? (
-              <NoFilterResults entity="communities" onClear={() => setSearch('')} />
+              <NoFilterResults entity="communities" onClear={() => setSearch('')} active={[{ en: `“${search}”`, el: `«${search}»` }]} />
             ) : (
               <ListEmptyState
                 icon={Users}

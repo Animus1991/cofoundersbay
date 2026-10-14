@@ -153,12 +153,29 @@ export function NoFilterResults({
   onClear,
   className,
   description,
+  active,
 }: {
   entity: string;
   onClear?: () => void;
   className?: string;
   description?: ReactNode;
+  /** The filters that emptied the list, in the reader's words. */
+  active?: { en: string; el: string }[];
 }) {
+  const named = (active ?? []).filter((item) => item.en.trim());
+  const namedSentence = named.length > 0 ? (
+    <BilingualText
+      en={`Nothing matched ${named.map((item) => item.en).join(', ')}. Clear them to see every row.`}
+      el={`Τίποτα δεν ταιριάζει με ${named.map((item) => item.el || item.en).join(', ')}. Καθαρίστε τα για να δείτε όλες τις γραμμές.`}
+      wrap
+    />
+  ) : (
+    <BilingualText
+      en="Clear the filters to see every row again."
+      el="Καθαρίστε τα φίλτρα για να δείτε ξανά όλες τις γραμμές."
+      wrap
+    />
+  );
   return (
     <ListEmptyState
       icon={Search}
@@ -169,7 +186,7 @@ export function NoFilterResults({
           wrap
         />
       }
-      description={description ?? (onClear ? undefined : (
+      description={description ?? (onClear || named.length > 0 ? namedSentence : (
         <BilingualText
           en="Try a different search term, broaden your filters, or clear them to start over."
           el="Δοκιμάστε άλλη αναζήτηση, πιο ευρεία φίλτρα ή καθαρίστε τα για να ξεκινήσετε από την αρχή."

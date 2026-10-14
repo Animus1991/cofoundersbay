@@ -224,6 +224,7 @@ function IntrosContent() {
           wrap
         />
       ),
+      confirmLabel: <BilingualText en="Do not forward" el="Να μην προωθηθεί" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run('decline', i);
