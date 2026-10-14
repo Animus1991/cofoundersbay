@@ -19,13 +19,23 @@ describe('document language preference', () => {
     expect(document.documentElement.dataset.languageDisplay).toBe('primary-only');
   });
 
-  it('updates document language when toggled without changing the language display mode', () => {
+  it('shows one language until the reader asks for both', () => {
     setup();
+    expect(document.documentElement.dataset.languageDisplay).toBe('primary-only');
+    expect(preference.showSecondary).toBe(false);
     act(() => { preference.togglePrimary(); });
     expect(document.documentElement.lang).toBe('el');
+    expect(preference.showSecondary).toBe(false);
+    act(() => { preference.setDisplayMode('bilingual'); });
     expect(preference.showSecondary).toBe(true);
-    act(() => { preference.setPrimary('en'); });
-    expect(document.documentElement.lang).toBe('en');
+    expect(localStorage.getItem('cfb:language-display')).toBe('bilingual');
+  });
+
+  it('keeps a stored choice to show both languages', () => {
+    localStorage.setItem('cfb:language-display', 'bilingual');
+    setup();
+    expect(preference.showSecondary).toBe(true);
+    expect(document.documentElement.dataset.languageDisplay).toBe('bilingual');
   });
 
   it('uses a safe default for corrupt or inaccessible storage', () => {

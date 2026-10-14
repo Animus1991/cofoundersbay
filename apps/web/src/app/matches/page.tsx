@@ -1030,29 +1030,20 @@ export default function MatchesPage() {
         {hasToken && !isLoading && visible.length > 0 && (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-tour="matches-stats">
             {[
-              { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all, tone: 'neutral' as const, icon: Users },
-              { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent, tone: 'success' as const, icon: Star },
-              { labelEn: matchesEn('avg_score'), labelEl: matchesEl('avg_score'), value: `${avgScore}%`, tone: 'info' as const, icon: TrendingUp },
-              { labelEn: matchesEn('top_score'), labelEl: matchesEl('top_score'), value: `${topScore}%`, tone: 'accent' as const, icon: Award },
-            ].map(({ labelEn, labelEl, value, tone, icon: Icon }) => {
-              const statColors = tone === 'neutral'
-                ? { bg: 'bg-muted/40', icon: 'text-foreground' }
-                : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
-              return (
+              { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all },
+              { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent },
+              { labelEn: matchesEn('avg_score'), labelEl: matchesEl('avg_score'), value: `${avgScore}%` },
+              { labelEn: matchesEn('top_score'), labelEl: matchesEl('top_score'), value: `${topScore}%` },
+            ].map(({ labelEn, labelEl, value }) => (
               <Card key={labelEn} className="min-w-0 shadow-sm border-border">
-                <CardContent className="flex items-center gap-2 sm:gap-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
-                    <Icon className={cn('icon-sm', statColors.icon)} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className={cn('text-lg font-bold tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
-                    <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
-                      <BilingualText en={labelEn} el={labelEl} compact wrap />
-                    </p>
-                  </div>
+                <CardContent className="min-w-0">
+                  <p className="text-lg font-bold tabular-nums leading-none text-foreground sm:text-xl">{value}</p>
+                  <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
+                    <BilingualText en={labelEn} el={labelEl} compact wrap />
+                  </p>
                 </CardContent>
               </Card>
-            );})}
+            ))}
           </div>
         )}
 

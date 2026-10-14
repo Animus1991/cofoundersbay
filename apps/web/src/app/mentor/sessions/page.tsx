@@ -12,7 +12,6 @@ import {
   Clock,
   Video,
   Plus,
-  CheckCircle2,
   Loader2,
   AlertCircle,
   RefreshCw,
@@ -386,38 +385,23 @@ export default function MentorSessionsPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-info-bg p-2">
-                <Calendar className="icon-md text-status-info" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{upcomingRows.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{upcomingRows.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-success-bg p-2">
-                <CheckCircle2 className="icon-md text-status-success" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">
-                  {sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length}
-                </p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">
+                {sessions.filter((s) => s.status === 'completed').length + bookings.filter((b) => b.status === 'completed').length}
+              </p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Clock className="icon-md text-muted-foreground" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{totalDuration} min</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{totalDuration} min</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
             </CardContent>
           </Card>
         </div>

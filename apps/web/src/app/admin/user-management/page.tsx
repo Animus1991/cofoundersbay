@@ -15,7 +15,6 @@ import {
   Download,
   RefreshCw,
   Eye,
-  Clock,
   User,
   GraduationCap,
   Rocket,
@@ -397,18 +396,15 @@ export default function AdminUserManagementPage() {
       content: (
         <div className="space-y-2">
           {[
-            { label: 'Total users', labelEl: 'Σύνολο χρηστών', value: stats.total, icon: Users },
-            { label: 'Active', labelEl: 'Ενεργοί', value: stats.active, icon: CheckCircle2, className: 'text-status-success' },
-            { label: 'Pending', labelEl: 'Σε αναμονή', value: stats.pending, icon: Clock, className: 'text-status-warning' },
-            { label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended, icon: Ban, className: 'text-status-danger' },
-          ].map(({ label, labelEl, value, icon: Icon, className }) => (
+            { label: 'Total users', labelEl: 'Σύνολο χρηστών', value: stats.total },
+            { label: 'Active', labelEl: 'Ενεργοί', value: stats.active },
+            { label: 'Pending', labelEl: 'Σε αναμονή', value: stats.pending },
+            { label: 'Suspended', labelEl: 'Σε αναστολή', value: stats.suspended },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                  <p className={cn('page-stat text-2xl font-bold', className)}>{value}</p>
-                </div>
-                <Icon className={cn('icon-lg text-muted-foreground', className)} />
+              <CardContent>
+                <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
+                <p className="page-stat text-2xl font-bold">{value}</p>
               </CardContent>
             </Card>
           ))}

@@ -331,48 +331,20 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-status-info-bg p-2">
-            <Users className="icon-md text-status-info" />
-          </div>
-          <div>
-            <p className="page-stat text-xl font-bold">{totalInvited}</p>
-            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
-          </div>
-        </div>
+        <p className="page-stat text-xl font-bold">{totalInvited}</p>
+        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_invited')} el={referralsEl('stat_invited')} compact wrap /></p>
       </Card>
       <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-status-success-bg p-2">
-            <CheckCircle className="icon-md text-status-success" />
-          </div>
-          <div>
-            <p className="page-stat text-xl font-bold">{signedUp}</p>
-            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
-          </div>
-        </div>
+        <p className="page-stat text-xl font-bold">{signedUp}</p>
+        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_signed_up')} el={referralsEl('stat_signed_up')} compact wrap /></p>
       </Card>
       <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-status-accent-bg p-2">
-            <Gift className="icon-md text-status-accent" />
-          </div>
-          <div>
-            <p className="page-stat text-xl font-bold">{rewarded}</p>
-            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
-          </div>
-        </div>
+        <p className="page-stat text-xl font-bold">{rewarded}</p>
+        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_rewarded')} el={referralsEl('stat_rewarded')} compact wrap /></p>
       </Card>
       <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-status-warning-bg p-2">
-            <TrendingUp className="icon-md text-status-warning" />
-          </div>
-          <div>
-            <p className="page-stat text-xl font-bold">€{totalEarned}</p>
-            <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_earned')} el={referralsEl('stat_earned')} compact wrap /></p>
-          </div>
-        </div>
+        <p className="page-stat text-xl font-bold">€{totalEarned}</p>
+        <p className="text-xs leading-snug text-muted-foreground"><BilingualText en={referralsEn('stat_earned')} el={referralsEl('stat_earned')} compact wrap /></p>
       </Card>
     </div>
   );

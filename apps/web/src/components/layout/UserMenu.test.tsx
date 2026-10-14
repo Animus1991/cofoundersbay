@@ -104,7 +104,8 @@ describe('UserMenu', () => {
 
   it('provides account and user fallback labels without inventing an identity', async () => {
     vi.mocked(useStoredUser).mockReturnValue(null);
-    render(<UserMenu />);
+    localStorage.setItem('cfb:language-display', 'bilingual');
+    render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
     const trigger = screen.getByRole('button', { name: 'Account menu. Μενού λογαριασμού' });
     // The visible trigger label is single-language (primary first): two
     // stacked languages in a w-fixed rail is what produced the truncated
@@ -117,7 +118,8 @@ describe('UserMenu', () => {
   });
 
   it.each(labels)('retains the $href destination with visible EN/EL labels and hidden decorative icons', async ({ en, el, href }) => {
-    render(<UserMenu />);
+    localStorage.setItem('cfb:language-display', 'bilingual');
+    render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
     const menu = await openMenu();
     const item = within(menu).getByRole('menuitem', { name: new RegExp(en) });
     expect(item.getAttribute('href')).toBe(href);
@@ -133,7 +135,8 @@ describe('UserMenu', () => {
   });
 
   it('shows a bilingual signout action with a decorative icon', async () => {
-    render(<UserMenu />);
+    localStorage.setItem('cfb:language-display', 'bilingual');
+    render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
     const menu = await openMenu();
     const item = within(menu).getByRole('menuitem', { name: /Sign out/ });
     expect(within(item).getByText('Αποσύνδεση').getAttribute('lang')).toBe('el');
@@ -207,6 +210,7 @@ describe('UserMenu', () => {
 
   it('uses the real language preference API for Greek-first bilingual labels', async () => {
     localStorage.setItem('cfb:primary-language', 'el');
+    localStorage.setItem('cfb:language-display', 'bilingual');
     render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
     const menu = await openMenu();
     const item = within(menu).getByRole('menuitem', { name: /Το προφίλ μου.*My Profile/ });
@@ -224,6 +228,7 @@ describe('UserMenu', () => {
   });
 
   it('keeps command palette, language, and theme in the account menu', async () => {
+    localStorage.setItem('cfb:language-display', 'bilingual');
     render(<LanguagePreferenceProvider><UserMenu /></LanguagePreferenceProvider>);
     const menu = await openMenu();
     expect(within(menu).getByRole('menuitem', { name: /Command palette|Παλέτα εντολών/ })).toBeTruthy();

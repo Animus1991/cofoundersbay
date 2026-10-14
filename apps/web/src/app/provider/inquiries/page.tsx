@@ -385,18 +385,15 @@ export default function ProviderInquiriesPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
-            { label: 'New', labelEl: 'Νέα', value: counts.new, icon: Mail, color: 'text-status-info' },
-            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
-            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
-          ].map(({ label, labelEl, value, icon: Icon, color }) => (
+            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length },
+            { label: 'New', labelEl: 'Νέα', value: counts.new },
+            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%` },
+            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%` },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}

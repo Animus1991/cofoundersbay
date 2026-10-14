@@ -27,7 +27,6 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { NotificationsBell } from './NotificationsBell';
 import { UserMenu } from './UserMenu';
-import { PreviewDemoBadge } from './TopBar';
 import { Button } from '@/components/ui/button';
 
 export function SideNav() {
@@ -384,7 +383,6 @@ export function SideNav() {
             </Button>
             <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
           </div>
-          {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
           {mounted ? (
             <UserMenu variant="sidebar" rail={rail} />
           ) : (

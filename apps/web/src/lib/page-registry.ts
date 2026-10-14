@@ -443,6 +443,31 @@ export function getPageMeta(pathname: string): PageMeta | undefined {
 
 export type PageMetaOverrides = Partial<Pick<PageMeta, 'title' | 'description' | 'titleEl' | 'descriptionEl'>>;
 
+/**
+ * The clarity census: a line under a heading that repeats it.
+ * Content words only, eight or fewer, at least half of them already in the
+ * heading. A longer line, or one that names a new fact, stays.
+ */
+const ECHO_STOP = new Set([
+  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'your', 'you', 'for', 'in', 'on',
+  'with', 'manage', 'view', 'see', 'all', 'here', 'this', 'is', 'are', 'be',
+  'by', 'from', 'at', 'as', 'it', 'its', 'our',
+]);
+
+function contentWords(text: string): string[] {
+  return text.toLowerCase().split(/[^a-z0-9]+/).filter((word) => word.length > 2 && !ECHO_STOP.has(word));
+}
+
+export function lineEchoesHeading(heading: string, line: string): boolean {
+  const headingWords = new Set(contentWords(heading));
+  const lineWords = contentWords(line);
+  if (headingWords.size < 1 || lineWords.length < 1 || lineWords.length > 8) return false;
+  const shared = lineWords.filter((word) => (
+    headingWords.has(word) || headingWords.has(word.replace(/s$/, '')) || headingWords.has(`${word}s`)
+  )).length;
+  return shared / lineWords.length >= 0.5;
+}
+
 /** Merge explicit AppShell props with registry defaults. */
 export function resolvePageHeader(
   pathname: string,
@@ -452,14 +477,19 @@ export function resolvePageHeader(
   const titleIsCustom = Boolean(overrides?.title) && overrides?.title !== meta?.title;
   const descriptionIsCustom =
     Boolean(overrides?.description) && overrides?.description !== meta?.description;
+  const title = overrides?.title ?? meta?.title;
+  const description = overrides?.description ?? meta?.description;
+  const echoes = Boolean(title && description && lineEchoesHeading(title, description));
   return {
-    title: overrides?.title ?? meta?.title,
+    title,
     // Drop registry Greek only when the English title is a different string
     // (a person's name). Pages that pass the registry English title still
     // need titleEl — otherwise Analytics/Projects/Fundraising rendered EN-only.
     titleEl: overrides?.titleEl ?? (titleIsCustom ? undefined : meta?.titleEl),
-    description: overrides?.description ?? meta?.description,
-    descriptionEl: overrides?.descriptionEl ?? (descriptionIsCustom ? undefined : meta?.descriptionEl),
+    description: echoes ? undefined : description,
+    descriptionEl: echoes
+      ? undefined
+      : overrides?.descriptionEl ?? (descriptionIsCustom ? undefined : meta?.descriptionEl),
     meta,
   };
 }

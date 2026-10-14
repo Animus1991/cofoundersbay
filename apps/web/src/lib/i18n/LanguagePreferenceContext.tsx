@@ -131,7 +131,11 @@ export function LanguagePreferenceProvider({ children }: { children: ReactNode }
 
   useEffect(() => {
     let primary: PrimaryLanguage = 'en';
-    let displayMode: LanguageDisplayMode = 'bilingual';
+    // One language until the reader asks for both. The switch is one click
+    // (the account menu and Settings). A stored choice wins, either way.
+    // The server snapshot stays bilingual so the first paint matches the HTML;
+    // this runs after hydration, the same moment a stored Greek preference does.
+    let displayMode: LanguageDisplayMode = 'primary-only';
     const storedLocale = readStoredLocale();
     try {
       const storedPrimary = localStorage.getItem(PRIMARY_STORAGE_KEY);

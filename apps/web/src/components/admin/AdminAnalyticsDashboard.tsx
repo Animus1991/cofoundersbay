@@ -41,38 +41,24 @@ const rarityMark = (rarity: string) =>
   RARITY_COLORS[rarity] ? `hsl(var(${RARITY_COLORS[rarity]}-mark))` : undefined;
 
 function StatCard({
-  icon: Icon,
   label,
   labelEl,
   value,
   sub,
-  color = 'indigo',
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   label: string;
   labelEl: string;
   value: string | number;
   sub?: React.ReactNode;
   color?: 'indigo' | 'green' | 'amber' | 'rose';
 }) {
-  const colorMap = {
-    indigo: 'bg-status-accent-bg text-status-accent',
-    green: 'bg-status-success-bg text-status-success',
-    amber: 'bg-status-warning-bg text-status-warning',
-    rose: 'bg-status-danger-bg text-status-danger',
-  };
   return (
-    // A stat card: the figure under its label, the tone's mark in front.
     <Card>
-      <CardContent className="flex items-start gap-3">
-        <div data-card-mark="" className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl', colorMap[color])}>
-          <Icon className="icon-md" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-          <p className="page-stat text-2xl font-semibold tabular-nums text-foreground">{value}</p>
-          {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
-        </div>
+      <CardContent className="min-w-0">
+        <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
+        <p className="page-stat text-2xl font-semibold tabular-nums text-foreground">{value}</p>
+        {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
       </CardContent>
     </Card>
   );

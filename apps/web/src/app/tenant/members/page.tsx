@@ -447,20 +447,15 @@ export default function TenantMembersPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length, icon: Users, color: 'text-primary-accessible' },
-            { label: 'Online Now', labelEl: 'Συνδεδεμένοι τώρα', value: onlineCount ?? '—', icon: Activity, color: 'text-status-success' },
-            { label: 'Avg Engagement', labelEl: 'Μέση συμμετοχή', value: avgEngagement == null ? '—' : `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
-            { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
-          ].map(({ label, labelEl, value, icon: Icon, color }) => (
+            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: members.length },
+            { label: 'Online Now', labelEl: 'Συνδεδεμένοι τώρα', value: onlineCount ?? '—' },
+            { label: 'Avg Engagement', labelEl: 'Μέση συμμετοχή', value: avgEngagement == null ? '—' : `${avgEngagement}%` },
+            { label: 'Pending Approval', labelEl: 'Σε αναμονή έγκρισης', value: members.filter((m) => m.status === 'pending').length },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary">
-                  <Icon className={cn('icon-sm', color)} />
-                </div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}

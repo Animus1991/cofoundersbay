@@ -501,21 +501,16 @@ export default function ProjectsPage() {
       content: (
         <div className="space-y-2">
           {[
-            { labelKey: 'stat_total' as const, value: stats.total, glyph: 'briefcase' as const, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-            { labelKey: 'stat_active' as const, value: stats.active, glyph: 'builder' as const, color: 'text-status-info', bg: 'bg-status-info-bg' },
-            { labelKey: 'stat_roles' as const, value: stats.openRoles, glyph: 'people' as const, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { labelKey: 'stat_industries' as const, value: stats.industries, glyph: 'chart' as const, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+            { labelKey: 'stat_total' as const, value: stats.total },
+            { labelKey: 'stat_active' as const, value: stats.active },
+            { labelKey: 'stat_roles' as const, value: stats.openRoles },
+            { labelKey: 'stat_industries' as const, value: stats.industries },
           ].map((s) => (
-            <div key={s.labelKey} className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-xl', s.bg, s.color)}>
-                <CfbGlyph name={s.glyph} className="icon-sm" />
-              </div>
-              <div className="min-w-0">
-                <p className="page-stat text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
-                <p className="page-stat-label mt-0.5 text-2xs leading-snug text-muted-foreground">
-                  <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
-                </p>
-              </div>
+            <div key={s.labelKey} className="min-w-0 rounded-lg border border-border p-3">
+              <p className="page-stat text-base font-bold leading-none text-foreground tabular-nums">{s.value}</p>
+              <p className="page-stat-label mt-0.5 text-2xs leading-snug text-muted-foreground">
+                <BilingualText en={projectEn(s.labelKey)} el={projectEl(s.labelKey)} compact wrap />
+              </p>
             </div>
           ))}
         </div>

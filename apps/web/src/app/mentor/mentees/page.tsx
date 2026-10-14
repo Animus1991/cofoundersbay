@@ -7,8 +7,6 @@ import {
   Users,
   MessageCircle,
   Calendar,
-  Target,
-  TrendingUp,
   Loader2,
   AlertCircle,
   RefreshCw,
@@ -249,36 +247,21 @@ export default function MenteesPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="icon-md text-muted-foreground" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί μαθητευόμενοι" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί μαθητευόμενοι" compact /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-success-bg p-2">
-                <Target className="icon-md text-status-success" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{completedRelationships.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{completedRelationships.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Completed" el="Ολοκληρώθηκε" compact /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-info-bg p-2">
-                <TrendingUp className="icon-md text-status-info" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{totalSessions}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{totalSessions}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Total Sessions" el="Σύνολο συνεδριών" compact /></p>
             </CardContent>
           </Card>
         </div>

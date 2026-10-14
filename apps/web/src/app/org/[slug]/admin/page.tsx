@@ -203,7 +203,7 @@ function memberStatusChip(status: string) {
   return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
 }
 
-function StatCard({ title, titleEl, value, change, icon: Icon, trend }: {
+function StatCard({ title, titleEl, value, change, trend }: {
   title: string;
   titleEl: string;
   value: string | number;
@@ -214,24 +214,19 @@ function StatCard({ title, titleEl, value, change, icon: Icon, trend }: {
   return (
     <Card>
       <CardContent>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground"><BilingualText en={title} el={titleEl} compact wrap /></p>
-            <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
-            {change && (
-              <p className={cn(
-                'text-xs mt-1',
-                trend === 'up' && TREND.up,
-                trend === 'down' && TREND.down,
-                trend === 'neutral' && 'text-muted-foreground'
-              )}>
-                {change}
-              </p>
-            )}
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
-            <Icon className="icon-lg text-muted-foreground" />
-          </div>
+        <div>
+          <p className="text-sm text-muted-foreground"><BilingualText en={title} el={titleEl} compact wrap /></p>
+          <p className="text-2xl font-bold text-foreground mt-1">{value}</p>
+          {change && (
+            <p className={cn(
+              'text-xs mt-1',
+              trend === 'up' && TREND.up,
+              trend === 'down' && TREND.down,
+              trend === 'neutral' && 'text-muted-foreground'
+            )}>
+              {change}
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -728,7 +723,6 @@ export default function OrgAdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Pending Invitations" el="Εκκρεμείς προσκλήσεις" compact /></CardTitle>
-                <CardDescription><BilingualText en="Manage pending member invitations" el="Διαχείριση εκκρεμών προσκλήσεων" wrap /></CardDescription>
               </CardHeader>
               {/* An empty line on the card's axis, not a centred block whose
                   sentence (on the body step) was as loud as the card's title. */}

@@ -407,20 +407,17 @@ export default function InvestorPortfolioPage() {
              * company count. Summed by the API over the same rows the table
              * below lists, so the four tiles are one statement.
              */
-            { label: 'Total Invested', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K', icon: DollarSign, color: 'text-foreground' },
-            { label: 'Current Value', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
+            { label: 'Total Invested', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K' },
+            { label: 'Current Value', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K' },
             { label: 'Total Return', value: isLive
                 ? (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`)
-                : `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-status-success' },
-            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-status-info' },
-          ].map(({ label, value, icon: Icon, color }) => (
+                : `+${totalReturn.toFixed(0)}%` },
+            { label: 'Companies', value: investments.length },
+          ].map(({ label, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
-                <div>
-                  <p className="page-stat text-xl font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                </div>
+              <CardContent>
+                <p className="page-stat text-xl font-bold tabular-nums">{value}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
               </CardContent>
             </Card>
           ))}

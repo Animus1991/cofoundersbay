@@ -39,6 +39,7 @@ afterEach(cleanup);
 
 describe('Mobile navigation destinations', () => {
   it.each(['founder', 'mentor', 'investor', 'service_provider', 'org', 'admin', 'tenant_admin'])('preserves every existing destination and translation for %s across all modes', (role) => {
+    localStorage.setItem('cfb:language-display', 'bilingual');
     state.role = role;
     render(<Navigation />);
     const drawer = openDrawer();
@@ -59,12 +60,13 @@ describe('Mobile navigation destinations', () => {
   });
 
   it('marks only the most specific destination as current', () => {
-    state.pathname = '/builder/pitch-deck';
+    localStorage.setItem('cfb:sidebar-mode', 'account');
+    state.pathname = '/settings/billing';
     render(<Navigation />);
     const navigation = within(openDrawer()).getByRole('navigation');
     const current = navigation.querySelectorAll('[aria-current="page"]');
     expect(current).toHaveLength(1);
-    expect(current[0].getAttribute('href')).toBe('/builder/pitch-deck');
+    expect(current[0].getAttribute('href')).toBe('/settings/billing');
   });
 
   it('does not mark similarly prefixed routes as current', () => {
@@ -95,7 +97,7 @@ describe('Mobile navigation destinations', () => {
       const link = drawer.querySelector(`a[href="${href}"]`)!;
       expect(link).not.toBeNull();
       expect(link.querySelector('button')).toBeNull();
-      expect(link.querySelector('[lang="el"]')).not.toBeNull();
+      expect(link.querySelector('[lang="en"]')).not.toBeNull();
     }
   });
 });
@@ -122,7 +124,19 @@ describe('Mobile drawer keyboard and language', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  it('shows both languages on all five bottom destinations', () => {
+  it('shows one language on all five bottom destinations until the reader asks for both', () => {
+    render(<Navigation />);
+    const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
+    const actions = [...within(bar).getAllByRole('link'), within(bar).getByRole('button')];
+    expect(actions).toHaveLength(5);
+    actions.forEach((action) => {
+      expect(action.querySelector('[lang="en"]')).not.toBeNull();
+      expect(action.querySelector('[lang="el"]')).toBeNull();
+    });
+  });
+
+  it('shows both languages on the bottom bar when that display is stored', () => {
+    localStorage.setItem('cfb:language-display', 'bilingual');
     render(<Navigation />);
     const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
     const actions = [...within(bar).getAllByRole('link'), within(bar).getByRole('button')];
@@ -135,6 +149,7 @@ describe('Mobile drawer keyboard and language', () => {
 
   it('honors Greek-first preference while preserving English labels', () => {
     localStorage.setItem('cfb:primary-language', 'el');
+    localStorage.setItem('cfb:language-display', 'bilingual');
     render(<Navigation />);
     const bar = screen.getByRole('navigation', { name: /Primary mobile navigation/ });
     const profile = bar.querySelector('a[href="/profile"]')!;

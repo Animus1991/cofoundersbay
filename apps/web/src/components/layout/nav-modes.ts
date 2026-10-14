@@ -121,36 +121,22 @@ export const founderWorkSections: NavSection[] = [
     section: 'Dashboard',
     links: [
       { href: '/dashboard/founder', label: 'Overview', icon: LayoutDashboard },
-      { href: '/readiness', label: 'Readiness Score', icon: Gauge },
-      { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     ],
   },
   {
     section: 'Build',
     links: [
-      { href: '/builder', label: 'Startup Builder', icon: Rocket },
-      { href: '/builder/pitch-deck', label: 'Pitch Deck', icon: Presentation },
-      { href: '/research', label: 'Research boards', icon: Grid3X3 },
-      { href: '/milestones', label: 'Milestones', icon: Flag },
-      { href: '/projects', label: 'Projects', icon: FolderKanban },
       { href: '/commitments', label: 'Commitments', icon: Handshake },
-      { href: '/scout', label: 'Co-founder scout', icon: Radar },
-    ],
-  },
-  {
-    section: 'Fundraise',
-    links: [
+      { href: '/builder', label: 'Startup Builder', icon: Rocket },
       { href: '/fundraising', label: 'Fundraising', icon: DollarSign },
       { href: '/updates', label: 'Updates', icon: Megaphone },
-      { href: '/builder/applications', label: 'Applications', icon: ClipboardList },
+      { href: '/scout', label: 'Co-founder scout', icon: Radar },
     ],
   },
   {
     section: 'Communicate',
     links: [
-      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
   },
 ];
@@ -163,7 +149,6 @@ export const mentorWorkSections: NavSection[] = [
     links: [
       { href: '/dashboard/mentor', label: 'Overview', icon: LayoutDashboard },
       { href: '/mentor/earnings', label: 'Earnings', icon: Wallet },
-      { href: '/mentor/reviews', label: 'Reviews', icon: Star },
     ],
   },
   {
@@ -175,18 +160,10 @@ export const mentorWorkSections: NavSection[] = [
     ],
   },
   {
-    section: 'Profile',
-    links: [
-      { href: '/mentor/availability', label: 'Availability', icon: Clock },
-      { href: '/mentor/profile', label: 'Mentor Profile', icon: BadgeCheck },
-    ],
-  },
-  {
     section: 'Communicate',
     links: [
-      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
+      { href: '/mentor/availability', label: 'Availability', icon: Clock },
     ],
   },
 ];
@@ -198,7 +175,6 @@ export const investorWorkSections: NavSection[] = [
     section: 'Dashboard',
     links: [
       { href: '/dashboard/investor', label: 'Overview', icon: LayoutDashboard },
-      { href: '/investor/analytics', label: 'Deal Analytics', icon: LineChart },
     ],
   },
   {
@@ -219,9 +195,7 @@ export const investorWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
-      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
   },
 ];
@@ -233,7 +207,6 @@ export const providerWorkSections: NavSection[] = [
     section: 'Dashboard',
     links: [
       { href: '/dashboard/provider', label: 'Overview', icon: LayoutDashboard },
-      { href: '/provider/analytics', label: 'Analytics', icon: BarChart3 },
     ],
   },
   {
@@ -254,9 +227,7 @@ export const providerWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
-      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
   },
 ];
@@ -268,30 +239,27 @@ export const orgWorkSections: NavSection[] = [
     section: 'Dashboard',
     links: [
       { href: '/dashboard/incubator', label: 'Overview', icon: LayoutDashboard },
-      { href: '/org/analytics', label: 'Analytics', icon: PieChart },
     ],
   },
   {
     section: 'Programs',
     links: [
       { href: '/org/programs', label: 'Programs', icon: Layers },
-      { href: '/org/cohorts', label: 'Cohorts', icon: Users },
       { href: '/org/applications', label: 'Applications', icon: ClipboardList },
+      { href: '/org/cohorts', label: 'Cohorts', icon: Users },
     ],
   },
   {
     section: 'Portfolio',
     links: [
       { href: '/org/startups', label: 'Startups', icon: Rocket },
-      { href: '/org/mentors', label: 'Mentor Pool', icon: GraduationCap },
     ],
   },
   {
     section: 'Manage',
     links: [
       { href: '/org/events', label: 'Events', icon: Calendar },
-      { href: '/org/members', label: 'Team', icon: Users },
-      { href: '/org/settings', label: 'Settings', icon: SlidersHorizontal },
+      { href: '/org/members', label: 'Team', icon: UserCheck },
     ],
   },
 ];
@@ -304,14 +272,12 @@ export const adminWorkSections: NavSection[] = [
     links: [
       { href: '/admin/dashboard', label: 'Platform overview', icon: LayoutDashboard },
       { href: '/admin', label: 'Admin console', icon: Shield },
-      { href: '/admin/analytics', label: 'Global Analytics', icon: BarChart3 },
     ],
   },
   {
     section: 'Users & Content',
     links: [
       { href: '/admin/users', label: 'Users', icon: Users },
-      { href: '/admin/communities', label: 'Communities', icon: Users },
       { href: '/admin/reports', label: 'Reports', icon: Flag },
     ],
   },
@@ -319,21 +285,9 @@ export const adminWorkSections: NavSection[] = [
     section: 'Platform',
     links: [
       { href: '/admin/tenants', label: 'Tenants', icon: Building2 },
-      { href: '/admin/programs', label: 'Programs', icon: Award },
       { href: '/admin/billing', label: 'Billing', icon: DollarSign },
-    ],
-  },
-  {
-    section: 'Config',
-    links: [
-      { href: '/admin/taxonomy', label: 'Taxonomy', icon: Boxes },
-      { href: '/admin/feature-flags', label: 'Feature Flags', icon: FlaskConical },
-      { href: '/admin/automations', label: 'Automations', icon: Workflow },
-      { href: '/admin/sso', label: 'SSO', icon: Lock },
-      { href: '/admin/domains', label: 'Domains', icon: Globe },
       { href: '/admin/audit-log', label: 'Audit Log', icon: ClipboardSignature },
     ],
-    collapsed: true,
   },
 ];
 
@@ -358,15 +312,9 @@ export const tenantWorkSections: NavSection[] = [
     section: 'Config',
     links: [
       { href: '/tenant/branding', label: 'Branding', icon: Lightbulb },
-      { href: '/tenant/domains', label: 'Domains', icon: Globe },
-      { href: '/tenant/sso', label: 'SSO', icon: Lock },
-      { href: '/tenant/webhooks', label: 'Webhooks', icon: Webhook },
-      { href: '/tenant/api-keys', label: 'API Keys', icon: KeyRound },
-      { href: '/tenant/automation', label: 'Automations', icon: Workflow },
       { href: '/tenant/billing', label: 'Billing', icon: DollarSign },
       { href: '/tenant/settings', label: 'Settings', icon: Settings },
     ],
-    collapsed: true,
   },
 ];
 
@@ -377,14 +325,12 @@ export const defaultWorkSections: NavSection[] = [
     section: 'Dashboard',
     links: [
       { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-      { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     ],
   },
   {
     section: 'Workspace',
     links: [
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
-      { href: '/research', label: 'Research boards', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
       { href: '/projects', label: 'Projects', icon: FolderKanban },
     ],
@@ -392,9 +338,7 @@ export const defaultWorkSections: NavSection[] = [
   {
     section: 'Communicate',
     links: [
-      { href: '/ai', label: 'AI Assistant', icon: Sparkles },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
-      { href: '/calendar', label: 'Calendar', icon: Calendar },
     ],
   },
 ];
@@ -408,52 +352,37 @@ export const exploreSections: NavSection[] = [
     section: 'Discover',
     links: [
       { href: '/discover', label: 'Explore', icon: Compass },
-      { href: '/search', label: 'Search', icon: Search },
-      { href: '/ai', label: 'Ask AI', icon: BrainCircuit },
     ],
   },
   {
     section: 'People',
     links: [
-      { href: '/members', label: 'Members', icon: Users },
       { href: '/mentoring', label: 'Mentors', icon: GraduationCap },
       { href: '/investors', label: 'Investors', icon: TrendingUp },
-    ],
-  },
-  {
-    section: 'Community',
-    links: [
-      { href: '/groups', label: 'Communities', icon: Users },
-      { href: '/events', label: 'Events', icon: Calendar },
-      { href: '/programs', label: 'Programs', icon: Award },
     ],
   },
   {
     section: 'Opportunities',
     links: [
       { href: '/opportunities', label: 'Opportunities', icon: Target },
-      { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
-      { href: '/marketplace', label: 'Services', icon: Store },
     ],
   },
   {
     section: 'Network',
     links: [
       { href: '/connections', label: 'Connections', icon: UserCheck, badge: 'connections' },
-      { href: '/intros', label: 'Introductions', icon: Waypoints },
-      { href: '/shortlist', label: 'Saved Profiles', icon: Bookmark },
-      { href: '/endorsements', label: 'Endorsements', icon: Handshake },
-      { href: '/compare', label: 'Compare Profiles', icon: ArrowLeftRight },
-      { href: '/saved-searches', label: 'Saved Searches', icon: Save },
+    ],
+  },
+  {
+    section: 'Community',
+    links: [
+      { href: '/groups', label: 'Communities', icon: Users },
     ],
   },
   {
     section: 'Learn',
     links: [
       { href: '/learning', label: 'Learning Hub', icon: BookOpen },
-      { href: '/expert-reviews', label: 'Expert Reviews', icon: ClipboardCheck },
-      { href: '/coaching', label: 'Coaching', icon: BrainCircuit },
-      { href: '/help', label: 'Help & Support', icon: HelpCircle },
     ],
   },
 ];
@@ -467,16 +396,12 @@ export const accountSections: NavSection[] = [
     section: 'Profile',
     links: [
       { href: '/profile', label: 'My Profile', icon: User },
-      { href: '/profile/edit', label: 'Edit Profile', icon: UserPen },
-      { href: '/reputation', label: 'Reputation', icon: Shield },
-      { href: '/achievements', label: 'Achievements', icon: Trophy },
     ],
   },
   {
     section: 'Activity',
     links: [
       { href: '/feed', label: 'Feed', icon: Rss },
-      { href: '/activity', label: 'Activity', icon: Activity },
       { href: '/notifications', label: 'Notifications', icon: Bell, badge: 'notifications' },
     ],
   },
@@ -484,10 +409,7 @@ export const accountSections: NavSection[] = [
     section: 'Settings',
     links: [
       { href: '/settings', label: 'General', icon: Settings },
-      { href: '/settings/ai', label: 'AI Preferences', icon: Sparkles },
-      { href: '/settings/notifications', label: 'Notification Prefs', icon: BellRing },
       { href: '/settings/billing', label: 'Billing', icon: DollarSign },
-      { href: '/settings/data-export', label: 'Data Export', icon: Download },
     ],
   },
   {
@@ -588,6 +510,43 @@ export function getActiveNavHref(pathname: string | null, sections: NavSection[]
 const ORPHAN_MODE: Record<string, SidebarMode> = {
   '/matches': 'explore',
   '/recommendations': 'explore',
+  // Off the open list, still that mode's page. Search and the command
+  // palette open them; the sidebar does not catalogue them.
+  '/readiness': 'work',
+  '/analytics': 'work',
+  '/research': 'work',
+  '/milestones': 'work',
+  '/projects': 'work',
+  '/calendar': 'work',
+  '/mentor/reviews': 'work',
+  '/mentor/profile': 'work',
+  '/investor/analytics': 'work',
+  '/provider/analytics': 'work',
+  '/org/analytics': 'work',
+  '/org/mentors': 'work',
+  '/org/settings': 'work',
+  '/tenant/domains': 'work',
+  '/tenant/sso': 'work',
+  '/tenant/webhooks': 'work',
+  '/tenant/api-keys': 'work',
+  '/tenant/automation': 'work',
+  '/search': 'explore',
+  '/members': 'explore',
+  '/events': 'explore',
+  '/programs': 'explore',
+  '/jobs': 'explore',
+  '/marketplace': 'explore',
+  '/intros': 'explore',
+  '/shortlist': 'explore',
+  '/endorsements': 'explore',
+  '/compare': 'explore',
+  '/saved-searches': 'explore',
+  '/expert-reviews': 'explore',
+  '/coaching': 'explore',
+  '/help': 'explore',
+  '/reputation': 'account',
+  '/achievements': 'account',
+  '/activity': 'account',
 };
 
 export function modeForPath(pathname: string | null, current: SidebarMode, role?: string): SidebarMode {

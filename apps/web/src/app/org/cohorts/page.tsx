@@ -365,20 +365,17 @@ export default function OrgCohortsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length, icon: Award, tone: 'accent' as const },
-            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
+            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length },
+            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length },
             totalMentors == null
-              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups, icon: Rocket, tone: 'info' as const }
-              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
-            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
-          ].map(({ label, labelEl, value, icon: Icon, tone }) => (
+              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups }
+              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups },
+            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014' },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}
