@@ -236,7 +236,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1">
+                  <Badge key={tag} variant="secondary" data-chip="" className="gap-1">
                     #{tag}
                     <button aria-label={bilingualAria(`Remove tag ${tag}`, `Αφαίρεση ετικέτας ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
                       <X className="icon-sm" aria-hidden="true" />

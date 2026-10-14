@@ -73,6 +73,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
                 <Badge
                   key={tag}
                   variant="secondary"
+                  data-chip=""
                   className="gap-1 pr-1"
                 >
                   {tag}
@@ -123,6 +124,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
           <Badge
             key={tag}
             variant="secondary"
+            data-chip=""
             className="gap-1 pr-1"
           >
             {tag}

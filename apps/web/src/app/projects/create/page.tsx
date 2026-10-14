@@ -396,7 +396,7 @@ export default function CreateProjectPage() {
                     {rolesNeeded.map((role) => {
                       const pair = PROJECT_COMMON_ROLES.find((item) => item.en === role);
                       return (
-                        <Badge key={role} variant="secondary" className="gap-1 rounded-full">
+                        <Badge key={role} variant="secondary" data-chip="" className="gap-1 rounded-full">
                           {pair ? <BilingualText en={pair.en} el={pair.el} compact /> : role}
                           <button aria-label={`Remove ${role}`} type="button" onClick={() => removeRole(role)}>
                             <X className="icon-sm" />

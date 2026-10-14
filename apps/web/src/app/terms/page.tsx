@@ -161,10 +161,7 @@ export default function TermsPage() {
 
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-            <FileText className="h-7 w-7 text-primary-accessible" />
-          </div>
+        <div className="mx-auto max-w-4xl px-4 py-12 text-left">
           <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Terms of Service" el="Όροι χρήσης" compact /></h1>
           <p className="text-sm text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
@@ -224,7 +221,7 @@ export default function TermsPage() {
           <p className="card-body text-muted-foreground">
             <BilingualText en="By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service." el="Χρησιμοποιώντας το CoFounderBay, δηλώνετε ότι διαβάσατε και αποδέχεστε αυτούς τους όρους χρήσης." wrap />
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3" data-actions="">
             <Button variant="outline" size="sm" asChild>
               <Link href="/privacy"><BilingualText en="Read Privacy Policy" el="Διαβάστε την πολιτική απορρήτου" compact /></Link>
             </Button>

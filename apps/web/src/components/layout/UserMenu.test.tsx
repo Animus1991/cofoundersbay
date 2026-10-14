@@ -124,7 +124,7 @@ describe('UserMenu', () => {
     expect(within(item).getByText(en).getAttribute('lang')).toBe('en');
     const secondary = within(item).getByText(el);
     expect(secondary.getAttribute('lang')).toBe('el');
-    // `.bilingual-secondary` owns the size (max(11px, 0.85em)) so the second
+    // `.bilingual-secondary` owns the size (1em, the same as the first) so the second
     // language stays subordinate without dropping below the legibility floor.
     // Asserting a fixed `text-sm` here would lock it to the primary's size.
     expect(secondary.className).toContain('bilingual-secondary');

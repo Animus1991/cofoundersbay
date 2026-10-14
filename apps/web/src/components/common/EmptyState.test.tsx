@@ -5,22 +5,16 @@ import { EmptyState } from './EmptyState';
 afterEach(cleanup);
 
 describe('calm, actionable empty states', () => {
-  it.each(['search', 'connection', 'message', 'rocket', 'profile', 'calendar', 'default'] as const)('preserves %s illustration and hides decorative graphics from assistive technology', (illustration) => {
+  it('states the next step on the left, without a decorative drawing', () => {
     const action = vi.fn();
-    const { container } = render(<EmptyState illustration={illustration} title="No results / Δεν υπάρχουν αποτελέσματα" description="Change the filters to broaden your search." action={<button onClick={action}>Reset filters</button>} />);
+    const { container } = render(<EmptyState illustration="search" title="No results / Δεν υπάρχουν αποτελέσματα" description="Change the filters to broaden your search." action={<button onClick={action}>Reset filters</button>} />);
     expect(screen.getByText('No results / Δεν υπάρχουν αποτελέσματα')).toBeTruthy();
-    expect(container.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
-    expect(container.querySelector('svg')?.getAttribute('focusable')).toBe('false');
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.firstElementChild?.className).toContain('text-left');
+    expect(container.innerHTML).not.toMatch(/animate-(float|pulse|spin|bounce)/);
+    expect(screen.getByText('Change the filters to broaden your search.').className).toContain('max-w-prose');
     fireEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
     expect(action).toHaveBeenCalledOnce();
-  });
-
-  it('centres illustrations and limits text width without perpetual decoration', () => {
-    const { container } = render(<EmptyState title="Start here" description="An explanation" />);
-    const svg = container.querySelector('svg')!;
-    expect(svg.parentElement?.className).toContain('mx-auto');
-    expect(container.innerHTML).not.toMatch(/animate-(float|pulse|spin|bounce)/);
-    expect(screen.getByText('An explanation').className).toContain('max-w-prose');
   });
 
   it('keeps all sizes, custom styling, and optional content', () => {

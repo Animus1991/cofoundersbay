@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_LOCALES, applyLocale, LOCALE_CHANGE_EVENT, LOCALE_STORAGE_KEY, type AppLocale } from '@/lib/locale';
 
-/** Which language appears first (larger); the other is secondary (smaller). */
+/** Which language appears first. The other, when shown, is the same size. */
 export type PrimaryLanguage = 'en' | 'el';
 
 /** Whether secondary language is shown alongside primary. */

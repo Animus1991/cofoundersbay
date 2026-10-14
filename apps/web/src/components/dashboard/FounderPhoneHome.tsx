@@ -240,7 +240,7 @@ export function FounderPhoneHome({
             <CardTitle>
               <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} compact wrap />
             </CardTitle>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2" data-actions="">
               <Button asChild variant="outline" size="sm">
                 <Link href="/updates">
                   <BilingualText en="Log an update" el="Καταχώριση ενημέρωσης" compact />
@@ -297,7 +297,7 @@ export function FounderPhoneHome({
                 ) : null}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2" data-actions="">
               <Button
                 type="button"
                 size="sm"

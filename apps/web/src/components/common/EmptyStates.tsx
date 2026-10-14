@@ -95,8 +95,8 @@ export function ListEmptyState({
   const iconSize = size === 'compact' ? 'h-6 w-6' : 'h-7 w-7';
 
   const content = (
-    <div className={cn('flex flex-col items-center justify-center text-center', padding)}>
-      <div className={cn('mb-4 flex items-center justify-center rounded-full', iconWrap, TONE_CLASSES[tone])}>
+    <div className={cn('flex flex-col items-start text-left', padding)}>
+      <div className={cn('empty-mark mb-4 flex items-center justify-center rounded-full', iconWrap, TONE_CLASSES[tone])}>
         <Icon className={iconSize} />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
@@ -104,7 +104,7 @@ export function ListEmptyState({
         <div className="card-body text-muted-foreground max-w-md mt-1.5">{description}</div>
       ) : null}
       {(action || secondary) && (
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-start gap-2" data-actions="">
           {action}
           {secondary}
         </div>
@@ -254,15 +254,15 @@ function AskAiLink({ prompt }: { prompt: string }) {
 
 export function EmptyConnections({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.accent.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.accent.bg)}>
         <Users className={cn('icon-xl', STATUS.accent.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No connections yet" el="Δεν υπάρχουν συνδέσεις ακόμα" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Start building your network by discovering founders, mentors, and investors who share your interests." el="Χτίστε το δίκτυό σας βρίσκοντας ιδρυτές, μέντορες και επενδυτές με κοινά ενδιαφέροντα." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/discover">
             <Compass className="icon-sm" />
@@ -277,15 +277,15 @@ export function EmptyConnections({ className }: EmptyStateProps) {
 
 export function EmptyMessages({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <MessageCircle className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No conversations" el="Δεν υπάρχουν συνομιλίες" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Connect with someone to start a conversation. Your messages will appear here." el="Συνδεθείτε με κάποιον για να ξεκινήσετε συνομιλία. Τα μηνύματά σας θα εμφανίζονται εδώ." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/connections">
             <UserPlus className="icon-sm" />
@@ -300,15 +300,15 @@ export function EmptyMessages({ className }: EmptyStateProps) {
 
 export function EmptyEvents({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
         <Calendar className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No upcoming events" el="Δεν υπάρχουν επερχόμενες εκδηλώσεις" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no events scheduled right now. Check back later or create your own event." el="Δεν υπάρχουν προγραμματισμένες εκδηλώσεις. Ελέγξτε αργότερα ή δημιουργήστε τη δική σας." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/events/create">
             <Calendar className="icon-sm" />
@@ -323,15 +323,15 @@ export function EmptyEvents({ className }: EmptyStateProps) {
 
 export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
         <Briefcase className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No jobs posted" el="Δεν υπάρχουν αγγελίες" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no job listings at the moment. Post a job to find your next team member." el="Δεν υπάρχουν αγγελίες αυτή τη στιγμή. Δημοσιεύστε μία για να βρείτε το επόμενο μέλος της ομάδας σας." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <Briefcase className="icon-sm" />
           <BilingualText en="Post a job" el="Δημοσίευση θέσης" compact />
@@ -344,15 +344,15 @@ export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps &
 
 export function EmptyGroups({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
         <Users className={cn('icon-xl', STATUS.success.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No groups joined" el="Δεν έχετε γίνει μέλος σε κοινότητες" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Join groups to connect with like-minded founders and participate in discussions." el="Γίνετε μέλος σε κοινότητες για να γνωρίσετε ιδρυτές με κοινά ενδιαφέροντα και να συμμετέχετε σε συζητήσεις." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/groups">
             <Search className="icon-sm" />
@@ -367,8 +367,8 @@ export function EmptyGroups({ className }: EmptyStateProps) {
 
 export function EmptyNotifications({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
         <Bell className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="All caught up!" el="Είστε ενημερωμένοι!" compact /></h3>
@@ -382,8 +382,8 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
 
 export function EmptySearchResults({ query, className }: EmptyStateProps & { query?: string }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
         <Search className="icon-xl text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h3>
@@ -392,7 +392,7 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
           ? `We couldn't find anything matching "${query}". Try different keywords.`
           : 'Try adjusting your search or filters to find what you\'re looking for.'}
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button variant="secondary" onClick={() => window.history.back()}>
           <BilingualText en="Go back" el="Επιστροφή" compact />
         </Button>
@@ -410,8 +410,8 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
 
 export function EmptyLearning({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
         <BookOpen className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No resources yet" el="Δεν υπάρχουν πόροι ακόμα" compact /></h3>
@@ -425,15 +425,15 @@ export function EmptyLearning({ className }: EmptyStateProps) {
 
 export function EmptyMarketplace({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
         <ShoppingBag className="icon-xl text-status-accent" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No services listed" el="Δεν υπάρχουν υπηρεσίες" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="The marketplace is empty. Be the first to offer your services to the community." el="Η αγορά είναι άδεια. Γίνετε οι πρώτοι που προσφέρουν υπηρεσίες στην κοινότητα." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <ShoppingBag className="icon-sm" />
           <BilingualText en="List a service" el="Καταχώριση υπηρεσίας" compact />
@@ -446,15 +446,15 @@ export function EmptyMarketplace({ className, actionHref, onAction }: EmptyState
 
 export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <Users className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No sessions booked" el="Δεν υπάρχουν κρατήσεις" compact /></h3>
       <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Book a session with a mentor to get personalized guidance for your startup journey." el="Κλείστε συνεδρία με μέντορα για εξατομικευμένη καθοδήγηση." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/mentoring">
             <Search className="icon-sm" />

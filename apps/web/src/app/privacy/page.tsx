@@ -267,10 +267,7 @@ export default function PrivacyPage() {
 
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-            <Shield className="h-7 w-7 text-primary-accessible" />
-          </div>
+        <div className="mx-auto max-w-4xl px-4 py-12 text-left">
           <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
           <p className="text-sm text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
@@ -370,7 +367,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
+        <div className="mx-auto max-w-4xl px-4 py-6 text-left text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>
       </footer>
