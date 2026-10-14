@@ -222,9 +222,9 @@ export function DemoSessionBanner() {
 
   return (
     <>
-      <p id={noticeId} className="sr-only">
+      <div id={noticeId} className="sr-only">
         <DemoNotice />
-      </p>
+      </div>
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
