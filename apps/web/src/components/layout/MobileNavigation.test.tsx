@@ -60,13 +60,12 @@ describe('Mobile navigation destinations', () => {
   });
 
   it('marks only the most specific destination as current', () => {
-    localStorage.setItem('cfb:sidebar-mode', 'account');
-    state.pathname = '/settings/billing';
+    state.pathname = '/builder/pitch-deck';
     render(<Navigation />);
     const navigation = within(openDrawer()).getByRole('navigation');
     const current = navigation.querySelectorAll('[aria-current="page"]');
     expect(current).toHaveLength(1);
-    expect(current[0].getAttribute('href')).toBe('/settings/billing');
+    expect(current[0].getAttribute('href')).toBe('/builder/pitch-deck');
   });
 
   it('does not mark similarly prefixed routes as current', () => {
