@@ -35,6 +35,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { demoPortrait } from '@/lib/demo/photos';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
@@ -612,8 +613,8 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      <CfbGlyph name="spark" className="icon-sm" />
+                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      <img src={demoPortrait(agent.id, 64)} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

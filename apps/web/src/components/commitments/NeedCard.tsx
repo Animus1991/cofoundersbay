@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { VerificationMethod } from '@cofounderbay/shared';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
@@ -28,7 +28,7 @@ export type NeedCardView = {
   version?: number;
   outcome?: 'open' | 'in_discussion' | 'agreed' | 'closed';
   closedReason?: string | null;
-  owner?: { displayName: string; headline: string | null; verifiedMethods?: readonly VerificationMethod[] };
+  owner?: { displayName: string; headline: string | null; avatarUrl?: string | null; verifiedMethods?: readonly VerificationMethod[] };
 };
 
 function Field({
@@ -128,6 +128,7 @@ export function NeedCard({
         {owner ? (
           <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
             <Avatar className="h-8 w-8" data-keep-icon="">
+              <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-primary/15 text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">

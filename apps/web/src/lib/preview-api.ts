@@ -15,6 +15,7 @@ import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
+import { attachDemoPhotos } from './demo/photos';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -2660,6 +2661,10 @@ export function resolvePreviewApiNow(path: string, init?: RequestInit): unknown 
 
 /** Returns a payload for preview, or null to fall through (never used — always resolve). */
 export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
+  return attachDemoPhotos(resolvePreviewApiBody(path, init));
+}
+
+function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const pathname = pathnameOf(path);
   const method = (init?.method ?? 'GET').toUpperCase();
   const body = parseBody(init);

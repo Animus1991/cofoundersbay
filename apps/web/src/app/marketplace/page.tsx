@@ -353,6 +353,7 @@ export default function MarketplacePage() {
     isAvailable: true,
     websiteUrl: s.websiteUrl ?? undefined,
     contactUrl: s.contactUrl ?? undefined,
+    providerAvatar: s.providerLogo ?? undefined,
   }));
 
   const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];

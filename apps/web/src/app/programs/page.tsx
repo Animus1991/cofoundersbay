@@ -244,7 +244,10 @@ function ProgramCard({
   // kind under it, the state at the right, then the sentence, the facts and
   // the actions, all on the mark's left edge.
   return (
-    <Card className={cn('card-interactive transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40')}>
+    <Card className={cn('card-interactive overflow-hidden transition-all hover:border-primary/30 group', isEnrolled && 'border-primary/40')}>
+      {program.coverImageUrl ? (
+        <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
+      ) : null}
       <CardContent className="space-y-3">
         <CardHead
           mark={(

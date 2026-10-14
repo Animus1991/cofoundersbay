@@ -152,7 +152,10 @@ export default function ProgramDetailPage() {
           {/* Each figure under its own name: the card listed "Aegean Venture
               Lab · Accelerator · Active · Athens" with nothing saying which
               was the organiser, the type, the status or the place. */}
-          <Card>
+          <Card className="overflow-hidden">
+            {program.coverImageUrl ? (
+              <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+            ) : null}
             <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
                 <Fact en="Organiser" el="Διοργανωτής">

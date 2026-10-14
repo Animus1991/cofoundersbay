@@ -5299,6 +5299,7 @@ export interface ProgramItem {
   settings: Record<string, unknown> | null;
   applicationCount: number;
   participantCount: number;
+  coverImageUrl: string | null;
   organization: {
     id: string;
     name: string;
@@ -5398,6 +5399,7 @@ export function toProgramItem(raw: RawProgram): ProgramItem {
     settings: raw.settings ?? null,
     applicationCount: raw.applicationCount ?? raw._count?.participants ?? 0,
     participantCount: raw.participantCount ?? raw.currentParticipants ?? 0,
+    coverImageUrl: raw.coverImageUrl ?? null,
     organization: {
       id: org?.id ?? '',
       name: org?.name ?? '',
