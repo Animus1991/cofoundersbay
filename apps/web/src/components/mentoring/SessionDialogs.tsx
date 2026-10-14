@@ -114,18 +114,18 @@ export function ScheduleSessionDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle><BilingualText en="Schedule a session" el="Προγραμματισμός συνεδρίας" compact /></DialogTitle>
-          <DialogDescription><BilingualText en="With one of your active mentees. They see it in their sessions straight away." el="Με έναν από τους ενεργούς μαθητευόμενούς σας. Τη βλέπουν αμέσως στις συνεδρίες τους." wrap /></DialogDescription>
+          <DialogDescription><BilingualText en="With one of your active mentees. They see it in their sessions straight away." el="Με έναν από τους ενεργούς καθοδηγούμενους σας. Τη βλέπουν αμέσως στις συνεδρίες τους." wrap /></DialogDescription>
         </DialogHeader>
         {isLoading ? (
           <div className="flex justify-center py-8"><Loader2 className="icon-lg animate-spin text-muted-foreground" aria-hidden="true" /></div>
         ) : relationships.length === 0 ? (
           <p className="py-4 text-sm text-muted-foreground">
-            <BilingualText en="You have no active mentees yet. Accept a request on the Requests page and they appear here." el="Δεν έχετε ακόμα ενεργούς μαθητευόμενους. Αποδεχτείτε ένα αίτημα στη σελίδα Αιτήματα και θα εμφανιστούν εδώ." wrap />
+            <BilingualText en="You have no active mentees yet. Accept a request on the Requests page and they appear here." el="Δεν έχετε ακόμα ενεργούς καθοδηγούμενους. Αποδεχτείτε ένα αίτημα στη σελίδα Αιτήματα και θα εμφανιστούν εδώ." wrap />
           </p>
         ) : (
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
             <div className="space-y-1.5">
-              <Label htmlFor="session-mentee"><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></Label>
+              <Label htmlFor="session-mentee"><BilingualText en="Mentee" el="Καθοδηγούμενος" compact /></Label>
               <Select value={relationshipId} onValueChange={setRelationshipId}>
                 <SelectTrigger id="session-mentee"><SelectValue placeholder={bilingualInline("Choose a mentee", "Επιλέξτε καθοδηγούμενο")} /></SelectTrigger>
                 <SelectContent>
@@ -298,7 +298,7 @@ export function SessionNotesDialog({
           </div>
           {session?.menteeNotes && (
             <div className="space-y-1.5">
-              <p className="text-sm font-medium"><BilingualText en="Mentee&apos;s notes" el="Σημειώσεις μαθητευόμενου" compact /></p>
+              <p className="text-sm font-medium"><BilingualText en="Mentee&apos;s notes" el="Σημειώσεις καθοδηγούμενου" compact /></p>
               <p className="whitespace-pre-line rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">{session.menteeNotes}</p>
             </div>
           )}

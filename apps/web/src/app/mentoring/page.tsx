@@ -422,7 +422,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
               </Link>
               <span className="text-xs font-normal text-muted-foreground">
                 {rel.mentorId === userId
-                  ? <BilingualText en="(mentee)" el="(μαθητευόμενος)" compact />
+                  ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />
                   : <BilingualText en="(mentor)" el="(μέντορας)" compact />}
               </span>
             </span>

@@ -200,7 +200,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
-              <h3 className="font-medium"><BilingualText en="Failed to load mentees" el="Δεν ήταν δυνατή η φόρτωση των μαθητευόμενων" compact /></h3>
+              <h3 className="font-medium"><BilingualText en="Failed to load mentees" el="Δεν ήταν δυνατή η φόρτωση των καθοδηγούμενων" compact /></h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
@@ -249,7 +249,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent>
               <p className="page-stat text-xl font-bold">{activeRelationships.length}</p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί μαθητευόμενοι" compact /></p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Active Mentees" el="Ενεργοί καθοδηγούμενοι" compact /></p>
             </CardContent>
           </Card>
           <Card>
@@ -281,7 +281,7 @@ export default function MenteesPage() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί μαθητευόμενοι" compact /></h3>
+                <h3 className="font-medium"><BilingualText en="No active mentees" el="Δεν υπάρχουν ενεργοί καθοδηγούμενοι" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   <BilingualText en="Accept mentorship requests to start mentoring" el="Αποδεχτείτε αιτήματα καθοδήγησης για να ξεκινήσετε" wrap />
                 </p>

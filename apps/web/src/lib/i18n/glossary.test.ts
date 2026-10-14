@@ -94,6 +94,21 @@ describe('the Greek glossary', () => {
     expect([...fromCatalogues, ...greekSide]).toEqual([]);
   });
 
+  it('calls the person being guided «καθοδηγούμενος», never «μαθητευόμενος»', () => {
+    // The mentee list said «Μαθητευόμενοι» while the dashboard beside it said
+    // «καθοδηγούμενοι». One person, one word, in every source file a reader
+    // can reach. English "mentee" stays; the catalogues translate that key.
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
+        d.isDirectory() ? walk(join(dir, d.name)) : /\.(tsx?|json)$/.test(d.name) && !/\.test\./.test(d.name) ? [join(dir, d.name)] : [],
+      );
+    const src = join(__dirname, '..', '..');
+    const hits = walk(src)
+      .filter((f) => /μαθητευόμεν/i.test(readFileSync(f, 'utf8')))
+      .map((f) => f.slice(src.length + 1));
+    expect(hits).toEqual([]);
+  });
+
   it('writes Greek units after numbers, never "2w" or "5h"', () => {
     // «πριν 2w» was the report that started this pass.
     expect(offenders((_, v) => /\d\s?(?:w|d|h|mo|y|min|hrs?)\b/.test(v))).toEqual([]);

@@ -284,7 +284,7 @@ export default function MentorDashboard() {
       actions={
         <Badge variant="outline" className="gap-1.5">
           <GraduationCap className="icon-sm" aria-hidden="true" />
-          Mentor
+          <BilingualText en="Mentor" el="Μέντορας" compact />
         </Badge>
       }
     >
