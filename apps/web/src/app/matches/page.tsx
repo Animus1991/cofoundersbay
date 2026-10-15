@@ -43,6 +43,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { FactLine } from '@/components/common/FactLine';
+import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 
 const MATCHES_TOUR: TourStep[] = [
@@ -181,12 +182,15 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
             </p>
-            {reasons.map((r, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
-                <span className="text-foreground">{r.text}</span>
-              </div>
-            ))}
+            {reasons.map((r, i) => {
+              const copy = matchReasonCopy(r.text);
+              return (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <Zap className="icon-sm text-muted-foreground mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground"><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
+                </div>
+              );
+            })}
           </div>
         )}
       </DialogContent>
@@ -345,7 +349,10 @@ function MatchListRow({
             />
             <FactLine
               label={bilingualAria('Why you match', 'Γιατί ταιριάζετε')}
-              items={matchReasons.slice(0, 3).map((r) => r.text)}
+              items={matchReasons.slice(0, 3).map((r) => {
+                const copy = matchReasonCopy(r.text);
+                return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
+              })}
             />
           </div>
         )}

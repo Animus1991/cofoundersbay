@@ -16,6 +16,7 @@ import { pressableProps } from '@/lib/pressable';
 import type { CommitmentStep } from '@cofounderbay/shared';
 import { StepChip } from '@/components/commitments/OutcomeChip';
 import { FactLine } from '@/components/common/FactLine';
+import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
@@ -145,6 +146,7 @@ function MatchCardInner({
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [showReasons, setShowReasons] = useState(false);
   const { stroke, glow, colors } = getScoreTier(compatibilityScore);
+  const reasonCopies = matchReasons.map((reason) => matchReasonCopy(reason.text));
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -240,6 +242,13 @@ function MatchCardInner({
           </div>
         )}
 
+        {/* The first cause sits on the card. The rest stay behind the same disclosure. */}
+        {reasonCopies[0] ? (
+          <p className="text-xs text-muted-foreground">
+            <BilingualText en={reasonCopies[0].en} el={reasonCopies[0].el} compact wrap />
+          </p>
+        ) : null}
+
         {/* Match reasons toggle */}
         <button
           onClick={() => setShowReasons(!showReasons)}
@@ -257,10 +266,10 @@ function MatchCardInner({
         {/* Match reasons (collapsible): rows on the card, not tiles in it. */}
         {showReasons && (
           <ul className="space-y-1">
-            {matchReasons.map((reason, i) => (
+            {reasonCopies.map((copy, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-foreground">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: stroke }} aria-hidden="true" />
-                <span className="min-w-0 flex-1 first-letter:uppercase">{reason.text}</span>
+                <span className="min-w-0 flex-1"><BilingualText en={copy.en} el={copy.el} compact wrap /></span>
               </li>
             ))}
           </ul>
