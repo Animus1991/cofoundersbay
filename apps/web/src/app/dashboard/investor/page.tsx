@@ -227,6 +227,8 @@ export default function InvestorDashboard() {
             kickerEn="Active deal"
             kickerEl="Ενεργή συμφωνία"
             title={active[0].name}
+            reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
+            reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
             href="/investor/pipeline"
             actionEn="Open"
             actionEl="Άνοιγμα"

@@ -22,6 +22,8 @@ export function HomeNextStep({
   href,
   actionEn,
   actionEl,
+  reasonEn,
+  reasonEl,
   external = false,
   actionVariant = 'default',
 }: {
@@ -34,6 +36,9 @@ export function HomeNextStep({
   href: string;
   actionEn: string;
   actionEl: string;
+  /** A fact about why this is the next step. Omitted when the page does not know one. */
+  reasonEn?: string;
+  reasonEl?: string;
   external?: boolean;
   actionVariant?: 'default' | 'outline';
 }) {
@@ -54,6 +59,11 @@ export function HomeNextStep({
               title
             )}
           </p>
+          {reasonEn ? (
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={reasonEn} el={reasonEl ?? reasonEn} compact wrap />
+            </p>
+          ) : null}
         </div>
         <Button asChild size="sm" variant={actionVariant} className="shrink-0">
           {external ? (

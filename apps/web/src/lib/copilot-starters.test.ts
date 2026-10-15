@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { planCopilotTools } from './copilot-planner';
 import {
   COPILOT_PRODUCT_LINKS,
   COPILOT_STARTERS,
@@ -60,6 +61,37 @@ describe('copilot empty-state lockstep', () => {
       '/builder',
       '/builder/applications',
     ]);
+  });
+
+  it('offers each role a question the planner already answers', () => {
+    const expected: Record<string, string> = {
+      'Show mentoring requests': 'get_mentor_requests',
+      'Which sessions are coming up?': 'get_mentorship_sessions',
+      'Show my availability': 'get_availability',
+      "Accept Sofia's mentoring request": 'respond_to_mentor_request',
+      'Show my investor board': 'get_investor_board',
+      'Show my inquiries': 'get_inquiries',
+      'Show my services': 'get_services',
+      'Which accelerator programmes are open right now?': 'get_programs',
+      'Show organisation members': 'get_org_members',
+      'Show cohorts': 'get_org_cohorts',
+      'How many users are on the platform?': 'get_platform_stats',
+      'Show the moderation queue': 'get_moderation_queue',
+    };
+    const roles = ['mentor', 'angel_investor', 'service_provider', 'incubator_admin', 'platform_admin'] as const;
+    for (const role of roles) {
+      const { reads, writes } = copilotStartersFor('page', role);
+      expect(reads.length).toBeGreaterThan(0);
+      expect(reads[0]?.en).toBe('What should I do next?');
+      for (const starter of [...reads, ...writes]) {
+        if (starter.en === 'What should I do next?' || starter.en === 'Show my best matches') continue;
+        const planned = planCopilotTools(starter.en);
+        expect(planned.some((tool) => tool.name === expected[starter.en]), `${role}: ${starter.en} → ${planned.map((tool) => tool.name).join(', ')}`).toBe(true);
+      }
+    }
+    expect(copilotStartersFor('page', 'existing_founder').reads.map((row) => row.en)).toEqual(
+      copilotStartersFor('page').reads.map((row) => row.en),
+    );
   });
 
   it('renders starters as full-width rows that fill the pane, not a centred island', () => {

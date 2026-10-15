@@ -321,6 +321,8 @@ export default function MentorDashboard() {
             kickerEn="Next session"
             kickerEl="Επόμενη συνεδρία"
             title={nextSession.menteeName}
+            reasonEn={sessionWhen(nextSession.scheduledAt, 'en-GB')}
+            reasonEl={sessionWhen(nextSession.scheduledAt, 'el-GR')}
             href={nextSession.meetingUrl || '/mentor/sessions'}
             external={Boolean(nextSession.meetingUrl)}
             actionEn="Join"
