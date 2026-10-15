@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,9 +17,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
-import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -206,6 +204,38 @@ const SAMPLE_INVESTORS: Investor[] = [
 
 // ── Investor card ──────────────────────────────────────────────────────────────
 
+/** One caption over its value. An empty value omits the row; it never changes the row's shape. */
+function CardFact({ en, el, children }: { en: string; el: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <span className="block text-xs font-medium text-foreground">
+        <BilingualText en={en} el={el} compact />
+      </span>
+      {children}
+    </div>
+  );
+}
+
+/** A sector, a stage or a place: the same almost-transparent frame on every card. */
+function QuietTag({ children }: { children: ReactNode }) {
+  return <span role="listitem" className="quiet-tag text-xs">{children}</span>;
+}
+
+function TagList({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div role="list" aria-label={label} className="flex flex-wrap gap-1">
+      {children}
+    </div>
+  );
+}
+
+type RecordBit = { figureEn: string; figureEl: string; en: string; el: string };
+
+function countLine(n: number, oneEn: string, manyEn: string, oneEl: string, manyEl: string): RecordBit {
+  const figure = String(n);
+  return { figureEn: figure, figureEl: figure, en: n === 1 ? oneEn : manyEn, el: n === 1 ? oneEl : manyEl };
+}
+
 function InvestorCard({
   investor,
   saved,
@@ -215,23 +245,30 @@ function InvestorCard({
   saved: boolean;
   onToggleSave: () => void;
 }) {
+  const sampleReasonId = useId();
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
-  const place = investor.geographies.length ? investor.geographies.join(', ') : investor.location;
   const stages = investor.stages.map((stage) => STAGE_COPY[stage] ?? { en: stage, el: stage });
-  const investsEn = [...stages.map((stage) => stage.en), checkSize, place].filter(Boolean).join(' · ');
-  const investsEl = [...stages.map((stage) => stage.el), checkSize, place].filter(Boolean).join(' · ');
-  const record = [
-    investor.portfolioCount != null && { en: `${investor.portfolioCount} investments`, el: `${investor.portfolioCount} επενδύσεις` },
-    investor.dealsThisYear != null && { en: `${investor.dealsThisYear} deals this year`, el: `${investor.dealsThisYear} συμφωνίες φέτος` },
-    investor.viewCount != null && { en: `${investor.viewCount.toLocaleString('en-GB')} views`, el: `${investor.viewCount.toLocaleString('el-GR')} προβολές` },
-  ].filter(Boolean) as { en: string; el: string }[];
+  const places = investor.geographies.length ? investor.geographies : investor.location ? [investor.location] : [];
+  const record: RecordBit[] = [];
+  if (investor.portfolioCount != null) record.push(countLine(investor.portfolioCount, 'investment', 'investments', 'επένδυση', 'επενδύσεις'));
+  if (investor.dealsThisYear != null) record.push(countLine(investor.dealsThisYear, 'deal this year', 'deals this year', 'συμφωνία φέτος', 'συμφωνίες φέτος'));
+  if (investor.viewCount != null) {
+    record.push({
+      figureEn: investor.viewCount.toLocaleString('en-GB'),
+      figureEl: investor.viewCount.toLocaleString('el-GR'),
+      en: investor.viewCount === 1 ? 'view' : 'views',
+      el: investor.viewCount === 1 ? 'προβολή' : 'προβολές',
+    });
+  }
+  const sampleReasonEn = 'Sample investor: there is no profile or inbox behind it';
+  const sampleReasonEl = 'Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα';
 
-  // The program card: mark and name, the line under it, the state as a
-  // word, then the sentence, one facts line, and each dense list under its
-  // own caption. The actions sit on their own row, under a hairline of space,
-  // so a long thesis does not share a line with the buttons.
+  // Every investor, sparse or dense, uses this order. A missing value drops
+  // its row and leaves the rest where they are, so two cards never look
+  // like two different components. Tokens share one frame; the cheque and
+  // the record's numbers are the only heavier ink.
   return (
     <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
@@ -291,41 +328,70 @@ function InvestorCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
         )}
 
-        <FactLine
-          label={bilingualInline('Sectors', 'Τομείς')}
-          items={investor.industries}
-        />
+        {investor.industries.length ? (
+          <CardFact en="Sectors" el="Τομείς">
+            <TagList label={bilingualInline('Sectors', 'Τομείς')}>
+              {investor.industries.map((name) => <QuietTag key={name}>{name}</QuietTag>)}
+            </TagList>
+          </CardFact>
+        ) : null}
 
-        {investsEn ? (
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground"><BilingualText en="Invests" el="Επενδύει" compact /></span>
-            {': '}
-            <BilingualText en={investsEn} el={investsEl} wrap />
-          </p>
+        {stages.length ? (
+          <CardFact en="Stages" el="Στάδια">
+            <TagList label={bilingualInline('Stages', 'Στάδια')}>
+              {stages.map((stage) => (
+                <QuietTag key={stage.en}><BilingualText en={stage.en} el={stage.el} compact wrap /></QuietTag>
+              ))}
+            </TagList>
+          </CardFact>
+        ) : null}
+
+        {checkSize ? (
+          <CardFact en="Cheque" el="Επιταγή">
+            <span className="text-xs font-semibold tabular-nums text-foreground">{checkSize}</span>
+          </CardFact>
+        ) : null}
+
+        {places.length ? (
+          <CardFact en="Place" el="Τόπος">
+            <TagList label={bilingualInline('Place', 'Τόπος')}>
+              {places.map((place) => <QuietTag key={place}>{place}</QuietTag>)}
+            </TagList>
+          </CardFact>
         ) : null}
 
         {record.length ? (
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground"><BilingualText en="So far" el="Μέχρι σήμερα" compact /></span>
-            {': '}
-            <BilingualText en={record.map((item) => item.en).join(' · ')} el={record.map((item) => item.el).join(' · ')} wrap />
-          </p>
+          <CardFact en="So far" el="Μέχρι σήμερα">
+            <p className="text-xs text-muted-foreground">
+              {record.map((item, index) => (
+                <span key={item.en}>
+                  {index > 0 ? ' · ' : null}
+                  <span className="font-medium tabular-nums text-foreground">
+                    <BilingualText en={item.figureEn} el={item.figureEl} compact />
+                  </span>
+                  {' '}
+                  <BilingualText en={item.en} el={item.el} compact />
+                </span>
+              ))}
+            </p>
+          </CardFact>
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {investor.sample ? (
-            <>
-              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button variant="outline" size="sm" disabled>
+            <div className="flex max-w-full flex-col items-start gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
                   <BilingualText en="Profile" el="Προφίλ" compact />
                 </Button>
-              </WithDisabledReason>
-              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button size="sm" disabled>
+                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Button>
-              </WithDisabledReason>
-            </>
+              </div>
+              <span id={sampleReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+                <BilingualText en={sampleReasonEn} el={sampleReasonEl} compact wrap />
+              </span>
+            </div>
           ) : (
             <>
               <Button variant="outline" size="sm" asChild>

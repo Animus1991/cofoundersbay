@@ -4032,6 +4032,22 @@ input[data-search-field][class~="border-input"]:focus-visible {
   text-transform: uppercase;
 }
 
+/* A directory token (a sector, a stage, a place) reads as a tag. The frame
+   is 16% of the ink and the wash is 4%, so the word separates from the
+   sentence around it without a pastel well. The word stays full ink.
+   A span, so the nested-card rule that fades a div's border does not
+   swallow this one. */
+.quiet-tag {
+  display: inline-block;
+  max-width: 100%;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid hsl(var(--foreground) / 0.16);
+  background-color: hsl(var(--foreground) / 0.04);
+  color: hsl(var(--foreground));
+  padding: 1px 6px;
+  overflow-wrap: anywhere;
+}
+
 /* ── Card text ladder ────────────────────────────────────────────────────
    Every card reads like the Endorsements and Connections cards, at the
    Members page's sizes (2026-10-10). One title, the line under it, the

@@ -29,6 +29,26 @@ describe('calm reading', () => {
     expect(CSS).toMatch(/main p\.card-body, main \.card-body p\) \{\s*max-width: 75ch;/);
   });
 
+  it('frames a directory tag with a trace of ink, not a pastel well', () => {
+    const rule = CSS.slice(CSS.indexOf('.quiet-tag'));
+    expect(rule.startsWith('.quiet-tag')).toBe(true);
+    expect(rule.slice(0, 520)).toMatch(/border: 1px solid hsl\(var\(--foreground\) \/ 0\.16\)/);
+    expect(rule.slice(0, 520)).toMatch(/background-color: hsl\(var\(--foreground\) \/ 0\.04\)/);
+    expect(rule.slice(0, 520)).not.toMatch(/--primary|--status/);
+  });
+
+  it('gives every investor card the same caption order', () => {
+    const src = readFileSync('src/app/investors/page.tsx', 'utf8');
+    const body = src.slice(src.indexOf('function InvestorCard'));
+    const captions = ['Sectors', 'Stages', 'Cheque', 'Place', 'So far'];
+    const order = captions.map((word) => body.indexOf(`en="${word}"`));
+    expect(order.every((at) => at > 0)).toBe(true);
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(src.match(/quiet-tag/g)?.length).toBe(1);
+    expect(body).not.toMatch(/<Badge[\s/>]/);
+    expect(body.match(/Sample investor: there is no profile or inbox behind it/g)?.length).toBe(1);
+  });
+
   it('keeps a search bar focus as a hairline, not the brand frame', () => {
     const rule = CSS.slice(CSS.indexOf('input[data-search-field]:focus'));
     expect(rule.startsWith('input[data-search-field]:focus')).toBe(true);
