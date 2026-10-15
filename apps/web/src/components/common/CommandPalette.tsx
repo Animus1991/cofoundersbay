@@ -29,16 +29,18 @@ import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 
 type CommandItem = {
   id: string;
   label: string;
+  labelEl?: string;
   description?: string;
   descriptionEl?: string;
   icon: React.ComponentType<{ className?: string }>;
   shortcut?: string[];
   action: () => void;
-  category: 'navigation' | 'actions' | 'settings' | 'help';
+  category: 'assistant' | 'navigation' | 'actions' | 'settings' | 'help';
 };
 
 type CommandPaletteProps = {
@@ -51,10 +53,27 @@ type CommandPaletteProps = {
 export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
   const router = useRouter();
   const { setTheme } = useTheme();
+  const openAssistant = usePopupChatOptional()?.open;
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const commands: CommandItem[] = useMemo(() => [
+    // First row. An empty palette selects it, so Enter asks from this page.
+    // The panel keeps the page the assistant reads. The full workspace stays
+    // under Navigation, for anyone who wants the page of its own.
+    {
+      id: 'ask-ai',
+      label: 'Ask the assistant',
+      labelEl: 'Ρωτήστε τον βοηθό',
+      description: openAssistant ? 'Opens here, on this page' : 'Opens the assistant page',
+      descriptionEl: openAssistant ? 'Ανοίγει εδώ, σε αυτή τη σελίδα' : 'Ανοίγει τη σελίδα του βοηθού',
+      icon: Sparkles,
+      action: () => {
+        if (openAssistant) openAssistant(undefined, 'ai');
+        else router.push('/ai');
+      },
+      category: 'assistant',
+    },
     // Navigation
     {
       id: 'home',
@@ -118,15 +137,6 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
     },
 
     // Actions
-    {
-      id: 'ask-ai',
-      label: 'Ask AI…',
-      description: 'Start a new assistant conversation',
-      descriptionEl: 'Νέα συνομιλία με τον βοηθό',
-      icon: Sparkles,
-      action: () => router.push('/ai'),
-      category: 'actions',
-    },
     {
       id: 'search',
       label: 'Search profiles',
@@ -213,7 +223,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       action: () => router.push('/help'),
       category: 'help',
     },
-  ], [router, setTheme, onOpenShortcuts]);
+  ], [router, setTheme, onOpenShortcuts, openAssistant]);
 
   // Filter commands based on search
   const filteredCommands = useMemo(() => {
@@ -230,6 +240,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
   // Group commands by category
   const groupedCommands = useMemo(() => {
     const groups: Record<string, CommandItem[]> = {
+      assistant: [],
       navigation: [],
       actions: [],
       settings: [],
@@ -281,11 +292,12 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
     setSelectedIndex(0);
   }, [search]);
 
-  const categoryLabels: Record<string, string> = {
-    navigation: 'Navigation',
-    actions: 'Actions',
-    settings: 'Settings',
-    help: 'Help',
+  const categoryLabels: Record<string, { en: string; el: string }> = {
+    assistant: { en: 'Assistant', el: 'Βοηθός' },
+    navigation: { en: 'Navigation', el: 'Πλοήγηση' },
+    actions: { en: 'Actions', el: 'Ενέργειες' },
+    settings: { en: 'Settings', el: 'Ρυθμίσεις' },
+    help: { en: 'Help', el: 'Βοήθεια' },
   };
 
   let flatIndex = 0;
@@ -332,7 +344,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
               return (
                 <div key={category} className="mb-4 last:mb-0">
                   <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                    {categoryLabels[category]}
+                    <BilingualText en={categoryLabels[category].en} el={categoryLabels[category].el} compact />
                   </div>
                   {items.map((cmd) => {
                     const currentFlatIndex = flatIndex++;
@@ -354,7 +366,9 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
                       >
                         <cmd.icon className="icon-sm flex-shrink-0" />
                         <div className="min-w-0 flex-1 text-left">
-                          <p className="font-medium">{cmd.label}</p>
+                          <p className="font-medium">
+                            {cmd.labelEl ? <BilingualText en={cmd.label} el={cmd.labelEl} compact /> : cmd.label}
+                          </p>
                           {cmd.description && (
                             <p className="text-xs text-muted-foreground">
                               <BilingualText en={cmd.description} el={cmd.descriptionEl} compact />
