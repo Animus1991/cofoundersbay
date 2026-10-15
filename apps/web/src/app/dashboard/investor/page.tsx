@@ -235,8 +235,6 @@ export default function InvestorDashboard() {
           />
         ) : null}
 
-        <WhatsNewPanel audience="investor" />
-
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile icon={Briefcase} label="Deal flow" labelEl="Ροή συμφωνιών" value={summary?.totalDeals ?? '—'} caption="Deals on your board" captionEl="Συμφωνίες στον πίνακά σας" href="/investor/pipeline" />
@@ -379,6 +377,10 @@ export default function InvestorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The active deal and the figures stay the first
+            glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="investor" />
       </div>
     </AppShell>
   );

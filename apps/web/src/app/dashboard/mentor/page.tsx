@@ -339,8 +339,6 @@ export default function MentorDashboard() {
           />
         ) : null}
 
-        <WhatsNewPanel audience="mentor" />
-
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -477,6 +475,10 @@ export default function MentorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The next session and the figures stay the first
+            glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="mentor" />
       </div>
     </AppShell>
   );

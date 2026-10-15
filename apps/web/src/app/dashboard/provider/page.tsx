@@ -264,8 +264,6 @@ export default function ProviderDashboard() {
           />
         ) : null}
 
-        <WhatsNewPanel audience="provider" />
-
         {/* Four figures, each linking to the page that lists what it counts. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           <MetricTile
@@ -470,6 +468,10 @@ export default function ProviderDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The inquiry that waits and the figures stay the
+            first glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="provider" />
       </div>
     </AppShell>
   );
