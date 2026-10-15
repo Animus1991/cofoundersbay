@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Search, TrendingUp, Briefcase,
-  Bookmark, UserPlus, Zap, ArrowUpDown, Users, Eye, BadgeCheck, Telescope,
-  BarChart3, Layers, X,
+  Bookmark, Zap, ArrowUpDown, Users, BadgeCheck, Telescope,
+  CheckCircle2, Layers, X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -19,9 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { FactLine } from '@/components/common/FactLine';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -127,7 +126,9 @@ const TYPE_LABEL: Record<InvestorType, { en: string; el: string }> = Object.from
   TYPE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
 ) as Record<InvestorType, { en: string; el: string }>;
 
-const STAGE_LABEL: Record<string, string> = Object.fromEntries(STAGE_OPTIONS.map((o) => [o.value, o.en]));
+const STAGE_COPY: Record<string, { en: string; el: string }> = Object.fromEntries(
+  STAGE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
+);
 
 function hitToInvestor(hit: SearchHit): Investor {
   return {
@@ -217,18 +218,22 @@ function InvestorCard({
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
-  const place = investor.geographies.length ? investor.geographies.slice(0, 2).join(', ') : investor.location;
-  const facts = [
-    investor.portfolioCount != null && { key: 'portfolio', icon: Briefcase, en: `${investor.portfolioCount} investments`, el: `${investor.portfolioCount} επενδύσεις` },
-    investor.dealsThisYear != null && { key: 'deals', icon: BarChart3, en: `${investor.dealsThisYear} deals this year`, el: `${investor.dealsThisYear} συμφωνίες φέτος` },
-    investor.viewCount != null && { key: 'views', icon: Eye, en: `${investor.viewCount.toLocaleString('en-GB')} views`, el: `${investor.viewCount.toLocaleString('el-GR')} προβολές` },
-  ].filter(Boolean) as { key: string; icon: typeof Briefcase; en: string; el: string }[];
+  const place = investor.geographies.length ? investor.geographies.join(', ') : investor.location;
+  const stages = investor.stages.map((stage) => STAGE_COPY[stage] ?? { en: stage, el: stage });
+  const investsEn = [...stages.map((stage) => stage.en), checkSize, place].filter(Boolean).join(' · ');
+  const investsEl = [...stages.map((stage) => stage.el), checkSize, place].filter(Boolean).join(' · ');
+  const record = [
+    investor.portfolioCount != null && { en: `${investor.portfolioCount} investments`, el: `${investor.portfolioCount} επενδύσεις` },
+    investor.dealsThisYear != null && { en: `${investor.dealsThisYear} deals this year`, el: `${investor.dealsThisYear} συμφωνίες φέτος` },
+    investor.viewCount != null && { en: `${investor.viewCount.toLocaleString('en-GB')} views`, el: `${investor.viewCount.toLocaleString('el-GR')} προβολές` },
+  ].filter(Boolean) as { en: string; el: string }[];
 
-  // The Endorsements card: avatar, name and the line under it, the save
-  // control at the right; the thesis, the facts and the foot start on the
-  // avatar's edge, and the thesis sits a notch under the name and byline.
+  // The program card: mark and name, the line under it, the state as a
+  // word, then the sentence, one facts line, and each dense list under its
+  // own caption. The actions sit on their own row, under a hairline of space,
+  // so a long thesis does not share a line with the buttons.
   return (
-    <Card className="group transition-all hover:border-primary/30">
+    <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -250,8 +255,6 @@ function InvestorCard({
               )}
             </span>
           )}
-          /* One text run, never cut: the investor type, then firm and role
-             (as separate flex items they broke into ragged columns). */
           subtitle={type || investor.firmName || investor.firmRole || investor.headline ? (
             <>
               {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
@@ -262,9 +265,10 @@ function InvestorCard({
             </>
           ) : undefined}
           meta={investor.isActivelyScouting ? (
-            <Badge className={cn('mt-1 border text-2xs', STATUS.success.chip)}>
+            <span className="inline-flex items-center gap-1 text-xs text-primary-accessible">
+              <CheckCircle2 className="icon-sm" aria-hidden="true" />
               <BilingualText en="Actively scouting" el="Αναζητά ενεργά" compact />
-            </Badge>
+            </span>
           ) : undefined}
           asideStays
           aside={(
@@ -287,65 +291,57 @@ function InvestorCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
         )}
 
-        {/* What they invest in, then in which sectors: two fact lines,
-            dot-separated, where stages, cheque, place and sectors were up
-            to eight tinted pills. */}
-        <div className="space-y-1">
-          <FactLine
-            label={bilingualInline('Stages, cheque size and place', 'Στάδια, εύρος επένδυσης και τόπος')}
-            items={[
-              ...investor.stages.map((s) => STAGE_LABEL[s] ?? s),
-              checkSize,
-              place,
-            ]}
-          />
-          <FactLine
-            label={bilingualInline('Sectors', 'Τομείς')}
-            items={investor.industries}
-          />
-        </div>
+        <FactLine
+          label={bilingualInline('Sectors', 'Τομείς')}
+          items={investor.industries}
+        />
 
-        <CardFoot
-          meta={facts.length ? (
-            <FactLine items={facts.map(({ key, en, el }) => <BilingualText key={key} en={en} el={el} compact />)} />
-          ) : undefined}
-        >
+        {investsEn ? (
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground"><BilingualText en="Invests" el="Επενδύει" compact /></span>
+            {': '}
+            <BilingualText en={investsEn} el={investsEl} wrap />
+          </p>
+        ) : null}
+
+        {record.length ? (
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground"><BilingualText en="So far" el="Μέχρι σήμερα" compact /></span>
+            {': '}
+            <BilingualText en={record.map((item) => item.en).join(' · ')} el={record.map((item) => item.el).join(' · ')} wrap />
+          </p>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           {investor.sample ? (
             <>
               <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled>
-                  <Eye className="icon-sm" aria-hidden="true" />
+                <Button variant="outline" size="sm" disabled>
                   <BilingualText en="Profile" el="Προφίλ" compact />
                 </Button>
               </WithDisabledReason>
               <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button size="sm" className="h-7 gap-1 text-xs" disabled>
-                  <UserPlus className="icon-sm" aria-hidden="true" />
+                <Button size="sm" disabled>
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Button>
               </WithDisabledReason>
             </>
           ) : (
             <>
-              <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link href={`/profiles/${investor.userId}`}>
-                  <Eye className="icon-sm" aria-hidden="true" />
                   <BilingualText en="Profile" el="Προφίλ" compact />
                 </Link>
               </Button>
-              {/* A warm path first: who you know who knows them (the
-                  intermediary decides whether to forward). The direct
-                  message stays beside it, named for what it is. */}
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="h-7 gap-1 text-xs" />
-              <Button size="sm" className="h-7 gap-1 text-xs" asChild>
+              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
+              <Button size="sm" asChild>
                 <Link href={`/messages?to=${investor.userId}`}>
-                  <UserPlus className="icon-sm" aria-hidden="true" />
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Link>
               </Button>
             </>
           )}
-        </CardFoot>
+        </div>
       </CardContent>
     </Card>
   );
