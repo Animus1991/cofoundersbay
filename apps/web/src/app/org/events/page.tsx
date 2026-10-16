@@ -36,7 +36,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
@@ -198,7 +198,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="shrink-0">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>

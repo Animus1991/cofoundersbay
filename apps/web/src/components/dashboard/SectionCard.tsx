@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 
 /**
  * A home-screen section: a bilingual title, at most one way out to the page
@@ -69,7 +70,7 @@ export type QuickLink = { href: string; icon: ElementType; label: string; labelE
  * outlined buttons: each row is the height of a text line, carries its own
  * icon, and reads as navigation to a screen reader.
  */
-export function QuickLinks({ links, label, title = 'Go to', titleEl = 'Μετάβαση' }: { links: QuickLink[]; label: string; title?: string; titleEl?: string }) {
+export function QuickLinks({ links, label, labelEl, title = 'Go to', titleEl = 'Μετάβαση' }: { links: QuickLink[]; label: string; /** The landmark's name in Greek. */ labelEl?: string; title?: string; titleEl?: string }) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -81,7 +82,7 @@ export function QuickLinks({ links, label, title = 'Go to', titleEl = 'Μετά�
           own horizontal padding matches .card-comfortable, so the label still
           starts on the same inset as the title above it. */}
       <CardContent className="px-0 py-2">
-        <nav aria-label={label} className="flex flex-col">
+        <nav aria-label={labelEl ? bilingualAria(label, labelEl) : label} className="flex flex-col">
           {links.map(({ href, icon: Icon, label: text, labelEl }) => (
             <Link
               key={href}

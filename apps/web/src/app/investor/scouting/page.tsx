@@ -390,10 +390,10 @@ export default function InvestorScoutingPage() {
       actions={
         <>
           <div className="flex items-center gap-2">
-            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
+            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}>
               <List className="icon-sm" />
             </Button>
-            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'}>
+            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}>
               <LayoutGrid className="icon-sm" />
             </Button>
           </div>

@@ -407,6 +407,7 @@ export default function ProviderDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Provider pages"
+              labelEl="Σελίδες παρόχου"
               links={[
                 { href: '/provider/services', icon: Store, label: 'Services', labelEl: 'Υπηρεσίες' },
                 { href: '/provider/inquiries', icon: MessageSquare, label: 'Inquiries', labelEl: 'Αιτήματα' },

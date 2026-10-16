@@ -28,6 +28,7 @@ import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { demoCover } from '@/lib/demo/photos';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { durationEl } from '@/lib/i18n/units';
 
 interface Resource {
   id: string;
@@ -263,7 +264,7 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
             <FactLine
               items={[
                 resource.author ? <span key="author" className="font-medium text-foreground">{resource.author}</span> : null,
-                resource.duration ? <span key="duration">{resource.duration}</span> : null,
+                resource.duration ? <BilingualText key="duration" en={resource.duration} el={durationEl(resource.duration)} compact /> : null,
                 resource.completedBy ? (
                   <BilingualText
                     key="completed"
@@ -313,7 +314,7 @@ function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (c
               items={[
                 <BilingualText key="level" en={learningEn(level.labelKey)} el={learningEl(level.labelKey)} compact />,
                 <BilingualText key="modules" en={learningEn('modules').replace('{n}', n)} el={learningEl('modules').replace('{n}', n)} compact />,
-                <span key="duration">{path.duration}</span>,
+                <BilingualText key="duration" en={path.duration} el={durationEl(path.duration)} compact />,
               ]}
             />
           )}

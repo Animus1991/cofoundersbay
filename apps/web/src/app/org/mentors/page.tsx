@@ -129,7 +129,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon">
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>

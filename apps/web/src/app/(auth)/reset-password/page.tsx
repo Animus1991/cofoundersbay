@@ -10,8 +10,18 @@ import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
 import { resetPassword } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { MainLandmark } from '@/components/layout/AppShell';
+
+/** Every message this form can show, in both languages. */
+const RESET_ERRORS = {
+  invalid: { en: 'Reset link is invalid or missing. Please request a new one.', el: 'Ο σύνδεσμος επαναφοράς λείπει ή δεν ισχύει. Ζητήστε νέο.' },
+  missing: { en: 'Reset link is missing. Please request a new one.', el: 'Ο σύνδεσμος επαναφοράς λείπει. Ζητήστε νέο.' },
+  short: { en: 'Password must be at least 8 characters.', el: 'Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.' },
+  mismatch: { en: 'Passwords do not match.', el: 'Οι κωδικοί δεν ταιριάζουν.' },
+  expired: { en: 'The reset link is invalid or has expired. Please request a new one.', el: 'Ο σύνδεσμος επαναφοράς δεν ισχύει ή έληξε. Ζητήστε νέο.' },
+} as const;
+type ResetError = { key?: keyof typeof RESET_ERRORS; en: string; el?: string };
 
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
@@ -23,40 +33,41 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<ResetError | null>(null);
+  const fail = (key: keyof typeof RESET_ERRORS) => setError({ key, ...RESET_ERRORS[key] });
 
   useEffect(() => {
-    if (!token) setError('Reset link is invalid or missing. Please request a new one.');
+    if (!token) fail('invalid');
   }, [token]);
 
-  function getStrength(pw: string): { level: number; label: string; color: string } {
+  function getStrength(pw: string): { level: number; label: { en: string; el: string }; color: string } {
     let score = 0;
     if (pw.length >= 8) score++;
     if (pw.length >= 12) score++;
     if (/[A-Z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^a-zA-Z0-9]/.test(pw)) score++;
-    if (score <= 1) return { level: score, label: 'Weak', color: 'bg-status-danger-mark' };
-    if (score <= 3) return { level: score, label: 'Fair', color: 'bg-status-warning-mark' };
-    return { level: score, label: 'Strong', color: 'bg-status-success-mark' };
+    if (score <= 1) return { level: score, label: { en: 'Weak', el: 'Αδύναμος' }, color: 'bg-status-danger-mark' };
+    if (score <= 3) return { level: score, label: { en: 'Fair', el: 'Μέτριος' }, color: 'bg-status-warning-mark' };
+    return { level: score, label: { en: 'Strong', el: 'Ισχυρός' }, color: 'bg-status-success-mark' };
   }
 
   const strength = getStrength(password);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError('');
+    setError(null);
 
     if (!token) {
-      setError('Reset link is missing. Please request a new one.');
+      fail('missing');
       return;
     }
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      fail('short');
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      fail('mismatch');
       return;
     }
 
@@ -66,7 +77,9 @@ export default function ResetPasswordPage() {
       setDone(true);
       setTimeout(() => router.replace('/login'), 3000);
     } catch (err: unknown) {
-      setError(errorMessage(err, 'The reset link is invalid or has expired. Please request a new one.'));
+      // The server's own words when it gave some; ours, in both languages, otherwise.
+      const message = errorMessage(err, RESET_ERRORS.expired.en);
+      setError(message === RESET_ERRORS.expired.en ? { key: 'expired', ...RESET_ERRORS.expired } : { en: message });
     } finally {
       setLoading(false);
     }
@@ -106,7 +119,7 @@ export default function ResetPasswordPage() {
             {error && (
               <div id="reset-error" role="alert" className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
-                <span>{error}</span>
+                <span>{error.el ? <BilingualText en={error.en} el={error.el} wrap /> : error.en}</span>
               </div>
             )}
 
@@ -128,8 +141,8 @@ export default function ResetPasswordPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
-                      aria-invalid={error === 'Password must be at least 8 characters.' || undefined}
-                      aria-describedby={error === 'Password must be at least 8 characters.' ? 'reset-error' : undefined}
+                      aria-invalid={error?.key === 'short' || undefined}
+                      aria-describedby={error?.key === 'short' ? 'reset-error' : undefined}
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={8}
@@ -142,9 +155,9 @@ export default function ResetPasswordPage() {
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? bilingualAria('Hide password', 'Απόκρυψη κωδικού') : bilingualAria('Show password', 'Εμφάνιση κωδικού')}
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {showPassword ? <BilingualText en="Hide" el="Απόκρυψη" compact /> : <BilingualText en="Show" el="Εμφάνιση" compact />}
                     </button>
                   </div>
                   {password.length > 0 && (
@@ -160,7 +173,8 @@ export default function ResetPasswordPage() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Strength: <span className="font-medium text-foreground">{strength.label}</span>
+                        <BilingualText en="Strength:" el="Ισχύς:" compact />{' '}
+                        <span className="font-medium text-foreground"><BilingualText en={strength.label.en} el={strength.label.el} compact /></span>
                       </p>
                     </div>
                   )}
@@ -172,8 +186,8 @@ export default function ResetPasswordPage() {
                     id="confirm"
                     type={showPassword ? 'text' : 'password'}
                     value={confirm}
-                    aria-invalid={Boolean(confirm && confirm !== password) || error === 'Passwords do not match.'}
-                    aria-describedby={confirm && confirm !== password ? 'confirm-mismatch' : error === 'Passwords do not match.' ? 'reset-error' : undefined}
+                    aria-invalid={Boolean(confirm && confirm !== password) || error?.key === 'mismatch'}
+                    aria-describedby={confirm && confirm !== password ? 'confirm-mismatch' : error?.key === 'mismatch' ? 'reset-error' : undefined}
                     onChange={(e) => setConfirm(e.target.value)}
                     required
                     autoComplete="new-password"
@@ -193,7 +207,7 @@ export default function ResetPasswordPage() {
                 >
                   {loading ? (
                     <><Loader2 className="mr-2 icon-sm animate-spin" /><BilingualText en="Updating…" el="Ενημέρωση…" compact /></>
-                  ) : 'Reset password'}
+                  ) : <BilingualText en="Reset password" el="Επαναφορά κωδικού" compact />}
                 </Button>
               </>
             )}

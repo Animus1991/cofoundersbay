@@ -3,6 +3,7 @@ import { LayoutDashboard, ShieldAlert, UserCog } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 
 export const metadata = {
   title: 'No access to this page',
@@ -40,13 +41,13 @@ export default function UnauthorizedPage() {
         <Button asChild>
           <Link href="/dashboard" className="gap-2">
             <LayoutDashboard className="icon-sm" aria-hidden="true" />
-            Go to your dashboard
+            <BilingualText en="Go to your dashboard" el="Στον πίνακα ελέγχου" compact />
           </Link>
         </Button>
         <Button variant="outline" asChild>
           <Link href="/settings" className="gap-2">
             <UserCog className="icon-sm" aria-hidden="true" />
-            Account and roles
+            <BilingualText en="Account and roles" el="Λογαριασμός και ρόλοι" compact />
           </Link>
         </Button>
       </div>

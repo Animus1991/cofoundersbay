@@ -54,7 +54,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 
 type Program = {
@@ -158,7 +158,7 @@ function ProgramCard({
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>

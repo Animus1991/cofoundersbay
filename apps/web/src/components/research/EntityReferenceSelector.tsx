@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils';
 import { searchProfiles } from '@/lib/api';
 import { qk } from '@/lib/query-keys';
+import { bilingualAria } from '@/lib/i18n/format';
 
 export type EntityType = 'user' | 'opportunity' | 'group' | 'project' | 'mentor';
 
@@ -104,7 +105,7 @@ export function EntityReferenceSelector({
           <DialogTitle>
             {selectedType ? (
               <div className="flex items-center gap-2">
-                <Button aria-label="Back" variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
+                <Button aria-label={bilingualAria('Back', 'Πίσω')} variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
                   <X className="icon-sm" />
                 </Button>
                 Add {ENTITY_TYPES.find((t) => t.type === selectedType)?.label} Reference

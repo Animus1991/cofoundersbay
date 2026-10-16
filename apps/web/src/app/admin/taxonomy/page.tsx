@@ -101,7 +101,7 @@ function SkillRow({
             <span className="tabular-nums" title={bilingualInline('Profiles using it', 'Προφίλ που τη χρησιμοποιούν')}>{skill.count}</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>

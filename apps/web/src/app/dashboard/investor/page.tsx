@@ -333,6 +333,7 @@ export default function InvestorDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Investor pages"
+              labelEl="Σελίδες επενδυτή"
               links={[
                 { href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' },
                 { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },

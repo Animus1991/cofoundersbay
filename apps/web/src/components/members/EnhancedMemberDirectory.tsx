@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 
@@ -149,14 +149,14 @@ export function EnhancedMemberDirectory() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button aria-label="Grid view"
+          <Button aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')}
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="icon"
             onClick={() => setViewMode('grid')}
           >
             <Grid className="icon-sm" />
           </Button>
-          <Button aria-label="List view"
+          <Button aria-label={bilingualAria('List view', 'Προβολή λίστας')}
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="icon"
             onClick={() => setViewMode('list')}

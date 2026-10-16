@@ -864,7 +864,7 @@ export default function SettingsPage() {
                       onClick={startCheckout}
                     >
                       {working === 'checkout' ? <Loader2 className="icon-sm animate-spin" /> : <Crown className="icon-sm" />}
-                      {isPremium ? 'Premium active' : 'Upgrade'}
+                      {isPremium ? <BilingualText en="Premium active" el="Το Premium είναι ενεργό" compact /> : <BilingualText en="Upgrade" el="Αναβάθμιση" compact />}
                     </Button>
                     {isPremium && (
                       <Button
@@ -1037,7 +1037,7 @@ export default function SettingsPage() {
                         // name: a static "Show password" would announce the
                         // wrong thing half the time. `aria-pressed` carries the
                         // state so the control reads as a toggle, not a command.
-                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                        aria-label={showPw ? bilingualAria('Hide password', 'Απόκρυψη κωδικού') : bilingualAria('Show password', 'Εμφάνιση κωδικού')}
                         aria-pressed={showPw}
                         className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
                       >
@@ -1068,7 +1068,7 @@ export default function SettingsPage() {
                     <div className="sm:col-span-2">
                     <Button type="submit" disabled={pwWorking} className="gap-2">
                       {pwWorking ? <Loader2 className="icon-sm animate-spin" /> : <KeyRound className="icon-sm" />}
-                      Update password
+                      <BilingualText en="Update password" el="Ενημέρωση κωδικού" compact />
                     </Button>
                     </div>
                   </form>
@@ -1142,7 +1142,7 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <Toggle
-                          label={`${category.titleEn} in-app notifications`}
+                          label={bilingualAria(`${category.titleEn} in-app notifications`, `${category.titleEl}: ειδοποιήσεις στην εφαρμογή`)}
                           checked={categoryChannelOn(notificationPrefs, category, 'inApp')}
                           onChange={(v) => setInApp(category, v)}
                         />
@@ -1161,7 +1161,7 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <Toggle
-                      label="Weekly email digest"
+                      label={bilingualAria('Weekly email digest', 'Εβδομαδιαία email σύνοψη')}
                       checked={digestOn}
                       onChange={(v) => saveDigest.mutate(v)}
                     />

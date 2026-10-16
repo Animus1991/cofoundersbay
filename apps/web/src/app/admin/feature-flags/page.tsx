@@ -205,7 +205,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>

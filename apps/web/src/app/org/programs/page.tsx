@@ -34,7 +34,7 @@ import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 /**
@@ -122,7 +122,7 @@ function ProgramCard({ program }: { program: Program }) {
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="More options" variant="ghost" size="icon">
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>

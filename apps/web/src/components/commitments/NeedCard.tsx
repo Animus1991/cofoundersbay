@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn, initialsOf } from '@/lib/utils';
 import { NonGuaranteeNote } from './NonGuaranteeNote';
 import { OutcomeChip } from './OutcomeChip';
@@ -100,12 +101,14 @@ export function NeedCard({
   headingLevel?: 1 | 2 | 3;
 }) {
   const kind = kindCopy(card.kind);
+  // The unit after the hours follows the reader: «40 ώρ./εβδ.», not "40 h/week".
+  const perWeek = useLanguagePreference().primary === 'el' ? CMT.per_week.el : CMT.per_week.en;
   const Heading = headingLevel === 1 ? 'h1' : headingLevel === 2 ? 'h2' : 'h3';
   const evidence = (card.evidence ?? []).map(evidenceCopy).filter((pair): pair is { en: string; el: string } => Boolean(pair));
   const showsMoney = Boolean(card.offer.equity) || card.kind === 'investor_intro';
   const offerLine = [
     card.offer.equity ? card.offer.equity : null,
-    card.offer.hoursPerWeek ? `${card.offer.hoursPerWeek} ${CMT.per_week.en}` : null,
+    card.offer.hoursPerWeek ? `${card.offer.hoursPerWeek} ${perWeek}` : null,
   ].filter(Boolean);
   const version = card.version && card.version > 1 ? card.version : null;
   const owner = showOwner ? card.owner : undefined;

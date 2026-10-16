@@ -29,7 +29,8 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
-import { formatCompactMoney } from '@/lib/i18n/format';
+import { formatCompactMoney, bilingualAria } from '@/lib/i18n/format';
+import { durationEl } from '@/lib/i18n/units';
 
 /** Compact money, in the board's currency rather than a hard-coded dollar. */
 function money(cents: number | null | undefined, currency = 'EUR'): string {
@@ -238,7 +239,7 @@ export default function InvestorAnalyticsPage() {
   return (
     <AppShell showHelp
       actions={
-        <div role="group" aria-label="Analytics window" className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
+        <div role="group" aria-label={bilingualAria('Analytics window', 'Χρονικό διάστημα αναλυτικών')} className="inline-flex items-center gap-0.5 rounded-xl border border-border bg-muted/40 p-0.5">
           {([
             ['3m', '3 months', '3 μήνες'],
             ['6m', '6 months', '6 μήνες'],
@@ -263,7 +264,7 @@ export default function InvestorAnalyticsPage() {
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
           {kpis.map((k) => (
-            <MetricTile key={k.label} icon={k.icon} label={k.label} labelEl={k.labelEl} value={k.value} caption={k.caption} captionEl={k.captionEl} />
+            <MetricTile key={k.label} icon={k.icon} label={k.label} labelEl={k.labelEl} value={durationEl(k.value) ? <BilingualText en={k.value} el={durationEl(k.value)} compact /> : k.value} caption={k.caption} captionEl={k.captionEl} />
           ))}
         </div>
 

@@ -43,7 +43,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 type AIPreferences = {
   preferredModel: string;
@@ -82,10 +82,20 @@ const DEFAULT_PREFS: AIPreferences = {
 };
 
 const RESPONSE_STYLES = [
-  { value: 'concise', label: 'Concise', desc: 'Short, to-the-point answers' },
-  { value: 'detailed', label: 'Detailed', desc: 'Comprehensive explanations' },
-  { value: 'casual', label: 'Casual', desc: 'Friendly, conversational tone' },
-  { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
+  { value: 'concise', label: 'Concise', labelEl: 'Σύντομο', desc: 'Short, to-the-point answers', descEl: 'Σύντομες, ουσιαστικές απαντήσεις' },
+  { value: 'detailed', label: 'Detailed', labelEl: 'Αναλυτικό', desc: 'Comprehensive explanations', descEl: 'Πλήρεις εξηγήσεις' },
+  { value: 'casual', label: 'Casual', labelEl: 'Φιλικό', desc: 'Friendly, conversational tone', descEl: 'Φιλικός τόνος συζήτησης' },
+  { value: 'formal', label: 'Formal', labelEl: 'Επίσημο', desc: 'Professional, business-like', descEl: 'Επαγγελματικός τόνος' },
+];
+
+/** The creativity steps, with the words each one reads as. */
+const TEMPERATURES = [
+  { value: '0.1', en: 'Very precise', el: 'Πολύ ακριβές' },
+  { value: '0.3', en: 'Focused', el: 'Εστιασμένο' },
+  { value: '0.5', en: 'Balanced', el: 'Ισορροπημένο' },
+  { value: '0.7', en: 'Creative (default)', el: 'Δημιουργικό (προεπιλογή)' },
+  { value: '0.9', en: 'Very creative', el: 'Πολύ δημιουργικό' },
+  { value: '1.0', en: 'Maximum creativity', el: 'Μέγιστη δημιουργικότητα' },
 ];
 
 /** The product's switch, with this page's prop names. See the note on the same
@@ -418,16 +428,15 @@ export default function AISettingsPage() {
                     value={String(prefs.temperature)}
                     onValueChange={(v) => updatePref('temperature', parseFloat(v))}
                   >
-                    <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full">
+                    <SelectTrigger id="prefs" aria-label={bilingualAria('Creativity (temperature)', 'Δημιουργικότητα (θερμοκρασία)')} className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0.1">0.1 - Very Precise</SelectItem>
-                      <SelectItem value="0.3">0.3 - Focused</SelectItem>
-                      <SelectItem value="0.5">0.5 - Balanced</SelectItem>
-                      <SelectItem value="0.7">0.7 - Creative (Default)</SelectItem>
-                      <SelectItem value="0.9">0.9 - Very Creative</SelectItem>
-                      <SelectItem value="1.0">1.0 - Maximum Creativity</SelectItem>
+                      {TEMPERATURES.map((step) => (
+                        <SelectItem key={step.value} value={step.value}>
+                          {step.value} · <BilingualText en={step.en} el={step.el} compact />
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
@@ -481,8 +490,8 @@ export default function AISettingsPage() {
                         : 'border-border hover:border-primary/50'
                     )}
                   >
-                    <span className="text-sm font-medium">{style.label}</span>
-                    <span className="card-body text-muted-foreground">{style.desc}</span>
+                    <span className="text-sm font-medium"><BilingualText en={style.label} el={style.labelEl} compact /></span>
+                    <span className="card-body text-muted-foreground"><BilingualText en={style.desc} el={style.descEl} wrap /></span>
                   </button>
                 ))}
               </div>
@@ -535,18 +544,18 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-1">
               {[
-                { key: 'enableStreaming', label: 'Streaming Responses', desc: 'See AI responses as they are generated' },
-                { key: 'enableSuggestions', label: 'Suggested Questions', desc: 'Show quick action suggestions in chat' },
-                { key: 'enableContextMemory', label: 'Context Memory', desc: 'AI remembers context from earlier in the conversation' },
-                { key: 'enableAutoSave', label: 'Auto-Save Conversations', desc: 'Automatically save your chat history' },
-              ].map(({ key, label, desc }) => (
+                { key: 'enableStreaming', label: 'Streaming responses', labelEl: 'Απαντήσεις σε ροή', desc: 'See AI responses as they are generated', descEl: 'Βλέπετε την απάντηση καθώς γράφεται' },
+                { key: 'enableSuggestions', label: 'Suggested questions', labelEl: 'Προτεινόμενες ερωτήσεις', desc: 'Show quick action suggestions in chat', descEl: 'Προτάσεις γρήγορων ενεργειών στη συζήτηση' },
+                { key: 'enableContextMemory', label: 'Context memory', labelEl: 'Μνήμη συμφραζομένων', desc: 'AI remembers context from earlier in the conversation', descEl: 'Ο βοηθός θυμάται όσα ειπώθηκαν νωρίτερα στη συζήτηση' },
+                { key: 'enableAutoSave', label: 'Auto-save conversations', labelEl: 'Αυτόματη αποθήκευση συνομιλιών', desc: 'Automatically save your chat history', descEl: 'Το ιστορικό συζητήσεων αποθηκεύεται αυτόματα' },
+              ].map(({ key, label, labelEl, desc, descEl }) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="card-body text-muted-foreground">{desc}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={label} el={labelEl} compact /></p>
+                    <p className="card-body text-muted-foreground"><BilingualText en={desc} el={descEl} wrap /></p>
                   </div>
                   <Toggle
-                    label={label}
+                    label={bilingualAria(label, labelEl)}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />
@@ -568,17 +577,17 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-1">
               {[
-                { key: 'saveConversations', label: 'Save Conversations', desc: 'Store your AI chat history for future reference' },
-                { key: 'anonymizeData', label: 'Anonymize Data', desc: 'Remove personally identifiable information from saved data' },
-                { key: 'shareForTraining', label: 'Help Improve AI', desc: 'Allow anonymized conversations to improve the AI (optional)' },
-              ].map(({ key, label, desc }) => (
+                { key: 'saveConversations', label: 'Save conversations', labelEl: 'Αποθήκευση συνομιλιών', desc: 'Store your AI chat history for future reference', descEl: 'Κρατά το ιστορικό σας για να το βρίσκετε αργότερα' },
+                { key: 'anonymizeData', label: 'Anonymize data', labelEl: 'Ανωνυμοποίηση δεδομένων', desc: 'Remove personally identifiable information from saved data', descEl: 'Αφαιρεί τα στοιχεία ταυτότητας από τα αποθηκευμένα δεδομένα' },
+                { key: 'shareForTraining', label: 'Help improve the AI', labelEl: 'Βοηθήστε να βελτιωθεί το AI', desc: 'Allow anonymized conversations to improve the AI (optional)', descEl: 'Επιτρέπει να χρησιμοποιούνται ανώνυμες συνομιλίες για τη βελτίωση του AI (προαιρετικό)' },
+              ].map(({ key, label, labelEl, desc, descEl }) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="card-body text-muted-foreground">{desc}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={label} el={labelEl} compact /></p>
+                    <p className="card-body text-muted-foreground"><BilingualText en={desc} el={descEl} wrap /></p>
                   </div>
                   <Toggle
-                    label={label}
+                    label={bilingualAria(label, labelEl)}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />

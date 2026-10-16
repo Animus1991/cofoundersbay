@@ -73,7 +73,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 // Types
@@ -497,7 +497,7 @@ export default function DataRoomPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="documents"><BilingualText en="Documents" el="Έγγραφα" compact /></TabsTrigger>
-          <TabsTrigger value="investors">Investors ({investors.length})</TabsTrigger>
+          <TabsTrigger value="investors"><BilingualText en={`Investors (${investors.length})`} el={`Επενδυτές (${investors.length})`} compact /></TabsTrigger>
           <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
           <TabsTrigger value="settings"><BilingualText en="Settings" el="Ρυθμίσεις" compact /></TabsTrigger>
         </TabsList>
@@ -527,14 +527,14 @@ export default function DataRoomPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button aria-label="List view" aria-pressed={viewMode === 'list'}
+                  <Button aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
                   >
                     <List className="icon-sm" />
                   </Button>
-                  <Button aria-label="Grid view" aria-pressed={viewMode === 'grid'}
+                  <Button aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
@@ -676,7 +676,7 @@ export default function DataRoomPage() {
                             aside={(
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button aria-label="More options"
+                                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
                                     variant="ghost"
                                     size="icon"
                                     // focus-visible too: a keyboard user tabbing onto an

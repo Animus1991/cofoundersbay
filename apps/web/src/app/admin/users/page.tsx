@@ -48,7 +48,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the admin row.
@@ -167,7 +167,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
+          <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
             <MoreVertical className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>

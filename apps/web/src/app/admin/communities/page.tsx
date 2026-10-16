@@ -164,7 +164,7 @@ function CommunityCard({
               </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
                   <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>

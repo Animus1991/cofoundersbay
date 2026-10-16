@@ -57,7 +57,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
@@ -156,7 +156,7 @@ function ProgramCard({
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="More options" variant="ghost" size="icon">
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>

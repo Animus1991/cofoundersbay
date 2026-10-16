@@ -430,6 +430,7 @@ export default function MentorDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Mentor pages"
+              labelEl="Σελίδες μέντορα"
               links={[
                 { href: '/mentor/availability', icon: Clock, label: 'Set availability', labelEl: 'Διαθεσιμότητα' },
                 { href: '/mentor/requests', icon: UserCheck, label: 'Mentorship requests', labelEl: 'Αιτήματα' },

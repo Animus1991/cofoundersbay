@@ -97,7 +97,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; labelEl: string; color: string }> = {
   spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -308,7 +308,7 @@ function ReportCard({
               </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
                   <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
@@ -419,7 +419,7 @@ function UserRow({
             </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
                   <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>

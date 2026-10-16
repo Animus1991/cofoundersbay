@@ -66,7 +66,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 type OrgMember = {
   id: string;
@@ -558,7 +558,7 @@ export default function OrgAdminPage() {
       <div className="min-w-0 max-w-full space-y-6">
         {/* Header */}
         <div className="flex min-w-0 flex-wrap items-center gap-4">
-          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
+          <Button aria-label={bilingualAria('Go back', 'Επιστροφή')} variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -670,7 +670,7 @@ export default function OrgAdminPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button aria-label="More options" variant="ghost" size="icon">
+                            <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
                               <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>

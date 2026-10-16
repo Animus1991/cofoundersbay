@@ -217,7 +217,7 @@ export function SideNav() {
               // Collapsed, the logo is the mark alone - no wordmark to name the
               // link - so every page with a collapsed sidebar (and the research
               // canvas, which always collapses it) had a nameless home link.
-              aria-label="CoFounderBay home"
+              aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}
               className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity"
             >
               <LogoIcon size={35} />

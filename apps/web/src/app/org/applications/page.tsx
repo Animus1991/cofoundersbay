@@ -52,7 +52,7 @@ import { choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageLi
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
 
@@ -192,7 +192,7 @@ function ApplicationCard({
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button aria-label="More options" variant="ghost" size="icon">
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
                     <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>

@@ -558,7 +558,11 @@ export default function GroupsPage() {
               <div className="flex items-center gap-2">
                 <Sparkles className="icon-sm text-muted-foreground" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
+                  {activeTab === 'my-groups'
+                    ? <BilingualText en="Your communities" el="Οι κοινότητές σας" compact />
+                    : sort === 'trending'
+                      ? <BilingualText en="Trending now" el="Σε άνοδο τώρα" compact />
+                      : <BilingualText en="Top communities" el="Κορυφαίες κοινότητες" compact />}
                 </h2>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -573,7 +577,9 @@ export default function GroupsPage() {
           {!discoverQuery.isLoading && restGroups.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {activeTab === 'my-groups' ? 'More Communities' : 'All Communities'}
+                {activeTab === 'my-groups'
+                  ? <BilingualText en="More communities" el="Περισσότερες κοινότητες" compact />
+                  : <BilingualText en="All communities" el="Όλες οι κοινότητες" compact />}
               </h2>
               <GroupsGrid groups={restGroups} onToggle={handleToggle} loadingId={loadingId} offset={topGroups.length} />
             </div>

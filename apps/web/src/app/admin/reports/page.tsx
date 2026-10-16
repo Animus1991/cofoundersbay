@@ -48,7 +48,7 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the moderation queue row.
@@ -190,7 +190,7 @@ function ReportCard({
               </Badge>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
                   <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
@@ -581,11 +581,11 @@ export default function AdminReportsPage() {
         {/* Tabs. Dismissed reports were reachable only under All. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex-wrap">
-            <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
-            <TabsTrigger value="reviewing">In Review ({statusCounts.reviewing})</TabsTrigger>
-            <TabsTrigger value="resolved">Resolved ({statusCounts.resolved})</TabsTrigger>
-            <TabsTrigger value="dismissed">Dismissed ({statusCounts.dismissed})</TabsTrigger>
-            <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en={`Pending (${statusCounts.pending})`} el={`Σε αναμονή (${statusCounts.pending})`} compact /></TabsTrigger>
+            <TabsTrigger value="reviewing"><BilingualText en={`In review (${statusCounts.reviewing})`} el={`Υπό έλεγχο (${statusCounts.reviewing})`} compact /></TabsTrigger>
+            <TabsTrigger value="resolved"><BilingualText en={`Resolved (${statusCounts.resolved})`} el={`Επιλυμένες (${statusCounts.resolved})`} compact /></TabsTrigger>
+            <TabsTrigger value="dismissed"><BilingualText en={`Dismissed (${statusCounts.dismissed})`} el={`Απορριφθείσες (${statusCounts.dismissed})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en={`All (${statusCounts.all})`} el={`Όλες (${statusCounts.all})`} compact /></TabsTrigger>
           </TabsList>
         </Tabs>
 

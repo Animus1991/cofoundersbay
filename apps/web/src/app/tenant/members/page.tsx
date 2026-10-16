@@ -59,7 +59,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { statusEl } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
@@ -145,7 +145,7 @@ function MemberCard({ member, onRole, onRemove }: { member: Member } & MemberAct
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="shrink-0">
           <MoreVertical className="icon-sm" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>

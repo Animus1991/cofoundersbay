@@ -167,7 +167,8 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
         <FactLine
           className="mt-1"
           items={[
-            <span key="time">{item.timeAgo}</span>,
+            // The server's "2h" is English; the date it came from reads in the reader's language.
+            item.createdAt ? <RelativeTime key="time" date={item.createdAt} short /> : <span key="time">{item.timeAgo}</span>,
             <BilingualText key="type" en={activityEn(cfg.key)} el={activityEl(cfg.key)} compact />,
           ]}
         />

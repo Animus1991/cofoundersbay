@@ -48,6 +48,7 @@ import { rowOptions, settle, usePageControls, usePageList, type PageControlRunRe
 import { cn } from '@/lib/utils';
 import { needCardPost, useSuggestedPost } from '@/lib/share-text';
 import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,
@@ -127,6 +128,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
 }
 
 function Board() {
+  const { primary } = useLanguagePreference();
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const router = useRouter();
@@ -388,7 +390,7 @@ function Board() {
             <li key={h.version} className="space-y-0.5 text-sm">
               <p className="font-medium text-foreground">v{h.version}</p>
               <p className="text-xs text-muted-foreground">
-                {[h.offer.role, h.offer.equity, h.offer.hoursPerWeek ? `${h.offer.hoursPerWeek} h/week` : null].filter(Boolean).join(' · ')}
+                {[h.offer.role, h.offer.equity, h.offer.hoursPerWeek ? `${h.offer.hoursPerWeek} ${primary === 'el' ? CMT.per_week.el : CMT.per_week.en}` : null].filter(Boolean).join(' · ')}
               </p>
               {h.changed.length ? (
                 <p className="text-2xs text-muted-foreground">

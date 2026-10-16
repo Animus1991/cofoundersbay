@@ -29,7 +29,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileExperience } from '@/components/profile/ProfileSections';
-import { formatDate } from '@/lib/i18n/format';
+import { formatDate, bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 
 function deriveProfileFields(profile: PublicProfile) {
@@ -157,7 +157,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+            <Link href="/" className="flex items-center gap-2" aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}>
               <Logo size="sm" />
             </Link>
           </div>
@@ -191,7 +191,7 @@ export default function PublicProfilePage() {
       {/* Header */}
       <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+          <Link href="/" className="flex items-center gap-2" aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}>
             <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-2">

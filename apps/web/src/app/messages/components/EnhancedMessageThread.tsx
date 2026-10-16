@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 interface Message {
   id: string;
@@ -196,7 +196,7 @@ export function EnhancedMessageThread({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon">
+              <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
                 <MoreVertical className="icon-md" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
@@ -344,7 +344,7 @@ export function EnhancedMessageThread({
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button aria-label="More options" size="icon" variant="secondary" className="h-7 w-7">
+                        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} size="icon" variant="secondary" className="h-7 w-7">
                           <MoreVertical className="icon-sm" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -410,7 +410,7 @@ export function EnhancedMessageThread({
               {replyingTo.content}
             </p>
           </div>
-          <Button aria-label="More options"
+          <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
             variant="ghost"
             size="icon"
             onClick={() => setReplyingTo(null)}
@@ -437,7 +437,7 @@ export function EnhancedMessageThread({
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
                 </span>
-                <Button aria-label="More options"
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"

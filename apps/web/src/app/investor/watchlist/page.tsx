@@ -571,8 +571,8 @@ export default function InvestorWatchlistPage() {
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
-            <TabsTrigger value="watchlist">My Watchlist ({watched.length})</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity ({activity.length})</TabsTrigger>
+            <TabsTrigger value="watchlist"><BilingualText en={`My watchlist (${watched.length})`} el={`Υπό παρακολούθηση (${watched.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="activity"><BilingualText en={`Recent activity (${activity.length})`} el={`Πρόσφατη δραστηριότητα (${activity.length})`} compact /></TabsTrigger>
           </TabsList>
 
           {/* Watchlist Tab */}

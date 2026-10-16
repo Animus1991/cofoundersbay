@@ -27,7 +27,7 @@ import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
@@ -266,7 +266,7 @@ export default function OrgAnalyticsPage() {
       actions={(
         <>
           <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-            <SelectTrigger aria-label="Time period" className="w-[150px]">
+            <SelectTrigger aria-label={bilingualAria('Time period', 'Χρονική περίοδος')} className="w-[150px]">
               <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
             </SelectTrigger>
             <SelectContent>

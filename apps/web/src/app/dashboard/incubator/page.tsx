@@ -43,6 +43,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { bilingualAria } from '@/lib/i18n/format';
 
 /*
  * The organisation's home.
@@ -347,7 +348,7 @@ export default function IncubatorDashboard() {
                     />
                     {pct != null && (
                       <div className="mt-2 flex items-center gap-3">
-                        <Progress value={pct} className="h-1.5 flex-1" aria-label={`${program.title}: ${program.participantCount} of ${program.capacity} places filled`} />
+                        <Progress value={pct} className="h-1.5 flex-1" aria-label={bilingualAria(`${program.title}: ${program.participantCount} of ${program.capacity} places filled`, `${program.title}: ${program.participantCount} από ${program.capacity} θέσεις καλυμμένες`)} />
                         <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                           {program.participantCount}/{program.capacity}
                         </span>
@@ -393,6 +394,7 @@ export default function IncubatorDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Organisation pages"
+              labelEl="Σελίδες οργανισμού"
               links={[
                 { href: '/tenant/programs', icon: Plus, label: 'Create program', labelEl: 'Νέο πρόγραμμα' },
                 { href: '/org/applications', icon: UserPlus, label: 'Review applications', labelEl: 'Αξιολόγηση αιτήσεων' },
@@ -430,8 +432,8 @@ export default function IncubatorDashboard() {
 
             <SectionCard title="Program health" titleEl="Υγεία προγραμμάτων" contentClassName="space-y-4">
               {[
-                { en: 'Places filled', el: 'Πληρότητα θέσεων', value: fill, detail: seats ? `${filled} of ${seats} in running programs` : null },
-                { en: 'Acceptance rate', el: 'Ποσοστό αποδοχής', value: acceptance, detail: decided.length ? `${accepted.length} of ${decided.length} decided applications` : null },
+                { en: 'Places filled', el: 'Πληρότητα θέσεων', value: fill, detail: seats ? { en: `${filled} of ${seats} in running programs`, el: `${filled} από ${seats} σε προγράμματα σε εξέλιξη` } : null },
+                { en: 'Acceptance rate', el: 'Ποσοστό αποδοχής', value: acceptance, detail: decided.length ? { en: `${accepted.length} of ${decided.length} decided applications`, el: `${accepted.length} από ${decided.length} αιτήσεις που κρίθηκαν` } : null },
               ].map((row) => (
                 <div key={row.en} className="space-y-1.5">
                   <div className="flex items-baseline justify-between gap-3 text-sm">
@@ -440,8 +442,8 @@ export default function IncubatorDashboard() {
                     </span>
                     <span className="font-semibold tabular-nums">{row.value == null ? '—' : `${row.value}%`}</span>
                   </div>
-                  <Progress value={row.value ?? 0} className="h-1.5" aria-label={row.en} />
-                  {row.detail ? <p className="text-xs text-muted-foreground">{row.detail}</p> : null}
+                  <Progress value={row.value ?? 0} className="h-1.5" aria-label={bilingualAria(row.en, row.el)} />
+                  {row.detail ? <p className="text-xs text-muted-foreground"><BilingualText en={row.detail.en} el={row.detail.el} wrap /></p> : null}
                 </div>
               ))}
               <p className="flex items-center gap-1.5 border-t border-border pt-3 text-sm">

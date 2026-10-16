@@ -296,7 +296,7 @@ export default function MatchDetailPage() {
     <AppShell>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Back">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label={bilingualAria('Back', 'Πίσω')}>
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           {/* A 12rem basis: with `flex-1` alone the line's basis was 0, so on

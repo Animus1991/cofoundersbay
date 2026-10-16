@@ -36,6 +36,7 @@ import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { durationEl } from '@/lib/i18n/units';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -231,7 +232,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <FactLine className="gap-y-1.5" items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
           <FactLine className="gap-y-1.5"
             items={[
-              provider.responseTime,
+              <BilingualText key="response" en={provider.responseTime} el={durationEl(provider.responseTime)} compact />,
               <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
               provider.location,
               <span key="avail" className={provider.isAvailable ? 'text-status-success' : undefined}>
