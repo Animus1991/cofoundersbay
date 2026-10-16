@@ -3423,7 +3423,8 @@ textarea[class~="border-input"]:focus,
 /* The ask field's edge lives on the form, so the input rule above never
    sees it. Same law: the neutral field edge at rest, the theme's link
    tone while the question is being typed. */
-form[data-ask-ai]:focus-within {
+form[data-ask-ai]:focus-within,
+[data-ask-frame]:focus-within {
   border-color: hsl(var(--ring));
 }
 
