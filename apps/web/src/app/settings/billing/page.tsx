@@ -259,7 +259,7 @@ export default function UserBillingPage() {
           </Card>
 
           {(sub?.plan?.name === 'free' || !sub) && (
-            <Card className="border-primary/15 bg-primary/[0.03]">
+            <Card className="border-primary-muted bg-primary-subtle">
               <CardHeader className="pb-2">
                 <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
                   <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />

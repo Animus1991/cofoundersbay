@@ -229,7 +229,7 @@ export default function ProviderProfilePage() {
         {/* The card others meet, on the card anatomy: the company's mark and
             name with the headline under it, the kind at the right, the facts
             on the mark's left edge. */}
-        <Card className="border-primary/15 bg-primary/[0.03]">
+        <Card className="border-primary-muted bg-primary-subtle">
           <CardContent className="space-y-3">
             <CardHead
               titleAs="h2"

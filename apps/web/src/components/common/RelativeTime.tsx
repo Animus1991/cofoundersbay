@@ -95,8 +95,15 @@ export function RelativeTime<T extends DateInput>({
     return relativeTimeLabel(date as string | Date, greek ? 'el' : 'en', { short, absoluteAfterDays });
   };
 
+  // The exact moment on hover, as GitHub's relative times do: "2d ago" says
+  // how long, the tooltip says when («Πέμ 15 Οκτωβρίου 2026, 15:42»). Only
+  // after hydration, so the server and the first client render still match.
+  const exact = hydrated && iso
+    ? d.toLocaleString(greek ? 'el-GR' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    : undefined;
+
   return (
-    <time dateTime={iso} className={className}>
+    <time dateTime={iso} className={className} title={exact}>
       {hydrated ? relative() : stableAbsolute(d)}
     </time>
   );

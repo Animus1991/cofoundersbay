@@ -43,7 +43,7 @@ const statusTone = (status: Intro['status']) =>
   status === 'accepted'
     ? 'border-status-success-border bg-status-success-bg text-status-success'
     : status === 'pending' || status === 'forwarded'
-      ? 'border-primary/15 bg-primary/[0.03] text-foreground'
+      ? 'border-primary-muted bg-primary-subtle text-foreground'
       : 'border-border bg-muted text-muted-foreground';
 
 function IntroCard({

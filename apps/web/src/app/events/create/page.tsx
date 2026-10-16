@@ -50,7 +50,7 @@ function whenText(startAt: string, endAt: string, locale: 'en-GB' | 'el-GR' = 'e
   const start = startAt ? new Date(startAt) : null;
   if (!start || Number.isNaN(start.getTime())) return null;
   const day = start.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  const time = (d: Date) => d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const time = (d: Date) => d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const end = endAt ? new Date(endAt) : null;
   if (!end || Number.isNaN(end.getTime())) return `${day}, ${time(start)}`;
   const sameDay = end.toDateString() === start.toDateString();

@@ -51,7 +51,7 @@ type RequestRow = { id: string; name: string; message?: string | null; avatarUrl
 function sessionWhen(iso: string, locale: 'en-GB' | 'el-GR' = 'en-GB'): string {
   const d = new Date(iso);
   const day = d.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
-  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   return `${day} · ${time}`;
 }
 

@@ -172,7 +172,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
       data-provider-card=""
       className={cn(
         'group flex flex-col transition-all hover:border-primary/30',
-        featured && 'border-primary/15 bg-primary/[0.03]',
+        featured && 'border-primary-muted bg-primary-subtle',
         !provider.isAvailable && 'surface-inactive',
       )}
     >
@@ -481,7 +481,7 @@ export default function MarketplacePage() {
           />
         )}
         {/* Banner CTA for providers */}
-        <Card className="border-primary/15 bg-primary/[0.03]">
+        <Card className="border-primary-muted bg-primary-subtle">
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="card-title text-foreground"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></h2>

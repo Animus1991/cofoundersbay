@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { usePageContext } from './usePageContext';
 import { PageSnapshotProvider, usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { resetPageListsForTests, usePageList } from '@/lib/page-controls';
 
 /**
  * The assistant's floor of page context.
@@ -25,7 +26,10 @@ vi.mock('@/components/common/I18nProvider', () => ({
   useI18n: () => ({ locale }),
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  resetPageListsForTests();
+});
 beforeEach(() => {
   pathname = '/';
   locale = 'en';
@@ -114,5 +118,23 @@ describe('the registry floor', () => {
     // The floor for /jobs, not the stale /matches snapshot.
     expect(ctx.screen.route).toBe('/jobs');
     expect(ctx.screen.title).not.toBe('Matches');
+  });
+});
+
+describe('the rows a page lists', () => {
+  function Scout() {
+    usePageList([{ id: 'scout', labelEn: 'People the scout proposes', labelEl: 'Πρόσωπα που προτείνει ο ανιχνευτής', rows: ['Marcus (90): Open to co-founding'], rowsEl: ['Marcus (90): Ενδιαφέρεται για συνίδρυση'] }]);
+    return <Reader />;
+  }
+
+  it('reach a Greek reader in Greek when the page has them, an English reader in English', () => {
+    pathname = '/scout';
+    locale = 'el';
+    render(<Scout />);
+    expect(read().lists[0]).toMatchObject({ label: 'Πρόσωπα που προτείνει ο ανιχνευτής', rows: ['Marcus (90): Ενδιαφέρεται για συνίδρυση'] });
+    cleanup();
+    locale = 'en';
+    render(<Scout />);
+    expect(read().lists[0]).toMatchObject({ label: 'People the scout proposes', rows: ['Marcus (90): Open to co-founding'] });
   });
 });

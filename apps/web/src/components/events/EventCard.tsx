@@ -52,8 +52,9 @@ type EventCardProps = {
 };
 
 function formatEventTime(start: Date, end: Date): string {
-  const startTime = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const endTime = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // 24-hour digits read the same in both languages ("18:30 - 20:00").
+  const startTime = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const endTime = end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   return `${startTime} - ${endTime}`;
 }
 

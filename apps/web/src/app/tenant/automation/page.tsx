@@ -34,6 +34,7 @@ import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
+import { statusEl } from '@/components/common/StatusText';
 
 const TRIGGER_LABELS: Record<string, { en: string; el: string }> = {
   user_signup: { en: 'User Signup', el: 'Εγγραφή χρήστη' },
@@ -375,6 +376,7 @@ export default function TenantAutomationPage() {
       labelEn: 'Automation rules',
       labelEl: 'Κανόνες αυτοματισμού',
       rows: isLoading ? undefined : rules.map((r) => `${r.name} · ${r.status} · ${TRIGGER_LABELS[r.triggerType]?.en ?? r.triggerType} · ${r.executionCount} runs${r.failureCount ? ` · ${r.failureCount} failures` : ''}${r.tenantId === null ? ' · platform' : ''}`),
+      rowsEl: isLoading ? undefined : rules.map((r) => `${r.name} · ${statusEl(r.status) ?? r.status} · ${TRIGGER_LABELS[r.triggerType]?.el ?? r.triggerType} · ${r.executionCount} εκτελέσεις${r.failureCount ? ` · ${r.failureCount} αποτυχίες` : ''}${r.tenantId === null ? ' · πλατφόρμα' : ''}`),
       total: rules.length,
     },
   ]);

@@ -279,7 +279,7 @@ export function BranchPanel({
 
           <div className="flex-1 overflow-y-auto mt-4 space-y-4">
             {/* Main branch indicator */}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary-subtle border border-primary-muted">
               <GitBranch className="icon-sm text-muted-foreground" />
               <span className="text-sm font-medium">main</span>
               <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>

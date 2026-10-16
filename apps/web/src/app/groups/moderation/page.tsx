@@ -40,6 +40,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { statusEl } from '@/components/common/StatusText';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -201,6 +202,7 @@ export default function GroupsModerationPage() {
       labelEn: 'Group reports',
       labelEl: 'Αναφορές κοινοτήτων',
       rows: filtered.map((r) => `${r.type} · ${r.contentType} by ${r.reportedUser} in ${r.groupName} · ${r.status} · ${r.priority} priority · ${ageLabel(r.reportedHoursAgo).en}`),
+      rowsEl: filtered.map((r) => `${statusEl(r.type) ?? r.type} · ${statusEl(r.contentType) ?? r.contentType}, από ${r.reportedUser} στην κοινότητα ${r.groupName} · ${statusEl(r.status) ?? r.status} · προτεραιότητα ${(statusEl(r.priority) ?? r.priority).toLowerCase()} · ${ageLabel(r.reportedHoursAgo).el}`),
       total: reports.length,
       sample: reports.length > 0,
     },

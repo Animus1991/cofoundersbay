@@ -626,7 +626,7 @@ export default function RecommendationsPage() {
         {!digestLoading && weeklyRecs.length > 0 && (
           // A section card: the title and its date in the head, the people
           // under it on the title's edge.
-          <Card className="border-primary/15 bg-primary/[0.03]">
+          <Card className="border-primary-muted bg-primary-subtle">
             <CardContent className="space-y-3">
               <CardHead
                 titleAs="h2"

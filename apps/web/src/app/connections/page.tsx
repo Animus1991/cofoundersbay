@@ -175,7 +175,7 @@ function IntroRequestCard({
   // Endorsements' anatomy: avatar, name and headline, the kind at the right;
   // the note and the foot (date, then the two answers) on the avatar's edge.
   return (
-    <Card className="card-interactive border-primary/20 bg-primary/5">
+    <Card className="card-interactive border-primary-muted bg-primary-subtle">
       <CardContent className="space-y-3">
         <CardHead
           mark={(

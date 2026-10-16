@@ -59,10 +59,8 @@ function SessionCard({ session, onReschedule, onCancel, onNotes }: { session: Me
   };
 
   const scheduledDate = new Date(session.scheduledAt);
-  const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  // "10:00", not "10:00 AM": 24-hour digits read the same in both languages.
+  const formattedTime = scheduledDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const meetingLabel = session.meetingType ? MEETING_TYPE_LABEL[session.meetingType] : undefined;
 
   // The booking card's anatomy: the date tile is the mark, the title and

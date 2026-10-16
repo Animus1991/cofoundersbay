@@ -128,7 +128,7 @@ export function HelpCallout({
       role="note"
       aria-label={bilingualAria(title, titleEl)}
       className={cn(
-        'rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-sm leading-relaxed shadow-sm',
+        'rounded-2xl border border-primary-muted bg-primary-subtle p-4 text-sm leading-relaxed shadow-sm',
         className,
       )}
     >

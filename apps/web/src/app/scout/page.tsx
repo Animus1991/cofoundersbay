@@ -84,7 +84,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
           meta={p.person?.location ?? undefined}
           asideStays
           aside={(
-            <span className="rounded-md border border-primary/15 bg-primary/[0.03] px-2 py-0.5 text-xs font-bold tabular-nums text-foreground" title="Fit with your brief · Ταίριασμα με το σημείωμα">
+            <span className="rounded-md border border-primary-muted bg-primary-subtle px-2 py-0.5 text-xs font-bold tabular-nums text-foreground" title="Fit with your brief · Ταίριασμα με το σημείωμα">
               {p.score}
             </span>
           )}
@@ -255,7 +255,8 @@ function ScoutContent() {
     },
   ]);
   usePageList([
-    { id: 'scout_proposed', labelEn: 'People the scout proposes', labelEl: 'Πρόσωπα που προτείνει ο ανιχνευτής', rows: tab === 'proposed' ? proposed.map((p) => `${p.person.displayName} (${p.score}): ${p.reasons.map((r) => r.en).join('; ')}`) : undefined },
+    { id: 'scout_proposed', labelEn: 'People the scout proposes', labelEl: 'Πρόσωπα που προτείνει ο ανιχνευτής', rows: tab === 'proposed' ? proposed.map((p) => `${p.person.displayName} (${p.score}): ${p.reasons.map((r) => r.en).join('; ')}`) : undefined,
+      rowsEl: tab === 'proposed' ? proposed.map((p) => `${p.person.displayName} (${p.score}): ${p.reasons.map((r) => scoutReasonEl(r.el, p.person.location, (place) => translate('el', place))).join('; ')}`) : undefined },
     { id: 'scout_saved', labelEn: 'Saved from the scout', labelEl: 'Αποθηκευμένοι από τον ανιχνευτή', rows: tab === 'saved' ? saved.map((p) => `${p.person.displayName} (${p.score})`) : undefined },
   ]);
 

@@ -78,7 +78,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
   return (
     <Card className={cn(
       'card-interactive group transition-all hover:border-primary/20',
-      featured && 'border-primary/15 bg-primary/[0.03]'
+      featured && 'border-primary-muted bg-primary-subtle'
     )}>
       <CardContent className="space-y-3">
         <CardHead

@@ -91,8 +91,9 @@ function mapMessage(m: MessageItem, myId: string): PopupMessage {
   };
 }
 
+/** 24-hour digits read the same in both languages ("15:42"). */
 function formatTime(d: Date) {
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 }
 
 // ── Messaging sub-components ───────────────────────────────────────────────────

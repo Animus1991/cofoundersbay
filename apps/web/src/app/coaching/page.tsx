@@ -230,7 +230,7 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
     const locale = primary === 'el' ? 'el-GR' : 'en-GB';
     if (variant === 'banner') {
       const day = d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' });
-      const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+      const time = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
       setLabel(primary === 'el' ? `${day} στις ${time}` : `${day} at ${time}`);
       return;
     }

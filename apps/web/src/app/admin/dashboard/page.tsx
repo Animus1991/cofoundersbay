@@ -197,6 +197,7 @@ export default function AdminDashboardPage() {
       labelEn: 'Needs attention',
       labelEl: 'Χρειάζεται προσοχή',
       rows: statsLoading ? undefined : attention.map((a) => (a.detailEn ? `${a.en} · ${a.detailEn}` : a.en)),
+      rowsEl: statsLoading ? undefined : attention.map((a) => (a.detailEl ? `${a.el} · ${a.detailEl}` : a.el)),
     },
   ]);
 

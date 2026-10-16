@@ -19,7 +19,7 @@ export function FormDraftNotice({ filled, prompt, onDismiss }: { filled: readonl
   return (
     <div
       role="status"
-      className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm"
+      className="flex items-start gap-3 rounded-xl border border-primary-muted bg-primary-subtle px-4 py-3 text-sm"
     >
       <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <p className="min-w-0 flex-1 leading-snug">

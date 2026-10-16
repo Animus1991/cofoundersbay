@@ -28,6 +28,8 @@ import { rowOptions, usePageControls, usePageList, type PageControlRunResult } f
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { durationEl } from '@/lib/i18n/units';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -86,6 +88,9 @@ export default function MentorAvailabilityPage() {
   const queryClient = useQueryClient();
 
   const [slots, setSlotsState] = useState<TimeSlot[]>(defaultSlots);
+  // Greek reads the 24-hour clock (10:00, 13:30), not AM/PM.
+  const { primary } = useLanguagePreference();
+  const timeLabel = (t: { value: string; label: string }) => (primary === 'el' ? t.value : t.label);
   const [timezone, setTimezoneState] = useState('Europe/Athens');
   // Edits since the hours were last read or saved.
   const [dirty, setDirty] = useState(false);
@@ -288,7 +293,7 @@ export default function MentorAvailabilityPage() {
                 <Clock className="icon-sm text-muted-foreground" />
                 <span className="text-sm font-medium"><BilingualText en="Weekly Hours" el="Εβδομαδιαίες ώρες" compact /></span>
               </div>
-              <p className="page-stat text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
+              <p className="page-stat text-xl font-bold"><BilingualText en={`${weeklyHours.toFixed(1)}h`} el={durationEl(`${weeklyHours.toFixed(1)}h`)} compact /></p>
               <p className="text-xs text-muted-foreground"><BilingualText en={`across ${slots.length} time blocks`} el={`σε ${slots.length} χρονοθυρίδες`} compact /></p>
             </CardContent>
           </Card>
@@ -356,7 +361,7 @@ export default function MentorAvailabilityPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {TIMES.map(t => (
-                                    <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
+                                    <SelectItem key={t.value} value={t.value} className="text-xs">{timeLabel(t)}</SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -367,7 +372,7 @@ export default function MentorAvailabilityPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {TIMES.map(t => (
-                                    <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
+                                    <SelectItem key={t.value} value={t.value} className="text-xs">{timeLabel(t)}</SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>

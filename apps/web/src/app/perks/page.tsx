@@ -148,7 +148,7 @@ function PerkCard({
         ) : null}
         {revealed ? (
           // A reveal is a preview of what to use: the one tinted block on the card.
-          <div className="space-y-2 rounded-lg border border-primary/15 bg-primary/[0.03] p-3">
+          <div className="space-y-2 rounded-lg border border-primary-muted bg-primary-subtle p-3">
             {perk.code ? (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs text-muted-foreground"><BilingualText en="Code" el="Κωδικός" compact /></span>

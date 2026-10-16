@@ -775,6 +775,7 @@ export default function FundraisingPage() {
       labelEn: 'Investor leads',
       labelEl: 'Υποψήφιοι επενδυτές',
       rows: leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).en} · ${l.checkSize}`),
+      rowsEl: leads.map((l) => `${l.name}${l.firm ? ` (${l.firm})` : ''} · ${stageName(l.status).el} · ${l.checkSize}`),
       sample: showDemoData,
     },
   ]);

@@ -432,7 +432,7 @@ export default function TenantBillingPage() {
 
         {/* Enterprise upgrade CTA */}
         {sub && sub.plan?.planType !== 'enterprise' && (
-          <Card className="border-primary/15 bg-primary/[0.03]">
+          <Card className="border-primary-muted bg-primary-subtle">
             <CardContent className="space-y-3">
               <CardHead
                 mark={(

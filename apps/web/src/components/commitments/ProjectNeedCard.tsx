@@ -30,7 +30,7 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
   if (!card) {
     if (!owned) return null;
     return (
-      <Card className="border-primary/15 bg-primary/[0.03]">
+      <Card className="border-primary-muted bg-primary-subtle">
         <CardContent className="space-y-3">
           <CardHead
             titleAs="p"

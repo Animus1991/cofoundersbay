@@ -235,7 +235,7 @@ export default function MentorProfilePage() {
       <div className="space-y-6">
         <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
         {/* Preview Card */}
-        <Card className="border-primary/15 bg-primary/[0.03]">
+        <Card className="border-primary-muted bg-primary-subtle">
           <CardContent className="space-y-3">
             {/* The preview reads like a person's card elsewhere: the circle,
                 the name over the headline, and the facts on its edge. */}

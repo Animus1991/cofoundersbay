@@ -1065,7 +1065,7 @@ export default function ReadinessPage() {
       labelEn: 'AI plan',
       labelEl: 'Πλάνο AI',
       content: <div className="space-y-3">
-        <Card className="border-primary/15 bg-primary/[0.03]">
+        <Card className="border-primary-muted bg-primary-subtle">
         <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2">

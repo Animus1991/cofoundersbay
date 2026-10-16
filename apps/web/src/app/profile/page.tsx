@@ -407,6 +407,7 @@ export default function ProfilePage() {
       labelEn: 'Missing from the profile',
       labelEl: 'Λείπουν από το προφίλ',
       rows: completion ? completion.items.filter((i) => !i.done).map((i) => i.labelEn) : undefined,
+      rowsEl: completion ? completion.items.filter((i) => !i.done).map((i) => i.labelEl ?? i.labelEn) : undefined,
       total: completion?.missing,
       sample: isPreviewDemo(),
     },
@@ -812,7 +813,7 @@ export default function ProfilePage() {
 
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
-            <Card className="animate-fade-in bg-primary/5 border-primary/15">
+            <Card className="animate-fade-in bg-primary-subtle border-primary-muted">
               <CardContent className="flex flex-col items-center gap-4 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
                   <Activity className="icon-xl text-primary-accessible" />

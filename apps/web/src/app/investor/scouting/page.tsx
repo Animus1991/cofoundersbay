@@ -403,7 +403,7 @@ export default function InvestorScoutingPage() {
       <div className="space-y-6">
         {/* Featured */}
         {featured.length > 0 && (
-          <Card className="border-primary/15 bg-primary/[0.03]">
+          <Card className="border-primary-muted bg-primary-subtle">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
             </CardHeader>

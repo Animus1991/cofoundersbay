@@ -182,7 +182,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
       {/* Current level: the level's emblem as the mark, its name as the
           title, the points under it and the XP pill at the head's right;
           progress and perks on the emblem's left edge below. */}
-      <Card className="border-primary/15 bg-primary/[0.03]">
+      <Card className="border-primary-muted bg-primary-subtle">
         <CardContent className="space-y-4">
           <CardHead
             titleAs="h2"

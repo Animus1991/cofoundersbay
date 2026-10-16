@@ -50,6 +50,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { publicCardUrl } from '@/lib/commitments-links';
 import { nextAction } from '@/lib/commitments-next';
+import { statusEl } from '@/components/common/StatusText';
 
 type Tab = 'mine' | 'responses' | 'history';
 type OutcomeFilter = 'all' | CommitmentOutcome;
@@ -306,18 +307,21 @@ export default function CommitmentsPage() {
       labelEn: 'My need cards',
       labelEl: 'Οι κάρτες ανάγκης μου',
       rows: tab === 'mine' ? shownCards.map((c) => `${c.title} — ${OUTCOME_COPY[c.outcome].en.toLowerCase()}, v${c.version}, ${interestsFor(c.id)} responses${c.shared ? ', public link on' : ''}`) : undefined,
+      rowsEl: tab === 'mine' ? shownCards.map((c) => `${c.title} — ${OUTCOME_COPY[c.outcome].el.toLowerCase()}, έκδ. ${c.version}, ${interestsFor(c.id)} απαντήσεις${c.shared ? ', δημόσιος σύνδεσμος ενεργός' : ''}`) : undefined,
     },
     {
       id: 'my_responses',
       labelEn: 'My responses',
       labelEl: 'Οι απαντήσεις μου',
       rows: tab === 'responses' ? shownResponses.map((t) => `${t.cardTitle} by ${t.counterpart.displayName} — ${t.step}${nextAction(t) ? `; next: ${nextAction(t)?.en}` : ''}`) : undefined,
+      rowsEl: tab === 'responses' ? shownResponses.map((t) => `${t.cardTitle}, από ${t.counterpart.displayName} — ${statusEl(t.step) ?? t.step}${nextAction(t) ? `· επόμενο: ${nextAction(t)?.el}` : ''}`) : undefined,
     },
     {
       id: 'needs_you',
       labelEn: 'Needs you',
       labelEl: 'Σας χρειάζονται',
       rows: needsYou.map((t) => `${nextAction(t)?.en} on “${t.cardTitle}”`),
+      rowsEl: needsYou.map((t) => `${nextAction(t)?.el} στο «${t.cardTitle}»`),
     },
   ]);
 

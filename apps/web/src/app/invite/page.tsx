@@ -52,7 +52,7 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <Card className={cn('', accent && 'border-primary/15 bg-primary/5')}>
+    <Card className={cn('', accent && 'border-primary-muted bg-primary-subtle')}>
       <CardContent>
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">

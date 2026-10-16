@@ -520,7 +520,7 @@ export function MembersPageClient() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {featuredMembers.map((member) => (
-                <div key={member.userId} data-card="" className="rounded-2xl border border-primary/15 bg-primary/[0.03] p-3">
+                <div key={member.userId} data-card="" className="rounded-2xl border border-primary-muted bg-primary-subtle p-3">
                   <CardHead
                     titleAs="p"
                     mark={(

@@ -189,7 +189,7 @@ function TenantLanding({ tenant, sso, slug }: { tenant: TenantItem; sso: SSODisc
 
       {/* CTA band */}
       <section className="mx-auto max-w-3xl px-6 pb-16">
-        <Card className="bg-primary/5 border-primary/15">
+        <Card className="bg-primary-subtle border-primary-muted">
           <CardContent>
             <h2 className="card-title mb-1">
               {b?.dashboardWelcomeText || <BilingualText en={`Ready to join ${tenantName}?`} el={`Έτοιμοι να μπείτε στο ${tenantName};`} wrap />}

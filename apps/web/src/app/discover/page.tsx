@@ -556,7 +556,7 @@ export default function DiscoverPage() {
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             // A section card: its title and the line under it, then the
             // people as chips on the title's edge.
-            <Card className="border-primary/15 bg-primary/[0.03]">
+            <Card className="border-primary-muted bg-primary-subtle">
               <CardHeader>
                 <CardTitle>
                   <BilingualText en="Featured profiles" el="Προτεινόμενα προφίλ" compact />

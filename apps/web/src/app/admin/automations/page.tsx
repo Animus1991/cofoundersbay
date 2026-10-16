@@ -332,7 +332,7 @@ function LogPanel({ executionId }: { executionId: string }) {
           {log.level === 'warn' && <AlertTriangle className="icon-sm text-status-warning mt-0.5 shrink-0" />}
           {log.level === 'info' && <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />}
           <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-status-warning' : 'text-muted-foreground'}>
-            [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
+            [{new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })}] {log.message}
           </span>
         </div>
       ))}

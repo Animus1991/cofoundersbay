@@ -236,7 +236,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    <Card className="flex min-w-0 flex-col border-primary/15 bg-primary/[0.03]">
+    <Card className="flex min-w-0 flex-col border-primary-muted bg-primary-subtle">
       <CardContent className="flex flex-1 flex-col">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}

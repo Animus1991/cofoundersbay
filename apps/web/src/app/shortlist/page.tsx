@@ -603,7 +603,7 @@ export default function ShortlistPage() {
 
         {/* Compare action bar */}
         {compareMode && selectedIds.size >= 2 && (
-          <div className="flex items-center justify-between rounded-xl border border-primary/15 bg-primary/5 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-primary-muted bg-primary-subtle px-4 py-3">
             <p className="text-sm font-medium text-foreground">
               <BilingualText
                 en={shortlistEn('selected_max').replace('{n}', String(selectedIds.size))}

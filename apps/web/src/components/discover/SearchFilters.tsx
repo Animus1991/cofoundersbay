@@ -523,7 +523,7 @@ export function SearchFilters({
 
       {/* What Enter read out of the words typed, and the way back to them. */}
       {interpreted && interpreted.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2" role="status">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary-muted bg-primary-subtle px-3 py-2" role="status">
           <span className="text-sm text-muted-foreground">
             <BilingualText en="Read as filters:" el="Διαβάστηκε ως φίλτρα:" compact />
           </span>

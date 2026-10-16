@@ -134,7 +134,7 @@ export function FounderFirstMove({
   // frame of their own, on the card's axis; the steps; and a foot with the
   // note at the left and the ways on at the right.
   return (
-    <Card className="border-primary/15 bg-primary/[0.03]" data-first-move="">
+    <Card className="border-primary-muted bg-primary-subtle" data-first-move="">
       <section aria-labelledby="founder-first-move-title">
         <CardHeader>
           <p className="text-xs font-medium text-primary-accessible">
