@@ -293,7 +293,7 @@ export function SearchFilters({
                 <Filter className="icon-sm" aria-hidden="true" />
                 <span className="hidden sm:inline"><BilingualText en="Filters" el="Φίλτρα" compact /></span>
                 {activeFiltersCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
+                  <Badge data-chip="" className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
                     {activeFiltersCount}
                   </Badge>
                 )}
@@ -579,6 +579,7 @@ export function SearchFilters({
             <Badge
               key={pill.key}
               variant="secondary"
+              data-chip=""
               className="gap-1 pr-1"
             >
               <BilingualText en={pill.label} el={pill.labelEl} compact />

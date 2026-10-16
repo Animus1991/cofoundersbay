@@ -1,3 +1,5 @@
+import { BilingualText } from '@/components/common/BilingualText';
+
 /**
  * Bypass-blocks link (WCAG 2.4.1).
  *
@@ -8,14 +10,12 @@
  * which `AppShellFrame` (and the public shells) already expose.
  *
  * It is visually hidden until focused — see `.skip-to-content` in globals.css.
- * The label stays bilingual like every other chrome surface in the app.
+ * The label follows the same display preference as the rest of the page.
  */
 export function SkipToContent() {
   return (
     <a href="#main-content" className="skip-to-content">
-      <span lang="en">Skip to main content</span>
-      <span aria-hidden="true"> · </span>
-      <span lang="el">Μετάβαση στο κύριο περιεχόμενο</span>
+      <BilingualText en="Skip to main content" el="Μετάβαση στο κύριο περιεχόμενο" compact />
     </a>
   );
 }

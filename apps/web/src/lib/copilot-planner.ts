@@ -186,6 +186,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
     keys: ['my workspace', 'my workspaces', 'startup builder', 'builder workspace', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας'],
     tool: 'get_builder_state',
   },
+  // The investor's board is one list: watchlist, pipeline and portfolio.
+  {
+    keys: ['investor board', 'my pipeline', 'my watchlist', 'my portfolio', 'πινακας επενδυσεων', 'πινακα επενδυσεων', 'pipeline μου', 'χαρτοφυλακιο μου'],
+    tool: 'get_investor_board',
+  },
   // Wave B. Each key names the area as a noun, as the ones above do.
   {
     keys: ['my program', 'my programme', 'my application', 'applied to', 'αιτησεις μου', 'αιτηση μου', 'προγραμματα μου'],

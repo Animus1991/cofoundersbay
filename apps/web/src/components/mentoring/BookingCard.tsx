@@ -248,7 +248,7 @@ export function BookingCard({
                   <>
                     <Button size="sm" className="h-7 gap-1 text-xs" onClick={onConfirm} disabled={isActing}>
                       {isActing ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <CheckCircle className="icon-sm" aria-hidden="true" />}
-                      <BilingualText en="Confirm" el="Επιβεβαίωση" compact />
+                      <BilingualText en="Confirm booking" el="Επιβεβαίωση κράτησης" compact />
                     </Button>
                     {/* Decline is not self-explanatory as a bare icon: a
                         bilingual accessible name always, a visible label from

@@ -9,7 +9,6 @@ import {
   Eye,
   Bell,
   BellOff,
-  Star,
   TrendingUp,
   TrendingDown,
   ArrowUpRight,
@@ -19,7 +18,6 @@ import {
   MoreVertical,
   MessageCircle,
   GitCompare,
-  Zap,
   Clock,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -550,9 +548,9 @@ export default function InvestorWatchlistPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
-            { label: 'Watching', value: watched.length, icon: Eye },
-            { label: 'Alerts On', value: alertCount, icon: Bell },
-            { label: 'New Activity', value: activity.length, icon: Zap },
+            { label: 'Watching', value: watched.length },
+            { label: 'Alerts On', value: alertCount },
+            { label: 'New Activity', value: activity.length },
             { label: 'Avg Match', value: (() => {
               // Averaged over the rows that carry a score, so adding an
               // unscored startup cannot drag the average down.
@@ -560,17 +558,12 @@ export default function InvestorWatchlistPage() {
               return scored.length
                 ? `${Math.round(scored.reduce((sum, w) => sum + (w.matchScore ?? 0), 0) / scored.length)}%`
                 : '—';
-            })(), icon: Star },
+            })() },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="page-stat text-xl font-bold">{stat.value}</p>
-                </div>
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary-accessible" />
-                </div>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}

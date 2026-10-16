@@ -42,6 +42,7 @@ import {
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import {
   messagesEn,
   messagesEl,
@@ -335,6 +336,14 @@ function DateDivider({ date }: { date: Date }) {
   );
 }
 
+/** Wording only. The planner must not treat this as a request to send. */
+export function draftReplyPrompt(recipientName?: string | null): string {
+  const name = recipientName?.trim();
+  return name
+    ? `Draft a reply to ${name} in this conversation. Suggest the wording only. Do not send it.`
+    : 'Draft a reply in this conversation. Suggest the wording only. Do not send it.';
+}
+
 export function ChatWindow({
   conversation,
   messages,
@@ -356,6 +365,15 @@ export function ChatWindow({
   initialDraft,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
+  const popup = usePopupChatOptional();
+  // The draft sits on the composer, where the reply is written.
+  // It opens the assistant on this page and asks for wording only.
+  // Send stays the only control that delivers a message.
+  const draftReply = () => {
+    const prompt = draftReplyPrompt(conversation.recipientName);
+    if (popup) popup.ask(prompt);
+    else onAskAi?.();
+  };
   const [inputValue, setInputValue] = useState(initialDraft ?? '');
   const [searchOpen, setSearchOpen] = useState(false);
   // Tells the page rail that this thread is showing the tools icon, so the
@@ -627,7 +645,7 @@ export function ChatWindow({
             </div>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-3 py-2 sm:px-4 sm:py-1.5">
+        <div className="hidden flex-wrap items-center gap-1.5 border-t border-border px-3 py-2 sm:flex sm:px-4 sm:py-1.5">
           <Link
             href={`/profiles/${conversation.recipientId}`}
             className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
@@ -649,24 +667,6 @@ export function ChatWindow({
             <CfbGlyph name="calendar" className="h-3 w-3" />
             {t(messagesEn('schedule_meet'), messagesEl('schedule_meet'))}
           </Link>
-          {onAskAi ? (
-            <button
-              type="button"
-              onClick={onAskAi}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full bg-muted/60 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted sm:min-h-0 sm:w-auto sm:justify-start sm:px-2.5 sm:py-1 sm:text-2xs sm:text-foreground/80"
-            >
-              <CfbGlyph name="spark" className="h-3 w-3" />
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </button>
-          ) : (
-            <Link
-              href="/ai"
-              className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-full bg-muted/60 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted sm:min-h-0 sm:w-auto sm:justify-start sm:px-2.5 sm:py-1 sm:text-2xs sm:text-foreground/80"
-            >
-              <CfbGlyph name="spark" className="h-3 w-3" />
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </Link>
-          )}
         </div>
         {/* Search bar */}
         {searchOpen && (
@@ -747,16 +747,6 @@ export function ChatWindow({
                 onClick={() => applyDraft(t(messagesEn('schedule_draft'), messagesEl('schedule_draft')))}
               >
                 <BilingualText en={messagesEn('propose_time')} el={messagesEl('propose_time')} compact />
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-8 rounded-full px-3 text-xs"
-                onClick={onAskAi}
-              >
-                <CfbGlyph name="spark" className="icon-sm mr-1" />
-                <BilingualText en={messagesEn('draft_with_ai')} el={messagesEl('draft_with_ai')} compact />
               </Button>
             </div>
           </div>
@@ -846,6 +836,18 @@ export function ChatWindow({
             ))}
           </div>
         )}
+        <div className="mb-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-auto min-h-9 gap-1.5 px-2"
+            onClick={draftReply}
+          >
+            <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText en={messagesEn('draft_with_ai')} el={messagesEl('draft_with_ai')} compact />
+          </Button>
+        </div>
         <div className="flex items-end gap-1 rounded-3xl border border-border bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
           <input
             ref={fileInputRef}
@@ -915,17 +917,8 @@ export function ChatWindow({
         <p className="mt-1.5 px-1 text-xs leading-snug text-muted-foreground sm:hidden">
           <BilingualText en={messagesEn('tap_message_hint')} el={messagesEl('tap_message_hint')} compact />
         </p>
-        <p className="mt-1.5 hidden flex-wrap items-center gap-x-2 gap-y-1 px-3 text-2xs text-muted-foreground sm:flex">
+        <p className="mt-1.5 hidden px-3 text-2xs text-muted-foreground sm:block">
           <span>{t(messagesEn('type_message_hint'), messagesEl('type_message_hint'))}</span>
-          {onAskAi && (
-            <button
-              type="button"
-              onClick={onAskAi}
-              className="font-medium text-primary-accessible underline-offset-2 hover:underline"
-            >
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </button>
-          )}
         </p>
       </div>
     </div>

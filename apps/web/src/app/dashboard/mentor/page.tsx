@@ -284,7 +284,7 @@ export default function MentorDashboard() {
       actions={
         <Badge variant="outline" className="gap-1.5">
           <GraduationCap className="icon-sm" aria-hidden="true" />
-          Mentor
+          <BilingualText en="Mentor" el="Μέντορας" compact />
         </Badge>
       }
     >
@@ -321,6 +321,8 @@ export default function MentorDashboard() {
             kickerEn="Next session"
             kickerEl="Επόμενη συνεδρία"
             title={nextSession.menteeName}
+            reasonEn={sessionWhen(nextSession.scheduledAt, 'en-GB')}
+            reasonEl={sessionWhen(nextSession.scheduledAt, 'el-GR')}
             href={nextSession.meetingUrl || '/mentor/sessions'}
             external={Boolean(nextSession.meetingUrl)}
             actionEn="Join"
@@ -336,8 +338,6 @@ export default function MentorDashboard() {
             actionEl="Εξέταση"
           />
         ) : null}
-
-        <WhatsNewPanel audience="mentor" />
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
@@ -475,6 +475,10 @@ export default function MentorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The next session and the figures stay the first
+            glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="mentor" />
       </div>
     </AppShell>
   );

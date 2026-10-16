@@ -143,10 +143,12 @@ const AFTER_AGREEMENT: Pair[] = [
   { en: 'AI next step', el: 'Επόμενο βήμα με AI' },
 ];
 
-const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: Pair[] }> = [
+const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: Pair[]; join: string; start: Pair }> = [
   {
     icon: Briefcase,
     role: { en: 'Founder', el: 'Ιδρυτής' },
+    join: 'founder',
+    start: { en: 'Start as a founder', el: 'Ξεκινήστε ως ιδρυτής' },
     headline: { en: 'Find your co-founder', el: 'Βρείτε τον συνιδρυτή σας' },
     bullets: [
       { en: 'A need card instead of a cold message', el: 'Μια κάρτα ανάγκης αντί για ψυχρό μήνυμα' },
@@ -157,6 +159,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: GraduationCap,
     role: { en: 'Mentor', el: 'Μέντορας' },
+    join: 'mentor',
+    start: { en: 'Start as a mentor', el: 'Ξεκινήστε ως μέντορας' },
     headline: { en: 'Mentor where it counts', el: 'Καθοδηγήστε εκεί που μετράει' },
     bullets: [
       { en: 'Set your availability and take bookings', el: 'Ορίστε διαθεσιμότητα και δεχτείτε κρατήσεις' },
@@ -167,6 +171,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: TrendingUp,
     role: { en: 'Investor', el: 'Επενδυτής' },
+    join: 'investor',
+    start: { en: 'Start as an investor', el: 'Ξεκινήστε ως επενδυτής' },
     headline: { en: 'Meet founders through people you trust', el: 'Γνωρίστε ιδρυτές μέσα από ανθρώπους που εμπιστεύεστε' },
     bullets: [
       { en: 'Filter by stage, sector and place', el: 'Φίλτρα ανά στάδιο, κλάδο και τόπο' },
@@ -177,6 +183,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: Building2,
     role: { en: 'Programme', el: 'Πρόγραμμα' },
+    join: 'org',
+    start: { en: 'Start as an organization', el: 'Ξεκινήστε ως οργανισμός' },
     headline: { en: 'Run your cohort', el: 'Τρέξτε την κοορτή σας' },
     bullets: [
       { en: 'Applications, cohorts and mentors in one workspace', el: 'Αιτήσεις, κοορτές και μέντορες σε έναν χώρο' },
@@ -415,7 +423,7 @@ export function LandingHome() {
             title={{ en: 'Built for every role in a founding team’s first year', el: 'Φτιαγμένο για κάθε ρόλο στον πρώτο χρόνο μιας ιδρυτικής ομάδας' }}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PERSONAS.map(({ icon: Icon, role, headline, bullets }) => (
+            {PERSONAS.map(({ icon: Icon, role, headline, bullets, join, start }) => (
               <Card key={role.en} className="h-full">
                 <CardHeader className="pb-3">
                   <Badge variant="outline" className="w-fit gap-1.5 text-xs text-primary-accessible">
@@ -431,6 +439,9 @@ export function LandingHome() {
                       <BilingualText en={bullet.en} el={bullet.el} wrap />
                     </div>
                   ))}
+                  <Link href={`/register?role=${join}`} className="inline-flex pt-2 text-sm font-medium text-primary-accessible hover:underline">
+                    <T p={start} wrap />
+                  </Link>
                 </CardContent>
               </Card>
             ))}

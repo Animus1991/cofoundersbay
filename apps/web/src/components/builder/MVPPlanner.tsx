@@ -644,7 +644,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                             </p>
                             <div role="group" aria-labelledby={`goals-cap-${sprint.id}`} className="flex flex-wrap gap-2 mt-1">
                               {sprint.goals.map((goal, goalIndex) => (
-                                <Badge key={goalIndex} variant="secondary" className="gap-1">
+                                <Badge key={goalIndex} variant="secondary" data-chip="" className="gap-1">
                                   {goal}
                                   <button
                                     type="button"

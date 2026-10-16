@@ -469,7 +469,7 @@ export default function InvestorScoutingPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground"><BilingualText en="Active filters" el="Ενεργά φίλτρα" compact /></span>
               {activeFilters.map(f => (
-                <Badge key={f} variant="secondary" className="gap-1 text-xs">
+                <Badge key={f} variant="secondary" data-chip="" className="gap-1 text-xs">
                   {f}
                   <button aria-label={`Remove filter ${f}`} onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
                     <X className="icon-sm" />

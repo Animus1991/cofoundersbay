@@ -393,18 +393,15 @@ export default function InvestorPipelinePage() {
         {/* Stats Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Deals', labelEl: 'Σύνολο ευκαιριών', value: deals.length, icon: FolderKanban, color: 'text-primary-accessible' },
-            { label: 'Pipeline Value', labelEl: 'Αξία ροής', value: pipelineValue, icon: DollarSign, color: 'text-status-success' },
-            { label: 'Avg Readiness', labelEl: 'Μέση ετοιμότητα', value: avgReadiness == null ? '—' : `${avgReadiness}%`, icon: Target, color: 'text-status-info' },
-            { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
-          ].map(({ label, labelEl, value, icon: Icon, color }) => (
+            { label: 'Total Deals', labelEl: 'Σύνολο ευκαιριών', value: deals.length },
+            { label: 'Pipeline Value', labelEl: 'Αξία ροής', value: pipelineValue },
+            { label: 'Avg Readiness', labelEl: 'Μέση ετοιμότητα', value: avgReadiness == null ? '—' : `${avgReadiness}%` },
+            { label: 'Invested', labelEl: 'Επενδύσεις', value: deals.filter((d) => d.pipelineStage === 'invested').length },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}

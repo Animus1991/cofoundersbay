@@ -200,8 +200,8 @@ export const PAGE_REGISTRY: PageMeta[] = [
   // entry, so the gap cannot reopen quietly.
 
   // Mentor
-  { path: '/mentor/dashboard', title: 'Mentor dashboard', titleEl: 'Πίνακας μέντορα', description: 'Your mentees, sessions and earnings at a glance.', descriptionEl: 'Οι μαθητευόμενοι, οι συνεδρίες και τα έσοδά σας με μια ματιά.', helpId: 'dashboard-mentor', helpTitle: 'How this mentor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας μέντορα', section: 'Work', audience: ['mentor'], priority: 'critical', status: 'complete' },
-  { path: '/mentor/mentees', title: 'Mentees', titleEl: 'Μαθητευόμενοι', description: 'The founders you are mentoring, and where each one stands.', descriptionEl: 'Οι ιδρυτές που καθοδηγείτε και σε ποιο σημείο βρίσκεται ο καθένας.', helpId: 'mentor-mentees', helpTitle: 'How the mentee list works', helpTitleEl: 'Πώς λειτουργεί η λίστα καθοδηγούμενων', section: 'Work', audience: ['mentor'], status: 'complete' },
+  { path: '/mentor/dashboard', title: 'Mentor dashboard', titleEl: 'Πίνακας μέντορα', description: 'Your mentees, sessions and earnings at a glance.', descriptionEl: 'Οι καθοδηγούμενοι, οι συνεδρίες και τα έσοδά σας με μια ματιά.', helpId: 'dashboard-mentor', helpTitle: 'How this mentor home works', helpTitleEl: 'Πώς δουλεύει ο πίνακας μέντορα', section: 'Work', audience: ['mentor'], priority: 'critical', status: 'complete' },
+  { path: '/mentor/mentees', title: 'Mentees', titleEl: 'Καθοδηγούμενοι', description: 'The founders you are mentoring, and where each one stands.', descriptionEl: 'Οι ιδρυτές που καθοδηγείτε και σε ποιο σημείο βρίσκεται ο καθένας.', helpId: 'mentor-mentees', helpTitle: 'How the mentee list works', helpTitleEl: 'Πώς λειτουργεί η λίστα καθοδηγούμενων', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/availability', title: 'Availability', titleEl: 'Διαθεσιμότητα', description: 'The hours you can be booked for sessions.', descriptionEl: 'Οι ώρες που μπορείτε να κλείσετε συνεδρίες.', helpId: 'mentor-availability', helpTitle: 'How booking hours work', helpTitleEl: 'Πώς δουλεύουν οι ώρες κράτησης', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/earnings', title: 'Earnings', titleEl: 'Έσοδα', description: 'Payouts, pending balance and session history.', descriptionEl: 'Πληρωμές, εκκρεμές υπόλοιπο και ιστορικό συνεδριών.', helpId: 'mentor-earnings', helpTitle: 'How earnings are counted', helpTitleEl: 'Πώς μετρώνται τα έσοδα', section: 'Work', audience: ['mentor'], status: 'complete' },
   { path: '/mentor/reviews', title: 'Reviews', titleEl: 'Κριτικές', description: 'What the founders you have mentored said afterwards.', descriptionEl: 'Τι είπαν οι ιδρυτές που καθοδηγήσατε.', helpId: 'mentor-reviews', helpTitle: 'How mentor reviews work', helpTitleEl: 'Πώς δουλεύουν οι κριτικές μέντορα', section: 'Work', audience: ['mentor'], status: 'complete' },
@@ -250,11 +250,11 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/u/[token]', title: 'Founder update', titleEl: 'Ενημέρωση ιδρυτή', description: 'An update its author made public: the founder\u2019s name and headline, and nothing that reaches them outside the platform.', descriptionEl: 'Ενημέρωση που ο συντάκτης της έκανε δημόσια: όνομα και τίτλος του ιδρυτή, και τίποτα που τον φτάνει εκτός πλατφόρμας.', section: 'Public', status: 'complete' },
   { path: '/pitch/[id]', title: 'Pitch deck', titleEl: 'Παρουσίαση', description: 'A deck in the builder — slides, notes and sharing.', descriptionEl: 'Μια παρουσίαση στον builder — διαφάνειες, σημειώσεις και κοινοποίηση.', helpId: 'public-pitch', helpTitle: 'Reading this pitch', helpTitleEl: 'Πώς διαβάζεται αυτό το pitch', section: 'Work', status: 'complete' },
   { path: '/data-room/[id]', title: 'Data room', titleEl: 'Data room', description: 'Documents shared with investors, and who has opened what.', descriptionEl: 'Έγγραφα που μοιράζεστε με επενδυτές και ποιος άνοιξε τι.', helpId: 'data-room', helpTitle: 'How the data room works', helpTitleEl: 'Πώς δουλεύει το data room', section: 'Work', status: 'complete' },
-  { path: '/share/[token]', title: 'Shared link', titleEl: 'Κοινόχρηστος σύνδεσμος', description: 'Something shared with you through a link.', descriptionEl: 'Κάτι που μοιράστηκε μαζί σας μέσω συνδέσμου.', section: 'Public', status: 'complete' },
+  { path: '/share/[token]', title: 'Shared link', titleEl: 'Κοινόχρηστος σύνδεσμος', description: 'Read what was sent. No account is required to open it.', descriptionEl: 'Διαβάστε ό,τι στάλθηκε. Δεν χρειάζεται λογαριασμός για να το ανοίξετε.', section: 'Public', status: 'complete' },
 
   // Auth and system
   { path: '/forgot-password', title: 'Reset your password', titleEl: 'Επαναφορά κωδικού', description: 'We will email you a link to set a new password.', descriptionEl: 'Θα σας στείλουμε σύνδεσμο για νέο κωδικό.', section: 'Auth', status: 'complete' },
-  { path: '/reset-password', title: 'Set a new password', titleEl: 'Ορισμός νέου κωδικού', description: 'Choose a new password for your account.', descriptionEl: 'Επιλέξτε νέο κωδικό για τον λογαριασμό σας.', section: 'Auth', status: 'complete' },
+  { path: '/reset-password', title: 'Set a new password', titleEl: 'Ορισμός νέου κωδικού', description: 'The link from your email works once. Saving replaces the previous password.', descriptionEl: 'Ο σύνδεσμος από το email ισχύει μία φορά. Η αποθήκευση αντικαθιστά τον προηγούμενο κωδικό.', section: 'Auth', status: 'complete' },
   { path: '/auth/verify-email', title: 'Verify your email', titleEl: 'Επιβεβαίωση email', description: 'Confirm your address so we can reach you.', descriptionEl: 'Επιβεβαιώστε τη διεύθυνσή σας για να μπορούμε να επικοινωνούμε.', section: 'Auth', status: 'complete' },
   { path: '/auth/oauth-callback', title: 'Signing you in', titleEl: 'Γίνεται σύνδεση', description: 'Completing sign-in with your provider.', descriptionEl: 'Ολοκλήρωση σύνδεσης με τον πάροχό σας.', section: 'Auth', status: 'complete' },
   { path: '/auth/sso-complete', title: 'Single sign-on', titleEl: 'Ενιαία σύνδεση', description: 'Finishing your organization sign-in.', descriptionEl: 'Ολοκλήρωση σύνδεσης μέσω του οργανισμού σας.', section: 'Auth', status: 'complete' },
@@ -265,7 +265,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/unauthorized', title: 'No access', titleEl: 'Χωρίς πρόσβαση', description: 'Shown when your roles do not include what a page needs, with the ways to get it.', descriptionEl: 'Εμφανίζεται όταν οι ρόλοι σας δεν καλύπτουν τη σελίδα, με τους τρόπους να αποκτήσετε πρόσβαση.', section: 'Account', status: 'complete' },
   { path: '/demo', title: 'Demo', titleEl: 'Επίδειξη', description: 'A guided tour of the product with sample data.', descriptionEl: 'Ξενάγηση στο προϊόν με δείγμα δεδομένων.', section: 'Public', status: 'complete' },
   { path: '/themes/alliance', title: 'Alliance theme', titleEl: 'Θέμα Alliance', description: 'Preview of the Alliance palette across the design system.', descriptionEl: 'Προεπισκόπηση της παλέτας Alliance στο design system.', section: 'Account', status: 'partial' },
-  { path: '/test-onboarding', title: 'Onboarding preview', titleEl: 'Προεπισκόπηση onboarding', description: 'Internal preview of the onboarding flow.', descriptionEl: 'Εσωτερική προεπισκόπηση της ροής onboarding.', section: 'Account', status: 'scaffold' },
+  { path: '/test-onboarding', title: 'Onboarding preview', titleEl: 'Προεπισκόπηση onboarding', description: 'A development harness. People never land here from the product.', descriptionEl: 'Εργαλείο ανάπτυξης. Οι άνθρωποι δεν φτάνουν εδώ από το προϊόν.', section: 'Account', status: 'scaffold' },
 ];
 
 const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & { path?: string } }> = [
@@ -444,6 +444,31 @@ export function getPageMeta(pathname: string): PageMeta | undefined {
 
 export type PageMetaOverrides = Partial<Pick<PageMeta, 'title' | 'description' | 'titleEl' | 'descriptionEl'>>;
 
+/**
+ * The clarity census: a line under a heading that repeats it.
+ * Content words only, eight or fewer, at least half of them already in the
+ * heading. A longer line, or one that names a new fact, stays.
+ */
+const ECHO_STOP = new Set([
+  'the', 'a', 'an', 'and', 'or', 'of', 'to', 'your', 'you', 'for', 'in', 'on',
+  'with', 'manage', 'view', 'see', 'all', 'here', 'this', 'is', 'are', 'be',
+  'by', 'from', 'at', 'as', 'it', 'its', 'our',
+]);
+
+function contentWords(text: string): string[] {
+  return text.toLowerCase().split(/[^a-z0-9]+/).filter((word) => word.length > 2 && !ECHO_STOP.has(word));
+}
+
+export function lineEchoesHeading(heading: string, line: string): boolean {
+  const headingWords = new Set(contentWords(heading));
+  const lineWords = contentWords(line);
+  if (headingWords.size < 1 || lineWords.length < 1 || lineWords.length > 8) return false;
+  const shared = lineWords.filter((word) => (
+    headingWords.has(word) || headingWords.has(word.replace(/s$/, '')) || headingWords.has(`${word}s`)
+  )).length;
+  return shared / lineWords.length >= 0.5;
+}
+
 /** Merge explicit AppShell props with registry defaults. */
 export function resolvePageHeader(
   pathname: string,
@@ -453,14 +478,19 @@ export function resolvePageHeader(
   const titleIsCustom = Boolean(overrides?.title) && overrides?.title !== meta?.title;
   const descriptionIsCustom =
     Boolean(overrides?.description) && overrides?.description !== meta?.description;
+  const title = overrides?.title ?? meta?.title;
+  const description = overrides?.description ?? meta?.description;
+  const echoes = Boolean(title && description && lineEchoesHeading(title, description));
   return {
-    title: overrides?.title ?? meta?.title,
+    title,
     // Drop registry Greek only when the English title is a different string
     // (a person's name). Pages that pass the registry English title still
     // need titleEl — otherwise Analytics/Projects/Fundraising rendered EN-only.
     titleEl: overrides?.titleEl ?? (titleIsCustom ? undefined : meta?.titleEl),
-    description: overrides?.description ?? meta?.description,
-    descriptionEl: overrides?.descriptionEl ?? (descriptionIsCustom ? undefined : meta?.descriptionEl),
+    description: echoes ? undefined : description,
+    descriptionEl: echoes
+      ? undefined
+      : overrides?.descriptionEl ?? (descriptionIsCustom ? undefined : meta?.descriptionEl),
     meta,
   };
 }

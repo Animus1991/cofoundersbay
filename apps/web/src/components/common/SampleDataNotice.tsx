@@ -18,7 +18,10 @@ type SampleDataNoticeProps = {
   className?: string;
 };
 
-/** Compact honesty pill. Expands to the full note; Ask AI stays a text link. */
+/**
+ * One quiet line where the rows are samples. It expands to the full note;
+ * Ask AI stays a text link. Exit is the other place the demo is named.
+ */
 export function SampleDataNotice({ surface, detail, askAiPrompt, className }: SampleDataNoticeProps) {
   const { t } = useI18n();
   const popup = usePopupChatOptional();
@@ -33,7 +36,7 @@ export function SampleDataNotice({ surface, detail, askAiPrompt, className }: Sa
         onClick={() => setOpen(true)}
         aria-label={bilingualAria(title, title)}
         className={cn(
-          'inline-flex items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground',
+          'inline-flex items-center text-xs font-medium text-muted-foreground underline-offset-2 hover:underline',
           className,
         )}
       >

@@ -48,7 +48,8 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, ROW_GONE, type PageControlRunResult } from '@/lib/page-controls';
-import { StatusText } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
+import { namedFilters, namedQuery, type NamedFilter } from '@/components/common/EmptyStates';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -88,6 +89,27 @@ type MatchReason = { type: MatchReasonType; text: string; score: number };
  * the same place. The engine returns its own reasons; a card with none shows
  * none.
  */
+
+function discoverFilterNames(filters: SearchFiltersValues): NamedFilter[] {
+  const word = (value: string): NamedFilter => {
+    const greek = statusEl(value);
+    const plain = value.replaceAll('_', ' ');
+    return { en: plain, el: greek ?? plain };
+  };
+  return namedFilters(
+    namedQuery(filters.q),
+    filters.location.trim() ? { en: filters.location.trim(), el: filters.location.trim() } : null,
+    ...filters.role.map(word),
+    ...filters.skills.map((skill) => ({ en: skill, el: skill })),
+    ...filters.industries.map((industry) => ({ en: industry, el: industry })),
+    ...filters.stage.map(word),
+    ...filters.availability.map(word),
+    ...filters.fundingStage.map(word),
+    ...filters.languages.map(word),
+    filters.remote === true ? { en: 'Remote', el: 'Εξ αποστάσεως' } : null,
+    filters.remote === false ? { en: 'On site', el: 'Με παρουσία' } : null,
+  );
+}
 
 const defaultFilters: SearchFiltersValues = {
   q: '',
@@ -598,6 +620,17 @@ export default function DiscoverPage() {
           {!loading && hits.length === 0 && (
             <EmptyState
               title={<BilingualText en="No profiles found" el="Δεν βρέθηκαν προφίλ" compact wrap />}
+              description={(() => {
+                const names = discoverFilterNames(filters);
+                if (names.length === 0) return undefined;
+                return (
+                  <BilingualText
+                    en={`Nothing matched ${names.map((item) => item.en).join(', ')}. Clear them to see every profile.`}
+                    el={`Τίποτα δεν ταιριάζει με ${names.map((item) => item.el).join(', ')}. Καθαρίστε τα για να δείτε όλα τα προφίλ.`}
+                    wrap
+                  />
+                );
+              })()}
               illustration="search"
               className="py-12"
               askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."

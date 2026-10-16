@@ -321,7 +321,7 @@ function TagInput({
       <label htmlFor={inputId} className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></label>
       <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-background/50 min-h-[60px]">
         {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="gap-1">
+          <Badge key={tag} variant="secondary" data-chip="" className="gap-1">
             <BilingualText en={tag} el={suggestionEl?.[tag]} compact />
             <button aria-label={bilingualAria(`Remove ${tag}`, suggestionEl?.[tag] ? `Αφαίρεση: ${suggestionEl[tag]}` : `Αφαίρεση: ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
               <X className="icon-sm" />

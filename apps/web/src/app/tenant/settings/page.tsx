@@ -308,9 +308,6 @@ export default function TenantSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="API Access" el="Πρόσβαση API" compact /></CardTitle>
-                <CardDescription>
-                  <BilingualText en="Manage API keys for programmatic access" el="Διαχείριση κλειδιών API για προγραμματιστική πρόσβαση" wrap />
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -360,9 +357,6 @@ export default function TenantSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact /></CardTitle>
-                <CardDescription>
-                  <BilingualText en="Manage your payment information" el="Διαχείριση στοιχείων πληρωμής" compact wrap />
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <RowHead

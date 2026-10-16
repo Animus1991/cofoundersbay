@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 import { getActionSpec } from '@/lib/action-registry';
 import type { CopilotAction, CopilotActionStatus, CopilotActionTool } from '@/lib/copilot-types';
@@ -126,6 +126,11 @@ describe('ActionCard reversibility', () => {
  * what can still be done.
  */
 describe('ActionCard outcomes', () => {
+  // These cards are checked in both languages. One language is the default
+  // display since 2026-10-14, so the reader's "both" choice is set here.
+  beforeEach(() => localStorage.setItem('cfb:language-display', 'bilingual'));
+  afterEach(() => localStorage.removeItem('cfb:language-display'));
+
   function renderWith(a: CopilotAction, busyId: string | null = null) {
     const onConfirm = vi.fn();
     const onUndo = vi.fn();

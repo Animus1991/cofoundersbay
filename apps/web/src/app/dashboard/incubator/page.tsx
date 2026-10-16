@@ -221,8 +221,6 @@ export default function IncubatorDashboard() {
           />
         ) : null}
 
-        <WhatsNewPanel audience="org" />
-
         {isNone && (
           <SectionCard title="No organisation yet" titleEl="Δεν υπάρχει οργανισμός ακόμα">
             <EmptyLine
@@ -454,6 +452,10 @@ export default function IncubatorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The application that waits and the figures stay
+            the first glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="org" />
       </div>
     </AppShell>
   );

@@ -39,6 +39,7 @@ import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
 import { followUpsFor } from '@/lib/copilot-followups';
+import { getPageMeta } from '@/lib/page-registry';
 
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -127,6 +128,7 @@ export function CopilotWorkspace({
   const sayOne = useBilingualString();
   const isPage = variant === 'page';
   const pageContext = usePageContext();
+  const pageMeta = pageContext.route === '/ai' ? undefined : getPageMeta(pageContext.route);
   const [input, setInput] = useState(initialPrompt ?? '');
   const [threadsOpen, setThreadsOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -463,57 +465,76 @@ export function CopilotWorkspace({
         )}
 
         <form onSubmit={onSubmit} className="shrink-0 border-t border-border p-3">
-          <div className="flex items-center gap-2">
-            <Input
-              ref={inputRef}
-              aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={sayOne(
-                isPage
-                  ? 'Search, intro, message, or go…'
-                  : 'Search, intro, or go…',
-                isPage
-                  ? 'Αναζήτηση, γνωριμία, μήνυμα ή μετάβαση…'
-                  : 'Αναζήτηση, γνωριμία ή μετάβαση…',
-              )}
-              className="type-ui h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 focus-visible:outline-none focus-visible:ring-0"
-              disabled={chat.isStreaming}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!input.trim() || chat.isStreaming}
-              className="h-11 w-11 rounded-full"
-              aria-label={bilingualAria('Send', 'Αποστολή')}
-            >
-              {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
-          </div>
-          {!isPage && chat.messages.length > 0 ? (
-            <p className="type-support mt-1.5 text-center text-muted-foreground">
-              <button
-                type="button"
-                className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
-                onClick={() => router.push('/ai/capabilities')}
-              >
+          {/* One field, the way a composer holds its context: the page this
+              question can see, the question, and the rule that a change waits.
+              The edge is the neutral field colour and takes the link tone
+              only while typing. On /ai the header already names the page. */}
+          <div data-ask-frame="" className="rounded-md border border-input bg-card px-3 py-2">
+            {pageMeta?.title ? (
+              <p className="type-support mb-1.5 text-muted-foreground">
                 <BilingualText
-                  en="See everything I can read and change"
-                  el="Δείτε όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                  en={`This page · ${pageMeta.title}`}
+                  el={`Αυτή η σελίδα · ${pageMeta.titleEl ?? pageMeta.title}`}
                   compact
                   wrap
                 />
-              </button>
-            </p>
-          ) : isPage ? (
-          <p className="type-support mt-1.5 text-muted-foreground">
-            <BilingualText
-              en="Changes wait for your confirmation."
-              el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
-              compact wrap
-            />
-          </p>
-          ) : null}
+              </p>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Input
+                ref={inputRef}
+                aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={sayOne(
+                  isPage
+                    ? 'Search, intro, message, or go…'
+                    : 'Search, intro, or go…',
+                  isPage
+                    ? 'Αναζήτηση, γνωριμία, μήνυμα ή μετάβαση…'
+                    : 'Αναζήτηση, γνωριμία ή μετάβαση…',
+                )}
+                className="type-ui h-11 min-h-11 flex-1 border-0 bg-transparent px-1 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                disabled={chat.isStreaming}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!input.trim() || chat.isStreaming}
+                className="h-11 w-11 shrink-0 rounded-full"
+                aria-label={bilingualAria('Send', 'Αποστολή')}
+              >
+                {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+            {isPage || chat.messages.length > 0 ? (
+              <p className="type-support mt-1.5 text-muted-foreground">
+                <BilingualText
+                  en="Changes wait for your confirmation."
+                  el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
+                  compact
+                  wrap
+                />
+                {!isPage && chat.messages.length > 0 ? (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
+                      onClick={() => router.push('/ai/capabilities')}
+                    >
+                      <BilingualText
+                        en="See everything I can read and change"
+                        el="Δείτε όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                        compact
+                        wrap
+                      />
+                    </button>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
         </form>
       </section>
     </div>

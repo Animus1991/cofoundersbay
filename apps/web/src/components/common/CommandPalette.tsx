@@ -32,6 +32,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { foldText, searchPages } from '@/lib/page-search';
 import { FileText } from 'lucide-react';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 
 type CommandItem = {
   id: string;
@@ -44,7 +45,7 @@ type CommandItem = {
   path?: string;
   shortcut?: string[];
   action: () => void;
-  category: 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
+  category: 'assistant' | 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
 };
 
 type CommandPaletteProps = {
@@ -57,10 +58,28 @@ type CommandPaletteProps = {
 export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
   const router = useRouter();
   const { setTheme } = useTheme();
+  const popup = usePopupChatOptional();
+  const openAssistant = popup?.open;
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const commands: CommandItem[] = useMemo(() => [
+    // First row. An empty palette selects it, so Enter asks from this page.
+    // The panel keeps the page the assistant reads. The full workspace stays
+    // under Navigation, for anyone who wants the page of its own.
+    {
+      id: 'ask-ai',
+      label: 'Ask the assistant',
+      labelEl: 'Ρωτήστε τον βοηθό',
+      description: openAssistant ? 'Opens here, on this page' : 'Opens the assistant page',
+      descriptionEl: openAssistant ? 'Ανοίγει εδώ, σε αυτή τη σελίδα' : 'Ανοίγει τη σελίδα του βοηθού',
+      icon: Sparkles,
+      action: () => {
+        if (openAssistant) openAssistant(undefined, 'ai');
+        else router.push('/ai');
+      },
+      category: 'assistant',
+    },
     // Navigation
     {
       id: 'home',
@@ -136,17 +155,6 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
     },
 
     // Actions
-    {
-      id: 'ask-ai',
-      label: 'Ask AI…',
-      labelEl: 'Ρωτήστε το AI…',
-      description: 'Start a new assistant conversation',
-      descriptionEl: 'Νέα συνομιλία με τον βοηθό',
-      icon: Sparkles,
-      path: '/ai',
-      action: () => router.push('/ai'),
-      category: 'actions',
-    },
     {
       id: 'search',
       label: 'Search profiles',
@@ -247,7 +255,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       action: () => router.push('/help'),
       category: 'help',
     },
-  ], [router, setTheme, onOpenShortcuts]);
+  ], [router, setTheme, onOpenShortcuts, openAssistant]);
 
   // Filter commands in either language, accents ignored; then every page that
   // fits the words, for this reader's role; then hand the words to the assistant.
@@ -278,15 +286,18 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       description: 'It reads your workspace and asks before it changes anything',
       descriptionEl: 'Διαβάζει τον χώρο εργασίας σας και ρωτά πριν αλλάξει κάτι',
       icon: Sparkles,
-      action: () => router.push(`/ai?q=${encodeURIComponent(search.trim())}`),
-      category: 'actions',
+      // Asked here, on this page, so the assistant keeps reading it; the
+      // full workspace only when there is no in-page assistant.
+      action: () => (popup ? popup.ask(search.trim()) : router.push(`/ai?q=${encodeURIComponent(search.trim())}`)),
+      category: 'assistant',
     };
     return [...own, ...pages, ask];
-  }, [commands, search, reader?.role, router]);
+  }, [commands, search, reader?.role, router, popup]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
     const groups: Record<string, CommandItem[]> = {
+      assistant: [],
       navigation: [],
       pages: [],
       actions: [],
@@ -340,6 +351,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
   }, [search]);
 
   const categoryLabels: Record<string, { en: string; el: string }> = {
+    assistant: { en: 'Assistant', el: 'Βοηθός' },
     navigation: { en: 'Navigation', el: 'Πλοήγηση' },
     pages: { en: 'Pages', el: 'Σελίδες' },
     actions: { en: 'Actions', el: 'Ενέργειες' },
@@ -413,7 +425,9 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
                       >
                         <cmd.icon className="icon-sm flex-shrink-0" />
                         <div className="min-w-0 flex-1 text-left">
-                          <p className="font-medium"><BilingualText en={cmd.label} el={cmd.labelEl} compact wrap /></p>
+                          <p className="font-medium">
+                            {cmd.labelEl ? <BilingualText en={cmd.label} el={cmd.labelEl} compact wrap /> : cmd.label}
+                          </p>
                           {cmd.description && (
                             <p className="text-xs text-muted-foreground"><BilingualText en={cmd.description} el={cmd.descriptionEl} wrap /></p>
                           )}

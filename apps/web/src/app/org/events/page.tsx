@@ -6,13 +6,11 @@ import {
   Calendar,
   Plus,
   Search,
-  Users,
   MoreVertical,
   Video,
   Edit,
   Trash2,
   Copy,
-  CheckCircle,
   ExternalLink,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -31,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgEvents } from '@/components/common/EmptyStates';
+import { EmptyOrgEvents, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -409,20 +407,15 @@ export default function OrgEventsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           {[
-            { label: 'Upcoming Events', labelEl: 'Προσεχείς εκδηλώσεις', value: upcoming, icon: Calendar },
-            { label: 'Total Attendees (all)', labelEl: 'Συνολικοί συμμετέχοντες', value: totalAttendees, icon: Users },
+            { label: 'Upcoming Events', labelEl: 'Προσεχείς εκδηλώσεις', value: upcoming },
+            { label: 'Total Attendees (all)', labelEl: 'Συνολικοί συμμετέχοντες', value: totalAttendees },
             // Every event not cancelled — it was labelled "This Month" but never filtered by date.
-            { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length, icon: CheckCircle },
+            { label: 'Events not cancelled', labelEl: 'Εκδηλώσεις σε ισχύ', value: events.filter(e => e.status !== 'cancelled').length },
           ].map(stat => (
             <Card key={stat.label}>
-              <CardContent className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
-                  <p className="page-stat text-xl font-bold">{stat.value}</p>
-                </div>
-                <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary-accessible" />
-                </div>
+              <CardContent>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
+                <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}
@@ -447,7 +440,14 @@ export default function OrgEventsPage() {
               <EventCard key={event.id} event={event} onDuplicate={live.length > 0 ? (ev) => void duplicate(ev) : undefined} />
             ))}
             {filtered.length === 0 && (
-              <EmptyOrgEvents filtersActive={filtersActive} onClearFilters={clearFilters} />
+              <EmptyOrgEvents
+                filtersActive={filtersActive}
+                onClearFilters={clearFilters}
+                active={namedFilters(namedQuery(search), namedChoice(activeTab, 'all', {
+                  active: { en: 'Active', el: 'Ενεργές' },
+                  completed: { en: 'Completed', el: 'Ολοκληρωμένες' },
+                }))}
+              />
             )}
           </TabsContent>
         </Tabs>

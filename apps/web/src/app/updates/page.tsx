@@ -110,6 +110,7 @@ function UpdatesContent() {
     const ok = await confirm({
       title: <BilingualText en="Delete this update?" el="Διαγραφή αυτής της ενημέρωσης;" compact />,
       description: <BilingualText en="It disappears for your followers, and its public link stops working." el="Χάνεται για τους ακολούθους σας και ο δημόσιος σύνδεσμός της σταματά να λειτουργεί." wrap />,
+      confirmLabel: <BilingualText en="Delete update" el="Διαγραφή ενημέρωσης" compact secondaryClassName="text-destructive-foreground" />,
       variant: 'destructive',
     });
     if (!ok) return CANCELLED;

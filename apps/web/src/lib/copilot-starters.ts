@@ -32,6 +32,74 @@ export const COPILOT_STARTERS: CopilotStarter[] = [
   { en: 'Connect with Elena', el: 'Στείλε αίτημα σύνδεσης στην Elena', kind: 'write', glyph: 'people' },
 ];
 
+/**
+ * Whose work the empty state should name.
+ *
+ * A founder opening the assistant and a mentor opening it were offered the
+ * same four questions. The phrases below are ones the planner already turns
+ * into a read or a confirmed change for that role's own pages.
+ */
+export type StarterAudience = 'founder' | 'mentor' | 'investor' | 'provider' | 'org' | 'admin';
+
+const ROLE_STARTERS: Record<Exclude<StarterAudience, 'founder'>, CopilotStarter[]> = {
+  mentor: [
+    { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
+    { en: 'Show mentoring requests', el: 'Δείξε τα αιτήματα καθοδήγησης', kind: 'read', glyph: 'people' },
+    { en: 'Which sessions are coming up?', el: 'Ποιες συνεδρίες έρχονται;', kind: 'read', glyph: 'calendar' },
+    { en: 'Show my availability', el: 'Δείξε τη διαθεσιμότητά μου', kind: 'read', glyph: 'calendar' },
+    { en: "Accept Sofia's mentoring request", el: 'Αποδέξου το αίτημα καθοδήγησης της Σοφίας', kind: 'write', glyph: 'people' },
+  ],
+  investor: [
+    { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
+    { en: 'Show my investor board', el: 'Δείξε τον πίνακα επενδύσεων', kind: 'read', glyph: 'wallet' },
+    { en: 'Show my best matches', el: 'Δείξε τις καλύτερες αντιστοιχίσεις', kind: 'read', glyph: 'matches' },
+  ],
+  provider: [
+    { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
+    { en: 'Show my inquiries', el: 'Δείξε τα αιτήματα πελατών', kind: 'read', glyph: 'people' },
+    { en: 'Show my services', el: 'Δείξε τις υπηρεσίες μου', kind: 'read', glyph: 'wallet' },
+  ],
+  org: [
+    { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
+    { en: 'Which accelerator programmes are open right now?', el: 'Ποια προγράμματα επιτάχυνσης δέχονται αιτήσεις;', kind: 'read', glyph: 'people' },
+    { en: 'Show organisation members', el: 'Δείξε τα μέλη του οργανισμού', kind: 'read', glyph: 'people' },
+    { en: 'Show cohorts', el: 'Δείξε τους κύκλους', kind: 'read', glyph: 'calendar' },
+  ],
+  admin: [
+    { en: 'What should I do next?', el: 'Τι να κάνω μετά;', kind: 'read', glyph: 'spark' },
+    { en: 'How many users are on the platform?', el: 'Πόσοι χρήστες είναι στην πλατφόρμα;', kind: 'read', glyph: 'people' },
+    { en: 'Show the moderation queue', el: 'Δείξε την ουρά ελέγχου', kind: 'read', glyph: 'spark' },
+  ],
+};
+
+export function starterAudience(role: string | null | undefined): StarterAudience {
+  switch (role) {
+    case 'mentor':
+    case 'advisor':
+    case 'coach':
+      return 'mentor';
+    case 'angel_investor':
+    case 'vc_scout':
+    case 'vc_analyst':
+    case 'syndicate_manager':
+      return 'investor';
+    case 'service_provider':
+    case 'legal_partner':
+    case 'finance_advisor':
+    case 'recruiter':
+      return 'provider';
+    case 'incubator_admin':
+    case 'accelerator_admin':
+    case 'university_admin':
+    case 'venture_studio_admin':
+      return 'org';
+    case 'platform_admin':
+      return 'admin';
+    default:
+      return 'founder';
+  }
+}
+
 /** A question about the page the reader is on, with the read it must plan. */
 export type PageStarter = CopilotStarter & { tool: string };
 
@@ -76,11 +144,22 @@ export function pageStartersFor(pathname: string | null | undefined): PageStarte
   return [];
 }
 
-export function copilotStartersFor(surface: 'page' | 'popup', pathname?: string | null): {
+/**
+ * The empty state's starters: the reader's role chooses the general ones (a
+ * mentor is offered mentoring work, not a founder's fundraising), and the
+ * page they opened it from puts its own questions first. One options object,
+ * because both used to arrive as the same positional argument.
+ */
+export function copilotStartersFor(
+  surface: 'page' | 'popup',
+  { pathname, role }: { pathname?: string | null; role?: string | null } = {},
+): {
   reads: CopilotStarter[];
   writes: CopilotStarter[];
 } {
-  const visible = COPILOT_STARTERS.filter((starter) =>
+  const audience = starterAudience(role);
+  const source = audience === 'founder' ? COPILOT_STARTERS : ROLE_STARTERS[audience];
+  const visible = source.filter((starter) =>
     surface === 'popup' ? starter.popup !== false : starter.page !== false,
   );
   const general = visible.filter((starter) => starter.kind === 'read');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { rememberReturnTo } from '@/lib/return-to';
@@ -81,6 +81,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>('founder');
+  // A role card on the public home opens this form with ?role= already chosen.
+  // Read after mount so the server and the first paint still agree on Founder.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('role');
+    if (requested && ROLES.some((item) => item.value === requested)) setRole(requested);
+  }, []);
   const [error, setError] = useState<Message | null>(null);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);

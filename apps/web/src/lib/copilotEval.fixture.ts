@@ -125,6 +125,9 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Show me angel investors for pre-seed in Limassol', tool: 'search_people', args: { roles: 'investor', fundingStage: 'pre-seed', location: 'Limassol' }, read: true },
   // «τεχνικό» contains «νικο»: this searched for Nikos until names had to start a word.
   { message: 'Ψάξε τεχνικό συνιδρυτή για fintech', tool: 'search_people', args: { q: 'technical', roles: 'founder', industries: 'Fintech' }, read: true },
+  // The investor board is the watchlist, the pipeline and the portfolio.
+  { message: 'Show my investor board', tool: 'get_investor_board', read: true },
+  { message: 'Δείξε τον πίνακα επενδύσεων', tool: 'get_investor_board', read: true },
 ];
 
 /** Writes the planner may propose; a question proposing one of these fails. */

@@ -1338,19 +1338,18 @@ html {
   }
 
   /* ── Bilingual secondary text ──
-     The secondary language must read as subordinate to the primary without
-     becoming illegible. Sizing is relative (0.85em) so the ratio holds in an
-     h1, in body copy and in a badge alike, with a 12px floor via max() so it
-     never drops below cursor.com's caption size in already-small containers.
-     Replaces the previous hardcoded text-[9px] / text-[10px].
-     Colour is deliberately NOT set here: it stays a Tailwind class on the
-     element so tailwind-merge can resolve a caller-supplied override
-     (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
+     Both languages share the size, the line box and the weight of the line
+     they sit in. A smaller second language read as a caption and made the
+     pair look uneven, especially in Greek. The second language stays quieter
+     only by colour (the muted class on the element). Colour is deliberately
+     NOT set here: it stays a Tailwind class so tailwind-merge can resolve a
+     caller-supplied override (e.g. secondaryClassName="text-primary-foreground"
+     on an active chip). */
   .bilingual-secondary {
-    font-size: max(12.2412px, 0.765075rem, 0.85em);
-    line-height: 1.45;                 /* room for Greek diacritics; 1.35 crowded a wrapped Greek line */
-    font-weight: 400;
-    letter-spacing: 0;
+    font-size: 1em;
+    line-height: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
   }
 
   /* Greek set in capitals with open tracking drops its accents and loses its
@@ -1380,7 +1379,8 @@ html {
   /* Separator between primary and secondary in inline mode. */
   .bilingual-separator {
     @apply select-none text-muted-foreground/40;
-    font-size: max(12.2412px, 0.765075rem, 0.85em);
+    font-size: 1em;
+    line-height: inherit;
   }
 
   /* Phone/tablet (16px root): same computed pixels as cursor.com. Desktop
@@ -1896,7 +1896,7 @@ html {
      Attribute selectors, not `.text-muted-foreground`: Tailwind folds a rule
      that names one of its utilities into that utility and rebuilds it for
      every variant (`placeholder:`, `hover:`...), which broke the stylesheet. */
-  :where(main p[class~='text-muted-foreground']:not([class~='truncate']):not([class~='line-clamp-1']), main p[class~='page-lead']) {
+  :where(main p[class~='text-muted-foreground']:not([class~='truncate']):not([class~='line-clamp-1']), main p[class~='page-lead'], main p.card-body, main .card-body p) {
     max-width: 75ch;
   }
   :where(main [class~='text-center']:not([class*='sm:text-left']):not([class*='md:text-left']):not([class*='lg:text-left']) p[class~='text-muted-foreground'], main p[class~='text-muted-foreground'][class~='text-center']) {
@@ -3146,7 +3146,57 @@ h3.page-section.page-section--compact,
    sheet fails to parse.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* In-flow boxes: a 1px hairline, no shadow, no 2px frame. */
+  /* A status word is ink. The tinted chip was a stain, and its padding
+     pushed the word off the line under it (the "In discussion" pill on
+     Overview). The colour of the word stays. A chip that is itself a
+     control, or is marked data-chip (a count sitting on a button), keeps
+     its shape: the shape is the control, not a label. */
+  .badge:not([data-chip]):not(button):not(a):not([role='button']) {
+    background-color: transparent !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* One filled action in a row. A second primary button in the same
+     action row becomes an outline, so the row has one next step.
+     A pressed control is a selection, not a second call to action. */
+  #main-content [data-actions] > :is(button, a)[class~='bg-primary'] ~ :is(button, a)[class~='bg-primary']:not([aria-pressed='true']) {
+    background-color: transparent;
+    color: hsl(var(--foreground));
+    border: 1px solid hsl(var(--border));
+  }
+  #main-content [data-actions] > :is(button, a)[class~='bg-primary'] ~ :is(button, a)[class~='bg-primary']:not([aria-pressed='true']):hover {
+    background-color: hsl(var(--secondary) / 0.5);
+  }
+
+  /* One language, when the reader asked for it. BilingualText already
+     omits the second half; this catches a pair that still carries the class. */
+  html[data-language-display='primary-only'] .bilingual-secondary,
+  html[data-language-display='primary-only'] .bilingual-separator {
+    display: none !important;
+  }
+
+  /* Motion only when something changed. Infinite bounce, glow and pulse
+     run while the page is resting. A short fade when content arrives, a
+     colour change on hover, and a loading spinner stay. */
+  .animate-bounce-subtle,
+  .animate-pulse-glow,
+  .animate-pulse-slow,
+  .animate-spin-slow,
+  .focus-ring-animated:focus-visible {
+    animation: none;
+  }
+  .glow-role {
+    box-shadow: none;
+  }
+
+  /* An empty state is a sentence and one next step, on the card's left
+     axis. The tinted circle above the title was a stain with no word. */
+  #main-content .empty-mark {
+    display: none;
+  }
+
+  /* In-flow boxes: a 1px hairline, no shadow, no 2px frame. */
 #main-content div[class~="border"],
 #main-content section[class~="border"],
 #main-content article[class~="border"],
@@ -3381,6 +3431,29 @@ textarea[class~="border-input"]:focus,
   border-color: hsl(var(--ring));
 }
 
+/* The ask field's edge lives on the form, so the input rule above never
+   sees it. Same law: the neutral field edge at rest, the theme's link
+   tone while the question is being typed. */
+form[data-ask-ai]:focus-within,
+[data-ask-frame]:focus-within {
+  border-color: hsl(var(--ring));
+}
+
+/* A search bar already has a border and a glyph. The shared 2px brand
+   outline, offset by another 2px, drew a second bright frame the moment
+   the field was tapped (the search page on a phone). The focused search
+   bar keeps a 1px hairline in the text colour, sitting on the edge. */
+input[data-search-field]:focus,
+input[data-search-field]:focus-visible {
+  outline: 1px solid hsl(var(--foreground) / 0.28) !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+input[data-search-field][class~="border-input"]:focus,
+input[data-search-field][class~="border-input"]:focus-visible {
+  border-color: hsl(var(--foreground) / 0.28);
+}
+
 /* ── Explicit zeros win ─────────────────────────────────────────────────
    `p-0`/`px-0`/`pt-0` on a card part used to lose twice: `.card-comfortable`
    is emitted after Tailwind's utilities in the same layer, and the
@@ -3443,8 +3516,8 @@ textarea[class~="border-input"]:focus,
 
   .bilingual-secondary,
   .bilingual-separator {
-    font-size: 13.044px;
-    line-height: 1.45;
+    font-size: 1em;
+    line-height: inherit;
   }
 
   #main-content .text-2xs,
@@ -3985,6 +4058,22 @@ textarea[class~="border-input"]:focus,
    ("Cofounder", not "cofounder"): tags arrive as typed. */
 .facts-dotted > li::first-letter {
   text-transform: uppercase;
+}
+
+/* A directory token (a sector, a stage, a place) reads as a tag. The frame
+   is 16% of the ink and the wash is 4%, so the word separates from the
+   sentence around it without a pastel well. The word stays full ink.
+   A span, so the nested-card rule that fades a div's border does not
+   swallow this one. */
+.quiet-tag {
+  display: inline-block;
+  max-width: 100%;
+  border-radius: calc(var(--radius) - 4px);
+  border: 1px solid hsl(var(--foreground) / 0.16);
+  background-color: hsl(var(--foreground) / 0.04);
+  color: hsl(var(--foreground));
+  padding: 1px 6px;
+  overflow-wrap: anywhere;
 }
 
 /* ── Card text ladder ────────────────────────────────────────────────────

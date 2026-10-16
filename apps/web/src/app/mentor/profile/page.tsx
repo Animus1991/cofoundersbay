@@ -336,8 +336,8 @@ export default function MentorProfilePage() {
                 </div>
                 <div className="flex items-center justify-between border-t border-border pt-4">
                   <div>
-                    <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους μαθητευόμενους" compact /></p>
-                    <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση μαθητευόμενων" wrap /></p>
+                    <p className="text-sm font-medium"><BilingualText en="Accepting New Mentees" el="Δέχεται νέους καθοδηγούμενους" compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en="Toggle visibility in mentee search" el="Εμφάνιση στην αναζήτηση καθοδηγούμενων" wrap /></p>
                   </div>
                   <Switch checked={isAccepting} onCheckedChange={setIsAccepting} aria-label="Accepting New Mentees" />
                 </div>

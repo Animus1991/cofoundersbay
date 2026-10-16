@@ -6,12 +6,42 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useRoleOptional } from '@/contexts/RoleContext';
 import {
   copilotStartersFor,
+  starterAudience,
   type CopilotStarter,
   type CopilotStarterKind,
+  type StarterAudience,
 } from '@/lib/copilot-starters';
 import { cn } from '@/lib/utils';
+
+const INTRO: Record<StarterAudience, { en: string; el: string }> = {
+  founder: {
+    en: 'Looks up the same data as the rest of your workspace — matches, research, fundraising and calendar.',
+    el: 'Ψάχνει τα ίδια δεδομένα με τον υπόλοιπο χώρο εργασίας σας — αντιστοιχίσεις, έρευνα, χρηματοδότηση και ημερολόγιο.',
+  },
+  mentor: {
+    en: 'Looks up your sessions, requests and hours. A change waits until you confirm it.',
+    el: 'Ψάχνει τις συνεδρίες, τα αιτήματα και τις ώρες σας. Μια αλλαγή περιμένει την επιβεβαίωσή σας.',
+  },
+  investor: {
+    en: 'Looks up the startups you are tracking. A change to a stage waits until you confirm it.',
+    el: 'Ψάχνει τα startups που παρακολουθείτε. Μια αλλαγή σταδίου περιμένει την επιβεβαίωσή σας.',
+  },
+  provider: {
+    en: 'Looks up your inquiries and the services you offer. A change waits until you confirm it.',
+    el: 'Ψάχνει τα αιτήματα και τις υπηρεσίες που προσφέρετε. Μια αλλαγή περιμένει την επιβεβαίωσή σας.',
+  },
+  org: {
+    en: 'Looks up programmes, cohorts and members. A change waits until you confirm it.',
+    el: 'Ψάχνει προγράμματα, κύκλους και μέλη. Μια αλλαγή περιμένει την επιβεβαίωσή σας.',
+  },
+  admin: {
+    en: 'Looks up platform figures and the moderation queue. It does not change a person’s access on its own.',
+    el: 'Ψάχνει τα μεγέθη της πλατφόρμας και την ουρά ελέγχου. Δεν αλλάζει μόνο του την πρόσβαση κάποιου.',
+  },
+};
 
 /**
  * Empty state for the copilot. Two equal columns of full-width rows that
@@ -31,9 +61,13 @@ export function CopilotEmptyState({
 }) {
   const isPage = surface === 'page';
   const sayOne = useBilingualString();
-  // Opened from a page, the assistant leads with questions about that page.
+  // Opened from a page, the assistant leads with questions about that page;
+  // the reader's role chooses the rest.
   const pathname = usePathname();
-  const { reads, writes } = copilotStartersFor(surface, pathname);
+  const role = useRoleOptional()?.primaryRole;
+  const audience = starterAudience(role);
+  const { reads, writes } = copilotStartersFor(surface, { pathname, role });
+  const intro = INTRO[audience];
 
   return (
     <div
@@ -46,10 +80,7 @@ export function CopilotEmptyState({
         <p className="type-ui mb-4 max-w-prose text-muted-foreground">
           {/* Every user reads this on /ai, so it names their workspace, not the
               showcase's company and its round. */}
-          {sayOne(
-            'Looks up the same data as the rest of your workspace — matches, research, fundraising and calendar.',
-            'Ψάχνει τα ίδια δεδομένα με τον υπόλοιπο χώρο εργασίας σας — αντιστοιχίσεις, έρευνα, χρηματοδότηση και ημερολόγιο.',
-          )}
+          {sayOne(intro.en, intro.el)}
         </p>
       ) : (
         <p className="type-caption text-muted-foreground">
@@ -59,13 +90,15 @@ export function CopilotEmptyState({
       <div
         className={cn(
           'grid w-full grid-cols-1',
-          isPage
+          isPage && writes.length
             ? 'gap-6 md:grid-cols-2 md:gap-0 md:divide-x md:divide-border/70'
             : 'gap-4',
         )}
       >
-        <StarterColumn kind="read" items={reads} onAsk={onAsk} className={isPage ? 'md:pr-8 lg:pr-10' : undefined} />
-        <StarterColumn kind="write" items={writes} onAsk={onAsk} className={isPage ? 'md:pl-8 lg:pl-10' : undefined} />
+        <StarterColumn kind="read" items={reads} onAsk={onAsk} className={isPage && writes.length ? 'md:pr-8 lg:pr-10' : undefined} />
+        {writes.length ? (
+          <StarterColumn kind="write" items={writes} onAsk={onAsk} className={isPage ? 'md:pl-8 lg:pl-10' : undefined} />
+        ) : null}
       </div>
       <p
         className={cn(

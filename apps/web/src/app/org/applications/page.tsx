@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EmptyOrgApplications } from '@/components/common/EmptyStates';
+import { EmptyOrgApplications, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -458,7 +458,19 @@ export default function OrgApplicationsPage() {
             />
           ))}
           {filteredApplications.length === 0 && (
-            <EmptyOrgApplications filtersActive={filtersActive} onClearFilters={clearFilters} />
+            <EmptyOrgApplications
+              filtersActive={filtersActive}
+              onClearFilters={clearFilters}
+              active={namedFilters(
+                namedQuery(search),
+                program !== 'all' ? { en: program, el: program } : null,
+                namedChoice(activeTab, 'all', {
+                  pending: { en: 'Pending', el: 'Σε αναμονή' },
+                  accepted: { en: 'Accepted', el: 'Εγκεκριμένες' },
+                  rejected: { en: 'Rejected', el: 'Απορριφθείσες' },
+                }),
+              )}
+            />
           )}
         </div>
       </div>

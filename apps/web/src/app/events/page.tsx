@@ -327,9 +327,15 @@ export default function EventsPage() {
                     ? hasToken
                       ? <BilingualText en="You have not said you are going to, or interested in, any event yet." el="Δεν έχετε δηλώσει ακόμα συμμετοχή ή ενδιαφέρον για κάποια εκδήλωση." />
                       : <BilingualText en="Sign in to view your event activity." el="Συνδεθείτε για να δείτε τις εκδηλώσεις σας." />
-                    : filter !== 'all'
-                      ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
-                      : undefined
+                    : searchQuery.trim()
+                      ? <BilingualText
+                          en={`Nothing matched “${searchQuery.trim()}”${filter !== 'all' ? ', with the format filter in the side panel' : ''}.`}
+                          el={`Τίποτα δεν ταιριάζει με «${searchQuery.trim()}»${filter !== 'all' ? ', μαζί με το φίλτρο μορφής στο πλευρικό πάνελ' : ''}.`}
+                          wrap
+                        />
+                      : filter !== 'all'
+                        ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
+                        : undefined
                 }
                 illustration="calendar"
                 askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."

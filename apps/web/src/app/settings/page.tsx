@@ -112,13 +112,10 @@ const PRIVACY_ITEMS = [
 /**
  * How many languages a screen carries.
  *
- * English and Greek pair: every label, title and description can show the
- * reader's language and the other one beside it. That is useful while
- * someone is learning the product's vocabulary and costs half of every
- * screen after that. The preference already existed — `primary-only` — but
- * only behind a menu item in the top bar and the account menu, so the one
- * setting that removes the most text from every page was the hardest to find.
- * It belongs here, under the language it qualifies.
+ * English and Greek pair: every label can show the reader's language and
+ * the other one beside it, at the same size. Both stay in the product.
+ * The screen starts with one language; this card, and the account menu,
+ * turn the second one on.
  *
  * Shown only for English and Greek: every other locale already reads in one
  * language (a Greek line under Spanish would be noise), so there is nothing
@@ -129,8 +126,8 @@ const DISPLAY_CHOICES: { value: LanguageDisplayMode; en: string; el: string; hin
     value: 'bilingual',
     en: 'Both languages',
     el: 'Και οι δύο γλώσσες',
-    hintEn: 'Each label shows its translation in smaller text.',
-    hintEl: 'Κάθε ετικέτα δείχνει και τη μετάφρασή της με μικρότερα γράμματα.',
+    hintEn: 'Each label shows its translation beside it.',
+    hintEl: 'Κάθε ετικέτα δείχνει και τη μετάφρασή της δίπλα.',
   },
   {
     value: 'primary-only',

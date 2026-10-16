@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
+import { Users } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 import { RailStats } from './RailParts';
 
 describe('RailStats description list', () => {
   it('keeps each bilingual term and value in a single valid description-list group', () => {
     const { container } = render(
-      <RailStats items={[{ key: 'people', label: 'People', labelEl: 'Άτομα', value: 12 }]} />,
+      <RailStats items={[{ key: 'people', label: 'People', labelEl: 'Άτομα', value: 12, icon: Users, tone: 'bg-status-accent-bg text-status-accent' }]} />,
     );
     const list = container.querySelector('dl');
     const group = list?.firstElementChild;
@@ -17,5 +18,7 @@ describe('RailStats description list', () => {
     expect(group?.querySelector('dd')?.parentElement).toBe(group);
     expect(screen.getByText('People')).toBeTruthy();
     expect(screen.getByText('12')).toBeTruthy();
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.innerHTML).not.toContain('bg-status-accent-bg');
   });
 });

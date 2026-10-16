@@ -40,7 +40,6 @@ const STATUS_CONFIG: Record<InviteItem['status'], { key: InviteKey; color: strin
 };
 
 function StatCard({
-  icon: Icon,
   labelKey,
   value,
   descriptionKey,
@@ -55,21 +54,16 @@ function StatCard({
   return (
     <Card className={cn('', accent && 'border-primary/15 bg-primary/5')}>
       <CardContent>
-        <div className="flex items-start justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
-              <BilingualText en={inviteEn(labelKey)} el={inviteEl(labelKey)} compact />
+        <div className="min-w-0">
+          <p className="text-xs font-medium uppercase leading-snug tracking-wide text-muted-foreground">
+            <BilingualText en={inviteEn(labelKey)} el={inviteEl(labelKey)} compact />
+          </p>
+          <p className={cn('mt-1 text-3xl font-bold tabular-nums', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
+          {descriptionKey && (
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">
+              <BilingualText en={inviteEn(descriptionKey)} el={inviteEl(descriptionKey)} compact wrap />
             </p>
-            <p className={cn('mt-1 text-3xl font-bold tabular-nums', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
-            {descriptionKey && (
-              <p className="mt-1 text-xs leading-snug text-muted-foreground">
-                <BilingualText en={inviteEn(descriptionKey)} el={inviteEl(descriptionKey)} compact wrap />
-              </p>
-            )}
-          </div>
-          <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', accent ? 'bg-primary/15' : 'bg-secondary')}>
-            <Icon className={cn('icon-sm', accent ? 'text-primary-accessible' : 'text-muted-foreground')} />
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -25,6 +25,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
+import { matchReasonCopy } from '@/lib/match-reason';
 
 type PhoneActivity = {
   id: string;
@@ -167,6 +168,7 @@ export function FounderPhoneHome({
       : [];
 
   const days = milestone?.dueDate ? daysUntil(milestone.dueDate) : null;
+  const firstReason = first?.matchReasons?.[0] ? matchReasonCopy(first.matchReasons[0]) : null;
   const resumeIsMilestone = showResume && !boards.isLoading && !latestBoard && !!milestone;
 
   const hasResume = Boolean(
@@ -240,7 +242,7 @@ export function FounderPhoneHome({
             <CardTitle>
               <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} compact wrap />
             </CardTitle>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2" data-actions="">
               <Button asChild variant="outline" size="sm">
                 <Link href="/updates">
                   <BilingualText en="Log an update" el="Καταχώριση ενημέρωσης" compact />
@@ -286,8 +288,13 @@ export function FounderPhoneHome({
                 <AvatarImage src={first.avatarUrl ?? undefined} alt="" />
                 <AvatarFallback>{first.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-foreground">{first.displayName}</p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="min-w-0 text-sm font-medium text-foreground">{first.displayName}</p>
+                  {(first.matchScore ?? 0) > 0 ? (
+                    <p className="shrink-0 text-sm font-semibold tabular-nums text-foreground">{first.matchScore}%</p>
+                  ) : null}
+                </div>
                 {first.headline ? (
                   <p className="text-xs text-muted-foreground">{first.headline}</p>
                 ) : seenToday(first.lastSeenAt) ? (
@@ -295,9 +302,14 @@ export function FounderPhoneHome({
                     <BilingualText en="Active today" el="Ενεργός σήμερα" compact />
                   </p>
                 ) : null}
+                {firstReason ? (
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText en={firstReason.en} el={firstReason.el} compact wrap />
+                  </p>
+                ) : null}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2" data-actions="">
               <Button
                 type="button"
                 size="sm"

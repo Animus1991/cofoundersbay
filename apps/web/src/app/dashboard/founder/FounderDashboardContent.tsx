@@ -73,6 +73,7 @@ import { PREVIEW_MILESTONE_EL } from '@/lib/i18n/strings-milestones';
 import { activityTimeAgoPair, activityTitleEl } from '@/lib/i18n/activity-titles';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { matchReasonCopy } from '@/lib/match-reason';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 const FOUNDER_TOUR: TourStep[] = [
   {
@@ -301,6 +302,7 @@ function AttentionChips({
 function MatchPreviewRow({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? 'text-primary-accessible' : STATUS.warning.icon;
+  const reason = match.matchReasons?.[0] ? matchReasonCopy(match.matchReasons[0]) : null;
   return (
     <Link href={`/matches/${match.userId}`} className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring">
       <RowHead
@@ -320,6 +322,7 @@ function MatchPreviewRow({ match }: { match: SearchHit }) {
               : match.headline}
           </span>
         ) : undefined}
+        meta={reason ? <BilingualText en={reason.en} el={reason.el} compact /> : undefined}
         asideStays
         aside={(
           <span className={cn('flex items-center gap-0.5 text-sm font-semibold tabular-nums', scoreColor)}>

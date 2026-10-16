@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Search, TrendingUp, Briefcase,
-  Bookmark, UserPlus, Zap, ArrowUpDown, Users, Eye, BadgeCheck, Telescope,
-  BarChart3, Layers, X,
+  Bookmark, Zap, ArrowUpDown, Users, BadgeCheck, Telescope,
+  CheckCircle2, Layers, X,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -17,11 +17,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { FactLine } from '@/components/common/FactLine';
-import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
@@ -127,7 +124,9 @@ const TYPE_LABEL: Record<InvestorType, { en: string; el: string }> = Object.from
   TYPE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
 ) as Record<InvestorType, { en: string; el: string }>;
 
-const STAGE_LABEL: Record<string, string> = Object.fromEntries(STAGE_OPTIONS.map((o) => [o.value, o.en]));
+const STAGE_COPY: Record<string, { en: string; el: string }> = Object.fromEntries(
+  STAGE_OPTIONS.filter((o) => o.value !== 'all').map((o) => [o.value, { en: o.en, el: o.el }]),
+);
 
 function hitToInvestor(hit: SearchHit): Investor {
   return {
@@ -205,6 +204,38 @@ const SAMPLE_INVESTORS: Investor[] = [
 
 // ── Investor card ──────────────────────────────────────────────────────────────
 
+/** One caption over its value. An empty value omits the row; it never changes the row's shape. */
+function CardFact({ en, el, children }: { en: string; el: string; children: ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <span className="block text-xs font-medium text-foreground">
+        <BilingualText en={en} el={el} compact />
+      </span>
+      {children}
+    </div>
+  );
+}
+
+/** A sector, a stage or a place: the same almost-transparent frame on every card. */
+function QuietTag({ children }: { children: ReactNode }) {
+  return <span role="listitem" className="quiet-tag text-xs">{children}</span>;
+}
+
+function TagList({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div role="list" aria-label={label} className="flex flex-wrap gap-1">
+      {children}
+    </div>
+  );
+}
+
+type RecordBit = { figureEn: string; figureEl: string; en: string; el: string };
+
+function countLine(n: number, oneEn: string, manyEn: string, oneEl: string, manyEl: string): RecordBit {
+  const figure = String(n);
+  return { figureEn: figure, figureEl: figure, en: n === 1 ? oneEn : manyEn, el: n === 1 ? oneEl : manyEl };
+}
+
 function InvestorCard({
   investor,
   saved,
@@ -214,21 +245,32 @@ function InvestorCard({
   saved: boolean;
   onToggleSave: () => void;
 }) {
+  const sampleReasonId = useId();
   const initials = initialsOf(investor.displayName);
   const checkSize = formatCheckSize(investor.checkSizeMin, investor.checkSizeMax);
   const type = investor.investorType ? TYPE_LABEL[investor.investorType] : null;
-  const place = investor.geographies.length ? investor.geographies.slice(0, 2).join(', ') : investor.location;
-  const facts = [
-    investor.portfolioCount != null && { key: 'portfolio', icon: Briefcase, en: `${investor.portfolioCount} investments`, el: `${investor.portfolioCount} επενδύσεις` },
-    investor.dealsThisYear != null && { key: 'deals', icon: BarChart3, en: `${investor.dealsThisYear} deals this year`, el: `${investor.dealsThisYear} συμφωνίες φέτος` },
-    investor.viewCount != null && { key: 'views', icon: Eye, en: `${investor.viewCount.toLocaleString('en-GB')} views`, el: `${investor.viewCount.toLocaleString('el-GR')} προβολές` },
-  ].filter(Boolean) as { key: string; icon: typeof Briefcase; en: string; el: string }[];
+  const stages = investor.stages.map((stage) => STAGE_COPY[stage] ?? { en: stage, el: stage });
+  const places = investor.geographies.length ? investor.geographies : investor.location ? [investor.location] : [];
+  const record: RecordBit[] = [];
+  if (investor.portfolioCount != null) record.push(countLine(investor.portfolioCount, 'investment', 'investments', 'επένδυση', 'επενδύσεις'));
+  if (investor.dealsThisYear != null) record.push(countLine(investor.dealsThisYear, 'deal this year', 'deals this year', 'συμφωνία φέτος', 'συμφωνίες φέτος'));
+  if (investor.viewCount != null) {
+    record.push({
+      figureEn: investor.viewCount.toLocaleString('en-GB'),
+      figureEl: investor.viewCount.toLocaleString('el-GR'),
+      en: investor.viewCount === 1 ? 'view' : 'views',
+      el: investor.viewCount === 1 ? 'προβολή' : 'προβολές',
+    });
+  }
+  const sampleReasonEn = 'Sample investor: there is no profile or inbox behind it';
+  const sampleReasonEl = 'Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα';
 
-  // The Endorsements card: avatar, name and the line under it, the save
-  // control at the right; the thesis, the facts and the foot start on the
-  // avatar's edge, and the thesis sits a notch under the name and byline.
+  // Every investor, sparse or dense, uses this order. A missing value drops
+  // its row and leaves the rest where they are, so two cards never look
+  // like two different components. Tokens share one frame; the cheque and
+  // the record's numbers are the only heavier ink.
   return (
-    <Card className="group transition-all hover:border-primary/30">
+    <Card className="group overflow-hidden transition-all hover:border-primary/30">
       <CardContent className="space-y-3">
         <CardHead
           mark={(
@@ -250,8 +292,6 @@ function InvestorCard({
               )}
             </span>
           )}
-          /* One text run, never cut: the investor type, then firm and role
-             (as separate flex items they broke into ragged columns). */
           subtitle={type || investor.firmName || investor.firmRole || investor.headline ? (
             <>
               {type ? <BilingualText en={type.en} el={type.el} compact /> : null}
@@ -262,9 +302,10 @@ function InvestorCard({
             </>
           ) : undefined}
           meta={investor.isActivelyScouting ? (
-            <Badge className={cn('mt-1 border text-2xs', STATUS.success.chip)}>
+            <span className="inline-flex items-center gap-1 text-xs text-primary-accessible">
+              <CheckCircle2 className="icon-sm" aria-hidden="true" />
               <BilingualText en="Actively scouting" el="Αναζητά ενεργά" compact />
-            </Badge>
+            </span>
           ) : undefined}
           asideStays
           aside={(
@@ -287,65 +328,86 @@ function InvestorCard({
           <p className="card-body line-clamp-2 text-muted-foreground">{investor.thesisSummary}</p>
         )}
 
-        {/* What they invest in, then in which sectors: two fact lines,
-            dot-separated, where stages, cheque, place and sectors were up
-            to eight tinted pills. */}
-        <div className="space-y-1">
-          <FactLine
-            label={bilingualInline('Stages, cheque size and place', 'Στάδια, εύρος επένδυσης και τόπος')}
-            items={[
-              ...investor.stages.map((s) => STAGE_LABEL[s] ?? s),
-              checkSize,
-              place,
-            ]}
-          />
-          <FactLine
-            label={bilingualInline('Sectors', 'Τομείς')}
-            items={investor.industries}
-          />
-        </div>
+        {investor.industries.length ? (
+          <CardFact en="Sectors" el="Τομείς">
+            <TagList label={bilingualInline('Sectors', 'Τομείς')}>
+              {investor.industries.map((name) => <QuietTag key={name}>{name}</QuietTag>)}
+            </TagList>
+          </CardFact>
+        ) : null}
 
-        <CardFoot
-          meta={facts.length ? (
-            <FactLine items={facts.map(({ key, en, el }) => <BilingualText key={key} en={en} el={el} compact />)} />
-          ) : undefined}
-        >
+        {stages.length ? (
+          <CardFact en="Stages" el="Στάδια">
+            <TagList label={bilingualInline('Stages', 'Στάδια')}>
+              {stages.map((stage) => (
+                <QuietTag key={stage.en}><BilingualText en={stage.en} el={stage.el} compact wrap /></QuietTag>
+              ))}
+            </TagList>
+          </CardFact>
+        ) : null}
+
+        {checkSize ? (
+          <CardFact en="Cheque" el="Επιταγή">
+            <span className="text-xs font-semibold tabular-nums text-foreground">{checkSize}</span>
+          </CardFact>
+        ) : null}
+
+        {places.length ? (
+          <CardFact en="Place" el="Τόπος">
+            <TagList label={bilingualInline('Place', 'Τόπος')}>
+              {places.map((place) => <QuietTag key={place}>{place}</QuietTag>)}
+            </TagList>
+          </CardFact>
+        ) : null}
+
+        {record.length ? (
+          <CardFact en="So far" el="Μέχρι σήμερα">
+            <p className="text-xs text-muted-foreground">
+              {record.map((item, index) => (
+                <span key={item.en}>
+                  {index > 0 ? ' · ' : null}
+                  <span className="font-medium tabular-nums text-foreground">
+                    <BilingualText en={item.figureEn} el={item.figureEl} compact />
+                  </span>
+                  {' '}
+                  <BilingualText en={item.en} el={item.el} compact />
+                </span>
+              ))}
+            </p>
+          </CardFact>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
           {investor.sample ? (
-            <>
-              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled>
-                  <Eye className="icon-sm" aria-hidden="true" />
+            <div className="flex max-w-full flex-col items-start gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
                   <BilingualText en="Profile" el="Προφίλ" compact />
                 </Button>
-              </WithDisabledReason>
-              <WithDisabledReason reasonEn="Sample investor: there is no profile or inbox behind it" reasonEl="Δείγμα επενδυτή: δεν υπάρχει προφίλ ή εισερχόμενα">
-                <Button size="sm" className="h-7 gap-1 text-xs" disabled>
-                  <UserPlus className="icon-sm" aria-hidden="true" />
+                <Button variant="outline" size="sm" disabled title={bilingualInline(sampleReasonEn, sampleReasonEl)} aria-describedby={sampleReasonId}>
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Button>
-              </WithDisabledReason>
-            </>
+              </div>
+              <span id={sampleReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+                <BilingualText en={sampleReasonEn} el={sampleReasonEl} compact wrap />
+              </span>
+            </div>
           ) : (
             <>
-              <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link href={`/profiles/${investor.userId}`}>
-                  <Eye className="icon-sm" aria-hidden="true" />
                   <BilingualText en="Profile" el="Προφίλ" compact />
                 </Link>
               </Button>
-              {/* A warm path first: who you know who knows them (the
-                  intermediary decides whether to forward). The direct
-                  message stays beside it, named for what it is. */}
-              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} className="h-7 gap-1 text-xs" />
-              <Button size="sm" className="h-7 gap-1 text-xs" asChild>
+              <AskIntroButton targetId={investor.userId} targetName={investor.displayName} />
+              <Button size="sm" asChild>
                 <Link href={`/messages?to=${investor.userId}`}>
-                  <UserPlus className="icon-sm" aria-hidden="true" />
                   <BilingualText en="Message directly" el="Απευθείας μήνυμα" compact />
                 </Link>
               </Button>
             </>
           )}
-        </CardFoot>
+        </div>
       </CardContent>
     </Card>
   );

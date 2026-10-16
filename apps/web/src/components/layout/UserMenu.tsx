@@ -32,7 +32,7 @@ import { useOpenCommandPalette } from './CommandPaletteHost';
 
 /**
  * Secondary line shared by every menu entry. Sizing is deliberately NOT set here:
- * `.bilingual-secondary` (globals.css) already scales it to max(11px, 0.85em), so
+ * `.bilingual-secondary` (globals.css) uses the same size as the first language, so
  * the second language stays subordinate to the first at any container size. Adding
  * a fixed `text-sm` here would flatten that ratio to the primary's own size.
  * We only add wrapping, so a long Greek label is never clipped.

@@ -279,7 +279,7 @@ export default function GroupsModerationPage() {
             {filtered.map(report => <ReportCard key={report.id} report={report} />)}
             {filtered.length === 0 && (
               search ? (
-                <NoFilterResults entity="reports" onClear={() => setSearch('')} />
+                <NoFilterResults entity="reports" onClear={() => setSearch('')} active={[{ en: `“${search}”`, el: `«${search}»` }]} />
               ) : activeTab === 'pending' ? (
                 <ListEmptyState
                   icon={CheckCircle}

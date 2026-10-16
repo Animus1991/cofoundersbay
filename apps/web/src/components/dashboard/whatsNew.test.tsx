@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { readNaturalSearch } from '@cofounderbay/shared';
 import { resolvePreviewApi } from '@/lib/preview-api';
@@ -43,6 +43,27 @@ describe('what is new', () => {
     cleanup();
     render(<WhatsNewPanel audience="founder" />);
     expect(screen.queryByRole('heading', { name: /What’s new/ })).toBeNull();
+  });
+});
+
+describe('where the panel sits', () => {
+  // The studio home puts the one next step, then the work. A changelog
+  // between them pushed the figures and the lists below the fold. The
+  // founder home already kept it last; the other homes follow.
+  const homes: { file: string; audience: string }[] = [
+    { file: 'dashboard/founder/FounderDashboardContent.tsx', audience: 'founder' },
+    { file: 'dashboard/investor/page.tsx', audience: 'investor' },
+    { file: 'dashboard/mentor/page.tsx', audience: 'mentor' },
+    { file: 'dashboard/provider/page.tsx', audience: 'provider' },
+    { file: 'dashboard/incubator/page.tsx', audience: 'org' },
+  ];
+
+  it.each(homes)('follows the figures on $file', ({ file, audience }) => {
+    const source = readFileSync(resolve(APP, file), 'utf8');
+    const figures = source.indexOf('grid-cols-4');
+    const panel = source.indexOf(`<WhatsNewPanel audience="${audience}" />`);
+    expect(figures).toBeGreaterThan(-1);
+    expect(panel).toBeGreaterThan(figures);
   });
 });
 

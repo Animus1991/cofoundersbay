@@ -829,26 +829,21 @@ export default function FundraisingPage() {
       content: (
         <div className="space-y-2">
           {[
-            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, count: stats.total, tone: 'accent' as const },
-            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, count: stats.active, tone: 'warning' as const },
-            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, count: stats.committed, tone: 'success' as const },
-            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null, tone: 'info' as const },
+            { label: 'stat_leads' as const, value: stats.total, count: stats.total },
+            { label: 'stat_active' as const, value: stats.active, count: stats.active },
+            { label: 'stat_committed' as const, value: stats.committed, count: stats.committed },
+            { label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', count: null },
           ].map((s) => (
-            <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
-                <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
-              </div>
-              <div className="min-w-0">
-                <p className="page-stat text-lg font-bold tabular-nums">{s.value}</p>
-                <p className="page-stat-label text-2xs leading-snug text-muted-foreground">
-                  <BilingualText
-                    en={fundraisingEn(s.label)}
-                    el={fundraisingEl(s.count === 1 ? (`${s.label}_one` as typeof s.label) : s.label)}
-                    compact
-                    wrap
-                  />
-                </p>
-              </div>
+            <div key={s.label} className="min-w-0 rounded-lg border border-border p-3">
+              <p className="page-stat text-lg font-bold tabular-nums">{s.value}</p>
+              <p className="page-stat-label text-2xs leading-snug text-muted-foreground">
+                <BilingualText
+                  en={fundraisingEn(s.label)}
+                  el={fundraisingEl(s.count === 1 ? (`${s.label}_one` as typeof s.label) : s.label)}
+                  compact
+                  wrap
+                />
+              </p>
             </div>
           ))}
         </div>

@@ -258,36 +258,21 @@ export default function MentorRequestsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-3">
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-warning-bg p-2">
-                <Clock className="icon-md text-status-warning" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{pendingRequests.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact wrap /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{pendingRequests.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Pending" el="Σε αναμονή" compact wrap /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-success-bg p-2">
-                <CheckCircle2 className="icon-md text-status-success" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{acceptedRequests.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτά" compact wrap /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{acceptedRequests.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Accepted" el="Αποδεκτά" compact wrap /></p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center gap-3">
-              <div className="rounded-lg bg-status-danger-bg p-2">
-                <XCircle className="icon-md text-status-danger" />
-              </div>
-              <div>
-                <p className="page-stat text-xl font-bold">{declinedRequests.length}</p>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Declined" el="Απορριφθέντα" compact wrap /></p>
-              </div>
+            <CardContent>
+              <p className="page-stat text-xl font-bold">{declinedRequests.length}</p>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Declined" el="Απορριφθέντα" compact wrap /></p>
             </CardContent>
           </Card>
         </div>
@@ -349,9 +334,6 @@ export default function MentorRequestsPage() {
                 <CardContent className="py-12 text-center">
                   <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No accepted requests" el="Δεν υπάρχουν αποδεκτά αιτήματα" /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Accepted requests will appear here." el="Τα αποδεκτά αιτήματα θα εμφανίζονται εδώ." wrap />
-                  </p>
                 </CardContent>
               </Card>
             )}
@@ -371,9 +353,6 @@ export default function MentorRequestsPage() {
                 <CardContent className="py-12 text-center">
                   <XCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium"><BilingualText en="No declined requests" el="Δεν υπάρχουν απορριφθέντα αιτήματα" /></h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en="Declined requests will appear here." el="Τα απορριφθέντα αιτήματα θα εμφανίζονται εδώ." wrap />
-                  </p>
                 </CardContent>
               </Card>
             )}

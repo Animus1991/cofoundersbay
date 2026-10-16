@@ -960,7 +960,7 @@ export default function CohortDetailPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead><BilingualText en="Mentor" el="Μέντορας" compact /></TableHead>
-                      <TableHead><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></TableHead>
+                      <TableHead><BilingualText en="Mentee" el="Καθοδηγούμενος" compact /></TableHead>
                       <TableHead><BilingualText en="Topic" el="Θέμα" compact /></TableHead>
                       <TableHead><BilingualText en="Date" el="Ημερομηνία" compact /></TableHead>
                       <TableHead><BilingualText en="Duration" el="Διάρκεια" compact /></TableHead>

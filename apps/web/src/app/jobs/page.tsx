@@ -450,7 +450,13 @@ export default function JobsPage() {
             : <BilingualText en={jobsEn('empty')} el={jobsEl('empty')} />
           }
           description={
-            search || activeFilters === 0 ? undefined
+            search ? (
+              <BilingualText
+                en={`Nothing matched “${search.trim()}”${activeFilters > 0 ? ', with the role and type filters in the side panel' : ''}. Clear the search to see every job.`}
+                el={`Τίποτα δεν ταιριάζει με «${search.trim()}»${activeFilters > 0 ? ', μαζί με τα φίλτρα ρόλου και τύπου στο πλευρικό πάνελ' : ''}. Καθαρίστε την αναζήτηση για να δείτε όλες τις θέσεις.`}
+                wrap
+              />
+            ) : activeFilters === 0 ? undefined
             : <BilingualText en="The role and type filters are set in the side panel." el="Τα φίλτρα ρόλου και τύπου βρίσκονται στο πλευρικό πάνελ." />
           }
           askAiPrompt={

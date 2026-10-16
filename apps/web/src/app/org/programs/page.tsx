@@ -26,7 +26,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
+import { EmptyOrgPrograms, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -391,7 +391,16 @@ export default function OrgProgramsPage() {
             <ProgramCard key={program.id} program={program} />
           ))}
           {filteredPrograms.length === 0 && (
-            <EmptyOrgPrograms filtersActive={filtersActive} onClearFilters={clearFilters} />
+            <EmptyOrgPrograms
+              filtersActive={filtersActive}
+              onClearFilters={clearFilters}
+              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
+                active: { en: 'Active', el: 'Ενεργά' },
+                completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
+                draft: { en: 'Draft', el: 'Πρόχειρα' },
+                archived: { en: 'Archived', el: 'Αρχειοθετημένα' },
+              }))}
+            />
           )}
         </div>
       </div>

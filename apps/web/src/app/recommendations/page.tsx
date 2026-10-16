@@ -61,6 +61,7 @@ import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { FactLine } from '@/components/common/FactLine';
+import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -155,9 +156,14 @@ function BreakdownModal({
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
-                {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">{r}</span>
-                ))}
+                {reasons.map((r, i) => {
+                  const copy = matchReasonCopy(r);
+                  return (
+                    <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">
+                      <BilingualText en={copy.en} el={copy.el} compact />
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -347,7 +353,10 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
         {/* Reasons, then the dimension bars when asked for. */}
         {reasons.length > 0 && (
           <div className="space-y-1">
-            <FactLine items={reasons.slice(0, 3)} />
+            <FactLine items={reasons.slice(0, 3).map((reason) => {
+              const copy = matchReasonCopy(reason);
+              return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
+            })} />
             <button
               type="button"
               aria-expanded={showExplanation}

@@ -178,6 +178,7 @@ export function EventCard({
             <img
               src={event.coverImage}
               alt={event.title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
@@ -293,7 +294,10 @@ export function EventCard({
   // title and when beside it, the kind at the right; where, who and how many
   // on the mark's edge; the actions on the axis.
   return (
-    <Card className={cn('group hover:border-primary/30 transition-colors', className)}>
+    <Card className={cn('group overflow-hidden hover:border-primary/30 transition-colors', className)}>
+      {event.coverImage ? (
+        <img src={event.coverImage} alt="" referrerPolicy="no-referrer" className="h-28 w-full object-cover" />
+      ) : null}
       <CardContent className="space-y-3">
         <CardHead
           mark={(

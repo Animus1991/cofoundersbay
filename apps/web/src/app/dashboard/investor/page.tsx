@@ -227,13 +227,13 @@ export default function InvestorDashboard() {
             kickerEn="Active deal"
             kickerEl="Ενεργή συμφωνία"
             title={active[0].name}
+            reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
+            reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
             href="/investor/pipeline"
             actionEn="Open"
             actionEl="Άνοιγμα"
           />
         ) : null}
-
-        <WhatsNewPanel audience="investor" />
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -377,6 +377,10 @@ export default function InvestorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The active deal and the figures stay the first
+            glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="investor" />
       </div>
     </AppShell>
   );

@@ -32,7 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgMembers } from '@/components/common/EmptyStates';
+import { EmptyOrgMembers, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { cn, initialsOf } from '@/lib/utils';
@@ -328,7 +328,14 @@ export default function OrgMembersPage() {
                   </div>
                 ) : null}
                 {filtered.length === 0 && (
-                  <EmptyOrgMembers filtersActive={filtersActive} onClearFilters={clearFilters} />
+                  <EmptyOrgMembers
+                    filtersActive={filtersActive}
+                    onClearFilters={clearFilters}
+                    active={namedFilters(namedQuery(search), namedChoice(activeTab, 'all', {
+                      active: { en: 'Active', el: 'Ενεργά' },
+                      invited: { en: 'Invited', el: 'Προσκεκλημένα' },
+                    }))}
+                  />
                 )}
               </CardContent>
             </Card>

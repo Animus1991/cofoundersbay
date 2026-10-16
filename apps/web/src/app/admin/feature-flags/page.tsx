@@ -497,20 +497,15 @@ export default function AdminFeatureFlagsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Enabled', labelEl: 'Ενεργές', value: stats.enabled, icon: CheckCircle2, color: 'text-status-success' },
-            { label: 'In Rollout', labelEl: 'Σε σταδιακή διάθεση', value: stats.rollout, icon: Percent, color: 'text-status-info' },
-            { label: 'Experiments', labelEl: 'Πειράματα', value: stats.experiment, icon: FlaskConical, color: 'text-status-accent' },
-            { label: 'Disabled', labelEl: 'Ανενεργές', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
-          ].map(({ label, labelEl, value, icon: Icon, color }) => (
+            { label: 'Enabled', labelEl: 'Ενεργές', value: stats.enabled },
+            { label: 'In Rollout', labelEl: 'Σε σταδιακή διάθεση', value: stats.rollout },
+            { label: 'Experiments', labelEl: 'Πειράματα', value: stats.experiment },
+            { label: 'Disabled', labelEl: 'Ανενεργές', value: stats.disabled },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary">
-                  <Icon className={cn('icon-sm', color)} />
-                </div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}

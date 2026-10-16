@@ -26,6 +26,7 @@ import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { demoCover } from '@/lib/demo/photos';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 
 interface Resource {
@@ -39,6 +40,7 @@ interface Resource {
   author: string;
   authorRole: string;
   url: string;
+  image?: string;
   isFeatured?: boolean;
   tags: string[];
   completedBy?: number;
@@ -88,6 +90,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Sarah Chen',
     authorRole: 'VC Partner',
     url: '#',
+    image: demoCover('course-seed', 800, 450),
     isFeatured: true,
     tags: ['Pitch Deck', 'Term Sheets', 'VC'],
     completedBy: 1247,
@@ -103,6 +106,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Alex Kumar',
     authorRole: 'Product Lead',
     url: '#',
+    image: demoCover('course-mvp', 800, 450),
     isFeatured: true,
     tags: ['MVP', 'No-Code', 'Validation'],
     completedBy: 892,
@@ -118,6 +122,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Maria Santos',
     authorRole: 'Growth Lead',
     url: '#',
+    image: demoCover('course-growth', 800, 450),
     tags: ['Growth', 'B2B', 'SaaS'],
     completedBy: 567,
   },
@@ -132,6 +137,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'James Wilson',
     authorRole: 'Sales Coach',
     url: '#',
+    image: demoCover('course-sales', 800, 450),
     tags: ['Sales', 'Founders', 'B2B'],
     completedBy: 734,
   },
@@ -146,6 +152,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'David Park',
     authorRole: 'CEO',
     url: '#',
+    image: demoCover('course-teams', 800, 450),
     tags: ['Leadership', 'Culture', 'Hiring'],
     completedBy: 423,
   },
@@ -160,6 +167,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Lisa Zhang',
     authorRole: 'CTO',
     url: '#',
+    image: demoCover('course-systems', 800, 450),
     tags: ['Architecture', 'Scaling', 'Backend'],
     completedBy: 645,
   },
@@ -183,7 +191,10 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
 
   return (
-    <Card className="flex flex-col transition-all hover:border-primary/20">
+    <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
+      {resource.image ? (
+        <img src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+      ) : null}
       <CardContent className="flex flex-1 flex-col gap-3">
         {/* The kind of resource is the card's mark; its title, then type and
             level as one line of facts. "Featured" is the card's one pill. */}
@@ -349,6 +360,7 @@ function backendToResource(r: LearningResourceItem): Resource {
     author: r.author ?? 'CoFounderBay',
     authorRole: '',
     url: r.url,
+    image: r.imageUrl ?? undefined,
     isFeatured: r.isFeatured,
     tags: r.tags ?? [],
     completedBy: undefined,
@@ -747,8 +759,24 @@ export default function LearningPage() {
                   <p className="font-medium text-foreground">
                     <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
+                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                    {searchQuery.trim() || typeFilter !== 'all' || selectedCategory !== 'All' ? (
+                      <BilingualText
+                        en={`Nothing matched ${[
+                          searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
+                        el={`Τίποτα δεν ταιριάζει με ${[
+                          searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
+                        wrap
+                      />
+                    ) : (
+                      <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} wrap />
+                    )}
                   </p>
                   {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
                     <div className="mt-4 flex flex-wrap justify-center gap-2">

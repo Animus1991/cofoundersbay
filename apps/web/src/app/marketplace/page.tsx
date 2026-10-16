@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, Star, ExternalLink, Package, TrendingUp, DollarSign,
+  Search, Star, ExternalLink, TrendingUp, DollarSign,
   CheckCircle, MessageCircle, Bookmark, Filter, ArrowUpDown,
   Clock, MapPin, Users, Zap, ChevronRight, ShieldCheck, Plus,
   Scale, Calculator, Megaphone, Code2, Brush, BrainCircuit, GraduationCap,
@@ -353,6 +353,7 @@ export default function MarketplacePage() {
     isAvailable: true,
     websiteUrl: s.websiteUrl ?? undefined,
     contactUrl: s.contactUrl ?? undefined,
+    providerAvatar: s.providerLogo ?? undefined,
   }));
 
   const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];
@@ -560,10 +561,37 @@ export default function MarketplacePage() {
                 )}
 
                 {filtered.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Package className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
+                  <div className="flex flex-col items-start py-16 text-left">
                     <p className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
-                    <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap /></p>
+                    <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                      {search.trim() || selectedCategory !== 'All' || availableOnly ? (
+                        <BilingualText
+                          en={`Nothing matched ${[
+                            search.trim() ? `“${search.trim()}”` : null,
+                            selectedCategory !== 'All' ? selectedCategory : null,
+                            availableOnly ? 'available now' : null,
+                          ].filter(Boolean).join(', ')}. Clear them to see every service.`}
+                          el={`Τίποτα δεν ταιριάζει με ${[
+                            search.trim() ? `«${search.trim()}»` : null,
+                            selectedCategory !== 'All' ? selectedCategory : null,
+                            availableOnly ? 'διαθέσιμοι τώρα' : null,
+                          ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλες τις υπηρεσίες.`}
+                          wrap
+                        />
+                      ) : (
+                        <BilingualText en="Services from members appear here once they are listed." el="Οι υπηρεσίες των μελών εμφανίζονται εδώ μόλις καταχωριστούν." wrap />
+                      )}
+                    </p>
+                    {(search.trim() || selectedCategory !== 'All' || availableOnly) && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => { setSearch(''); setSelectedCategory('All'); setAvailableOnly(false); }}
+                      >
+                        <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+                      </Button>
+                    )}
                   </div>
                 )}
               </>

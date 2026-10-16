@@ -19,32 +19,27 @@ export type RailStat = {
   label: string;
   labelEl?: string;
   value: ReactNode;
+  /**
+   * Kept so existing callers compile. Not drawn: a tinted square beside a
+   * number is a stain, and the glyph inside it is often already hidden.
+   */
   icon?: ElementType;
-  /** A semantic tone class pair for the icon tile, e.g. 'bg-status-info-bg text-status-info'. */
+  /** @deprecated The figure is the number and its caption. */
   tone?: string;
   /** One line of context under the label ("+3 this week"), in both languages. */
   note?: string;
   noteEl?: string;
 };
 
-/** Figures that describe the page's list: counts, not controls. */
+/** Figures that describe the page's list: the number and its caption. */
 export function RailStats({ items }: { items: RailStat[] }) {
   return (
     <dl className="space-y-2">
-      {items.map(({ key, label, labelEl, value, icon: Icon, tone, note, noteEl }) => (
-        /* Padding per side, not `p-3` + `pl-[3.75rem]`: globals.css restates
-           `.p-3` in px after the utilities, so the shorthand won and the
-           left inset fell back to 12px - the icon sat on top of the first
-           letters of every label ("Con|nections") on every railed page.
-           A soft tile, not a framed box: the rail is a flat surface like the
-           left sidebar, and a frame per figure turned it back into cards. */
-        <div key={key} className={cn('relative flex min-w-0 flex-col rounded-lg bg-muted/45 py-3 pr-3', Icon ? 'pl-[3.75rem]' : 'pl-3')}>
+      {items.map(({ key, label, labelEl, value, note, noteEl }) => (
+        /* A soft tile, not a framed box, and no icon well: the rail is a
+           flat surface like the left sidebar. */
+        <div key={key} className="relative flex min-w-0 flex-col rounded-lg bg-muted/45 py-3 pl-3 pr-3">
           <dt className="order-2 mt-1 text-xs leading-snug text-muted-foreground">
-            {Icon ? (
-              <span className={cn('absolute left-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg', tone ?? 'bg-muted text-muted-foreground')} aria-hidden="true">
-                <Icon className="icon-sm" />
-              </span>
-            ) : null}
             {/* Stacked: in a column this narrow an inline pair wraps and
                 leaves its "·" separator alone on a line. */}
             <BilingualText en={label} el={labelEl} stacked wrap />
