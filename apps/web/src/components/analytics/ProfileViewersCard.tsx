@@ -15,6 +15,7 @@ import { usePageList } from '@/lib/page-controls';
 import { getProfileViewers } from '@/lib/profile-viewers-api';
 import { qk } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 /**
  * Who viewed the reader's profile in the last 90 days. Names appear only for
@@ -91,13 +92,10 @@ export function ProfileViewersCard() {
                       <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary-accessible">{initialsOf(n.displayName)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/profiles/${encodeURIComponent(n.id)}`}
+                      <PersonHovercard userId={n.id}><Link href={`/profiles/${encodeURIComponent(n.id)}`}
                         className="text-sm font-medium text-foreground hover:text-primary-accessible"
                         aria-label={bilingualAria(`Open ${n.displayName}'s profile`, `Άνοιγμα προφίλ: ${n.displayName}`)}
-                      >
-                        {n.displayName}
-                      </Link>
+                      >{n.displayName}</Link></PersonHovercard>
                       <p className="truncate text-xs text-muted-foreground">{n.headline ?? <StatusText value={n.role} />}</p>
                     </div>
                     <span className="shrink-0 text-xs text-muted-foreground">

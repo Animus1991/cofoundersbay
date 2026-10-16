@@ -49,6 +49,7 @@ import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { PeopleYouMayKnow } from '@/components/network/PeopleYouMayKnow';
 import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -139,9 +140,7 @@ function ConnectionCard({
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/profiles/${other.id}`} className="transition-colors hover:text-primary-accessible">
-                {other.displayName}
-              </Link>
+              <PersonHovercard userId={other.id}><Link href={`/profiles/${other.id}`} className="transition-colors hover:text-primary-accessible">{other.displayName}</Link></PersonHovercard>
               <RoleBadge role={other.role} size="sm" />
             </span>
           )}
@@ -191,9 +190,7 @@ function IntroRequestCard({
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/profiles/${sender.id}`} className="transition-colors hover:text-primary-accessible">
-                {sender.displayName}
-              </Link>
+              <PersonHovercard userId={sender.id}><Link href={`/profiles/${sender.id}`} className="transition-colors hover:text-primary-accessible">{sender.displayName}</Link></PersonHovercard>
               <RoleBadge role={sender.role} size="sm" />
             </span>
           )}

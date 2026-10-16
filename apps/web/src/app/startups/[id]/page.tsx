@@ -29,6 +29,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CANCELLED, usePageControls } from '@/lib/page-controls';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -353,9 +354,7 @@ export default function StartupDealPage() {
                     </Avatar>
                   )}
                   title={(
-                    <Link href={`/profiles/${deal.founder.id}`} className="hover:text-primary-accessible">
-                      {deal.founder?.displayName ?? '—'}
-                    </Link>
+                    <PersonHovercard userId={deal.founder.id}><Link href={`/profiles/${deal.founder.id}`} className="hover:text-primary-accessible">{deal.founder?.displayName ?? '—'}</Link></PersonHovercard>
                   )}
                   subtitle={deal.founder?.headline ?? undefined}
                   meta={<BilingualText en="Founder" el="Ιδρυτής" compact />}

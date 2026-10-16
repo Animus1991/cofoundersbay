@@ -19,6 +19,7 @@ import { getMeProfile, searchProfiles, sendConnectionRequest } from '@/lib/api';
 import { rowOptions, ROW_GONE, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { initialsOf } from '@/lib/utils';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 /**
  * "People you may know", the way a professional network's My Network page
@@ -173,7 +174,7 @@ export function PeopleYouMayKnow({ excludeIds, limit = 6 }: { excludeIds: Readon
                   )}
                   title={(
                     <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <Link href={`/profiles/${hit.userId}`} className="transition-colors hover:text-primary-accessible">{hit.displayName}</Link>
+                      <PersonHovercard userId={hit.userId}><Link href={`/profiles/${hit.userId}`} className="transition-colors hover:text-primary-accessible">{hit.displayName}</Link></PersonHovercard>
                       <PersonVerifiedBadge userId={hit.userId} />
                     </span>
                   )}

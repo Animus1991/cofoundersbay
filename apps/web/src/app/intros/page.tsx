@@ -26,6 +26,7 @@ import { commitmentRefusal } from '@/lib/commitments-api';
 import { acceptIntro, declineIntro, forwardIntro, listIntros, notNowIntro, withdrawIntro, type Intro } from '@/lib/intros-api';
 import { CANCELLED, ROW_GONE, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type Tab = 'sent' | 'forward' | 'received';
 const TABS = [
@@ -87,9 +88,7 @@ function IntroCard({
               </Link>
             )}
             title={(
-              <Link href={`/profiles/${encodeURIComponent(person.id)}`} className="transition-colors hover:text-primary-accessible">
-                {person.displayName}
-              </Link>
+              <PersonHovercard userId={person.id}><Link href={`/profiles/${encodeURIComponent(person.id)}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
             )}
             aside={(
               <Badge variant="outline" className={statusTone(intro.status)}>

@@ -25,6 +25,7 @@ import { listCommitmentCards } from '@/lib/commitments-api';
 import { qk } from '@/lib/query-keys';
 import { getMyUpdates, getUpdatesBy } from '@/lib/updates-api';
 import { initialsOf } from '@/lib/utils';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 /**
  * The profile sections a professional profile reads in, adapted to what this
@@ -285,7 +286,7 @@ export function SimilarProfiles({
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 flex-wrap items-center gap-x-1.5">
-                  <Link href={`/profiles/${hit.userId}`} className="truncate text-sm font-medium text-foreground hover:text-primary-accessible">{hit.displayName}</Link>
+                  <PersonHovercard userId={hit.userId}><Link href={`/profiles/${hit.userId}`} className="truncate text-sm font-medium text-foreground hover:text-primary-accessible">{hit.displayName}</Link></PersonHovercard>
                   <PersonVerifiedBadge userId={hit.userId} />
                 </div>
                 {hit.headline ? <p className="line-clamp-1 text-xs text-muted-foreground">{hit.headline}</p> : null}

@@ -45,6 +45,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 const MATCHES_TOUR: TourStep[] = [
   {
@@ -319,9 +320,7 @@ function MatchListRow({
             </div>
           )}
           title={(
-            <Link href={`/profiles/${hit.userId}`} className="transition-colors hover:text-primary-accessible">
-              {hit.displayName}
-            </Link>
+            <PersonHovercard userId={hit.userId}><Link href={`/profiles/${hit.userId}`} className="transition-colors hover:text-primary-accessible">{hit.displayName}</Link></PersonHovercard>
           )}
           subtitle={hit.headline ? <span className="line-clamp-1">{hit.headline}</span> : undefined}
           // The place, and where a commitment stands, on the title's edge;

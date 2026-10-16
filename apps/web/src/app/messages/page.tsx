@@ -52,6 +52,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 function mapConversation(s: ConversationSummary): Conversation {
   const lastAt = s.lastMessage?.createdAt ?? s.updatedAt;
@@ -176,9 +177,7 @@ function IntroDetailPane({
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/profiles/${request.requester.id}`} className="transition-colors hover:text-primary-accessible">
-                {request.requester.displayName}
-              </Link>
+              <PersonHovercard userId={request.requester.id}><Link href={`/profiles/${request.requester.id}`} className="transition-colors hover:text-primary-accessible">{request.requester.displayName}</Link></PersonHovercard>
               <RoleBadge role={request.requester?.role || 'founder'} size="sm" />
             </span>
           )}

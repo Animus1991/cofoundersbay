@@ -36,6 +36,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type RequestCardProps = {
   request: MentorRequestItem;
@@ -83,9 +84,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
             </Link>
           )}
           title={(
-            <Link href={`/profiles/${request.requesterId}`} className="hover:text-primary-accessible transition-colors">
-              {displayName}
-            </Link>
+            <PersonHovercard userId={request.requesterId}><Link href={`/profiles/${request.requesterId}`} className="hover:text-primary-accessible transition-colors">{displayName}</Link></PersonHovercard>
           )}
           subtitle={request.requester?.headline ? <span className="line-clamp-1">{request.requester.headline}</span> : undefined}
           aside={(

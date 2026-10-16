@@ -28,6 +28,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { SessionDateTile } from './SessionDateTile';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 export const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
   video: { en: 'Video call', el: 'Βιντεοκλήση' },
@@ -99,12 +100,9 @@ export function BookingCard({
           mark={<SessionDateTile date={start} />}
           title={(
             <span className="flex flex-wrap items-baseline gap-x-2">
-              <Link
-                href={`/profiles/${otherUserId}`}
+              <PersonHovercard userId={otherUserId}><Link href={`/profiles/${otherUserId}`}
                 className="transition-colors hover:text-primary-accessible"
-              >
-                {other.displayName}
-              </Link>
+              >{other.displayName}</Link></PersonHovercard>
               <span className="text-xs font-normal text-muted-foreground">
                 {isMentor
                   ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />

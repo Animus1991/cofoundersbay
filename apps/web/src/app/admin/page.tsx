@@ -99,6 +99,7 @@ import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; labelEl: string; color: string }> = {
   spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -389,9 +390,7 @@ function UserRow({
           </Link>
         )}
         title={(
-          <Link href={`/profiles/${user.id}`} className="transition-colors hover:text-primary-accessible">
-            {displayName}
-          </Link>
+          <PersonHovercard userId={user.id}><Link href={`/profiles/${user.id}`} className="transition-colors hover:text-primary-accessible">{displayName}</Link></PersonHovercard>
         )}
         subtitle={<span className="block truncate" translate="no">{user.email}</span>}
         meta={(

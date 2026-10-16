@@ -18,6 +18,7 @@ import { StepChip } from '@/components/commitments/OutcomeChip';
 import { FactLine } from '@/components/common/FactLine';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
   text: string;
@@ -196,9 +197,7 @@ function MatchCardInner({
           )}
           title={(
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <Link href={`/profiles/${userId}`} className="transition-colors hover:text-primary-accessible">
-                {displayName}
-              </Link>
+              <PersonHovercard userId={userId}><Link href={`/profiles/${userId}`} className="transition-colors hover:text-primary-accessible">{displayName}</Link></PersonHovercard>
               <RoleBadge role={role} size="sm" />
             </span>
           )}

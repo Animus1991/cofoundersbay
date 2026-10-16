@@ -24,6 +24,7 @@ import { matchAxisEl } from '@/lib/i18n/strings-matches';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 /*
  * Matches side by side.
@@ -237,9 +238,7 @@ export default function MatchComparePage() {
                         )}
                         title={(
                           <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                            <Link href={`/profiles/${person.userId}`} className="transition-colors hover:text-primary-accessible">
-                              {person.displayName}
-                            </Link>
+                            <PersonHovercard userId={person.userId}><Link href={`/profiles/${person.userId}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
                             <RoleBadge role={person.role} size="sm" />
                           </span>
                         )}

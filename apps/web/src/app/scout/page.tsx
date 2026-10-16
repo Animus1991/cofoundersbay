@@ -32,6 +32,7 @@ import { qk } from '@/lib/query-keys';
 import { dismissScoutProposal, getScout, restoreScoutProposal, runScout, saveScoutProposal, scoutReasonEl, setScoutBrief, type ScoutProposal } from '@/lib/scout-api';
 import { translate } from '@/lib/i18n/translate';
 import { useI18n } from '@/components/common/I18nProvider';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 const TABS = [
   { value: 'proposed', en: 'Proposed', el: 'Προτάσεις' },
@@ -76,9 +77,7 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
             </Link>
           )}
           title={(
-            <Link href={`/profiles/${encodeURIComponent(p.person.id)}`} className="hover:text-primary-accessible">
-              {p.person.displayName}
-            </Link>
+            <PersonHovercard userId={p.person.id}><Link href={`/profiles/${encodeURIComponent(p.person.id)}`} className="hover:text-primary-accessible">{p.person.displayName}</Link></PersonHovercard>
           )}
           subtitle={p.person?.headline ?? undefined}
           meta={p.person?.location ?? undefined}

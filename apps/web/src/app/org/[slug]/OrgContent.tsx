@@ -26,6 +26,7 @@ import { FollowButton } from '@/components/updates/FollowButton';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 /** The organisation's rounded square, the kind's glyph standing in for a
  * missing logo (the Programs card's mark). */
@@ -370,9 +371,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           </Avatar>
                         )}
                         title={(
-                          <Link href={`/profiles/${member.id}`} className="transition-colors hover:text-primary-accessible">
-                            {member.displayName}
-                          </Link>
+                          <PersonHovercard userId={member.id}><Link href={`/profiles/${member.id}`} className="transition-colors hover:text-primary-accessible">{member.displayName}</Link></PersonHovercard>
                         )}
                         subtitle={member.headline ? <span className="line-clamp-2">{member.headline}</span> : undefined}
                       />

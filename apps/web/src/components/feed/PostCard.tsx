@@ -29,6 +29,7 @@ import {
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -126,12 +127,9 @@ export function PostCard({
             </Link>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link
-                  href={`/profiles/${author.id}`}
+                <PersonHovercard userId={author.id}><Link href={`/profiles/${author.id}`}
                   className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
-                >
-                  {author.displayName}
-                </Link>
+                >{author.displayName}</Link></PersonHovercard>
                 <RoleBadge role={author.role} size="sm" />
                 <span className="text-xs text-muted-foreground">·</span>
                 {/* RelativeTime, not suppressHydrationWarning: suppression

@@ -34,6 +34,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 export type ProfileCardData = {
   id: string;
@@ -161,9 +162,7 @@ function ProfileCardInner({
   );
   const nameWithRole = (
     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-      <Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">
-        {profile.displayName}
-      </Link>
+      <PersonHovercard userId={profile.userId}><Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">{profile.displayName}</Link></PersonHovercard>
       <RoleBadge role={profile.role} size="sm" />
     </span>
   );
@@ -202,9 +201,7 @@ function ProfileCardInner({
             mark={profileLink('ring-2 ring-border/40 group-hover:ring-primary/40 transition-all', 'bg-primary/20 text-primary-accessible font-semibold')}
             title={(
               <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
-                <Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">
-                  {profile.displayName}
-                </Link>
+                <PersonHovercard userId={profile.userId}><Link href={`/profiles/${profile.userId}`} className="person-name transition-colors hover:text-primary-accessible">{profile.displayName}</Link></PersonHovercard>
                 {profile.isVerified && (
                   <Badge variant="secondary" size="sm" className="bg-status-success-bg text-status-success border-status-success-border">
                     <BilingualText en="Verified" el="Επαληθευμένο" compact />

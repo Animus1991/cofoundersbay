@@ -45,6 +45,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -152,9 +153,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
     </Link>
   );
   const name = (
-    <Link href={`/profiles/${member.userId}`} className="transition-colors hover:text-primary-accessible">
-      {member.displayName}
-    </Link>
+    <PersonHovercard userId={member.userId}><Link href={`/profiles/${member.userId}`} className="transition-colors hover:text-primary-accessible">{member.displayName}</Link></PersonHovercard>
   );
   const role = member.role ? <StatusText value={member.role} /> : undefined;
   const actions = (
@@ -534,7 +533,7 @@ export function MembersPageClient() {
                     /* The badge wraps under the name rather than clipping it. */
                     title={(
                       <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                        <Link href={`/profiles/${member.userId}`} className="hover:text-primary-accessible transition-colors">{member.displayName}</Link>
+                        <PersonHovercard userId={member.userId}><Link href={`/profiles/${member.userId}`} className="hover:text-primary-accessible transition-colors">{member.displayName}</Link></PersonHovercard>
                         <PersonVerifiedBadge userId={member.userId} />
                       </span>
                     )}

@@ -73,6 +73,7 @@ import {
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type ViewMode = 'list' | 'grid';
 type SortBy = 'saved_newest' | 'saved_oldest' | 'name_az' | 'match_score';
@@ -203,9 +204,7 @@ function ShortlistCard({
             </Link>
           )}
           title={(
-            <Link href={`/profiles/${item.userId}`} className="transition-colors hover:text-primary-accessible">
-              {profile?.displayName ?? 'Unknown'}
-            </Link>
+            <PersonHovercard userId={item.userId}><Link href={`/profiles/${item.userId}`} className="transition-colors hover:text-primary-accessible">{profile?.displayName ?? 'Unknown'}</Link></PersonHovercard>
           )}
           // The head's right holds states only: the compare tick, the
           // engine's score and the reader's own label. The quick actions

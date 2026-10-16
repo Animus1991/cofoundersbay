@@ -69,6 +69,7 @@ import { qk } from '@/lib/query-keys';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 interface Mentor {
   id: string;
@@ -157,9 +158,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           )}
           title={(
             <span className="inline-flex flex-wrap items-center gap-1.5">
-              <Link href={`/profiles/${mentor.id}`} className="person-name transition-colors hover:text-primary-accessible">
-                {mentor.displayName}
-              </Link>
+              <PersonHovercard userId={mentor.id}><Link href={`/profiles/${mentor.id}`} className="person-name transition-colors hover:text-primary-accessible">{mentor.displayName}</Link></PersonHovercard>
               {mentor.isVerified && <BadgeCheck className="icon-sm text-muted-foreground shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
               {mentor.isFeatured && (
                 <Badge variant="secondary" className="gap-1 text-xs px-1.5 py-0.5 font-normal">
@@ -418,9 +417,7 @@ function MentorshipSessionRow({ rel, session, userId }: { rel: MentorshipRelatio
           mark={<SessionDateTile date={start} />}
           title={(
             <span className="flex flex-wrap items-baseline gap-x-2">
-              <Link href={`/profiles/${other.id}`} className="person-name transition-colors hover:text-primary-accessible">
-                {other.displayName}
-              </Link>
+              <PersonHovercard userId={other.id}><Link href={`/profiles/${other.id}`} className="person-name transition-colors hover:text-primary-accessible">{other.displayName}</Link></PersonHovercard>
               <span className="text-xs font-normal text-muted-foreground">
                 {rel.mentorId === userId
                   ? <BilingualText en="(mentee)" el="(καθοδηγούμενος)" compact />

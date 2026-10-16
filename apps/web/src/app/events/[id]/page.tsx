@@ -17,6 +17,7 @@ import { getEvent, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type Rsvp = 'going' | 'interested' | 'not_going';
 
@@ -322,9 +323,7 @@ export default function EventDetailPage() {
                   </Avatar>
                 )}
                 title={event.host?.id ? (
-                  <Link href={`/profiles/${event.host.id}`} className="transition-colors hover:text-primary-accessible">
-                    {event.host.displayName}
-                  </Link>
+                  <PersonHovercard userId={event.host.id}><Link href={`/profiles/${event.host.id}`} className="transition-colors hover:text-primary-accessible">{event.host.displayName}</Link></PersonHovercard>
                 ) : (
                   <span>{event.host?.displayName || '—'}</span>
                 )}
