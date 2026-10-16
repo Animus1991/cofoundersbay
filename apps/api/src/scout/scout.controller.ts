@@ -21,8 +21,9 @@ export class ScoutController {
 
   @Post('run')
   @Throttle({ default: { ttl: 60_000, limit: 6 } })
-  run(@CurrentUser() user: { id: string }, @Body() body: { lang?: string } = {}) {
-    return this.scout.run(user.id, new Date(), body?.lang === 'el' ? 'el' : 'en');
+  // A run keeps the note in both languages; an older client's `lang` is ignored.
+  run(@CurrentUser() user: { id: string }) {
+    return this.scout.run(user.id, new Date());
   }
 
   @Post('proposals/:id/save')

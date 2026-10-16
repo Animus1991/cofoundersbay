@@ -29,7 +29,9 @@ import { useFormDraft } from '@/lib/form-draft';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { ROW_GONE, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
-import { dismissScoutProposal, getScout, restoreScoutProposal, runScout, saveScoutProposal, setScoutBrief, type ScoutProposal } from '@/lib/scout-api';
+import { dismissScoutProposal, getScout, restoreScoutProposal, runScout, saveScoutProposal, scoutReasonEl, setScoutBrief, type ScoutProposal } from '@/lib/scout-api';
+import { translate } from '@/lib/i18n/translate';
+import { useI18n } from '@/components/common/I18nProvider';
 
 const TABS = [
   { value: 'proposed', en: 'Proposed', el: 'Προτάσεις' },
@@ -41,8 +43,23 @@ const EMPTY: Draft = { role: '', skills: '', place: '', remoteOk: true, commitme
 const fromBrief = (b: ScoutBrief | null): Draft =>
   b ? { role: b.role, skills: b.skills.join(', '), place: b.place ?? '', remoteOk: b.remoteOk, commitment: b.commitment ?? '', stage: b.stage ?? '', note: b.note ?? '' } : EMPTY;
 
+const NOTE_LANGUAGES = [
+  { value: 'en', name: 'English' },
+  { value: 'el', name: 'Ελληνικά' },
+] as const;
+
 function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNode }) {
   const { success, error: showError } = useToast();
+  const { primary } = useLanguagePreference();
+  // Subscribing re-renders the card once the Greek catalog (place names) arrives.
+  const { locale, t } = useI18n();
+  const placeEl = (place: string) => (locale === 'el' ? t(place) : translate('el', place));
+  // The note opens in the reader's language; the other one is a tap away for
+  // writing to someone who reads the other (proposals from before both were
+  // kept have English only, and show no switch).
+  const [noteLanguage, setNoteLanguage] = useState<'en' | 'el' | null>(null);
+  const shownLanguage = p.draftNoteEl ? (noteLanguage ?? (primary === 'el' ? 'el' : 'en')) : 'en';
+  const note = shownLanguage === 'el' && p.draftNoteEl ? p.draftNoteEl : p.draftNote;
   // The Connections card: the person's circle, name, headline and place,
   // the fit at the right; the reasons, the suggested note and the foot (when
   // it was proposed, then the ways on) on the avatar's edge.
@@ -75,18 +92,38 @@ function ProposalCard({ p, actions }: { p: ScoutProposal; actions: React.ReactNo
         {p.reasons.length ? (
           <ul className="card-body list-disc space-y-0.5 pl-4 text-muted-foreground">
             {p.reasons.map((r) => (
-              <li key={r.en}><BilingualText en={r.en} el={r.el} compact /></li>
+              <li key={r.en}><BilingualText en={r.en} el={scoutReasonEl(r.el, p.person.location, placeEl)} compact /></li>
             ))}
           </ul>
         ) : null}
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground"><BilingualText en="A first note you could send yourself" el="Ένα πρώτο σημείωμα που μπορείτε να στείλετε εσείς" compact /></p>
-          <p className="card-body text-foreground">{p.draftNote}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium text-muted-foreground"><BilingualText en="A first note you could send yourself" el="Ένα πρώτο σημείωμα που μπορείτε να στείλετε εσείς" compact /></p>
+            {p.draftNoteEl ? (
+              <div role="group" aria-label={bilingualAria('Language of the note', 'Γλώσσα του σημειώματος')} className="flex gap-1">
+                {NOTE_LANGUAGES.map((l) => (
+                  <Button
+                    key={l.value}
+                    type="button"
+                    size="sm"
+                    variant={shownLanguage === l.value ? 'secondary' : 'ghost'}
+                    aria-pressed={shownLanguage === l.value}
+                    lang={l.value}
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setNoteLanguage(l.value)}
+                  >
+                    {l.name}
+                  </Button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <p className="card-body text-foreground" lang={shownLanguage}>{note}</p>
           <Button
             type="button"
             size="sm"
             variant="outline"
-            onClick={() => void navigator.clipboard?.writeText(p.draftNote).then(() => success('Note copied'), () => showError('Could not copy the link'))}
+            onClick={() => void navigator.clipboard?.writeText(note).then(() => success('Note copied'), () => showError('Could not copy'))}
           >
             <BilingualText en="Copy note" el="Αντιγραφή σημειώματος" compact />
           </Button>
@@ -157,7 +194,7 @@ function ScoutContent() {
     },
   });
   const run = useMutation({
-    mutationFn: () => runScout(primary === 'el' ? 'el' : 'en'),
+    mutationFn: () => runScout(),
     onSuccess: (res) => {
       refresh();
       setTab('proposed');

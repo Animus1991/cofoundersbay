@@ -7716,6 +7716,8 @@ model ScoutProposal {
   // [{ en, el }] reasons the founder may read
   reasons     Json
   draftNote   String              @db.Text
+  // The same note in Greek; null on proposals written before both were kept
+  draftNoteEl String?             @db.Text
   status      ScoutProposalStatus @default(proposed)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt

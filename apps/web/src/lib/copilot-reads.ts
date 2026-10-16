@@ -79,7 +79,7 @@ import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
-import { getScout } from '@/lib/scout-api';
+import { getScout, scoutReasonEl } from '@/lib/scout-api';
 import { listClaimedPerks, listPerks } from '@/lib/perks-api';
 import { getProfileViewers } from '@/lib/profile-viewers-api';
 import { statusEl } from '@/components/common/StatusText';
@@ -771,12 +771,13 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     if (!state?.brief) return { section: t('No brief yet. Tell me who you are looking for and I will draft one.'), citations: [], actions };
     const brief = state.brief;
     const head = `${t('Brief:')} **${brief.role}**${brief.skills?.length ? ` — ${brief.skills.join(', ')}` : ''}${brief.place ? ` · ${brief.place}` : ''}`;
-    const proposed = asList<{ id: string; status: string; score: number; reasons: Array<{ en: string; el: string }>; person: { id: string; displayName: string } }>(state.proposals)
+    const proposed = asList<{ id: string; status: string; score: number; reasons: Array<{ en: string; el: string }>; person: { id: string; displayName: string; location?: string | null } }>(state.proposals)
       .filter((p) => p.status === 'proposed')
       .slice(0, LIMIT);
     if (!proposed.length) return { section: `${head}\n\n${t('Nobody proposed right now. The scout looks again tomorrow.')}`, citations: [], actions };
     const citations: CopilotCitation[] = proposed.map((p) => ({ type: 'person', id: p.person?.id ?? '', label: p.person?.displayName ?? '', href: `/profiles/${encodeURIComponent(p.person?.id ?? '')}` }));
-    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map(say).join('; ')}`);
+    const reason = (r: { en: string; el: string }, location?: string | null) => (locale === 'el' ? scoutReasonEl(r.el, location, t) : say(r));
+    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map((r) => reason(r, p.person?.location)).join('; ')}`);
     return { section: `${head}\n\n${t('The scout proposes:')}\n${lines.join('\n')}`, citations, actions };
   },
 
