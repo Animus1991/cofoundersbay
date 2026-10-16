@@ -38,6 +38,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
+import { getPageMeta } from '@/lib/page-registry';
 
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -126,6 +127,7 @@ export function CopilotWorkspace({
   const sayOne = useBilingualString();
   const isPage = variant === 'page';
   const pageContext = usePageContext();
+  const pageMeta = pageContext.route === '/ai' ? undefined : getPageMeta(pageContext.route);
   const [input, setInput] = useState(initialPrompt ?? '');
   const [threadsOpen, setThreadsOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -445,6 +447,19 @@ export function CopilotWorkspace({
         )}
 
         <form onSubmit={onSubmit} className="shrink-0 border-t border-border p-3">
+          {/* GitHub attaches the current file to the composer. Here the same
+              place names the page this question can see. On /ai the header
+              already says that, so the line would only repeat it. */}
+          {pageMeta?.title ? (
+            <p className="type-support mb-1.5 text-muted-foreground">
+              <BilingualText
+                en={`This page · ${pageMeta.title}`}
+                el={`Αυτή η σελίδα · ${pageMeta.titleEl ?? pageMeta.title}`}
+                compact
+                wrap
+              />
+            </p>
+          ) : null}
           <div className="flex items-center gap-2">
             <Input
               ref={inputRef}
