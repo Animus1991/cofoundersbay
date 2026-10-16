@@ -40,6 +40,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { priceEl } from '@/lib/i18n/units';
 
 /*
  * The provider's one home.
@@ -384,7 +385,7 @@ export default function ProviderDashboard() {
                 <Link key={svc.id} href="/provider/services" className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
                   <RowHead
                     title={svc.title}
-                    subtitle={<span className="tabular-nums">{svc.pricing ?? EM_DASH}</span>}
+                    subtitle={<span className="tabular-nums">{svc.pricing ? <BilingualText en={svc.pricing} el={priceEl(svc.pricing)} compact /> : EM_DASH}</span>}
                     asideStays
                     aside={(
                       <Badge size="sm" variant={svc.isActive === false ? 'secondary' : 'success'}>

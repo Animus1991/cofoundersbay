@@ -195,7 +195,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`More actions for ${startup.name}`}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={bilingualAria(`More actions for ${startup.name}`, `Περισσότερες ενέργειες: ${startup.name}`)}>
                     <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -450,7 +450,7 @@ export default function InvestorScoutingPage() {
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
@@ -484,8 +484,8 @@ export default function InvestorScoutingPage() {
         {/* Results header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" />{ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
+            <span className="font-medium text-foreground">{filtered.length}</span>{' '}<BilingualText en={filtered.length === 1 ? 'startup found' : 'startups found'} el={filtered.length === 1 ? 'startup βρέθηκε' : 'startups βρέθηκαν'} compact />
+            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" /><BilingualText en={`${ALL_STARTUPS.filter(s => s.isHot).length} trending`} el={`${ALL_STARTUPS.filter(s => s.isHot).length} σε άνοδο`} compact /></span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
             <GanttChart className="icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact />

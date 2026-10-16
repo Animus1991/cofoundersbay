@@ -40,7 +40,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 /**
  * The page's own row from the organisation's member list.
@@ -107,7 +107,7 @@ function StartupCard({ startup }: { startup: Startup }) {
   const menu = (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open actions for ${startup.name}`}>
+        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={bilingualAria(`Open actions for ${startup.name}`, `Ενέργειες: ${startup.name}`)}>
           <MoreVertical className="icon-sm" />
         </Button>
       </DropdownMenuTrigger>
@@ -400,7 +400,7 @@ export default function OrgStartupsPage() {
             />
           </div>
           <Select value={program} onValueChange={setProgram}>
-            <SelectTrigger aria-label="Program" className="w-full sm:w-[200px]">
+            <SelectTrigger aria-label={bilingualAria('Program', 'Πρόγραμμα')} className="w-full sm:w-[200px]">
               <SelectValue placeholder={bilingualInline("Program", "Πρόγραμμα")} />
             </SelectTrigger>
             <SelectContent>
@@ -411,7 +411,7 @@ export default function OrgStartupsPage() {
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger aria-label="Status" className="w-full sm:w-[150px]">
+            <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="w-full sm:w-[150px]">
               <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>

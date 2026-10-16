@@ -305,7 +305,7 @@ export default function ProviderProfilePage() {
                     id="provider-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
-                    placeholder="e.g. Startup-focused legal services — term sheets, IP, incorporation"
+                    placeholder={bilingualInline('e.g. Startup-focused legal services — term sheets, IP, incorporation', 'π.χ. Νομικές υπηρεσίες για startups — term sheets, πνευματική ιδιοκτησία, σύσταση εταιρείας')}
                     maxLength={120}
                   />
                 </div>

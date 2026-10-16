@@ -55,6 +55,14 @@ const MOCK_CONVERSIONS = [
   { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success-mark' },
 ];
 
+/** Where visits came from, in Greek; a source the API adds later shows as sent. */
+const SOURCE_EL: Record<string, string> = {
+  'Direct Search': 'Άμεση αναζήτηση',
+  Recommendations: 'Προτάσεις',
+  'Community Posts': 'Αναρτήσεις κοινότητας',
+  'Mentor Referrals': 'Συστάσεις μεντόρων',
+};
+
 const MOCK_TRAFFIC_SOURCES = [
   { source: 'Direct Search', visits: 148, pct: 43 },
   { source: 'Recommendations', visits: 89, pct: 26 },
@@ -124,7 +132,11 @@ function MetricCard({
           trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
           <TrendIcon trend={trend} />
-          <span>{trend !== 'neutral' && change != null ? `${Math.abs(change)}% vs last period` : 'vs last period'}</span>
+          <span>
+            {trend !== 'neutral' && change != null
+              ? <BilingualText en={`${Math.abs(change)}% vs last period`} el={`${Math.abs(change)}% έναντι προηγούμενης περιόδου`} compact />
+              : <BilingualText en="vs last period" el="έναντι προηγούμενης περιόδου" compact />}
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -449,7 +461,7 @@ export default function ProviderAnalyticsPage() {
                   {trafficSources.map(src => (
                     <div key={src.source}>
                       <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">{src.source}</span>
+                        <span className="text-muted-foreground"><BilingualText en={src.source} el={SOURCE_EL[src.source]} compact /></span>
                         <span className="font-medium">{src.pct}%</span>
                       </div>
                       <div className="h-1.5 w-full rounded-full bg-muted">

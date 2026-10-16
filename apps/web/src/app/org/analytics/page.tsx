@@ -271,15 +271,15 @@ export default function OrgAnalyticsPage() {
             </SelectTrigger>
             <SelectContent>
               {PERIODS.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.en}</SelectItem>
+                <SelectItem key={p.value} value={p.value}><BilingualText en={p.en} el={p.el} compact /></SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" title="Refresh" aria-label="Refresh" onClick={refresh}>
+          <Button variant="outline" size="icon" title={bilingualInline('Refresh', 'Ανανέωση')} aria-label={bilingualAria('Refresh', 'Ανανέωση')} onClick={refresh}>
             <RefreshCw className="icon-sm" aria-hidden="true" />
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={exportCsv}>
-            <Download className="icon-sm" aria-hidden="true" /> Export
+            <Download className="icon-sm" aria-hidden="true" /> <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
         </>
       )}
@@ -328,12 +328,16 @@ export default function OrgAnalyticsPage() {
           <SectionCard title="Applications by month" titleEl="Αιτήσεις ανά μήνα" contentClassName="space-y-2">
             <ApplicationsTrendChart data={trend} />
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Applications</span> received and <span className="font-medium text-status-success">accepted</span> in each of the last six months.
+              <BilingualText
+                en="Applications received, and accepted (green), in each of the last six months."
+                el="Αιτήσεις που ελήφθησαν, και όσες εγκρίθηκαν (πράσινο), σε καθέναν από τους τελευταίους έξι μήνες."
+                wrap
+              />
             </p>
           </SectionCard>
           <SectionCard title="Mentor sessions by month" titleEl="Συνεδρίες ανά μήνα" contentClassName="space-y-2">
             <MentorSessionsChart data={sessionsByMonth} />
-            <p className="text-xs text-muted-foreground">Held and scheduled sessions across every cohort.</p>
+            <p className="text-xs text-muted-foreground"><BilingualText en="Held and scheduled sessions across every cohort." el="Συνεδρίες που έγιναν και που έχουν προγραμματιστεί, σε όλους τους κύκλους." wrap /></p>
           </SectionCard>
         </div>
 
@@ -351,10 +355,10 @@ export default function OrgAnalyticsPage() {
                 <div className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate">{program.name}</span>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {program.startups}/{program.capacity ?? '—'} places · {program.applications} applied
+                    <BilingualText en={`${program.startups}/${program.capacity ?? '—'} places · ${program.applications} applied`} el={`${program.startups}/${program.capacity ?? '—'} θέσεις · ${program.applications} αιτήσεις`} compact />
                   </span>
                 </div>
-                <Progress value={program.fill ?? 0} className="h-1.5" aria-label={`${program.name}: ${program.fill ?? 0}% of places filled`} />
+                <Progress value={program.fill ?? 0} className="h-1.5" aria-label={bilingualAria(`${program.name}: ${program.fill ?? 0}% of places filled`, `${program.name}: ${program.fill ?? 0}% των θέσεων καλυμμένες`)} />
               </div>
             ))}
           </SectionCard>
@@ -412,7 +416,7 @@ export default function OrgAnalyticsPage() {
                   <span className="text-muted-foreground">{city}</span>
                   <span className="font-medium tabular-nums">{count}</span>
                 </div>
-                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={`${city}: ${count} founders`} />
+                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={bilingualAria(`${city}: ${count} ${count === 1 ? 'founder' : 'founders'}`, `${city}: ${count} ${count === 1 ? 'ιδρυτής' : 'ιδρυτές'}`)} />
               </div>
             ))}
             {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." />}

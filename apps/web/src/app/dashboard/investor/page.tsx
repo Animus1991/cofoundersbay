@@ -42,6 +42,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -367,7 +368,7 @@ export default function InvestorDashboard() {
               {activity.map((a) => (
                 <Link key={a.id} href={`/startups/${a.dealId}`} className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
                   <RowHead
-                    title={<span className="block truncate first-letter:uppercase">{a.title}</span>}
+                    title={<span className="block truncate first-letter:uppercase"><BilingualText en={a.title} el={dealEventTitleEl(a.title)} compact /></span>}
                     subtitle={<>{a.dealName} · <RelativeTime date={a.createdAt} /></>}
                   />
                 </Link>

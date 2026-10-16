@@ -14,6 +14,27 @@ const RULES: Array<[RegExp, (n: string) => string]> = [
   [/^(\d+)\s*(?:w|weeks?)$/i, (n) => `${n} εβδ.`],
 ];
 
+const PRICE_UNITS: Array<[RegExp, string]> = [
+  [/\s+fixed$/i, ' σταθερή τιμή'],
+  [/\s*(?:\/|per)\s*(?:hour|hr|h)$/i, ' / ώρα'],
+  [/\s*(?:\/|per)\s*day$/i, ' / ημέρα'],
+  [/\s*(?:\/|per)\s*(?:month|mo)$/i, ' / μήνα'],
+];
+
+/**
+ * Greek for the unit word on a price a provider typed ("€1,200 fixed",
+ * "€95 / hour"); the amount stays as written. Undefined for anything that
+ * is not an amount with one of these units.
+ */
+export function priceEl(text: string | null | undefined): string | undefined {
+  const source = String(text ?? '').trim();
+  if (!/^[€$£]?\s*\d/.test(source)) return undefined;
+  for (const [re, el] of PRICE_UNITS) {
+    if (re.test(source)) return source.replace(re, el);
+  }
+  return undefined;
+}
+
 export function durationEl(text: string | null | undefined): string | undefined {
   const source = String(text ?? '').trim();
   if (!source) return undefined;

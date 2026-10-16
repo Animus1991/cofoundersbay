@@ -294,7 +294,7 @@ export default function MentorProfilePage() {
                     id="mentor-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
-                    placeholder="e.g. Serial founder & GTM advisor | 2x exits"
+                    placeholder={bilingualInline('e.g. Serial founder & GTM advisor | 2x exits', 'π.χ. Ιδρυτής πολλών εταιρειών και σύμβουλος GTM | 2 exits')}
                     maxLength={120}
                   />
                   <p className="text-xs text-muted-foreground"><BilingualText en={`${headline.length}/120 characters`} el={`${headline.length}/120 χαρακτήρες`} compact /></p>

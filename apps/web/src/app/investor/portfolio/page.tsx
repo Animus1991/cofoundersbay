@@ -407,17 +407,17 @@ export default function InvestorPortfolioPage() {
              * company count. Summed by the API over the same rows the table
              * below lists, so the four tiles are one statement.
              */
-            { label: 'Total Invested', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K' },
-            { label: 'Current Value', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K' },
-            { label: 'Total Return', value: isLive
+            { label: 'Total invested', labelEl: 'Συνολική επένδυση', value: isLive ? money(summary?.deployedCents, 'EUR') : '$275K' },
+            { label: 'Current value', labelEl: 'Τρέχουσα αξία', value: isLive ? money(summary?.currentValueCents, 'EUR') : '$535K' },
+            { label: 'Total return', labelEl: 'Συνολική απόδοση', value: isLive
                 ? (summary?.returnPct == null ? '\u2014' : `${summary.returnPct > 0 ? '+' : ''}${summary.returnPct}%`)
                 : `+${totalReturn.toFixed(0)}%` },
-            { label: 'Companies', value: investments.length },
-          ].map(({ label, value }) => (
+            { label: 'Companies', labelEl: 'Εταιρείες', value: investments.length },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
               <CardContent>
                 <p className="page-stat text-xl font-bold tabular-nums">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact /></p>
               </CardContent>
             </Card>
           ))}

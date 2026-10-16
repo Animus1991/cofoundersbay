@@ -45,6 +45,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { priceEl } from '@/lib/i18n/units';
 
 type Service = {
   id: string;
@@ -149,8 +150,8 @@ function ServiceCard({ service, onActive, onEdit, onDelete }: { service: Service
         <FactLine
           items={[
             <span key="price" className="font-medium tabular-nums text-foreground">
-              {service.price}
-              {service.priceType === 'hourly' && <BilingualText en="/hr" el="/ώρα" compact />}
+              <BilingualText en={service.price} el={priceEl(service.price)} compact />
+              {service.priceType === 'hourly' && !/hour|hr/i.test(service.price) && <BilingualText en="/hr" el="/ώρα" compact />}
             </span>,
             service.deliveryTime && service.deliveryTime !== '—' ? service.deliveryTime : null,
             /*

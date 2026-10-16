@@ -20,6 +20,7 @@ const ALL: readonly WhatsNewAudience[] = ['founder', 'investor', 'mentor', 'org'
  * renders the same on the server and in the browser.
  */
 const ITEMS: Item[] = [
+  // 16–17 October 2026
   { href: '/scout', en: 'Co-founder scout', el: 'Ανιχνευτής συνιδρυτών', hintEn: 'Proposes people for your brief, with its reasons and a first note in English or Greek, whichever they read. It never contacts anyone.', hintEl: 'Προτείνει ανθρώπους για το σημείωμά σας, με τους λόγους του και ένα πρώτο μήνυμα στα ελληνικά ή στα αγγλικά, όποια γλώσσα διαβάζει ο άλλος. Δεν επικοινωνεί ποτέ με κανέναν.', for: ['founder'] },
   { href: '/messages', en: 'Search your messages', el: 'Αναζήτηση στα μηνύματα', hintEn: 'Search a conversation and step through every hit, accents ignored, or ask the assistant where you talked about something.', hintEl: 'Αναζητήστε σε μια συζήτηση και μεταβείτε σε κάθε εύρημα, χωρίς να μετρούν οι τόνοι, ή ρωτήστε τον βοηθό πού μιλήσατε για κάτι.', for: ALL },
   { href: '/commitments/new', en: 'Need cards', el: 'Κάρτες ανάγκης', hintEn: 'Say what exists, the outcome and who is missing in three sentences; the conversation stays protected until both confirm.', hintEl: 'Τι υπάρχει, το αποτέλεσμα και ποιος λείπει σε τρεις προτάσεις· η συζήτηση μένει προστατευμένη μέχρι να επιβεβαιώσουν και οι δύο.', for: ['founder'] },
@@ -38,7 +39,7 @@ const ITEMS: Item[] = [
 ];
 
 // A new round shows the panel again to those who hid the previous one.
-const ROUND = '2026-10-08';
+const ROUND = '2026-10-17';
 
 export function whatsNewItems(audience: WhatsNewAudience): Item[] {
   return ITEMS.filter((i) => i.for.includes(audience));
@@ -77,7 +78,7 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
               <BilingualText en="What’s new" el="Τι νέο υπάρχει" compact />
             </CardTitle>
             <CardDescription>
-              <BilingualText en="Added on 7 and 8 October 2026. Each opens where you can try it." el="Προστέθηκαν στις 7 και 8 Οκτωβρίου 2026. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
+              <BilingualText en="Added between 7 and 17 October 2026, newest first. Each opens where you can try it." el="Προστέθηκαν από τις 7 έως τις 17 Οκτωβρίου 2026, τα νεότερα πρώτα. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
             </CardDescription>
           </div>
           <Button size="sm" variant="ghost" className="-mr-2 shrink-0" onClick={hide}>

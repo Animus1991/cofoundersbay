@@ -40,6 +40,7 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { statusEl } from '@/components/common/StatusText';
 
 type OrgEvent = {
   id: string;
@@ -251,7 +252,8 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
               className="text-sm"
               items={[
                 <BilingualText key="type" en={typeCfg.label} el={typeCfg.labelEl} compact />,
-                event.location,
+                // "Online" is the page's own word; a venue stays as written.
+                <BilingualText key="where" en={event.location} el={statusEl(event.location)} compact />,
               ]}
             />
           )}

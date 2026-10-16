@@ -27,6 +27,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -297,7 +298,7 @@ export default function MentorAvailabilityPage() {
             <CardContent className="space-y-2">
               <Label htmlFor="mentor-timezone" className="text-sm font-medium"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></Label>
               <Select value={timezone} onValueChange={setTimezone}>
-                <SelectTrigger id="mentor-timezone" aria-label="Timezone" className="w-full">
+                <SelectTrigger id="mentor-timezone" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -350,7 +351,7 @@ export default function MentorAvailabilityPage() {
                           {daySlots.map(slot => (
                             <div key={slot.id} className="flex items-center gap-2">
                               <Select value={slot.startTime} onValueChange={v => updateSlot(slot.id, 'startTime', v)}>
-                                <SelectTrigger aria-label={`${day.label} start time`} className="w-32 h-8 text-xs">
+                                <SelectTrigger aria-label={bilingualAria(`${day.label} start time`, `${DAY_EL[day.key]}: ώρα έναρξης`)} className="w-32 h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -361,7 +362,7 @@ export default function MentorAvailabilityPage() {
                               </Select>
                               <span className="text-muted-foreground text-xs"><BilingualText en="to" el="έως" compact /></span>
                               <Select value={slot.endTime} onValueChange={v => updateSlot(slot.id, 'endTime', v)}>
-                                <SelectTrigger aria-label={`${day.label} end time`} className="w-32 h-8 text-xs">
+                                <SelectTrigger aria-label={bilingualAria(`${day.label} end time`, `${DAY_EL[day.key]}: ώρα λήξης`)} className="w-32 h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

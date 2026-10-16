@@ -400,7 +400,7 @@ export default function MentorSessionsPage() {
           </Card>
           <Card>
             <CardContent>
-              <p className="page-stat text-xl font-bold">{totalDuration} min</p>
+              <p className="page-stat text-xl font-bold"><BilingualText en={`${totalDuration} min`} el={`${totalDuration} λεπτά`} compact /></p>
               <p className="text-sm text-muted-foreground"><BilingualText en="Total Time" el="Συνολικός χρόνος" compact /></p>
             </CardContent>
           </Card>

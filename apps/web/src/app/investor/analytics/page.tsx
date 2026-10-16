@@ -103,7 +103,7 @@ function MonthlyBars({ rows }: { rows: ReturnType<typeof monthly> }) {
   const slot = (W - 20) / rows.length;
   const bar = Math.min(26, slot * 0.55);
   return (
-    <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full" role="img" aria-label="Deals added and investments made per month">
+    <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full" role="img" aria-label={bilingualAria('Deals added and investments made per month', 'Συμφωνίες που προστέθηκαν και επενδύσεις ανά μήνα')}>
       {rows.map((r, i) => {
         const x = 10 + i * slot + (slot - bar) / 2;
         const addedH = (r.added / max) * H;
@@ -308,10 +308,10 @@ export default function InvestorAnalyticsPage() {
                           <div className="mb-1 flex items-center justify-between gap-3 text-sm">
                             <span><BilingualText en={STAGE_LABEL[stage].en} el={STAGE_LABEL[stage].el} compact /></span>
                             <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                              <span className="font-semibold text-foreground">{reached}</span> reached · {now} here now
+                              <span className="font-semibold text-foreground">{reached}</span>{' '}<BilingualText en={`reached · ${now} here now`} el={`έφτασαν · ${now} εδώ τώρα`} compact />
                             </span>
                           </div>
-                          <Progress value={pct} className="h-2" aria-label={`${STAGE_LABEL[stage].en}: ${reached} deals reached this stage`} />
+                          <Progress value={pct} className="h-2" aria-label={bilingualAria(`${STAGE_LABEL[stage].en}: ${reached} deals reached this stage`, `${STAGE_LABEL[stage].el}: ${reached} συμφωνίες έφτασαν σε αυτό το στάδιο`)} />
                         </li>
                       );
                     })}

@@ -54,6 +54,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -531,7 +532,7 @@ export default function InvestorWatchlistPage() {
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1.5">
               <Bell className="icon-sm" />
-              {alertCount} alerts active
+              <BilingualText en={`${alertCount} alerts active`} el={`${alertCount} ενεργές ειδοποιήσεις`} compact />
             </Badge>
             <Button variant="outline" size="sm" asChild>
               <Link href="/investor/scouting">
@@ -548,10 +549,10 @@ export default function InvestorWatchlistPage() {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 kpi-odd-span-md gap-4 md:grid-cols-4">
           {[
-            { label: 'Watching', value: watched.length },
-            { label: 'Alerts On', value: alertCount },
-            { label: 'New Activity', value: activity.length },
-            { label: 'Avg Match', value: (() => {
+            { label: 'Watching', labelEl: 'Σε παρακολούθηση', value: watched.length },
+            { label: 'Alerts on', labelEl: 'Ενεργές ειδοποιήσεις', value: alertCount },
+            { label: 'New activity', labelEl: 'Νέα δραστηριότητα', value: activity.length },
+            { label: 'Avg match', labelEl: 'Μέσο ταίριασμα', value: (() => {
               // Averaged over the rows that carry a score, so adding an
               // unscored startup cannot drag the average down.
               const scored = watched.filter((w) => w.matchScore != null);
@@ -562,7 +563,7 @@ export default function InvestorWatchlistPage() {
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact /></p>
                 <p className="page-stat text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
@@ -644,7 +645,7 @@ export default function InvestorWatchlistPage() {
                           {item.startupName}
                         </Link>
                       )}
-                      subtitle={item.title}
+                      subtitle={<BilingualText en={item.title} el={dealEventTitleEl(item.title)} compact />}
                       meta={<RelativeTime date={item.time} format={formatRelativeTime} />}
                       aside={(
                         <Badge variant="secondary" className={cn('text-xs', cfg.color)}>
