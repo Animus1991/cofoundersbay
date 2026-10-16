@@ -333,7 +333,7 @@ export default function TenantMembersPage() {
       if (!m.userId) return { error: 'This member has no account to remove.' };
       const ok = await confirm({
         title: <BilingualText en={`Remove ${m.name}?`} el={`Αφαίρεση: ${m.name};`} />,
-        description: <BilingualText en="They lose access to this workspace. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον χώρο εργασίας. Ο λογαριασμός του/της δεν διαγράφεται." />,
+        description: <BilingualText en="They lose access to this workspace. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον χώρο εργασίας. Ο λογαριασμός του μέλους δεν διαγράφεται." />,
         confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
       });
       if (!ok) return CANCELLED;

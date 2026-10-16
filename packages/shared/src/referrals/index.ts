@@ -22,5 +22,5 @@ export function referralPoints(activeReferrals: number): number {
 
 export const REFERRAL_REWARD_COPY = {
   en: 'An invitation counts once the person has verified their email and taken a first real step: a connection, a need card, a milestone or an answer to a card. A sign-up alone earns nothing.',
-  el: 'Μια πρόσκληση μετράει όταν ο/η προσκεκλημένος/η επαληθεύσει το email του/της και κάνει ένα πρώτο πραγματικό βήμα: μια σύνδεση, μια κάρτα ανάγκης, ένα ορόσημο ή μια απάντηση σε κάρτα. Η εγγραφή μόνη της δεν αποφέρει τίποτα.',
+  el: 'Μια πρόσκληση μετράει όταν το άτομο που προσκαλέσατε επαληθεύσει το email του και κάνει ένα πρώτο πραγματικό βήμα: μια σύνδεση, μια κάρτα ανάγκης, ένα ορόσημο ή μια απάντηση σε κάρτα. Η εγγραφή μόνη της δεν αποφέρει τίποτα.',
 } as const;

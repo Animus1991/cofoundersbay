@@ -120,7 +120,7 @@ function IntroCard({
         <blockquote className="card-body italic text-foreground/80">“{intro.note}”</blockquote>
         {intro.forwardNote ? (
           <p className="card-body text-muted-foreground">
-            <BilingualText en={`${intro.intermediary.displayName} adds:`} el={`Ο/Η ${intro.intermediary.displayName} προσθέτει:`} compact /> {intro.forwardNote}
+            <BilingualText en={`${intro.intermediary.displayName} adds:`} el={`Σημείωση από ${intro.intermediary.displayName}:`} compact /> {intro.forwardNote}
           </p>
         ) : null}
         <p className="text-xs text-muted-foreground">
@@ -220,7 +220,7 @@ function IntrosContent() {
       description: (
         <BilingualText
           en={`${i.requester.displayName} is told only that it was not forwarded, and ${i.target.displayName} never hears of it.`}
-          el={`Ο/Η ${i.requester.displayName} μαθαίνει μόνο ότι δεν προωθήθηκε, και ο/η ${i.target.displayName} δεν το μαθαίνει ποτέ.`}
+          el={`Το μαθαίνει μόνο όποιος τη ζήτησε (${i.requester.displayName}), και μόνο ότι δεν προωθήθηκε· το πρόσωπο που θα συστηνόταν (${i.target.displayName}) δεν το μαθαίνει ποτέ.`}
           wrap
         />
       ),
@@ -348,7 +348,7 @@ function IntrosContent() {
                               }}
                             >
                               <label htmlFor={`fwd-${i.id}`} className="text-sm font-medium text-foreground">
-                                <BilingualText en={`A line for ${i.target.displayName} (optional)`} el={`Μια γραμμή για τον/την ${i.target.displayName} (προαιρετικά)`} compact />
+                                <BilingualText en={`A line for ${i.target.displayName} (optional)`} el={`Μια γραμμή προς ${i.target.displayName} (προαιρετικά)`} compact />
                               </label>
                               <Textarea id={`fwd-${i.id}`} rows={2} maxLength={INTRO_LIMITS.forwardNote} value={forwardNote} onChange={(e) => setForwardNote(e.target.value)} />
                               <div className="flex flex-wrap gap-2">
@@ -365,7 +365,7 @@ function IntrosContent() {
                                 <BilingualText en="Forward…" el="Προώθηση…" compact />
                               </Button>
                               <Button size="sm" variant="ghost" disabled={busy} onClick={() => void confirmDecline(i)}>
-                                <BilingualText en="Not this one" el="Όχι αυτή" compact />
+                                <BilingualText en="Not this one" el="Δεν θα την προωθήσω" compact />
                               </Button>
                             </>
                           ) : undefined

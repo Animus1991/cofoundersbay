@@ -340,7 +340,7 @@ export default function OrgAdminPage() {
     const name = members.find((m) => m.id === memberId)?.name ?? 'this member';
     const ok = await confirm({
       title: <BilingualText en={`Remove ${name}?`} el={`Αφαίρεση: ${name};`} />,
-      description: <BilingualText en="They lose access to this organisation. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον οργανισμό. Ο λογαριασμός του/της δεν διαγράφεται." />,
+      description: <BilingualText en="They lose access to this organisation. Their account itself is not deleted." el="Χάνει την πρόσβαση σε αυτόν τον οργανισμό. Ο λογαριασμός του μέλους δεν διαγράφεται." />,
       confirmLabel: <BilingualText en="Remove member" el="Αφαίρεση μέλους" compact />,
     });
     if (!ok) return CANCELLED;

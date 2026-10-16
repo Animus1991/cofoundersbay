@@ -53,7 +53,7 @@ export function MessageButton({
   if (!userId) return null;
 
   const label = displayName
-    ? bilingualInline(`Message ${displayName}`, `Μήνυμα στον/στην ${displayName}`)
+    ? bilingualInline(`Message ${displayName}`, `Μήνυμα προς ${displayName}`)
     : bilingualInline('Message', 'Μήνυμα');
 
   return (
@@ -145,7 +145,7 @@ export function ConnectButton({
           success(
             bilingualInline('Intro sent', 'Η σύσταση στάλθηκε'),
             displayName
-              ? bilingualInline(`${displayName} will see your request.`, `Ο/Η ${displayName} θα δει το αίτημά σας.`)
+              ? bilingualInline(`${displayName} will see your request.`, `Το αίτημά σας θα σταλεί προς ${displayName}.`)
               : undefined,
           );
         } catch (err) {

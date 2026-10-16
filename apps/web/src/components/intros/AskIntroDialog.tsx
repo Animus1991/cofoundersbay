@@ -77,7 +77,7 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle><BilingualText en={`An introduction to ${targetName}`} el={`Σύσταση στον/στην ${targetName}`} compact /></DialogTitle>
+          <DialogTitle><BilingualText en={`An introduction to ${targetName}`} el={`Σύσταση προς ${targetName}`} compact /></DialogTitle>
           <DialogDescription>
             <BilingualText
               en="Someone you both know decides whether to forward it. If they do and the answer is yes, the conversation continues on your need card."
@@ -92,9 +92,9 @@ export function AskIntroDialog({ open, onOpenChange, targetId, targetName }: { o
         ) : !data ? (
           <p className="text-sm text-muted-foreground"><BilingualText en="Introductions are not available right now." el="Οι συστάσεις δεν είναι διαθέσιμες αυτή τη στιγμή." wrap /></p>
         ) : data.direct ? (
-          <p className="text-sm text-muted-foreground"><BilingualText en="You already know them directly. Send them a message or point them to your need card." el="Τον/τη γνωρίζετε ήδη άμεσα. Στείλτε μήνυμα ή δείξτε την κάρτα ανάγκης σας." wrap /></p>
+          <p className="text-sm text-muted-foreground"><BilingualText en="You already know them directly. Send them a message or point them to your need card." el="Γνωρίζεστε ήδη άμεσα. Στείλτε μήνυμα ή δείξτε την κάρτα ανάγκης σας." wrap /></p>
         ) : !data.paths.length ? (
-          <p className="text-sm text-muted-foreground"><BilingualText en="Nobody you know on CoFounderBay knows them yet. Connections, mentoring and shared cohorts are what count." el="Κανείς από όσους γνωρίζετε στο CoFounderBay δεν τον/τη γνωρίζει ακόμη. Μετρούν οι συνδέσεις, η καθοδήγηση και οι κοινοί κύκλοι." wrap /></p>
+          <p className="text-sm text-muted-foreground"><BilingualText en="Nobody you know on CoFounderBay knows them yet. Connections, mentoring and shared cohorts are what count." el="Κανείς από όσους γνωρίζετε στο CoFounderBay δεν γνωρίζει ακόμη αυτό το πρόσωπο. Μετρούν οι συνδέσεις, η καθοδήγηση και οι κοινοί κύκλοι." wrap /></p>
         ) : !data.cards.length ? (
           <div className="space-y-3 text-sm text-muted-foreground">
             <BilingualText en="An introduction is for one of your open need cards, and you have none yet." el="Η σύσταση αφορά μία από τις ανοιχτές κάρτες ανάγκης σας, και δεν έχετε ακόμη." wrap />

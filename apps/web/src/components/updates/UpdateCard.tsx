@@ -61,7 +61,8 @@ export function UpdateCard({
             meta={update.author?.headline ?? undefined}
             aside={(
               <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
-                <BilingualText en={update.visibility === 'public' ? 'Public' : 'Followers'} el={update.visibility === 'public' ? 'Δημόσιο' : 'Ακόλουθοι'} compact />
+                {/* Who may read it: a bare «Ακόλουθοι» under the headline read as a count. */}
+                <BilingualText en={update.visibility === 'public' ? 'Public' : 'Followers only'} el={update.visibility === 'public' ? 'Δημόσια' : 'Μόνο για ακολούθους'} compact />
               </Badge>
             )}
           />

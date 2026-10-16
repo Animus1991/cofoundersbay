@@ -150,7 +150,7 @@ export const MATCHES_STRINGS: Record<string, BilingualPair> = {
 
   // ── Toast messages ──
   connection_sent: { en: 'Connection request sent!', el: 'Το αίτημα σύνδεσης στάλθηκε!' },
-  request_to: { en: 'Your request to', el: 'Το αίτημά σας στον/στην' },
+  request_to: { en: 'Your request to', el: 'Το αίτημά σας προς' },
   has_been_sent: { en: 'has been sent.', el: 'στάλθηκε.' },
   could_not_send: { en: 'Could not send request', el: 'Αδυναμία αποστολής αιτήματος' },
   passed_toast: { en: 'Passed', el: 'Παραλείφθηκε' },

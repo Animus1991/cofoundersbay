@@ -50,7 +50,7 @@ const RELATIONSHIPS: { en: string; el: string }[] = [
   { en: 'Worked together', el: 'Συνεργαστήκαμε' },
   { en: 'Co-founder', el: 'Συνιδρυτής' },
   { en: 'Mentored me', el: 'Με καθοδήγησε' },
-  { en: 'I mentored them', el: 'Τον/την καθοδήγησα' },
+  { en: 'I mentored them', el: 'Ήμουν μέντορας' },
   { en: 'Client', el: 'Πελάτης' },
   { en: 'Investor', el: 'Επενδυτής' },
 ];
@@ -133,7 +133,9 @@ export function GiveEndorsementDialog({
         bilingualInline('Endorsement sent', 'Η σύσταση στάλθηκε'),
         bilingualInline(
           `${picked?.displayName ?? 'They'} approves it before it appears on their profile.`,
-          `Ο/Η ${picked?.displayName ?? ''} την εγκρίνει πριν εμφανιστεί στο προφίλ.`,
+          picked?.displayName
+            ? `Εμφανίζεται στο προφίλ μόνο αφού την εγκρίνει το πρόσωπο που τη λαμβάνει (${picked.displayName}).`
+            : 'Εμφανίζεται στο προφίλ μόνο αφού την εγκρίνει το πρόσωπο που τη λαμβάνει.',
         ),
       );
       onOpenChange(false);

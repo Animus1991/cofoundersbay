@@ -44,7 +44,7 @@ export const INVITE_STRINGS: Record<string, BilingualPair> = {
   sent_title: { en: 'Invitation sent!', el: 'Η πρόσκληση στάλθηκε!' },
   sent_body: {
     en: '{email} will receive an invite to join CoFounderBay.',
-    el: 'Ο/Η {email} θα λάβει πρόσκληση για το CoFounderBay.',
+    el: 'Θα σταλεί πρόσκληση για το CoFounderBay στο {email}.',
   },
   send_failed: { en: 'Could not send invite', el: 'Η πρόσκληση δεν στάλθηκε' },
   cancel_failed: { en: 'Could not cancel', el: 'Η ακύρωση δεν έγινε' },

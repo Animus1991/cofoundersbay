@@ -221,7 +221,7 @@ export default function MatchComparePage() {
                   </th>
                   {people.map((person, i) => (
                     <th key={person.userId} scope="col" className="relative p-4 text-left align-top font-normal">
-                      <Button aria-label={bilingualAria(`Remove ${person.displayName} from the comparison`, `Αφαίρεση του/της ${person.displayName} από τη σύγκριση`)} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
+                      <Button aria-label={bilingualAria(`Remove ${person.displayName} from the comparison`, `Αφαίρεση από τη σύγκριση: ${person.displayName}`)} variant="ghost" size="icon" className="absolute right-2 top-2 h-7 w-7" onClick={() => remove(person.userId)}>
                         <X className="icon-sm" aria-hidden="true" />
                       </Button>
                       {/* Each column's head is a card's head: the circle, the
