@@ -16,6 +16,10 @@ import { cn } from '@/lib/utils';
  * only suspended users" can be done here. It used to navigate to /ai?q=,
  * which dropped that context and only pre-filled the question. /ai itself,
  * or a tree without the popup, still goes to the full page.
+ *
+ * The frame is a field edge (the neutral --input), and it takes the theme's
+ * link tone only while the question is being typed. The placeholder says
+ * the question is about this page; the control's name stays "Ask AI".
  */
 export function AIComposer({
   prompt,
@@ -46,14 +50,14 @@ export function AIComposer({
       onSubmit={submit}
       data-ask-ai=""
       className={cn(
-        'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 max-sm:min-h-11',
+        'flex min-h-10 min-w-0 w-full items-center gap-2 rounded-md border border-input bg-card px-3 py-1.5 max-sm:min-h-11',
         className,
       )}
     >
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        placeholder={sayOne('Ask AI…', 'Ρωτήστε το AI…')}
+        placeholder={sayOne('Ask about this page', 'Ρωτήστε για αυτή τη σελίδα')}
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
         className="min-w-0 flex-1 self-stretch bg-transparent text-sm text-foreground shadow-none outline-none ring-0 placeholder:text-muted-foreground focus:shadow-none focus:outline-none focus:ring-0"
       />
@@ -63,7 +67,7 @@ export function AIComposer({
       <button
         type="submit"
         aria-label={bilingualAria('Ask AI', 'Ρωτήστε το AI')}
-        className="tap-target-phone -mr-1.5 inline-flex shrink-0 items-center justify-center rounded-md p-1 text-muted-foreground outline-none hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-0"
+        className="tap-target-phone -mr-1.5 inline-flex shrink-0 items-center justify-center rounded-md p-1 text-foreground outline-none hover:bg-secondary focus-visible:outline-none focus-visible:ring-0"
       >
         <ArrowRight className="icon-sm" aria-hidden="true" />
       </button>
