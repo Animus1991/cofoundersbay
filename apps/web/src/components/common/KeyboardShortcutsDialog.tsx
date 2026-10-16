@@ -22,6 +22,13 @@ const NAV_SHORTCUTS: ShortcutRow[] = [
   { keys: ['G', 'S'], seq: true, en: 'Go to Settings', el: 'Μετάβαση στις ρυθμίσεις' },
 ];
 
+/** Typed first in the command palette, as on GitHub. */
+const PALETTE_PREFIXES: ShortcutRow[] = [
+  { keys: ['>'], en: 'Commands only', el: 'Μόνο εντολές' },
+  { keys: ['@'], en: 'People, by name or skill', el: 'Άτομα, με όνομα ή δεξιότητα' },
+  { keys: ['/'], en: 'Pages only', el: 'Μόνο σελίδες' },
+];
+
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
     <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground">
@@ -81,6 +88,10 @@ export function KeyboardShortcutsDialog({ open, onOpenChange }: { open: boolean;
           <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Navigate" el="Πλοήγηση" compact /></p>
           <ul className="mt-1 divide-y divide-border/60">
             {NAV_SHORTCUTS.map((s) => <Row key={s.en} {...s} />)}
+          </ul>
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="In the command palette, type first" el="Στην παλέτα εντολών, πληκτρολογήστε πρώτα" compact /></p>
+          <ul className="mt-1 divide-y divide-border/60">
+            {PALETTE_PREFIXES.map((s) => <Row key={s.en} {...s} />)}
           </ul>
         </div>
       </DialogContent>

@@ -63,6 +63,7 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { statusEl } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * The page's own row from the tenant membership row.
@@ -483,14 +484,14 @@ export default function TenantMembersPage() {
         {/* Role Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setRoleFilter(v)}>
           <TabsList className="flex-wrap h-auto gap-1">
-            <TabsTrigger value="all"><BilingualText en={`All (${members.length})`} el={`Όλα (${members.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /><Counter value={members.length} /></TabsTrigger>
             {roles.map((role) => (
               <TabsTrigger key={role} value={role}>
                 <BilingualText
-                  en={`${role.charAt(0).toUpperCase()}${role.slice(1)} (${members.filter((m) => m.role === role).length})`}
-                  el={`${statusEl(role) ?? role} (${members.filter((m) => m.role === role).length})`}
+                  en={`${role.charAt(0).toUpperCase()}${role.slice(1)}`}
+                  el={`${statusEl(role) ?? role}`}
                   compact
-                />
+                /><Counter value={members.filter((m) => m.role === role).length} />
               </TabsTrigger>
             ))}
           </TabsList>

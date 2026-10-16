@@ -49,6 +49,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { Counter } from '@/components/ui/counter';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -526,7 +527,7 @@ export default function AdminFeatureFlagsPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all"><BilingualText en={`All (${flags.length})`} el={`Όλες (${flags.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={flags.length} /></TabsTrigger>
             <TabsTrigger value="enabled"><BilingualText en="Enabled" el="Ενεργές" compact /></TabsTrigger>
             <TabsTrigger value="rollout"><BilingualText en="Rollout" el="Σταδιακή διάθεση" compact /></TabsTrigger>
             <TabsTrigger value="experiment"><BilingualText en="Experiments" el="Πειράματα" compact /></TabsTrigger>

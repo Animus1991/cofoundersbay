@@ -45,6 +45,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 
 type Inquiry = {
   id: string;
@@ -415,16 +416,16 @@ export default function ProviderInquiriesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">
-              <BilingualText en="All" el="Όλα" compact /> <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
+              <BilingualText en="All" el="Όλα" compact /> <Counter value={counts.all} />
             </TabsTrigger>
             <TabsTrigger value="new">
-              <BilingualText en="New" el="Νέο" compact /> <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
+              <BilingualText en="New" el="Νέο" compact /> <Counter value={counts.new} />
             </TabsTrigger>
             <TabsTrigger value="replied">
-              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
+              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Counter value={counts.replied} />
             </TabsTrigger>
             <TabsTrigger value="converted">
-              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
+              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Counter value={counts.converted} />
             </TabsTrigger>
           </TabsList>
 

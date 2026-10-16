@@ -35,6 +35,7 @@ import {
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 
 type RequestCardProps = {
   request: MentorRequestItem;
@@ -283,9 +284,7 @@ export default function MentorRequestsPage() {
             <TabsTrigger value="pending" className="gap-2">
               <BilingualText en="Pending" el="Σε αναμονή" compact />
               {pendingRequests.length > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {pendingRequests.length}
-                </Badge>
+                <Counter value={pendingRequests.length} />
               )}
             </TabsTrigger>
             <TabsTrigger value="accepted"><BilingualText en="Accepted" el="Αποδεκτά" compact /></TabsTrigger>

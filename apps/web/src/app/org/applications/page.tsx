@@ -55,6 +55,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * An application is a program participant whose status says so.
@@ -415,10 +416,10 @@ export default function OrgApplicationsPage() {
         {/* Tabs: In review and Shortlisted had no status behind them and read 0 forever. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all"><BilingualText en={`All (${statusCounts.all})`} el={`Όλες (${statusCounts.all})`} compact /></TabsTrigger>
-            <TabsTrigger value="pending"><BilingualText en={`Pending (${statusCounts.pending})`} el={`Σε αναμονή (${statusCounts.pending})`} compact /></TabsTrigger>
-            <TabsTrigger value="accepted"><BilingualText en={`Accepted (${statusCounts.accepted})`} el={`Εγκεκριμένες (${statusCounts.accepted})`} compact /></TabsTrigger>
-            <TabsTrigger value="rejected"><BilingualText en={`Rejected (${statusCounts.rejected})`} el={`Απορριφθείσες (${statusCounts.rejected})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={statusCounts.all} /></TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /><Counter value={statusCounts.pending} /></TabsTrigger>
+            <TabsTrigger value="accepted"><BilingualText en="Accepted" el="Εγκεκριμένες" compact /><Counter value={statusCounts.accepted} /></TabsTrigger>
+            <TabsTrigger value="rejected"><BilingualText en="Rejected" el="Απορριφθείσες" compact /><Counter value={statusCounts.rejected} /></TabsTrigger>
           </TabsList>
         </Tabs>
 

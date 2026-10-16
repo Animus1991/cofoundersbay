@@ -25,6 +25,7 @@ import { ProfileHero } from '@/components/profile/ProfileHero';
 import { FollowButton } from '@/components/updates/FollowButton';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { Counter } from '@/components/ui/counter';
 
 /** The organisation's rounded square, the kind's glyph standing in for a
  * missing logo (the Programs card's mark). */
@@ -178,21 +179,21 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               <Briefcase className="icon-sm" aria-hidden="true" />
               <BilingualText en="Opportunities" el="Ευκαιρίες" compact />
               {opportunities.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{opportunities.length}</Badge>
+                <Counter value={opportunities.length} />
               )}
             </TabsTrigger>
             <TabsTrigger value="programs" className="text-sm gap-1.5">
               <GraduationCap className="icon-sm" aria-hidden="true" />
               <BilingualText en="Programs" el="Προγράμματα" compact />
               {cohorts.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{cohorts.length}</Badge>
+                <Counter value={cohorts.length} />
               )}
             </TabsTrigger>
             <TabsTrigger value="members" className="text-sm gap-1.5">
               <Users className="icon-sm" aria-hidden="true" />
               <BilingualText en="Members" el="Μέλη" compact />
               {members.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{members.length}</Badge>
+                <Counter value={members.length} />
               )}
             </TabsTrigger>
             <TabsTrigger value="about" className="text-sm gap-1.5">

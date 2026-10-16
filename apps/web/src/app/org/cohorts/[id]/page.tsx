@@ -72,6 +72,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Counter } from '@/components/ui/counter';
 
 // Types
 interface Participant {
@@ -527,24 +528,24 @@ export default function CohortDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="participants">
             <BilingualText
-              en={`Participants (${participants.length})`}
-              el={`Συμμετέχοντες (${participants.length})`}
+              en="Participants"
+              el="Συμμετέχοντες"
               compact
-            />
+            /><Counter value={participants.length} />
           </TabsTrigger>
           <TabsTrigger value="matches">
             <BilingualText
-              en={`Matches (${matches.length})`}
-              el={`Αντιστοιχίσεις (${matches.length})`}
+              en="Matches"
+              el="Αντιστοιχίσεις"
               compact
-            />
+            /><Counter value={matches.length} />
           </TabsTrigger>
           <TabsTrigger value="mentoring">
             <BilingualText
-              en={`Mentoring (${sessions.length})`}
-              el={`Καθοδήγηση (${sessions.length})`}
+              en="Mentoring"
+              el="Καθοδήγηση"
               compact
-            />
+            /><Counter value={sessions.length} />
           </TabsTrigger>
         </TabsList>
 

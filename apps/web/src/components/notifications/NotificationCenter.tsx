@@ -37,6 +37,8 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { qk } from '@/lib/query-keys';
 
 import { pressableProps } from '@/lib/pressable';
+import { Counter } from '@/components/ui/counter';
+import { BilingualText } from '@/components/common/BilingualText';
 // Use NotificationItem from @/lib/api
 
 const NOTIFICATION_ICONS = {
@@ -283,10 +285,10 @@ export function NotificationCenter() {
           <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
             <TabsList className="w-full">
               <TabsTrigger value="all" className="flex-1">
-                All ({notifications.length})
+                <BilingualText en="All" el="Όλες" compact /><Counter value={notifications.length} />
               </TabsTrigger>
               <TabsTrigger value="unread" className="flex-1">
-                Unread ({unreadCount})
+                <BilingualText en="Unread" el="Αδιάβαστες" compact /><Counter value={unreadCount} />
               </TabsTrigger>
             </TabsList>
           </Tabs>

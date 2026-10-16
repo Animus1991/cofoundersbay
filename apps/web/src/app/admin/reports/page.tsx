@@ -49,6 +49,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * The page's own row from the moderation queue row.
@@ -581,11 +582,11 @@ export default function AdminReportsPage() {
         {/* Tabs. Dismissed reports were reachable only under All. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="flex-wrap">
-            <TabsTrigger value="pending"><BilingualText en={`Pending (${statusCounts.pending})`} el={`Σε αναμονή (${statusCounts.pending})`} compact /></TabsTrigger>
-            <TabsTrigger value="reviewing"><BilingualText en={`In review (${statusCounts.reviewing})`} el={`Υπό έλεγχο (${statusCounts.reviewing})`} compact /></TabsTrigger>
-            <TabsTrigger value="resolved"><BilingualText en={`Resolved (${statusCounts.resolved})`} el={`Επιλυμένες (${statusCounts.resolved})`} compact /></TabsTrigger>
-            <TabsTrigger value="dismissed"><BilingualText en={`Dismissed (${statusCounts.dismissed})`} el={`Απορριφθείσες (${statusCounts.dismissed})`} compact /></TabsTrigger>
-            <TabsTrigger value="all"><BilingualText en={`All (${statusCounts.all})`} el={`Όλες (${statusCounts.all})`} compact /></TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /><Counter value={statusCounts.pending} /></TabsTrigger>
+            <TabsTrigger value="reviewing"><BilingualText en="In review" el="Υπό έλεγχο" compact /><Counter value={statusCounts.reviewing} /></TabsTrigger>
+            <TabsTrigger value="resolved"><BilingualText en="Resolved" el="Επιλυμένες" compact /><Counter value={statusCounts.resolved} /></TabsTrigger>
+            <TabsTrigger value="dismissed"><BilingualText en="Dismissed" el="Απορριφθείσες" compact /><Counter value={statusCounts.dismissed} /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={statusCounts.all} /></TabsTrigger>
           </TabsList>
         </Tabs>
 

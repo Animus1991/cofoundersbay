@@ -33,6 +33,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { foldText, searchPages } from '@/lib/page-search';
 import { FileText } from 'lucide-react';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { searchProfiles, type SearchHit } from '@/lib/api';
 
 type CommandItem = {
   id: string;
@@ -45,8 +46,23 @@ type CommandItem = {
   path?: string;
   shortcut?: string[];
   action: () => void;
-  category: 'assistant' | 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
+  category: 'assistant' | 'people' | 'navigation' | 'pages' | 'actions' | 'settings' | 'help';
 };
+
+/**
+ * What the first character asks for, as in GitHub's palette: `>` commands
+ * only, `@` people, `/` pages only; anything else searches everything and
+ * offers the words to the assistant.
+ */
+type PaletteMode = 'all' | 'commands' | 'people' | 'pages';
+export function paletteMode(search: string): { mode: PaletteMode; term: string } {
+  const first = search.trimStart().charAt(0);
+  const rest = search.trimStart().slice(1).trim();
+  if (first === '>') return { mode: 'commands', term: rest };
+  if (first === '@') return { mode: 'people', term: rest };
+  if (first === '/') return { mode: 'pages', term: rest };
+  return { mode: 'all', term: search.trim() };
+}
 
 type CommandPaletteProps = {
   open: boolean;
@@ -62,6 +78,26 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
   const openAssistant = popup?.open;
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const { mode, term } = paletteMode(search);
+  // `@` people: the directory's own search, a short pause after typing, the
+  // newest answer only.
+  const [people, setPeople] = useState<SearchHit[]>([]);
+  useEffect(() => {
+    if (mode !== 'people' || term.length < 2) {
+      setPeople([]);
+      return;
+    }
+    let live = true;
+    const t = window.setTimeout(() => {
+      searchProfiles({ q: term, limit: 6 })
+        .then((res) => { if (live) setPeople(res.hits ?? []); })
+        .catch(() => { if (live) setPeople([]); });
+    }, 200);
+    return () => {
+      live = false;
+      window.clearTimeout(t);
+    };
+  }, [mode, term]);
 
   const commands: CommandItem[] = useMemo(() => [
     // First row. An empty palette selects it, so Enter asks from this page.
@@ -261,13 +297,40 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
   // fits the words, for this reader's role; then hand the words to the assistant.
   const reader = useStoredUser();
   const filteredCommands = useMemo(() => {
-    if (!search.trim()) return commands;
-    const q = foldText(search.trim());
-    const own = commands.filter((cmd) =>
-      [cmd.label, cmd.labelEl, cmd.description, cmd.descriptionEl].some((t) => t && foldText(t).includes(q)),
+    if (mode === 'people') {
+      const found: CommandItem[] = people.map((p) => ({
+        id: `person:${p.userId}`,
+        label: p.displayName,
+        description: p.headline ?? undefined,
+        icon: User,
+        action: () => router.push(`/profiles/${encodeURIComponent(p.userId)}`),
+        category: 'people' as const,
+      }));
+      if (term.length < 2) return found;
+      return [
+        ...found,
+        {
+          id: 'people-discover',
+          label: `Search everyone for “${term}”`,
+          labelEl: `Αναζήτηση σε όλους για «${term}»`,
+          description: 'Opens Discover with these words as the search',
+          descriptionEl: 'Ανοίγει την Εξερεύνηση με αυτές τις λέξεις',
+          icon: Users,
+          action: () => router.push(`/discover?q=${encodeURIComponent(term)}`),
+          category: 'people' as const,
+        },
+      ];
+    }
+    if (mode === 'all' && !term) return commands;
+    if (mode === 'commands' && !term) return commands.filter((cmd) => cmd.category !== 'assistant');
+    const q = foldText(term);
+    const own = mode === 'pages' ? [] : commands.filter((cmd) =>
+      (mode === 'all' || cmd.category !== 'assistant')
+      && [cmd.label, cmd.labelEl, cmd.description, cmd.descriptionEl].some((t) => t && foldText(t).includes(q)),
     );
+    if (mode === 'commands') return own;
     const taken = new Set(own.map((cmd) => cmd.path).filter(Boolean));
-    const pages: CommandItem[] = searchPages(search, reader?.role)
+    const pages: CommandItem[] = (term ? searchPages(term, reader?.role) : [])
       .filter((p) => !taken.has(p.path))
       .map((p) => ({
         id: `page:${p.path}`,
@@ -279,6 +342,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
         action: () => router.push(p.path),
         category: 'pages' as const,
       }));
+    if (mode === 'pages') return pages;
     const ask: CommandItem = {
       id: 'ask-ai-query',
       label: `Ask the assistant: “${search.trim()}”`,
@@ -292,12 +356,13 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
       category: 'assistant',
     };
     return [...own, ...pages, ask];
-  }, [commands, search, reader?.role, router, popup]);
+  }, [commands, search, mode, term, people, reader?.role, router, popup]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
     const groups: Record<string, CommandItem[]> = {
       assistant: [],
+      people: [],
       navigation: [],
       pages: [],
       actions: [],
@@ -352,6 +417,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
 
   const categoryLabels: Record<string, { en: string; el: string }> = {
     assistant: { en: 'Assistant', el: 'Βοηθός' },
+    people: { en: 'People', el: 'Άτομα' },
     navigation: { en: 'Navigation', el: 'Πλοήγηση' },
     pages: { en: 'Pages', el: 'Σελίδες' },
     actions: { en: 'Actions', el: 'Ενέργειες' },
@@ -373,7 +439,8 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder={bilingualInline("Type a command or search…", "Πληκτρολογήστε εντολή ή αναζήτηση…")}
+              placeholder={bilingualInline("Search or jump to…", "Αναζήτηση ή μετάβαση…")}
+              aria-describedby="palette-tip"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -391,7 +458,15 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
           {filteredCommands.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center text-sm text-muted-foreground">
               <p>
-                <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
+                {mode === 'people' && term.length < 2 ? (
+                  <BilingualText en="Type a name or a skill after @." el="Γράψτε ένα όνομα ή μια δεξιότητα μετά το @." wrap />
+                ) : mode === 'people' ? (
+                  <BilingualText en="Nobody matches yet." el="Κανείς δεν ταιριάζει ακόμη." wrap />
+                ) : mode === 'pages' && !term ? (
+                  <BilingualText en="Type a page name after /." el="Γράψτε το όνομα μιας σελίδας μετά το /." wrap />
+                ) : (
+                  <BilingualText en="No commands match this search." el="Καμία εντολή δεν ταιριάζει σε αυτή την αναζήτηση." wrap />
+                )}
               </p>
               <Button type="button" variant="outline" size="sm" onClick={() => setSearch('')}>
                 <BilingualText en="Clear search" el="Εκκαθάριση αναζήτησης" compact />
@@ -453,13 +528,18 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
           )}
         </div>
 
-        {/* Footer hint */}
-        <div className="hidden shrink-0 items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground md:flex">
-          <span><BilingualText en="Navigate with ↑↓ keys" el="Πλοήγηση με τα πλήκτρα ↑↓" compact /></span>
-          <span><BilingualText en="Press Enter to select" el="Enter για επιλογή" compact /></span>
-        </div>
-        <div className="shrink-0 border-t border-border px-4 py-2 text-center text-xs text-muted-foreground md:hidden">
-          <BilingualText en="Tap a result to go" el="Πατήστε ένα αποτέλεσμα για μετάβαση" compact />
+        {/* Footer: the prefixes (GitHub's "Tip: type > for commands"), then the keys. */}
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-border px-4 py-2 text-xs text-muted-foreground">
+          <span id="palette-tip">
+            <BilingualText
+              en="Tip: > commands · @ people · / pages"
+              el="Συμβουλή: > εντολές · @ άτομα · / σελίδες"
+              compact
+              wrap
+            />
+          </span>
+          <span className="hidden md:inline"><BilingualText en="↑↓ to move · Enter to open" el="↑↓ για μετακίνηση · Enter για άνοιγμα" compact /></span>
+          <span className="md:hidden"><BilingualText en="Tap a result to go" el="Πατήστε ένα αποτέλεσμα για μετάβαση" compact /></span>
         </div>
       </DialogContent>
     </Dialog>

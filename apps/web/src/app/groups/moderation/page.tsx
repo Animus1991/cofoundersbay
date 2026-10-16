@@ -41,6 +41,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -272,10 +273,10 @@ export default function GroupsModerationPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="pending"><BilingualText en={`Pending (${pendingCount})`} el={`Σε αναμονή (${pendingCount})`} compact /></TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /><Counter value={pendingCount} /></TabsTrigger>
             <TabsTrigger value="reviewed"><BilingualText en="Reviewed" el="Ελεγμένες" compact /></TabsTrigger>
             <TabsTrigger value="resolved"><BilingualText en="Resolved" el="Επιλυμένες" compact /></TabsTrigger>
-            <TabsTrigger value="all"><BilingualText en={`All (${reports.length})`} el={`Όλες (${reports.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={reports.length} /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(report => <ReportCard key={report.id} report={report} />)}

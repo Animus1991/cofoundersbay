@@ -43,6 +43,7 @@ import { Progress } from '@/components/ui/progress';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
+import { Counter } from '@/components/ui/counter';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -614,11 +615,11 @@ export default function EndorsementsPage() {
             <TabsList>
               <TabsTrigger value="received" className="gap-1.5">
                 <BilingualText en="Received" el="Ληφθείσες" compact />
-                {pendingCount > 0 && <Badge variant="secondary" size="sm" className="px-1.5">{pendingCount}</Badge>}
+                {pendingCount > 0 && <Counter value={pendingCount} />}
               </TabsTrigger>
               <TabsTrigger value="given" className="gap-1.5">
                 <BilingualText en="Given" el="Δοσμένες" compact />
-                <span className="tabular-nums text-muted-foreground">{givenCount}</span>
+                <Counter value={givenCount} />
               </TabsTrigger>
             </TabsList>
             <Button size="sm" className="gap-1.5" onClick={() => setGiving(true)}>

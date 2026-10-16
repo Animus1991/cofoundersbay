@@ -43,6 +43,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -313,9 +314,9 @@ export default function OrgMembersPage() {
             {/* Counted over the members on screen - these read the sample
                 list, so a real organisation's tabs said 8 / 6 / 2 whatever
                 it held. */}
-            <TabsTrigger value="all"><BilingualText en={`All (${members.length})`} el={`Όλα (${members.length})`} compact /></TabsTrigger>
-            <TabsTrigger value="active"><BilingualText en={`Active (${members.filter(m => m.status === 'active').length})`} el={`Ενεργά (${members.filter(m => m.status === 'active').length})`} compact /></TabsTrigger>
-            <TabsTrigger value="invited"><BilingualText en={`Invited (${members.filter(m => m.status === 'invited').length})`} el={`Προσκεκλημένα (${members.filter(m => m.status === 'invited').length})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /><Counter value={members.length} /></TabsTrigger>
+            <TabsTrigger value="active"><BilingualText en="Active" el="Ενεργά" compact /><Counter value={members.filter(m => m.status === 'active').length} /></TabsTrigger>
+            <TabsTrigger value="invited"><BilingualText en="Invited" el="Προσκεκλημένα" compact /><Counter value={members.filter(m => m.status === 'invited').length} /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4">
             <Card>

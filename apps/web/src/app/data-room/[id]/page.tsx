@@ -75,6 +75,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Counter } from '@/components/ui/counter';
 
 // Types
 interface Document {
@@ -497,7 +498,7 @@ export default function DataRoomPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="documents"><BilingualText en="Documents" el="Έγγραφα" compact /></TabsTrigger>
-          <TabsTrigger value="investors"><BilingualText en={`Investors (${investors.length})`} el={`Επενδυτές (${investors.length})`} compact /></TabsTrigger>
+          <TabsTrigger value="investors"><BilingualText en="Investors" el="Επενδυτές" compact /><Counter value={investors.length} /></TabsTrigger>
           <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
           <TabsTrigger value="settings"><BilingualText en="Settings" el="Ρυθμίσεις" compact /></TabsTrigger>
         </TabsList>

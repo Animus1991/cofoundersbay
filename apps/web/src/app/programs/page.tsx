@@ -62,6 +62,7 @@ import { pressableProps } from '@/lib/pressable';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { Counter } from '@/components/ui/counter';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
   open: 'success',
@@ -625,13 +626,13 @@ export default function ProgramsPage() {
           <div className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="all">
-                {t('tab_all')} {filtered.length > 0 && `(${filtered.length})`}
+                {t('tab_all')}{filtered.length > 0 && <Counter value={filtered.length} />}
               </TabsTrigger>
               <TabsTrigger value="open">
-                {t('tab_open')} {openPrograms.length > 0 && `(${openPrograms.length})`}
+                {t('tab_open')}{openPrograms.length > 0 && <Counter value={openPrograms.length} />}
               </TabsTrigger>
               <TabsTrigger value="mine">
-                {t('tab_mine')} {myPrograms.length > 0 && `(${myPrograms.length})`}
+                {t('tab_mine')}{myPrograms.length > 0 && <Counter value={myPrograms.length} />}
               </TabsTrigger>
             </TabsList>
           </div>

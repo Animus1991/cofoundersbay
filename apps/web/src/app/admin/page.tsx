@@ -98,6 +98,7 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; labelEl: string; color: string }> = {
   spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -877,9 +878,7 @@ export default function AdminPage() {
                     <BilingualText en={en} el={el} stacked wrap />
                   </span>
                   {value === 'reports' && pendingReports > 0 && (
-                    <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
-                      {pendingReports}
-                    </Badge>
+                    <Counter value={pendingReports} tone="attention" />
                   )}
                 </TabsTrigger>
               ))}

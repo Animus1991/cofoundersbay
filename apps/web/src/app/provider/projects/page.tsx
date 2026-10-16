@@ -47,6 +47,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -385,13 +386,13 @@ export default function ProviderProjectsPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="active">
-              <BilingualText en="Active" el="Ενεργά" compact /> <Badge variant="secondary" className="ml-1">{counts.active}</Badge>
+              <BilingualText en="Active" el="Ενεργά" compact /> <Counter value={counts.active} />
             </TabsTrigger>
             <TabsTrigger value="on_hold">
-              <BilingualText en="On Hold" el="Σε αναμονή" compact /> <Badge variant="secondary" className="ml-1">{counts.on_hold}</Badge>
+              <BilingualText en="On Hold" el="Σε αναμονή" compact /> <Counter value={counts.on_hold} />
             </TabsTrigger>
             <TabsTrigger value="completed">
-              <BilingualText en="Completed" el="Ολοκληρωμένες" compact /> <Badge variant="secondary" className="ml-1">{counts.completed}</Badge>
+              <BilingualText en="Completed" el="Ολοκληρωμένες" compact /> <Counter value={counts.completed} />
             </TabsTrigger>
           </TabsList>
 

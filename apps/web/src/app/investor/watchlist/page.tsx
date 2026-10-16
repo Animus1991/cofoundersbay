@@ -55,6 +55,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
+import { Counter } from '@/components/ui/counter';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -572,8 +573,8 @@ export default function InvestorWatchlistPage() {
 
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
-            <TabsTrigger value="watchlist"><BilingualText en={`My watchlist (${watched.length})`} el={`Υπό παρακολούθηση (${watched.length})`} compact /></TabsTrigger>
-            <TabsTrigger value="activity"><BilingualText en={`Recent activity (${activity.length})`} el={`Πρόσφατη δραστηριότητα (${activity.length})`} compact /></TabsTrigger>
+            <TabsTrigger value="watchlist"><BilingualText en="My watchlist" el="Υπό παρακολούθηση" compact /><Counter value={watched.length} /></TabsTrigger>
+            <TabsTrigger value="activity"><BilingualText en="Recent activity" el="Πρόσφατη δραστηριότητα" compact /><Counter value={activity.length} /></TabsTrigger>
           </TabsList>
 
           {/* Watchlist Tab */}

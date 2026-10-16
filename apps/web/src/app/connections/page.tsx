@@ -48,6 +48,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { PeopleYouMayKnow } from '@/components/network/PeopleYouMayKnow';
+import { Counter } from '@/components/ui/counter';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -460,9 +461,7 @@ export default function ConnectionsPage() {
             <Handshake className="icon-sm" />
             <BilingualText en={connectionsEn('intro_requests')} el={connectionsEl('intro_requests')} compact />
             {introCount > 0 && (
-              <Badge variant="destructive" size="sm" className="ml-1 px-1.5">
-                {introCount}
-              </Badge>
+              <Counter value={introCount} tone="attention" />
             )}
           </TabsTrigger>
           <TabsTrigger value="received" className="gap-2">

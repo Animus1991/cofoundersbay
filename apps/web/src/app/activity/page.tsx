@@ -27,6 +27,7 @@ import { ACTIVITY_STRINGS, activityEn, activityEl } from '@/lib/i18n/strings-act
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
+import { Counter } from '@/components/ui/counter';
 
 const ACTIVITY_TOUR: TourStep[] = [
   {
@@ -486,19 +487,19 @@ export default function ActivityPage() {
                   <TabsTrigger value="network" className="gap-1.5 text-xs">
                     <Sparkles className="icon-sm" /> <BilingualText en={activityEn('tab_network')} el={activityEl('tab_network')} compact />
                     {activityItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{activityItems.length}</Badge>
+                      <Counter value={activityItems.length} />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="notifications" className="gap-1.5 text-xs">
                     <Bell className="icon-sm" /> <BilingualText en={activityEn('tab_notifications')} el={activityEl('tab_notifications')} compact />
                     {unreadCount > 0 && (
-                      <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{unreadCount}</Badge>
+                      <Counter value={unreadCount} tone="attention" />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="events" className="gap-1.5 text-xs">
                     <Calendar className="icon-sm" /> <BilingualText en={activityEn('tab_events')} el={activityEl('tab_events')} compact />
                     {eventItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{eventItems.length}</Badge>
+                      <Counter value={eventItems.length} />
                     )}
                   </TabsTrigger>
                 </TabsList>

@@ -43,6 +43,7 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
+import { Counter } from '@/components/ui/counter';
 
 type SessionActions = {
   onReschedule: (s: MentorshipSessionItem) => void;
@@ -410,9 +411,7 @@ export default function MentorSessionsPage() {
             <TabsTrigger value="upcoming" className="gap-2">
               Upcoming
               {upcomingRows.length > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs">
-                  {upcomingRows.length}
-                </Badge>
+                <Counter value={upcomingRows.length} />
               )}
             </TabsTrigger>
             <TabsTrigger value="past"><BilingualText en="Past Sessions" el="Παρελθούσες συνεδρίες" compact /></TabsTrigger>

@@ -68,6 +68,7 @@ import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { Counter } from '@/components/ui/counter';
 
 interface Mentor {
   id: string;
@@ -767,9 +768,7 @@ export default function MentoringPage() {
             <Calendar className="icon-sm" aria-hidden="true" />
             <BilingualText en="My sessions" el="Οι συνεδρίες μου" compact />
             {upcomingCount > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                {upcomingCount}
-              </Badge>
+              <Counter value={upcomingCount} />
             )}
           </TabsTrigger>
         </TabsList>
@@ -871,9 +870,7 @@ export default function MentoringPage() {
                 <Calendar className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                 {upcomingCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                    {upcomingCount}
-                  </Badge>
+                  <Counter value={upcomingCount} />
                 )}
               </TabsTrigger>
               <TabsTrigger value="past" className="gap-2">

@@ -41,6 +41,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { statusEl } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 
 type OrgEvent = {
   id: string;
@@ -433,9 +434,9 @@ export default function OrgEventsPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all"><BilingualText en={`All (${events.length})`} el={`Όλες (${events.length})`} compact /></TabsTrigger>
-            <TabsTrigger value="active"><BilingualText en={`Active (${activeCount})`} el={`Ενεργές (${activeCount})`} compact /></TabsTrigger>
-            <TabsTrigger value="completed"><BilingualText en={`Completed (${completedCount})`} el={`Ολοκληρωμένες (${completedCount})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={events.length} /></TabsTrigger>
+            <TabsTrigger value="active"><BilingualText en="Active" el="Ενεργές" compact /><Counter value={activeCount} /></TabsTrigger>
+            <TabsTrigger value="completed"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /><Counter value={completedCount} /></TabsTrigger>
           </TabsList>
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(event => (

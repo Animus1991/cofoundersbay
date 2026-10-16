@@ -63,6 +63,7 @@ import {
   type DocStatus,
 } from '@/lib/fundraising-demo';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { Counter } from '@/components/ui/counter';
 
 const ROUND_TONE: Record<string, StatusTone> = {
   planning: 'neutral',
@@ -935,14 +936,14 @@ export default function FundraisingPage() {
             <TabsList className="rounded-xl">
               <TabsTrigger value="pipeline" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_pipeline')} el={fundraisingEl('tab_pipeline')} compact />
-                <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{stats.total}</Badge>
+                <Counter value={stats.total} />
               </TabsTrigger>
               <TabsTrigger value="kanban" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_kanban')} el={fundraisingEl('tab_kanban')} compact />
               </TabsTrigger>
               <TabsTrigger value="dataroom" className="rounded-xl">
                 <BilingualText en={fundraisingEn('tab_dataroom')} el={fundraisingEl('tab_dataroom')} compact />
-                <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{docs.length}</Badge>
+                <Counter value={docs.length} />
               </TabsTrigger>
             </TabsList>
             {/* Find investors / Add lead live in the page header actions -
