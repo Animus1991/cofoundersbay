@@ -20,6 +20,8 @@ import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
+import { messageSnippet, textMatches } from '@cofounderbay/shared';
+import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -3049,6 +3051,38 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
 
   if (pathname === '/api/messages/conversations') {
     return { conversations: CONVERSATIONS };
+  }
+  // Message search, by the rule the API uses, over the demo's own threads.
+  // A demo message also shows its Greek, so that text is searched too and
+  // the snippet comes from whichever one holds the words.
+  if (pathname === '/api/messages/search') {
+    const sp = new URLSearchParams(path.split('?')[1] ?? '');
+    const q = (sp.get('q') ?? '').trim();
+    const limit = Math.min(Math.max(Number(sp.get('limit')) || 10, 1), 25);
+    if (q.length < 2) return { hits: [] };
+    const all = Object.values(MESSAGES)
+      .flat()
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const hits = [];
+    for (const m of all) {
+      const body = String(m.body ?? '');
+      const text = [body, PREVIEW_MESSAGE_EL[body]].find((t) => t && textMatches(t, q));
+      if (!text) continue;
+      const conversation = CONVERSATIONS.find((c) => c.id === m.conversationId);
+      const sender = (m.sender ?? {}) as { displayName?: string };
+      hits.push({
+        messageId: String(m.id),
+        conversationId: String(m.conversationId),
+        createdAt: String(m.createdAt),
+        fromMe: m.senderId === ME_ID,
+        senderName: sender.displayName ?? '',
+        withName: conversation?.recipient?.displayName ?? '',
+        withUserId: conversation?.recipient?.id ?? null,
+        snippet: messageSnippet(text, q),
+      });
+      if (hits.length >= limit) break;
+    }
+    return { hits };
   }
   if (pathname === '/api/messages/conversations/direct' && method === 'POST') {
     return { conversationId: 'conv-elena' };

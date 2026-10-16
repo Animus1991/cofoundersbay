@@ -590,6 +590,54 @@ function searchQueryFromMessage(message: string): string {
   return stripped.slice(0, 80);
 }
 
+/*
+ * A search through the reader's own messages: a search verb with
+ * "messages"/«μηνύματα», or "where did we talk about…", «πού μιλήσαμε για…»,
+ * "when did Elena mention…", «πότε μου ανέφερε…». It is decided before the
+ * area reads, because «μηνύματα» alone reads the inbox and "find" alone
+ * searches people. Returns the words to look for ('' when none were given),
+ * or null when the message is not a message search.
+ */
+const MESSAGE_SEARCH_PATTERNS: RegExp[] = [
+  /\b(?:search|find|look)\b.*\b(?:in|through)\s+(?:my\s+|our\s+)?(?:messages|chats|conversations|inbox)\b/,
+  /\b(?:search|find|look\s+for)\s+(?:in\s+)?(?:my\s+|our\s+)?(?:messages|chats|conversations)\b/,
+  /\bwhere\s+did\s+(?:we|i|\w+(?:\s+and\s+i)?)\s+(?:talk|write|speak|chat)\s+about\b/,
+  /\bwhen\s+did\s+\w+\s+(?:mention|say|write|talk\s+about)\b/,
+  /\b(?:messages?|chats?)\s+(?:about|mentioning)\b/,
+  // Greek: JavaScript's \b knows only ASCII letters, so a Greek word is
+  // bounded by the start or a space, never by \b.
+  /(?:^|\s)(?:βρες|ψαξε|αναζητησε|αναζητηση)(?:\s.*)?\sμηνυματ/,
+  /(?:^|\s)που\s+(?:μιλησαμε|γραψαμε|ειπαμε|συζητησαμε)(?:\s|$)/,
+  /(?:^|\s)ποτε\s+(?:μου\s+)?(?:ειπε|ανεφερε|εγραψε|μιλησε)(?:\s|$)/,
+  /(?:^|\s)μηνυματα?\s+(?:για|σχετικα\s+με)(?:\s|$)/,
+];
+
+const MESSAGE_SEARCH_FILLER = /^(?:the|a|an|my|our|το|τη|την|τον|τα|τις|τους|οι|ο|η|μου|μας)\s+/i;
+const MESSAGE_SEARCH_VERB = /^(?:please\s+)?(?:search|find|look\s+for|look|βρες(?:\s+μου)?|ψάξε|ψαξε|αναζήτησε|αναζητησε)(?:\s+|$)/i;
+// «Πότε μου ανέφερε ο Μάρκος το Next.js»: the person after a Greek verb is not the query.
+const MESSAGE_SEARCH_SUBJECT = /^(?:ο|η|τη|την|τον)\s+\p{Lu}\p{L}+\s+(?=\S)/u;
+const MESSAGE_SEARCH_PLACE = /(?:^|\s)(?:(?:in|through)\s+(?:my|our)\s+(?:messages|chats|conversations|inbox)|my\s+(?:messages|chats|conversations)|(?:στα\s+)?μηνύματ[άα]\s+(?:μου|μας)|(?:στα\s+)?μηνυματα\s+(?:μου|μας)|στα\s+μηνύματα|στα\s+μηνυματα)(?=\s|$|[?;!.])/gi;
+
+export function messageSearchQuery(rawMessage: string): string | null {
+  const folded = fold(rawMessage.trim().toLowerCase());
+  if (!MESSAGE_SEARCH_PATTERNS.some((re) => re.test(folded))) return null;
+  // Quoted words are the query, in any of the quotes people type.
+  const quoted = rawMessage.match(/[«“"]([^«»“”"]{2,80})[»”"]/);
+  if (quoted) return quoted[1].trim();
+  // Otherwise what follows "about / for / mention / για / σχετικά με",
+  // or, failing that, the message without its verb and "in my messages".
+  const after = rawMessage.match(/(?:^|\s)(?:about|for|mention(?:ed)?|σχετικά με|σχετικα με|για|ανέφερε|ανεφερε)\s+(.+)$/i);
+  let words = (after ? after[1] : rawMessage).replace(MESSAGE_SEARCH_PLACE, ' ');
+  // Question marks anywhere; a full stop only at the end, so "Next.js" survives.
+  words = words.replace(/[?;!]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[.]+$/, '').trim();
+  for (let i = 0; i < 3; i += 1) {
+    const next = words.replace(MESSAGE_SEARCH_VERB, '').replace(MESSAGE_SEARCH_SUBJECT, '').replace(MESSAGE_SEARCH_FILLER, '');
+    if (next === words) break;
+    words = next;
+  }
+  return words.slice(0, 80);
+}
+
 /**
  * Rule-based planner used when the LLM has no tools (preview, Ollama down).
  * Returns 1–3 tools; never proposes destructive admin actions.
@@ -604,6 +652,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
       tools.push({ name, args });
     }
   };
+
+  // A search through the reader's own messages is a request of its own.
+  const inMessages = messageSearchQuery(rawMessage);
+  if (inMessages !== null) return [{ name: 'search_messages', args: inMessages ? { query: inMessages } : {} }];
 
   const location = detectLocation(message);
   const person = detectPersonName(message);

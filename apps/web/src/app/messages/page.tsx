@@ -552,6 +552,9 @@ export default function MessagesPage() {
   // Handle URL param for direct messaging
   const toUserId = searchParams?.get('to');
   const openConversationId = searchParams?.get('c');
+  // From the assistant's message search: the thread opens with the words
+  // already searched, so the hit is marked where it sits.
+  const findParam = searchParams?.get('find') ?? undefined;
   useEffect(() => {
     if (!canUseMessaging || !toUserId || openConversationId) return;
 
@@ -1217,6 +1220,7 @@ export default function MessagesPage() {
                   isRecipientTyping={isRecipientTyping}
                   onAskAi={openInboxAi}
                   initialDraft={composerDraft}
+                  initialSearch={selectedConversation?.id === openConversationId ? findParam : undefined}
                   onBack={() => {
                     setIsMobileViewingChat(false);
                   }}

@@ -44,6 +44,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_builder_state: { en: 'Show my Startup Builder workspaces', el: 'Δείξε τους χώρους Startup Builder' },
   get_profile: { en: 'Show my profile', el: 'Δείξε το προφίλ μου' },
   get_messages: { en: 'Any unread messages?', el: 'Έχω αδιάβαστα μηνύματα;' },
+  search_messages: { en: 'Where did Elena and I talk about the research canvas?', el: 'Πού μιλήσαμε με την Έλενα για τον πίνακα έρευνας;' },
   get_connections: { en: 'Who is waiting on my connections?', el: 'Ποιος περιμένει στις συνδέσεις μου;' },
   get_programs: { en: 'Which programmes are taking applications?', el: 'Ποια προγράμματα δέχονται αιτήσεις;' },
   get_my_programs: { en: 'Where do my programme applications stand?', el: 'Πού βρίσκονται οι αιτήσεις μου σε προγράμματα;' },

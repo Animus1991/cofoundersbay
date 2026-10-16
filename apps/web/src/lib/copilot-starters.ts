@@ -128,7 +128,10 @@ export const PAGE_STARTERS: Record<string, PageStarter[]> = {
   '/updates': [read('Any new founder updates from people I follow?', 'Τι νέες ενημερώσεις ιδρυτών έχω;', 'update', 'get_founder_updates')],
   '/events': [read('What events are coming up this month?', 'Τι εκδηλώσεις έχει αυτόν τον μήνα;', 'calendar', 'get_events')],
   '/milestones': [read('Which of my milestones are overdue?', 'Ποια ορόσημα έχουν καθυστερήσει;', 'flag', 'get_milestones')],
-  '/messages': [read('Do I have unread messages?', 'Έχω αδιάβαστα μηνύματα;', 'messages', 'get_messages')],
+  '/messages': [
+    read('Do I have unread messages?', 'Έχω αδιάβαστα μηνύματα;', 'messages', 'get_messages'),
+    read('Search my messages for research canvas', 'Βρες στα μηνύματά μου τον πίνακα έρευνας', 'search', 'search_messages'),
+  ],
   '/connections': [read('Any connection requests waiting for me?', 'Έχω αιτήματα σύνδεσης σε αναμονή;', 'people', 'get_connections')],
   '/programs': [read('Which accelerator programmes are open right now?', 'Ποια προγράμματα επιτάχυνσης δέχονται αιτήσεις;', 'award', 'get_programs')],
   '/jobs': [read('Are there any open jobs I could apply to?', 'Υπάρχουν αγγελίες για θέσεις εργασίας;', 'briefcase', 'get_jobs')],

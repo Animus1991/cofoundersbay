@@ -52,6 +52,7 @@ import {
   listInvestorDeals,
   listJobs,
   listMessageConversations,
+  searchMessages,
   listMilestones,
   listOpportunities,
   listResearchBoards,
@@ -991,6 +992,36 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${parts.join(' · ')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  // "Where did Elena and I talk about the terms?" - the reader's own messages
+  // that hold the words, with a line around them. The link opens the thread
+  // with the words already searched, so the hit is marked where it sits.
+  async search_messages(args, { t, locale }) {
+    const query = typeof args?.query === 'string' ? args.query.trim() : '';
+    const inbox = openArea(t, '/messages', t('Open messages'), t('Read and answer your threads.'));
+    if (query.length < 2) return { section: t('Tell me what to look for in your messages.'), citations: [], actions: [inbox] };
+    const { hits } = await searchMessages(query, LIMIT);
+    if (hits.length === 0) {
+      return { section: t('No message of yours holds “{query}”.', { query }), citations: [], actions: [inbox] };
+    }
+    const threadHref = (conversationId: string) => `/messages?c=${encodeURIComponent(conversationId)}&find=${encodeURIComponent(query)}`;
+    const citations: CopilotCitation[] = [];
+    const lines = hits.map((hit) => {
+      const name = hit.withName || t('Conversation');
+      if (!citations.some((c) => c.id === hit.conversationId)) {
+        citations.push({ type: 'conversation', id: hit.conversationId, label: name, href: threadHref(hit.conversationId) });
+      }
+      // Words the other person wrote carry their name once; words the reader wrote say "You".
+      const quote = t('“{snippet}”', { snippet: hit.snippet });
+      const when = formatWhen(hit.createdAt, locale, false);
+      return hit.fromMe ? `• **${name}** — ${t('You')}: ${quote} · ${when}` : `• **${name}**: ${quote} · ${when}`;
+    });
+    const head = hits.length === 1
+      ? t('One message holds “{query}”:', { query })
+      : t('{count} messages hold “{query}”, newest first:', { count: hits.length, query });
+    const actions = [openArea(t, threadHref(hits[0].conversationId), t('Open the conversation'), t('With the words marked, on the message.'))];
+    return { section: `${head}\n${lines.join('\n')}`, citations, actions };
   },
 
   async get_connections(_args, { t }) {

@@ -4645,3 +4645,14 @@ input:is(
     color: hsl(var(--foreground) / 0.7);
   }
 }
+
+/* ── Greek capitals keep their tonos ──────────────────────────────────────
+   `first-letter:uppercase` sets text-transform: uppercase on the first
+   letter, and Chrome applies Greek's all-caps rule to it, which drops the
+   accent: «Άνοιγμα της συνομιλίας» on the assistant's card rendered
+   «Ανοιγμα», «Έλεγχος» «Ελεγχος». On a single letter `capitalize` gives the
+   same capital in English and keeps the tonos in Greek («άνοιγμα» →
+   «Άνοιγμα»). Measured in Chromium; `greekCapitals.test.ts` holds the rule. */
+:root [class~='first-letter:uppercase']::first-letter {
+  text-transform: capitalize;
+}

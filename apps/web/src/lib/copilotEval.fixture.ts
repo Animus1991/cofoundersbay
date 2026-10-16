@@ -34,6 +34,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Δείξε μου τα αποθηκευμένα προφίλ', tool: 'get_shortlist', read: true },
   { message: 'Do I have unread messages?', tool: 'get_messages', read: true },
   { message: 'Έχω αδιάβαστα μηνύματα;', tool: 'get_messages', read: true },
+  { message: 'Search my messages for research canvas', tool: 'search_messages', read: true },
+  { message: 'Βρες στα μηνύματά μου τον πίνακα έρευνας', tool: 'search_messages', read: true },
   { message: 'Any connection requests waiting for me?', tool: 'get_connections', read: true },
   { message: 'Έχω αιτήματα σύνδεσης σε αναμονή;', tool: 'get_connections', read: true },
   { message: 'Which accelerator programmes are open right now?', tool: 'get_programs', read: true },

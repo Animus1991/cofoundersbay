@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Send,
@@ -19,6 +19,9 @@ import {
   X,
   Copy,
   Reply,
+  ChevronUp,
+  ChevronDown,
+  ListFilter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,6 +46,7 @@ import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { highlightParts, stepMatch, threadMatches } from '@/lib/thread-search';
 import {
   messagesEn,
   messagesEl,
@@ -91,6 +95,8 @@ type ChatWindowProps = {
   onValidationModeChange?: (mode: ValidationMode) => void;
   onAskAi?: () => void;
   initialDraft?: string;
+  /** Words to open the thread's search with (the assistant's message search links here). */
+  initialSearch?: string;
 };
 
 function firstName(full: string): string {
@@ -146,6 +152,8 @@ function MessageBubble({
   recipientName,
   onReply,
   onReact,
+  highlight,
+  hit = 'none',
 }: {
   message: Message;
   isOwn: boolean;
@@ -154,6 +162,10 @@ function MessageBubble({
   recipientName: string;
   onReply?: (msg: Message) => void;
   onReact?: (messageId: string, emoji: string) => void;
+  /** The thread search's words, marked where they occur. */
+  highlight?: string;
+  /** 'active' is the hit the search is on; 'hit' any other match. */
+  hit?: 'none' | 'hit' | 'active';
 }) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -209,12 +221,24 @@ function MessageBubble({
               isOwn
                 ? 'rounded-2xl rounded-br-sm bg-primary text-primary-foreground'
                 : 'rounded-2xl rounded-bl-sm border border-border bg-background/90 text-foreground backdrop-blur-sm',
+              // The hit the search is on carries a ring; the others a faint one,
+              // so the eye finds them while scrolling the whole thread.
+              hit === 'active' && 'ring-2 ring-ring ring-offset-2 ring-offset-background',
+              hit === 'hit' && 'ring-1 ring-ring/40',
             )}
           >
             <p className="text-sm whitespace-pre-wrap break-words">
               {PREVIEW_MESSAGE_EL[message.content]
                 ? <BilingualText en={message.content} el={PREVIEW_MESSAGE_EL[message.content]} wrap />
-                : message.content}
+                : highlight
+                  ? highlightParts(message.content, highlight).map((part, i) =>
+                      part.hit ? (
+                        <mark key={i} className="rounded-sm bg-status-warning-mark/45 px-0.5 text-inherit">{part.text}</mark>
+                      ) : (
+                        <span key={i}>{part.text}</span>
+                      ),
+                    )
+                  : message.content}
             </p>
             {message.attachments?.length ? (
               <div className="mt-2 space-y-1">
@@ -363,6 +387,7 @@ export function ChatWindow({
   onValidationModeChange,
   onAskAi,
   initialDraft,
+  initialSearch,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
   const popup = usePopupChatOptional();
@@ -386,6 +411,11 @@ export function ChatWindow({
     };
   }, []);
   const [searchQuery, setSearchQuery] = useState('');
+  // Which hit the search is on (index into hitIds), and whether the thread
+  // shows only the matching messages, as the search did before it marked hits.
+  const [activeHit, setActiveHit] = useState(-1);
+  const [onlyHits, setOnlyHits] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [localReactions, setLocalReactions] = useState<Record<string, { emoji: string; count: number }[]>>({});
@@ -398,11 +428,12 @@ export function ChatWindow({
   useEffect(() => {
     setLocalReactions({});
     setReplyTo(null);
-    setSearchOpen(false);
-    setSearchQuery('');
+    setSearchOpen(Boolean(initialSearch));
+    setSearchQuery(initialSearch ?? '');
+    setOnlyHits(false);
     setPendingFiles([]);
     setInputValue(initialDraft ?? '');
-  }, [conversation.id, initialDraft]);
+  }, [conversation.id, initialDraft, initialSearch]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -475,10 +506,31 @@ export function ChatWindow({
     }
   };
 
-  // Filter by search
-  const filteredMessages = searchQuery.trim()
-    ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
-    : messages;
+  // Search: every hit in the whole thread, accents and case ignored, in the
+  // text the reader sees (a demo message shows its Greek too). The thread
+  // stays whole unless the reader asks for only the matches.
+  const hitIds = useMemo(
+    () => threadMatches(messages, searchQuery, (m) => (PREVIEW_MESSAGE_EL[m.content] ? [m.content, PREVIEW_MESSAGE_EL[m.content]] : [m.content])),
+    [messages, searchQuery],
+  );
+  const searching = searchOpen && searchQuery.trim().length > 0;
+  // A new query starts on the newest hit, nearest where the reader is.
+  useEffect(() => {
+    setActiveHit(hitIds.length ? hitIds.length - 1 : -1);
+  }, [searchQuery, hitIds.length]);
+  const activeHitId = activeHit >= 0 ? hitIds[activeHit] : undefined;
+  useEffect(() => {
+    if (!activeHitId) return;
+    const rows = scrollRef.current?.querySelectorAll<HTMLElement>('[data-message-id]') ?? [];
+    [...rows].find((row) => row.dataset.messageId === activeHitId)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+  }, [activeHitId]);
+  const goToHit = (step: -1 | 1) => setActiveHit((current) => stepMatch(current, hitIds.length, step));
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setOnlyHits(false);
+  };
+  const filteredMessages = searching && onlyHits ? messages.filter((m) => hitIds.includes(m.id)) : messages;
 
   const visibleMessages = filteredMessages.map((m) =>
     localReactions[m.id] ? { ...m, reactions: localReactions[m.id] } : m,
@@ -675,22 +727,60 @@ export function ChatWindow({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <input
                 autoFocus
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter goes up the thread to the next older hit, as a
+                  // reader searching back in time expects; Shift+Enter comes down.
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToHit(e.shiftKey ? 1 : -1);
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeSearch();
+                  }
+                }}
                 placeholder={t(messagesEn('search_in_chat'), messagesEl('search_in_chat'))}
+                aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))}
                 className="w-full rounded-xl border border-border bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
-            {searchQuery && (
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {filteredMessages.length}{' '}
-                {filteredMessages.length === 1
-                  ? t(messagesEn('result_one'), messagesEl('result_one'))
-                  : t(messagesEn('results_n'), messagesEl('results_n'))}
+            {searching && (
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground" aria-live="polite">
+                {hitIds.length === 0
+                  ? t(messagesEn('no_matches'), messagesEl('no_matches'))
+                  : onlyHits
+                    ? `${hitIds.length} ${hitIds.length === 1 ? t(messagesEn('result_one'), messagesEl('result_one')) : t(messagesEn('results_n'), messagesEl('results_n'))}`
+                    : t(messagesEn('match_position'), messagesEl('match_position'))
+                        .replace('{n}', String(activeHit + 1))
+                        .replace('{total}', String(hitIds.length))}
               </span>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} aria-label={bilingualAria(messagesEn('close_search'), messagesEl('close_search'))}>
+            {searching && hitIds.length > 0 && !onlyHits && (
+              <>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => goToHit(-1)} aria-label={bilingualAria(messagesEn('older_match'), messagesEl('older_match'))} title={t(messagesEn('older_match'), messagesEl('older_match'))}>
+                  <ChevronUp className="icon-sm" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => goToHit(1)} aria-label={bilingualAria(messagesEn('newer_match'), messagesEl('newer_match'))} title={t(messagesEn('newer_match'), messagesEl('newer_match'))}>
+                  <ChevronDown className="icon-sm" />
+                </Button>
+              </>
+            )}
+            {searching && hitIds.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn('h-7 w-7', onlyHits && 'bg-secondary text-foreground')}
+                onClick={() => setOnlyHits((v) => !v)}
+                aria-pressed={onlyHits}
+                aria-label={bilingualAria(messagesEn('only_matches'), messagesEl('only_matches'))}
+                title={t(messagesEn('only_matches'), messagesEl('only_matches'))}
+              >
+                <ListFilter className="icon-sm" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={closeSearch} aria-label={bilingualAria(messagesEn('close_search'), messagesEl('close_search'))}>
               <X className="icon-sm" />
             </Button>
           </div>
@@ -698,7 +788,7 @@ export function ChatWindow({
       </div>
 
       {/* Messages */}
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto">
         <div className="flex min-h-full flex-col justify-end px-4 py-4 sm:px-6">
         {hasMoreMessages && (
           <div className="flex justify-center py-2">
@@ -760,9 +850,11 @@ export function ChatWindow({
               const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId;
 
               return (
-                <div key={msg.id} className="mb-1.5">
+                <div key={msg.id} className="mb-1.5" data-message-id={msg.id}>
                   <MessageBubble
                     message={msg}
+                    highlight={searching ? searchQuery : undefined}
+                    hit={!searching || !hitIds.includes(msg.id) ? 'none' : msg.id === activeHitId ? 'active' : 'hit'}
                     isOwn={isOwn}
                     showAvatar={showAvatar}
                     recipientAvatar={conversation.recipientAvatar}

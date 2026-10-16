@@ -810,6 +810,25 @@ export async function listMessageConversations(): Promise<{ conversations: Conve
   return apiRequest('/api/messages/conversations');
 }
 
+/** One message that holds the searched words (GET /messages/search). */
+export type MessageSearchHit = {
+  messageId: string;
+  conversationId: string;
+  createdAt: string;
+  fromMe: boolean;
+  senderName: string;
+  withName: string;
+  withUserId: string | null;
+  snippet: string;
+};
+
+/** The reader's own messages that hold the words, newest first. */
+export async function searchMessages(q: string, limit = 10): Promise<{ hits: MessageSearchHit[] }> {
+  const sp = new URLSearchParams({ q, limit: String(limit) });
+  const res = await apiRequest<{ hits?: MessageSearchHit[] }>(`/api/messages/search?${sp}`);
+  return { hits: Array.isArray(res?.hits) ? res.hits : [] };
+}
+
 export async function getOrCreateDirectConversation(userId: string): Promise<{ conversationId: string }> {
   return apiRequest('/api/messages/conversations/direct', {
     method: 'POST',

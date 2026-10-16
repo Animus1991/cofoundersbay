@@ -400,6 +400,19 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'search_messages',
+    kind: 'read',
+    label: { en: 'Search your messages', el: 'Αναζήτηση στα μηνύματά σου' },
+    description: {
+      en: 'Find the signed-in user\u2019s own messages that hold some words, newest first: with whom, who wrote it, when, and a line around the words. Accents and case are ignored. It reads only conversations the user is in, and opens or sends nothing.',
+      el: 'Βρίσκει τα μηνύματα του χρήστη που περιέχουν κάποιες λέξεις, τα νεότερα πρώτα: με ποιον, ποιος το έγραψε, πότε και μια γραμμή γύρω από τις λέξεις. Τόνοι και κεφαλαία αγνοούνται. Διαβάζει μόνο συνομιλίες όπου συμμετέχει ο χρήστης και δεν ανοίγει ούτε στέλνει τίποτα.',
+    },
+    params: [
+      { name: 'query', type: 'string', required: false, description: { en: 'The words to look for, as the user wrote them.', el: 'Οι λέξεις προς αναζήτηση, όπως τις έγραψε ο χρήστης.' } },
+    ],
+    writes: false,
+  },
+  {
     id: 'get_connections',
     kind: 'read',
     label: { en: 'Read your connections', el: 'Ανάγνωση των συνδέσεών σου' },

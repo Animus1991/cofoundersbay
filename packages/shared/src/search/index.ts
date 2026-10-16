@@ -216,3 +216,48 @@ export function placeVariants(location: string): string[] {
   const hit = PLACES.find((p) => p.patterns.some((re) => re.test(f)) || p.variants.some((v) => foldSearchText(v) === f));
   return hit ? [...new Set([value, ...hit.variants])] : [value];
 }
+
+/**
+ * Where words occur in a text, accents, case and the final sigma ignored
+ * («ορους» finds «όρους», "TERM" finds "term"). Positions are in the text as
+ * given, so a reader can mark them in place. Used by the in-thread search and
+ * by message search on the server, so both find the same messages.
+ */
+export function findTextMatches(text: string, query: string): Array<[number, number]> {
+  const fold = (s: string) => foldSearchText(s).replace(/ς/g, 'σ');
+  const q = fold(String(query ?? '').trim());
+  const source = String(text ?? '').normalize('NFC');
+  if (!q || !source) return [];
+  const folded = fold(source);
+  const ranges: Array<[number, number]> = [];
+  for (let at = folded.indexOf(q); at >= 0; at = folded.indexOf(q, at + q.length)) {
+    ranges.push([at, at + q.length]);
+  }
+  return ranges;
+}
+
+/** Whether a text holds the words, by the same rule as `findTextMatches`. */
+export function textMatches(text: string, query: string): boolean {
+  return findTextMatches(text, query).length > 0;
+}
+
+/** How far back message search reads: a member's most recent messages. */
+export const MESSAGE_SEARCH_WINDOW = 1000;
+
+/**
+ * A line of a message around its first hit, for a search result: up to
+ * `radius` characters each side, cut at a space where one is near, with an
+ * ellipsis where the message goes on. A short message is returned whole.
+ */
+export function messageSnippet(text: string, query: string, radius = 60): string {
+  const source = String(text ?? '').normalize('NFC').replace(/\s+/g, ' ').trim();
+  const [first] = findTextMatches(source, query);
+  if (!first || source.length <= radius * 2) return source;
+  let start = Math.max(0, first[0] - radius);
+  let end = Math.min(source.length, first[1] + radius);
+  const space = source.lastIndexOf(' ', start + 10);
+  if (start > 0 && space > start - 10 && space < first[0]) start = space + 1;
+  const after = source.indexOf(' ', end - 10);
+  if (end < source.length && after > first[1] && after < end + 10) end = after;
+  return `${start > 0 ? '…' : ''}${source.slice(start, end).trim()}${end < source.length ? '…' : ''}`;
+}
