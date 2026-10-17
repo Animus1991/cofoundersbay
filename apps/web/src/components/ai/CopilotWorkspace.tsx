@@ -33,7 +33,7 @@ import { useAIChat, type AIMessage } from '@/hooks/useAIChat';
 import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
 import { CopilotEmptyState } from '@/components/ai/CopilotEmptyState';
-import { CitationChip } from '@/components/ai/CitationChip';
+import { CitationList } from '@/components/ai/CitationChip';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import type { CopilotAction } from '@/lib/copilot-types';
 import { getActionSpec } from '@/lib/action-registry';
@@ -126,13 +126,7 @@ function AssistantBody({
       {message.stopped ? (
         <p className="type-caption text-muted-foreground"><BilingualText en="Stopped. What had arrived is above." el="Σταμάτησε. Ό,τι είχε φτάσει είναι παραπάνω." compact wrap /></p>
       ) : null}
-      {message.citations && message.citations.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {message.citations.map((c) => (
-            <CitationChip key={`${c.type}-${c.id}`} citation={c} />
-          ))}
-        </div>
-      )}
+      {message.citations && message.citations.length > 0 && <CitationList citations={message.citations} />}
       {message.actions && message.actions.length > 0 && (
         <div className="grid grid-cols-1 gap-2 pt-1">
           {message.actions.map((action) => (

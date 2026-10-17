@@ -3399,12 +3399,12 @@ a[class~="inline-flex"].bg-destructive {
 
 /* Labeled action buttons on every page (header Invite / New Document, asChild
    links, dialogs). Icon-only controls have only an svg child and are skipped. */
-button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
+button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph:not([data-keep-icon] *),
 button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) .cfb-glyph,
 button:not([data-keep-icon]):has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
 button:not([data-keep-icon]):has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > .cfb-glyph,
-a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph,
+a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.cfb-glyph:not([data-keep-icon] *),
 a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) svg.cfb-glyph:not([data-keep-icon] *),
 button[data-slot="button"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.lucide:not([data-keep-icon] *):not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
 a[class~="inline-flex"]:has(> :not(svg):not(.sr-only):not(.hidden):not([class~="absolute"])) > svg.lucide:not([data-keep-icon] *):not(.lucide-chevron-down):not(.lucide-chevron-right):not(.lucide-chevron-up):not(.lucide-chevron-left):not(.lucide-x):not(.lucide-loader-2):not(.lucide-loader-circle),
