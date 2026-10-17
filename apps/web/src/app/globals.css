@@ -45,8 +45,15 @@ html {
        cursor.com), so a card reads as a place rather than as a box. Every
        theme below holds the same three ratios:
          card on page   1.05-1.09
-         --border       1.14-1.19 on its card (cursor.com 1.15-1.18)
-         --input        1.17-1.19 on its card — a field edge as quiet as a card's */
+         --border       ~1.20 on its card. cursor.com draws 1.15-1.18 and we
+                        sat at 1.14, which the dark themes rendered at 1.09-1.12:
+                        measured invisible on common panels (§55). Primer's
+                        two tiers are 1.28 (muted) and 1.43 (default); we take
+                        the step that registers without doubling the surface
+                        step into a frame.
+         --input        ~1.32 on its card — the edge of a control (a field, an
+                        outline button), one tier firmer than a card's, as
+                        Primer's control-borderColor-rest is its default tier */
     --background:       232 7% 96.6%;
     --foreground:       232 10% 21%;
     --card:             232 12% 99.4%;
@@ -114,12 +121,12 @@ html {
        band, so `/60` and `/40` fade toward nothing, which is what an inner
        divider should do. A control's own boundary is `--input`, kept firmer
        than a card edge because it is the only thing that marks the field. */
-    --border:           232 5% 93.6%;  /* 1.14 on card — a hairline, not a frame */
+    --border:           232 5% 91.6%;  /* 1.20 on card — a hairline that registers, not a frame */
     /* Fields share the card's whisper (1.19, was 1.22-3.14 by theme). The
        field is found by its fill, label and placeholder; focus is the strong
        signal: a 2px --ring outline (globals "Shared keyboard indicator") and
        the edge taking --ring while typing. */
-    --input:            232 5% 92%;
+    --input:            232 5% 87.7%;  /* 1.32 on card — the edge of a control, one tier up */
     --ring:             250 40.7% 55%; /* the link tone: 4.9:1 on the page */
 
     /* Score/progress rings — the brand-banner gold on its quiet brown
@@ -209,8 +216,8 @@ html {
     --destructive: 4 23.5% 47%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 4 30% 70%;
-    --border: 232 12% 13.6%;           /* ~1.12 on card */
-    --input: 232 12% 15%;              /* ~1.16 on card */
+    --border: 232 12% 16.8%;           /* ~1.20 on card */
+    --input: 232 12% 19.8%;            /* ~1.32 on card */
     --ring: 248 47% 76.6%;
     --ring-gold-track:  30 22% 38%;   /* quiet on the dark card */
     --ring-gold-ink:    36 55% 80%;   /* the banner's pale-gold text */
@@ -239,8 +246,8 @@ html {
     --destructive: 2 23.5% 46.8%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 30% 70%;
-    --border: 215 16% 22.8%;           /* ~1.12 on card */
-    --input: 215 16% 24.4%;            /* ~1.16 on card */
+    --border: 215 16% 24%;             /* ~1.20 on card */
+    --input: 215 16% 26.5%;            /* ~1.32 on card */
     --ring: 199 36% 40%;
     --ring-gold-track:  30 22% 38%;
     --ring-gold-ink:    36 55% 80%;
@@ -268,8 +275,8 @@ html {
     --destructive: 2 30.5% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 33.5% 38.8%;
-    --border: 210 8% 93.4%;            /* ~1.13 on card */
-    --input: 210 8% 91.8%;             /* ~1.18 on card */
+    --border: 210 8% 91.4%;            /* ~1.20 on card */
+    --input: 210 8% 87.4%;             /* ~1.32 on card */
     --gradient-hero: linear-gradient(hsl(205 20% 13%), hsl(205 20% 13%));
     color-scheme: light;
   }
@@ -296,8 +303,8 @@ html {
     --destructive: 2 23% 48%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 2 25% 64%;
-    --border: 240 6% 10.8%;            /* ~1.12 on card */
-    --input: 240 6% 12.2%;             /* ~1.15 on card */
+    --border: 240 6% 14.2%;            /* ~1.20 on card */
+    --input: 240 6% 17.3%;             /* ~1.32 on card */
     --ring: 258 28% 54%;
     --ring-gold-track:  30 22% 38%;
     --ring-gold-ink:    36 55% 80%;
@@ -333,8 +340,8 @@ html {
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 6 33.5% 38.8%; /* 6.92 on card */
 
-    --border:            38 30% 87.6%;  /* ~1.15 on card */
-    --input:             38 28% 86.2%;  /* ~1.19 on card — was 3.14, a drawn box */
+    --border:            38 30% 86.3%;  /* ~1.20 on card */
+    --input:             38 28% 82.1%;  /* ~1.32 on card — was 3.14, a drawn box */
 
     color-scheme: light;
   }
@@ -360,8 +367,8 @@ html {
     --destructive: 350 30% 42.6%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 350 33% 38.8%;
-    --border: 30 16% 92.6%;            /* ~1.13 on card */
-    --input: 30 16% 91%;               /* ~1.18 on card */
+    --border: 30 16% 90.2%;            /* ~1.20 on card */
+    --input: 30 16% 86.1%;             /* ~1.32 on card */
     --gradient-hero: linear-gradient(hsl(24 14% 13%), hsl(24 14% 13%));
     color-scheme: light;
   }
@@ -3250,10 +3257,13 @@ h3.page-section.page-section--compact,
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────
-   cursor.com "Adjust Plan": 1px hairline, transparent fill, 8px corner.
+   cursor.com "Adjust Plan": 1px edge, transparent fill, 8px corner.
    cursor.com "Upgrade": fill, no extra edge.
+   The edge is the control tier (--input, ~1.32 on the card), not the card
+   hairline: a button has to be found, a card only placed. Primer draws its
+   default button at control-borderColor-rest for the same reason (§55).
    Applies on every page and every overlay, including asChild <a> buttons.
-   Fields (combobox / checkbox / switch) keep --input, not this hairline. */
+   Fields (combobox / checkbox / switch) are already on --input. */
 button[class~="border-2"]:not([role="combobox"]):not([role="checkbox"]):not([role="switch"]),
 [data-slot="button"][class~="border-2"],
 [role="button"][class~="border-2"]:not([data-surface="card"]),
@@ -3272,7 +3282,7 @@ button[class~="border-border"]:not([role="combobox"]):not([role="checkbox"]):not
 a[class~="inline-flex"][class~="border"],
 a[class~="inline-flex"][class~="border-input"],
 a[class~="inline-flex"][class~="border-border"] {
-  border-color: hsl(var(--border));
+  border-color: hsl(var(--input));
   box-shadow: none;
 }
 button[class~="border"]:not([role="combobox"]):hover,
@@ -3287,7 +3297,7 @@ button[class~="border-border"]:not([role="combobox"]):hover,
 a[class~="inline-flex"][class~="border"]:hover,
 a[class~="inline-flex"][class~="border-input"]:hover,
 a[class~="inline-flex"][class~="border-border"]:hover {
-  border-color: hsl(var(--foreground) / 0.12);
+  border-color: hsl(var(--foreground) / 0.2);
 }
 button.bg-primary,
 button.bg-destructive,
@@ -3931,26 +3941,23 @@ input[data-search-field][class~="border-input"]:focus-visible {
   }
 }
 
-/* Landing intro. On a phone the headline and the line under it use the
-   phone title and subtitle (13.582 and 12.921). The live counts use the
-   stat step (14.002). From 640px they keep the poster sizes. Pixels,
-   not rem: the desktop root is 82% and would shrink a rem a second time.
-   The wash started at blur-3xl (64px), then 10% less (57.6px), then
-   another 5% (54.72px), so the lilac stays a shape. On a phone the
-   poster column is 2% narrower than the full width; from 640px it is
-   full width again. */
-.landing-wash {
-  filter: blur(54.72px);
-}
+/* Landing intro. One type ladder, no poster sizes: the headline is the
+   page-title step (26px, the top of the scale, cursor.com h1), the lead is
+   body, the live counts sit one step above body. The widest ratio on the
+   first screen is headline / body ≈ 1.6, where a 60px display over 13px
+   card text read as four unrelated sizes (§55, 2026-10-17). On a phone the
+   headline is 17px over a 12.921 lead (1.3×), one clear step above the
+   eyebrow and the body so the first line still leads. Pixels, not rem: the desktop root is 82% and would
+   shrink a rem a second time. */
 @media (max-width: 639.98px) {
   .landing-intro {
     width: 98%;
   }
 }
 #main-content h1.landing-display {
-  font-size: 13.582px;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 #main-content p.landing-lead {
   font-size: 12.921px;
@@ -3960,33 +3967,47 @@ input[data-search-field][class~="border-input"]:focus-visible {
   font-size: 14.002px;
   line-height: 1.2;
 }
-/* The hero headline's second language: a subtitle under the display line,
-   not a second display line (0.85em of 60px read as two headlines). */
+/* The hero headline's second language: a subtitle under the first line,
+   one step down, the same weight as the lead. */
 #main-content h1.landing-display .landing-display-secondary {
-  margin-top: 0.4em;
-  font-size: 0.5em;
+  margin-top: 0.3em;
+  font-size: 0.78em;
   font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 @media (min-width: 640px) {
   #main-content h1.landing-display {
-    font-size: 48px;
-    line-height: 1.08;
+    font-size: 22px;
+    line-height: 1.25;
   }
   #main-content p.landing-lead {
-    font-size: 18px;
+    font-size: 15px;
   }
   #main-content p.landing-stat {
-    font-size: 24px;
+    font-size: 17px;
   }
 }
 @media (min-width: 1024px) {
   #main-content h1.landing-display {
-    font-size: 60px;
-    line-height: 1.05;
+    font-size: 26px;
+    line-height: 1.25;
   }
   #main-content p.landing-lead {
+    font-size: 16px;
+  }
+  #main-content p.landing-stat {
+    font-size: 18px;
+  }
+}
+/* Section headings on the landing follow the same ladder: title step
+   (20px) over a body lead, not 36px over 18px. */
+#main-content h2.landing-section {
+  font-size: 18px;
+  line-height: 1.3;
+}
+@media (min-width: 1024px) {
+  #main-content h2.landing-section {
     font-size: 20px;
   }
 }

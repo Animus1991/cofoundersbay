@@ -100,7 +100,7 @@ export function LiveStatsGrid() {
             className="animate-fade-in rounded-2xl border border-border bg-card/80 p-6 text-center backdrop-blur-sm"
             style={{ animationDelay: `${index * 60}ms` }}
           >
-            <p className="font-display text-4xl font-bold text-primary-accessible">{number(stats[key])}</p>
+            <p className="font-display text-xl font-semibold text-foreground">{number(stats[key])}</p>
             <p className="mt-2 font-semibold text-foreground"><BilingualText en={label.en} el={label.el} compact /></p>
             <p className="mt-1 text-xs text-muted-foreground"><BilingualText en={sub.en} el={sub.el} wrap /></p>
           </div>

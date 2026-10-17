@@ -23,14 +23,16 @@ const buttonVariants = cva(
         // the mid tone would lighten Cyan, whose mid is the pale tint.
         default:
           'bg-primary text-primary-foreground hover:bg-[color-mix(in_hsl,hsl(var(--primary))_86%,black)]',
-        // A fill or an edge, never both. The outline is the same hairline as a
-        // card (cursor.com "Adjust Plan"): never --input, which is a field edge.
+        // A fill or an edge, never both. The outline is the control edge
+        // (--input, ~1.32 on the card), one tier firmer than a card's hairline:
+        // Primer draws its default button at control-borderColor-rest for the
+        // same reason — a button has to be found, a card only placed (§55).
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-foreground/[0.06]',
         ghost:
           'bg-transparent text-foreground/70 hover:text-foreground hover:bg-secondary/60',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-foreground/15',
+          'border border-input bg-transparent text-foreground hover:bg-secondary/50 hover:border-foreground/25',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:

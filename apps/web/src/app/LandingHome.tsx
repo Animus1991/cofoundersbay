@@ -246,12 +246,10 @@ const FOOTER: Array<{ title: Pair; links: Array<{ href: string; label: Pair }> }
 
 function SectionHeading({ eyebrow, title, lead }: { eyebrow: Pair; title: Pair; lead?: Pair }) {
   return (
-    <div className="mx-auto mb-12 max-w-3xl text-center">
-      <Badge variant="outline" className="mb-3 border-primary/30 text-primary-accessible"><T p={eyebrow} /></Badge>
-      <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl"><T p={title} wrap /></h2>
-      {/* Under the heading on every width: on a phone the heading sits on
-          the 15.343 title step and an unclassed lead (16.327) outranked it. */}
-      {lead ? <p className="mt-3 text-sm text-muted-foreground sm:text-lg"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
+    <div className="mx-auto mb-8 max-w-2xl text-center">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><T p={eyebrow} /></p>
+      <h2 className="landing-section font-display font-semibold text-foreground"><T p={title} wrap /></h2>
+      {lead ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
     </div>
   );
 }
@@ -267,15 +265,10 @@ export function LandingHome() {
 
       {/* ── Hero: the one move, and an example of it ─────────────────────── */}
       <section id="need-cards" className="relative overflow-hidden pt-[52px]">
-        {/* blur-3xl is 64px. 10% less, then another 5% (54.72px). */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="landing-wash absolute left-[18%] top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/[0.16] sm:left-1/4 sm:h-96 sm:w-96" />
-          <div className="landing-wash absolute bottom-0 right-[12%] h-56 w-56 translate-x-1/2 rounded-full bg-primary/[0.11] sm:right-1/4 sm:h-96 sm:w-96" />
-        </div>
-        <div className="landing-intro relative mx-auto w-full px-4 py-8 sm:px-8 sm:py-16 lg:px-12 lg:py-20 xl:px-16">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+        <div className="landing-intro relative mx-auto w-full px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-14 xl:px-16">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
             <div className="min-w-0 animate-fade-in text-center lg:text-left">
-              <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-4 py-1.5 text-sm text-primary-accessible">
+              <span className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <Sparkles className="icon-sm" />
                 <BilingualText en="Co-founders, mentors and investors" el="Συνιδρυτές, μέντορες και επενδυτές" compact />
               </span>
@@ -288,7 +281,7 @@ export function LandingHome() {
                   secondaryClassName="landing-display-secondary"
                 />
               </h1>
-              <p className="landing-lead mx-auto mt-4 max-w-2xl text-muted-foreground sm:mt-6 lg:mx-0">
+              <p className="landing-lead mx-auto mt-3 max-w-xl text-muted-foreground lg:mx-0">
                 <BilingualText
                   en="One need card: what exists, the outcome, who is missing. The right people answer in a protected conversation, and terms are agreed in versions."
                   el="Μία κάρτα ανάγκης: τι υπάρχει, το αποτέλεσμα, ποιος λείπει. Οι κατάλληλοι άνθρωποι απαντούν σε προστατευμένη συζήτηση και οι όροι συμφωνούνται σε εκδόσεις."
@@ -297,38 +290,38 @@ export function LandingHome() {
                 />
               </p>
 
-              <div className="mx-auto mt-8 flex w-full max-w-sm flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
-                <Button size="lg" className="w-full gap-2 sm:w-auto" asChild>
+              <div className="mx-auto mt-6 flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+                <Button className="w-full gap-2 sm:w-auto" asChild>
                   <Link href="/register?redirect=/commitments/new">
                     <BilingualText en="Write your need card" el="Γράψτε την κάρτα σας" compact />
                     <ArrowRight className="icon-sm" />
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+                <Button variant="outline" className="w-full sm:w-auto" asChild>
                   <Link href="/demo">
                     <Play className="icon-sm" />
                     <BilingualText en="Try the demo" el="Δοκιμάστε το demo" compact />
                   </Link>
                 </Button>
               </div>
-              <p className="mt-4 text-sm">
+              <p className="mt-3 text-xs">
                 <Link href="/discover" className="text-muted-foreground hover:text-foreground hover:underline">
                   <BilingualText en="or browse profiles first" el="ή δείτε πρώτα προφίλ" compact />
                 </Link>
               </p>
 
-              <ol className="mt-8 grid grid-cols-1 gap-3 text-left sm:grid-cols-3" aria-label="Three moves · Τρεις κινήσεις">
+              <ol className="mx-auto mt-8 flex w-fit flex-col gap-1.5 text-left lg:mx-0" aria-label="Three moves · Τρεις κινήσεις">
                 {MOVES.map(({ title }, index) => (
-                  <li key={title.en} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-border bg-card/60 px-3 py-2.5">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-2xs font-bold tabular-nums text-primary-foreground">{index + 1}</span>
-                    <span className="min-w-0 text-sm font-medium text-foreground"><T p={title} wrap /></span>
+                  <li key={title.en} className="flex min-w-0 items-center gap-2.5 py-1">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input text-2xs font-semibold tabular-nums text-muted-foreground">{index + 1}</span>
+                    <span className="min-w-0 text-sm text-foreground"><T p={title} wrap /></span>
                   </li>
                 ))}
               </ol>
             </div>
 
             <div className="min-w-0 animate-fade-in" style={{ animationDelay: '120ms' }}>
-              <Card className="mx-auto w-full max-w-xl shadow-lg shadow-primary/5">
+              <Card className="mx-auto w-full max-w-xl">
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Badge variant="secondary" className="text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
@@ -397,7 +390,7 @@ export function LandingHome() {
             ))}
           </ol>
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
-            <p className="text-sm font-medium text-foreground sm:text-lg">
+            <p className="text-sm font-medium text-foreground">
               <BilingualText en="The agreement is the threshold, not the ceiling." el="Η συμφωνία είναι το κατώφλι, όχι το ταβάνι." wrap />
             </p>
             <ul className="flex flex-wrap justify-center gap-1.5" aria-label="What continues after the agreement · Τι συνεχίζεται μετά τη συμφωνία">
@@ -531,22 +524,22 @@ export function LandingHome() {
       </section>
 
       {/* ── The way in ──────────────────────────────────────────────────── */}
-      <section id="cta" className="border-t border-border px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
+      <section id="cta" className="border-t border-border px-6 py-16 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full max-w-3xl text-center">
-          <h2 className="font-display text-4xl font-semibold text-foreground">
+          <h2 className="landing-section font-display font-semibold text-foreground">
             <BilingualText en="Write the card. Meet the people." el="Γράψτε την κάρτα. Γνωρίστε τους ανθρώπους." stacked wrap />
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
             <BilingualText en="Free to start. Nothing is shared outside the platform until both of you say yes." el="Δωρεάν για να ξεκινήσετε. Τίποτα δεν βγαίνει εκτός πλατφόρμας πριν πείτε και οι δύο ναι." wrap />
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Button size="lg" className="gap-2 px-10" asChild>
+            <Button className="gap-2 px-6" asChild>
               <Link href="/register">
                 <BilingualText en="Create a free account" el="Δημιουργία δωρεάν λογαριασμού" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 px-8" asChild>
+            <Button variant="outline" className="gap-2 px-6" asChild>
               <Link href="/discover">
                 <Users className="icon-sm" />
                 <BilingualText en="Browse profiles" el="Περιήγηση προφίλ" compact />
