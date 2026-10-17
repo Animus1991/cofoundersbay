@@ -22,9 +22,11 @@ import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { StatusText } from '@/components/common/StatusText';
 import { useSession } from '@/hooks/useSession';
 import { cn, companyStageLabel } from '@/lib/utils';
 import {
@@ -40,6 +42,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { formatCompactMoney } from '@/lib/i18n/format';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 
 /*
  * The investor's home, read from the investor's own board.
@@ -56,14 +59,15 @@ import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
  */
 
 const ACTIVE_STAGES: PipelineStage[] = ['reviewing', 'meeting', 'due_diligence', 'negotiating'];
-const STAGE_LABEL: Record<string, string> = {
-  discovered: 'Discovered',
-  reviewing: 'Reviewing',
-  meeting: 'Meeting',
-  due_diligence: 'Due diligence',
-  negotiating: 'Negotiating',
-  invested: 'Invested',
-  passed: 'Passed',
+// The pipeline page's own words for each stage, in both languages.
+const STAGE_LABEL: Record<string, { en: string; el: string }> = {
+  discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
+  reviewing: { en: 'Reviewing', el: 'Υπό εξέταση' },
+  meeting: { en: 'Meeting', el: 'Συνάντηση' },
+  due_diligence: { en: 'Due diligence', el: 'Δέουσα επιμέλεια' },
+  negotiating: { en: 'Negotiating', el: 'Διαπραγμάτευση' },
+  invested: { en: 'Invested', el: 'Επένδυση' },
+  passed: { en: 'Passed', el: 'Απορρίφθηκε' },
 };
 const STAGE_TONE: Record<string, string> = {
   reviewing: 'bg-status-info-bg text-status-info',
@@ -110,24 +114,30 @@ function Distribution({ title, titleEl, rows, total }: { title: string; titleEl:
 }
 
 function DealRow({ deal, trailing }: { deal: InvestorDeal; trailing: React.ReactNode }) {
+  // A startup's rounded square, its name over sector and stage, and the
+  // stage or figure at the right: a CardHead row, on the section's axis.
   return (
     <Link
       href={`/startups/${deal.id}`}
-      className="axis-row group flex items-center gap-3 rounded-md transition-colors hover:bg-accent"
+      className="axis-row group block rounded-md transition-colors hover:bg-accent focus-ring"
     >
-      <Avatar className="h-10 w-10 shrink-0 rounded-lg">
-        <AvatarImage src={deal.logoUrl ?? undefined} />
-        <AvatarFallback className="rounded-lg bg-primary/10 font-semibold text-primary-accessible">
-          {deal.name?.[0]?.toUpperCase() ?? '?'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{deal.name}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {[deal.industry, companyStageLabel(deal.companyStage)].filter(Boolean).join(' · ') || deal.tagline || '—'}
-        </p>
-      </div>
-      <div className="shrink-0 text-right">{trailing}</div>
+      <RowHead
+        mark={(
+          <Avatar className="h-10 w-10 rounded-xl">
+            <AvatarImage src={deal.logoUrl ?? undefined} alt="" />
+            <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+              {deal.name?.[0]?.toUpperCase() ?? '?'}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        title={<span className="block truncate">{deal.name}</span>}
+        subtitle={(
+          <span className="block truncate">
+            {[deal.industry, companyStageLabel(deal.companyStage)].filter(Boolean).join(' · ') || deal.tagline || '—'}
+          </span>
+        )}
+        aside={trailing ? <div className="text-left sm:text-right">{trailing}</div> : undefined}
+      />
     </Link>
   );
 }
@@ -206,13 +216,25 @@ export default function InvestorDashboard() {
       actions={
         <Badge variant="outline" className="gap-1.5">
           <DollarSign className="icon-sm" aria-hidden="true" />
-          Investor
+          <BilingualText en="Investor" el="Επενδυτής" compact />
         </Badge>
       }
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('investor_lead'), el: dashboardEl('investor_lead') }} />
-        <WhatsNewPanel audience="investor" />
+
+        {!dealsLoading && active[0] ? (
+          <HomeNextStep
+            kickerEn="Active deal"
+            kickerEl="Ενεργή συμφωνία"
+            title={active[0].name}
+            reasonEn={STAGE_LABEL[active[0].pipelineStage]?.en}
+            reasonEl={STAGE_LABEL[active[0].pipelineStage]?.el}
+            href="/investor/pipeline"
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
 
         {/* The four figures, each linking to the page that holds its rows. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -250,10 +272,14 @@ export default function InvestorDashboard() {
                   trailing={
                     <>
                       <Badge size="sm" className={cn(STAGE_TONE[deal.pipelineStage] ?? '')}>
-                        {STAGE_LABEL[deal.pipelineStage] ?? deal.pipelineStage}
+                        {STAGE_LABEL[deal.pipelineStage]
+                          ? <BilingualText en={STAGE_LABEL[deal.pipelineStage].en} el={STAGE_LABEL[deal.pipelineStage].el} compact />
+                          : <StatusText value={deal.pipelineStage} />}
                       </Badge>
                       {deal.askAmountCents != null && (
-                        <p className="mt-1 text-xs tabular-nums text-muted-foreground">asking {money(deal.askAmountCents, deal.currency)}</p>
+                        <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+                          <BilingualText en={`Asking ${money(deal.askAmountCents, deal.currency)}`} el={`Ζητά ${money(deal.askAmountCents, deal.currency)}`} compact />
+                        </p>
                       )}
                     </>
                   }
@@ -308,6 +334,7 @@ export default function InvestorDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Investor pages"
+              labelEl="Σελίδες επενδυτή"
               links={[
                 { href: '/investor/scouting', icon: Search, label: 'Scout startups', labelEl: 'Ανίχνευση startups' },
                 { href: '/investor/watchlist', icon: Star, label: 'Watchlist', labelEl: 'Λίστα παρακολούθησης' },
@@ -335,16 +362,15 @@ export default function InvestorDashboard() {
               </Button>
             </SectionCard>
 
-            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="space-y-3">
+            <SectionCard title="Recent activity" titleEl="Πρόσφατη δραστηριότητα" icon={Eye} contentClassName="card-rows">
+              {/* Activity rows on the section's axis: the move, then the
+                  company and when, without a bullet column in front. */}
               {activity.map((a) => (
-                <Link key={a.id} href={`/startups/${a.dealId}`} className="flex items-start gap-2 rounded-md text-sm hover:text-foreground focus-ring">
-                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" aria-hidden="true" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-foreground">{a.title}</span>
-                    <span className="block text-xs text-muted-foreground">
-                      {a.dealName} · <RelativeTime date={a.createdAt} />
-                    </span>
-                  </span>
+                <Link key={a.id} href={`/startups/${a.dealId}`} className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
+                  <RowHead
+                    title={<span className="block truncate first-letter:uppercase"><BilingualText en={a.title} el={dealEventTitleEl(a.title)} compact /></span>}
+                    subtitle={<>{a.dealName} · <RelativeTime date={a.createdAt} /></>}
+                  />
                 </Link>
               ))}
               {activity.length === 0 && (
@@ -353,6 +379,10 @@ export default function InvestorDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The active deal and the figures stay the first
+            glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="investor" />
       </div>
     </AppShell>
   );

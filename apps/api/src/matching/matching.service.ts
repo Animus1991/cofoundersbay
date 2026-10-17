@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
-import { OPEN_TO_COPY, openToBoost, openToShownTo, seekerWants, isHiddenFromSearch } from '@cofounderbay/shared';
+import { OPEN_TO_COPY, candidateRoleFor, compareCompatAnswers, openToBoost, openToShownTo, roleFit, seekerWants, isHiddenFromSearch } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CacheService } from '../common/cache/cache.service';
 import { OpenToService } from '../open-to/open-to.service';
@@ -331,18 +331,18 @@ export class MatchingService {
       });
     }
 
-    // ── Work style comparison data (5-axis: Risk, Speed, Vision, Technical, Social) ────
-    const workStyleAxes = ['Risk', 'Speed', 'Vision', 'Technical', 'Social'];
-    const extractWorkStyle = (user: any, vec: any): number[] => {
-      const p = user.profile?.rolePayload as any;
-      const risk = p?.riskTolerance === 'high' ? 85 : p?.riskTolerance === 'medium' ? 55 : 30;
-      const speed = p?.commitment === 'full_time' ? 90 : p?.commitment === 'part_time' ? 55 : 40;
-      const vision = Math.round((vec.goalKeywords?.length ?? 0) / 20 * 100);
-      const skillNames = (user.profile?.skills ?? []).map((s: any) => (s.skill?.name ?? '').toLowerCase());
-      const techScore = Math.min(100, skillNames.filter((n: string) => ['code', 'engineer', 'data', 'tech', 'dev'].some(t => n.includes(t))).length * 25);
-      const social = Math.round(Math.min(100, (vec.activityScore ?? 0.5) * 100));
-      return [risk, speed, Math.max(20, Math.min(100, vision)), techScore, social];
-    };
+    // ── How you would work together ─────────────────────────────────────────
+    // Asked, not guessed: the five-axis chart that stood here read a risk
+    // field nothing wrote (every member scored 30), a commitment spelling
+    // profile edit never saves, and keyword counts. The compatibility
+    // questions answer it; only the per-question agreement leaves the server.
+    const prefs = await this.prisma.userPreference.findMany({
+      where: { userId: { in: [sourceUserId, targetUserId] } },
+      select: { userId: true, workStyle: true, showInMatching: true },
+    });
+    const compatOf = (id: string) => (prefs.find((p) => p.userId === id)?.workStyle as { compat?: unknown } | null)?.compat;
+    const targetListed = prefs.find((p) => p.userId === targetUserId)?.showInMatching !== false;
+    const compatibility = targetListed ? compareCompatAnswers(compatOf(sourceUserId), compatOf(targetUserId)) : compareCompatAnswers(null, null);
 
     return {
       overall: { score: Math.round(matchScore.score * 100), confidence: Math.round(matchScore.confidence * 100) },
@@ -357,11 +357,7 @@ export class MatchingService {
       badges: badges.slice(0, 3),
       sharedStrengths,
       frictionPoints: frictionPoints.slice(0, 3),
-      workStyle: {
-        axes: workStyleAxes,
-        source: extractWorkStyle(source, sourceVec),
-        target: extractWorkStyle(target, targetVec),
-      },
+      compatibility,
       reasons: matchScore.reasons,
       sourceProfile: {
         id: source.id,
@@ -396,7 +392,7 @@ export class MatchingService {
     const reasons: string[] = [];
 
     // Layer 1: Structured features
-    const roleScore = this.calculateRoleCompatibility(user.role, candidate.role);
+    const roleScore = this.calculateRoleCompatibility(user, candidate.role);
     const skillsScore = this.calculateSkillsCompatibility(
       user.profile?.skills ?? [], candidate.profile?.skills ?? []
     );
@@ -481,7 +477,9 @@ export class MatchingService {
       const signals = await this.openTo.activeSignals(matches.map((m) => m.userId));
       if (!signals.size) return;
       const profile = await this.prisma.matchProfile.findUnique({ where: { userId: user.id }, select: { lookingForRoles: true } }).catch(() => null);
-      const wants = seekerWants(profile?.lookingForRoles, user.role);
+      // Profile edit saves "Looking for" as rolePayload.rolesSought; nothing
+      // writes lookingForRoles, so both are read.
+      const wants = seekerWants([...(profile?.lookingForRoles ?? []), ...lookingForOf(user)], user.role);
       let verified: boolean | null = null;
       for (const match of matches) {
         const signal = signals.get(match.userId);
@@ -737,14 +735,9 @@ export class MatchingService {
 
   // ── Structured scoring helpers ─────────────────────────────────────────────
 
-  private calculateRoleCompatibility(userRole: string, candidateRole: string): number {
-    const matrix: Record<string, Record<string, number>> = {
-      founder: { founder: 0.3, mentor: 0.9, investor: 0.8, org: 0.7 },
-      mentor:  { founder: 0.9, mentor: 0.4, investor: 0.6, org: 0.8 },
-      investor: { founder: 0.8, mentor: 0.6, investor: 0.5, org: 0.9 },
-      org:     { founder: 0.7, mentor: 0.8, investor: 0.9, org: 0.6 },
-    };
-    return matrix[userRole]?.[candidateRole] ?? 0.5;
+  /** Role fit, a founder's by what they are looking for (`roleFit` in shared open-to). */
+  private calculateRoleCompatibility(user: any, candidateRole: string): number {
+    return roleFit(user?.role, candidateRole, seekerWants(lookingForOf(user), user?.role));
   }
 
   private calculateSkillsCompatibility(userSkills: any[], candidateSkills: any[]): number {
@@ -803,7 +796,14 @@ export class MatchingService {
     return ({ idea: 0, mvp: 1, traction: 2, scaling: 3 }[stage] ?? 1);
   }
 
+  /** The role recommendations are drawn from; a founder's pool is everyone (see `candidateRoleFor`). */
   private getComplementaryRole(role: string): string | undefined {
-    return ({ founder: 'mentor', mentor: 'founder', investor: 'founder', org: 'mentor' }[role]);
+    return candidateRoleFor(role);
   }
+}
+
+/** What a member said they are looking for on their profile ("Looking for", `rolePayload.rolesSought`). */
+function lookingForOf(user: any): string[] {
+  const sought = user?.profile?.rolePayload?.rolesSought;
+  return Array.isArray(sought) ? sought.filter((x: unknown): x is string => typeof x === 'string') : [];
 }

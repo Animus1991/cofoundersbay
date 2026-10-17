@@ -468,7 +468,7 @@ export function ReadinessScoring({ workspaceData, workspaceId, onRefresh }: Read
               </h3>
               <div className="mb-2 flex items-center gap-2">
                 <CfbGlyph name="flag" className="icon-sm text-muted-foreground" />
-                <span className="page-section font-semibold tracking-tight">
+                <span className="card-title">
                   <BilingualText
                     en={STAGE_LABEL[data.readinessLevel]?.en ?? data.readinessLevel}
                     el={STAGE_LABEL[data.readinessLevel]?.el ?? data.readinessLevel}

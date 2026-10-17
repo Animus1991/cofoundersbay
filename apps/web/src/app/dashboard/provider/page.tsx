@@ -18,8 +18,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
-import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
+import { EmptyLine, QuickLinks, RowHead, SectionCard } from '@/components/dashboard/SectionCard';
+import { StatusText } from '@/components/common/StatusText';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RelativeTime } from '@/components/common/RelativeTime';
@@ -38,6 +40,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
+import { priceEl } from '@/lib/i18n/units';
 
 /*
  * The provider's one home.
@@ -237,12 +240,12 @@ export default function ProviderDashboard() {
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-1.5">
             <Briefcase className="icon-sm" aria-hidden="true" />
-            Service Provider
+            <BilingualText en="Service Provider" el="Πάροχος υπηρεσιών" compact />
           </Badge>
           <Button variant="outline" size="sm" asChild>
             <Link href="/provider/services">
               <Store className="mr-2 icon-sm" aria-hidden="true" />
-              Manage services
+              <BilingualText en="Manage services" el="Διαχείριση υπηρεσιών" compact />
             </Link>
           </Button>
         </div>
@@ -250,7 +253,17 @@ export default function ProviderDashboard() {
     >
       <div className="space-y-6">
         <DashboardGreeting name={displayName} lead={{ en: dashboardEn('provider_lead'), el: dashboardEl('provider_lead') }} />
-        <WhatsNewPanel audience="provider" />
+
+        {!inquiriesLoading && waiting[0] ? (
+          <HomeNextStep
+            kickerEn="Waiting on you"
+            kickerEl="Σας περιμένει"
+            title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}
+            href="/provider/inquiries"
+            actionEn="Reply"
+            actionEl="Απάντηση"
+          />
+        ) : null}
 
         {/* Four figures, each linking to the page that lists what it counts. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
@@ -298,25 +311,30 @@ export default function ProviderDashboard() {
                 below, or closed, and a Reply beside them offered nothing. */}
             <SectionCard title="Waiting on you" titleEl="Σας περιμένουν" icon={MessageSquare} action={{ href: '/provider/inquiries', label: 'All inquiries', labelEl: 'Όλα τα αιτήματα' }} contentClassName="card-rows">
               {inquiriesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
+              {/* The client's circle, name over the service, the state and
+                  when at the right; the message and Reply start on the
+                  circle's edge, like the body and foot of an Endorsements card. */}
               {waiting.slice(0, 5).map((inquiry) => (
-                <div key={inquiry.id} className="flex items-start gap-3">
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={inquiry.clientAvatar} />
-                    <AvatarFallback>{initialsOf(inquiry.clientName)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="text-sm font-medium">{inquiry.clientName}</span>
-                      <Badge size="sm" className={INQUIRY_LABEL[inquiry.status].tone}>{INQUIRY_LABEL[inquiry.status].en}</Badge>
-                      <span className="text-xs text-muted-foreground">
+                <div key={inquiry.id} className="space-y-2">
+                  <RowHead
+                    mark={(
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={inquiry.clientAvatar} alt="" />
+                        <AvatarFallback>{initialsOf(inquiry.clientName)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    title={inquiry.clientName}
+                    subtitle={inquiry.service}
+                    aside={(
+                      <>
+                        <Badge size="sm" className={INQUIRY_LABEL[inquiry.status].tone}><StatusText value={INQUIRY_LABEL[inquiry.status].en} /></Badge>
                         <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{inquiry.service}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{inquiry.message}</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="shrink-0" asChild>
-                    <Link href="/provider/inquiries">Reply</Link>
+                      </>
+                    )}
+                  />
+                  <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/provider/inquiries"><BilingualText en="Reply" el="Απάντηση" compact /></Link>
                   </Button>
                 </div>
               ))}
@@ -330,22 +348,25 @@ export default function ProviderDashboard() {
 
             <SectionCard title="Projects" titleEl="Έργα" icon={FolderKanban} action={{ href: '/provider/projects', label: 'All projects', labelEl: 'Όλα τα έργα' }} contentClassName="card-rows">
               {projects.slice(0, 5).map((project) => (
-                <div key={project.id} className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarImage src={project.clientAvatar} />
-                    <AvatarFallback>{initialsOf(project.clientName)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <span className="text-sm font-medium">{project.clientName}</span>
+                <RowHead
+                  key={project.id}
+                  mark={(
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={project.clientAvatar} alt="" />
+                      <AvatarFallback>{initialsOf(project.clientName)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  title={(
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span>{project.clientName}</span>
                       <Badge size="sm" variant={project.status === 'active' ? 'success' : 'secondary'}>
-                        {project.status === 'active' ? 'Active' : 'Completed'}
+                        <StatusText value={project.status === 'active' ? 'Active' : 'Completed'} />
                       </Badge>
-                    </div>
-                    <p className="truncate text-xs text-muted-foreground">{project.service}</p>
-                  </div>
-                  <p className="shrink-0 text-sm font-semibold tabular-nums">{eur(project.agreedPrice, project.currency)}</p>
-                </div>
+                    </span>
+                  )}
+                  subtitle={<span className="block truncate">{project.service}</span>}
+                  aside={<span className="font-semibold tabular-nums text-foreground">{eur(project.agreedPrice, project.currency)}</span>}
+                />
               ))}
               {!projectsLoading && projects.length === 0 && (
                 <EmptyLine en="An accepted inquiry becomes a project." el="Ένα αποδεκτό αίτημα γίνεται έργο." />
@@ -362,13 +383,18 @@ export default function ProviderDashboard() {
               {servicesLoading && [0, 1].map((i) => <Skeleton key={i} className="h-16" />)}
               {services.map((svc) => (
                 <Link key={svc.id} href="/provider/services" className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="min-w-0 text-sm font-medium">{svc.title}</p>
-                    <Badge size="sm" variant={svc.isActive === false ? 'secondary' : 'success'} className="shrink-0">
-                      {svc.isActive === false ? 'Hidden' : 'Live'}
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-xs tabular-nums text-muted-foreground">{svc.pricing ?? EM_DASH}</p>
+                  <RowHead
+                    title={svc.title}
+                    subtitle={<span className="tabular-nums">{svc.pricing ? <BilingualText en={svc.pricing} el={priceEl(svc.pricing)} compact /> : EM_DASH}</span>}
+                    asideStays
+                    aside={(
+                      <Badge size="sm" variant={svc.isActive === false ? 'secondary' : 'success'}>
+                        {svc.isActive === false
+                          ? <StatusText value="Hidden" />
+                          : <BilingualText en="Live" el="Ενεργή" compact />}
+                      </Badge>
+                    )}
+                  />
                 </Link>
               ))}
               {!servicesLoading && services.length === 0 && (
@@ -382,6 +408,7 @@ export default function ProviderDashboard() {
           <div className="space-y-6">
             <QuickLinks
               label="Provider pages"
+              labelEl="Σελίδες παρόχου"
               links={[
                 { href: '/provider/services', icon: Store, label: 'Services', labelEl: 'Υπηρεσίες' },
                 { href: '/provider/inquiries', icon: MessageSquare, label: 'Inquiries', labelEl: 'Αιτήματα' },
@@ -409,22 +436,32 @@ export default function ProviderDashboard() {
               ))}
               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="icon-sm" aria-hidden="true" />
-                Counted over {totalInquiries} {totalInquiries === 1 ? 'inquiry' : 'inquiries'}.
+                <BilingualText
+                  en={`Counted over ${totalInquiries} ${totalInquiries === 1 ? 'inquiry' : 'inquiries'}.`}
+                  el={`Μετρημένο σε ${totalInquiries} ${totalInquiries === 1 ? 'αίτημα' : 'αιτήματα'}.`}
+                  compact
+                  wrap
+                />
               </p>
             </SectionCard>
 
             <SectionCard title="Recent reviews" titleEl="Πρόσφατες αξιολογήσεις" icon={Star} action={{ href: '/provider/reviews', label: 'All', labelEl: 'Όλες' }} contentClassName="card-rows">
               {reviews.map((review) => (
-                <figure key={review.id}>
-                  <figcaption className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium">{review.client}</span>
-                    <span className="flex items-center gap-0.5" role="img" aria-label={`${review.rating} out of 5`}>
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={cn('h-3.5 w-3.5', i < review.rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/40')} aria-hidden="true" />
-                      ))}
-                    </span>
+                <figure key={review.id} className="space-y-1.5">
+                  <figcaption>
+                    <RowHead
+                      title={review.client}
+                      asideStays
+                      aside={(
+                        <span className="flex items-center gap-0.5" role="img" aria-label={`${review.rating} out of 5`}>
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star key={i} className={cn('h-3.5 w-3.5', i < review.rating ? 'fill-status-warning text-status-warning' : 'text-muted-foreground/40')} aria-hidden="true" />
+                          ))}
+                        </span>
+                      )}
+                    />
                   </figcaption>
-                  <blockquote className="text-sm text-muted-foreground">{review.comment}</blockquote>
+                  <blockquote className="card-body text-muted-foreground">{review.comment}</blockquote>
                 </figure>
               ))}
               {!reviewsLoading && reviews.length === 0 && (
@@ -433,6 +470,10 @@ export default function ProviderDashboard() {
             </SectionCard>
           </div>
         </div>
+
+        {/* After the work. The inquiry that waits and the figures stay the
+            first glance; this list is what shipped, and it is still one press away. */}
+        <WhatsNewPanel audience="provider" />
       </div>
     </AppShell>
   );

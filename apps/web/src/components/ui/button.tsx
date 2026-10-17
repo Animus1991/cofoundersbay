@@ -18,21 +18,21 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // A pastel fill with a dark label of its own hue (Cursor's
-        // "Upgrade", Windsurf's "Download"): the primary action is still
-        // the one coloured thing in a row, without a saturated block and
-        // white text pulling the eye from every page header. Hover deepens
-        // toward the mid tone instead of fading out.
+        // A coloured fill with a white label. The fill is deep enough that
+        // the letters clear 4.6:1. Hover darkens the same fill; mixing toward
+        // the mid tone would lighten Cyan, whose mid is the pale tint.
         default:
-          'bg-primary text-primary-foreground hover:bg-[color-mix(in_hsl,hsl(var(--primary))_82%,hsl(var(--primary-mid)))]',
-        // A fill or an edge, never both. The outline is the same hairline as a
-        // card (cursor.com "Adjust Plan"): never --input, which is a field edge.
+          'bg-primary text-primary-foreground hover:bg-[color-mix(in_hsl,hsl(var(--primary))_86%,black)]',
+        // A fill or an edge, never both. The outline is the control edge
+        // (--input, ~1.32 on the card), one tier firmer than a card's hairline:
+        // Primer draws its default button at control-borderColor-rest for the
+        // same reason — a button has to be found, a card only placed (§55).
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-foreground/[0.06]',
         ghost:
-          'text-foreground/70 hover:text-foreground hover:bg-secondary/60',
+          'bg-transparent text-foreground/70 hover:text-foreground hover:bg-secondary/60',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-foreground/15',
+          'border border-input bg-transparent text-foreground hover:bg-secondary/50 hover:border-foreground/25',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:
@@ -48,9 +48,11 @@ const buttonVariants = cva(
        * the type beside them had been retuned to stay legible, which is what
        * made the controls feel cramped.
        *
-       * Nothing below `lg` changes: there the root is 100%, the rem values
-       * already render at their nominal size, and the 44px touch heights are
-       * deliberate. The ladder is 28 / 32 / 36 / 40 / 48.
+       * The height is 2% under the Help topic pill: 30.458px below 640px
+       * and 32.997px from there up. On a phone, a purple primary and a
+       * transparent outline or ghost are another 5% under the pill, then
+       * the same 2% (28.939px). xs stays the shorter mark. A call site that passes a
+       * stacked label still grows with it.
        *
        * Expressed as `min-height` with `height: auto`, not as a fixed height.
        * A fixed one is indistinguishable from the ladder for an ordinary
@@ -62,13 +64,13 @@ const buttonVariants = cva(
        */
       size: {
         xs:   'h-7 min-h-7 px-2.5 text-xs lg:h-auto lg:min-h-[calc(28px*var(--chrome-y))] lg:px-[10px]',
-        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[calc(32px*var(--chrome-y))] lg:px-[12px]',
-        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[calc(36px*var(--chrome-y))] lg:px-[16px]',
-        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[calc(40px*var(--chrome-y))] lg:px-[24px]',
-        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[calc(48px*var(--chrome-y))] lg:px-[32px]',
+        sm:   'h-auto min-h-[30.458px] px-3 text-xs sm:min-h-[32.997px] lg:px-[12px]',
+        md:   'h-auto min-h-[30.458px] px-4 sm:min-h-[32.997px] lg:px-[16px]',
+        lg:   'h-auto min-h-[30.458px] px-6 text-base sm:min-h-[32.997px] lg:px-[24px]',
+        xl:   'h-auto min-h-[30.458px] px-8 text-base sm:min-h-[32.997px] lg:px-[32px]',
         // An icon button has no text to outgrow its box, so it stays a fixed
-        // square — that is the shape, not a floor.
-        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[calc(36px*var(--chrome-y))] lg:w-[36px]',
+        // square — the same height as the other buttons.
+        icon: 'h-[30.458px] w-[30.458px] min-h-[30.458px] min-w-[30.458px] sm:h-[32.997px] sm:w-[32.997px] sm:min-h-[32.997px] sm:min-w-[32.997px]',
       },
     },
     defaultVariants: {

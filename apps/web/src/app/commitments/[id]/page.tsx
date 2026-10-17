@@ -48,6 +48,7 @@ import { rowOptions, settle, usePageControls, usePageList, type PageControlRunRe
 import { cn } from '@/lib/utils';
 import { needCardPost, useSuggestedPost } from '@/lib/share-text';
 import { FORM_DRAFT_ROUTES, stashFormDraft } from '@/lib/form-draft';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerRole: CMT.offer_role,
@@ -85,9 +86,9 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
         }
       }}
     >
-      <div className="space-y-1">
-        <h2 className="text-base font-semibold text-foreground"><BilingualText en={CMT.interest_title.en} el={CMT.interest_title.el} compact /></h2>
-        <p id="interest-hint" className="text-sm text-muted-foreground"><BilingualText en={CMT.interest_hint.en} el={CMT.interest_hint.el} wrap /></p>
+      <div className="space-y-0.5">
+        <h2 className="card-title text-foreground"><BilingualText en={CMT.interest_title.en} el={CMT.interest_title.el} compact /></h2>
+        <p id="interest-hint" className="card-subtitle"><BilingualText en={CMT.interest_hint.en} el={CMT.interest_hint.el} wrap /></p>
       </div>
       <Label htmlFor="interest-note" className="sr-only">{CMT.interest_title.en}</Label>
       <Textarea
@@ -100,7 +101,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
         placeholder="I have shipped… and could start with…"
       />
       <ContactWarning text={note} promises />
-      {error ? <p role="alert" className="text-sm text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
+      {error ? <p role="alert" className="card-body text-status-danger"><BilingualText en={error.en} el={error.el} wrap /></p> : null}
       {error?.reason === 'role_verification_required' || error?.reason === 'verification_required' ? (
         <Button size="sm" variant="outline" asChild>
           <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
@@ -127,6 +128,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
 }
 
 function Board() {
+  const { primary } = useLanguagePreference();
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const router = useRouter();
@@ -388,7 +390,7 @@ function Board() {
             <li key={h.version} className="space-y-0.5 text-sm">
               <p className="font-medium text-foreground">v{h.version}</p>
               <p className="text-xs text-muted-foreground">
-                {[h.offer.role, h.offer.equity, h.offer.hoursPerWeek ? `${h.offer.hoursPerWeek} h/week` : null].filter(Boolean).join(' · ')}
+                {[h.offer.role, h.offer.equity, h.offer.hoursPerWeek ? `${h.offer.hoursPerWeek} ${primary === 'el' ? CMT.per_week.el : CMT.per_week.en}` : null].filter(Boolean).join(' · ')}
               </p>
               {h.changed.length ? (
                 <p className="text-2xs text-muted-foreground">
@@ -495,15 +497,15 @@ function Board() {
 
         {isOwner ? (
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">
+            <CardHeader>
+              <CardTitle>
                 <BilingualText en={CMT.responses.en} el={CMT.responses.el} compact />
                 <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">{responses.length}</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               {responses.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   <BilingualText en="No responses yet. Share the public card to reach people outside the platform." el="Δεν υπάρχουν απαντήσεις ακόμη. Μοιραστείτε τη δημόσια κάρτα για να φτάσει και εκτός πλατφόρμας." wrap />
                 </p>
               ) : (
@@ -526,10 +528,22 @@ function Board() {
                   ))}
                 </div>
               )}
-              {activeThreadId ? <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} /> : null}
             </CardContent>
           </Card>
-        ) : (
+        ) : null}
+
+        {/* The open response is a card of its own under the list of
+            responses: inside the list's card its name read as a second
+            title under "Responses". */}
+        {isOwner && activeThreadId ? (
+          <Card>
+            <CardContent>
+              <ThreadWorkspace key={activeThreadId} threadId={activeThreadId} />
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {isOwner ? null : (
           <Card>
             <CardContent>
               {activeThreadId ? (
@@ -537,7 +551,7 @@ function Board() {
               ) : acceptsInterest(card.outcome) ? (
                 <InterestForm card={card} onSent={() => void refresh()} />
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   <BilingualText en={CMT.not_taking.en} el={CMT.not_taking.el} wrap />
                   {card.closedReason ? <span className="ml-1"><StatusText value={card.closedReason} /></span> : null}
                 </p>

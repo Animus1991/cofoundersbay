@@ -723,6 +723,43 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
       </>
     ),
   },
+  perks: {
+    en: (
+      <>
+        <p>
+          Partner companies offer members <strong>credits, discounts and free months</strong>. Each card says what the
+          offer is, which stages it suits, and how to redeem it. Offers for your stage come first when you choose it.
+        </p>
+        <p>
+          <strong>Claim</strong> to see the code or the partner&apos;s link. A claim is between you and CoFounderBay:
+          partners get no list of who claimed, and learn who you are only if you redeem on their own site. The count on
+          a card is a number, never names.
+        </p>
+        <p>
+          The value is the partner&apos;s offer as they wrote it, and its terms can change; read them before you rely
+          on it. A claimed perk stays under <strong>Claimed</strong> even after the offer ends.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Συνεργαζόμενες εταιρείες προσφέρουν στα μέλη <strong>πιστώσεις, εκπτώσεις και δωρεάν μήνες</strong>. Κάθε
+          κάρτα λέει ποια είναι η προσφορά, σε ποια στάδια ταιριάζει και πώς εξαργυρώνεται. Όταν επιλέξετε το στάδιό
+          σας, οι προσφορές γι&apos; αυτό εμφανίζονται πρώτες.
+        </p>
+        <p>
+          Με τη <strong>διεκδίκηση</strong> βλέπετε τον κωδικό ή τον σύνδεσμο του συνεργάτη. Η διεκδίκηση αφορά μόνο εσάς
+          και το CoFounderBay: οι συνεργάτες δεν λαμβάνουν λίστα, και σας γνωρίζουν μόνο αν εξαργυρώσετε στον δικό τους
+          ιστότοπο. Ο αριθμός σε μια κάρτα είναι πλήθος, ποτέ ονόματα.
+        </p>
+        <p>
+          Η αξία είναι η προσφορά του συνεργάτη όπως τη διατύπωσε, και οι όροι της μπορεί να αλλάξουν· διαβάστε τους
+          πριν βασιστείτε σε αυτήν. Μια διεκδικημένη προσφορά μένει στις <strong>Διεκδικημένες</strong> και αφού λήξει.
+        </p>
+      </>
+    ),
+  },
   scout: {
     en: (
       <>
@@ -1312,8 +1349,8 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     el: (
       <>
         <p>
-          Οι αριθμοί εδώ είναι οι ίδιες λίστες ένα κλικ μακριά: επερχόμενες συνεδρίες, ανοιχτά αιτήματα mentee και
-          ενεργοί μαθητευόμενοι. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν.
+          Οι αριθμοί εδώ είναι οι ίδιες λίστες ένα κλικ μακριά: επερχόμενες συνεδρίες, ανοιχτά αιτήματα καθοδήγησης και
+          ενεργοί καθοδηγούμενοι. Η παύλα σημαίνει ότι η μέτρηση δεν καταγράφηκε — όχι μηδέν.
         </p>
         <p>
           Ανοίξτε τα <a href="/mentor/requests">Αιτήματα</a> για αποδοχή ή απόρριψη. Οι{' '}

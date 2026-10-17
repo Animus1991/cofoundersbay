@@ -77,6 +77,15 @@ export const PROFILE_STRINGS: Record<string, BilingualPair> = {
   programs: { en: 'Programs', el: 'Προγράμματα' },
   links: { en: 'Links', el: 'Σύνδεσμοι' },
   website: { en: 'Website', el: 'Ιστότοπος' },
+  intro_video: { en: 'Introduction video', el: 'Βίντεο παρουσίασης' },
+  intro_video_hint: {
+    en: 'A short video of you, so someone can see who they might work with. Paste a link. It opens in a new tab.',
+    el: 'Ένα σύντομο βίντεο σας, ώστε κάποιος να δει με ποιον μπορεί να συνεργαστεί. Επικολλήστε έναν σύνδεσμο. Ανοίγει σε νέα καρτέλα.',
+  },
+  intro_video_invalid: {
+    en: 'That link needs to be an ordinary web address, starting with http or https.',
+    el: 'Ο σύνδεσμος πρέπει να είναι μια συνηθισμένη διεύθυνση ιστού, με http ή https.',
+  },
   linkedin: { en: 'LinkedIn', el: 'LinkedIn' },
   github: { en: 'GitHub', el: 'GitHub' },
   twitter_x: { en: 'Twitter/X', el: 'Twitter/X' },

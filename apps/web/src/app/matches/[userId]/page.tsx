@@ -27,8 +27,10 @@ import { settle, usePageControls, type PageControlRunResult } from '@/lib/page-c
 import { cn, initialsOf } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { SectionCard } from '@/components/dashboard/SectionCard';
+import { CompatibilityList } from '@/components/matches/CompatibilityList';
+import { StatusText } from '@/components/common/StatusText';
 import {
-  getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
+  getMatchVs, getMyCompatibility, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
   type MatchVsResult, type MatchVsBreakdownItem,
 } from '@/lib/api';
@@ -52,59 +54,10 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
 // ── Friction Icon helper ───────────────────────────────────────────────────────
 
 function FrictionIcon({ icon }: { icon: string }) {
-  const cls = 'icon-sm';
+  const cls = 'icon-sm shrink-0';
   if (icon === 'schedule') return <Clock className={cls} aria-hidden="true" />;
   if (icon === 'trending_up') return <TrendingUp className={cls} aria-hidden="true" />;
   return <AlertTriangle className={cls} aria-hidden="true" />;
-}
-
-// ── Work Style — smooth SVG line chart ────────────────────────────────────────
-
-function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
-  const { axes, source, target } = data;
-  const n = axes.length;
-  const W = 300, H = 160;
-  const PAD = { top: 14, bottom: 30, left: 10, right: 10 };
-  const cW = W - PAD.left - PAD.right;
-  const cH = H - PAD.top - PAD.bottom;
-
-  const xAt = (i: number) => PAD.left + (n > 1 ? (i / (n - 1)) * cW : cW / 2);
-  const yAt = (v: number) => PAD.top + cH - (Math.min(Math.max(v, 0), 100) / 100) * cH;
-
-  const smoothPath = (vals: number[]) => {
-    if (!vals.length) return '';
-    if (vals.length === 1) return `M ${xAt(0)} ${yAt(vals[0])}`;
-    const pts = vals.map((v, i) => [xAt(i), yAt(v)] as [number, number]);
-    let d = `M ${pts[0][0]} ${pts[0][1]}`;
-    for (let i = 1; i < pts.length; i++) {
-      const cpx = (pts[i - 1][0] + pts[i][0]) / 2;
-      d += ` C ${cpx} ${pts[i - 1][1]}, ${cpx} ${pts[i][1]}, ${pts[i][0]} ${pts[i][1]}`;
-    }
-    return d;
-  };
-
-  return (
-    <figure className="w-full">
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ overflow: 'visible' }} role="img" aria-label="Work style: yours against your match's">
-        {[0, 25, 50, 75, 100].map((pct) => (
-          <line key={pct} x1={PAD.left} y1={yAt(pct)} x2={W - PAD.right} y2={yAt(pct)} stroke="hsl(var(--border))" strokeWidth={1} />
-        ))}
-        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-mark))" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-        {source.map((v, i) => <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-success-mark))" />)}
-        {target.map((v, i) => <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={3.5} fill="hsl(var(--status-info-mark))" />)}
-        {axes.map((axis, i) => (
-          <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9} fill="hsl(var(--muted-foreground))">
-            {axis}
-          </text>
-        ))}
-      </svg>
-      <figcaption className="mt-3 flex justify-center gap-6 text-xs text-muted-foreground">
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-success-mark" aria-hidden="true" />You</span>
-        <span className="flex items-center gap-2"><span className="h-0.5 w-5 rounded-full bg-status-info-mark" aria-hidden="true" />Match</span>
-      </figcaption>
-    </figure>
-  );
 }
 
 // ── Donut Score ───────────────────────────────────────────────────────────────
@@ -151,7 +104,7 @@ function PersonBlock({ name, role, avatarUrl, href, accent }: { name: string; ro
         ) : (
           <p className="text-sm font-semibold text-foreground">{name}</p>
         )}
-        <p className="text-xs capitalize text-muted-foreground">{role}</p>
+        <p className="text-xs text-muted-foreground"><StatusText value={role} /></p>
       </div>
     </div>
   );
@@ -196,6 +149,8 @@ export default function MatchDetailPage() {
     queryFn: () => getMatchVs(targetUserId),
     enabled: !!targetUserId,
   });
+  // How many of the questions the reader answered, for the link when too few are shared.
+  const myCompat = useQuery({ queryKey: qk('compatibility', 'me'), queryFn: getMyCompatibility, retry: 0 });
 
   const connectMutation = useMutation({
     mutationFn: (msg: string) => sendConnectionRequest({ receiverId: targetUserId, message: msg }),
@@ -317,7 +272,7 @@ export default function MatchDetailPage() {
     );
   }
 
-  const { overall, breakdown, badges, sharedStrengths, frictionPoints, workStyle, targetProfile, sourceProfile } = data;
+  const { overall, breakdown, badges, sharedStrengths, frictionPoints, compatibility, targetProfile, sourceProfile } = data;
 
   const copyLink = async () => {
     try {
@@ -341,25 +296,28 @@ export default function MatchDetailPage() {
     <AppShell>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Back">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label={bilingualAria('Back', 'Πίσω')}>
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
-          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+          {/* A 12rem basis: with `flex-1` alone the line's basis was 0, so on
+              a phone the buttons kept the row and the words stood one
+              letter per line. Now the buttons wrap under it instead. */}
+          <p className="min-w-0 flex-1 basis-48 text-sm text-muted-foreground">
             <BilingualText en={`You and ${targetProfile.displayName}`} el={`Εσείς και ${targetProfile.displayName}`} />
           </p>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => void handleShortlist()} aria-pressed={shortlisted}>
             <Bookmark className={cn('icon-sm', shortlisted && 'fill-current text-status-warning')} aria-hidden="true" />
-            {shortlisted ? 'Saved' : 'Shortlist'}
+            {shortlisted ? <BilingualText en="Saved" el="Αποθηκεύτηκε" compact /> : <BilingualText en="Shortlist" el="Λίστα" compact />}
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" asChild>
             <Link href={`/messages?to=${targetUserId}`}>
               <MessageCircle className="icon-sm" aria-hidden="true" />
-              Message
+              <BilingualText en="Message" el="Μήνυμα" compact />
             </Link>
           </Button>
           <Button size="sm" className="gap-1.5" onClick={() => void handlePropose()} disabled={connectMutation.isPending}>
             <Send className="icon-sm" aria-hidden="true" />
-            Collaborate
+            <BilingualText en="Collaborate" el="Συνεργασία" compact />
           </Button>
           {/* Hand someone the link, or open the full profile. */}
           <DropdownMenu>
@@ -383,8 +341,9 @@ export default function MatchDetailPage() {
           </DropdownMenu>
         </div>
 
-        {/* Summary: the two of you, the score between you, how sure it is. */}
-        <div className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
+        {/* Summary: the two of you, the score between you, how sure it is. A
+            chart card (two marks and a donut), so it stays centred. */}
+        <div data-card-chart="" className="rounded-2xl border border-border bg-card px-4 py-6 sm:px-8">
           <div className="flex items-center justify-between gap-4">
             <PersonBlock name={sourceProfile.displayName} role={sourceProfile.role} avatarUrl={sourceProfile.avatarUrl} />
             <DonutScore score={overall.score} />
@@ -412,15 +371,17 @@ export default function MatchDetailPage() {
             <SectionCard title="Core compatibility" titleEl="Βασική συμβατότητα" icon={ListChecks} contentClassName="space-y-4">
               {breakdown.map((item) => <FactorRow key={item.key} item={item} />)}
             </SectionCard>
-            <SectionCard title="Work style overlap" titleEl="Στυλ εργασίας" icon={Activity}>
-              <WorkStyleLineChart data={workStyle} />
+            {/* Asked, not guessed: the chart that stood here was drawn from
+                fields nothing wrote. Agreement only; never their answers. */}
+            <SectionCard title="Where you agree, and what to talk about first" titleEl="Πού συμφωνείτε, και τι να συζητήσετε πρώτα" icon={Activity}>
+              <CompatibilityList comparison={compatibility} answeredByYou={myCompat.data?.answered} />
             </SectionCard>
           </div>
           <div className="space-y-6">
             {data.reasons.length > 0 && (
               <SectionCard title="Why this match" titleEl="Γιατί ταιριάζετε" icon={ThumbsUp} contentClassName="space-y-3">
                 {data.reasons.map((r) => (
-                  <p key={r} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <p key={r} className="card-body flex items-start gap-2.5 text-muted-foreground">
                     <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
                     <span>{r}</span>
                   </p>
@@ -440,14 +401,17 @@ export default function MatchDetailPage() {
               </SectionCard>
             )}
             {frictionPoints.length > 0 && (
-              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-3">
+              <SectionCard title="Potential friction" titleEl="Πιθανές τριβές" icon={AlertTriangle} contentClassName="space-y-0 divide-y divide-border">
+                {/* Rows on the card, not warning tiles in it: the glyph in
+                    front of the title, the advice under it on the card's
+                    axis. */}
                 {frictionPoints.map((point) => (
-                  <div key={point.title} className="flex gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
-                    <span className="mt-0.5 shrink-0 text-status-warning"><FrictionIcon icon={point.icon} /></span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-status-warning">{point.title}</p>
-                      <p className="text-sm text-foreground">{point.description}</p>
-                    </div>
+                  <div key={point.title} className="space-y-1 py-3 first:pt-0 last:pb-0">
+                    <p className="flex items-center gap-2 text-sm font-medium text-status-warning">
+                      <FrictionIcon icon={point.icon} />
+                      <span className="min-w-0">{point.title}</span>
+                    </p>
+                    <p className="card-body text-muted-foreground">{point.description}</p>
                   </div>
                 ))}
               </SectionCard>

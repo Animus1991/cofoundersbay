@@ -69,7 +69,7 @@ export default function PublicNeedCardPage() {
                 <NeedCard card={card} headingLevel={1} />
               </CardContent>
             </Card>
-            <Card className="border-primary/15 bg-primary/[0.03]">
+            <Card className="border-primary-muted bg-primary-subtle">
               <CardContent className="space-y-3">
                 <p className="text-sm text-foreground">
                   <BilingualText en={`${CMT.public_by.en} ${card.owner.displayName}.`} el={`${CMT.public_by.el} ${card.owner.displayName}.`} wrap />

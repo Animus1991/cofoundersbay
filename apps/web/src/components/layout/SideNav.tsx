@@ -27,7 +27,6 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
 import { NotificationsBell } from './NotificationsBell';
 import { UserMenu } from './UserMenu';
-import { PreviewDemoBadge } from './TopBar';
 import { Button } from '@/components/ui/button';
 
 export function SideNav() {
@@ -218,7 +217,7 @@ export function SideNav() {
               // Collapsed, the logo is the mark alone - no wordmark to name the
               // link - so every page with a collapsed sidebar (and the research
               // canvas, which always collapses it) had a nameless home link.
-              aria-label="CoFounderBay home"
+              aria-label={bilingualAria('CoFounderBay home', 'Αρχική σελίδα CoFounderBay')}
               className="flex h-11 w-11 items-center justify-center hover:opacity-80 transition-opacity"
             >
               <LogoIcon size={35} />
@@ -375,12 +374,15 @@ export function SideNav() {
               className={cn('shrink-0 text-muted-foreground', rail ? railSlot : 'h-8 w-8')}
               onClick={() => router.push('/search')}
               aria-label={bilingualAria('Search', 'Αναζήτηση')}
+              title={bilingualAria(
+                NAV_LINK_DESCRIPTIONS['/search'],
+                getNavDescriptionEl('/search'),
+              )}
             >
               <CfbGlyph name="search" className={chromeIcon} />
             </Button>
             <NotificationsBell className={rail ? railSlot : 'h-8 w-8'} />
           </div>
-          {showLabels && <PreviewDemoBadge className="max-w-full justify-start" />}
           {mounted ? (
             <UserMenu variant="sidebar" rail={rail} />
           ) : (

@@ -1,8 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Eye, EyeOff, Globe, Keyboard, Languages, MoreHorizontal, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Globe, Keyboard, Languages, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +10,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
@@ -19,53 +17,11 @@ import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { BilingualText } from '@/components/common/BilingualText';
-import { commonEn, commonEl } from '@/lib/i18n/strings-common';
-import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { STATUS } from '@/lib/semantic-colors';
 import { useOpenCommandPalette } from './CommandPaletteHost';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
 import { TOP_BANNER_STACK } from './useTopBannerHeight';
-
-/**
- * Shared preview-demo chip. Lives in the phone bar and the sidebar user row.
- */
-export function PreviewDemoBadge({ className }: { className?: string }) {
-  const user = useCurrentUser();
-  if (user?.email !== 'demo@cofounderbay.com') return null;
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            href="/register"
-            className={cn(
-              'inline-flex h-7 items-center gap-1 rounded-full border px-2 text-2xs font-medium transition-colors',
-              STATUS.warning.chip,
-              'hover:brightness-95',
-              className,
-            )}
-          >
-            <Sparkles className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Demo" el="Δείγμα" compact secondaryClassName="hidden" />
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="end" className="max-w-[220px]">
-          <p className="text-xs">
-            <BilingualText en={commonEn('demo_mode_banner')} el={commonEl('demo_mode_banner')} />
-          </p>
-          <p className="mt-1 text-xs font-medium text-status-warning underline underline-offset-2">
-            <BilingualText en={commonEn('create_free_account')} el={commonEl('create_free_account')} />
-          </p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
 
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
@@ -146,7 +102,6 @@ export function TopBar() {
       <SearchBar />
       <div className="min-w-0 flex-1" />
       <div className="flex shrink-0 items-center gap-0.5">
-        <PreviewDemoBadge className="hidden xs:inline-flex" />
         <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
         <LanguageSwitcher iconOnly className="h-9 w-9" />
         <ThemeSwitcher className="h-9 w-9" />

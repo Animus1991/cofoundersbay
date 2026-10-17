@@ -18,6 +18,14 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
     en: 'Draft a reply, summarise this thread, or suggest who to message next.',
     el: 'Συντάξτε απάντηση, συνοψίστε το νήμα ή προτείνετε ποιον να γράψετε μετά.',
   },
+  ask_ai_short: {
+    en: 'Draft a reply for you',
+    el: 'Συντάσσει μια απάντηση',
+  },
+  new_message_short: {
+    en: 'Write to a connection',
+    el: 'Γράψτε σε μια σύνδεση',
+  },
 
   all: { en: 'All', el: 'Όλα' },
   unread: { en: 'Unread', el: 'Αδιάβαστα' },
@@ -37,6 +45,10 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   type_message_hint: {
     en: 'Enter to send, Shift+Enter for a new line',
     el: 'Enter για αποστολή, Shift+Enter για νέα γραμμή',
+  },
+  tap_message_hint: {
+    en: 'Tap a message to reply or react.',
+    el: 'Πατήστε ένα μήνυμα για απάντηση ή αντίδραση.',
   },
   send: { en: 'Send', el: 'Αποστολή' },
   pin: { en: 'Pin', el: 'Καρφίτσωμα' },
@@ -58,6 +70,11 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   search_messages: { en: 'Search messages', el: 'Αναζήτηση μηνυμάτων' },
   results_n: { en: 'results', el: 'αποτελέσματα' },
   result_one: { en: 'result', el: 'αποτέλεσμα' },
+  match_position: { en: '{n} of {total}', el: '{n} από {total}' },
+  no_matches: { en: 'No matches', el: 'Κανένα αποτέλεσμα' },
+  older_match: { en: 'Older match (Enter)', el: 'Παλαιότερο αποτέλεσμα (Enter)' },
+  newer_match: { en: 'Newer match (Shift+Enter)', el: 'Νεότερο αποτέλεσμα (Shift+Enter)' },
+  only_matches: { en: 'Show only matching messages', el: 'Μόνο τα μηνύματα που ταιριάζουν' },
   load_older: { en: 'Load older messages', el: 'Φόρτωση παλαιότερων' },
   loading: { en: 'Loading…', el: 'Φόρτωση…' },
   preparing: { en: 'Preparing your messages…', el: 'Προετοιμασία μηνυμάτων…' },
@@ -205,6 +222,8 @@ export const MESSAGES_STRINGS: Record<string, BilingualPair> = {
   cancel_reply: { en: 'Cancel reply', el: 'Ακύρωση απάντησης' },
   add_reaction: { en: 'Add reaction', el: 'Προσθήκη αντίδρασης' },
 
+  val_change: { en: 'Change', el: 'Αλλαγή' },
+  val_save_transcript: { en: 'Save transcript', el: 'Αποθήκευση αντιγράφου' },
   val_casual: { en: 'Casual chat', el: 'Απλή συνομιλία' },
   val_one: { en: 'One-party validation', el: 'Επικύρωση ενός μέρους' },
   val_two: { en: 'Two-party validation', el: 'Επικύρωση δύο μερών' },

@@ -25,6 +25,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -35,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 
 interface Message {
   id: string;
@@ -195,7 +196,7 @@ export function EnhancedMessageThread({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon">
+              <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
                 <MoreVertical className="icon-md" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
@@ -343,7 +344,7 @@ export function EnhancedMessageThread({
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button aria-label="More options" size="icon" variant="secondary" className="h-7 w-7">
+                        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} size="icon" variant="secondary" className="h-7 w-7">
                           <MoreVertical className="icon-sm" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -409,7 +410,7 @@ export function EnhancedMessageThread({
               {replyingTo.content}
             </p>
           </div>
-          <Button aria-label="More options"
+          <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
             variant="ghost"
             size="icon"
             onClick={() => setReplyingTo(null)}
@@ -436,7 +437,7 @@ export function EnhancedMessageThread({
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
                 </span>
-                <Button aria-label="More options"
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
@@ -482,15 +483,17 @@ export function EnhancedMessageThread({
               className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />
-            <Button aria-label="Add emoji"
-              disabled
-              title="Emoji picker is not available here yet"
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 bottom-2"
-            >
-              <Smile className="icon-md" />
-            </Button>
+            <WithDisabledReason reasonEn="Emoji picker is not available here yet" reasonEl="Η επιλογή emoji δεν είναι ακόμη διαθέσιμη εδώ">
+              <Button
+                aria-label="Add emoji"
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 bottom-2"
+                disabled
+              >
+                <Smile className="icon-md" />
+              </Button>
+            </WithDisabledReason>
           </div>
 
           <Button aria-label="Send message"

@@ -240,6 +240,13 @@ export default function EventsPage() {
       }
     >
       <div className="space-y-6 pb-10">
+      <p className="text-sm text-muted-foreground">
+        <Link href="/events/create?kind=pitch-practice" className="text-primary-accessible">
+          <BilingualText en="Host a pitch practice" el="Διοργάνωση εξάσκησης παρουσίασης" compact />
+        </Link>
+        {' '}
+        <BilingualText en="A live workshop where founders present and hear notes." el="Ένα ζωντανό εργαστήριο όπου ιδρυτές παρουσιάζουν και ακούν σημειώσεις." wrap />
+      </p>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
@@ -320,11 +327,15 @@ export default function EventsPage() {
                     ? hasToken
                       ? <BilingualText en="You have not said you are going to, or interested in, any event yet." el="Δεν έχετε δηλώσει ακόμα συμμετοχή ή ενδιαφέρον για κάποια εκδήλωση." />
                       : <BilingualText en="Sign in to view your event activity." el="Συνδεθείτε για να δείτε τις εκδηλώσεις σας." />
-                    : filter !== 'all'
-                      ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
-                      : searchQuery
-                        ? <BilingualText en="Try a different search." el="Δοκιμάστε διαφορετική αναζήτηση." />
-                        : <BilingualText en="No events are listed right now." el="Δεν υπάρχουν εκδηλώσεις αυτή τη στιγμή." />
+                    : searchQuery.trim()
+                      ? <BilingualText
+                          en={`Nothing matched “${searchQuery.trim()}”${filter !== 'all' ? ', with the format filter in the side panel' : ''}.`}
+                          el={`Τίποτα δεν ταιριάζει με «${searchQuery.trim()}»${filter !== 'all' ? ', μαζί με το φίλτρο μορφής στο πλευρικό πάνελ' : ''}.`}
+                          wrap
+                        />
+                      : filter !== 'all'
+                        ? <BilingualText en="The format filter in the side panel may be hiding events." el="Το φίλτρο μορφής στο πλευρικό πάνελ ίσως κρύβει εκδηλώσεις." />
+                        : undefined
                 }
                 illustration="calendar"
                 askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
@@ -352,7 +363,7 @@ export default function EventsPage() {
               <>
                 {featured && (
                   <div className="mb-6">
-                    <h2 className="mb-4 text-lg font-semibold text-foreground">
+                    <h2 className="mb-4 text-base font-semibold text-foreground">
                       <BilingualText en={firstLabel.en} el={firstLabel.el} compact />
                     </h2>
                     <EventCard

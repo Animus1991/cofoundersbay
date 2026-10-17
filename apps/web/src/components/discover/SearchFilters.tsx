@@ -1,7 +1,8 @@
 'use client';
 
 import { BilingualText } from '@/components/common/BilingualText';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { readNaturalSearch } from '@cofounderbay/shared';
 import {
   Filter,
   X,
@@ -74,10 +75,10 @@ const roles = [
 ];
 
 const stages = [
-  { value: 'idea', label: 'Idea Stage' },
-  { value: 'mvp', label: 'MVP' },
-  { value: 'traction', label: 'Traction' },
-  { value: 'scaling', label: 'Scaling' },
+  { value: 'idea', label: 'Idea Stage', labelEl: 'Στάδιο ιδέας' },
+  { value: 'mvp', label: 'MVP', labelEl: 'MVP' },
+  { value: 'traction', label: 'Traction', labelEl: 'Traction' },
+  { value: 'scaling', label: 'Scaling', labelEl: 'Κλιμάκωση' },
 ];
 
 const industries = [
@@ -87,18 +88,18 @@ const industries = [
 ];
 
 const availabilities = [
-  { value: 'full-time', label: 'Full-time' },
-  { value: 'part-time', label: 'Part-time' },
-  { value: 'weekends', label: 'Weekends only' },
-  { value: 'flexible', label: 'Flexible' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα' },
 ];
 
 const fundingStages = [
-  { value: 'pre-seed', label: 'Pre-seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B+' },
-  { value: 'bootstrapped', label: 'Bootstrapped' },
+  { value: 'pre-seed', label: 'Pre-seed', labelEl: 'Προ-seed' },
+  { value: 'seed', label: 'Seed', labelEl: 'Seed' },
+  { value: 'series-a', label: 'Series A', labelEl: 'Σειρά A' },
+  { value: 'series-b', label: 'Series B+', labelEl: 'Σειρά B+' },
+  { value: 'bootstrapped', label: 'Bootstrapped', labelEl: 'Αυτοχρηματοδοτούμενο' },
 ];
 
 const commonSkills = [
@@ -107,8 +108,16 @@ const commonSkills = [
 ];
 
 const languageOptions = [
-  'English', 'Greek', 'Spanish', 'French', 'German', 
-  'Chinese', 'Hindi', 'Arabic', 'Portuguese', 'Japanese',
+  { value: 'English', label: 'English', labelEl: 'Αγγλικά' },
+  { value: 'Greek', label: 'Greek', labelEl: 'Ελληνικά' },
+  { value: 'Spanish', label: 'Spanish', labelEl: 'Ισπανικά' },
+  { value: 'French', label: 'French', labelEl: 'Γαλλικά' },
+  { value: 'German', label: 'German', labelEl: 'Γερμανικά' },
+  { value: 'Chinese', label: 'Chinese', labelEl: 'Κινεζικά' },
+  { value: 'Hindi', label: 'Hindi', labelEl: 'Χίντι' },
+  { value: 'Arabic', label: 'Arabic', labelEl: 'Αραβικά' },
+  { value: 'Portuguese', label: 'Portuguese', labelEl: 'Πορτογαλικά' },
+  { value: 'Japanese', label: 'Japanese', labelEl: 'Ιαπωνικά' },
 ];
 
 function MultiSelect({
@@ -117,7 +126,7 @@ function MultiSelect({
   onChange,
   placeholder,
 }: {
-  options: { value: string; label: string }[] | string[];
+  options: { value: string; label: string; labelEl?: string }[] | string[];
   selected: string[];
   onChange: (selected: string[]) => void;
   placeholder?: string;
@@ -147,7 +156,7 @@ function MultiSelect({
               : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
           )}
         >
-          {opt.label}
+          <BilingualText en={opt.label} el={'labelEl' in opt ? opt.labelEl : undefined} compact />
         </button>
       ))}
     </div>
@@ -165,6 +174,19 @@ export function SearchFilters({
   onSearchAsTyped,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // While typing, say what Enter will read as filters (debounced); only Enter
+  // applies it. Shown where Enter reads words at all (Discover passes
+  // onSearchAsTyped), and never beside a reading already applied.
+  const [preview, setPreview] = useState<NaturalFilter[]>([]);
+  useEffect(() => {
+    if (!onSearchAsTyped || interpreted?.length) {
+      setPreview([]);
+      return;
+    }
+    const timer = setTimeout(() => setPreview(filters.q.trim() ? readNaturalSearch(filters.q).understood : []), 300);
+    return () => clearTimeout(timer);
+  }, [filters.q, onSearchAsTyped, interpreted]);
 
   const updateFilter = <K extends keyof SearchFiltersValues>(
     key: K,
@@ -202,12 +224,14 @@ export function SearchFilters({
   ].reduce((a, b) => a + b, 0);
 
   // Active filter pills
-  const activeFilterPills: { key: string; label: string; onRemove: () => void }[] = [];
+  const activeFilterPills: { key: string; label: string; labelEl?: string; onRemove: () => void }[] = [];
   
   filters.role.forEach((r) => {
+    const role = roles.find((x) => x.value === r);
     activeFilterPills.push({
       key: `role-${r}`,
-      label: roles.find((x) => x.value === r)?.label || r,
+      label: role?.label || r,
+      labelEl: role?.labelEl,
       onRemove: () => updateFilter('role', filters.role.filter((x) => x !== r)),
     });
   });
@@ -248,7 +272,7 @@ export function SearchFilters({
               <button
                 onClick={() => updateFilter('q', '')}
                 className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
-                aria-label="Clear search"
+                aria-label={bilingualAria('Clear search', 'Καθαρισμός αναζήτησης')}
               >
                 <X className="icon-sm" />
               </button>
@@ -263,13 +287,13 @@ export function SearchFilters({
                   not a name. */}
               <Button
                 variant="outline"
-                aria-label="Filters"
+                aria-label={bilingualAria('Filters', 'Φίλτρα')}
                 className="relative min-h-10 shrink-0 gap-2 px-3"
               >
                 <Filter className="icon-sm" aria-hidden="true" />
                 <span className="hidden sm:inline"><BilingualText en="Filters" el="Φίλτρα" compact /></span>
                 {activeFiltersCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
+                  <Badge data-chip="" className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-2xs">
                     {activeFiltersCount}
                   </Badge>
                 )}
@@ -279,7 +303,7 @@ export function SearchFilters({
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <Filter className="icon-md text-muted-foreground" />
-                Search Filters
+                <BilingualText en="Search Filters" el="Φίλτρα αναζήτησης" compact />
               </SheetTitle>
               <SheetDescription className="sr-only"><BilingualText en="Refine search results by role, skills and other criteria." el="Περιορίστε τα αποτελέσματα αναζήτησης με ρόλο, δεξιότητες και άλλα κριτήρια." /></SheetDescription>
             </SheetHeader>
@@ -290,7 +314,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Users className="icon-sm" />
-                    Role
+                    <BilingualText en="Role" el="Ρόλος" compact />
                     {filters.role.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.role.length}</Badge>
                     )}
@@ -310,7 +334,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Sparkles className="icon-sm" />
-                    Skills
+                    <BilingualText en="Skills" el="Δεξιότητες" compact />
                     {filters.skills.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.skills.length}</Badge>
                     )}
@@ -330,7 +354,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Briefcase className="icon-sm" />
-                    Industry
+                    <BilingualText en="Industry" el="Κλάδος" compact />
                     {filters.industries.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.industries.length}</Badge>
                     )}
@@ -350,7 +374,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Target className="icon-sm" />
-                    Startup Stage
+                    <BilingualText en="Startup Stage" el="Στάδιο startup" compact />
                     {filters.stage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.stage.length}</Badge>
                     )}
@@ -370,7 +394,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <MapPin className="icon-sm" />
-                    Location
+                    <BilingualText en="Location" el="Τοποθεσία" compact />
                     {filters.location && <Badge variant="secondary" size="sm">1</Badge>}
                   </div>
                 </AccordionTrigger>
@@ -381,9 +405,12 @@ export function SearchFilters({
                     onChange={(e) => updateFilter('location', e.target.value)}
                   />
                   <div className="flex gap-2">
-                    {['Remote OK', 'On-site only'].map((opt, i) => (
+                    {([
+                      { en: 'Remote OK', el: 'Δεκτό το απομακρυσμένο' },
+                      { en: 'On-site only', el: 'Μόνο στον χώρο' },
+                    ] as const).map((opt, i) => (
                       <button
-                        key={opt}
+                        key={opt.en}
                         onClick={() => updateFilter('remote', i === 0 ? true : false)}
                         className={cn(
                           'rounded-full border px-3 py-1 text-xs transition-colors',
@@ -392,7 +419,7 @@ export function SearchFilters({
                             : 'border-border text-muted-foreground hover:border-primary/50'
                         )}
                       >
-                        {opt}
+                        <BilingualText en={opt.en} el={opt.el} compact />
                       </button>
                     ))}
                   </div>
@@ -404,7 +431,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Clock className="icon-sm" />
-                    Availability
+                    <BilingualText en="Availability" el="Διαθεσιμότητα" compact />
                     {filters.availability.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.availability.length}</Badge>
                     )}
@@ -424,7 +451,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <DollarSign className="icon-sm" />
-                    Funding Stage
+                    <BilingualText en="Funding Stage" el="Στάδιο χρηματοδότησης" compact />
                     {filters.fundingStage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.fundingStage.length}</Badge>
                     )}
@@ -444,7 +471,7 @@ export function SearchFilters({
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
                     <Languages className="icon-sm" />
-                    Languages
+                    <BilingualText en="Languages" el="Γλώσσες" compact />
                     {filters.languages.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.languages.length}</Badge>
                     )}
@@ -462,10 +489,10 @@ export function SearchFilters({
 
             <SheetFooter className="mt-6 flex flex-col gap-2 sm:flex-row">
               <Button variant="ghost" onClick={clearFilters} className="min-h-10 flex-1">
-                Clear all
+                <BilingualText en="Clear all" el="Καθαρισμός" compact />
               </Button>
               <Button onClick={() => { onSearch(); setIsOpen(false); }} className="min-h-10 flex-1">
-                Apply filters
+                <BilingualText en="Apply filters" el="Εφαρμογή φίλτρων" compact />
               </Button>
             </SheetFooter>
           </SheetContent>
@@ -474,7 +501,7 @@ export function SearchFilters({
 
         <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
           <Search className="h-4 w-4 sm:hidden" />
-          {loading ? 'Searching...' : 'Search'}
+          {loading ? <BilingualText en="Searching…" el="Αναζήτηση…" compact /> : <BilingualText en="Search" el="Αναζήτηση" compact />}
         </Button>
         {onSaveSearch && (
           <Button variant="outline" onClick={onSaveSearch} className="min-h-10 w-full gap-2 sm:w-auto">
@@ -484,9 +511,19 @@ export function SearchFilters({
         )}
       </div>
 
+      {preview.length > 0 && (
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          <BilingualText
+            en={`Press Enter to read as filters: ${preview.map((f) => f.en).join(' · ')}`}
+            el={`Πατήστε Enter για ανάγνωση ως φίλτρα: ${preview.map((f) => f.el).join(' · ')}`}
+            wrap
+          />
+        </p>
+      )}
+
       {/* What Enter read out of the words typed, and the way back to them. */}
       {interpreted && interpreted.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary/15 bg-primary/[0.03] px-3 py-2" role="status">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-primary-muted bg-primary-subtle px-3 py-2" role="status">
           <span className="text-sm text-muted-foreground">
             <BilingualText en="Read as filters:" el="Διαβάστηκε ως φίλτρα:" compact />
           </span>
@@ -503,7 +540,10 @@ export function SearchFilters({
         </div>
       )}
 
-      {/* Quick role filters */}
+      {/* Role, stage and place stay in the filters sheet and the page rail.
+          This row repeats the role only once a search has named one, so the
+          field stays the first thing while it is still empty. */}
+      {(filters.role.length > 0 || filters.stage.length > 0 || filters.location.trim()) ? (
       <div className="flex flex-wrap items-center gap-2">
         {/* "Search only", not "Quick filter": the role chips above this row
             narrow the results on screen, while these change the query sent to
@@ -529,6 +569,7 @@ export function SearchFilters({
           </Button>
         ))}
       </div>
+      ) : null}
 
       {/* Active filter pills */}
       {activeFilterPills.length > 0 && (
@@ -538,10 +579,11 @@ export function SearchFilters({
             <Badge
               key={pill.key}
               variant="secondary"
+              data-chip=""
               className="gap-1 pr-1"
             >
-              {pill.label}
-              <button aria-label={`Remove filter ${pill.label}`} type="button"
+              <BilingualText en={pill.label} el={pill.labelEl} compact />
+              <button aria-label={bilingualAria(`Remove filter ${pill.label}`, pill.labelEl ? `Αφαίρεση φίλτρου ${pill.labelEl}` : undefined)} type="button"
                 onClick={pill.onRemove}
                 className="ml-1 rounded-full p-0.5 hover:bg-background/50"
               >
@@ -551,11 +593,11 @@ export function SearchFilters({
           ))}
           {activeFilterPills.length > 10 && (
             <span className="text-xs text-muted-foreground">
-              +{activeFilterPills.length - 10} more
+              <BilingualText en={`+${activeFilterPills.length - 10} more`} el={`+${activeFilterPills.length - 10} ακόμη`} compact />
             </span>
           )}
           <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear all
+            <BilingualText en="Clear all" el="Καθαρισμός" compact />
           </Button>
         </div>
       )}
@@ -574,12 +616,12 @@ export function SearchFilters({
             aria-label={bilingualAria('Sort results', 'Ταξινόμηση αποτελεσμάτων')}
             value={filters.sortBy}
             onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
-            className="h-8 rounded-xl border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
+            className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
             data-filter-field=""
           >
-            <option value="relevance">Most relevant</option>
-            <option value="recent">Recently active</option>
-            <option value="active">Most active</option>
+            <option value="relevance">{bilingualInline('Most relevant', 'Πιο σχετικά')}</option>
+            <option value="recent">{bilingualInline('Recently active', 'Πρόσφατα ενεργοί')}</option>
+            <option value="active">{bilingualInline('Most active', 'Πιο ενεργοί')}</option>
           </select>
         </div>
       )}

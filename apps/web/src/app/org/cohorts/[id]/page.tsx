@@ -21,7 +21,6 @@ import { useParams } from 'next/navigation';
 import {
   Users,
   Calendar,
-  Award,
   TrendingUp,
   GraduationCap,
   Target,
@@ -43,11 +42,15 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
+import { bilingualInline } from '@/lib/i18n/format';
 import { downloadCsv } from '@/lib/csv';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -69,6 +72,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import Link from 'next/link';
 import { qk } from '@/lib/query-keys';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Counter } from '@/components/ui/counter';
 
 // Types
 interface Participant {
@@ -214,6 +218,24 @@ function toSession(row: CohortSession): MentoringSession {
     status: row.status === 'no_show' ? 'cancelled' : row.status,
     rating: row.rating ?? undefined,
   };
+}
+
+/** The two people of a match as one mark: two round avatars, overlapped. */
+function MatchPair({ match }: { match: Match }) {
+  return (
+    <div className="flex shrink-0 -space-x-2">
+      <Avatar className="h-10 w-10 border-2 border-card">
+        <AvatarFallback className="bg-muted font-semibold">
+          {initialsOf(match.participant1.name)}
+        </AvatarFallback>
+      </Avatar>
+      <Avatar className="h-10 w-10 border-2 border-card">
+        <AvatarFallback className="bg-primary/15 font-semibold text-primary-accessible">
+          {initialsOf(match.participant2.name)}
+        </AvatarFallback>
+      </Avatar>
+    </div>
+  );
 }
 
 export default function CohortDetailPage() {
@@ -479,10 +501,15 @@ export default function CohortDetailPage() {
               </a>
             </Button>
           ) : (
-            <Button size="sm" variant="outline" disabled title={isSample ? 'Sample people have no real address to write to' : 'Nobody in this cohort has an email address on file'}>
-              <Mail className="icon-sm mr-2" aria-hidden="true" />
-              <BilingualText en="Email all" el="Email σε όλους" compact />
-            </Button>
+            <WithDisabledReason
+              reasonEn={isSample ? 'Sample people have no real address to write to' : 'Nobody in this cohort has an email address on file'}
+              reasonEl={isSample ? 'Τα ενδεικτικά άτομα δεν έχουν πραγματική διεύθυνση' : 'Κανείς σε αυτόν τον κύκλο δεν έχει καταχωρισμένο email'}
+            >
+              <Button size="sm" variant="outline" disabled>
+                <Mail className="icon-sm mr-2" aria-hidden="true" />
+                <BilingualText en="Email all" el="Email σε όλους" compact />
+              </Button>
+            </WithDisabledReason>
           )}
         </div>
       }
@@ -501,24 +528,24 @@ export default function CohortDetailPage() {
           </TabsTrigger>
           <TabsTrigger value="participants">
             <BilingualText
-              en={`Participants (${participants.length})`}
-              el={`Συμμετέχοντες (${participants.length})`}
+              en="Participants"
+              el="Συμμετέχοντες"
               compact
-            />
+            /><Counter value={participants.length} />
           </TabsTrigger>
           <TabsTrigger value="matches">
             <BilingualText
-              en={`Matches (${matches.length})`}
-              el={`Αντιστοιχίσεις (${matches.length})`}
+              en="Matches"
+              el="Αντιστοιχίσεις"
               compact
-            />
+            /><Counter value={matches.length} />
           </TabsTrigger>
           <TabsTrigger value="mentoring">
             <BilingualText
-              en={`Mentoring (${sessions.length})`}
-              el={`Καθοδήγηση (${sessions.length})`}
+              en="Mentoring"
+              el="Καθοδήγηση"
               compact
-            />
+            /><Counter value={sessions.length} />
           </TabsTrigger>
         </TabsList>
 
@@ -618,27 +645,18 @@ export default function CohortDetailPage() {
                 <BilingualText en="About This Cohort" el="Σχετικά με τον κύκλο" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">{cohort.description}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-                <div className="flex items-center gap-2">
-                  <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
-                  <span className="text-sm">
-                    {formatDate(cohort.startDate)} - {formatDate(cohort.endDate)}
-                  </span>
-                </div>
-                {cohort.location ? (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />
-                    <span className="text-sm">{cohort.location}</span>
-                  </div>
-                ) : null}
-                <div className="flex items-center gap-2">
-                  <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
-                  <span className="text-sm">{cohort.program}</span>
-                </div>
-              </div>
+            <CardContent className="space-y-3">
+              {cohort.description ? (
+                <p className="card-body text-muted-foreground first-letter:uppercase">{cohort.description}</p>
+              ) : null}
+              <FactLine
+                label={bilingualInline('When, where and which programme', 'Πότε, πού και ποιο πρόγραμμα')}
+                items={[
+                  <span key="dates" className="tabular-nums">{formatDate(cohort.startDate)} - {formatDate(cohort.endDate)}</span>,
+                  cohort.location || null,
+                  cohort.program,
+                ]}
+              />
             </CardContent>
           </Card>
 
@@ -652,31 +670,25 @@ export default function CohortDetailPage() {
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
                 <div className="card-rows">
+                  {/* Each row is a card's head without its frame: the pair,
+                      their names, the score under them, the state at the
+                      right. */}
                   {matches.slice(0, 3).map((match) => (
-                    <div key={match.id} className="flex items-center gap-3">
-                      <div className="flex shrink-0 -space-x-1">
-                        <Avatar className="h-8 w-8 border-2 border-card">
-                          <AvatarFallback className="bg-muted text-2xs font-semibold">
-                            {initialsOf(match.participant1.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-8 w-8 border-2 border-card">
-                          <AvatarFallback className="bg-primary/15 text-2xs font-semibold text-primary-accessible">
-                            {initialsOf(match.participant2.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {match.participant1.name} ↔ {match.participant2.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Match score: {match.matchScore}%
-                          {match.interactions > 0 && ` • ${match.interactions} interactions`}
-                        </p>
-                      </div>
-                      {getStatusBadge(match.status)}
-                    </div>
+                    <RowHead
+                      key={match.id}
+                      titleAs="h4"
+                      mark={<MatchPair match={match} />}
+                      title={<>{match.participant1.name} ↔ {match.participant2.name}</>}
+                      subtitle={(
+                        <FactLine
+                          items={[
+                            <BilingualText key="score" en={`Match score: ${match.matchScore}%`} el={`Βαθμός ταιριάσματος: ${match.matchScore}%`} compact />,
+                            match.interactions > 0 ? <BilingualText key="interactions" en={`${match.interactions} interactions`} el={`${match.interactions} αλληλεπιδράσεις`} compact /> : null,
+                          ]}
+                        />
+                      )}
+                      aside={getStatusBadge(match.status)}
+                    />
                   ))}
                 </div>
                 <button
@@ -702,23 +714,21 @@ export default function CohortDetailPage() {
                     .filter((s) => s.status === 'scheduled')
                     .slice(0, 3)
                     .map((session) => (
-                      <div key={session.id} className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            {initialsOf(session.mentor.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{session.topic}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {session.mentor.name} → {session.mentee.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatDate(session.scheduledDate)} • {session.duration} min
-                          </p>
-                        </div>
-                        {getStatusBadge(session.status)}
-                      </div>
+                      <RowHead
+                        key={session.id}
+                        titleAs="h4"
+                        mark={(
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
+                              {initialsOf(session.mentor.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
+                        title={<span className="block first-letter:uppercase">{session.topic}</span>}
+                        subtitle={<>{session.mentor.name} → {session.mentee.name}</>}
+                        meta={<span className="tabular-nums">{formatDate(session.scheduledDate)} · {session.duration} min</span>}
+                        aside={getStatusBadge(session.status)}
+                      />
                     ))}
                 </div>
                 <button
@@ -738,10 +748,12 @@ export default function CohortDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle><BilingualText en="All Participants" el="Όλοι οι συμμετέχοντες" compact /></CardTitle>
-              <Button size="sm" disabled title="Cohort membership is managed by platform administrators for now">
-                <Users className="icon-sm mr-2" aria-hidden="true" />
-                <BilingualText en="Add Participant" el="Προσθήκη συμμετέχοντα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="Cohort membership is managed by platform administrators for now" reasonEl="Τη συμμετοχή διαχειρίζονται προς το παρόν οι διαχειριστές της πλατφόρμας">
+                <Button size="sm" disabled>
+                  <Users className="icon-sm mr-2" aria-hidden="true" />
+                  <BilingualText en="Add Participant" el="Προσθήκη συμμετέχοντα" compact />
+                </Button>
+              </WithDisabledReason>
             </CardHeader>
             <CardContent>
               <Table>
@@ -847,46 +859,36 @@ export default function CohortDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="card-rows">
+                {/* The pair, their names over their roles, the dates as one
+                    caption line; the score is a fact under the title, not a
+                    figure louder than the names. */}
                 {matches.map((match) => (
-                  <div key={match.id} className="flex items-center gap-4">
-                    <div className="flex shrink-0 -space-x-2">
-                      <Avatar className="h-12 w-12 border-2 border-card">
-                        <AvatarFallback className="bg-muted text-sm font-semibold">
-                          {initialsOf(match.participant1.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Avatar className="h-12 w-12 border-2 border-card">
-                        <AvatarFallback className="bg-primary/15 text-sm font-semibold text-primary-accessible">
-                          {initialsOf(match.participant2.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">
-                        {match.participant1.name} ↔ {match.participant2.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <StatusText value={match.participant1.role} /> • <StatusText value={match.participant2.role} />
-                      </p>
-                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
-                        <span>Matched: {formatDate(match.matchedDate)}</span>
-                        <span>•</span>
-                        {match.interactions > 0 && <span>{match.interactions} interactions</span>}
-                        {match.lastInteraction && (
-                          <>
-                            <span>•</span>
-                            <span>Last: {formatDate(match.lastInteraction)}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary-accessible">{match.matchScore}%</div>
-                        <div className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></div>
-                      </div>
-                      {getStatusBadge(match.status)}
-                    </div>
+                  <div key={match.id} className="space-y-2">
+                    <RowHead
+                      titleAs="h4"
+                      mark={<MatchPair match={match} />}
+                      title={<>{match.participant1.name} ↔ {match.participant2.name}</>}
+                      subtitle={(
+                        <FactLine
+                          items={[
+                            <StatusText key="r1" value={match.participant1.role} />,
+                            <StatusText key="r2" value={match.participant2.role} />,
+                          ]}
+                        />
+                      )}
+                      aside={getStatusBadge(match.status)}
+                    />
+                    <FactLine
+                      items={[
+                        <span key="score">
+                          <BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact />{' '}
+                          <span className="font-semibold tabular-nums text-primary-accessible">{match.matchScore}%</span>
+                        </span>,
+                        <BilingualText key="matched" en={`Matched: ${formatDate(match.matchedDate)}`} el={`Αντιστοίχιση: ${formatDate(match.matchedDate)}`} compact />,
+                        match.interactions > 0 ? <BilingualText key="interactions" en={`${match.interactions} interactions`} el={`${match.interactions} αλληλεπιδράσεις`} compact /> : null,
+                        match.lastInteraction ? <BilingualText key="last" en={`Last: ${formatDate(match.lastInteraction)}`} el={`Τελευταία: ${formatDate(match.lastInteraction)}`} compact /> : null,
+                      ]}
+                    />
                   </div>
                 ))}
               </div>
@@ -959,7 +961,7 @@ export default function CohortDetailPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead><BilingualText en="Mentor" el="Μέντορας" compact /></TableHead>
-                      <TableHead><BilingualText en="Mentee" el="Μαθητευόμενος" compact /></TableHead>
+                      <TableHead><BilingualText en="Mentee" el="Καθοδηγούμενος" compact /></TableHead>
                       <TableHead><BilingualText en="Topic" el="Θέμα" compact /></TableHead>
                       <TableHead><BilingualText en="Date" el="Ημερομηνία" compact /></TableHead>
                       <TableHead><BilingualText en="Duration" el="Διάρκεια" compact /></TableHead>

@@ -5,7 +5,7 @@ import { listCommitmentCards, type CommitmentCard } from '@/lib/commitments-api'
 import { BOARD_LIMIT, NO_CHIPS, type CardChips } from '@/lib/need-card-wall';
 import { useNeedCardWall } from './useNeedCardWall';
 
-vi.mock('@/lib/commitments-api', () => ({ listCommitmentCards: vi.fn() }));
+vi.mock('@/lib/commitments-api', () => ({ listCommitmentCards: vi.fn(), getCommitmentCardCounts: vi.fn(async () => null) }));
 
 /**
  * The board holds the newest BOARD_LIMIT cards. While it holds them all the

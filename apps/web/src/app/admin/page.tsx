@@ -26,7 +26,6 @@ import {
   Plus,
   Trash2,
   Calendar,
-  UserCheck,
   Mail,
   Send,
   ChevronRight,
@@ -82,6 +81,10 @@ import {
 import { RailStats } from '@/components/layout/RailParts';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
 import { ScoreInspector } from '@/components/admin/ScoreInspector';
@@ -94,21 +97,23 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
-const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
-  harassment: { label: 'Harassment', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
-  fake: { label: 'Fake Profile', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
-  other: { label: 'Other', color: 'bg-muted text-foreground border-border ' },
+const reportTypeConfig: Record<AdminReportItem['type'], { label: string; labelEl: string; color: string }> = {
+  spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  harassment: { label: 'Harassment', labelEl: 'Παρενόχληση', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
+  fake: { label: 'Fake Profile', labelEl: 'Ψεύτικο προφίλ', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
+  inappropriate: { label: 'Inappropriate', labelEl: 'Ακατάλληλο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  other: { label: 'Other', labelEl: 'Άλλο', color: 'bg-muted text-foreground border-border ' },
 };
 
-const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'text-status-warning ', icon: Clock },
-  reviewed: { label: 'Under Review', color: 'text-status-info ', icon: Eye },
-  resolved: { label: 'Resolved', color: 'text-status-success ', icon: CheckCircle },
-  dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
+const reportStatusConfig: Record<AdminReportItem['status'], { label: string; labelEl: string; color: string; icon: React.ElementType }> = {
+  pending: { label: 'Pending', labelEl: 'Σε αναμονή', color: 'text-status-warning ', icon: Clock },
+  reviewed: { label: 'Under Review', labelEl: 'Υπό εξέταση', color: 'text-status-info ', icon: Eye },
+  resolved: { label: 'Resolved', labelEl: 'Επιλύθηκε', color: 'text-status-success ', icon: CheckCircle },
+  dismissed: { label: 'Dismissed', labelEl: 'Απορρίφθηκε', color: 'text-muted-foreground', icon: XCircle },
 };
 
 
@@ -151,7 +156,7 @@ function EmailTemplatesTab() {
         {/* Template list */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold"><BilingualText en="Templates" el="Πρότυπα" compact /></CardTitle>
+            <CardTitle><BilingualText en="Templates" el="Πρότυπα" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {listLoading ? (
@@ -185,8 +190,10 @@ function EmailTemplatesTab() {
         <Card className="md:col-span-2">
           <CardHeader>
             <div className="flex items-center justify-between gap-4">
-              <CardTitle className="text-sm font-semibold">
-                {selectedId ? `Preview: ${templates.find(t => t.id === selectedId)?.name ?? selectedId}` : 'Select a template'}
+              <CardTitle>
+                {selectedId
+                  ? <BilingualText en={`Preview: ${templates.find(t => t.id === selectedId)?.name ?? selectedId}`} el={`Προεπισκόπηση: ${templates.find(t => t.id === selectedId)?.name ?? selectedId}`} compact wrap />
+                  : <BilingualText en="Select a template" el="Επιλέξτε πρότυπο" compact />}
               </CardTitle>
               {selectedId && (
                 <div className="flex items-center gap-2">
@@ -204,23 +211,20 @@ function EmailTemplatesTab() {
                     disabled={!testEmail || sending}
                   >
                     <Send className="icon-sm" aria-hidden="true" />
-                    {sending ? 'Sending…' : 'Test Send'}
+                    {sending ? <BilingualText en="Sending…" el="Αποστολή…" compact /> : <BilingualText en="Test Send" el="Δοκιμαστική αποστολή" compact />}
                   </Button>
                 </div>
               )}
             </div>
             {selectedId && preview && (
               <p className="text-xs text-muted-foreground mt-1">
-                Subject: <span className="font-medium text-foreground">{preview.subject}</span>
+                <BilingualText en="Subject:" el="Θέμα:" compact /> <span className="font-medium text-foreground">{preview.subject}</span>
               </p>
             )}
           </CardHeader>
           <CardContent>
             {!selectedId && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Mail className="icon-lg text-muted-foreground mb-3" aria-hidden="true" />
-                <p className="text-sm text-muted-foreground"><BilingualText en="Select a template to preview it" el="Επιλέξτε πρότυπο για προεπισκόπηση" compact /></p>
-              </div>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Select a template to preview it" el="Επιλέξτε πρότυπο για προεπισκόπηση" compact wrap /></p>
             )}
             {selectedId && previewLoading && (
               <div className="space-y-2">
@@ -265,39 +269,48 @@ function ReportCard({
 
   return (
     <Card className="group">
-      <CardContent className="pt-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Link href={`/profiles/${report.reported.id}`}>
-              <Avatar className="icon-md">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Link href={`/profiles/${report.reported.id}`} aria-label={bilingualInline(`Open the profile of ${report.reported?.name || report.reported.email}`, `Άνοιγμα προφίλ: ${report.reported?.name || report.reported.email}`)}>
+              <Avatar className="h-10 w-10">
                 <AvatarFallback className="bg-destructive/20 text-destructive-accessible">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
-                  {report.reported?.name || report.reported.email}
-                </Link>
-                <Badge variant="outline" className="text-xs"><StatusText value={report.reported.role} /></Badge>
-                <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
-                  {typeConf.label}
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter?.name || report.reporter.email} · <RelativeTime date={report.createdAt} />
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <span className={cn('flex items-center gap-1 text-xs', statusConf.color)}>
-              <StatusIcon className="icon-sm" />
-              {statusConf.label}
-            </span>
+          )}
+          title={(
+            <Link href={`/profiles/${report.reported.id}`} className="transition-colors hover:text-primary-accessible">
+              {report.reported?.name || report.reported.email}
+            </Link>
+          )}
+          // The role and the kind of report are facts under the name, not
+          // pills beside it; who reported it and when is the caption.
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                report.reported?.role ? <StatusText key="role" value={report.reported.role} /> : null,
+                typeConf ? <BilingualText key="type" en={typeConf.label} el={typeConf.labelEl} compact /> : null,
+              ]}
+            />
+          )}
+          meta={(
+            <>
+              <BilingualText en={`Reported by ${report.reporter?.name || report.reporter?.email}`} el={`Αναφορά από ${report.reporter?.name || report.reporter?.email}`} compact wrap /> · <RelativeTime date={report.createdAt} />
+            </>
+          )}
+          asideStays
+          aside={(
+            <>
+              <span className={cn('flex items-center gap-1 text-xs', statusConf.color)}>
+                <StatusIcon className="icon-sm" aria-hidden="true" />
+                <BilingualText en={statusConf.label} el={statusConf.labelEl} compact />
+              </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
                   <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
@@ -324,22 +337,21 @@ function ReportCard({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        </div>
+            </>
+          )}
+        />
 
-        <div className="mt-3">
-          <p className="text-sm text-foreground">{report.reason}</p>
-        </div>
+        <p className="card-body text-muted-foreground first-letter:uppercase">{report.reason}</p>
 
         {report.status === 'pending' && (
-          <div className="mt-4 flex items-center gap-2">
+          <CardFoot>
             <Button size="sm" variant="secondary" onClick={onDismiss} disabled={isActing}>
               <BilingualText en="Dismiss" el="Απόρριψη" compact />
             </Button>
             <Button size="sm" onClick={onResolve} disabled={isActing}>
               <BilingualText en="Resolve" el="Επίλυση" compact />
             </Button>
-          </div>
+          </CardFoot>
         )}
       </CardContent>
     </Card>
@@ -361,87 +373,93 @@ function UserRow({
 }) {
   const displayName = user.profile?.displayName ?? user.email;
 
+  // A row of the list, set like every row in a section card: the person's
+  // circle, the name over the address, the role and the record on the
+  // caption line, the state and the menu at the right.
   return (
-    <div className="flex items-center gap-4 border-b border-border p-4 transition-colors hover:bg-secondary/30">
-      <Link href={`/profiles/${user.id}`}>
-        <Avatar className="icon-md shrink-0">
-          <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary-accessible">
-            {displayName[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      </Link>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-accessible transition-colors">
-            {displayName}
+    <div className="border-b border-border px-4 py-3 transition-colors hover:bg-secondary/30 sm:px-6">
+      <RowHead
+        mark={(
+          <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open the profile of ${displayName}`, `Άνοιγμα προφίλ: ${displayName}`)}>
+            <Avatar className="h-10 w-10 shrink-0">
+              <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/20 text-primary-accessible">
+                {displayName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </Link>
-          <Badge
-            variant="outline"
-            className={cn(
-              'text-xs',
-              user.moderationStatus === 'active' ? 'text-status-success border-status-success-border' :
-              user.moderationStatus === 'suspended' ? 'text-status-warning border-status-warning-border' :
-              'text-status-danger border-status-danger-border',
-            )}
-          >
-            {user.moderationStatus}
-          </Badge>
-        </div>
-        <p className="truncate text-sm text-muted-foreground">{user.email}</p>
-      </div>
-      <div className="hidden text-right sm:block">
-        <p className="text-sm capitalize text-foreground"><StatusText value={user.role} /></p>
-        {user.lastSeenAt && (
-          <p className="text-xs text-muted-foreground"><RelativeTime date={user.lastSeenAt} /></p>
         )}
-      </div>
-      <div className="hidden text-right md:block">
-        <p className="text-sm text-foreground">{user.reportsCount} reports</p>
-        <p className="text-xs text-muted-foreground">
-          <BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} />
-        </p>
-      </div>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button aria-label="More options" variant="ghost" size="icon" disabled={isActing}>
-            <MoreHorizontal className="icon-sm" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href={`/profiles/${user.id}`}>
-              <Eye className="mr-2 icon-sm" aria-hidden="true" />
-              <BilingualText en="View profile" el="Προβολή προφίλ" compact />
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          {user.moderationStatus === 'active' && (
-            <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
-              <AlertTriangle className="mr-2 icon-sm" />
-              <BilingualText en="Suspend" el="Αναστολή" compact />
-            </DropdownMenuItem>
-          )}
-          {user.moderationStatus === 'suspended' && (
-            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
-              <CheckCircle className="mr-2 icon-sm" />
-              <BilingualText en="Reactivate" el="Επανενεργοποίηση" compact />
-            </DropdownMenuItem>
-          )}
-          {user.moderationStatus !== 'banned' && (
-            <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
-              <Ban className="mr-2 icon-sm" />
-              <BilingualText en="Ban permanently" el="Οριστικός αποκλεισμός" compact />
-            </DropdownMenuItem>
-          )}
-          {user.moderationStatus === 'banned' && (
-            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
-              <CheckCircle className="mr-2 icon-sm" />
-              <BilingualText en="Unban" el="Άρση αποκλεισμού" compact />
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        title={(
+          <PersonHovercard userId={user.id}><Link href={`/profiles/${user.id}`} className="transition-colors hover:text-primary-accessible">{displayName}</Link></PersonHovercard>
+        )}
+        subtitle={<span className="block truncate" translate="no">{user.email}</span>}
+        meta={(
+          <FactLine
+            items={[
+              user.role ? <StatusText key="role" value={user.role} /> : null,
+              <BilingualText key="reports" en={`${user.reportsCount ?? 0} reports`} el={`${user.reportsCount ?? 0} αναφορές`} compact />,
+              <span key="joined"><BilingualText en="Joined" el="Εγγράφηκε" compact /> <RelativeTime date={user.createdAt} /></span>,
+              user.lastSeenAt ? <span key="seen"><BilingualText en="Seen" el="Τελευταία φορά" compact /> <RelativeTime date={user.lastSeenAt} /></span> : null,
+            ]}
+          />
+        )}
+        asideStays
+        aside={(
+          <>
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-xs',
+                user.moderationStatus === 'active' ? 'text-status-success border-status-success-border' :
+                user.moderationStatus === 'suspended' ? 'text-status-warning border-status-warning-border' :
+                'text-status-danger border-status-danger-border',
+              )}
+            >
+              <StatusText value={user.moderationStatus} />
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/profiles/${user.id}`}>
+                    <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="View profile" el="Προβολή προφίλ" compact />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {user.moderationStatus === 'active' && (
+                  <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
+                    <AlertTriangle className="mr-2 icon-sm" />
+                    <BilingualText en="Suspend" el="Αναστολή" compact />
+                  </DropdownMenuItem>
+                )}
+                {user.moderationStatus === 'suspended' && (
+                  <DropdownMenuItem onClick={onActivate} className="text-status-success ">
+                    <CheckCircle className="mr-2 icon-sm" />
+                    <BilingualText en="Reactivate" el="Επανενεργοποίηση" compact />
+                  </DropdownMenuItem>
+                )}
+                {user.moderationStatus !== 'banned' && (
+                  <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
+                    <Ban className="mr-2 icon-sm" />
+                    <BilingualText en="Ban permanently" el="Οριστικός αποκλεισμός" compact />
+                  </DropdownMenuItem>
+                )}
+                {user.moderationStatus === 'banned' && (
+                  <DropdownMenuItem onClick={onActivate} className="text-status-success ">
+                    <CheckCircle className="mr-2 icon-sm" />
+                    <BilingualText en="Unban" el="Άρση αποκλεισμού" compact />
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+      />
     </div>
   );
 }
@@ -506,6 +524,7 @@ function useWide(): boolean {
 
 export default function AdminPage() {
   const queryClient = useQueryClient();
+  const fmtDate = useDateFormat();
   const { success, error: showError } = useToast();
   const confirm = useConfirm();
   const [activeTab, setActiveTab] = useState('reports');
@@ -858,9 +877,7 @@ export default function AdminPage() {
                     <BilingualText en={en} el={el} stacked wrap />
                   </span>
                   {value === 'reports' && pendingReports > 0 && (
-                    <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
-                      {pendingReports}
-                    </Badge>
+                    <Counter value={pendingReports} tone="attention" />
                   )}
                 </TabsTrigger>
               ))}
@@ -873,10 +890,10 @@ export default function AdminPage() {
         {/* Reports Tab */}
         <TabsContent value="reports" className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground">
-              Moderation Queue
+            <h2 className="text-base font-semibold text-foreground">
+              <BilingualText en="Moderation Queue" el="Ουρά ελέγχου" compact />
               {pendingReports > 0 && (
-                <span className="ml-2 text-sm text-muted-foreground">({pendingReports} pending)</span>
+                <span className="ml-2 text-sm font-normal text-muted-foreground"><BilingualText en={`(${pendingReports} pending)`} el={`(${pendingReports} σε αναμονή)`} compact /></span>
               )}
             </h2>
           </div>
@@ -897,10 +914,16 @@ export default function AdminPage() {
             ))
           ) : reports.filter((r) => r.status === 'pending').length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Shield className="mx-auto mb-4 h-12 w-12 text-status-success" aria-hidden="true" />
-                <h3 className="text-lg font-semibold text-foreground"><BilingualText en="All clear!" el="Όλα καθαρά!" compact /></h3>
-                <p className="text-sm text-muted-foreground"><BilingualText en="No pending reports to review" el="Δεν υπάρχουν αναφορές για έλεγχο" compact /></p>
+              <CardContent>
+                <CardHead
+                  mark={(
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-status-success-bg text-status-success">
+                      <Shield className="icon-md" aria-hidden="true" />
+                    </div>
+                  )}
+                  title={<BilingualText en="All clear!" el="Όλα καθαρά!" compact />}
+                  subtitle={<BilingualText en="No pending reports to review" el="Δεν υπάρχουν αναφορές για έλεγχο" compact wrap />}
+                />
               </CardContent>
             </Card>
           ) : (
@@ -934,7 +957,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between gap-4">
-                <CardTitle className="text-base"><BilingualText en="User Management" el="Διαχείριση χρηστών" compact /></CardTitle>
+                <CardTitle><BilingualText en="User Management" el="Διαχείριση χρηστών" compact /></CardTitle>
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
@@ -958,7 +981,7 @@ export default function AdminPage() {
                   </div>
                 ))
               ) : filteredUsers.length === 0 ? (
-                <div className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact /></div>
+                <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6"><BilingualText en="No users found" el="Δεν βρέθηκαν χρήστες" compact wrap /></p>
               ) : (
                 filteredUsers.map((user) => (
                   <UserRow
@@ -996,27 +1019,34 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact wrap /> <button className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
+              <Card><CardContent className="text-sm text-destructive-accessible"><BilingualText en="Failed to load events." el="Δεν ήταν δυνατή η φόρτωση των εκδηλώσεων." compact wrap /> <button type="button" className="underline" onClick={() => void refetchEvents()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" compact /></CardContent></Card>
+              <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="No events found" el="Δεν βρέθηκαν εκδηλώσεις" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
                   {(eventsData?.events ?? []).map((ev) => (
-                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{ev.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{ev.mode} · {ev.attendeesCount} attendees</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                    <div key={ev.id} className="border-b border-border px-4 py-3 last:border-0 sm:px-6">
+                      <RowHead
+                        title={ev.title}
+                        subtitle={(
+                          <FactLine
+                            items={[
+                              ev.mode ? <StatusText key="mode" value={ev.mode} /> : null,
+                              <BilingualText key="n" en={`${ev.attendeesCount ?? 0} attendees`} el={`${ev.attendeesCount ?? 0} συμμετέχοντες`} compact />,
+                            ]}
+                          />
+                        )}
+                        aside={(
+                          <>
                         <Button
-                          variant="ghost" size="sm"
+                          variant="outline" size="sm"
                           className={ev.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
                           {ev.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
-                          {ev.isFeatured ? 'Unfeature' : 'Feature'}
+                          {ev.isFeatured ? <BilingualText en="Unfeature" el="Αφαίρεση προβολής" compact /> : <BilingualText en="Feature" el="Προβολή" compact />}
                         </Button>
                         <Button
                           variant="ghost" size="sm" className="text-destructive-accessible"
@@ -1025,7 +1055,9 @@ export default function AdminPage() {
                         >
                           <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
-                      </div>
+                          </>
+                        )}
+                      />
                     </div>
                   ))}
                 </CardContent>
@@ -1052,27 +1084,34 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact wrap /> <button className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
+              <Card><CardContent className="text-sm text-destructive-accessible"><BilingualText en="Failed to load jobs." el="Δεν ήταν δυνατή η φόρτωση των θέσεων." compact wrap /> <button type="button" className="underline" onClick={() => void refetchJobs()}><BilingualText en="Retry" el="Δοκιμάστε ξανά" compact /></button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
-              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="No job postings found" el="Δεν βρέθηκαν αγγελίες" compact /></CardContent></Card>
+              <Card><CardContent className="text-sm text-muted-foreground"><BilingualText en="No job postings found" el="Δεν βρέθηκαν αγγελίες" compact /></CardContent></Card>
             ) : (
               <Card>
                 <CardContent className="p-0">
                   {(jobsData?.jobs ?? []).map((job) => (
-                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border p-4 last:border-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{job.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{job.type ?? 'Full-time'} · {job.location ?? 'Remote'}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                    <div key={job.id} className="border-b border-border px-4 py-3 last:border-0 sm:px-6">
+                      <RowHead
+                        title={job.title}
+                        subtitle={(
+                          <FactLine
+                            items={[
+                              job.type ? <StatusText key="type" value={job.type} /> : <BilingualText key="type" en="Full-time" el="Πλήρης απασχόληση" compact />,
+                              job.location ? <span key="place" className="first-letter:uppercase">{job.location}</span> : <BilingualText key="place" en="Remote" el="Εξ αποστάσεως" compact />,
+                            ]}
+                          />
+                        )}
+                        aside={(
+                          <>
                         <Button
-                          variant="ghost" size="sm"
+                          variant="outline" size="sm"
                           className={job.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
                           {job.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
-                          {job.isFeatured ? 'Unfeature' : 'Feature'}
+                          {job.isFeatured ? <BilingualText en="Unfeature" el="Αφαίρεση προβολής" compact /> : <BilingualText en="Feature" el="Προβολή" compact />}
                         </Button>
                         <Button
                           variant="ghost" size="sm" className="text-destructive-accessible"
@@ -1081,7 +1120,9 @@ export default function AdminPage() {
                         >
                           <Trash2 className="icon-sm mr-1" /> <BilingualText en="Remove" el="Αφαίρεση" compact />
                         </Button>
-                      </div>
+                          </>
+                        )}
+                      />
                     </div>
                   ))}
                 </CardContent>
@@ -1111,33 +1152,33 @@ export default function AdminPage() {
           {showNewCohort && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέου κύκλου / προγράμματος" compact /></CardTitle>
+                <CardTitle><BilingualText en="Create New Cohort / Program" el="Δημιουργία νέου κύκλου / προγράμματος" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor="cohort-f1" className="text-xs font-medium text-muted-foreground">Name *</label>
+                    <label htmlFor="cohort-f1" className="text-sm font-medium text-muted-foreground"><BilingualText en="Name *" el="Όνομα *" compact /></label>
                     <Input id="cohort-f1" placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
                       onChange={(e) => setNewCohort(p => ({ ...p, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') }))} />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="cohort-f2" className="text-xs font-medium text-muted-foreground">Slug *</label>
+                    <label htmlFor="cohort-f2" className="text-sm font-medium text-muted-foreground"><BilingualText en="Slug *" el="Σύντομο όνομα (slug) *" compact /></label>
                     <Input id="cohort-f2" placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="cohort-f3" className="text-xs font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
+                    <label htmlFor="cohort-f3" className="text-sm font-medium text-muted-foreground"><BilingualText en="Start Date" el="Ημερομηνία έναρξης" compact /></label>
                     <Input id="cohort-f3" type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="cohort-f4" className="text-xs font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
+                    <label htmlFor="cohort-f4" className="text-sm font-medium text-muted-foreground"><BilingualText en="End Date" el="Ημερομηνία λήξης" compact /></label>
                     <Input id="cohort-f4" type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor="cohort-f5" className="text-xs font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
+                    <label htmlFor="cohort-f5" className="text-sm font-medium text-muted-foreground"><BilingualText en="Capacity" el="Χωρητικότητα" compact /></label>
                     <Input id="cohort-f5" type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
                   </div>
                   <div className="space-y-1 sm:col-span-2">
-                    <label htmlFor="cohort-f6" className="text-xs font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
+                    <label htmlFor="cohort-f6" className="text-sm font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
                     <Input id="cohort-f6" placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
@@ -1151,7 +1192,7 @@ export default function AdminPage() {
                       endDate: newCohort.endDate || undefined,
                       capacity: newCohort.capacity ? parseInt(newCohort.capacity) : undefined,
                     })}>
-                    {createCohortMutation.isPending ? 'Creating…' : 'Create'}
+                    {createCohortMutation.isPending ? <BilingualText en="Creating…" el="Δημιουργία…" compact /> : <BilingualText en="Create" el="Δημιουργία" compact />}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                 </div>
@@ -1165,50 +1206,63 @@ export default function AdminPage() {
             ))
           ) : (cohortsData?.cohorts ?? []).length === 0 ? (
             <Card>
-              <CardContent className="py-12 text-center">
-                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                <h3 className="font-semibold text-foreground"><BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κύκλοι" compact /></h3>
-                <p className="text-sm text-muted-foreground"><BilingualText en="Create your first cohort or program above" el="Δημιουργήστε τον πρώτο σας κύκλο ή πρόγραμμα παραπάνω" wrap /></p>
+              <CardContent>
+                <CardHead
+                  mark={(
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                      <GraduationCap className="icon-md" aria-hidden="true" />
+                    </div>
+                  )}
+                  title={<BilingualText en="No cohorts yet" el="Δεν υπάρχουν ακόμη κύκλοι" compact wrap />}
+                  subtitle={<BilingualText en="Create your first cohort or program above" el="Δημιουργήστε τον πρώτο σας κύκλο ή πρόγραμμα παραπάνω" wrap />}
+                />
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {(cohortsData?.cohorts ?? []).map((cohort) => (
-                <Card key={cohort.id} className="group">
-                  <CardContent className="pt-5">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">{cohort.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">/{cohort.slug}</p>
-                        {cohort.description && (
-                          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{cohort.description}</p>
-                        )}
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <Badge variant="secondary" className="gap-1 text-xs">
-                            <UserCheck className="icon-sm" />
-                            {cohort._count.members} members
-                          </Badge>
-                          {cohort.startDate && (
-                            <Badge variant="outline" className="gap-1 text-xs">
-                              <Calendar className="icon-sm" />
-                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
-                            </Badge>
-                          )}
-                          {cohort.capacity && (
-                            <Badge variant="outline" className="text-xs">Cap: {cohort.capacity}</Badge>
-                          )}
+                // A programme's card: its rounded-square mark, the name over
+                // its address, the sentence and the facts on the mark's edge.
+                <Card key={cohort.id} className="group transition-all hover:border-primary/20">
+                  <CardContent className="space-y-3">
+                    <CardHead
+                      mark={(
+                        <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          <GraduationCap className="icon-md" aria-hidden="true" />
                         </div>
-                      </div>
-                      <Button aria-label="Delete"
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-                        onClick={() => void deleteCohort(cohort)}
-                        disabled={deleteCohortMutation.isPending}
-                      >
-                        <Trash2 className="icon-sm" />
-                      </Button>
-                    </div>
+                      )}
+                      title={cohort.name}
+                      subtitle={<span translate="no">/{cohort.slug}</span>}
+                      asideStays
+                      aside={(
+                        <Button aria-label={bilingualInline(`Delete ${cohort.name}`, `Διαγραφή: ${cohort.name}`)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-destructive-accessible sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+                          onClick={() => void deleteCohort(cohort)}
+                          disabled={deleteCohortMutation.isPending}
+                        >
+                          <Trash2 className="icon-sm" aria-hidden="true" />
+                        </Button>
+                      )}
+                    />
+                    {cohort.description && (
+                      <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{cohort.description}</p>
+                    )}
+                    <FactLine
+                      items={[
+                        <BilingualText key="members" en={`${cohort._count?.members ?? 0} members`} el={`${cohort._count?.members ?? 0} μέλη`} compact />,
+                        cohort.startDate ? (
+                          <BilingualText
+                            key="start"
+                            en={`Starts ${fmtDate(cohort.startDate, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                            el={`Έναρξη ${fmtDate(cohort.startDate, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                            compact
+                          />
+                        ) : null,
+                        cohort.capacity ? <BilingualText key="cap" en={`Capacity ${cohort.capacity}`} el={`Χωρητικότητα ${cohort.capacity}`} compact /> : null,
+                      ]}
+                    />
                   </CardContent>
                 </Card>
               ))}
@@ -1221,52 +1275,52 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Users by Role" el="Χρήστες ανά ρόλο" compact /></CardTitle>
+                <CardTitle><BilingualText en="Users by Role" el="Χρήστες ανά ρόλο" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {stats?.usersByRole && Object.entries(stats.usersByRole).map(([role, count]) => (
                   <div key={role} className="flex items-center justify-between">
-                    <span className="text-sm capitalize text-foreground">{role}</span>
-                    <Badge variant="secondary">{count}</Badge>
+                    <span className="text-sm text-foreground"><StatusText value={role} /></span>
+                    <span className="text-sm font-medium tabular-nums text-foreground">{count}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="New Users" el="Νέοι χρήστες" compact /></CardTitle>
+                <CardTitle><BilingualText en="New Users" el="Νέοι χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground"><BilingualText en="Today" el="Σήμερα" compact /></span>
-                  <Badge variant="secondary">{stats?.newUsersToday ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.newUsersToday ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground"><BilingualText en="This Week" el="Αυτή την εβδομάδα" compact /></span>
-                  <Badge variant="secondary">{stats?.newUsersThisWeek ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.newUsersThisWeek ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground"><BilingualText en="This Month" el="Αυτόν τον μήνα" compact /></span>
-                  <Badge variant="secondary">{stats?.newUsersThisMonth ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.newUsersThisMonth ?? 0}</span>
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-muted-foreground"><BilingualText en="Active Users" el="Ενεργοί χρήστες" compact /></CardTitle>
+                <CardTitle><BilingualText en="Active Users" el="Ενεργοί χρήστες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">DAU</span>
-                  <Badge variant="secondary">{stats?.activeUsersToday ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.activeUsersToday ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">WAU</span>
-                  <Badge variant="secondary">{stats?.activeUsersThisWeek ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.activeUsersThisWeek ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-foreground">MAU</span>
-                  <Badge variant="secondary">{stats?.activeUsersThisMonth ?? 0}</Badge>
+                  <span className="text-sm font-medium tabular-nums text-foreground">{stats?.activeUsersThisMonth ?? 0}</span>
                 </div>
               </CardContent>
             </Card>
@@ -1281,7 +1335,7 @@ export default function AdminPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base"><BilingualText en="Admin Audit Log" el="Αρχείο ενεργειών διαχείρισης" compact /></CardTitle>
+                <CardTitle><BilingualText en="Admin Audit Log" el="Αρχείο ενεργειών διαχείρισης" compact /></CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -1296,32 +1350,35 @@ export default function AdminPage() {
                   </div>
                 ))
               ) : (auditData?.logs ?? []).length === 0 ? (
-                <div className="py-12 text-center">
-                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
-                  <p className="text-sm text-muted-foreground"><BilingualText en="No audit logs yet" el="Δεν υπάρχουν εγγραφές ακόμα" compact /></p>
-                </div>
+                <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6"><BilingualText en="No audit logs yet" el="Δεν υπάρχουν εγγραφές ακόμα" compact wrap /></p>
               ) : (
                 (auditData?.logs ?? []).map((log) => (
-                  <div key={log.id} className="flex items-start gap-4 border-b border-border p-4">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                      <Shield className="icon-sm text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-foreground">{log.actorEmail}</span>
-                        <Badge variant="outline" className="text-xs">{log.action}</Badge>
-                        <Badge variant="secondary" className="text-xs">{log.entityType}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
-                        <RelativeTime date={log.createdAt} />
-                      </p>
-                      {log.meta && Object.keys(log.meta).length > 0 && (
-                        <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">
-                          {JSON.stringify(log.meta, null, 2)}
-                        </pre>
+                  // A row of the log: the action's mark, the actor over the
+                  // action and the entity, the details on the mark's edge.
+                  <div key={log.id} className="space-y-2 border-b border-border px-4 py-3 last:border-0 sm:px-6">
+                    <RowHead
+                      mark={(
+                        <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                          <Shield className="icon-sm" aria-hidden="true" />
+                        </div>
                       )}
-                    </div>
+                      title={<span translate="no">{log.actorEmail}</span>}
+                      subtitle={(
+                        <FactLine
+                          items={[
+                            <code key="action" className="font-mono" translate="no">{log.action}</code>,
+                            log.entityType ? <StatusText key="entity" value={log.entityType} /> : null,
+                            log.entityId ? <span key="id" translate="no">ID {log.entityId.slice(0, 8)}…</span> : null,
+                          ]}
+                        />
+                      )}
+                      aside={<RelativeTime date={log.createdAt} />}
+                    />
+                    {log.meta && Object.keys(log.meta).length > 0 && (
+                      <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-xs text-muted-foreground">
+                        {JSON.stringify(log.meta, null, 2)}
+                      </pre>
+                    )}
                   </div>
                 ))
               )}

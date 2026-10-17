@@ -1,14 +1,17 @@
+'use client';
+
 import { Rocket, GraduationCap, TrendingUp, Building2 } from 'lucide-react';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 
 type RoleType = 'founder' | 'mentor' | 'investor' | 'org';
 
-const roleConfig: Record<RoleType, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
-  founder: { label: 'Founder', icon: Rocket },
-  mentor: { label: 'Mentor', icon: GraduationCap },
-  investor: { label: 'Investor', icon: TrendingUp },
-  org: { label: 'Organization', icon: Building2 },
+const roleConfig: Record<RoleType, { label: string; labelEl: string; icon: React.ComponentType<{ className?: string }> }> = {
+  founder: { label: 'Founder', labelEl: 'Ιδρυτής', icon: Rocket },
+  mentor: { label: 'Mentor', labelEl: 'Μέντορας', icon: GraduationCap },
+  investor: { label: 'Investor', labelEl: 'Επενδυτής', icon: TrendingUp },
+  org: { label: 'Organization', labelEl: 'Οργανισμός', icon: Building2 },
 };
 
 type RoleBadgeProps = {
@@ -64,7 +67,7 @@ export function RoleBadge({
       )}
     >
       {showIcon && <Icon className={cn('icon-sm', animated && 'animate-bounce-subtle')} />}
-      {config.label}
+      <BilingualText en={config.label} el={config.labelEl} compact />
     </Badge>
   );
 }

@@ -80,7 +80,7 @@ export default function TransparencyPage() {
           <h1 className="text-2xl font-semibold text-foreground">
             <BilingualText en="Transparency report" el="Αναφορά διαφάνειας" compact />
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             <BilingualText
               en="What our safety rules refused and what members reported, counted every half year. Every figure is something the platform recorded; none is an estimate. A refusal is stored as its kind, where it happened and when, with no user and no text."
               el="Τι απέρριψαν οι κανόνες ασφαλείας μας και τι ανέφεραν τα μέλη, μετρημένα ανά εξάμηνο. Κάθε αριθμός είναι κάτι που κατέγραψε η πλατφόρμα· κανένας δεν είναι εκτίμηση. Μια απόρριψη καταγράφεται ως είδος, σημείο και χρόνος, χωρίς χρήστη και χωρίς κείμενο."

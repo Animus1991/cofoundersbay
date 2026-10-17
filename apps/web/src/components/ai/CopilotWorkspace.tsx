@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  Check,
+  Copy,
   Loader2,
   List,
   Maximize2,
@@ -10,7 +12,9 @@ import {
   RefreshCw,
   Send,
   Settings,
+  Square,
   Trash2,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,12 +39,44 @@ import type { CopilotAction } from '@/lib/copilot-types';
 import { getActionSpec } from '@/lib/action-registry';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
-import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString, useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria, formatLocalTime } from '@/lib/i18n/format';
 import { COPILOT_PRODUCT_LINKS } from '@/lib/copilot-starters';
+import { followUpsFor } from '@/lib/copilot-followups';
+import { getPageMeta } from '@/lib/page-registry';
 
-function formatTime(d: Date) {
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+/** The message clock, 24-hour in both languages (formatLocalTime). */
+function formatTime(d: Date, language: 'en' | 'el') {
+  return formatLocalTime(d, language);
+}
+
+/** The answer as plain text: what Copy puts on the clipboard, without the bold markers. */
+function plainAnswer(content: string): string {
+  return content.replace(/\*\*(.+?)\*\*/g, '$1').trim();
+}
+
+/**
+ * Copy under an answer, as in GitHub Copilot Chat: a check for two seconds
+ * says it worked, and nothing else moves.
+ */
+function CopyAnswer({ content }: { content: string }) {
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const t = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [copied]);
+  return (
+    <button
+      type="button"
+      onClick={() => void navigator.clipboard?.writeText(plainAnswer(content)).then(() => setCopied(true), () => undefined)}
+      className="tap-target inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+      title={copied ? bilingualAria('Copied', 'Αντιγράφηκε') : bilingualAria('Copy answer', 'Αντιγραφή απάντησης')}
+      aria-label={copied ? bilingualAria('Copied', 'Αντιγράφηκε') : bilingualAria('Copy answer', 'Αντιγραφή απάντησης')}
+    >
+      {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+    </button>
+  );
 }
 
 function AssistantBody({
@@ -49,12 +85,14 @@ function AssistantBody({
   onConfirm,
   onDismiss,
   onUndo,
+  onRetry,
 }: {
   message: AIMessage;
   pendingActionId: string | null;
   onConfirm: (action: CopilotAction) => void;
   onDismiss: (action: CopilotAction) => void;
   onUndo: (action: CopilotAction) => void;
+  onRetry: () => void;
 }) {
   const html = useMemo(() => {
     const escaped = message.content
@@ -71,12 +109,23 @@ function AssistantBody({
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           <BilingualText en="Working across your graph…" el="Εργασία στο γράφο σας…" compact />
         </div>
+      ) : message.failed ? (
+        // Nothing arrived: say so in the reader's language, with the way on.
+        <div className="type-identity space-y-1.5 text-foreground">
+          <p><BilingualText en="I could not answer this time. Your question is kept; try again." el="Δεν μπόρεσα να απαντήσω αυτή τη φορά. Η ερώτησή σας κρατήθηκε· δοκιμάστε ξανά." wrap /></p>
+          <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+            <BilingualText en="Try again" el="Δοκιμή ξανά" compact />
+          </Button>
+        </div>
       ) : (
         <SanitizedHtml
           className="type-identity leading-relaxed text-foreground"
           html={html}
         />
       )}
+      {message.stopped ? (
+        <p className="type-caption text-muted-foreground"><BilingualText en="Stopped. What had arrived is above." el="Σταμάτησε. Ό,τι είχε φτάσει είναι παραπάνω." compact wrap /></p>
+      ) : null}
       {message.citations && message.citations.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-1">
           {message.citations.map((c) => (
@@ -124,9 +173,17 @@ export function CopilotWorkspace({
 }: CopilotWorkspaceProps) {
   const router = useRouter();
   const sayOne = useBilingualString();
+  const { primary } = useLanguagePreference();
   const isPage = variant === 'page';
   const pageContext = usePageContext();
+  const pageMeta = pageContext.route === '/ai' ? undefined : getPageMeta(pageContext.route);
+  // The page the assistant reads with each question, shown as a chip the
+  // reader can switch off (GitHub Copilot's implicit context). Off holds for
+  // this page only: on the next page it reads again.
+  const [pageLeftOut, setPageLeftOut] = useState<string | null>(null);
+  const readsPage = pageLeftOut !== pageContext.route;
   const [input, setInput] = useState(initialPrompt ?? '');
+  const [threadsOpen, setThreadsOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -134,7 +191,7 @@ export function CopilotWorkspace({
     agentId: 'general',
     autoCreateConversation: true,
     enableCopilot: true,
-    pageContext,
+    pageContext: readsPage ? pageContext : undefined,
   });
   const agentList = chat.agents ?? [];
   const currentAgentConfig = agentList.find((a) => a.id === chat.currentAgent);
@@ -184,7 +241,40 @@ export function CopilotWorkspace({
   return (
     <div className={cn('flex min-h-0 flex-1 overflow-hidden', isPage ? 'flex-col lg:flex-row' : 'flex-col')}>
       {isPage && (
-        <aside className="flex w-full shrink-0 flex-col border-b border-border bg-card/80 lg:w-72 lg:border-b-0 lg:border-r">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 py-1.5 lg:hidden">
+          <button
+            type="button"
+            className="type-ui min-h-11 rounded-md px-2 text-left font-medium"
+            aria-expanded={threadsOpen}
+            onClick={() => setThreadsOpen((open) => !open)}
+          >
+            <BilingualText
+              en={threadsOpen ? 'Hide threads' : 'Your threads'}
+              el={threadsOpen ? 'Απόκρυψη νημάτων' : 'Τα νήματά σας'}
+              compact
+            />
+          </button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="type-ui min-h-11 gap-1.5"
+            onClick={() => {
+              chat.clearMessages();
+              setThreadsOpen(false);
+              inputRef.current?.focus();
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <BilingualText en="New question" el="Νέα ερώτηση" compact />
+          </Button>
+        </div>
+      )}
+      {isPage && (
+        <aside className={cn(
+          'w-full shrink-0 flex-col overflow-hidden border-b border-border bg-card/80 lg:flex lg:w-72 lg:max-h-none lg:border-b-0 lg:border-r',
+          threadsOpen ? 'flex max-h-[38vh]' : 'hidden',
+        )}>
           <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
             <p className="type-identity font-semibold">
               <BilingualText en="Threads" el="Νήματα" compact />
@@ -282,8 +372,11 @@ export function CopilotWorkspace({
       )}
 
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className={cn(
+          'flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2',
+          !isPage && 'max-sm:flex-wrap',
+        )}>
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <CfbGlyph name={getAgentGlyph(chat.currentAgent)} className="icon-sm" aria-hidden="true" />
             </span>
@@ -293,7 +386,7 @@ export function CopilotWorkspace({
                   {currentAgentConfig?.name || 'CoFounderBay Assistant'}
                 </h1>
               ) : (
-                <p className="type-identity max-w-[9.5rem] truncate font-medium">
+                <p className="type-identity font-medium leading-snug sm:max-w-[9.5rem] sm:truncate">
                   {currentAgentConfig?.name || 'CoFounderBay Assistant'}
                 </p>
               )}
@@ -306,7 +399,7 @@ export function CopilotWorkspace({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className={cn('flex items-center gap-1', !isPage && 'max-sm:basis-full')}>
             {isPage && <PageContextualHelp defaultOpen={false} compact />}
             {agentList.length > 1 && (
               <Select value={chat.currentAgent} onValueChange={(v) => chat.setAgent(v)}>
@@ -341,8 +434,11 @@ export function CopilotWorkspace({
               </>
             )}
             {onExpand && (
-                <button type="button" onClick={onExpand} className={cn('tap-target flex items-center justify-center rounded-xl hover:bg-muted', isPage ? 'h-11 w-11' : 'h-8 w-8')} title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
+                <button type="button" onClick={onExpand} className={cn('tap-target inline-flex items-center justify-center gap-1 rounded-xl px-2 hover:bg-muted', isPage ? 'h-11 w-11' : 'h-11 sm:h-8 sm:w-8 sm:px-0')} title={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')} aria-label={bilingualAria('Open full page', 'Άνοιγμα πλήρους σελίδας')}>
                 <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground sm:sr-only">
+                  <BilingualText en="Full page" el="Πλήρης σελίδα" compact />
+                </span>
               </button>
             )}
           </div>
@@ -388,74 +484,149 @@ export function CopilotWorkspace({
                       onConfirm={(a) => void handleConfirm(a)}
                       onDismiss={chat.dismissAction}
                       onUndo={(a) => void chat.undoAction(a)}
+                      onRetry={chat.retryLastMessage}
                     />
                   )}
-                  <p className={cn('type-caption mt-1', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
-                    {formatTime(msg.timestamp)}
-                  </p>
+                  <div className={cn('mt-1 flex items-center gap-1', msg.role === 'user' && 'justify-end')}>
+                    <p className={cn('type-caption', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
+                      {formatTime(msg.timestamp, primary)}
+                    </p>
+                    {msg.role === 'assistant' && !msg.isStreaming && msg.content ? <CopyAnswer content={msg.content} /> : null}
+                  </div>
                 </div>
               </div>
             ))
           )}
+          {(() => {
+            // What to ask next, under the latest answer only, and out of the
+            // way while the reader is typing.
+            const last = chat.messages[chat.messages.length - 1];
+            if (!last || last.role !== 'assistant' || last.isStreaming || input.trim()) return null;
+            const next = followUpsFor(last.usedTools, last.citations);
+            if (!next.length) return null;
+            return (
+              <div className="flex flex-col items-start gap-1.5 pl-9" aria-label={bilingualAria('Ask next', 'Ρωτήστε μετά')} role="group">
+                {next.map((f) => (
+                  <Button key={f.en} type="button" size="sm" variant="outline" onClick={() => void chat.sendMessage(f.en)}>
+                    <BilingualText en={f.en} el={f.el} compact wrap />
+                  </Button>
+                ))}
+              </div>
+            );
+          })()}
           <div ref={endRef} />
         </div>
 
         {chat.error && (
-          <p className="type-caption px-3 text-destructive">{chat.error}</p>
+          // The server's own words stay in the tooltip; the line is the reader's.
+          <p className="type-caption px-3 text-destructive" title={chat.error}>
+            <BilingualText en="The assistant could not finish. Check the connection and try again." el="Ο βοηθός δεν ολοκλήρωσε. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά." compact wrap />
+          </p>
         )}
 
         <form onSubmit={onSubmit} className="shrink-0 border-t border-border p-3">
-          <div className="flex items-center gap-2">
-            <Input
-              ref={inputRef}
-              aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={sayOne(
-                isPage
-                  ? 'Search, intro, message, or go…'
-                  : 'Search, intro, or go…',
-                isPage
-                  ? 'Αναζήτηση, γνωριμία, μήνυμα ή μετάβαση…'
-                  : 'Αναζήτηση, γνωριμία ή μετάβαση…',
+          {/* One field, the way a composer holds its context: the page this
+              question can see, the question, and the rule that a change waits.
+              The edge is the neutral field colour and takes the link tone
+              only while typing. On /ai the header already names the page. */}
+          <div data-ask-frame="" className="rounded-md border border-input bg-card px-3 py-2">
+            {pageMeta?.title ? (
+              <div className="mb-1.5 flex">
+                <button
+                  type="button"
+                  data-keep-icon=""
+                  aria-pressed={readsPage}
+                  onClick={() => setPageLeftOut(readsPage ? pageContext.route : null)}
+                  className={cn(
+                    'type-support inline-flex max-w-full items-center gap-1 rounded-md border px-1.5 py-0.5 text-muted-foreground hover:text-foreground',
+                    readsPage ? 'border-border' : 'border-dashed border-border opacity-70',
+                  )}
+                  title={readsPage
+                    ? bilingualAria('The assistant reads this page with your question. Select to leave it out.', 'Ο βοηθός διαβάζει αυτή τη σελίδα μαζί με την ερώτησή σας. Επιλέξτε για να την αφήσει εκτός.')
+                    : bilingualAria('Left out. Select to let the assistant read this page again.', 'Εκτός. Επιλέξτε για να τη διαβάζει ξανά ο βοηθός.')}
+                >
+                  <span className={cn('min-w-0 truncate', !readsPage && 'line-through')}>
+                    <BilingualText
+                      en={`This page · ${pageMeta.title}`}
+                      el={`Αυτή η σελίδα · ${pageMeta.titleEl ?? pageMeta.title}`}
+                      compact
+                    />
+                  </span>
+                  {readsPage ? <X className="h-3 w-3 shrink-0" aria-hidden="true" /> : <Plus className="h-3 w-3 shrink-0" aria-hidden="true" />}
+                </button>
+              </div>
+            ) : null}
+            <div className="flex items-center gap-2">
+              <Input
+                ref={inputRef}
+                aria-label={sayOne('Ask AI', 'Ρωτήστε το AI')}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder={sayOne(
+                  isPage
+                    ? 'Search, intro, message, or go…'
+                    : 'Search, intro, or go…',
+                  isPage
+                    ? 'Αναζήτηση, γνωριμία, μήνυμα ή μετάβαση…'
+                    : 'Αναζήτηση, γνωριμία ή μετάβαση…',
+                )}
+                className="type-ui h-11 min-h-11 flex-1 border-0 bg-transparent px-1 shadow-none focus-visible:outline-none focus-visible:ring-0"
+                disabled={chat.isStreaming}
+              />
+              {chat.isStreaming ? (
+                // While an answer is being written, the send button is Stop
+                // (GitHub Copilot Chat): what arrived stays, marked "Stopped".
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={chat.stopStreaming}
+                  className="h-11 w-11 shrink-0 rounded-full"
+                  title={bilingualAria('Stop answering', 'Διακοπή απάντησης')}
+                  aria-label={bilingualAria('Stop answering', 'Διακοπή απάντησης')}
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!input.trim()}
+                  className="h-11 w-11 shrink-0 rounded-full"
+                  aria-label={bilingualAria('Send', 'Αποστολή')}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
               )}
-              className="type-ui h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 focus-visible:outline-none focus-visible:ring-0"
-              disabled={chat.isStreaming}
-            />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!input.trim() || chat.isStreaming}
-              className="h-11 w-11 rounded-full"
-              aria-label={bilingualAria('Send', 'Αποστολή')}
-            >
-              {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            </Button>
-          </div>
-          {!isPage && chat.messages.length > 0 ? (
-            <p className="type-support mt-1.5 text-center text-muted-foreground">
-              <button
-                type="button"
-                className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
-                onClick={() => router.push('/ai/capabilities')}
-              >
+            </div>
+            {isPage || chat.messages.length > 0 ? (
+              <p className="type-support mt-1.5 text-muted-foreground">
                 <BilingualText
-                  en="See everything I can read and change"
-                  el="Δείτε όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                  en="Changes wait for your confirmation."
+                  el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
                   compact
                   wrap
                 />
-              </button>
-            </p>
-          ) : isPage ? (
-          <p className="type-support mt-1.5 text-muted-foreground">
-            <BilingualText
-              en="Changes wait for your confirmation."
-              el="Οι αλλαγές γίνονται μόνο με την επιβεβαίωσή σας."
-              compact wrap
-            />
-          </p>
-          ) : null}
+                {!isPage && chat.messages.length > 0 ? (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      className="tap-target-y inline-flex items-center underline-offset-2 hover:underline"
+                      onClick={() => router.push('/ai/capabilities')}
+                    >
+                      <BilingualText
+                        en="See everything I can read and change"
+                        el="Δείτε όλα όσα μπορώ να διαβάσω και να αλλάξω"
+                        compact
+                        wrap
+                      />
+                    </button>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
         </form>
       </section>
     </div>

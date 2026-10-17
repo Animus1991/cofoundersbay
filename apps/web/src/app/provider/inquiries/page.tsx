@@ -25,6 +25,7 @@ import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } f
 import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -41,8 +42,10 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { Counter } from '@/components/ui/counter';
 
 type Inquiry = {
   id: string;
@@ -78,30 +81,30 @@ function InquiryCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-3 sm:gap-4">
-          <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
-            <AvatarImage src={inquiry.clientAvatar} />
-            <AvatarFallback>{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="font-semibold">{inquiry.clientName}</span>
-                  <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 icon-sm" />
-                    <StatusText value={inquiry.status} />
-                  </Badge>
-                </div>
-                {inquiry.clientCompany && (
-                  <p className="text-sm text-muted-foreground">{inquiry.clientCompany}</p>
-                )}
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
-                <span className="whitespace-nowrap text-xs text-muted-foreground">
-                  <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
-                </span>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={inquiry.clientAvatar} alt="" />
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>{inquiry.clientName}</span>
+              <Badge variant="outline" className={cn('text-xs', config.color)}>
+                <StatusIcon className="mr-1 icon-sm" />
+                <StatusText value={inquiry.status} />
+              </Badge>
+            </span>
+          )}
+          subtitle={inquiry.clientCompany || undefined}
+          asideStays
+          aside={(
+            <>
+              <span className="whitespace-nowrap">
+                <RelativeTime date={inquiry.receivedAt} format={formatRelativeTime} />
+              </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Open inquiry actions for ${inquiry.clientName}`}>
@@ -144,14 +147,14 @@ function InquiryCard({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
-            </div>
-            <Badge variant="secondary" className="mt-2 text-xs">
-              {inquiry.service}
-            </Badge>
-            <p className="text-sm text-muted-foreground mt-2">{inquiry.message}</p>
-            {inquiry.status === 'new' && (
-              <div className="flex gap-2 mt-3">
+            </>
+          )}
+        />
+        {/* The service asked about is a fact, the message the body. */}
+        <p className="text-xs font-medium text-muted-foreground first-letter:uppercase">{inquiry.service}</p>
+        <p className="card-body text-muted-foreground first-letter:uppercase">{inquiry.message}</p>
+        {inquiry.status === 'new' && (
+          <CardFoot>
                 {/* Both had no handler; they do what the menu's Reply and
                     View Profile do. */}
                 <Button
@@ -170,12 +173,12 @@ function InquiryCard({
                     <Link href={`/profiles/${inquiry.clientId}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
                   </Button>
                 ) : (
-                  <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                  <WithDisabledReason reasonEn="This client has no profile to open" reasonEl="Ο πελάτης δεν έχει προφίλ για προβολή">
+                    <Button size="sm" variant="outline" disabled><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Button>
+                  </WithDisabledReason>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
+          </CardFoot>
+        )}
       </CardContent>
     </Card>
   );
@@ -383,18 +386,15 @@ export default function ProviderInquiriesPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
-            { label: 'New', labelEl: 'Νέα', value: counts.new, icon: Mail, color: 'text-status-info' },
-            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
-            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
-          ].map(({ label, labelEl, value, icon: Icon, color }) => (
+            { label: 'Total Inquiries', labelEl: 'Σύνολο αιτημάτων', value: inquiries.length },
+            { label: 'New', labelEl: 'Νέα', value: counts.new },
+            { label: 'Response Rate', labelEl: 'Ποσοστό απαντήσεων', value: `${responseRate}%` },
+            { label: 'Conversion', labelEl: 'Μετατροπή σε πελάτες', value: `${conversionRate}%` },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}
@@ -416,16 +416,16 @@ export default function ProviderInquiriesPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="all">
-              <BilingualText en="All" el="Όλα" compact /> <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
+              <BilingualText en="All" el="Όλα" compact /> <Counter value={counts.all} />
             </TabsTrigger>
             <TabsTrigger value="new">
-              <BilingualText en="New" el="Νέο" compact /> <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
+              <BilingualText en="New" el="Νέο" compact /> <Counter value={counts.new} />
             </TabsTrigger>
             <TabsTrigger value="replied">
-              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
+              <BilingualText en="Replied" el="Απαντήθηκε" compact /> <Counter value={counts.replied} />
             </TabsTrigger>
             <TabsTrigger value="converted">
-              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
+              <BilingualText en="Converted" el="Έγινε πελάτης" compact /> <Counter value={counts.converted} />
             </TabsTrigger>
           </TabsList>
 
@@ -437,7 +437,7 @@ export default function ProviderInquiriesPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                  <h3 className="font-medium"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
+                  <h3 className="card-title text-foreground"><BilingualText en="No inquiries found" el="Δεν βρέθηκαν ερωτήματα" compact /></h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'all'
                       ? 'You have no inquiries yet'

@@ -1,9 +1,16 @@
 /*
  * Status tones per accent theme. Same band for all (fg chroma 21, tint chroma
- * ~1, a faint edge), hues picked so no status tone sits within ~25 degrees of
+ * 4, an edge of the same hue at chroma 6), hues picked so no status tone sits within ~25 degrees of
  * the theme's own accent - otherwise a "warning" chip in the apricot theme
  * reads as a brand chip. Each fg is the lightest L that clears 5.0 on its own
  * tint and on the theme's card.
+ *
+ * Tint and edge, 2026-10-17 (GitHub comparison, docs §54): at tint chroma ~1
+ * and a grey edge the five boxes sat 1.2 CIEDE2000 apart (warning/danger), under
+ * one just-noticeable difference, so only the words told a warning from an
+ * error. GitHub's Primer derives each role's tint and border from one hue and
+ * keeps them 8-20 apart. Chroma 4 with a hued edge keeps them >=4.4 apart (two
+ * JNDs) at about a third of Primer's loudness (the sweep is in the plan). The dark theme already sat >=4.0 apart and is not solved here.
  */
 function hsl2rgb(h, s, l) { s /= 100; l /= 100; const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l); const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return [f(0), f(8), f(4)]; }
 const lum = ([r, g, b]) => { const c = (v) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * c(r) + 0.7152 * c(g) + 0.0722 * c(b); };
@@ -22,8 +29,8 @@ let css = '';
 for (const [name, t] of Object.entries(THEMES)) {
   css += `\n/* ${name} */\n`;
   for (const [tone, h] of Object.entries(t.hues)) {
-    const bg = [h, sFor(name === "minimal" ? 3.2 : 1.0, t.tintL), t.tintL];
-    const border = [h, 6, +(t.tintL - 5).toFixed(1)];
+    const bg = [h, sFor(4.0, t.tintL), t.tintL];
+    const border = [h, sFor(6.0, t.tintL - 7), +(t.tintL - 7).toFixed(1)];
     let L = 50, fg;
     for (; L > 20; L -= 0.25) { fg = [h, sFor(21, L), +L.toFixed(2)]; if (cr(fg, bg) >= 5.0 && cr(fg, t.card) >= 5.0) break; }
     css += `    --status-${tone}-fg:${' '.repeat(Math.max(1, 8 - tone.length))}${f(fg)};   /* ${cr(fg, bg).toFixed(2)} on tint, ${cr(fg, t.card).toFixed(2)} on card */\n`;

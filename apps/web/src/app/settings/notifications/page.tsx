@@ -40,6 +40,7 @@ import {
   type NotificationCategoryDef,
   type NotificationChannel,
 } from '@/lib/notification-prefs';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type Digest = 'daily' | 'weekly' | 'monthly' | 'never';
 
@@ -166,7 +167,7 @@ export default function NotificationPreferencesPage() {
     <AppShell
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Settings" asChild>
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label={bilingualAria('Settings', 'Ρυθμίσεις')} asChild>
             <Link href="/settings">
               <ArrowLeft className="icon-sm" />
             </Link>
@@ -192,6 +193,7 @@ export default function NotificationPreferencesPage() {
           />
         </p>
 
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Delivery */}
         <Card className="shadow-sm border-border">
           <CardHeader className="border-b border-border">
@@ -214,7 +216,7 @@ export default function NotificationPreferencesPage() {
                 </p>
               </div>
               <Select value={digest} onValueChange={(v) => setDigest(v as Digest)}>
-                <SelectTrigger id="digest" className="ml-auto w-full sm:w-44" aria-label="Email digest frequency">
+                <SelectTrigger id="digest" className="ml-auto w-full sm:w-44" aria-label={bilingualAria('Email digest frequency', 'Συχνότητα email σύνοψης')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -241,7 +243,7 @@ export default function NotificationPreferencesPage() {
                 <Switch
                   checked={prefs.quietHours.enabled}
                   onCheckedChange={(v) => setQuietHours({ enabled: v })}
-                  aria-label="Enable quiet hours"
+                  aria-label={bilingualAria('Enable quiet hours', 'Ενεργοποίηση ωρών ησυχίας')}
                 />
               </div>
               {prefs.quietHours.enabled && (
@@ -250,7 +252,7 @@ export default function NotificationPreferencesPage() {
                     <div key={key} className="flex items-center gap-2">
                       <Label htmlFor="page-f2" className="text-sm text-muted-foreground"><BilingualText en={en} el={el} compact /></Label>
                       <Select value={prefs.quietHours[key]} onValueChange={(v) => setQuietHours({ [key]: v })}>
-                        <SelectTrigger id="page-f2" className="w-[100px]" aria-label={key === 'start' ? 'Quiet hours start time' : 'Quiet hours end time'}>
+                        <SelectTrigger id="page-f2" className="w-[100px]" aria-label={key === 'start' ? bilingualAria('Quiet hours start time', 'Έναρξη ωρών ησυχίας') : bilingualAria('Quiet hours end time', 'Λήξη ωρών ησυχίας')}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -264,6 +266,39 @@ export default function NotificationPreferencesPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Automated messages */}
+        <Card className="shadow-sm border-border">
+          <CardHeader className="border-b border-border">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
+              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
+            </CardTitle>
+            <CardDescription>
+              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/40">
+            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
+              <div key={key} className="flex items-center justify-between gap-4 py-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
+                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
+                  </div>
+                </div>
+                <Switch
+                  checked={prefs.automation[key]}
+                  onCheckedChange={(val) => setAutomation(key, val)}
+                  aria-label={bilingualAria(en, el)}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        </div>
 
         {/* Notification types: one matrix, the channels as columns. */}
         <Card className="shadow-sm border-border">
@@ -306,6 +341,7 @@ export default function NotificationPreferencesPage() {
                     </div>
                     <ChannelSwitches
                       label={category.titleEn}
+                      labelEl={category.titleEl}
                       value={(ch) => categoryChannelOn(prefs, category, ch)}
                       onChange={(ch, v) => setCategory(category, ch, v)}
                       scope="all"
@@ -325,6 +361,7 @@ export default function NotificationPreferencesPage() {
                         </div>
                         <ChannelSwitches
                           label={setting.labelEn}
+                          labelEl={setting.labelEl}
                           value={(ch) => channels[ch]}
                           onChange={(ch, v) => setChannel([setting.id], ch, v)}
                         />
@@ -337,37 +374,6 @@ export default function NotificationPreferencesPage() {
           </CardContent>
         </Card>
 
-        {/* Automated messages */}
-        <Card className="shadow-sm border-border">
-          <CardHeader className="border-b border-border">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-muted-foreground" aria-hidden="true" />
-              <BilingualText en="Automated messages" el="Αυτοματοποιημένα μηνύματα" compact />
-            </CardTitle>
-            <CardDescription>
-              <BilingualText en="Workflow messages the platform sends on its own." el="Μηνύματα ροών που στέλνει η πλατφόρμα από μόνη της." compact wrap />
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="divide-y divide-border/40">
-            {AUTOMATION.map(({ key, icon: Icon, en, el, descEn, descEl }) => (
-              <div key={key} className="flex items-center justify-between gap-4 py-3">
-                <div className="flex min-w-0 items-start gap-3">
-                  <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium"><BilingualText en={en} el={el} compact /></p>
-                    <p className="text-xs text-muted-foreground"><BilingualText en={descEn} el={descEl} compact wrap /></p>
-                  </div>
-                </div>
-                <Switch
-                  checked={prefs.automation[key]}
-                  onCheckedChange={(val) => setAutomation(key, val)}
-                  aria-label={en}
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
         <div className="sm:hidden">{saveButton('w-full')}</div>
       </div>
     </AppShell>
@@ -377,11 +383,14 @@ export default function NotificationPreferencesPage() {
 /** Three switches, one per channel, aligned under the column heads. */
 function ChannelSwitches({
   label,
+  labelEl,
   value,
   onChange,
   scope,
 }: {
   label: string;
+  /** The same name in Greek, so a screen reader in Greek hears Greek. */
+  labelEl: string;
   value: (channel: NotificationChannel) => boolean;
   onChange: (channel: NotificationChannel, value: boolean) => void;
   scope?: 'all';
@@ -394,7 +403,10 @@ function ChannelSwitches({
           <Switch
             checked={value(ch.id)}
             onCheckedChange={(v) => onChange(ch.id, v)}
-            aria-label={`${label}${scope === 'all' ? ' (all types)' : ''} — ${ch.en.toLowerCase()} notifications`}
+            aria-label={bilingualAria(
+              `${label}${scope === 'all' ? ' (all types)' : ''} — ${ch.en.toLowerCase()} notifications`,
+              `${labelEl}${scope === 'all' ? ' (όλα τα είδη)' : ''} — ειδοποιήσεις: ${ch.el}`,
+            )}
           />
         </div>
       ))}

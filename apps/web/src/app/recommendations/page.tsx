@@ -61,6 +61,10 @@ import { STATUS } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { FactLine } from '@/components/common/FactLine';
+import { matchReasonCopy } from '@/lib/match-reason';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { StatusText } from '@/components/common/StatusText';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const ROLE_ICON: Record<string, typeof Users> = {
   founder: Briefcase,
@@ -93,7 +97,7 @@ function MatchScoreBadge({ score }: { score: number }) {
 function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]; maxItems?: number }) {
   if (!items || items.length === 0) return null;
   return (
-    <div className="mt-2 mb-3 space-y-1.5">
+    <div className="space-y-1.5">
       {items.slice(0, maxItems).map((item) => (
         <div key={item.dimension} className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground w-28 shrink-0">{item.label}</span>
@@ -152,9 +156,14 @@ function BreakdownModal({
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
-                {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">{r}</span>
-                ))}
+                {reasons.map((r, i) => {
+                  const copy = matchReasonCopy(r);
+                  return (
+                    <span key={i} className="text-xs bg-primary/10 text-primary-accessible px-2 py-0.5 rounded-full border border-primary/15">
+                      <BilingualText en={copy.en} el={copy.el} compact />
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -291,121 +300,120 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
       explanation={explanation}
       reasons={reasons}
     />
+    {/* The Connections card: circle, name, headline and place; the score
+        and role at the right; reasons, skills and the foot on the avatar's
+        edge, never indented under the name. */}
     <Card className="group hover:border-primary/30 transition-colors">
-      <CardContent>
-        <div className="flex items-start gap-4">
-          <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
-            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
-              <AvatarImage src={avatarUrl ?? undefined} />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
-                {displayName?.[0]?.toUpperCase() ?? '?'}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Link
+              href={`/profiles/${userId}`}
+              aria-label={bilingualAria(`Open ${displayName}'s profile`, `Άνοιγμα προφίλ: ${displayName}`)}
+              onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}
+            >
+              <Avatar className="h-10 w-10 ring-2 ring-border group-hover:ring-primary/20 transition-all">
+                <AvatarImage src={avatarUrl ?? undefined} alt="" />
+                <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-accessible">
+                  {displayName?.[0]?.toUpperCase() ?? '?'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
+          title={(
+            <Link
+              href={`/profiles/${userId}`}
+              className="person-name transition-colors hover:text-primary-accessible"
+              onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}
+            >
+              {displayName}
+            </Link>
+          )}
+          subtitle={headline ? <span className="line-clamp-1">{headline}</span> : undefined}
+          meta={location ?? undefined}
+          aside={(score > 0 || confidence !== null || role) ? (
+            <>
+              {score > 0 && <MatchScoreBadge score={score} />}
+              {confidence !== null && (
+                <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs tabular-nums text-muted-foreground">
+                  <ShieldCheck className="icon-sm" />
+                  {confidence}%
+                </span>
+              )}
+              {role && (
+                <Badge variant="outline" className={cn('text-xs hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
+                  <RoleIcon className="icon-sm mr-1" />
+                  <StatusText value={role} />
+                </Badge>
+              )}
+            </>
+          ) : undefined}
+        />
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div>
-                <Link href={`/profiles/${userId}`} className="person-name inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
-                  {displayName}
-                </Link>
-                {headline && (
-                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{headline}</p>
-                )}
-                {location && (
-                  <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="icon-sm" />
-                    {location}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {score > 0 && <MatchScoreBadge score={score} />}
-                {confidence !== null && (
-                  <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <ShieldCheck className="icon-sm" />
-                    {confidence}%
-                  </span>
-                )}
-                {role && (
-                  <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
-                    <RoleIcon className="icon-sm mr-1" />
-                    {role}
-                  </Badge>
-                )}
-              </div>
-            </div>
+        {/* Reasons, then the dimension bars when asked for. */}
+        {reasons.length > 0 && (
+          <div className="space-y-1">
+            <FactLine items={reasons.slice(0, 3).map((reason) => {
+              const copy = matchReasonCopy(reason);
+              return <BilingualText key={copy.en} en={copy.en} el={copy.el} compact />;
+            })} />
+            <button
+              type="button"
+              aria-expanded={showExplanation}
+              onClick={() => setShowExplanation(p => !p)}
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
+            >
+              <Info className="icon-sm" aria-hidden="true" />
+              {showExplanation
+                ? <BilingualText en="Hide the reasons" el="Απόκρυψη αιτιών" compact />
+                : <BilingualText en="Why this match?" el="Γιατί αυτή η αντιστοίχιση;" compact />}
+            </button>
+          </div>
+        )}
 
-            {/* Reason chips */}
-            {reasons.length > 0 && (
-              <div className="mt-2 mb-2 space-y-1">
-                <FactLine items={reasons.slice(0, 3)} />
-                <button
-                  type="button"
-                  aria-expanded={showExplanation}
-                  onClick={() => setShowExplanation(p => !p)}
-                  className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
-                >
-                  <Info className="icon-sm" aria-hidden="true" />
-                  {showExplanation
-                    ? <BilingualText en="Hide the reasons" el="Απόκρυψη αιτιών" compact />
-                    : <BilingualText en="Why this match?" el="Γιατί αυτή η αντιστοίχιση;" compact />}
-                </button>
-              </div>
-            )}
+        {showExplanation && <ExplanationBar items={explanation} />}
 
-            {/* Explanation bars */}
-            {showExplanation && <ExplanationBar items={explanation} />}
+        {/* Skills: facts, not chips. */}
+        {skills.length > 0 && (
+          <FactLine items={[...skills.slice(0, 4), skills.length > 4 ? `+${skills.length - 4}` : null]} />
+        )}
 
-            {/* Skills */}
-            {skills.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-3">
-                {skills.slice(0, 4).map((skill) => (
-                  <span key={skill} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
-                    {skill}
-                  </span>
-                ))}
-                {skills.length > 4 && (
-                  <span className="text-xs text-muted-foreground px-1">+{skills.length - 4}</span>
-                )}
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-                <UserPlus className="icon-sm" />
-                Connect
-              </Button>
-              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-                <TrendingUp className="icon-sm" />
-                Score Breakdown
-              </Button>
-              <div className="ml-auto flex items-center gap-1">
-                {onSave && (
-                  <Button aria-label="Save match"
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-primary-accessible"
-                    title="Save match"
-                    onClick={() => onSave(userId)}
-                  >
-                    <BookmarkPlus className="icon-sm" />
-                  </Button>
-                )}
-                <Button aria-label="Good match"
+        <CardFoot
+          meta={(
+            <div className="flex items-center gap-1">
+              {onSave && (
+                <Button aria-label="Save match"
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-status-success"
-                  title="Good match"
-                  onClick={() => onFeedback(userId, 'accepted')}
+                  className="h-7 w-7 text-muted-foreground hover:text-primary-accessible"
+                  title="Save match"
+                  onClick={() => onSave(userId)}
                 >
-                  <ThumbsUp className="icon-sm" />
+                  <BookmarkPlus className="icon-sm" />
                 </Button>
-                <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
-              </div>
+              )}
+              <Button aria-label="Good match"
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 text-muted-foreground hover:text-status-success"
+                title="Good match"
+                onClick={() => onFeedback(userId, 'accepted')}
+              >
+                <ThumbsUp className="icon-sm" />
+              </Button>
+              <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
             </div>
-          </div>
-        </div>
+          )}
+        >
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
+            <TrendingUp className="icon-sm" />
+            <BilingualText en="Score breakdown" el="Ανάλυση βαθμολογίας" compact />
+          </Button>
+          <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
+            <UserPlus className="icon-sm" />
+            <BilingualText en="Connect" el="Σύνδεση" compact />
+          </Button>
+        </CardFoot>
       </CardContent>
     </Card>
     </>
@@ -616,33 +624,37 @@ export default function RecommendationsPage() {
       <div className="space-y-6">
         {/* Weekly digest section */}
         {!digestLoading && weeklyRecs.length > 0 && (
-          <Card className="border-primary/15 bg-primary/[0.03]">
-            <CardContent>
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="icon-sm text-muted-foreground" />
-                <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
-                <Badge variant="secondary" className="text-xs ml-auto">
-                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : 'Today'}
-                </Badge>
-              </div>
-              <div className="flex gap-3 overflow-x-auto pb-1">
+          // A section card: the title and its date in the head, the people
+          // under it on the title's edge.
+          <Card className="border-primary-muted bg-primary-subtle">
+            <CardContent className="space-y-3">
+              <CardHead
+                titleAs="h2"
+                title={<BilingualText en="This week's top picks" el="Κορυφαίες επιλογές εβδομάδας" compact />}
+                asideStays
+                aside={(
+                  <Badge variant="secondary" className="text-xs tabular-nums">
+                    {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : <BilingualText en="Today" el="Σήμερα" compact />}
+                  </Badge>
+                )}
+              />
+              {/* The people as rows on the card's axis, each circle with
+                  the first name and the score beside it, not names centred
+                  under floating avatars. The strip scrolls on a phone. */}
+              <div className="-mx-1 flex gap-x-6 gap-y-3 overflow-x-auto px-1 pb-1 scrollbar-hide sm:flex-wrap">
                 {weeklyRecs.slice(0, 5).map((m) => (
-                  <Link key={m.userId} href={`/profiles/${m.userId}`} className="shrink-0">
-                    <div className="flex flex-col items-center gap-1.5 w-16 text-center group">
-                      <div className="relative">
-                        <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
-                          <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
-                            {m.profile?.displayName?.[0] ?? '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-2xs font-bold px-1 rounded-full">
-                          {m.score}%
-                        </div>
-                      </div>
-                      <p className="text-xs truncate w-full text-muted-foreground group-hover:text-foreground">
+                  <Link key={m.userId} href={`/profiles/${m.userId}`} className="group flex shrink-0 items-center gap-3 rounded-md">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={m.profile?.avatarUrl ?? undefined} alt="" />
+                      <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary-accessible">
+                        {m.profile?.displayName?.[0] ?? '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="whitespace-nowrap text-sm font-medium text-foreground transition-colors group-hover:text-primary-accessible">
                         {m.profile?.displayName?.split(' ')[0] ?? 'User'}
                       </p>
+                      <p className="text-xs font-medium tabular-nums text-muted-foreground">{m.score}%</p>
                     </div>
                   </Link>
                 ))}
@@ -660,12 +672,12 @@ export default function RecommendationsPage() {
             onClick={() => setShowFilter(p => !p)}
           >
             <Filter className="icon-sm" />
-            Filter
+            <BilingualText en="Filter" el="Φίλτρο" compact />
             {minScore > 0 && <span className="ml-1 text-xs text-primary-accessible font-semibold">≥{minScore}%</span>}
           </Button>
           {showFilter && (
             <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">
-              <span className="text-xs text-muted-foreground shrink-0">Min score:</span>
+              <span className="text-xs text-muted-foreground shrink-0"><BilingualText en="Min score:" el="Ελάχιστος βαθμός:" compact /></span>
               <input
                 type="range"
                 min={0}
@@ -684,8 +696,11 @@ export default function RecommendationsPage() {
             </div>
           )}
           <span className="ml-auto text-xs text-muted-foreground">
-            {recommendations.length} match{recommendations.length !== 1 ? 'es' : ''}
-            {savedIds.size > 0 && ` · ${savedIds.size} saved`}
+            <BilingualText
+              en={`${recommendations.length} match${recommendations.length !== 1 ? 'es' : ''}${savedIds.size > 0 ? ` · ${savedIds.size} saved` : ''}`}
+              el={`${recommendations.length} ${recommendations.length !== 1 ? 'αντιστοιχίσεις' : 'αντιστοίχιση'}${savedIds.size > 0 ? ` · ${savedIds.size} ${savedIds.size !== 1 ? 'αποθηκευμένες' : 'αποθηκευμένη'}` : ''}`}
+              compact
+            />
           </span>
         </div>
 

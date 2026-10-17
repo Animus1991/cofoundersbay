@@ -5,8 +5,10 @@ import { ArrowLeft } from 'lucide-react';
 import { listDeclarations, type ActionDeclaration } from '@cofounderbay/shared';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BUILDER_BTN } from '@/components/builder/BuilderStageChrome';
 
@@ -29,8 +31,12 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_commitments: { en: 'Where do my commitments stand?', el: 'Πού βρίσκονται οι δεσμεύσεις μου;' },
   get_founder_updates: { en: 'Any new founder updates?', el: 'Υπάρχουν νέες ενημερώσεις ιδρυτών;' },
   get_intros: { en: 'Who could introduce me to Nikos?', el: 'Ποιος μπορεί να με συστήσει στον Νίκο;' },
+  get_match_detail: { en: 'Why do I match with Elena?', el: 'Γιατί ταιριάζω με την Έλενα;' },
+  get_team_gaps: { en: 'What skills is my team missing?', el: 'Τι δεξιότητες λείπουν από την ομάδα μου;' },
   get_skill_evidence: { en: 'What evidence backs my skills?', el: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;' },
   get_scout: { en: 'What did my co-founder scout find?', el: 'Τι βρήκε ο ανιχνευτής συνιδρυτών;' },
+  get_perks: { en: 'Which perks fit my stage?', el: 'Ποιες προσφορές συνεργατών ταιριάζουν στο στάδιό μου;' },
+  get_profile_viewers: { en: 'Who viewed my profile?', el: 'Ποιος είδε το προφίλ μου;' },
   get_mentorship_sessions: { en: 'When is my next mentoring session?', el: 'Πότε είναι η επόμενη συνεδρία καθοδήγησής μου;' },
   get_shortlist: { en: 'Who is on my shortlist?', el: 'Ποιος είναι στη λίστα μου;' },
   get_research_boards: { en: 'Show my research boards', el: 'Δείξε τους πίνακες έρευνας' },
@@ -38,6 +44,7 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   get_builder_state: { en: 'Show my Startup Builder workspaces', el: 'Δείξε τους χώρους Startup Builder' },
   get_profile: { en: 'Show my profile', el: 'Δείξε το προφίλ μου' },
   get_messages: { en: 'Any unread messages?', el: 'Έχω αδιάβαστα μηνύματα;' },
+  search_messages: { en: 'Where did Elena and I talk about the research canvas?', el: 'Πού μιλήσαμε με την Έλενα για τον πίνακα έρευνας;' },
   get_connections: { en: 'Who is waiting on my connections?', el: 'Ποιος περιμένει στις συνδέσεις μου;' },
   get_programs: { en: 'Which programmes are taking applications?', el: 'Ποια προγράμματα δέχονται αιτήσεις;' },
   get_my_programs: { en: 'Where do my programme applications stand?', el: 'Πού βρίσκονται οι αιτήσεις μου σε προγράμματα;' },
@@ -93,6 +100,8 @@ const SAMPLE_ASK: Record<string, { en: string; el: string }> = {
   request_intro: { en: 'Ask Dr. Kim to introduce me to Nikos for my Athens card', el: 'Ζήτα από την Dr. Kim να με συστήσει στον Νίκο για την κάρτα μου' },
   run_scout: { en: 'Run my co-founder scout', el: 'Τρέξε τον ανιχνευτή συνιδρυτών' },
   draft_scout_brief: { en: 'Draft a scout brief for a technical co-founder in Athens', el: 'Ετοίμασε σημείωμα ανιχνευτή για τεχνικό συνιδρυτή στην Αθήνα' },
+  draft_mentor_listing: { en: 'Draft my mentor listing “Go-to-market mentor for seed founders”', el: 'Συμπλήρωσε την καταχώριση μέντορα «Μέντορας go-to-market για ιδρυτές seed»' },
+  draft_provider_listing: { en: 'Prepare my provider listing “Seed-stage legal for SaaS startups”', el: 'Ετοίμασε το προφίλ παρόχου «Νομική υποστήριξη για startups σε seed»' },
   link_skill_evidence: { en: 'Link my Market Analysis to my Growth skill', el: 'Σύνδεσε την Ανάλυση Αγοράς με τη δεξιότητα Growth' },
   set_open_to: { en: 'Mark me open to advising, visible to verified members', el: 'Δήλωσε ότι είμαι ανοιχτός σε συμβουλευτικό ρόλο, ορατό σε επαληθευμένους' },
   draft_founder_update: { en: 'Draft a founder update “September: twelve interviews”', el: 'Ετοίμασε ενημέρωση ιδρυτή «Σεπτέμβριος: δώδεκα συνεντεύξεις»' },
@@ -112,14 +121,16 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
   const reversal = reversalLabel(spec);
   const writes = spec.writes;
 
+  // One state at the head's right (whether it writes); how far it can be
+  // taken back is the caption under the title, and the explanation of it
+  // sits with the description on the card's left edge.
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="text-sm font-semibold leading-snug">
-          <BilingualText en={spec.label.en} el={spec.label.el} compact wrap />
-        </h3>
-        <div className="flex flex-wrap gap-1">
-          {writes ? (
+    <Card>
+      <CardContent className="space-y-3">
+        <CardHead
+          title={<BilingualText en={spec.label.en} el={spec.label.el} compact wrap />}
+          meta={reversal ? <BilingualText en={reversal.en} el={reversal.el} compact wrap /> : undefined}
+          aside={writes ? (
             <Badge variant="outline" className="border-status-warning-border/60 bg-status-warning-bg text-status-warning">
               <BilingualText en="Writes" el="Γράφει" compact />
             </Badge>
@@ -128,29 +139,24 @@ function CapabilityCard({ spec }: { spec: ActionDeclaration }) {
               <BilingualText en="Looks up" el="Αναζητά" compact />
             </Badge>
           )}
-          {reversal && (
-            <Badge variant="outline">
-              <BilingualText en={reversal.en} el={reversal.el} compact />
-            </Badge>
-          )}
-        </div>
-      </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">
-        <BilingualText en={spec.description.en} el={spec.description.el} wrap />
-      </p>
-      {spec.reversal && spec.kind === 'mutation' && (
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          <BilingualText en={spec.reversal.explanation.en} el={spec.reversal.explanation.el} wrap />
+        />
+        <p className="card-body text-muted-foreground">
+          <BilingualText en={spec.description.en} el={spec.description.el} wrap />
         </p>
-      )}
-      {sample && (
-        <Button asChild variant="ghost" size="sm" className={`h-auto min-h-11 w-fit justify-start px-2 py-1.5 text-xs ${BUILDER_BTN}`}>
-          <Link href={`/ai?q=${encodeURIComponent(sample.en)}`}>
-            <BilingualText en={`Try: “${sample.en}”`} el={`Δοκίμασε: «${sample.el}»`} compact wrap />
-          </Link>
-        </Button>
-      )}
-    </article>
+        {spec.reversal && spec.kind === 'mutation' && (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            <BilingualText en={spec.reversal.explanation.en} el={spec.reversal.explanation.el} wrap />
+          </p>
+        )}
+        {sample && (
+          <Button asChild variant="ghost" size="sm" className={`h-auto min-h-11 w-fit justify-start px-0 py-1.5 text-xs lg:px-0 hover:bg-transparent hover:underline ${BUILDER_BTN}`}>
+            <Link href={`/ai?q=${encodeURIComponent(sample.en)}`}>
+              <BilingualText en={`Try: “${sample.en}”`} el={`Δοκίμασε: «${sample.el}»`} compact wrap />
+            </Link>
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -407,6 +407,9 @@ export const exploreSections: NavSection[] = [
   {
     section: 'Discover',
     links: [
+      // The product's core outcome had no sidebar link: people who complement
+      // you, with the reasons and where the two of you agree.
+      { href: '/matches', label: 'Matches', icon: Sparkles },
       { href: '/discover', label: 'Explore', icon: Compass },
       { href: '/search', label: 'Search', icon: Search },
       { href: '/ai', label: 'Ask AI', icon: BrainCircuit },
@@ -434,6 +437,7 @@ export const exploreSections: NavSection[] = [
       { href: '/opportunities', label: 'Opportunities', icon: Target },
       { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
       { href: '/marketplace', label: 'Services', icon: Store },
+      { href: '/perks', label: 'Perks', icon: Gift },
     ],
   },
   {

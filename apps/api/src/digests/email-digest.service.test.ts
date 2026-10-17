@@ -33,6 +33,7 @@ const digestData = {
     opportunities: true,
     events: true,
     updates: false,
+    matches: false,
   },
 };
 
@@ -327,5 +328,47 @@ describe('digest sections fed by follows and saved searches', () => {
     const { service: older } = makeService(bare as never);
     // No follow or saved-search tables in this database: no section, no error.
     expect(await older.generateUserDigest('reader', 'weekly')).toBeNull();
+  });
+});
+
+describe('people who complement the reader', () => {
+  function reader(channels: Array<{ category: string; isEnabled: boolean }> = []) {
+    return {
+      ...makePrisma(),
+      user: {
+        findUnique: vi.fn().mockResolvedValue({ id: 'reader', emailVerified: true, moderationStatus: 'active', digestPreference: { frequency: 'weekly' }, notificationChannels: channels }),
+      },
+      matchOutcome: { findMany: vi.fn().mockResolvedValue([{ targetUserId: 'passed' }]) },
+      savedProfile: { findMany: vi.fn().mockResolvedValue([{ userId: 'saved' }]) },
+      connectionRequest: {
+        findMany: vi.fn((args: any) => Promise.resolve(args?.where?.status === 'accepted' ? [] : [{ requesterId: 'reader', receiverId: 'asked' }])),
+      },
+    };
+  }
+  const rec = (userId: string, name: string, score = 0.8) => ({ userId, score, reasons: ['Complementary roles'], profile: { displayName: name, headline: `${name}'s headline` } });
+  const matching = {
+    getRecommendations: vi.fn().mockResolvedValue([
+      rec('passed', 'Passed On'), rec('saved', 'Shortlisted'), rec('asked', 'Already Asked'),
+      rec('m1', 'Marcus Chen', 0.88), rec('m2', 'Elena Papadopoulos', 0.92), rec('m3', 'Sofia'), rec('m4', 'Yannis'),
+    ]),
+  };
+  function service(prisma: unknown) {
+    const config = { get: vi.fn((key: string) => (key === 'WEB_BASE_URL' ? 'https://cofounderbay.example' : undefined)) };
+    return new EmailDigestService(config as never, { enqueueSendEmail: vi.fn() } as never, prisma as never, matching as never);
+  }
+
+  it('lists three, leaving out anyone the reader passed on, shortlisted or already asked', async () => {
+    const digest = await service(reader()).generateUserDigest('reader', 'weekly');
+    expect(digest?.content.matches?.items.map((i) => i.id)).toEqual(['m1', 'm2', 'm3']);
+    expect(digest?.content.matches?.items[0]).toMatchObject({ title: 'Marcus Chen · 88% match', url: '/matches/m1' });
+    expect(digest?.content.matches?.items[0].description).toContain('Complementary roles');
+  });
+
+  it('is left out when the reader turned matches off, or matching is not available', async () => {
+    const off = await service(reader([{ category: 'matches', isEnabled: false }])).generateUserDigest('reader', 'weekly');
+    expect(off?.content.matches).toBeUndefined();
+    const config = { get: vi.fn(() => 'https://cofounderbay.example') };
+    const bare = new EmailDigestService(config as never, { enqueueSendEmail: vi.fn() } as never, reader() as never);
+    expect((await bare.generateUserDigest('reader', 'weekly'))?.content.matches).toBeUndefined();
   });
 });

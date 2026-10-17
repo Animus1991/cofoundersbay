@@ -110,6 +110,7 @@ function UpdatesContent() {
     const ok = await confirm({
       title: <BilingualText en="Delete this update?" el="Διαγραφή αυτής της ενημέρωσης;" compact />,
       description: <BilingualText en="It disappears for your followers, and its public link stops working." el="Χάνεται για τους ακολούθους σας και ο δημόσιος σύνδεσμός της σταματά να λειτουργεί." wrap />,
+      confirmLabel: <BilingualText en="Delete update" el="Διαγραφή ενημέρωσης" compact secondaryClassName="text-destructive-foreground" />,
       variant: 'destructive',
     });
     if (!ok) return CANCELLED;
@@ -244,7 +245,7 @@ function UpdatesContent() {
             )}
           </TabsContent>
           <TabsContent value="mine" className="space-y-4">
-            <div className="empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
+            <div className="empty:hidden"><FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} /></div>
             <Card>
               <CardContent>
                 <UpdateComposer initial={prefill} busy={send.isPending} onSend={async (d) => !!(await send.mutateAsync(d).catch(() => null))} />
@@ -265,7 +266,7 @@ function UpdatesContent() {
                         </Button>
                       </>
                     ) : null}
-                    <Button size="sm" variant="ghost" disabled={visibility.isPending} onClick={() => void toggleVisibility(u)}>
+                    <Button size="sm" variant="outline" disabled={visibility.isPending} onClick={() => void toggleVisibility(u)}>
                       <BilingualText en={u.visibility === 'public' ? 'Followers only' : 'Make public'} el={u.visibility === 'public' ? 'Μόνο ακόλουθοι' : 'Δημόσια'} compact />
                     </Button>
                     <Button size="sm" variant="ghost" className="text-destructive-accessible" disabled={remove.isPending} onClick={() => void confirmDelete(u)}>

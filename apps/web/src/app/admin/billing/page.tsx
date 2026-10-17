@@ -1,6 +1,10 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { FactLine } from '@/components/common/FactLine';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { RailStats } from '@/components/layout/RailParts';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -59,43 +63,60 @@ function SubRow({
   onOverride: (sub: BillingSubscription) => void;
 }) {
   const ownerLabel = subscriptionOwner(sub);
+  const fmtDate = useDateFormat();
+  const annual = sub.billingCycle === 'annual';
 
+  // A row of the list, set like every row in a section card: the owner over
+  // the plan and its terms, the state, the price and the actions at the
+  // right (under the terms on a phone, on the owner's edge).
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium truncate max-w-[200px]">{ownerLabel}</span>
-          <Badge variant="outline" className={cn('text-xs capitalize shrink-0', STATUS_COLORS[sub.status] ?? '')}>
-            <StatusText value={sub.status} />
-          </Badge>
-          <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
-        </div>
-        <p className="text-xs text-muted-foreground capitalize">
-          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
-          {sub.seatLimit ? ` · ${sub.activeSeatCount}/${sub.seatLimit} seats` : ''}
-        </p>
-      </div>
-      <div className="text-right shrink-0 hidden sm:block">
-        <p className="text-sm font-semibold">
-          {formatCents(sub.billingCycle === 'annual' ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0), sub.plan?.currency)}
-        </p>
-        <p className="text-xs text-muted-foreground">/{sub.billingCycle === 'annual' ? 'yr' : 'mo'}</p>
-      </div>
-      <div className="flex gap-1 shrink-0">
-        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOverride(sub)}>
-          <Settings className="icon-sm mr-1" aria-hidden="true" /><BilingualText en="Override" el="Παράκαμψη" compact />
-        </Button>
-        {sub.status === 'trialing' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onExtendTrial(sub.id)}>
-            <Clock className="icon-sm mr-1" aria-hidden="true" />+7d
-          </Button>
+    <div className="px-4 py-3 transition-colors hover:bg-muted/50 sm:px-6">
+      <RowHead
+        title={<span className="block truncate" translate="no">{ownerLabel}</span>}
+        subtitle={(
+          <FactLine
+            items={[
+              sub.plan?.displayName ?? '—',
+              sub.billingCycle ? <StatusText key="cycle" value={sub.billingCycle} /> : null,
+              sub.currentPeriodEnd ? (
+                <BilingualText
+                  key="renews"
+                  en={`Renews ${fmtDate(sub.currentPeriodEnd, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                  el={`Ανανέωση ${fmtDate(sub.currentPeriodEnd, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                  compact
+                />
+              ) : null,
+              sub.seatLimit ? (
+                <BilingualText key="seats" en={`${sub.activeSeatCount}/${sub.seatLimit} seats`} el={`${sub.activeSeatCount}/${sub.seatLimit} θέσεις`} compact />
+              ) : null,
+            ]}
+          />
         )}
-        {sub.status !== 'canceled' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
-            <XCircle className="icon-sm mr-1" /><BilingualText en="Cancel" el="Ακύρωση" compact />
-          </Button>
+        aside={(
+          <>
+            <Badge variant="outline" className={cn('text-xs shrink-0', STATUS_COLORS[sub.status] ?? '')}>
+              <StatusText value={sub.status} />
+            </Badge>
+            <span className="font-medium tabular-nums text-foreground">
+              {formatCents(annual ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0), sub.plan?.currency)}
+              <span className="text-muted-foreground"><BilingualText en={annual ? '/yr' : '/mo'} el={annual ? '/έτος' : '/μήνα'} compact /></span>
+            </span>
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOverride(sub)}>
+              <Settings className="icon-sm mr-1" aria-hidden="true" /><BilingualText en="Override" el="Παράκαμψη" compact />
+            </Button>
+            {sub.status === 'trialing' && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onExtendTrial(sub.id)}>
+                <Clock className="icon-sm mr-1" aria-hidden="true" />+7d
+              </Button>
+            )}
+            {sub.status !== 'canceled' && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
+                <XCircle className="icon-sm mr-1" /><BilingualText en="Cancel" el="Ακύρωση" compact />
+              </Button>
+            )}
+          </>
         )}
-      </div>
+      />
     </div>
   );
 }
@@ -111,32 +132,36 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
 
+  const fmtDate = useDateFormat();
+
   return (
-    <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <FileText className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{inv.invoiceNumber}</span>
-          <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}><StatusText value={inv.status} /></Badge>
-        </div>
-        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
-      </div>
-      <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
-      {inv.hostedInvoiceUrl && (
-        // A <button> inside an <a> is two interactive elements nested - one
-        // tab stop too many and axe nested-interactive. The link is the control.
-        <Button asChild variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-          <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer" aria-label={`Download invoice ${inv.invoiceNumber}`}>
-            <Download className="icon-sm" aria-hidden="true" />
-          </a>
-        </Button>
-      )}
+    <div className="px-4 py-3 transition-colors hover:bg-muted/50 sm:px-6">
+      <RowHead
+        title={<span translate="no">{inv.invoiceNumber}</span>}
+        subtitle={<FactLine items={[<span key="owner" translate="no">{ownerLabel}</span>, fmtDate(inv.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })]} />}
+        aside={(
+          <>
+            <Badge variant="outline" className={cn('text-xs', statusColors[inv.status] ?? '')}><StatusText value={inv.status} /></Badge>
+            <span className="font-medium tabular-nums text-foreground">{formatCents(inv.total, inv.currency)}</span>
+            {inv.hostedInvoiceUrl && (
+              // A <button> inside an <a> is two interactive elements nested - one
+              // tab stop too many and axe nested-interactive. The link is the control.
+              <Button asChild variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer" aria-label={`Download invoice ${inv.invoiceNumber}`}>
+                  <Download className="icon-sm" aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+          </>
+        )}
+      />
     </div>
   );
 }
 
 export default function AdminBillingPage() {
   const qc = useQueryClient();
+  const fmtDate = useDateFormat();
   const { success: toastSuccess, error: toastError } = useToast();
   const [search, setSearch] = useState('');
   // Radix <Select.Item> forbids an empty-string value (it is reserved for
@@ -323,24 +348,14 @@ export default function AdminBillingPage() {
       labelEl: 'Οικονομικά',
       badge: statsData?.pastDueSubs || null,
       content: (
-        <div className="space-y-2">
-          {[
-            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-status-success' },
-            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-status-info' },
-            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-status-accent' },
-            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-status-warning' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-lg border border-border p-3">
-              <div className="flex items-center gap-2">
-                <Icon className={cn('icon-sm', color)} aria-hidden="true" />
-                <p className="text-sm text-muted-foreground">{label}</p>
-              </div>
-              <p className="page-stat text-xl font-bold mt-1">
-                {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /> : value}
-              </p>
-            </div>
-          ))}
-        </div>
+        <RailStats
+          items={[
+            { key: 'mrr', label: 'MRR', labelEl: 'Μηνιαία έσοδα (MRR)', value: statsLoading ? '—' : formatCents(mrr), icon: DollarSign, tone: 'bg-status-success-bg text-status-success' },
+            { key: 'arr', label: 'ARR (est.)', labelEl: 'Ετήσια έσοδα (εκτ.)', value: statsLoading ? '—' : formatCents(arr), icon: TrendingUp, tone: 'bg-status-info-bg text-status-info' },
+            { key: 'active', label: 'Active Subs', labelEl: 'Ενεργές συνδρομές', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, tone: 'bg-status-accent-bg text-status-accent' },
+            { key: 'pastdue', label: 'Past Due', labelEl: 'Ληξιπρόθεσμες', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, tone: 'bg-status-warning-bg text-status-warning' },
+          ]}
+        />
       ),
     },
     {
@@ -415,9 +430,9 @@ export default function AdminBillingPage() {
                 {subsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground">
-                    <BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact />
-                    <span className="mt-1 block text-xs"><BilingualText en="Subscriptions appear here once an organization picks a plan." el="Οι συνδρομές εμφανίζονται εδώ μόλις ένας οργανισμός επιλέξει πλάνο." compact /></span>
+                  <div className="px-4 py-6 text-sm text-muted-foreground sm:px-6">
+                    <BilingualText en="No subscriptions found" el="Δεν βρέθηκαν συνδρομές" compact wrap />
+                    <span className="mt-1 block text-xs"><BilingualText en="Subscriptions appear here once an organization picks a plan." el="Οι συνδρομές εμφανίζονται εδώ μόλις ένας οργανισμός επιλέξει πλάνο." wrap /></span>
                   </div>
                 ) : (
                   <div className="divide-y divide-border/50">
@@ -444,7 +459,7 @@ export default function AdminBillingPage() {
                 {invoicesLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : invoices.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No invoices found" el="Δεν βρέθηκαν τιμολόγια" compact /></div>
+                  <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6"><BilingualText en="No invoices found" el="Δεν βρέθηκαν τιμολόγια" compact wrap /></p>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {invoices.map(inv => <InvRow key={inv.id} inv={inv} />)}
@@ -457,41 +472,48 @@ export default function AdminBillingPage() {
           {/* Plans tab */}
           <TabsContent value="plans" className="mt-4">
             <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base"><BilingualText en="Billing Plans" el="Πλάνα χρέωσης" compact /></CardTitle>
-                  <p className="text-xs text-muted-foreground"><BilingualText en="Edit plan details via the API or admin actions." el="Επεξεργαστείτε τα πλάνα μέσω API ή ενεργειών διαχείρισης." wrap /></p>
-                </div>
+              <CardHeader>
+                <CardTitle><BilingualText en="Billing Plans" el="Πλάνα χρέωσης" compact /></CardTitle>
+                <CardDescription><BilingualText en="Edit plan details via the API or admin actions." el="Επεξεργαστείτε τα πλάνα μέσω API ή ενεργειών διαχείρισης." wrap /></CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 {statsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : plans.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No plans configured" el="Δεν έχουν οριστεί πλάνα" compact /></div>
+                  <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6"><BilingualText en="No plans configured" el="Δεν έχουν οριστεί πλάνα" compact wrap /></p>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {plans.map(plan => (
-                      <div key={plan.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
-                          <Crown className="icon-sm text-muted-foreground" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">{plan.displayName}</span>
-                            <Badge variant="outline" className="text-xs"><StatusText value={plan.planType} /></Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
-                            {plan.seatLimit ? ` · ${plan.seatLimit} seats` : ' · Unlimited seats'}
-                          </p>
-                        </div>
-                        <div className="shrink-0">
-                          <Badge variant="outline" className="text-xs">
-                            {(statsData?.totalSubs ?? 0)} active
-                          </Badge>
-                        </div>
+                      <div key={plan.id} className="px-4 py-3 sm:px-6">
+                        <RowHead
+                          mark={(
+                            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                              <Crown className="icon-sm" aria-hidden="true" />
+                            </div>
+                          )}
+                          title={plan.displayName}
+                          subtitle={(
+                            <FactLine
+                              items={[
+                                <StatusText key="type" value={plan.planType} />,
+                                <BilingualText key="mo" en={`${formatCents(plan.priceMonthly)}/mo`} el={`${formatCents(plan.priceMonthly)}/μήνα`} compact />,
+                                <BilingualText key="yr" en={`${formatCents(plan.priceAnnual)}/yr`} el={`${formatCents(plan.priceAnnual)}/έτος`} compact />,
+                                plan.seatLimit
+                                  ? <BilingualText key="seats" en={`${plan.seatLimit} seats`} el={`${plan.seatLimit} θέσεις`} compact />
+                                  : <BilingualText key="seats" en="Unlimited seats" el="Απεριόριστες θέσεις" compact />,
+                              ]}
+                            />
+                          )}
+                          aside={(
+                            <>
+                              {!plan.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                              {!plan.isPublic && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Private" el="Ιδιωτικό" compact /></Badge>}
+                              <span className="tabular-nums">
+                                <BilingualText en={`${statsData?.totalSubs ?? 0} active`} el={`${statsData?.totalSubs ?? 0} ενεργές`} compact />
+                              </span>
+                            </>
+                          )}
+                        />
                       </div>
                     ))}
                   </div>
@@ -512,12 +534,12 @@ export default function AdminBillingPage() {
             {showCouponForm && (
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm"><BilingualText en="Create coupon" el="Δημιουργία κουπονιού" compact /></CardTitle>
+                  <CardTitle><BilingualText en="Create coupon" el="Δημιουργία κουπονιού" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="code" className="text-xs">Code *</Label>
+                      <Label htmlFor="code"><BilingualText en="Code *" el="Κωδικός *" compact /></Label>
                       <Input id="code"
                         placeholder="LAUNCH30"
                         value={couponForm.code}
@@ -525,7 +547,7 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="discountType" className="text-xs"><BilingualText en="Discount type" el="Τύπος έκπτωσης" compact /></Label>
+                      <Label htmlFor="discountType"><BilingualText en="Discount type" el="Τύπος έκπτωσης" compact /></Label>
                       <Select value={couponForm.discountType} onValueChange={v => setCouponForm(p => ({ ...p, discountType: v }))}>
                         <SelectTrigger id="discountType" aria-label="Discount type" className="h-9">
                           <SelectValue />
@@ -537,7 +559,7 @@ export default function AdminBillingPage() {
                       </Select>
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="discountValue" className="text-xs">Value ({couponForm.discountType === 'percent' ? '%' : '$'})</Label>
+                      <Label htmlFor="discountValue"><BilingualText en={`Value (${couponForm.discountType === 'percent' ? '%' : '$'})`} el={`Τιμή (${couponForm.discountType === 'percent' ? '%' : '$'})`} compact /></Label>
                       <Input id="discountValue"
                         type="number"
                         value={couponForm.discountValue}
@@ -545,7 +567,7 @@ export default function AdminBillingPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label htmlFor="maxRedemptions" className="text-xs"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
+                      <Label htmlFor="maxRedemptions"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
                       <Input id="maxRedemptions"
                         type="number"
                         placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
@@ -557,7 +579,7 @@ export default function AdminBillingPage() {
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => saveCoupon()} disabled={savingCoupon || !couponForm.code}>
                       {savingCoupon && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
-                      Create
+                      <BilingualText en="Create" el="Δημιουργία" compact />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
                   </div>
@@ -570,35 +592,53 @@ export default function AdminBillingPage() {
                 {couponsLoading ? (
                   <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : coupons.length === 0 ? (
-                  <div className="py-12 text-center text-sm text-muted-foreground"><BilingualText en="No coupons yet" el="Δεν υπάρχουν κουπόνια ακόμα" compact /></div>
+                  <p className="px-4 py-6 text-sm text-muted-foreground sm:px-6"><BilingualText en="No coupons yet" el="Δεν υπάρχουν κουπόνια ακόμα" compact wrap /></p>
                 ) : (
                   <div className="divide-y divide-border/50">
                     {coupons.map(coupon => (
-                      <div key={coupon.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted shrink-0">
-                          <Tag className="icon-sm text-muted-foreground" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
-                            {coupon.timesRedeemed}/{coupon.maxRedemptions ?? '∞'} used
-                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
-                          </p>
-                        </div>
-                        {coupon.isActive && (
-                          <Button aria-label="Delete"
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
-                            onClick={() => removeCoupon(coupon.id)}
-                          >
-                            <Trash2 className="icon-sm" />
-                          </Button>
-                        )}
+                      <div key={coupon.id} className="px-4 py-3 sm:px-6">
+                        <RowHead
+                          mark={(
+                            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                              <Tag className="icon-sm" aria-hidden="true" />
+                            </div>
+                          )}
+                          title={<span className="font-mono" translate="no">{coupon.code}</span>}
+                          subtitle={(
+                            <FactLine
+                              items={[
+                                coupon.discountType === 'percent'
+                                  ? <BilingualText key="off" en={`${coupon.discountValue}% off`} el={`${coupon.discountValue}% έκπτωση`} compact />
+                                  : formatCents(coupon.discountValue),
+                                <BilingualText key="used" en={`${coupon.timesRedeemed}/${coupon.maxRedemptions ?? '∞'} used`} el={`${coupon.timesRedeemed}/${coupon.maxRedemptions ?? '∞'} χρήσεις`} compact />,
+                                coupon.validUntil ? (
+                                  <BilingualText
+                                    key="expires"
+                                    en={`Expires ${fmtDate(coupon.validUntil, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                                    el={`Λήγει ${fmtDate(coupon.validUntil, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                                    compact
+                                  />
+                                ) : null,
+                              ]}
+                            />
+                          )}
+                          asideStays
+                          aside={(
+                            <>
+                              {!coupon.isActive && <Badge variant="outline" className="text-xs bg-muted text-muted-foreground"><BilingualText en="Inactive" el="Ανενεργό" compact /></Badge>}
+                              {coupon.isActive && (
+                                <Button aria-label="Delete"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
+                                  onClick={() => removeCoupon(coupon.id)}
+                                >
+                                  <Trash2 className="icon-sm" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        />
                       </div>
                     ))}
                   </div>
@@ -618,7 +658,7 @@ export default function AdminBillingPage() {
           <div className="space-y-3 py-2">
             <DialogDescription><BilingualText en="Select a new plan to apply immediately. This bypasses payment." el="Επιλέξτε νέο πλάνο που εφαρμόζεται αμέσως, χωρίς πληρωμή." wrap /></DialogDescription>
             <div className="space-y-1.5">
-              <Label htmlFor="overridePlanId" className="text-xs"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
+              <Label htmlFor="overridePlanId"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
                 <SelectTrigger id="overridePlanId" aria-label="New plan">
                   <SelectValue placeholder={bilingualInline("Select plan", "Επιλογή πακέτου")} />

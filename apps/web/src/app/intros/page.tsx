@@ -13,6 +13,10 @@ import { RelativeTime } from '@/components/common/RelativeTime';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { bilingualAria } from '@/lib/i18n/format';
+import { initialsOf } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +26,7 @@ import { commitmentRefusal } from '@/lib/commitments-api';
 import { acceptIntro, declineIntro, forwardIntro, listIntros, notNowIntro, withdrawIntro, type Intro } from '@/lib/intros-api';
 import { CANCELLED, ROW_GONE, choiceControl, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 type Tab = 'sent' | 'forward' | 'received';
 const TABS = [
@@ -39,17 +44,20 @@ const statusTone = (status: Intro['status']) =>
   status === 'accepted'
     ? 'border-status-success-border bg-status-success-bg text-status-success'
     : status === 'pending' || status === 'forwarded'
-      ? 'border-primary/15 bg-primary/[0.03] text-foreground'
+      ? 'border-primary-muted bg-primary-subtle text-foreground'
       : 'border-border bg-muted text-muted-foreground';
 
 function IntroCard({
   intro,
   highlight,
   actions,
+  editor,
 }: {
   intro: Intro;
   highlight: boolean;
   actions?: React.ReactNode;
+  /** A form that replaces the actions while it is open (the forward note). */
+  editor?: React.ReactNode;
 }) {
   // The shared copy names who it waits on; when that is the reader, say so.
   const status =
@@ -60,31 +68,58 @@ function IntroCard({
         : INTRO_STATUS_COPY[intro.status];
   const toReq = relationText(intro.toRequester);
   const toTgt = relationText(intro.toTarget);
+  // The person the card is about, for its reader: the one asked about when
+  // the reader asked, otherwise the founder who asked.
+  const person = intro.role === 'requester' ? intro.target : intro.requester;
+  // IntroRequestCard's anatomy (Connections): the person's circle, name and
+  // headline, the state at the right; the path, the note and the foot (the
+  // time, then the answers) on the avatar's edge.
   return (
     <Card id={`intro-${intro.id}`} className={highlight ? 'scroll-mt-20 border-primary/40' : 'scroll-mt-20'}>
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <p className="min-w-0 text-sm text-foreground">
-            <span className="font-medium">{intro.role === 'requester' ? <BilingualText en="You" el="Εσείς" compact /> : intro.requester.displayName}</span>
-            <span className="text-muted-foreground" aria-hidden="true"> → </span>
-            <span className="font-medium">{intro.role === 'intermediary' ? <BilingualText en="you" el="εσείς" compact /> : intro.intermediary.displayName}</span>
-            <span className="text-muted-foreground" aria-hidden="true"> → </span>
-            <span className="font-medium">{intro.role === 'target' ? <BilingualText en="you" el="εσείς" compact /> : intro.target.displayName}</span>
-          </p>
-          <Badge variant="outline" className={statusTone(intro.status)}>
-            <BilingualText en={status.en} el={status.el} compact />
-          </Badge>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <CardHead
+            mark={(
+              <Link href={`/profiles/${encodeURIComponent(person.id)}`} aria-label={bilingualAria(`Open ${person.displayName}'s profile`, `Άνοιγμα προφίλ: ${person.displayName}`)}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
+                  <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(person.displayName)}</AvatarFallback>
+                </Avatar>
+              </Link>
+            )}
+            title={(
+              <PersonHovercard userId={person.id}><Link href={`/profiles/${encodeURIComponent(person.id)}`} className="transition-colors hover:text-primary-accessible">{person.displayName}</Link></PersonHovercard>
+            )}
+            aside={(
+              <Badge variant="outline" className={statusTone(intro.status)}>
+                <BilingualText en={status.en} el={status.el} compact />
+              </Badge>
+            )}
+          />
+          {/* Headline and path are both short. Beside the status pill they
+              wrapped early; on the card's full width they share one line
+              and wrap only when the card itself is too narrow. */}
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            {person.headline ? <span className="card-subtitle">{person.headline}</span> : null}
+            <span className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{intro.role === 'requester' ? <BilingualText en="You" el="Εσείς" compact /> : intro.requester.displayName}</span>
+              <span aria-hidden="true"> → </span>
+              <span className="font-medium text-foreground">{intro.role === 'intermediary' ? <BilingualText en="you" el="εσείς" compact /> : intro.intermediary.displayName}</span>
+              <span aria-hidden="true"> → </span>
+              <span className="font-medium text-foreground">{intro.role === 'target' ? <BilingualText en="you" el="εσείς" compact /> : intro.target.displayName}</span>
+            </span>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="card-body text-muted-foreground">
           <BilingualText en="For the need card" el="Για την κάρτα ανάγκης" compact />{' '}
-          <Link className="text-primary-accessible underline-offset-4 hover:underline" href={`/commitments/${encodeURIComponent(intro.card.id)}`}>
+          <Link className="text-primary-accessible underline-offset-4 hover:underline" href={`/commitments/${encodeURIComponent(intro.card?.id ?? '')}`}>
             {intro.card?.title || <BilingualText en="need card" el="κάρτα ανάγκης" compact />}
           </Link>
         </p>
-        <blockquote className="text-sm text-foreground">“{intro.note}”</blockquote>
+        <blockquote className="card-body italic text-foreground/80">“{intro.note}”</blockquote>
         {intro.forwardNote ? (
-          <p className="text-sm text-muted-foreground">
-            <BilingualText en={`${intro.intermediary.displayName} adds:`} el={`Ο/Η ${intro.intermediary.displayName} προσθέτει:`} compact /> {intro.forwardNote}
+          <p className="card-body text-muted-foreground">
+            <BilingualText en={`${intro.intermediary.displayName} adds:`} el={`Σημείωση από ${intro.intermediary.displayName}:`} compact /> {intro.forwardNote}
           </p>
         ) : null}
         <p className="text-xs text-muted-foreground">
@@ -92,10 +127,10 @@ function IntroCard({
             en={`How it connects: ${toReq.en || '—'} to the founder, ${toTgt.en || '—'} to the person introduced.`}
             el={`Πώς συνδέονται: ${toReq.el || '—'} με τον ιδρυτή, ${toTgt.el || '—'} με το πρόσωπο που συστήνεται.`}
             wrap
-          />{' '}
-          · <RelativeTime date={intro.createdAt} />
+          />
         </p>
-        {actions ? <div className="flex flex-wrap gap-2 pt-1">{actions}</div> : null}
+        {editor}
+        <CardFoot meta={<RelativeTime date={intro.createdAt} />}>{actions}</CardFoot>
       </CardContent>
     </Card>
   );
@@ -184,10 +219,11 @@ function IntrosContent() {
       description: (
         <BilingualText
           en={`${i.requester.displayName} is told only that it was not forwarded, and ${i.target.displayName} never hears of it.`}
-          el={`Ο/Η ${i.requester.displayName} μαθαίνει μόνο ότι δεν προωθήθηκε, και ο/η ${i.target.displayName} δεν το μαθαίνει ποτέ.`}
+          el={`Το μαθαίνει μόνο όποιος τη ζήτησε (${i.requester.displayName}), και μόνο ότι δεν προωθήθηκε· το πρόσωπο που θα συστηνόταν (${i.target.displayName}) δεν το μαθαίνει ποτέ.`}
           wrap
         />
       ),
+      confirmLabel: <BilingualText en="Do not forward" el="Να μην προωθηθεί" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run('decline', i);
@@ -301,35 +337,36 @@ function IntrosContent() {
                         key={i.id}
                         intro={i}
                         highlight={focus === i.id}
+                        editor={
+                          i.status === 'pending' && forwarding === i.id ? (
+                            <form
+                              className="w-full space-y-2"
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                void run('forward', i, forwardNote);
+                              }}
+                            >
+                              <label htmlFor={`fwd-${i.id}`} className="text-sm font-medium text-foreground">
+                                <BilingualText en={`A line for ${i.target.displayName} (optional)`} el={`Μια γραμμή προς ${i.target.displayName} (προαιρετικά)`} compact />
+                              </label>
+                              <Textarea id={`fwd-${i.id}`} rows={2} maxLength={INTRO_LIMITS.forwardNote} value={forwardNote} onChange={(e) => setForwardNote(e.target.value)} />
+                              <div className="flex flex-wrap gap-2">
+                                <Button type="submit" size="sm" disabled={busy}><BilingualText en="Forward" el="Προώθηση" compact /></Button>
+                                <Button type="button" size="sm" variant="ghost" onClick={() => setForwarding(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
+                              </div>
+                            </form>
+                          ) : undefined
+                        }
                         actions={
-                          i.status === 'pending' ? (
-                            forwarding === i.id ? (
-                              <form
-                                className="w-full space-y-2"
-                                onSubmit={(e) => {
-                                  e.preventDefault();
-                                  void run('forward', i, forwardNote);
-                                }}
-                              >
-                                <label htmlFor={`fwd-${i.id}`} className="text-sm font-medium text-foreground">
-                                  <BilingualText en={`A line for ${i.target.displayName} (optional)`} el={`Μια γραμμή για τον/την ${i.target.displayName} (προαιρετικά)`} compact />
-                                </label>
-                                <Textarea id={`fwd-${i.id}`} rows={2} maxLength={INTRO_LIMITS.forwardNote} value={forwardNote} onChange={(e) => setForwardNote(e.target.value)} />
-                                <div className="flex flex-wrap gap-2">
-                                  <Button type="submit" size="sm" disabled={busy}><BilingualText en="Forward" el="Προώθηση" compact /></Button>
-                                  <Button type="button" size="sm" variant="ghost" onClick={() => setForwarding(null)}><BilingualText en="Cancel" el="Ακύρωση" compact /></Button>
-                                </div>
-                              </form>
-                            ) : (
-                              <>
-                                <Button size="sm" disabled={busy} onClick={() => { setForwarding(i.id); setForwardNote(''); }}>
-                                  <BilingualText en="Forward…" el="Προώθηση…" compact />
-                                </Button>
-                                <Button size="sm" variant="ghost" disabled={busy} onClick={() => void confirmDecline(i)}>
-                                  <BilingualText en="Not this one" el="Όχι αυτή" compact />
-                                </Button>
-                              </>
-                            )
+                          i.status === 'pending' && forwarding !== i.id ? (
+                            <>
+                              <Button size="sm" disabled={busy} onClick={() => { setForwarding(i.id); setForwardNote(''); }}>
+                                <BilingualText en="Forward…" el="Προώθηση…" compact />
+                              </Button>
+                              <Button size="sm" variant="ghost" disabled={busy} onClick={() => void confirmDecline(i)}>
+                                <BilingualText en="Not this one" el="Δεν θα την προωθήσω" compact />
+                              </Button>
+                            </>
                           ) : undefined
                         }
                       />

@@ -35,6 +35,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { demoPortrait } from '@/lib/demo/photos';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
@@ -42,7 +43,7 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 type AIPreferences = {
   preferredModel: string;
@@ -81,10 +82,20 @@ const DEFAULT_PREFS: AIPreferences = {
 };
 
 const RESPONSE_STYLES = [
-  { value: 'concise', label: 'Concise', desc: 'Short, to-the-point answers' },
-  { value: 'detailed', label: 'Detailed', desc: 'Comprehensive explanations' },
-  { value: 'casual', label: 'Casual', desc: 'Friendly, conversational tone' },
-  { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
+  { value: 'concise', label: 'Concise', labelEl: 'Σύντομο', desc: 'Short, to-the-point answers', descEl: 'Σύντομες, ουσιαστικές απαντήσεις' },
+  { value: 'detailed', label: 'Detailed', labelEl: 'Αναλυτικό', desc: 'Comprehensive explanations', descEl: 'Πλήρεις εξηγήσεις' },
+  { value: 'casual', label: 'Casual', labelEl: 'Φιλικό', desc: 'Friendly, conversational tone', descEl: 'Φιλικός τόνος συζήτησης' },
+  { value: 'formal', label: 'Formal', labelEl: 'Επίσημο', desc: 'Professional, business-like', descEl: 'Επαγγελματικός τόνος' },
+];
+
+/** The creativity steps, with the words each one reads as. */
+const TEMPERATURES = [
+  { value: '0.1', en: 'Very precise', el: 'Πολύ ακριβές' },
+  { value: '0.3', en: 'Focused', el: 'Εστιασμένο' },
+  { value: '0.5', en: 'Balanced', el: 'Ισορροπημένο' },
+  { value: '0.7', en: 'Creative (default)', el: 'Δημιουργικό (προεπιλογή)' },
+  { value: '0.9', en: 'Very creative', el: 'Πολύ δημιουργικό' },
+  { value: '1.0', en: 'Maximum creativity', el: 'Μέγιστη δημιουργικότητα' },
 ];
 
 /** The product's switch, with this page's prop names. See the note on the same
@@ -238,21 +249,19 @@ export default function AISettingsPage() {
   ]);
   return (
     <AppShell>
-      <div className="max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
+      <div className="w-full min-w-0">
+        {/* Header. The page title lives in the shell header; a second, larger
+            "AI Assistant Settings" here made the page open with its own name
+            twice. The links beside it stay, on the width the sidebar leaves. */}
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/settings"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="icon-sm" />
             {t('Back to Settings')}
           </Link>
-          {/* The page title lives in the shell header; a second, larger
-              "AI Assistant Settings" here made the page open with its own name
-              twice. The links beside it stay. */}
-          <div className="flex items-center justify-end">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline" className="gap-2">
               <Link href="/ai/capabilities">
                 <CfbGlyph name="spark" className="h-4 w-4" />
@@ -269,7 +278,6 @@ export default function AISettingsPage() {
               {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
-            </div>
           </div>
         </div>
 
@@ -297,7 +305,7 @@ export default function AISettingsPage() {
                 )}>
                   {isAIAvailable ? 'AI Assistant is Online' : 'AI Assistant is Offline'}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   {/* Written for the reader, not the operator: "Run: ollama
                       serve" was shown to every user. The built-in copilot
                       answers from platform data without a model, so the
@@ -316,7 +324,7 @@ export default function AISettingsPage() {
                     />
                   )}
                   {!isAIAvailable && process.env.NODE_ENV !== 'production' && (
-                    <span className="mt-1 block font-mono text-xs">dev: ollama serve</span>
+                    <code className="mt-1 block font-mono text-xs">dev: ollama serve</code>
                   )}
                 </p>
               </div>
@@ -324,7 +332,7 @@ export default function AISettingsPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-2">
           {/* Model Settings */}
           <Card>
             <CardHeader>
@@ -407,50 +415,52 @@ export default function AISettingsPage() {
                 </div>
               </div>
 
-              {/* Temperature Selection */}
-              <div className="space-y-2">
-                <Label htmlFor="prefs" className="flex items-center gap-2">
-                  <ThermometerSun className="icon-sm text-muted-foreground" />
-                  <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
-                </Label>
-                <Select
-                  value={String(prefs.temperature)}
-                  onValueChange={(v) => updatePref('temperature', parseFloat(v))}
-                >
-                  <SelectTrigger id="prefs" aria-label="Creativity (Temperature)" className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0.1">0.1 - Very Precise</SelectItem>
-                    <SelectItem value="0.3">0.3 - Focused</SelectItem>
-                    <SelectItem value="0.5">0.5 - Balanced</SelectItem>
-                    <SelectItem value="0.7">0.7 - Creative (Default)</SelectItem>
-                    <SelectItem value="0.9">0.9 - Very Creative</SelectItem>
-                    <SelectItem value="1.0">1.0 - Maximum Creativity</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText en="Higher values make responses more varied and creative" el="Υψηλότερες τιμές δίνουν πιο ποικίλες και δημιουργικές απαντήσεις" wrap />
-                </p>
-              </div>
+              {/* Temperature and length share the card width, the same way the
+                  model and agent selects do, so a half-width card does not
+                  leave a short control with an empty run beside it. */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="prefs" className="flex items-center gap-2">
+                    <ThermometerSun className="icon-sm text-muted-foreground" />
+                    <BilingualText en="Creativity (Temperature)" el="Δημιουργικότητα (θερμοκρασία)" compact />
+                  </Label>
+                  <Select
+                    value={String(prefs.temperature)}
+                    onValueChange={(v) => updatePref('temperature', parseFloat(v))}
+                  >
+                    <SelectTrigger id="prefs" aria-label={bilingualAria('Creativity (temperature)', 'Δημιουργικότητα (θερμοκρασία)')} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TEMPERATURES.map((step) => (
+                        <SelectItem key={step.value} value={step.value}>
+                          {step.value} · <BilingualText en={step.en} el={step.el} compact />
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    <BilingualText en="Higher values make responses more varied and creative" el="Υψηλότερες τιμές δίνουν πιο ποικίλες και δημιουργικές απαντήσεις" wrap />
+                  </p>
+                </div>
 
-              {/* Max Tokens */}
-              <div className="space-y-2">
-                <Label htmlFor="prefs-2"><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
-                <Select
-                  value={String(prefs.maxTokens)}
-                  onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
-                >
-                  <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="512"><BilingualText en="Short (512 tokens)" el="Σύντομη (512 tokens)" compact /></SelectItem>
-                    <SelectItem value="1024"><BilingualText en="Medium (1024 tokens)" el="Μεσαία (1024 tokens)" compact /></SelectItem>
-                    <SelectItem value="2048"><BilingualText en="Long (2048 tokens)" el="Μεγάλη (2048 tokens)" compact /></SelectItem>
-                    <SelectItem value="4096"><BilingualText en="Very Long (4096 tokens)" el="Πολύ μεγάλη (4096 tokens)" compact /></SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="prefs-2"><BilingualText en="Max Response Length" el="Μέγιστο μήκος απάντησης" compact /></Label>
+                  <Select
+                    value={String(prefs.maxTokens)}
+                    onValueChange={(v) => updatePref('maxTokens', parseInt(v))}
+                  >
+                    <SelectTrigger id="prefs-2" aria-label="Max Response Length" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="512"><BilingualText en="Short (512 tokens)" el="Σύντομη (512 tokens)" compact /></SelectItem>
+                      <SelectItem value="1024"><BilingualText en="Medium (1024 tokens)" el="Μεσαία (1024 tokens)" compact /></SelectItem>
+                      <SelectItem value="2048"><BilingualText en="Long (2048 tokens)" el="Μεγάλη (2048 tokens)" compact /></SelectItem>
+                      <SelectItem value="4096"><BilingualText en="Very Long (4096 tokens)" el="Πολύ μεγάλη (4096 tokens)" compact /></SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -480,19 +490,19 @@ export default function AISettingsPage() {
                         : 'border-border hover:border-primary/50'
                     )}
                   >
-                    <span className="font-medium">{style.label}</span>
-                    <span className="text-sm text-muted-foreground">{style.desc}</span>
+                    <span className="text-sm font-medium"><BilingualText en={style.label} el={style.labelEl} compact /></span>
+                    <span className="card-body text-muted-foreground"><BilingualText en={style.desc} el={style.descEl} wrap /></span>
                   </button>
                 ))}
               </div>
 
               {/* Language */}
               <div className="space-y-2">
-                <p id="page-cap5-cap" className="flex items-center gap-2">
+                <p id="page-cap5-cap" className="flex items-center gap-2 text-sm font-medium">
                   <Languages className="icon-sm text-muted-foreground" />
                   {t('Response Language')}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   {t('Tap a language. The same setting is in the header globe and in Settings.')}
                 </p>
                 <LanguageChipGrid
@@ -507,8 +517,8 @@ export default function AISettingsPage() {
               {/* Use Emoji */}
               <div className="flex items-center justify-between gap-4 py-2">
                 <div>
-                  <p className="font-medium"><BilingualText en="Use Emojis" el="Χρήση emoji" compact /></p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm font-medium"><BilingualText en="Use Emojis" el="Χρήση emoji" compact /></p>
+                  <p className="card-body text-muted-foreground">
                     <BilingualText en="Include emojis in AI responses for a friendlier tone" el="Emoji στις απαντήσεις για πιο φιλικό ύφος" wrap />
                   </p>
                 </div>
@@ -534,18 +544,18 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-1">
               {[
-                { key: 'enableStreaming', label: 'Streaming Responses', desc: 'See AI responses as they are generated' },
-                { key: 'enableSuggestions', label: 'Suggested Questions', desc: 'Show quick action suggestions in chat' },
-                { key: 'enableContextMemory', label: 'Context Memory', desc: 'AI remembers context from earlier in the conversation' },
-                { key: 'enableAutoSave', label: 'Auto-Save Conversations', desc: 'Automatically save your chat history' },
-              ].map(({ key, label, desc }) => (
+                { key: 'enableStreaming', label: 'Streaming responses', labelEl: 'Απαντήσεις σε ροή', desc: 'See AI responses as they are generated', descEl: 'Βλέπετε την απάντηση καθώς γράφεται' },
+                { key: 'enableSuggestions', label: 'Suggested questions', labelEl: 'Προτεινόμενες ερωτήσεις', desc: 'Show quick action suggestions in chat', descEl: 'Προτάσεις γρήγορων ενεργειών στη συζήτηση' },
+                { key: 'enableContextMemory', label: 'Context memory', labelEl: 'Μνήμη συμφραζομένων', desc: 'AI remembers context from earlier in the conversation', descEl: 'Ο βοηθός θυμάται όσα ειπώθηκαν νωρίτερα στη συζήτηση' },
+                { key: 'enableAutoSave', label: 'Auto-save conversations', labelEl: 'Αυτόματη αποθήκευση συνομιλιών', desc: 'Automatically save your chat history', descEl: 'Το ιστορικό συζητήσεων αποθηκεύεται αυτόματα' },
+              ].map(({ key, label, labelEl, desc, descEl }) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="font-medium">{label}</p>
-                    <p className="text-sm text-muted-foreground">{desc}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={label} el={labelEl} compact /></p>
+                    <p className="card-body text-muted-foreground"><BilingualText en={desc} el={descEl} wrap /></p>
                   </div>
                   <Toggle
-                    label={label}
+                    label={bilingualAria(label, labelEl)}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />
@@ -567,17 +577,17 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-1">
               {[
-                { key: 'saveConversations', label: 'Save Conversations', desc: 'Store your AI chat history for future reference' },
-                { key: 'anonymizeData', label: 'Anonymize Data', desc: 'Remove personally identifiable information from saved data' },
-                { key: 'shareForTraining', label: 'Help Improve AI', desc: 'Allow anonymized conversations to improve the AI (optional)' },
-              ].map(({ key, label, desc }) => (
+                { key: 'saveConversations', label: 'Save conversations', labelEl: 'Αποθήκευση συνομιλιών', desc: 'Store your AI chat history for future reference', descEl: 'Κρατά το ιστορικό σας για να το βρίσκετε αργότερα' },
+                { key: 'anonymizeData', label: 'Anonymize data', labelEl: 'Ανωνυμοποίηση δεδομένων', desc: 'Remove personally identifiable information from saved data', descEl: 'Αφαιρεί τα στοιχεία ταυτότητας από τα αποθηκευμένα δεδομένα' },
+                { key: 'shareForTraining', label: 'Help improve the AI', labelEl: 'Βοηθήστε να βελτιωθεί το AI', desc: 'Allow anonymized conversations to improve the AI (optional)', descEl: 'Επιτρέπει να χρησιμοποιούνται ανώνυμες συνομιλίες για τη βελτίωση του AI (προαιρετικό)' },
+              ].map(({ key, label, labelEl, desc, descEl }) => (
                 <div key={key} className="flex items-center justify-between gap-4 py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="font-medium">{label}</p>
-                    <p className="text-sm text-muted-foreground">{desc}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium"><BilingualText en={label} el={labelEl} compact /></p>
+                    <p className="card-body text-muted-foreground"><BilingualText en={desc} el={descEl} wrap /></p>
                   </div>
                   <Toggle
-                    label={label}
+                    label={bilingualAria(label, labelEl)}
                     checked={prefs[key as keyof AIPreferences] as boolean}
                     onChange={(v) => updatePref(key as keyof AIPreferences, v)}
                   />
@@ -586,8 +596,9 @@ export default function AISettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Available Agents Info */}
-          <Card>
+          {/* Available Agents Info. A two-column catalogue from sm, three from
+              xl, so it takes the full width under the paired cards. */}
+          <Card className="xl:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CfbGlyph name="spark" className="icon-md text-muted-foreground" />
@@ -598,7 +609,7 @@ export default function AISettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
                 {(agents.length > 0 ? agents : [
                   { id: 'general', name: 'General Assistant', description: 'Platform help and FAQs' },
                   { id: 'matching', name: 'Co-Founder Matching', description: 'Find the right co-founder' },
@@ -611,8 +622,8 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                      <CfbGlyph name="spark" className="icon-sm" />
+                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      <img src={demoPortrait(agent.id, 64)} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

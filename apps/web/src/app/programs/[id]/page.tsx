@@ -152,7 +152,10 @@ export default function ProgramDetailPage() {
           {/* Each figure under its own name: the card listed "Aegean Venture
               Lab · Accelerator · Active · Athens" with nothing saying which
               was the organiser, the type, the status or the place. */}
-          <Card>
+          <Card className="overflow-hidden">
+            {program.coverImageUrl ? (
+              <img src={program.coverImageUrl} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+            ) : null}
             <CardContent>
               <dl className="grid grid-cols-1 gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
                 <Fact en="Organiser" el="Διοργανωτής">
@@ -194,21 +197,21 @@ export default function ProgramDetailPage() {
           {program.description && (
             <Card>
               <CardContent>
-                <p className="whitespace-pre-line text-sm leading-relaxed">{program.description}</p>
+                <p className="card-body whitespace-pre-line">{program.description}</p>
               </CardContent>
             </Card>
           )}
           {(program.industries?.length ?? 0) > 0 && (
             <section aria-labelledby="program-industries" className="space-y-2">
               <h2 id="program-industries" className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="Industries" el="Κλάδοι" compact /></h2>
-              <FactLine className="text-sm text-foreground" items={program.industries} />
+              <FactLine className="text-foreground sm:text-sm" items={program.industries} />
             </section>
           )}
           {(program.benefits?.length ?? 0) > 0 && (
             <Card>
               <CardContent className="space-y-3">
-                <h2 className="text-xs font-medium uppercase tracking-wide text-muted-foreground"><BilingualText en="What the programme offers" el="Τι προσφέρει το πρόγραμμα" compact wrap /></h2>
-                <ul className="space-y-1.5 text-sm">
+                <h2 className="card-title"><BilingualText en="What the programme offers" el="Τι προσφέρει το πρόγραμμα" compact wrap /></h2>
+                <ul className="card-body space-y-1.5">
                   {program.benefits.map((b) => (
                     <li key={b} className="flex items-start gap-2">
                       <CheckCircle2 className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
@@ -224,16 +227,16 @@ export default function ProgramDetailPage() {
         <aside>
           <Card>
             <CardContent className="space-y-3">
-              <p className="text-sm font-semibold">
+              <h2 className="card-title">
                 <BilingualText en={`${programsEn('apply_to')} ${program.title}`} el={`${programsEl('apply_to')} ${program.title}`} compact wrap />
-              </p>
+              </h2>
               {enrolled ? (
                 <Badge className="gap-1.5" variant="secondary">
                   <CheckCircle2 className="icon-sm" aria-hidden="true" />
                   <BilingualText en={programsEn('applied')} el={programsEl('applied')} compact />
                 </Badge>
               ) : closed ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="card-body text-muted-foreground">
                   <BilingualText
                     en={full ? 'The programme is full.' : deadlinePassed ? 'Applications have closed.' : 'This programme is not taking applications.'}
                     el={full ? 'Το πρόγραμμα είναι πλήρες.' : deadlinePassed ? 'Οι αιτήσεις έκλεισαν.' : 'Το πρόγραμμα δεν δέχεται αιτήσεις.'}

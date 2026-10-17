@@ -20,6 +20,7 @@ import { useTenant } from '@/components/providers/TenantContext';
 import { updateTenant, type TenantSettings } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -33,7 +34,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
 export default function TenantSettingsPage() {
   /*
@@ -181,23 +183,23 @@ export default function TenantSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p id="page-cap1-cap" className="text-sm font-medium leading-tight"><BilingualText en="Require Approval for New Members" el="Έγκριση για νέα μέλη" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p id="page-cap1-cap" className="text-sm font-medium"><BilingualText en="Require Approval for New Members" el="Έγκριση για νέα μέλη" compact wrap /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="New members must be approved by an admin" el="Τα νέα μέλη εγκρίνονται από διαχειριστή" wrap />
                     </p>
                   </div>
-                  <Switch checked={requireApproval} onCheckedChange={setRequireApproval} aria-label="Require Approval for New Members" />
+                  <Switch checked={requireApproval} onCheckedChange={setRequireApproval} aria-label={bilingualAria('Require Approval for New Members', 'Έγκριση για νέα μέλη')} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p id="page-cap2-cap" className="text-sm font-medium leading-tight"><BilingualText en="Auto-approve from Allowed Domains" el="Αυτόματη έγκριση από επιτρεπόμενους τομείς" wrap /></p>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p id="page-cap2-cap" className="text-sm font-medium"><BilingualText en="Auto-approve from Allowed Domains" el="Αυτόματη έγκριση από επιτρεπόμενους τομείς" wrap /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Automatically approve members from specific email domains" el="Αυτόματη έγκριση μελών από συγκεκριμένους τομείς email" wrap />
                     </p>
                   </div>
-                  <Switch checked={autoApprove} onCheckedChange={setAutoApprove} aria-label="Auto-approve from Allowed Domains" />
+                  <Switch checked={autoApprove} onCheckedChange={setAutoApprove} aria-label={bilingualAria('Auto-approve from Allowed Domains', 'Αυτόματη έγκριση από επιτρεπόμενους τομείς')} />
                 </div>
                 {autoApprove && (
                   <div className="space-y-2">
@@ -219,7 +221,7 @@ export default function TenantSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="page-f4"><BilingualText en="SSO Provider" el="Πάροχος SSO" compact /></Label>
                   <Select defaultValue="none">
-                    <SelectTrigger id="page-f4" aria-label="SSO Provider">
+                    <SelectTrigger id="page-f4" aria-label={bilingualAria('SSO Provider', 'Πάροχος SSO')}>
                       <SelectValue placeholder={bilingualInline("Select provider", "Επιλογή παρόχου")} />
                     </SelectTrigger>
                     <SelectContent>
@@ -245,23 +247,23 @@ export default function TenantSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p id="page-cap5-cap" className="text-sm font-medium leading-tight"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p id="page-cap5-cap" className="text-sm font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact wrap /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Send email notifications to members" el="Αποστολή ειδοποιήσεων email στα μέλη" wrap />
                     </p>
                   </div>
-                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} aria-label="Email Notifications" />
+                  <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} aria-label={bilingualAria('Email Notifications', 'Ειδοποιήσεις email')} />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p id="page-cap6-cap" className="text-sm font-medium leading-tight"><BilingualText en="Weekly Digest" el="Εβδομαδιαία σύνοψη" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p id="page-cap6-cap" className="text-sm font-medium"><BilingualText en="Weekly Digest" el="Εβδομαδιαία σύνοψη" compact wrap /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Send weekly summary emails to members" el="Αποστολή εβδομαδιαίας σύνοψης στα μέλη" wrap />
                     </p>
                   </div>
-                  <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} aria-label="Weekly Digest" />
+                  <Switch checked={weeklyDigest} onCheckedChange={setWeeklyDigest} aria-label={bilingualAria('Weekly Digest', 'Εβδομαδιαία σύνοψη')} />
                 </div>
               </CardContent>
             </Card>
@@ -276,22 +278,29 @@ export default function TenantSettingsPage() {
                   <BilingualText en="Integrate with external services" el="Σύνδεση με εξωτερικές υπηρεσίες" compact wrap />
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              {/* Rows of the section card, not boxes drawn inside it. */}
+              <CardContent className="card-rows">
                 {[
-                  { name: 'Slack', description: 'Send notifications to Slack channels', connected: true },
-                  { name: 'Google Calendar', description: 'Sync events with Google Calendar', connected: false },
-                  { name: 'Zoom', description: 'Create Zoom meetings for sessions', connected: true },
-                  { name: 'Notion', description: 'Sync resources with Notion', connected: false },
+                  { name: 'Slack', description: 'Send notifications to Slack channels', descriptionEl: 'Ειδοποιήσεις σε κανάλια Slack', connected: true },
+                  { name: 'Google Calendar', description: 'Sync events with Google Calendar', descriptionEl: 'Συγχρονισμός εκδηλώσεων με το Google Calendar', connected: false },
+                  { name: 'Zoom', description: 'Create Zoom meetings for sessions', descriptionEl: 'Συναντήσεις Zoom για τις συνεδρίες', connected: true },
+                  { name: 'Notion', description: 'Sync resources with Notion', descriptionEl: 'Συγχρονισμός πόρων με το Notion', connected: false },
                 ].map((integration) => (
-                  <div key={integration.name} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
-                      <p className="font-medium">{integration.name}</p>
-                      <p className="text-sm text-muted-foreground">{integration.description}</p>
-                    </div>
-                    <Button variant={integration.connected ? 'outline' : 'default'} size="sm" disabled title="Third-party integrations are not available yet">
-                      {integration.connected ? 'Disconnect' : 'Connect'}
-                    </Button>
-                  </div>
+                  <RowHead
+                    key={integration.name}
+                    title={integration.name}
+                    subtitle={<BilingualText en={integration.description} el={integration.descriptionEl} wrap />}
+                    asideStays
+                    aside={(
+                      <WithDisabledReason reasonEn="Third-party integrations are not available yet" reasonEl="Οι συνδέσεις με τρίτες υπηρεσίες δεν είναι ακόμη διαθέσιμες">
+                        <Button variant={integration.connected ? 'outline' : 'default'} size="sm" disabled>
+                          {integration.connected
+                            ? <BilingualText en="Disconnect" el="Αποσύνδεση" compact />
+                            : <BilingualText en="Connect" el="Σύνδεση" compact />}
+                        </Button>
+                      </WithDisabledReason>
+                    )}
+                  />
                 ))}
               </CardContent>
             </Card>
@@ -299,14 +308,11 @@ export default function TenantSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="API Access" el="Πρόσβαση API" compact /></CardTitle>
-                <CardDescription>
-                  <BilingualText en="Manage API keys for programmatic access" el="Διαχείριση κλειδιών API για προγραμματιστική πρόσβαση" wrap />
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <Input value="sk_live_xxxxxxxxxxxxxxxxxxxxx" readOnly className="font-mono text-sm" />
+                    <Input aria-label={bilingualAria('API key (masked)', 'Κλειδί API (κρυμμένο)')} value="sk_live_xxxxxxxxxxxxxxxxxxxxx" readOnly className="font-mono" />
                   </div>
                   <Button variant="outline" size="sm" asChild>
                     <Link href="/tenant/api-keys">
@@ -329,15 +335,18 @@ export default function TenantSettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg border bg-muted/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-lg"><BilingualText en="Enterprise Plan" el="Πλάνο Enterprise" compact /></p>
-                      <p className="text-sm text-muted-foreground"><BilingualText en="Up to 500 members, unlimited programs" el="Έως 500 μέλη, απεριόριστα προγράμματα" wrap /></p>
-                    </div>
-                    <p className="page-stat text-xl font-bold">$499<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                  </div>
-                </div>
+                {/* The plan as a row of the card: its name a step under the
+                    card's title, the price beside it on the body step. */}
+                <RowHead
+                  title={<BilingualText en="Enterprise Plan" el="Πλάνο Enterprise" compact />}
+                  subtitle={<BilingualText en="Up to 500 members, unlimited programs" el="Έως 500 μέλη, απεριόριστα προγράμματα" wrap />}
+                  asideStays
+                  aside={(
+                    <p className="card-body font-semibold tabular-nums text-foreground">
+                      $499<span className="text-xs font-normal text-muted-foreground"><BilingualText en="/mo" el="/μήνα" compact /></span>
+                    </p>
+                  )}
+                />
                 <div className="flex gap-2">
                   <Button variant="outline" asChild><Link href="/tenant/billing"><BilingualText en="Change Plan" el="Αλλαγή πλάνου" compact /></Link></Button>
                   <Button variant="outline" asChild><Link href="/tenant/billing"><BilingualText en="View Invoices" el="Προβολή τιμολογίων" compact /></Link></Button>
@@ -348,19 +357,19 @@ export default function TenantSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle><BilingualText en="Payment Method" el="Τρόπος πληρωμής" compact /></CardTitle>
-                <CardDescription>
-                  <BilingualText en="Manage your payment information" el="Διαχείριση στοιχείων πληρωμής" compact wrap />
-                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center gap-4 p-3 rounded-lg border">
-                  <CreditCard className="icon-xl text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">•••• •••• •••• 4242</p>
-                    <p className="text-sm text-muted-foreground">Expires 12/2026</p>
-                  </div>
-                  <Button variant="outline" size="sm" asChild><Link href="/tenant/billing"><BilingualText en="Update" el="Ενημέρωση" compact /></Link></Button>
-                </div>
+                <RowHead
+                  mark={(
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                      <CreditCard className="icon-md" aria-hidden="true" />
+                    </div>
+                  )}
+                  title={<span className="tabular-nums">•••• •••• •••• 4242</span>}
+                  subtitle={<BilingualText en="Expires 12/2026" el="Λήγει 12/2026" compact />}
+                  asideStays
+                  aside={<Button variant="outline" size="sm" asChild><Link href="/tenant/billing"><BilingualText en="Update" el="Ενημέρωση" compact /></Link></Button>}
+                />
               </CardContent>
             </Card>
           </TabsContent>

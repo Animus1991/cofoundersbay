@@ -17,6 +17,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import {
   messagesEn,
   messagesEl,
@@ -50,6 +52,7 @@ import { queryKeys } from '@/lib/query-keys';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ConversationValidationState } from '@/components/messaging/ConversationValidation';
+import { PersonHovercard } from '@/components/common/PersonHovercard';
 
 function mapConversation(s: ConversationSummary): Conversation {
   const lastAt = s.lastMessage?.createdAt ?? s.updatedAt;
@@ -157,32 +160,34 @@ function IntroDetailPane({
         <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           <BilingualText en={messagesEn('connection_request')} el={messagesEl('connection_request')} compact />
         </p>
-        <div className="flex items-start gap-4">
-          <Link href={`/profiles/${request.requester.id}`} className="shrink-0">
-            <ThreadAvatar
-              name={request.requester.displayName}
-              src={request.requester.avatarUrl}
-              seed={request.requester.id}
-              size="lg"
-            />
-          </Link>
-          <div className="min-w-0 flex-1">
-            <Link href={`/profiles/${request.requester.id}`} className="text-lg font-semibold tracking-tight text-foreground hover:underline">
-              {request.requester.displayName}
+        {/* The request as its card shows it: the person's mark, the name with
+            the role beside it and the headline under it, the date at the
+            right; the note under them starts on the mark's edge. */}
+        <CardHead
+          titleAs="p"
+          mark={(
+            <Link href={`/profiles/${request.requester.id}`} aria-label={bilingualAria(`Open ${request.requester.displayName}'s profile`, `Άνοιγμα προφίλ: ${request.requester.displayName}`)}>
+              <ThreadAvatar
+                name={request.requester.displayName}
+                src={request.requester.avatarUrl}
+                seed={request.requester.id}
+                size="md"
+              />
             </Link>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <PersonHovercard userId={request.requester.id}><Link href={`/profiles/${request.requester.id}`} className="transition-colors hover:text-primary-accessible">{request.requester.displayName}</Link></PersonHovercard>
               <RoleBadge role={request.requester?.role || 'founder'} size="sm" />
-              <span className="text-xs text-muted-foreground">{dateLabel}</span>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {request.requester?.headline || (
-                <BilingualText en={messagesEn('headline_fallback')} el={messagesEl('headline_fallback')} compact />
-              )}
-            </p>
-          </div>
-        </div>
+            </span>
+          )}
+          subtitle={request.requester?.headline || (
+            <BilingualText en={messagesEn('headline_fallback')} el={messagesEl('headline_fallback')} compact />
+          )}
+          aside={dateLabel}
+        />
         {request.message && (
-          <blockquote className="rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm italic leading-relaxed text-foreground/80">
+          <blockquote className="card-body italic text-muted-foreground">
             {quoteEl ? (
               <BilingualText en={request.message} el={quoteEl} wrap />
             ) : (
@@ -196,7 +201,7 @@ function IntroDetailPane({
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
-            className="h-9 gap-1.5 rounded-full px-4"
+            className="gap-1.5"
             disabled={responding}
             onClick={onAccept}
           >
@@ -206,7 +211,7 @@ function IntroDetailPane({
           <Button
             size="sm"
             variant="outline"
-            className="h-9 gap-1.5 rounded-full px-4"
+            className="gap-1.5"
             disabled={responding}
             onClick={onDecline}
           >
@@ -214,20 +219,22 @@ function IntroDetailPane({
             <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
           </Button>
         </div>
+        {/* Outline, not ghost: a ghost button that starts the row put its
+            padding in front of its letters, off the pane's left edge. */}
         <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+          <Button asChild size="sm" variant="outline">
             <Link href={`/profiles/${request.requester.id}`}>
               <CfbGlyph name="people" className="icon-sm mr-1.5" />
               <BilingualText en={messagesEn('view_profile')} el={messagesEl('view_profile')} compact />
             </Link>
           </Button>
-          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+          <Button asChild size="sm" variant="outline">
             <Link href={`/matches/${request.requester.id}`}>
               <CfbGlyph name="matches" className="icon-sm mr-1.5" />
               <BilingualText en={messagesEn('view_match')} el={messagesEl('view_match')} compact />
             </Link>
           </Button>
-          <Button asChild size="sm" variant="ghost" className="h-8 rounded-full">
+          <Button asChild size="sm" variant="outline">
             <Link href="/discover">
               <CfbGlyph name="discover" className="icon-sm mr-1.5" />
               <BilingualText en={messagesEn('discover_people')} el={messagesEl('discover_people')} compact />
@@ -544,6 +551,9 @@ export default function MessagesPage() {
   // Handle URL param for direct messaging
   const toUserId = searchParams?.get('to');
   const openConversationId = searchParams?.get('c');
+  // From the assistant's message search: the thread opens with the words
+  // already searched, so the hit is marked where it sits.
+  const findParam = searchParams?.get('find') ?? undefined;
   useEffect(() => {
     if (!canUseMessaging || !toUserId || openConversationId) return;
 
@@ -932,60 +942,63 @@ export default function MessagesPage() {
 
   return (
     <AppShell fullHeight contentClassName="min-h-0" rail={rail}>
-      <div className="flex h-full min-h-0 flex-col p-2 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:p-3 lg:p-4 lg:pb-4">
-        <div className="flex min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
+      <div className="flex h-full min-h-0 flex-col p-0 sm:p-3 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:p-4 lg:pb-4">
+        <div className="flex min-h-0 flex-1 overflow-hidden bg-background sm:rounded-2xl sm:border sm:border-border sm:bg-card sm:shadow-[0_24px_64px_-28px_hsl(var(--foreground)/0.35)]">
           <div
             className={cn(
-              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-r border-border bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
+              'grid h-full min-h-0 min-w-0 w-full shrink-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden border-border bg-background max-sm:border-0 sm:border-r sm:bg-muted/40 md:w-[340px] md:max-w-[340px] lg:w-[392px] lg:max-w-[392px]',
               isMobileViewingChat && 'hidden md:grid',
             )}
           >
-            <div className="min-w-0 shrink-0 space-y-3 px-4 pb-3 pt-4">
-              {/* The compose button gets its own row. This pane is a fixed 392px
-                  at every desktop width, and with the button beside the title the
-                  heading block was left 138px of a 365px row -- the lead wrapped
-                  to five lines of about 23 characters, at every width, not just
-                  the wide ones. A full-width compose action at the top of a list
-                  pane is also what the reader expects it to be. */}
-              <div className="flex items-start gap-2">
+            {/* From sm the inbox axis is 20px, the same edge as the avatars
+                (the list's px-2 and each row's px-3). On a phone the pane is
+                tighter, and the title row keeps clear of the tools icon. */}
+            <div className="min-w-0 shrink-0 space-y-2 px-3 pb-2 pt-3 sm:space-y-3 sm:px-5 sm:pb-3 sm:pt-4">
+              <div className="flex items-center gap-2 max-sm:pr-10 sm:items-start">
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                  {/* The page-title step every page header uses: at text-lg
+                      the inbox title sat 0.17px over the card title step on a
+                      desktop, level with a thread's or a request's name. */}
+                  <h1 className="page-title font-semibold tracking-tight text-foreground">
                     <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
                   </h1>
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  <p className="mt-0.5 hidden text-xs leading-snug text-muted-foreground sm:block">
                     <BilingualText en={messagesEn('inbox_lead')} el={messagesEl('inbox_lead')} compact wrap />
                   </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />
               </div>
-              <div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
                 <Button
                   type="button"
                   size="sm"
-                  className="h-8 w-full gap-1.5 rounded-full px-3 text-xs text-primary-foreground shadow-none"
+                  className="h-auto min-h-11 w-full flex-col items-start gap-0 whitespace-normal rounded-xl px-3 py-2 text-left text-primary-foreground shadow-none sm:h-8 sm:flex-row sm:items-center sm:rounded-full sm:px-3 sm:py-0"
                   onClick={() => setComposeOpen(true)}
                   aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
                 >
-                  {t(messagesEn('new_message'), messagesEl('new_message'))}
+                  <span className="text-sm font-medium">{t(messagesEn('new_message'), messagesEl('new_message'))}</span>
+                  <span className="text-xs font-normal leading-snug sm:hidden">
+                    <BilingualText en={messagesEn('new_message_short')} el={messagesEl('new_message_short')} compact />
+                  </span>
                 </Button>
-              </div>
-              <button
-                type="button"
-                onClick={openInboxAi}
-                className="flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-xl border border-border px-3 py-2 text-left transition-colors hover:bg-muted/40"
-              >
-                <span className="min-w-0">
-                  <span className="block text-xs font-semibold text-foreground">
+                <button
+                  type="button"
+                  onClick={openInboxAi}
+                  className="flex min-h-11 min-w-0 w-full flex-col items-start justify-center gap-0 overflow-hidden rounded-xl border border-border px-3 py-2 text-left transition-colors hover:bg-muted/40 sm:min-h-0"
+                >
+                  <span className="block text-sm font-medium text-foreground">
                     {t(messagesEn('ask_ai'), messagesEl('ask_ai'))}
                   </span>
+                  <span className="block text-xs leading-snug text-muted-foreground sm:hidden">
+                    <BilingualText en={messagesEn('ask_ai_short')} el={messagesEl('ask_ai_short')} compact />
+                  </span>
                   {/* line-clamp, not truncate: this hint is a sentence, and one
-                      line cut it by a third ("Draft a reply, summarise this thread,
-                      or s…"). Two lines still bound the button's height. */}
-                  <span className="block line-clamp-2 text-2xs text-muted-foreground">
+                      line cut it by a third. Two lines still bound the height. */}
+                  <span className="hidden line-clamp-2 text-2xs text-muted-foreground sm:block">
                     <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} compact wrap />
                   </span>
-                </span>
-              </button>
+                </button>
+              </div>
             </div>
             <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
               <div className="shrink-0 px-3 pb-1">
@@ -1021,7 +1034,6 @@ export default function MessagesPage() {
                     markConversationRead(conv.id);
                     setIsMobileViewingChat(true);
                   }}
-                  onNewMessage={() => setComposeOpen(true)}
                   onPin={handlePin}
                   onArchive={handleArchive}
                 />
@@ -1075,8 +1087,13 @@ export default function MessagesPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2 p-3">
+                  <div className="space-y-1 p-2">
                     {introRequests.map((req) => (
+                      // A row of the list (RowHead: a card title here would
+                      // outrank the pane's own h1 on a phone): the person's
+                      // mark, the name and the headline under it, the date at
+                      // the right; the note and the answers start on the
+                      // mark's edge. A row, not a tile: the pane is the card.
                       <div
                         key={req.id}
                         role="button"
@@ -1092,74 +1109,72 @@ export default function MessagesPage() {
                           }
                         }}
                         className={cn(
-                          'animate-fade-in cursor-pointer rounded-2xl bg-background/80 p-4 shadow-sm ring-1 transition-colors',
-                          selectedIntro?.id === req.id ? 'ring-primary/50 bg-muted/40' : 'ring-border/50 hover:bg-muted/20',
+                          'animate-fade-in cursor-pointer space-y-2 rounded-2xl p-3 transition-colors',
+                          selectedIntro?.id === req.id ? 'bg-muted/50' : 'hover:bg-muted/30',
                         )}
                       >
-                        <div className="flex items-start gap-3">
-                          <ThreadAvatar
-                            name={req.requester.displayName}
-                            src={req.requester?.avatarUrl}
-                            seed={req.requester.id}
-                            size="md"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
+                        <RowHead
+                          mark={(
+                            <ThreadAvatar
+                              name={req.requester.displayName}
+                              src={req.requester?.avatarUrl}
+                              seed={req.requester.id}
+                              size="md"
+                            />
+                          )}
+                          title={(
+                            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                               <Link
                                 href={`/profiles/${req.requester.id}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="truncate text-sm font-medium text-foreground hover:underline"
+                                className="transition-colors hover:text-primary-accessible"
                               >
                                 {req.requester.displayName}
                               </Link>
-                              <span className="shrink-0 text-xs text-muted-foreground">
-                                {new Date(req.createdAt).toLocaleDateString(primary === 'el' ? 'el-GR' : 'en-GB', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                })}
-                              </span>
-                            </div>
-                            <RoleBadge role={req.requester?.role || 'founder'} size="sm" className="mt-0.5" />
-                            {req.requester.headline && (
-                              <p className="mt-1 truncate text-2xs text-muted-foreground">{req.requester.headline}</p>
+                              <RoleBadge role={req.requester?.role || 'founder'} size="sm" />
+                            </span>
+                          )}
+                          subtitle={req.requester.headline ? <span className="line-clamp-2">{req.requester.headline}</span> : undefined}
+                          aside={new Date(req.createdAt).toLocaleDateString(primary === 'el' ? 'el-GR' : 'en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                        />
+                        {req.message && (
+                          <p className="line-clamp-3 text-xs italic leading-relaxed text-muted-foreground">
+                            {PREVIEW_MESSAGE_EL[req.message] ? (
+                              <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
+                            ) : (
+                              <>&ldquo;{req.message}&rdquo;</>
                             )}
-                            {req.message && (
-                              <p className="mt-2 line-clamp-3 text-xs italic leading-relaxed text-foreground/70">
-                                {PREVIEW_MESSAGE_EL[req.message] ? (
-                                  <BilingualText en={req.message} el={PREVIEW_MESSAGE_EL[req.message]} />
-                                ) : (
-                                  <>&ldquo;{req.message}&rdquo;</>
-                                )}
-                              </p>
-                            )}
-                            <div className="mt-3 flex gap-2">
-                              <Button
-                                size="sm"
-                                className="h-7 gap-1 rounded-full px-3 text-xs"
-                                disabled={introResponding[req.id]}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  void handleIntroRespond(req.id, 'accepted');
-                                }}
-                              >
-                                <Check className="icon-sm" />
-                                <BilingualText en={messagesEn('accept')} el={messagesEl('accept')} compact />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 gap-1 rounded-full px-3 text-xs"
-                                disabled={introResponding[req.id]}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  void handleIntroRespond(req.id, 'declined');
-                                }}
-                              >
-                                <X className="icon-sm" />
-                                <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
-                              </Button>
-                            </div>
-                          </div>
+                          </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button
+                            size="sm"
+                            className="gap-1"
+                            disabled={introResponding[req.id]}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleIntroRespond(req.id, 'accepted');
+                            }}
+                          >
+                            <Check className="icon-sm" />
+                            <BilingualText en={messagesEn('accept')} el={messagesEl('accept')} compact />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1"
+                            disabled={introResponding[req.id]}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void handleIntroRespond(req.id, 'declined');
+                            }}
+                          >
+                            <X className="icon-sm" />
+                            <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -1204,6 +1219,7 @@ export default function MessagesPage() {
                   isRecipientTyping={isRecipientTyping}
                   onAskAi={openInboxAi}
                   initialDraft={composerDraft}
+                  initialSearch={selectedConversation?.id === openConversationId ? findParam : undefined}
                   onBack={() => {
                     setIsMobileViewingChat(false);
                   }}

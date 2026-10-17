@@ -113,7 +113,7 @@ export function scoreScoutCandidate(brief: ScoutBrief, c: ScoutCandidate): { sco
   const headline = words(c.headline ?? '');
   if (roleWords.length && roleWords.some((w) => headline.includes(w))) {
     score += 15;
-    reasons.push({ en: 'Their headline matches the role', el: 'Ο τίτλος του/της ταιριάζει με τον ρόλο' });
+    reasons.push({ en: 'Their headline matches the role', el: 'Ο τίτλος στο προφίλ ταιριάζει με τον ρόλο' });
   }
 
   const here = (brief.place ?? '').toLowerCase();
@@ -127,28 +127,42 @@ export function scoreScoutCandidate(brief: ScoutBrief, c: ScoutCandidate): { sco
 
   if (c.openTo.includes('cofounder')) {
     score += 10;
-    if (c.openToVisible.includes('cofounder')) reasons.push({ en: 'Open to co-founding', el: 'Ανοιχτός/ή σε συνίδρυση' });
+    if (c.openToVisible.includes('cofounder')) reasons.push({ en: 'Open to co-founding', el: 'Ενδιαφέρεται για συνίδρυση' });
   }
 
   if (c.verified) {
     score += 10;
-    reasons.push({ en: 'Verified', el: 'Επαληθευμένος/η' });
+    reasons.push({ en: 'Verified', el: 'Επαληθευμένο προφίλ' });
   }
 
   return { score: Math.min(100, score), reasons };
 }
 
+/** Where the founder's startup is, as the Greek note says it. */
+const STAGE_EL: Record<CardStage, string> = {
+  idea: 'βρίσκεται σε στάδιο ιδέας',
+  validating: 'βρίσκεται σε στάδιο επικύρωσης',
+  building: 'βρίσκεται σε στάδιο κατασκευής',
+  launched: 'έχει ήδη κυκλοφορήσει',
+  scaling: 'βρίσκεται σε στάδιο κλιμάκωσης',
+};
+
 /**
- * A first note the founder may send themselves, in their language. It names
- * the role and what stood out, asks for a conversation on the platform, and
- * carries no contact details and no promises.
+ * A first note the founder may send themselves, in either language: a run
+ * keeps both, so a founder reading Greek can still write in English to
+ * someone abroad. It names the role and what stood out, asks for a
+ * conversation on the platform, and carries no contact details and no
+ * promises. The role is quoted in Greek because the founder typed it in
+ * whatever language, and «ψάχνω» before a bare nominative would not read.
  */
 export function draftScoutNote(brief: ScoutBrief, c: Pick<ScoutCandidate, 'displayName' | 'skills'>, lang: 'en' | 'el' = 'en'): string {
   const first = c.displayName.split(/\s+/)[0] || c.displayName;
   const matched = brief.skills.filter((s) => c.skills.some((cs) => sameSkill(cs, s))).slice(0, 3);
   if (lang === 'el') {
     return [
-      `Γεια σας ${first}, ψάχνω ${brief.role}${brief.stage ? ` για startup στο στάδιο «${brief.stage}»` : ''}.`,
+      brief.stage
+        ? `Γεια σας ${first}, η startup μου ${STAGE_EL[brief.stage]} και ψάχνω άτομο για τον ρόλο «${brief.role}».`
+        : `Γεια σας ${first}, ψάχνω άτομο για τον ρόλο «${brief.role}».`,
       matched.length ? `Μου έκανε εντύπωση η εμπειρία σας σε ${matched.join(', ')}.` : 'Το προφίλ σας μου έκανε εντύπωση.',
       'Θα σας ενδιέφερε μια σύντομη συζήτηση εδώ στο CoFounderBay;',
     ].join(' ');

@@ -34,6 +34,8 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Δείξε μου τα αποθηκευμένα προφίλ', tool: 'get_shortlist', read: true },
   { message: 'Do I have unread messages?', tool: 'get_messages', read: true },
   { message: 'Έχω αδιάβαστα μηνύματα;', tool: 'get_messages', read: true },
+  { message: 'Search my messages for research canvas', tool: 'search_messages', read: true },
+  { message: 'Βρες στα μηνύματά μου τον πίνακα έρευνας', tool: 'search_messages', read: true },
   { message: 'Any connection requests waiting for me?', tool: 'get_connections', read: true },
   { message: 'Έχω αιτήματα σύνδεσης σε αναμονή;', tool: 'get_connections', read: true },
   { message: 'Which accelerator programmes are open right now?', tool: 'get_programs', read: true },
@@ -101,6 +103,21 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Ποια τεκμήρια στηρίζουν τις δεξιότητές μου;', tool: 'get_skill_evidence', read: true },
   { message: 'What did my co-founder scout find?', tool: 'get_scout', read: true },
   { message: 'Τι βρήκε ο ανιχνευτής συνιδρυτών;', tool: 'get_scout', read: true },
+  { message: 'Are there any startup perks or cloud credits for us?', tool: 'get_perks', read: true },
+  { message: 'Υπάρχουν προσφορές συνεργατών ή εκπτώσεις για startups;', tool: 'get_perks', read: true },
+  { message: 'Who viewed my profile this month?', tool: 'get_profile_viewers', read: true },
+  { message: 'Ποιοι είδαν το προφίλ μου;', tool: 'get_profile_viewers', read: true },
+  // What the founding team lacks (2026-10-12), read from the founder's own skills.
+  { message: 'What skills is my team missing?', tool: 'get_team_gaps', read: true },
+  { message: 'Τι δεξιότητες λείπουν από την ομάδα μου;', tool: 'get_team_gaps', read: true },
+  // One match explained (2026-10-12): reasons, friction, where the questions agree.
+  { message: 'Why do I match with Elena?', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
+  { message: 'Γιατί ταιριάζω με την Έλενα;', tool: 'get_match_detail', args: { name: 'Elena' }, read: true },
+  // Listings members search (2026-10-12): the assistant fills the form, the person saves.
+  { message: 'Draft my mentor listing with the headline “Go-to-market mentor for seed founders”', tool: 'draft_mentor_listing', args: { headline: 'Go-to-market mentor for seed founders' } },
+  { message: 'Συμπλήρωσε την καταχώριση μέντορα με τίτλο «Μέντορας go-to-market για ιδρυτές seed»', tool: 'draft_mentor_listing', args: { headline: 'Μέντορας go-to-market για ιδρυτές seed' } },
+  { message: 'Prepare my provider listing: “Seed-stage legal for SaaS startups”', tool: 'draft_provider_listing', args: { headline: 'Seed-stage legal for SaaS startups' } },
+  { message: 'Ετοίμασε το προφίλ παρόχου «Νομική υποστήριξη για startups σε seed»', tool: 'draft_provider_listing', args: { headline: 'Νομική υποστήριξη για startups σε seed' } },
   { message: 'Ακολούθησε την Έλενα', tool: 'follow_person', args: { name: 'Elena' } },
   { message: 'Tick the team readiness criterion', tool: 'readiness_tick_criterion', args: { dimension: 'team' } },
   { message: 'Σημείωσε το κριτήριο ετοιμότητας για την αγορά', tool: 'readiness_tick_criterion', args: { dimension: 'market' } },
@@ -110,6 +127,9 @@ export const EVAL_CASES: EvalCase[] = [
   { message: 'Show me angel investors for pre-seed in Limassol', tool: 'search_people', args: { roles: 'investor', fundingStage: 'pre-seed', location: 'Limassol' }, read: true },
   // «τεχνικό» contains «νικο»: this searched for Nikos until names had to start a word.
   { message: 'Ψάξε τεχνικό συνιδρυτή για fintech', tool: 'search_people', args: { q: 'technical', roles: 'founder', industries: 'Fintech' }, read: true },
+  // The investor board is the watchlist, the pipeline and the portfolio.
+  { message: 'Show my investor board', tool: 'get_investor_board', read: true },
+  { message: 'Δείξε τον πίνακα επενδύσεων', tool: 'get_investor_board', read: true },
 ];
 
 /** Writes the planner may propose; a question proposing one of these fails. */

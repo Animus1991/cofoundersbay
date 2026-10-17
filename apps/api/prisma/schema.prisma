@@ -606,6 +606,8 @@ model User {
   // Saved searches
   savedSearches               SavedSearch[]               @relation("SavedSearches")
   savedItems                  SavedItem[]                 @relation("SavedItems")
+  perkClaims                  PerkClaim[]                 @relation("PerkClaims")
+  profileViewerSetting        ProfileViewerSetting?       @relation("ProfileViewerSetting")
 
   // Platform announcements
   platformAnnouncements       PlatformAnnouncement[]      @relation("PlatformAnnouncements")
@@ -7714,6 +7716,8 @@ model ScoutProposal {
   // [{ en, el }] reasons the founder may read
   reasons     Json
   draftNote   String              @db.Text
+  // The same note in Greek; null on proposals written before both were kept
+  draftNoteEl String?             @db.Text
   status      ScoutProposalStatus @default(proposed)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
@@ -7721,4 +7725,56 @@ model ScoutProposal {
   // A person is proposed to a founder once; a dismissal is never undone by a run.
   @@unique([userId, candidateId])
   @@index([userId, status])
+}
+
+/// A partner's offer members claim once (packages/shared perks). Schema-only
+/// like the other new models (`prisma db push`). The partner never receives
+/// the claim list; the code is shown to a member only after they claim.
+model Perk {
+  id            String      @id @default(uuid())
+  partner       String
+  title         String
+  titleEl       String?
+  summary       String      @db.Text
+  summaryEl     String?     @db.Text
+  value         String
+  valueEl       String?
+  category      String // packages/shared PERK_CATEGORIES
+  stages        String[]    @default([])
+  howToRedeem   String      @db.Text
+  howToRedeemEl String?     @db.Text
+  terms         String?     @db.Text
+  termsEl       String?     @db.Text
+  code          String?
+  redeemUrl     String?
+  expiresAt     DateTime?
+  active        Boolean     @default(true)
+  createdById   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  claims        PerkClaim[]
+
+  @@index([active, category])
+}
+
+model PerkClaim {
+  id        String   @id @default(uuid())
+  perkId    String
+  perk      Perk     @relation(fields: [perkId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("PerkClaims", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([perkId, userId])
+  @@index([userId, createdAt])
+}
+
+/// Whether a member is named to the people whose profiles they view
+/// (packages/shared profile-viewers). Off by default; reciprocal: a member
+/// who views privately sees no names either. Schema-only (`prisma db push`).
+model ProfileViewerSetting {
+  userId    String   @id
+  user      User     @relation("ProfileViewerSetting", fields: [userId], references: [id], onDelete: Cascade)
+  shareName Boolean  @default(false)
+  updatedAt DateTime @updatedAt
 }

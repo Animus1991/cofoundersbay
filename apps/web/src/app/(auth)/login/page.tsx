@@ -13,6 +13,7 @@ import { useTenant } from '@/components/providers/TenantContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { loginEmailError, loginPasswordError } from '@/lib/auth-fields';
 
 // No member counts here: the platform does not publish one, so a figure
 // would be invented. Each point describes something the product does.
@@ -33,6 +34,8 @@ function LoginPageContent() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<Message | null>(null);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [ssoDiscovery, setSsoDiscovery] = useState<SSODiscoveryResult | null>(null);
   const [checkingSSO, setCheckingSSO] = useState(false);
@@ -80,7 +83,10 @@ function LoginPageContent() {
     e.preventDefault();
     if (submittingRef.current) return;
     setError(null);
-    if (!email.trim() || !password) return;
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    const passwordHidden = Boolean(ssoDiscovery?.ssoRequired && !ssoDiscovery.allowPasswordLogin);
+    if (loginEmailError(email) || (!passwordHidden && loginPasswordError(password))) return;
     submittingRef.current = true;
     setLoading(true);
     try {
@@ -106,6 +112,10 @@ function LoginPageContent() {
     }
   }
 
+  const passwordHidden = Boolean(ssoDiscovery?.ssoRequired && !ssoDiscovery.allowPasswordLogin);
+  const emailMessage = emailTouched ? loginEmailError(email) : null;
+  const passwordMessage = passwordTouched && !passwordHidden ? loginPasswordError(password) : null;
+
   return (
     <div className="flex min-h-screen">
       {/* Left — form */}
@@ -130,13 +140,13 @@ function LoginPageContent() {
               <BilingualText en="Welcome back" el="Καλώς ήρθατε ξανά" wrap />
             )}
           </h1>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
             {branding?.dashboardWelcomeText ?? (
               <BilingualText en="Sign in to continue building your network." el="Συνδεθείτε για να συνεχίσετε να χτίζετε το δίκτυό σας." wrap />
             )}
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             {error && (
               <div
                 role="alert"
@@ -154,10 +164,17 @@ function LoginPageContent() {
                 type="email"
                 value={email}
                 onChange={handleEmailChange}
-                required
+                onBlur={() => setEmailTouched(true)}
                 autoComplete="email"
                 placeholder="you@startup.com"
+                aria-invalid={emailMessage ? true : undefined}
+                aria-describedby={emailMessage ? 'email-error' : undefined}
               />
+              {emailMessage ? (
+                <p id="email-error" className="text-xs text-destructive-accessible">
+                  <BilingualText en={emailMessage.en} el={emailMessage.el} compact />
+                </p>
+              ) : null}
               {checkingSSO && (
                 <p className="text-xs text-muted-foreground animate-pulse">
                   <BilingualText en="Checking organisation settings…" el="Έλεγχος ρυθμίσεων οργανισμού…" wrap />
@@ -167,7 +184,7 @@ function LoginPageContent() {
 
             {/* SSO Discovery Banner */}
             {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
-              <div className="rounded-lg border border-primary/15 bg-primary/5 p-4 space-y-3">
+              <div className="rounded-lg border border-primary-muted bg-primary-subtle p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-primary-accessible">
                     SSO
@@ -218,10 +235,12 @@ function LoginPageContent() {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required={!ssoDiscovery?.ssoRequired}
+                      onBlur={() => setPasswordTouched(true)}
                       autoComplete="current-password"
                       placeholder="••••••••"
                       className="pr-24"
+                      aria-invalid={passwordMessage ? true : undefined}
+                      aria-describedby={passwordMessage ? 'password-error' : undefined}
                     />
                     <button
                       type="button"
@@ -233,6 +252,11 @@ function LoginPageContent() {
                       {showPassword ? (primary === 'el' ? 'Απόκρυψη' : 'Hide') : (primary === 'el' ? 'Εμφάνιση' : 'Show')}
                     </button>
                   </div>
+                  {passwordMessage ? (
+                    <p id="password-error" className="text-xs text-destructive-accessible">
+                      <BilingualText en={passwordMessage.en} el={passwordMessage.el} compact />
+                    </p>
+                  ) : null}
                 </div>
 
                 <Button type="submit" loading={loading} className="w-full" size="lg">

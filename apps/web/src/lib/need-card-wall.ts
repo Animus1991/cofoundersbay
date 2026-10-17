@@ -1,6 +1,23 @@
-import { CARD_COMMITMENTS, CARD_STAGES, isInHistory, placeVariants, foldSearchText, type CommitmentKind } from '@cofounderbay/shared';
+import {
+  applyFacetChips,
+  facetBoard,
+  facetChipCounts,
+  CARD_COMMITMENTS,
+  CARD_STAGES,
+  CHIP_KEYS,
+  cityOf,
+  NO_CHIPS,
+  type CardChips,
+  type ChipKey,
+  type CommitmentKind,
+  type FacetCard,
+  type FacetCount,
+} from '@cofounderbay/shared';
 import type { CommitmentCard } from '@/lib/commitments-api';
 import { statusEl } from '@/components/common/StatusText';
+
+export { CHIP_KEYS, NO_CHIPS, cityOf };
+export type { CardChips, ChipKey, FacetCount };
 
 /**
  * The need-card wall on /opportunities: which cards the board shows, the four
@@ -12,12 +29,6 @@ import { statusEl } from '@/components/common/StatusText';
 /** The newest cards the board reads at once (the API's own cap per request). */
 export const BOARD_LIMIT = 100;
 
-export const CHIP_KEYS = ['category', 'place', 'stage', 'commitment'] as const;
-export type ChipKey = (typeof CHIP_KEYS)[number];
-/** '' is "any". */
-export type CardChips = Record<ChipKey, string>;
-export const NO_CHIPS: CardChips = { category: '', place: '', stage: '', commitment: '' };
-
 export const CHIP_LABEL: Record<ChipKey, { en: string; el: string }> = {
   category: { en: 'Category', el: 'Κατηγορία' },
   place: { en: 'Place', el: 'Τόπος' },
@@ -25,42 +36,45 @@ export const CHIP_LABEL: Record<ChipKey, { en: string; el: string }> = {
   commitment: { en: 'Commitment', el: 'Δέσμευση' },
 };
 
-/** The city part of a place ("Athens, Greece" → "Athens"), which is what people choose between. */
-export function cityOf(place: string | null | undefined): string {
-  return (place ?? '').split(',')[0]?.trim() ?? '';
+/** The shared facet row for one card, so the page and the counts endpoint share one filter. */
+export function toFacetCard(card: CommitmentCard): FacetCard {
+  return {
+    isMine: Boolean(card.isMine),
+    kind: card.kind,
+    outcome: card.outcome,
+    settledAt: card.settledAt ?? null,
+    isRemote: Boolean(card.isRemote),
+    title: card.title ?? '',
+    exists: card.exists ?? '',
+    goal: card.goal ?? '',
+    missing: card.missing ?? '',
+    offerRole: card.offer?.role ?? null,
+    category: card.category ?? null,
+    place: card.place ?? null,
+    stage: card.stage ?? '',
+    commitment: card.commitment ?? '',
+  };
 }
 
 /**
  * What the board shows any member: other people's cards that still take
  * interest, plus agreed ones for thirty days, inside the page's type,
- * remote and word filters.
+ * remote and word filters. The rules live in `@cofounderbay/shared`.
  */
 export function boardCards(
   cards: readonly CommitmentCard[],
-  { kinds, remoteOnly, search, now }: { kinds: readonly CommitmentKind[]; remoteOnly: boolean; search: string; now: number },
+  opts: { kinds: readonly CommitmentKind[]; remoteOnly: boolean; search: string; now: number },
 ): CommitmentCard[] {
-  const words = search.trim().toLowerCase();
-  return cards
-    .filter((c) => !c.isMine && kinds.includes(c.kind))
-    .filter((c) => c.outcome === 'open' || c.outcome === 'in_discussion' || (c.outcome === 'agreed' && !isInHistory(c.settledAt, now)))
-    .filter((c) => !remoteOnly || c.isRemote)
-    .filter((c) => !words || `${c.title} ${c.exists} ${c.goal} ${c.missing} ${c.offer?.role ?? ''} ${c.category} ${c.place ?? ''}`.toLowerCase().includes(words));
-}
-
-function fits(card: CommitmentCard, key: ChipKey, value: string): boolean {
-  if (!value) return true;
-  if (key === 'category') return foldSearchText(card.category ?? '') === foldSearchText(value);
-  if (key === 'place') {
-    const place = foldSearchText(card.place ?? '');
-    return placeVariants(value).some((v) => place.includes(foldSearchText(v)));
-  }
-  if (key === 'stage') return card.stage === value;
-  return card.commitment === value;
+  const facets = cards.map(toFacetCard);
+  const shown = new Set(facetBoard(facets, opts));
+  return cards.filter((_, i) => shown.has(facets[i]!));
 }
 
 /** The cards every set chip allows; `except` leaves one chip out (for that chip's own counts). */
 export function applyChips(cards: readonly CommitmentCard[], chips: CardChips, except?: ChipKey): CommitmentCard[] {
-  return cards.filter((c) => CHIP_KEYS.every((k) => k === except || fits(c, k, chips[k])));
+  const facets = cards.map(toFacetCard);
+  const shown = new Set(applyFacetChips(facets, chips, except));
+  return cards.filter((_, i) => shown.has(facets[i]!));
 }
 
 export type ChipOption = { value: string; en: string; el: string; count: number };
@@ -81,39 +95,37 @@ function enumLabel(value: string): { en: string; el: string } {
  * not show. A chosen value stays listed even at zero, so it can be seen and
  * changed; stages and commitments keep their product order.
  */
+function labelFor(key: ChipKey, value: string): { en: string; el: string } {
+  return key === 'stage' || key === 'commitment' ? enumLabel(value) : { en: value, el: value };
+}
+
 export function chipOptions(cards: readonly CommitmentCard[], chips: CardChips): Record<ChipKey, ChipOption[]> {
+  const counts = facetChipCounts(cards.map(toFacetCard), chips);
+  return overlayChipCounts(emptyOptions(), counts);
+}
+
+/** Labels with no counts, so a server payload can fill them in. */
+function emptyOptions(): Record<ChipKey, ChipOption[]> {
+  return { category: [], place: [], stage: [], commitment: [] };
+}
+
+/**
+ * The counts endpoint's numbers, with this page's Greek labels.
+ * A value the loaded board has never seen (a card past the newest 100)
+ * still gets a label.
+ */
+export function overlayChipCounts(
+  local: Record<ChipKey, ChipOption[]>,
+  remote: Record<ChipKey, FacetCount[]>,
+): Record<ChipKey, ChipOption[]> {
   const out = {} as Record<ChipKey, ChipOption[]>;
   for (const key of CHIP_KEYS) {
-    const pool = applyChips(cards, chips, key);
-    let values: { value: string; en: string; el: string }[];
-    if (key === 'stage') values = CARD_STAGES.map((v) => ({ value: v, ...enumLabel(v) }));
-    else if (key === 'commitment') values = CARD_COMMITMENTS.map((v) => ({ value: v, ...enumLabel(v) }));
-    else {
-      // One choice per spelling-insensitive value, named by its most common
-      // spelling on the whole board, so a narrower pool cannot rename it.
-      const valueOf = (c: CommitmentCard) => (key === 'category' ? (c.category ?? '').trim() : cityOf(c.place));
-      const spellings = new Map<string, Map<string, number>>();
-      for (const c of cards) {
-        const v = valueOf(c);
-        if (!v) continue;
-        const forms = spellings.get(foldSearchText(v)) ?? new Map<string, number>();
-        forms.set(v, (forms.get(v) ?? 0) + 1);
-        spellings.set(foldSearchText(v), forms);
-      }
-      const named = (folded: string, fallback: string) =>
-        [...(spellings.get(folded)?.entries() ?? [])].sort((a, b) => b[1] - a[1])[0]?.[0] ?? fallback;
-      const seen = new Map<string, string>();
-      for (const c of pool) {
-        const v = valueOf(c);
-        if (v && !seen.has(foldSearchText(v))) seen.set(foldSearchText(v), named(foldSearchText(v), v));
-      }
-      if (chips[key] && !seen.has(foldSearchText(chips[key]))) seen.set(foldSearchText(chips[key]), chips[key]);
-      values = [...seen.values()].map((v) => ({ value: v, en: v, el: v }));
-    }
-    const counted = values
-      .map((v) => ({ ...v, count: pool.filter((c) => fits(c, key, v.value)).length }))
-      .filter((o) => o.count > 0 || o.value === chips[key]);
-    out[key] = key === 'category' || key === 'place' ? counted.sort((a, b) => b.count - a.count || a.en.localeCompare(b.en)) : counted;
+    const known = new Map(local[key].map((o) => [o.value, o]));
+    out[key] = (remote[key] ?? []).map((row) => {
+      const prev = known.get(row.value);
+      const label = prev ? { en: prev.en, el: prev.el } : labelFor(key, row.value);
+      return { value: row.value, ...label, count: row.count };
+    });
   }
   return out;
 }

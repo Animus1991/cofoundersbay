@@ -1,3 +1,4 @@
+import { StrictMode, useEffect, useRef } from 'react';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/lib/api';
@@ -169,6 +170,62 @@ describe('useAIChat streaming safety', () => {
     expect(result.current.messages.map((message) => message.content)).toEqual(['New', 'New partial']);
     await act(async () => { releaseNew(); await newSend; });
     expect(result.current.messages[1]).toMatchObject({ content: 'New partial answer', model: 'new-model', isStreaming: false });
+  });
+
+  it('stops an answer on request, keeping what arrived and marking it', async () => {
+    let release: () => void = () => {};
+    stream.mockImplementation(async function* (_payload: unknown, signal?: AbortSignal) {
+      yield { chunk: 'The first half', done: false, model: 'm' };
+      await new Promise<void>((resolve, reject) => {
+        release = resolve;
+        signal?.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')));
+      });
+      yield { chunk: ' and the rest', done: true, model: 'm' };
+    } as never);
+    const { result } = renderHook(() => useAIChat());
+    let pending: Promise<void> = Promise.resolve();
+    await act(async () => {
+      pending = result.current.sendMessage('Hello');
+      await new Promise((r) => setTimeout(r, 0));
+    });
+    await act(async () => {
+      result.current.stopStreaming();
+      await pending;
+    });
+    release();
+    expect(result.current.isStreaming).toBe(false);
+    expect(result.current.error).toBeNull();
+    expect(result.current.messages[1]).toMatchObject({ content: 'The first half', stopped: true, isStreaming: false });
+  });
+
+  it('marks a failure with nothing received instead of writing English into the answer', async () => {
+    stream.mockImplementation(async function* () { throw new ApiError(500, 'Server failed'); });
+    const { result } = renderHook(() => useAIChat());
+    await act(() => result.current.sendMessage('Hello'));
+    expect(result.current.messages[1]).toMatchObject({ content: '', failed: true, isStreaming: false });
+  });
+
+  it('answers a question sent on mount under StrictMode (the ask bar hand-off)', async () => {
+    stream.mockImplementation(async function* () {
+      yield { chunk: 'The answer', done: true, model: 'm' };
+    } as never);
+    // What the workspace does with the ask bar's question: send once, from an
+    // effect on mount, and remember it was sent.
+    const useAskOnMount = () => {
+      const chat = useAIChat();
+      const sent = useRef(false);
+      useEffect(() => {
+        if (sent.current) return;
+        sent.current = true;
+        void chat.sendMessage('Hello');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+      return chat;
+    };
+    const { result } = renderHook(useAskOnMount, { wrapper: StrictMode });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    expect(result.current.isStreaming).toBe(false);
+    expect(result.current.messages[1]).toMatchObject({ content: 'The answer', isStreaming: false });
   });
 
   it('aborts the active stream on unmount', async () => {

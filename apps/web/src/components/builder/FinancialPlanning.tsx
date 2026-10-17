@@ -108,7 +108,7 @@ function Verdict({ ok, warn, children }: { ok: boolean; warn: boolean; children:
   const Icon = ok ? CheckCircle2 : warn ? AlertTriangle : XCircle;
   const tone = ok ? 'text-status-success' : warn ? 'text-status-warning' : 'text-status-danger';
   return (
-    <div className={cn('mt-1 inline-flex items-center justify-center gap-1 text-xs', tone)}>
+    <div className={cn('mt-1 flex items-center gap-1 text-xs', tone)}>
       <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
       <span>{children}</span>
     </div>
@@ -445,11 +445,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     </div>
                   </div>
                 ))}
-                <div className="pt-3 border-t flex justify-between">
+                <div className="flex justify-between gap-3 border-t pt-3 text-sm">
                   <span className="font-medium">
                     <BilingualText en={builderEn('fin_total_start')} el={builderEl('fin_total_start')} compact />
                   </span>
-                  <span className="font-bold">{formatCurrency(totalStartupCosts)}</span>
+                  <span className="font-semibold tabular-nums">{formatCurrency(totalStartupCosts)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -512,11 +512,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     </div>
                   </div>
                 ))}
-                <div className="pt-3 border-t flex justify-between">
+                <div className="flex justify-between gap-3 border-t pt-3 text-sm">
                   <span className="font-medium">
                     <BilingualText en={builderEn('fin_total_op')} el={builderEl('fin_total_op')} compact />
                   </span>
-                  <span className="font-bold">{formatCurrency(totalMonthlyOperating)}</span>
+                  <span className="font-semibold tabular-nums">{formatCurrency(totalMonthlyOperating)}</span>
                 </div>
               </CardContent>
             </Card>
@@ -535,9 +535,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="divide-y divide-border">
               {data.revenueStreams.map((stream, index) => (
-                <Card key={index} className="p-4">
-                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div key={index} className="py-4 first:pt-0">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                       <Label htmlFor={`rs-name-${index}`}><BilingualText en="Name" el="Όνομα" compact /></Label>
                       <Input id={`rs-name-${index}`}
@@ -559,7 +560,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, type: e.target.value as RevenueStream['type'] };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        className="w-full px-3 py-2 border rounded-xl"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2"
                       >
                         <option value="subscription">{bilingualInline("Subscription", "Συνδρομή")}</option>
                         <option value="transaction">{bilingualInline("Transaction", "Συναλλαγή")}</option>
@@ -595,14 +596,15 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                   </div>
-                </Card>
+                </div>
               ))}
-              
-              <div className="pt-3 border-t flex justify-between">
+              </div>
+
+              <div className="flex justify-between gap-3 border-t pt-3 text-sm">
                 <span className="font-medium">
                   <BilingualText en={builderEn('fin_total_mrev')} el={builderEl('fin_total_mrev')} compact />
                 </span>
-                <span className="font-bold text-status-success">{formatCurrency(totalMonthlyRevenue)}</span>
+                <span className="font-semibold tabular-nums text-status-success">{formatCurrency(totalMonthlyRevenue)}</span>
               </div>
             </CardContent>
           </Card>
@@ -615,7 +617,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </CardHeader>
             <CardContent>
               <textarea
-                className="w-full min-h-[100px] p-3 border rounded-xl"
+                aria-label={bilingualInline('Pricing model', 'Μοντέλο τιμολόγησης')}
+                className="w-full min-h-[100px] rounded-md border border-input bg-background p-3"
                 placeholder={t(builderEn('fin_pricing_ph'), builderEl('fin_pricing_ph'))}
                 value={data.pricingModel}
                 onChange={(e) => setData(prev => ({ ...prev, pricingModel: e.target.value }))}
@@ -711,35 +714,35 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="text-center p-4 border rounded-lg">
+                <div className="min-w-0">
                   <div className={cn(
                     BUILDER_STAT,
-                    "mb-2",
+                    "mb-1",
                     data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
                     data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
                   )}>
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
-                  <div className="text-sm text-muted-foreground"><BilingualText en="LTV/CAC Ratio" el="Λόγος LTV/CAC" compact /></div>
+                  <div className="text-xs text-muted-foreground"><BilingualText en="LTV/CAC Ratio" el="Λόγος LTV/CAC" compact /></div>
                   <Verdict ok={data.unitEconomics.ltvCacRatio >= 3} warn={data.unitEconomics.ltvCacRatio >= 1}>
                     {data.unitEconomics.ltvCacRatio >= 3 ? 'Healthy (>3x)' :
                      data.unitEconomics.ltvCacRatio >= 1 ? 'Needs improvement' : 'Unsustainable'}
                   </Verdict>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-info')}>
+                <div className="min-w-0">
+                  <div className={cn(BUILDER_STAT, 'mb-1 text-status-info')}>
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
-                  <div className="text-sm text-muted-foreground"><BilingualText en="Payback Period" el="Περίοδος απόσβεσης" compact /></div>
+                  <div className="text-xs text-muted-foreground"><BilingualText en="Payback Period" el="Περίοδος απόσβεσης" compact /></div>
                   <Verdict ok={data.unitEconomics.paybackPeriod <= 12} warn>
                     {data.unitEconomics.paybackPeriod <= 12 ? 'Good (<12 mo)' : 'Long payback'}
                   </Verdict>
                 </div>
-                <div className="text-center p-4 border rounded-lg">
-                  <div className={cn(BUILDER_STAT, 'mb-2 text-status-accent')}>
+                <div className="min-w-0">
+                  <div className={cn(BUILDER_STAT, 'mb-1 text-status-accent')}>
                     {data.unitEconomics.grossMargin}%
                   </div>
-                  <div className="text-sm text-muted-foreground"><BilingualText en="Gross Margin" el="Μικτό περιθώριο" compact /></div>
+                  <div className="text-xs text-muted-foreground"><BilingualText en="Gross Margin" el="Μικτό περιθώριο" compact /></div>
                   <Verdict ok={data.unitEconomics.grossMargin >= 70} warn>
                     {data.unitEconomics.grossMargin >= 70 ? 'SaaS-level (>70%)' : 'Below SaaS average'}
                   </Verdict>
@@ -761,9 +764,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="divide-y divide-border">
               {data.fundingRounds.map((round, index) => (
-                <Card key={index} className="p-4">
-                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <div key={index} className="py-4 first:pt-0">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                       <Label htmlFor={`fr-stage-${index}`}><BilingualText en="Stage" el="Στάδιο" compact /></Label>
                       <Input id={`fr-stage-${index}`}
@@ -815,14 +819,15 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       />
                     </div>
                   </div>
-                </Card>
+                </div>
               ))}
-              
-              <div className="pt-3 border-t flex justify-between">
+              </div>
+
+              <div className="flex justify-between gap-3 border-t pt-3 text-sm">
                 <span className="font-medium">
                   <BilingualText en={builderEn('fin_total_fund')} el={builderEl('fin_total_fund')} compact />
                 </span>
-                <span className="font-bold">
+                <span className="font-semibold tabular-nums">
                   {formatCurrency(data.fundingRounds.reduce((sum, r) => sum + r.amount, 0))}
                 </span>
               </div>
@@ -873,10 +878,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div className="pt-3 border-t">
-                  <div className="flex justify-between">
-                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
+                  <div className="flex justify-between gap-3 text-sm">
+                    <span className="font-medium"><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
-                      "font-bold",
+                      "font-semibold tabular-nums",
                       data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m >= 0
                         ? "text-status-success" : "text-status-danger"
                     )}>
@@ -927,10 +932,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div className="pt-3 border-t">
-                  <div className="flex justify-between">
-                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
+                  <div className="flex justify-between gap-3 text-sm">
+                    <span className="font-medium"><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
-                      "font-bold",
+                      "font-semibold tabular-nums",
                       data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m >= 0
                         ? "text-status-success" : "text-status-danger"
                     )}>
@@ -981,10 +986,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   />
                 </div>
                 <div className="pt-3 border-t">
-                  <div className="flex justify-between">
-                    <span><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
+                  <div className="flex justify-between gap-3 text-sm">
+                    <span className="font-medium"><BilingualText en={builderEn('fin_net')} el={builderEl('fin_net')} compact /></span>
                     <span className={cn(
-                      "font-bold",
+                      "font-semibold tabular-nums",
                       data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m >= 0
                         ? "text-status-success" : "text-status-danger"
                     )}>

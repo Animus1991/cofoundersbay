@@ -227,7 +227,7 @@ export function FirstRunTour({ tourId, steps, ready = true }: FirstRunTourProps)
         <div className="mb-2 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-2">
             {/* One language per line: in a 340px card a run-together pair breaks mid-phrase. */}
-            <h3 id={titleId} className="page-section min-w-0 pt-1 font-semibold leading-tight text-foreground">
+            <h3 id={titleId} className="page-section min-w-0 pt-1 font-semibold leading-snug text-foreground">
               <BilingualText en={step.titleEn} el={step.titleEl} stacked wrap secondaryClassName="mt-0.5" />
             </h3>
           </div>

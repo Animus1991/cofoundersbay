@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
 export type WhatsNewAudience = 'founder' | 'investor' | 'mentor' | 'org' | 'provider';
@@ -20,9 +20,11 @@ const ALL: readonly WhatsNewAudience[] = ['founder', 'investor', 'mentor', 'org'
  * renders the same on the server and in the browser.
  */
 const ITEMS: Item[] = [
+  // 16–17 October 2026
+  { href: '/scout', en: 'Co-founder scout', el: 'Ανιχνευτής συνιδρυτών', hintEn: 'Proposes people for your brief, with its reasons and a first note in English or Greek, whichever they read. It never contacts anyone.', hintEl: 'Προτείνει ανθρώπους για το σημείωμά σας, με τους λόγους του και ένα πρώτο μήνυμα στα ελληνικά ή στα αγγλικά, όποια γλώσσα διαβάζει ο άλλος. Δεν επικοινωνεί ποτέ με κανέναν.', for: ['founder'] },
+  { href: '/messages', en: 'Search your messages', el: 'Αναζήτηση στα μηνύματα', hintEn: 'Search a conversation and step through every hit, accents ignored, or ask the assistant where you talked about something.', hintEl: 'Αναζητήστε σε μια συζήτηση και μεταβείτε σε κάθε εύρημα, χωρίς να μετρούν οι τόνοι, ή ρωτήστε τον βοηθό πού μιλήσατε για κάτι.', for: ALL },
   { href: '/commitments/new', en: 'Need cards', el: 'Κάρτες ανάγκης', hintEn: 'Say what exists, the outcome and who is missing in three sentences; the conversation stays protected until both confirm.', hintEl: 'Τι υπάρχει, το αποτέλεσμα και ποιος λείπει σε τρεις προτάσεις· η συζήτηση μένει προστατευμένη μέχρι να επιβεβαιώσουν και οι δύο.', for: ['founder'] },
-  { href: '/scout', en: 'Co-founder scout', el: 'Ανιχνευτής συνιδρυτών', hintEn: 'Proposes people for your brief, with its reasons. It never contacts anyone.', hintEl: 'Προτείνει ανθρώπους για το σημείωμά σας, με τους λόγους του. Δεν επικοινωνεί ποτέ με κανέναν.', for: ['founder'] },
-  { href: '/intros', en: 'Warm introductions', el: 'Ζεστές συστάσεις', hintEn: 'Ask someone who knows both of you; they decide whether to forward.', hintEl: 'Ζητήστε από κάποιον που γνωρίζει και τους δύο· εκείνος αποφασίζει αν θα προωθήσει.', for: ALL },
+  { href: '/intros', en: 'Warm introductions', el: 'Συστάσεις γνωριμίας', hintEn: 'Ask someone who knows both of you; they decide whether to forward.', hintEl: 'Ζητήστε από κάποιον που γνωρίζει και τους δύο· εκείνος αποφασίζει αν θα προωθήσει.', for: ALL },
   { href: '/updates', en: 'Founder updates', el: 'Ενημερώσεις ιδρυτών', hintEn: 'Follow founders and read their monthly updates; write yours for followers or as a public link.', hintEl: 'Ακολουθήστε ιδρυτές και διαβάστε τις μηνιαίες ενημερώσεις τους· γράψτε τη δική σας για ακολούθους ή ως δημόσιο σύνδεσμο.', for: ['founder', 'investor', 'mentor'] },
   { href: '/discover', en: 'Search in plain words', el: 'Αναζήτηση με απλά λόγια', hintEn: 'Type "co-founder SaaS Athens full-time" and press Enter; the known words become filters.', hintEl: 'Γράψτε «συνιδρυτής SaaS Αθήνα πλήρης απασχόληση» και πατήστε Enter· οι γνωστές λέξεις γίνονται φίλτρα.', for: ALL },
   { href: '/opportunities', en: 'Alerts on new need cards', el: 'Ειδοποιήσεις για νέες κάρτες ανάγκης', hintEn: 'Save the need-card filters and hear about new cards that fit.', hintEl: 'Αποθηκεύστε τα φίλτρα καρτών ανάγκης και μάθετε για νέες κάρτες που ταιριάζουν.', for: ['founder', 'investor', 'mentor'] },
@@ -37,7 +39,7 @@ const ITEMS: Item[] = [
 ];
 
 // A new round shows the panel again to those who hid the previous one.
-const ROUND = '2026-10-08';
+const ROUND = '2026-10-17';
 
 export function whatsNewItems(audience: WhatsNewAudience): Item[] {
   return ITEMS.filter((i) => i.for.includes(audience));
@@ -65,28 +67,32 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
       // storage blocked: hidden for this page view
     }
   };
+  // A section card: its title and the line under it, the way out at the
+  // right, and rows without a frame of their own, each on the card's axis.
   return (
     <Card aria-labelledby="whats-new-heading">
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h2 id="whats-new-heading" className="text-base font-semibold text-foreground">
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <CardTitle id="whats-new-heading">
               <BilingualText en="What’s new" el="Τι νέο υπάρχει" compact />
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              <BilingualText en="Added on 7 and 8 October 2026. Each opens where you can try it." el="Προστέθηκαν στις 7 και 8 Οκτωβρίου 2026. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
-            </p>
+            </CardTitle>
+            <CardDescription>
+              <BilingualText en="Added between 7 and 17 October 2026, newest first. Each opens where you can try it." el="Προστέθηκαν από τις 7 έως τις 17 Οκτωβρίου 2026, τα νεότερα πρώτα. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
+            </CardDescription>
           </div>
-          <Button size="sm" variant="ghost" onClick={hide}>
+          <Button size="sm" variant="ghost" className="-mr-2 shrink-0" onClick={hide}>
             <BilingualText en="Hide" el="Απόκρυψη" compact />
           </Button>
         </div>
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      </CardHeader>
+      <CardContent>
+        <ul className="grid grid-cols-1 gap-x-6 gap-y-1 md:grid-cols-2">
           {items.map((item) => (
             <li key={item.href} className="min-w-0">
-              <Link href={item.href} className="axis-row block rounded-lg py-2 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Link href={item.href} className="axis-row block rounded-md py-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span className="block text-sm font-medium text-foreground"><BilingualText en={item.en} el={item.el} compact /></span>
-                <span className="block text-xs text-muted-foreground"><BilingualText en={item.hintEn} el={item.hintEl} wrap /></span>
+                <span className="mt-0.5 block text-xs text-muted-foreground"><BilingualText en={item.hintEn} el={item.hintEl} wrap /></span>
               </Link>
             </li>
           ))}

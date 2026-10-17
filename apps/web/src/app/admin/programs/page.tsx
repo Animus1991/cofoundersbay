@@ -1,6 +1,8 @@
 'use client';
 
 import { StatusText } from '@/components/common/StatusText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { listPrograms, deleteProgram, type ProgramItem } from '@/lib/api';
@@ -52,7 +54,7 @@ import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 
 type Program = {
@@ -127,78 +129,90 @@ function ProgramCard({
   const statusColors = STATUS[PROGRAM_STATUS_TONE[program.status]];
 
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">{program.name}</span>
+    // The Programs card's anatomy: the programme's rounded square, the name
+    // over its organiser and kind, the state and the menu at the right, the
+    // sentence, the facts and the progress on the mark's edge.
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <Award className="icon-md" aria-hidden="true" />
+            </div>
+          )}
+          title={program.name}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                program.organization,
+                program.type ? <StatusText key="type" value={program.type} /> : null,
+              ]}
+            />
+          )}
+          asideStays
+          aside={(
+            <>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 <StatusText value={program.status} />
               </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {/* The three items here had no handler. */}
+                  <DropdownMenuItem onSelect={() => onView(program)}>
+                    <Eye className="mr-2 icon-sm" aria-hidden="true" />
+                    <BilingualText en="View Details" el="Λεπτομέρειες" compact />
+                  </DropdownMenuItem>
+                  {program.orgSlug ? (
+                    <DropdownMenuItem asChild>
+                      <Link href={`/org/${program.orgSlug}/admin`}>
+                        <Edit className="mr-2 icon-sm" aria-hidden="true" />
+                        <BilingualText en={`Edit in ${program.organization}`} el={`Επεξεργασία στο ${program.organization}`} compact />
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <UnavailableMenuItem
+                      icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                      en="Edit Program"
+                      el="Επεξεργασία προγράμματος"
+                      reasonEn="A sample row - live programs are edited by their organisation."
+                      reasonEl="Δείγμα - τα πραγματικά προγράμματα τα επεξεργάζεται ο οργανισμός τους."
+                    />
+                  )}
+                  {program.status !== 'archived' && (
+                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onArchive(program)}>
+                      <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
+                      <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        />
+        {program.description ? (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{program.description}</p>
+        ) : null}
+        <FactLine
+          items={[
+            <BilingualText key="startups" en={`${program.startups} startups`} el={`${program.startups} startups`} compact />,
+            <span key="dates" className="tabular-nums">{program.startDate} – {program.endDate}</span>,
+          ]}
+        />
+        {program.status === 'active' && (
+          <div>
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
+              <span className="font-medium tabular-nums">{program.progress}%</span>
             </div>
-            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Building2 className="icon-sm" aria-hidden="true" />
-              {program.organization}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <Badge variant="secondary" className="text-xs"><StatusText value={program.type} /></Badge>
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />
-                {program.startups} startups
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {program.startDate} - {program.endDate}
-              </span>
-            </div>
-            {program.status === 'active' && (
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground"><BilingualText en="Progress" el="Πρόοδος" compact /></span>
-                  <span className="font-medium">{program.progress}%</span>
-                </div>
-                <Progress value={program.progress} className="h-2" />
-              </div>
-            )}
+            <Progress value={program.progress} className="h-2" aria-label={bilingualInline('Progress', 'Πρόοδος')} />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="icon-sm" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* The three items here had no handler. */}
-              <DropdownMenuItem onSelect={() => onView(program)}>
-                <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                <BilingualText en="View Details" el="Λεπτομέρειες" compact />
-              </DropdownMenuItem>
-              {program.orgSlug ? (
-                <DropdownMenuItem asChild>
-                  <Link href={`/org/${program.orgSlug}/admin`}>
-                    <Edit className="mr-2 icon-sm" aria-hidden="true" />
-                    Edit in {program.organization}
-                  </Link>
-                </DropdownMenuItem>
-              ) : (
-                <UnavailableMenuItem
-                  icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                  en="Edit Program"
-                  el="Επεξεργασία προγράμματος"
-                  reasonEn="A sample row - live programs are edited by their organisation."
-                  reasonEl="Δείγμα - τα πραγματικά προγράμματα τα επεξεργάζεται ο οργανισμός τους."
-                />
-              )}
-              {program.status !== 'archived' && (
-                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onArchive(program)}>
-                  <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
-                  <BilingualText en="Archive" el="Αρχειοθέτηση" compact />
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -503,14 +517,13 @@ export default function AdminProgramsPage() {
           ))}
           {filteredPrograms.length === 0 && (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No programs found" el="Δεν βρέθηκαν προγράμματα" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
-                </p>
+              <CardContent className="space-y-3">
+                <CardHead
+                  title={<BilingualText en="No programs found" el="Δεν βρέθηκαν προγράμματα" compact wrap />}
+                  subtitle={<BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact wrap />}
+                />
                 {activeFilterCount > 0 && (
-                  <Button variant="outline" size="sm" className="mt-4" onClick={() => openRailSection('filters')}>
+                  <Button variant="outline" size="sm" onClick={() => openRailSection('filters')}>
                     <BilingualText en="Show filters" el="Εμφάνιση φίλτρων" compact />
                   </Button>
                 )}

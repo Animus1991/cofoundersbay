@@ -255,13 +255,13 @@ function PostingGuide() {
             <BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact />
           </span>
         </p>
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
           <form onSubmit={submit} className="min-w-0 space-y-6" aria-label={bilingualAria(CMT.guide_title.en, CMT.guide_title.el)}>
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en={CMT.kind.en} el={CMT.kind.el} compact /></CardTitle>
+              <CardHeader>
+                <CardTitle><BilingualText en={CMT.kind.en} el={CMT.kind.el} compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div role="radiogroup" aria-label={bilingualAria(CMT.kind.en, CMT.kind.el)} className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -314,8 +314,8 @@ function PostingGuide() {
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en="Three sentences" el="Τρεις προτάσεις" compact /></CardTitle>
+              <CardHeader>
+                <CardTitle><BilingualText en="Three sentences" el="Τρεις προτάσεις" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {(
@@ -340,8 +340,8 @@ function PostingGuide() {
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en={CMT.offer.en} el={CMT.offer.el} compact /></CardTitle>
+              <CardHeader>
+                <CardTitle><BilingualText en={CMT.offer.en} el={CMT.offer.el} compact /></CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field id="offer-role" label={CMT.offer_role}>
@@ -380,8 +380,8 @@ function PostingGuide() {
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base"><BilingualText en={CMT.filters.en} el={CMT.filters.el} compact /></CardTitle>
+              <CardHeader>
+                <CardTitle><BilingualText en={CMT.filters.en} el={CMT.filters.el} compact /></CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field id="card-category" label={CMT.category}>
@@ -441,17 +441,17 @@ function PostingGuide() {
           </form>
 
           <aside className="min-w-0 space-y-4 lg:sticky lg:top-20 lg:self-start" aria-label={bilingualAria(CMT.preview.en, CMT.preview.el)}>
+            {/* The preview's name sits above the card: inside it, a heading
+                over the need card's own title read as a second title. */}
+            <h2 className="text-base font-semibold text-foreground"><BilingualText en={CMT.preview.en} el={CMT.preview.el} compact /></h2>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground"><BilingualText en={CMT.preview.en} el={CMT.preview.el} compact /></CardTitle>
-              </CardHeader>
               <CardContent>
                 <NeedCard card={preview} />
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between gap-2 text-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between gap-2">
                   <BilingualText en={CMT.quality.en} el={CMT.quality.el} compact />
                   <span className="tabular-nums text-muted-foreground">{assessment.score}/100</span>
                 </CardTitle>

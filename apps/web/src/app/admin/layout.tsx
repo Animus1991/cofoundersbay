@@ -8,6 +8,7 @@ import { AppShellFrame } from '@/components/layout/AppShell';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { LayoutDashboard, LayoutGrid, Building2, KeyRound, Globe, Zap } from 'lucide-react';
+import { bilingualAria } from '@/lib/i18n/format';
 
 // The overview is the platform admin's home (the role's landing page); the
 // console holds the moderation queue and the twelve operational sections.
@@ -24,7 +25,7 @@ function AdminSubNav() {
   const pathname = usePathname() ?? '/admin';
   return (
     <div className="border-b border-border bg-card/60 px-4">
-      <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
+      <nav aria-label={bilingualAria('Admin sections', 'Ενότητες διαχείρισης')} className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-[84rem] mx-auto">
         {ADMIN_NAV.map(({ href, label, labelEl, icon: Icon }) => {
           const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
           return (

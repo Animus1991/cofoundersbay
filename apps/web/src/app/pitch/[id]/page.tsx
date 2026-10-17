@@ -27,6 +27,8 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { NonGuaranteeNote } from '@/components/commitments/NonGuaranteeNote';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -149,7 +151,7 @@ const DEMO_DECK: PublicPitchDeck = {
       order: 6,
       content: {
         members: [
-          { name: 'Elena Papadopoulos', role: 'CEO & Co-founder', background: 'Ex-Google, 2x founder' },
+          { name: 'Elena Papadopoulos', role: 'CEO & Co-founder', background: 'Former product lead, 2x founder' },
           { name: 'Marcus Chen', role: 'CTO & Co-founder', background: 'Ex-Meta, MIT CS' },
           { name: 'Dr. Sarah Kim', role: 'Head of AI', background: 'PhD Stanford, Ex-DeepMind' },
         ],
@@ -223,14 +225,15 @@ function contentOf<T>(slide: SlideBase): T {
 function CoverSlide({ slide }: { slide: SlideBase }) {
   const c = contentOf<CoverContent>(slide);
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-primary/[0.04]">
+    // Left-aligned like every card: the round, the name, the line under it.
+    <div className="flex flex-col items-start justify-center h-full px-8 py-12 bg-primary/[0.04]">
       <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible font-medium">
-        {c.stage} • Raising {c.raising}
+        <BilingualText en={`${c.stage} · Raising ${c.raising}`} el={`${c.stage} · Αντλεί ${c.raising}`} compact />
       </div>
       {/* 48px fixed left roughly six characters per line on a 320px screen. */}
       <h1 className="text-3xl font-semibold text-foreground mb-4 sm:text-4xl lg:text-5xl">{slide.title}</h1>
-      <p className="text-xl text-muted-foreground max-w-2xl">{c.tagline}</p>
-      <p className="text-sm text-muted-foreground mt-8">Founded {c.founded}</p>
+      <p className="text-lg text-muted-foreground max-w-2xl">{c.tagline}</p>
+      <p className="text-sm text-muted-foreground mt-8"><BilingualText en={`Founded ${c.founded}`} el={`Ιδρύθηκε ${c.founded}`} compact /></p>
     </div>
   );
 }
@@ -380,14 +383,14 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
       </div>
       <div className="grid grid-cols-3 gap-6">
         {c.members.map((member, i) => (
-          <div key={i} className="rounded-2xl border bg-card p-6 text-center">
-            <Avatar className="h-16 w-16 mx-auto mb-4">
-              <AvatarFallback className="text-xl">
+          <div key={i} data-card="" className="rounded-2xl border bg-card p-4">
+            <Avatar className="mb-3 h-10 w-10">
+              <AvatarFallback className="text-sm">
                 {initialsOf(member.name)}
               </AvatarFallback>
             </Avatar>
-            <p className="font-semibold">{member.name}</p>
-            <p className="text-sm text-primary-accessible mt-1">{member.role}</p>
+            <p className="card-title">{member.name}</p>
+            <p className="card-subtitle mt-0.5 text-primary-accessible">{member.role}</p>
             <p className="text-xs text-muted-foreground mt-2">{member.background}</p>
           </div>
         ))}
@@ -715,38 +718,50 @@ export default function PitchDeckPage() {
         </MainLandmark>
 
         {/* Author sidebar */}
-        <aside className="flex flex-col gap-4 w-full xl:w-64 flex-shrink-0">
-          <div className="rounded-xl border bg-card p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-10 w-10 shrink-0">
-                <AvatarImage src={deck.author.avatarUrl} />
-                <AvatarFallback>
-                  {initialsOf(deck.author.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{deck.author.name}</p>
-                <p className="text-xs text-muted-foreground">{deck.author.headline}</p>
-              </div>
-            </div>
-            {deck.allowContact && (
-              <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
-              </Button>
-            )}
-          </div>
+        <aside className="flex w-full flex-shrink-0 flex-col gap-4 xl:w-72">
+          {/* The author, the deck's figures and the share links: cards on
+              the Endorsements anatomy (mark, name, headline; then the rows
+              on the mark's edge). */}
+          <Card>
+            <CardContent className="space-y-3">
+              <CardHead
+                mark={(
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={deck.author.avatarUrl} alt="" />
+                    <AvatarFallback>
+                      {initialsOf(deck.author.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                title={deck.author.name}
+                subtitle={deck.author.headline}
+              />
+              {deck.allowContact && (
+                <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
+                  <Mail className="icon-sm mr-2" /><BilingualText en="Get in Touch" el="Επικοινωνήστε" compact />
+                </Button>
+              )}
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border bg-card p-4 space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide"><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></span><span className="font-medium">{deck.stats.views}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></span><span className="font-medium">{deck.stats.shares}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></span><span className="font-medium">{deck.stats.contactRequests}</span></div>
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle><BilingualText en="Deck Stats" el="Στατιστικά deck" compact /></CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2 text-sm">
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Views" el="Προβολές" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.views}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Shares" el="Κοινοποιήσεις" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.shares}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-muted-foreground"><BilingualText en="Contacts" el="Επαφές" compact /></dt><dd className="font-medium tabular-nums">{deck.stats.contactRequests}</dd></div>
+              </dl>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3"><BilingualText en="Share" el="Κοινοποίηση" compact /></p>
+          <Card>
+            <CardHeader>
+              <CardTitle><BilingualText en="Share" el="Κοινοποίηση" compact /></CardTitle>
+            </CardHeader>
+            <CardContent>
             <div className="flex gap-2">
               <Button aria-label={bilingualAria('Share on X', 'Κοινοποίηση στο X')} variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
@@ -762,7 +777,8 @@ export default function PitchDeckPage() {
                 {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
-          </div>
+            </CardContent>
+          </Card>
         </aside>
       </div>
 

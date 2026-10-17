@@ -19,7 +19,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * through a window event and fills itself in place.
  */
 
-export type FormDraftId = 'milestone' | 'event' | 'project' | 'profile' | 'need_card' | 'founder_update' | 'scout_brief';
+export type FormDraftId =
+  | 'milestone'
+  | 'event'
+  | 'project'
+  | 'profile'
+  | 'need_card'
+  | 'founder_update'
+  | 'scout_brief'
+  | 'mentor_listing'
+  | 'provider_listing';
 export type FormDraftFields = Record<string, string | boolean>;
 
 /** Where each draft is filled in. */
@@ -31,6 +40,8 @@ export const FORM_DRAFT_ROUTES: Record<FormDraftId, string> = {
   need_card: '/commitments/new',
   founder_update: '/updates',
   scout_brief: '/scout',
+  mentor_listing: '/mentor/profile',
+  provider_listing: '/provider/profile',
 };
 
 const KEY = (id: FormDraftId) => `cfb_form_draft:${id}`;
@@ -38,33 +49,39 @@ const EVENT = 'cfb:form-draft';
 /** A draft older than this was abandoned; opening the form later starts clean. */
 const MAX_AGE_MS = 10 * 60_000;
 
-export function stashFormDraft(id: FormDraftId, fields: FormDraftFields): void {
+export function stashFormDraft(id: FormDraftId, fields: FormDraftFields, prompt?: string): void {
   const clean = Object.fromEntries(
     Object.entries(fields).filter(([, v]) => (typeof v === 'string' ? v.trim() !== '' : typeof v === 'boolean')),
   );
+  const note = prompt?.trim() || undefined;
   try {
-    window.sessionStorage.setItem(KEY(id), JSON.stringify({ fields: clean, at: Date.now() }));
+    window.sessionStorage.setItem(KEY(id), JSON.stringify({ fields: clean, at: Date.now(), ...(note ? { prompt: note } : {}) }));
   } catch {
     // Private mode or storage blocked: the open-page event below still works.
   }
   try {
-    window.dispatchEvent(new CustomEvent(EVENT, { detail: { id, fields: clean } }));
+    window.dispatchEvent(new CustomEvent(EVENT, { detail: { id, fields: clean, prompt: note } }));
   } catch {
     // No window (tests without jsdom).
   }
 }
 
-export function takeFormDraft(id: FormDraftId, now = Date.now()): FormDraftFields | null {
+function takeBundle(id: FormDraftId, now: number): { fields: FormDraftFields; prompt?: string } | null {
   try {
     const raw = window.sessionStorage.getItem(KEY(id));
     if (!raw) return null;
     window.sessionStorage.removeItem(KEY(id));
-    const parsed = JSON.parse(raw) as { fields?: FormDraftFields; at?: number };
+    const parsed = JSON.parse(raw) as { fields?: FormDraftFields; at?: number; prompt?: string };
     if (!parsed?.fields || typeof parsed.at !== 'number' || now - parsed.at > MAX_AGE_MS) return null;
-    return parsed.fields;
+    const prompt = typeof parsed.prompt === 'string' && parsed.prompt.trim() ? parsed.prompt.trim() : undefined;
+    return { fields: parsed.fields, ...(prompt ? { prompt } : {}) };
   } catch {
     return null;
   }
+}
+
+export function takeFormDraft(id: FormDraftId, now = Date.now()): FormDraftFields | null {
+  return takeBundle(id, now)?.fields ?? null;
 }
 
 /**
@@ -79,27 +96,29 @@ export function useFormDraft(
   id: FormDraftId,
   apply: (fields: FormDraftFields) => void,
   ready = true,
-): { filled: string[]; dismiss: () => void } {
+): { filled: string[]; prompt: string; dismiss: () => void } {
   const [filled, setFilled] = useState<string[]>([]);
+  const [prompt, setPrompt] = useState('');
   const applyRef = useRef(apply);
   applyRef.current = apply;
 
-  const use = useCallback((fields: FormDraftFields | null) => {
-    if (!fields || Object.keys(fields).length === 0) return;
-    applyRef.current(fields);
-    setFilled(Object.keys(fields));
+  const use = useCallback((bundle: { fields: FormDraftFields; prompt?: string } | null) => {
+    if (!bundle || Object.keys(bundle.fields).length === 0) return;
+    applyRef.current(bundle.fields);
+    setFilled(Object.keys(bundle.fields));
+    setPrompt(bundle.prompt ?? '');
   }, []);
 
   useEffect(() => {
     if (!ready) return;
-    use(takeFormDraft(id));
+    use(takeBundle(id, Date.now()));
     const onDraft = (event: Event) => {
       const detail = (event as CustomEvent<{ id: FormDraftId }>).detail;
-      if (detail?.id === id) use(takeFormDraft(id));
+      if (detail?.id === id) use(takeBundle(id, Date.now()));
     };
     window.addEventListener(EVENT, onDraft);
     return () => window.removeEventListener(EVENT, onDraft);
   }, [id, ready, use]);
 
-  return { filled, dismiss: () => setFilled([]) };
+  return { filled, prompt, dismiss: () => { setFilled([]); setPrompt(''); } };
 }

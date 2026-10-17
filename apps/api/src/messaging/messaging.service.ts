@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { MESSAGE_SEARCH_WINDOW, messageSnippet, textMatches } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PresenceService } from './presence.service';
@@ -56,6 +57,19 @@ export type MessageDto = {
     fileName: string | null;
     sizeBytes: number | null;
   }[];
+};
+
+/** One message that holds the words a member searched for. */
+export type MessageSearchHitDto = {
+  messageId: string;
+  conversationId: string;
+  createdAt: string;
+  fromMe: boolean;
+  senderName: string;
+  /** The other person in the conversation. */
+  withName: string;
+  withUserId: string | null;
+  snippet: string;
 };
 
 @Injectable()
@@ -288,6 +302,57 @@ export class MessagingService {
         sizeBytes: a.sizeBytes ?? null,
       })),
     }));
+  }
+
+  /**
+   * The member's own messages that hold the words, newest first.
+   *
+   * Only conversations the member takes part in are read, deleted messages
+   * are never found, and the match is the shared rule (accents, case and the
+   * final sigma ignored), so «ορους» finds «όρους» here as in the thread's
+   * own search box. Postgres `contains` ignores case but not accents, so the
+   * most recent MESSAGE_SEARCH_WINDOW messages are read and matched here.
+   */
+  async searchMessages(userId: string, query: string, limit = 10): Promise<MessageSearchHitDto[]> {
+    const q = String(query ?? '').trim();
+    if (q.length < 2) throw new BadRequestException('Search for at least two characters.');
+    const take = Math.min(Math.max(Math.trunc(limit) || 10, 1), 25);
+    const recent = await this.prisma.message.findMany({
+      where: { deletedAt: null, conversation: { participants: { some: { userId } } } },
+      orderBy: { createdAt: 'desc' },
+      take: MESSAGE_SEARCH_WINDOW,
+      select: {
+        id: true,
+        conversationId: true,
+        body: true,
+        createdAt: true,
+        senderId: true,
+        sender: { select: { email: true, profile: { select: { displayName: true } } } },
+        conversation: {
+          select: {
+            participants: {
+              select: { userId: true, user: { select: { email: true, profile: { select: { displayName: true } } } } },
+            },
+          },
+        },
+      },
+    });
+    return recent
+      .filter((m) => textMatches(m.body, q))
+      .slice(0, take)
+      .map((m) => {
+        const other = m.conversation.participants.find((p) => p.userId !== userId) ?? null;
+        return {
+          messageId: m.id,
+          conversationId: m.conversationId,
+          createdAt: m.createdAt.toISOString(),
+          fromMe: m.senderId === userId,
+          senderName: m.sender.profile?.displayName ?? m.sender.email,
+          withName: other ? other.user.profile?.displayName ?? other.user.email : '',
+          withUserId: other?.userId ?? null,
+          snippet: messageSnippet(m.body, q),
+        };
+      });
   }
 
   async sendMessage(

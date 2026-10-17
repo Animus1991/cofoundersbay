@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap } from 'lucide-react';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { FactLine } from '@/components/common/FactLine';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,7 +26,9 @@ import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { demoCover } from '@/lib/demo/photos';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
+import { durationEl } from '@/lib/i18n/units';
 
 interface Resource {
   id: string;
@@ -38,6 +41,7 @@ interface Resource {
   author: string;
   authorRole: string;
   url: string;
+  image?: string;
   isFeatured?: boolean;
   tags: string[];
   completedBy?: number;
@@ -65,15 +69,14 @@ interface LearningPath {
   duration: string;
   level: 'beginner' | 'intermediate' | 'advanced';
   progress: number;
-  color: string;
   glyph: CfbGlyphName;
 }
 
 const LEARNING_PATHS: LearningPath[] = [
-  { id: 'lp1', titleKey: 'path_fast_title', descKey: 'path_fast_desc', category: 'Product', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'bg-status-accent-bg border-status-accent-border', glyph: 'spark' },
-  { id: 'lp2', titleKey: 'path_fund_title', descKey: 'path_fund_desc', category: 'Fundraising', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'bg-status-success-bg border-status-success-border', glyph: 'wallet' },
-  { id: 'lp3', titleKey: 'path_growth_title', descKey: 'path_growth_desc', category: 'Marketing', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'bg-status-warning-bg border-status-warning-border', glyph: 'chart' },
-  { id: 'lp4', titleKey: 'path_team_title', descKey: 'path_team_desc', category: 'Leadership', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'bg-status-info-bg border-status-info-border', glyph: 'people' },
+  { id: 'lp1', titleKey: 'path_fast_title', descKey: 'path_fast_desc', category: 'Product', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, glyph: 'spark' },
+  { id: 'lp2', titleKey: 'path_fund_title', descKey: 'path_fund_desc', category: 'Fundraising', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, glyph: 'wallet' },
+  { id: 'lp3', titleKey: 'path_growth_title', descKey: 'path_growth_desc', category: 'Marketing', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, glyph: 'chart' },
+  { id: 'lp4', titleKey: 'path_team_title', descKey: 'path_team_desc', category: 'Leadership', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, glyph: 'people' },
 ];
 
 const DEMO_RESOURCES: Resource[] = [
@@ -88,6 +91,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Sarah Chen',
     authorRole: 'VC Partner',
     url: '#',
+    image: demoCover('course-seed', 800, 450),
     isFeatured: true,
     tags: ['Pitch Deck', 'Term Sheets', 'VC'],
     completedBy: 1247,
@@ -103,6 +107,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Alex Kumar',
     authorRole: 'Product Lead',
     url: '#',
+    image: demoCover('course-mvp', 800, 450),
     isFeatured: true,
     tags: ['MVP', 'No-Code', 'Validation'],
     completedBy: 892,
@@ -118,6 +123,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Maria Santos',
     authorRole: 'Growth Lead',
     url: '#',
+    image: demoCover('course-growth', 800, 450),
     tags: ['Growth', 'B2B', 'SaaS'],
     completedBy: 567,
   },
@@ -132,6 +138,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'James Wilson',
     authorRole: 'Sales Coach',
     url: '#',
+    image: demoCover('course-sales', 800, 450),
     tags: ['Sales', 'Founders', 'B2B'],
     completedBy: 734,
   },
@@ -146,6 +153,7 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'David Park',
     authorRole: 'CEO',
     url: '#',
+    image: demoCover('course-teams', 800, 450),
     tags: ['Leadership', 'Culture', 'Hiring'],
     completedBy: 423,
   },
@@ -160,16 +168,17 @@ const DEMO_RESOURCES: Resource[] = [
     author: 'Lisa Zhang',
     authorRole: 'CTO',
     url: '#',
+    image: demoCover('course-systems', 800, 450),
     tags: ['Architecture', 'Scaling', 'Backend'],
     completedBy: 645,
   },
 ];
 
 const TYPE_CONFIG = {
-  article: { labelKey: 'type_article' as const, icon: FileText, color: 'text-status-info', bg: 'bg-status-info-bg' },
-  video:   { labelKey: 'type_video' as const,   icon: Video,    color: 'text-status-accent', bg: 'bg-status-accent-bg' },
-  course:  { labelKey: 'type_course' as const,  icon: BookOpen, color: 'text-status-success', bg: 'bg-status-success-bg' },
-  guide:   { labelKey: 'type_guide' as const,   icon: Award,    color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  article: { labelKey: 'type_article' as const, icon: FileText },
+  video:   { labelKey: 'type_video' as const,   icon: Video },
+  course:  { labelKey: 'type_course' as const,  icon: BookOpen },
+  guide:   { labelKey: 'type_guide' as const,   icon: Award },
 };
 
 const DIFFICULTY_CONFIG = {
@@ -183,125 +192,152 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
 
   return (
-    <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
-      <CardContent className="flex flex-col flex-1 gap-3">
-        {/* Type icon + title */}
-        <div className="flex items-start gap-3">
-          <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.color)}>
-            <typeConfig.icon className="icon-md" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1.5 leading-snug">
-              {resource.title}
-            </h3>
-            {/* Type and level are facts (one muted line); "Featured" is the
-                card's one pill. All three were tinted badges. */}
-            <div className="flex items-center gap-x-2 gap-y-1 flex-wrap">
-              <FactLine
-                items={[
-                  <BilingualText key="type" en={learningEn(typeConfig.labelKey)} el={learningEl(typeConfig.labelKey)} compact />,
-                  <BilingualText key="level" en={learningEn(difficultyConfig.labelKey)} el={learningEl(difficultyConfig.labelKey)} compact />,
-                ]}
-              />
-              {resource.isFeatured && (
-                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-accessible">
-                  <BilingualText en={learningEn('featured_badge')} el={learningEl('featured_badge')} compact />
-                </Badge>
-              )}
+    <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
+      {resource.image ? (
+        <img src={resource.image} alt="" referrerPolicy="no-referrer" className="aspect-video w-full object-cover" />
+      ) : null}
+      <CardContent className="flex flex-1 flex-col gap-3">
+        {/* The kind of resource is the card's mark; its title, then type and
+            level as one line of facts. "Featured" is the card's one pill. */}
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <typeConfig.icon className="icon-md" aria-hidden="true" />
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => onToggleSave(resource.id)}
-            aria-pressed={saved}
-            aria-label={
-              saved
-                ? bilingualAria(`Saved: ${resource.title}`, `Αποθηκευμένο: ${resource.title}`)
-                : bilingualAria(`Save ${resource.title}`, `Αποθήκευση: ${resource.title}`)
-            }
-            // WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows.
-            // Unsaved was text-muted-foreground/40: an icon that is the whole
-            // control needs 3:1 against the card (WCAG 1.4.11), and 40% of the
-            // muted tone is well under it in every theme.
-            className={cn(
-              'shrink-0 -m-1 mt-0.5 inline-flex tap-target items-center justify-center transition-colors',
-              saved ? 'text-primary-accessible' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Bookmark className={cn('icon-sm', saved && 'fill-current')} aria-hidden="true" />
-            <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-          </button>
-        </div>
+          )}
+          title={<span className="line-clamp-2">{resource.title}</span>}
+          // "Featured" is a fact of the resource, in the accent: as a pill
+          // that wrapped under the facts its padding put the word off the
+          // title's edge.
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <BilingualText key="type" en={learningEn(typeConfig.labelKey)} el={learningEl(typeConfig.labelKey)} compact />,
+                <BilingualText key="level" en={learningEn(difficultyConfig.labelKey)} el={learningEl(difficultyConfig.labelKey)} compact />,
+                resource.isFeatured ? (
+                  <span key="featured" className="font-medium text-primary-accessible">
+                    <BilingualText en={learningEn('featured_badge')} el={learningEl('featured_badge')} compact />
+                  </span>
+                ) : null,
+              ]}
+            />
+          )}
+          asideStays
+          aside={(
+            <button
+              type="button"
+              onClick={() => onToggleSave(resource.id)}
+              aria-pressed={saved}
+              aria-label={
+                saved
+                  ? bilingualAria(`Saved: ${resource.title}`, `Αποθηκευμένο: ${resource.title}`)
+                  : bilingualAria(`Save ${resource.title}`, `Αποθήκευση: ${resource.title}`)
+              }
+              // WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows.
+              // Unsaved was text-muted-foreground/40: an icon that is the whole
+              // control needs 3:1 against the card (WCAG 1.4.11), and 40% of the
+              // muted tone is well under it in every theme.
+              className={cn(
+                '-m-1 inline-flex shrink-0 tap-target items-center justify-center gap-1 rounded-md transition-colors',
+                saved ? 'text-primary-accessible' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <Bookmark className={cn('icon-sm', saved && 'fill-current')} aria-hidden="true" />
+              <span className="hidden sm:inline text-xs"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
+            </button>
+          )}
+        />
 
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">
+        <p className="card-body line-clamp-2 flex-1 text-muted-foreground first-letter:uppercase">
           {resource.description}
         </p>
 
         <FactLine label={bilingualAria('Topics', 'Θέματα')} items={(resource.tags ?? []).slice(0, 3)} />
 
-        <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
-            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
-              {resource.duration && (
-                <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{resource.duration}</span>
-              )}
-              {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-sm text-status-success" />{resource.completedBy.toLocaleString('en-GB')}</span>
-              )}
-            </div>
-          </div>
-          <Button variant="default" size="sm" className="gap-1 h-7 text-xs shrink-0" onClick={() => window.open(resource.url, '_blank')}>
+        {/* Who wrote it, how long it takes and how many finished it: the
+            foot's caption. The count had only a check glyph for a label, and
+            glyphs outside a control are hidden, so it now says what it counts. */}
+        <CardFoot
+          className="mt-auto"
+          meta={(
+            <FactLine
+              items={[
+                resource.author ? <span key="author" className="font-medium text-foreground">{resource.author}</span> : null,
+                resource.duration ? <BilingualText key="duration" en={resource.duration} el={durationEl(resource.duration)} compact /> : null,
+                resource.completedBy ? (
+                  <BilingualText
+                    key="completed"
+                    en={`${resource.completedBy.toLocaleString('en-GB')} completed`}
+                    el={`${resource.completedBy.toLocaleString('el-GR')} ολοκλήρωσαν`}
+                    compact
+                  />
+                ) : null,
+              ]}
+            />
+          )}
+        >
+          <Button size="sm" className="gap-1" onClick={() => window.open(resource.url, '_blank')}>
             {resource.type === 'video' || resource.type === 'course' ? (
-              <><Play className="icon-sm" /><BilingualText en={learningEn('start')} el={learningEl('start')} compact /></>
+              <><Play className="icon-sm" aria-hidden="true" /><BilingualText en={learningEn('start')} el={learningEl('start')} compact /></>
             ) : (
-              <><ExternalLink className="icon-sm" /><BilingualText en={learningEn('open')} el={learningEl('open')} compact /></>
+              <><ExternalLink className="icon-sm" aria-hidden="true" /><BilingualText en={learningEn('open')} el={learningEl('open')} compact /></>
             )}
           </Button>
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
 }
 
 function LearningPathCard({ path, onSelect }: { path: LearningPath; onSelect: (category: string) => void }) {
+  const level = DIFFICULTY_CONFIG[path.level] ?? DIFFICULTY_CONFIG.beginner;
+  const n = String(path.steps);
+  const done = String(path.progress);
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(path.category)}
-      className={cn('relative rounded-xl border p-4 text-left transition-all hover:border-primary/30', path.color)}
-    >
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>
-          <CfbGlyph name={path.glyph} className="icon-md text-foreground" />
-        </div>
-        {path.progress > 0 && (
-          <Badge variant="secondary" className="text-2xs bg-background/60">
-            {learningEn('percent_done').replace('{n}', String(path.progress))}
-          </Badge>
-        )}
-      </div>
-      <h3 className="font-semibold text-sm text-foreground mb-1">
-        <BilingualText en={learningEn(path.titleKey)} el={learningEl(path.titleKey)} compact />
-      </h3>
-      <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">
-        <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} wrap />
-      </p>
-      <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
-        <span className="flex items-center gap-0.5">
-          <BookOpen className="icon-sm" />
-          {learningEn('modules').replace('{n}', String(path.steps))}
-        </span>
-        <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{path.duration}</span>
-      </div>
-      {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-accessible">
-        {path.progress > 0
-          ? <BilingualText en={learningEn('continue_path')} el={learningEl('continue_path')} compact />
-          : <BilingualText en={learningEn('start_path')} el={learningEl('start_path')} compact />}
-        <ChevronRight className="icon-sm" />
-      </div>
-    </button>
+    // An entity card like a resource: the path's glyph as its mark, level,
+    // modules and length as facts, the way in as the foot's action. The
+    // whole tile used to be one button holding a heading, tinted in a
+    // status hue that meant nothing about the path.
+    <Card className="flex flex-col transition-all hover:border-primary/20">
+      <CardContent className="flex flex-1 flex-col gap-3">
+        <CardHead
+          mark={(
+            <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+              <CfbGlyph name={path.glyph} className="icon-md" />
+            </div>
+          )}
+          title={<BilingualText en={learningEn(path.titleKey)} el={learningEl(path.titleKey)} compact />}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                <BilingualText key="level" en={learningEn(level.labelKey)} el={learningEl(level.labelKey)} compact />,
+                <BilingualText key="modules" en={learningEn('modules').replace('{n}', n)} el={learningEl('modules').replace('{n}', n)} compact />,
+                <BilingualText key="duration" en={path.duration} el={durationEl(path.duration)} compact />,
+              ]}
+            />
+          )}
+          aside={path.progress > 0 ? (
+            <Badge variant="outline" className="text-xs tabular-nums">
+              <BilingualText en={learningEn('percent_done').replace('{n}', done)} el={learningEl('percent_done').replace('{n}', done)} compact />
+            </Badge>
+          ) : undefined}
+        />
+        <p className="card-body line-clamp-2 flex-1 text-muted-foreground">
+          <BilingualText en={learningEn(path.descKey)} el={learningEl(path.descKey)} wrap />
+        </p>
+        {path.progress > 0 && <Progress value={path.progress} className="h-1.5" aria-label={bilingualAria(`${done}% done`, `${done}% ολοκληρωμένο`)} />}
+        <CardFoot className="mt-auto">
+          <Button size="sm" variant="outline" className="gap-1" onClick={() => onSelect(path.category)}>
+            {path.progress > 0
+              ? <BilingualText en={learningEn('continue_path')} el={learningEl('continue_path')} compact />
+              : <BilingualText en={learningEn('start_path')} el={learningEl('start_path')} compact />}
+            <ChevronRight className="icon-sm" aria-hidden="true" />
+          </Button>
+        </CardFoot>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -325,6 +361,7 @@ function backendToResource(r: LearningResourceItem): Resource {
     author: r.author ?? 'CoFounderBay',
     authorRole: '',
     url: r.url,
+    image: r.imageUrl ?? undefined,
     isFeatured: r.isFeatured,
     tags: r.tags ?? [],
     completedBy: undefined,
@@ -332,6 +369,7 @@ function backendToResource(r: LearningResourceItem): Resource {
 }
 
 export default function LearningPage() {
+  const completedReasonId = useId();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -434,7 +472,11 @@ export default function LearningPage() {
   const regularResources = filteredResources.filter((r) => !recommendedShown.has(r.id) && !featuredShown.has(r.id));
   const listedAbove = recommendedShown.size + featuredShown.size > 0;
 
-  const inProgressPaths = LEARNING_PATHS.filter((p) => p.progress > 0 && p.progress < 100);
+  // Nothing records progress through a path yet, so the 33% and 60% are
+  // sample figures: shown with the sample data, and zero for everyone else
+  // (the paths stay, as shortcuts into their category).
+  const paths = showDemoData ? LEARNING_PATHS : LEARNING_PATHS.map((p) => ({ ...p, progress: 0 }));
+  const inProgressPaths = paths.filter((p) => p.progress > 0 && p.progress < 100);
   const totalResourceCount = allResources.length;
   const courseCount = allResources.filter((r) => r.type === 'course').length;
   const totalHours = Math.round(allResources.reduce((acc, r) => {
@@ -568,12 +610,12 @@ export default function LearningPage() {
                 renders every path. A count says something true in the space
                 the promise was occupying. */}
             <span className="text-xs tabular-nums text-muted-foreground">
-              {LEARNING_PATHS.length}{' '}
+              {paths.length}{' '}
               <BilingualText en="paths" el="μονοπάτια" compact />
             </span>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-4">
-            {LEARNING_PATHS.map((path) => (
+            {paths.map((path) => (
               <LearningPathCard
                 key={path.id}
                 path={path}
@@ -617,10 +659,18 @@ export default function LearningPage() {
           {/* Nothing records a resource as completed yet, so the tab cannot
               list any; it stays visible and says why rather than showing
               every resource under "Completed". */}
-          <TabsTrigger value="completed" disabled title="Completion is not recorded yet">
+          <TabsTrigger
+            value="completed"
+            disabled
+            title={bilingualAria('Completion is not recorded yet', 'Η ολοκλήρωση δεν καταγράφεται ακόμη')}
+            aria-describedby={completedReasonId}
+          >
             <BilingualText en={learningEn('tab_completed')} el={learningEl('tab_completed')} compact />
           </TabsTrigger>
         </TabsList>
+        <span id={completedReasonId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+          <BilingualText en="Completion is not recorded yet" el="Η ολοκλήρωση δεν καταγράφεται ακόμη" compact wrap />
+        </span>
 
         <TabsContent value={activeTab} className="space-y-4">
           {/* Search & Filters */}
@@ -710,8 +760,24 @@ export default function LearningPage() {
                   <p className="font-medium text-foreground">
                     <BilingualText en={learningEn('empty')} el={learningEl('empty')} compact />
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} compact />
+                  <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                    {searchQuery.trim() || typeFilter !== 'all' || selectedCategory !== 'All' ? (
+                      <BilingualText
+                        en={`Nothing matched ${[
+                          searchQuery.trim() ? `“${searchQuery.trim()}”` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Clear them to see every resource.`}
+                        el={`Τίποτα δεν ταιριάζει με ${[
+                          searchQuery.trim() ? `«${searchQuery.trim()}»` : null,
+                          typeFilter !== 'all' ? typeFilter : null,
+                          selectedCategory !== 'All' ? selectedCategory : null,
+                        ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλους τους πόρους.`}
+                        wrap
+                      />
+                    ) : (
+                      <BilingualText en={learningEn('empty_hint')} el={learningEl('empty_hint')} wrap />
+                    )}
                   </p>
                   {(searchQuery.trim() !== '' || typeFilter !== 'all' || selectedCategory !== 'All') && (
                     <div className="mt-4 flex flex-wrap justify-center gap-2">

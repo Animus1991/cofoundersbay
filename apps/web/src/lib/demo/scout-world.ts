@@ -32,20 +32,20 @@ const BASE: ScoutCandidate[] = [
   { userId: 'user-christina', displayName: 'Christina Mavrou', headline: 'Founder at Aegis Health', location: 'Athens, Greece', skills: ['Healthcare', 'Sales'], openTo: [], openToVisible: [], verified: false },
 ];
 
-type Row = { id: string; candidateId: string; score: number; reasons: ScoutReason[]; draftNote: string; status: 'proposed' | 'saved' | 'dismissed'; ageMs: number };
+type Row = { id: string; candidateId: string; score: number; reasons: ScoutReason[]; draftNote: string; draftNoteEl?: string; status: 'proposed' | 'saved' | 'dismissed'; ageMs: number };
 type State = { brief: ScoutBrief | null; lastRunAgeMs: number | null; rows: Row[]; seq: number; savedAt: number };
 let memory: State | null = null;
 
 const SEED_BRIEF: ScoutBrief = { role: 'Technical co-founder', skills: ['TypeScript', 'AI'], place: 'Athens', remoteOk: true, commitment: 'full_time', stage: 'building', note: null, active: true };
 
-function runOnce(state: State, lang: 'en' | 'el' = 'en'): number {
+function runOnce(state: State): number {
   if (!state.brief) return 0;
   const seen = new Set(state.rows.map((r) => r.candidateId));
   const scored = BASE.filter((c) => !seen.has(c.userId)).map((c) => ({ c, ...scoreScoutCandidate(state.brief as ScoutBrief, c) }));
   const picked = pickScoutProposals(scored);
   for (const p of picked) {
     state.seq += 1;
-    state.rows.push({ id: `scout-${state.seq}`, candidateId: p.c.userId, score: p.score, reasons: p.reasons, draftNote: draftScoutNote(state.brief, p.c, lang), status: 'proposed', ageMs: 0 });
+    state.rows.push({ id: `scout-${state.seq}`, candidateId: p.c.userId, score: p.score, reasons: p.reasons, draftNote: draftScoutNote(state.brief, p.c, 'en'), draftNoteEl: draftScoutNote(state.brief, p.c, 'el'), status: 'proposed', ageMs: 0 });
   }
   state.lastRunAgeMs = 0;
   return picked.length;
@@ -93,6 +93,12 @@ export function resetDemoScout() {
   }
 }
 
+/** A demo saved before both notes were kept still reads in Greek. */
+function greekNote(state: State, candidateId: string): string | null {
+  const c = BASE.find((b) => b.userId === candidateId);
+  return c && state.brief ? draftScoutNote(state.brief, c, 'el') : null;
+}
+
 function view(state: State, now: number) {
   const person = (id: string) => {
     const c = BASE.find((b) => b.userId === id);
@@ -104,7 +110,7 @@ function view(state: State, now: number) {
     proposals: state.rows
       .filter((r) => r.status !== 'dismissed')
       .sort((a, b) => b.score - a.score)
-      .map((r) => ({ id: r.id, status: r.status, score: r.score, reasons: r.reasons, draftNote: r.draftNote, createdAt: new Date(now - r.ageMs).toISOString(), person: person(r.candidateId) })),
+      .map((r) => ({ id: r.id, status: r.status, score: r.score, reasons: r.reasons, draftNote: r.draftNote, draftNoteEl: r.draftNoteEl ?? greekNote(state, r.candidateId), createdAt: new Date(now - r.ageMs).toISOString(), person: person(r.candidateId) })),
   };
 }
 
@@ -131,7 +137,7 @@ export function previewScoutApi(pathname: string, method: string, body: Record<s
   }
   if (parts[0] === 'run' && method === 'POST') {
     if (!state.brief) throw new DemoRefusal(400, 'Write a brief first: the role you are looking for.', { reason: 'no_brief', messageEl: 'Γράψτε πρώτα ένα σημείωμα: τον ρόλο που ψάχνετε.' });
-    const added = runOnce(state, body.lang === 'el' ? 'el' : 'en');
+    const added = runOnce(state);
     save();
     return { added, ...view(state, now) };
   }

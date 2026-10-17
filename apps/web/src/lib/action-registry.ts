@@ -622,6 +622,20 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     ),
   draft_founder_update: async (payload) => openDraft('founder_update', payload, ['title', 'body', 'visibility'], null),
   draft_scout_brief: async (payload) => openDraft('scout_brief', payload, ['role', 'skills', 'place', 'commitment', 'stage', 'note'], 'role'),
+  draft_mentor_listing: async (payload) =>
+    openDraft(
+      'mentor_listing',
+      payload,
+      ['headline', 'bio', 'industries', 'stages', 'expertise', 'sessionFormats', 'hoursPerWeek', 'sessionDuration', 'yearsExperience', 'isFree', 'hourlyRateUsd'],
+      null,
+    ),
+  draft_provider_listing: async (payload) =>
+    openDraft(
+      'provider_listing',
+      payload,
+      ['serviceType', 'companyName', 'companyWebsite', 'headline', 'description', 'pricingModel', 'startingPriceUsd', 'yearsInBusiness', 'clientsServed', 'industries', 'stages'],
+      null,
+    ),
   // Adds proposals to the founder's own list; contacts nobody (declared none).
   run_scout: async () => {
     await runScout();
@@ -696,10 +710,13 @@ async function openDraft(
     const value = payload?.[key];
     if (typeof value === 'string' && value.trim()) fields[key] = value.trim();
     else if (typeof value === 'boolean') fields[key] = value;
+    // A model sends a declared number as a number; the form reads text.
+    else if (typeof value === 'number' && Number.isFinite(value)) fields[key] = String(value);
   }
   if (required && !fields[required]) return { ok: false, error: `Missing ${required}` };
   if (Object.keys(fields).length === 0) return { ok: false, error: 'Nothing to fill in' };
-  stashFormDraft(id, fields);
+  const ask = typeof payload?.__ask === 'string' ? payload.__ask.trim() : '';
+  stashFormDraft(id, fields, ask || undefined);
   return { ok: true, href: FORM_DRAFT_ROUTES[id] };
 }
 

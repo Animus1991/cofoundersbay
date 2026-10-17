@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LegalText } from '@/components/common/LegalText';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { MainLandmark } from '@/components/layout/AppShell';
 
 const LAST_UPDATED = 'October 7, 2026';
@@ -85,6 +86,13 @@ We process your data based on legitimate interests, contractual necessity, legal
 • Work-email codes are stored hashed and expire after 15 minutes. "Verified on LinkedIn" stores only which categories LinkedIn verified (identity, workplace), never documents.
 • Accounts whose role is investor or organisation need a work-email or LinkedIn workplace verification, or a role checked by the platform team, before they accept an introduction or answer an investor-introduction card.
 • A LinkedIn data export you choose to import is read in your browser. If you use LinkedIn's portability API instead, the selected fields wait on our server for at most 15 minutes and are deleted when your profile form reads them. Nothing reaches your profile until you press Save.
+
+**Profile views:**
+• When you open another member's profile we record that it was viewed, when, and by which account; a view from someone who is not signed in is recorded without an account. Opening your own profile is not counted.
+• The owner sees your name only if you turned on "Show my name when I view profiles" (Settings → Privacy; off by default) and they turned it on too. Otherwise you are part of a count, and a role is named only when at least three private viewers share it. Views older than 90 days are not shown.
+
+**Perks:**
+• Claiming a partner offer records the claim with your account so the code stays under "Claimed". We do not send partners a list of who claimed; a partner learns who you are only if you redeem on their own site.
 
 **Safety rules and the transparency report:**
 • Before two people have both confirmed, messages, notes, cards and briefs that contain contact details or promised returns are refused, not rewritten. Each refusal is recorded as its kind, where it happened and when, with no account and no text, and the counts are published per half year at /transparency together with the number of reports received and decided.
@@ -266,12 +274,9 @@ export default function PrivacyPage() {
 
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-            <Shield className="h-7 w-7 text-primary-accessible" />
-          </div>
+        <div className="mx-auto max-w-4xl px-4 py-12 text-left">
           <h1 className="text-3xl font-semibold text-foreground mb-2"><BilingualText en="Privacy Policy" el="Πολιτική απορρήτου" compact /></h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             <BilingualText en={`Last updated: ${LAST_UPDATED}`} el={`Τελευταία ενημέρωση: ${LAST_UPDATED_EL}`} compact />
           </p>
           {/* Legal text is not machine-translated: a paraphrase could promise something the policy does not. */}
@@ -332,13 +337,17 @@ export default function PrivacyPage() {
         <div className="space-y-12">
           {sections.map((section) => (
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-                    <section.icon className="h-4 w-4 text-primary-accessible" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
-                </div>
+              <CardContent className="space-y-4">
+                <CardHead
+                  titleAs="h2"
+                  mark={(
+                    <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                      <section.icon className="icon-md text-primary-accessible" aria-hidden="true" />
+                    </div>
+                  )}
+                  title={section.title}
+                  className="items-center"
+                />
                 <LegalText content={section.content} />
               </CardContent>
             </Card>
@@ -346,11 +355,13 @@ export default function PrivacyPage() {
         </div>
 
         {/* Footer CTA */}
-        <div className="mt-12 rounded-xl border border-border bg-muted/30 p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
+        {/* Closing note: left on one axis like every card, the two ways on
+            under it. It was centred, the only centred text box on the page. */}
+        <div className="mt-12 space-y-4 rounded-xl border border-border bg-muted/30 p-4 sm:p-6">
+          <p className="card-body text-muted-foreground">
             <BilingualText en="Your privacy matters to us. If you have any questions, please don't hesitate to reach out." el="Το απόρρητό σας μας ενδιαφέρει. Για οποιαδήποτε ερώτηση, επικοινωνήστε μαζί μας." wrap />
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button variant="outline" size="sm" asChild>
               <Link href="/terms"><BilingualText en="Read Terms of Service" el="Διαβάστε τους όρους χρήσης" compact /></Link>
             </Button>
@@ -363,7 +374,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card">
-        <div className="mx-auto max-w-4xl px-4 py-6 text-center text-xs text-muted-foreground">
+        <div className="mx-auto max-w-4xl px-4 py-6 text-left text-xs text-muted-foreground">
           © {new Date().getFullYear()} CoFounderBay. All rights reserved.
         </div>
       </footer>

@@ -46,7 +46,7 @@ function InvoiceStatusBadge({ status }: { status: string }) {
 /** What a plan includes: one quiet list, shared with /pricing through PLAN_HIGHLIGHTS. */
 function PlanHighlights({ items }: { items: { en: string; el: string }[] }) {
   return (
-    <ul className="space-y-1.5 border-t border-border pt-3 text-sm text-muted-foreground">
+    <ul className="card-body space-y-1.5 border-t border-border pt-3 text-muted-foreground">
       {items.map((item) => (
         <li key={item.en} className="flex items-start gap-2">
           <Check className="mt-0.5 icon-sm shrink-0 text-status-success" aria-hidden="true" />
@@ -220,8 +220,8 @@ export default function UserBillingPage() {
               ) : sub ? (
                 <>
                   <div>
-                    <p className="text-lg font-semibold">{sub.plan?.displayName ?? <BilingualText en="Unknown plan" el="Άγνωστο πλάνο" compact />}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="card-title">{sub.plan?.displayName ?? <BilingualText en="Unknown plan" el="Άγνωστο πλάνο" compact />}</p>
+                    <p className="card-subtitle">
                       {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
                       {sub.billingCycle === 'annual'
                         ? <BilingualText en="/year" el="/έτος" compact />
@@ -249,8 +249,8 @@ export default function UserBillingPage() {
               ) : (
                 <>
                   <div>
-                    <p className="text-lg font-semibold"><BilingualText en="Free" el="Δωρεάν" compact /></p>
-                    <p className="text-sm text-muted-foreground">$0<BilingualText en="/mo" el="/μήνα" compact /></p>
+                    <p className="card-title"><BilingualText en="Free" el="Δωρεάν" compact /></p>
+                    <p className="card-subtitle">$0<BilingualText en="/mo" el="/μήνα" compact /></p>
                   </div>
                   <PlanHighlights items={PLAN_HIGHLIGHTS.free} />
                 </>
@@ -259,7 +259,7 @@ export default function UserBillingPage() {
           </Card>
 
           {(sub?.plan?.name === 'free' || !sub) && (
-            <Card className="border-primary/15 bg-primary/[0.03]">
+            <Card className="border-primary-muted bg-primary-subtle">
               <CardHeader className="pb-2">
                 <p className="text-2xs font-medium uppercase tracking-widest text-primary-accessible">
                   <BilingualText en="Upgrade available" el="Διαθέσιμη αναβάθμιση" />
@@ -267,8 +267,8 @@ export default function UserBillingPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-lg font-semibold">Pro</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="card-title">Pro</p>
+                  <p className="card-subtitle">
                     <BilingualText en="Unlock more usage on matching, messages, and mentor booking." el="Περισσότερη χρήση σε αντιστοιχίσεις, μηνύματα και κρατήσεις μεντόρων." wrap />
                   </p>
                 </div>
@@ -307,7 +307,7 @@ export default function UserBillingPage() {
         {sub?.plan?.features && (
           <Card className="border-border shadow-none">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base"><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
+              <CardTitle><BilingualText en="Included" el="Περιλαμβάνονται" compact /></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(sub.plan.features as Record<string, unknown>)
@@ -348,13 +348,14 @@ export default function UserBillingPage() {
           </CardContent>
         </Card>
 
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         {/* Billing Contact */}
         <Card className="border-border shadow-none">
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-base"><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
-                <CardDescription className="text-xs mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
+                <CardTitle><BilingualText en="Billing Contact" el="Στοιχεία τιμολόγησης" compact /></CardTitle>
+                <CardDescription className="mt-0.5"><BilingualText en="Used on invoices and for tax compliance." el="Χρησιμοποιούνται σε τιμολόγια και για φορολογικούς σκοπούς." wrap /></CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => setShowContactForm(!showContactForm)}>
                 {showContactForm
@@ -386,7 +387,7 @@ export default function UserBillingPage() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-name" className="text-xs"><BilingualText en="Full name" el="Ονοματεπώνυμο" compact /> *</Label>
+                    <Label htmlFor="billing-contact-name"><BilingualText en="Full name" el="Ονοματεπώνυμο" compact /> *</Label>
                     <Input
                       id="billing-contact-name"
                       placeholder="Jane Doe"
@@ -395,7 +396,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-email" className="text-xs">Email *</Label>
+                    <Label htmlFor="billing-contact-email">Email *</Label>
                     <Input
                       id="billing-contact-email"
                       type="email"
@@ -405,7 +406,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-company" className="text-xs"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
+                    <Label htmlFor="billing-contact-company"><BilingualText en="Company" el="Επωνυμία" compact /></Label>
                     <Input
                       id="billing-contact-company"
                       placeholder="Acme Inc."
@@ -414,7 +415,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-vat" className="text-xs"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
+                    <Label htmlFor="billing-contact-vat"><BilingualText en="VAT / Tax ID" el="ΑΦΜ" compact /></Label>
                     <Input
                       id="billing-contact-vat"
                       placeholder="EU123456789"
@@ -423,7 +424,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label htmlFor="billing-contact-address" className="text-xs"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
+                    <Label htmlFor="billing-contact-address"><BilingualText en="Address" el="Διεύθυνση" compact /></Label>
                     <Input
                       id="billing-contact-address"
                       placeholder="123 Main Street"
@@ -432,7 +433,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-city" className="text-xs"><BilingualText en="City" el="Πόλη" compact /></Label>
+                    <Label htmlFor="billing-contact-city"><BilingualText en="City" el="Πόλη" compact /></Label>
                     <Input
                       id="billing-contact-city"
                       placeholder="Athens"
@@ -441,7 +442,7 @@ export default function UserBillingPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="billing-contact-postal" className="text-xs"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
+                    <Label htmlFor="billing-contact-postal"><BilingualText en="Postal Code" el="Ταχυδρομικός κώδικας" compact /></Label>
                     <Input
                       id="billing-contact-postal"
                       placeholder="10431"
@@ -469,7 +470,7 @@ export default function UserBillingPage() {
         {/* Invoice history */}
         <Card className="border-border shadow-none">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-base"><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
+            <CardTitle><BilingualText en="Invoice History" el="Ιστορικό τιμολογίων" compact /></CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {invoicesLoading ? (
@@ -482,6 +483,9 @@ export default function UserBillingPage() {
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
                 <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact /></p>
+                <Link href="/pricing" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                  <BilingualText en="Compare plans" el="Σύγκριση πλάνων" compact />
+                </Link>
               </div>
             ) : (
               <div className="divide-y divide-border/50">
@@ -490,6 +494,7 @@ export default function UserBillingPage() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
     </AppShell>
   );

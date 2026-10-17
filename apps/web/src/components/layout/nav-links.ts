@@ -23,6 +23,7 @@ import {
   Award,
   FileText,
   PieChart,
+  Gift,
   Shield,
   Sparkles,
   Lightbulb,
@@ -155,6 +156,7 @@ export const navSections: NavSection[] = [
     links: [
       { href: '/learning', label: 'Learning Hub', icon: BookOpen },
       { href: '/marketplace', label: 'Services', icon: Store },
+      { href: '/perks', label: 'Perks', icon: Gift },
       { href: '/jobs', label: 'Jobs & Roles', icon: Briefcase },
       { href: '/expert-reviews', label: 'Expert Reviews', icon: Award },
       { href: '/coaching', label: 'Coaching', icon: BrainCircuit },

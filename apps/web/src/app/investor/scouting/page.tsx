@@ -8,7 +8,6 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   ArrowUpDown,
   Compass,
-  DollarSign,
   Eye,
   Filter,
   Flame,
@@ -17,15 +16,12 @@ import {
   Globe,
   LayoutGrid,
   List,
-  MapPin,
   MessageCircle,
   MoreVertical,
   Rocket,
   Search,
   SlidersHorizontal,
   Star,
-  TrendingUp,
-  Users,
   X,
   Zap,
 } from 'lucide-react';
@@ -40,6 +36,7 @@ import {
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -64,6 +61,8 @@ import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControl
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
 type Startup = {
   id: string;
@@ -162,115 +161,119 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     onError: (err) => showError('Could not add to the pipeline', err instanceof Error ? err.message : undefined),
   });
 
+  // The Opportunities card: the logo and name with the tagline under it,
+  // the watch control and menu at the right, then facts, the two scores and
+  // the actions, all on the logo's left edge.
   return (
-    <Card className={cn('transition-all hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-11 w-11 rounded-lg shrink-0">
-            <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold text-sm">
-              {startup.name[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
-                    {startup.name}
-                  </Link>
-                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 gap-0.5 px-1.5"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
-                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-accessible border-primary/30"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
-                </div>
-                <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
-                  <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
-                  <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`More actions for ${startup.name}`}>
-                      <MoreVertical className="icon-sm" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      {/* A startup already on the board opens its deal. */}
-                      <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
-                      <GanttChart className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setInWatchlist()}>
-                      <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <UnavailableMenuItem
-                      icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                      en="Request Intro"
-                      el="Αίτημα γνωριμίας"
-                      reasonEn="Scouted startups are not linked to founder accounts yet."
-                      reasonEl="Οι startups της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών."
-                    />
-                    <UnavailableMenuItem
-                      icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                      en="Compare"
-                      el="Σύγκριση"
-                      reasonEn="Startup comparison is not built yet."
-                      reasonEl="Η σύγκριση startups δεν υπάρχει ακόμη."
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            <FactLine
-              className="mt-2"
-              items={[<StatusText key="stage" value={startup.stage} />, startup.businessModel, ...startup.tags.slice(0, 2)]}
-            />
-
-            <div className="flex flex-wrap gap-4 mt-2.5 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
-              <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize} founders</span>
-              <span className="flex items-center gap-1 font-medium text-primary-accessible"><DollarSign className="icon-sm" />Raising {startup.raisingAmount}</span>
-              {startup.revenue !== 'Pre-revenue' && (
-                <span className="flex items-center gap-1 text-status-success"><TrendingUp className="icon-sm" />{startup.revenue}</span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-2xs mb-1">
-                  <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
-                  <span className="font-medium">{startup.readinessScore}%</span>
-                </div>
-                <Progress value={startup.readinessScore} className="h-1.5" />
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-2xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
-                <p className={cn('text-sm font-semibold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
-                  {startup.matchScore}%
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
-              <Button size="sm" variant="default" className="h-7 text-xs flex-1" asChild>
-                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
+    <Card className={cn('transition-all hover:border-primary/20', startup.isFeatured && 'border-primary/40')}>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={startup.logoUrl} alt="" />
+              <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">
+                {startup.name[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <Link href={`/startups/${startup.id}`} className="transition-colors hover:text-primary-accessible">
+                {startup.name}
+              </Link>
+              {startup.isHot && <Badge variant="destructive" className="h-4 gap-0.5 px-1.5 text-2xs"><Flame className="h-2.5 w-2.5" aria-hidden="true" /><BilingualText en="Hot" el="Δημοφιλές" compact /></Badge>}
+              {startup.isFeatured && <Badge className="h-4 border-primary/30 bg-primary/10 px-1.5 text-2xs text-primary-accessible"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
+            </span>
+          )}
+          subtitle={<span className="line-clamp-1">{startup.tagline}</span>}
+          asideStays
+          aside={(
+            <>
+              <Button variant="ghost" size="icon" className="h-7 w-7 gap-1 sm:w-auto sm:px-2" onClick={() => setInWatchlist()} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'} aria-label={inWatchlist ? `Remove ${startup.name} from watchlist` : `Add ${startup.name} to watchlist`} aria-pressed={inWatchlist}>
+                <Eye className={cn('icon-sm', inWatchlist ? 'text-primary-accessible fill-primary/20' : 'text-muted-foreground')} />
+                <span className="hidden sm:inline text-xs"><BilingualText en={inWatchlist ? 'Watching' : 'Watch'} el={inWatchlist ? 'Σε παρακολούθηση' : 'Παρακολούθηση'} compact /></span>
               </Button>
-              {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
-                  and Intro has no founder account to reach yet. */}
-              <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
-                <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Pipeline" el="Pipeline" compact />
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-xs flex-1" disabled title="Scouted startups are not linked to founder accounts yet">
-                <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={bilingualAria(`More actions for ${startup.name}`, `Περισσότερες ενέργειες: ${startup.name}`)}>
+                    <MoreVertical className="icon-sm" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    {/* A startup already on the board opens its deal. */}
+                    <Link href={`/startups/${existing?.id ?? startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled={addToPipeline.isPending} onSelect={() => addToPipeline.mutate()}>
+                    <GanttChart className="mr-2 icon-sm" aria-hidden="true" /><BilingualText en="Add to Pipeline" el="Προσθήκη στο pipeline" compact />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setInWatchlist()}>
+                    <Eye className="mr-2 icon-sm" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <UnavailableMenuItem
+                    icon={<MessageCircle className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Request Intro"
+                    el="Αίτημα γνωριμίας"
+                    reasonEn="Scouted startups are not linked to founder accounts yet."
+                    reasonEl="Οι startups της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών."
+                  />
+                  <UnavailableMenuItem
+                    icon={<GitCompare className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+                    en="Compare"
+                    el="Σύγκριση"
+                    reasonEn="Startup comparison is not built yet."
+                    reasonEl="Η σύγκριση startups δεν υπάρχει ακόμη."
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        />
+
+        <div className="space-y-1">
+          <FactLine items={[<StatusText key="stage" value={startup.stage} />, startup.businessModel, ...startup.tags.slice(0, 2)]} />
+          <FactLine
+            items={[
+              startup.location,
+              <BilingualText key="team" en={`${startup.teamSize} founders`} el={`${startup.teamSize} ιδρυτές`} compact />,
+              <span key="raising" className="font-medium text-primary-accessible"><BilingualText en={`Raising ${startup.raisingAmount}`} el={`Αντλεί ${startup.raisingAmount}`} compact /></span>,
+              startup.revenue !== 'Pre-revenue' ? <span key="revenue" className="text-status-success">{startup.revenue}</span> : null,
+            ]}
+          />
+        </div>
+
+        <div className="flex items-end gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground"><BilingualText en="Readiness" el="Ετοιμότητα" compact /></span>
+              <span className="font-medium tabular-nums">{startup.readinessScore}%</span>
             </div>
+            <Progress value={startup.readinessScore} className="h-1.5" />
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="text-xs text-muted-foreground"><BilingualText en="Match Score" el="Βαθμός ταιριάσματος" compact /></p>
+            <p className={cn('card-body font-semibold tabular-nums', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
+              {startup.matchScore}%
+            </p>
           </div>
         </div>
+
+        <CardFoot>
+          <Button size="sm" variant="default" asChild>
+            <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-sm" /><BilingualText en="View" el="Προβολή" compact /></Link>
+          </Button>
+          {/* Both had no handler: Pipeline is the menu's Add to Pipeline,
+              and Intro has no founder account to reach yet. */}
+          <Button size="sm" variant="outline" disabled={addToPipeline.isPending} onClick={() => addToPipeline.mutate()}>
+            <GanttChart className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Pipeline" el="Pipeline" compact />
+          </Button>
+          <WithDisabledReason reasonEn="Scouted startups are not linked to founder accounts yet" reasonEl="Οι νεοφυείς επιχειρήσεις της αναζήτησης δεν συνδέονται ακόμη με λογαριασμούς ιδρυτών">
+            <Button size="sm" variant="outline" disabled>
+              <MessageCircle className="mr-1 icon-sm" aria-hidden="true" /><BilingualText en="Intro" el="Γνωριμία" compact />
+            </Button>
+          </WithDisabledReason>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -387,10 +390,10 @@ export default function InvestorScoutingPage() {
       actions={
         <>
           <div className="flex items-center gap-2">
-            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label="List view" aria-pressed={viewMode === 'list'}>
+            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')} aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}>
               <List className="icon-sm" />
             </Button>
-            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label="Grid view" aria-pressed={viewMode === 'grid'}>
+            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')} aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}>
               <LayoutGrid className="icon-sm" />
             </Button>
           </div>
@@ -400,25 +403,28 @@ export default function InvestorScoutingPage() {
       <div className="space-y-6">
         {/* Featured */}
         {featured.length > 0 && (
-          <Card className="border-primary/15 bg-primary/[0.03]">
+          <Card className="border-primary-muted bg-primary-subtle">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
+              <CardTitle className="flex items-center gap-2"><Zap className="icon-sm text-muted-foreground" aria-hidden="true" /><BilingualText en="Featured Startups" el="Προτεινόμενες startups" compact /></CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
               {featured.map(s => (
-                <div key={s.id} className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">{s.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{s.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{s.tagline}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-primary-accessible font-semibold">{s.matchScore}% match</p>
-                    <p className="text-xs text-muted-foreground">{s.raisingAmount}</p>
-                  </div>
-                </div>
+                <RowHead
+                  key={s.id}
+                  mark={(
+                    <Avatar className="h-10 w-10 rounded-xl">
+                      <AvatarFallback className="rounded-xl bg-primary/10 font-semibold text-primary-accessible">{s.name[0]}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  title={<Link href={`/startups/${s.id}`} className="transition-colors hover:text-primary-accessible">{s.name}</Link>}
+                  subtitle={<span className="line-clamp-1">{s.tagline}</span>}
+                  aside={(
+                    <>
+                      <span className="font-medium tabular-nums text-primary-accessible"><BilingualText en={`${s.matchScore}% match`} el={`${s.matchScore}% ταίριασμα`} compact /></span>
+                      <span className="tabular-nums">{s.raisingAmount}</span>
+                    </>
+                  )}
+                />
               ))}
             </CardContent>
           </Card>
@@ -444,7 +450,7 @@ export default function InvestorScoutingPage() {
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label="Business model" className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
@@ -463,7 +469,7 @@ export default function InvestorScoutingPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground"><BilingualText en="Active filters" el="Ενεργά φίλτρα" compact /></span>
               {activeFilters.map(f => (
-                <Badge key={f} variant="secondary" className="gap-1 text-xs">
+                <Badge key={f} variant="secondary" data-chip="" className="gap-1 text-xs">
                   {f}
                   <button aria-label={`Remove filter ${f}`} onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
                     <X className="icon-sm" />
@@ -478,8 +484,8 @@ export default function InvestorScoutingPage() {
         {/* Results header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" />{ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
+            <span className="font-medium text-foreground">{filtered.length}</span>{' '}<BilingualText en={filtered.length === 1 ? 'startup found' : 'startups found'} el={filtered.length === 1 ? 'startup βρέθηκε' : 'startups βρέθηκαν'} compact />
+            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 inline-flex items-center gap-1 text-status-warning"><Flame className="h-3 w-3" aria-hidden="true" /><BilingualText en={`${ALL_STARTUPS.filter(s => s.isHot).length} trending`} el={`${ALL_STARTUPS.filter(s => s.isHot).length} σε άνοδο`} compact /></span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
             <GanttChart className="icon-sm" /><BilingualText en="View Pipeline" el="Προβολή pipeline" compact />
@@ -495,7 +501,7 @@ export default function InvestorScoutingPage() {
             <Card className="col-span-2">
               <CardContent className="py-12 text-center">
                 <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
+                <h3 className="card-title text-foreground"><BilingualText en="No startups found" el="Δεν βρέθηκαν startups" compact /></h3>
                 <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your filters or search term" el="Δοκιμάστε να αλλάξετε φίλτρα ή αναζήτηση" wrap /></p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}><BilingualText en="Clear Filters" el="Καθαρισμός φίλτρων" compact /></Button>
               </CardContent>

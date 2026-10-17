@@ -1,6 +1,9 @@
 'use client';
 
-import { StatusText } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
+import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -298,7 +301,7 @@ function statusBadge(status: string) {
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? 'bg-muted text-muted-foreground'}`}>
-      {status}
+      <StatusText value={status} />
     </span>
   );
 }
@@ -329,7 +332,7 @@ function LogPanel({ executionId }: { executionId: string }) {
           {log.level === 'warn' && <AlertTriangle className="icon-sm text-status-warning mt-0.5 shrink-0" />}
           {log.level === 'info' && <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />}
           <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-status-warning' : 'text-muted-foreground'}>
-            [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
+            [{new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })}] {log.message}
           </span>
         </div>
       ))}
@@ -339,6 +342,7 @@ function LogPanel({ executionId }: { executionId: string }) {
 
 export default function AutomationsPage() {
   const queryClient = useQueryClient();
+  const fmtDate = useDateFormat();
   const { success, error: showError } = useToast();
   const confirm = useConfirm();
   const { apiAvailable, pollInterval } = usePollingGuards();
@@ -455,15 +459,15 @@ export default function AutomationsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', value: activeCount, color: 'text-status-success' },
-            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-status-info' },
-            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-status-warning' },
+            { icon: ListChecks, label: 'Total Rules', labelEl: 'Σύνολο κανόνων', value: total, color: 'text-foreground' },
+            { icon: Zap, label: 'Active', labelEl: 'Ενεργοί', value: activeCount, color: 'text-status-success' },
+            { icon: Activity, label: 'Executions (recent)', labelEl: 'Εκτελέσεις (πρόσφατες)', value: executions.length, color: 'text-status-info' },
+            { icon: AlertTriangle, label: 'Rules with Failures', labelEl: 'Κανόνες με αποτυχίες', value: failureCount, color: 'text-status-warning' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
               <stat.icon className={`icon-md ${stat.color}`} />
               <div>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xs text-muted-foreground"><BilingualText en={stat.label} el={stat.labelEl} compact wrap /></p>
                 <p className="page-stat text-xl font-bold">{stat.value}</p>
               </div>
             </Card>
@@ -482,7 +486,7 @@ export default function AutomationsPage() {
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tab === 'rules' ? 'Rules' : 'Execution Log'}
+              {tab === 'rules' ? <BilingualText en="Rules" el="Κανόνες" compact /> : <BilingualText en="Execution Log" el="Αρχείο εκτελέσεων" compact />}
             </button>
           ))}
         </div>
@@ -492,46 +496,60 @@ export default function AutomationsPage() {
           <div className="space-y-3">
             {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading rules…" el="Φόρτωση κανόνων…" compact /></p>}
             {!rulesLoading && rules.length === 0 && (
-              <Card className="p-8 text-center">
-                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact wrap /></p>
-                <Button size="sm" className="mt-3 gap-1" onClick={() => setShowCreate(true)}>
-                  <Plus className="icon-sm" /><BilingualText en="New Rule" el="Νέος κανόνας" compact />
-                </Button>
+              <Card>
+                <CardContent className="space-y-3">
+                  <p className="text-muted-foreground text-sm"><BilingualText en="No automation rules defined yet." el="Δεν έχουν οριστεί κανόνες αυτοματισμού ακόμα." compact wrap /></p>
+                  <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
+                    <Plus className="icon-sm" /><BilingualText en="New Rule" el="Νέος κανόνας" compact />
+                  </Button>
+                </CardContent>
               </Card>
             )}
             {rules.map(rule => (
-              <Card key={rule.id} className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-sm">{rule.name}</span>
-                      {statusBadge(rule.status)}
-                      <Badge variant="outline" className="text-xs">
-                        {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
-                      </Badge>
-                      {rule.tenantId && (
-                        <Badge variant="secondary" className="text-xs"><BilingualText en="Tenant" el="Οργανισμός" compact /></Badge>
-                      )}
-                    </div>
-                    {rule.description && (
-                      <p className="text-xs text-muted-foreground mt-1">{rule.description}</p>
+              // The Endorsements card's anatomy: the rule's name over its
+              // trigger, its state at the right, the sentence and the facts
+              // on one axis, the actions in the foot.
+              <Card key={rule.id} className="transition-all hover:border-primary/20">
+                <CardContent className="space-y-3">
+                  <CardHead
+                    title={rule.name}
+                    subtitle={(
+                      <FactLine
+                        className="text-sm"
+                        items={[
+                          TRIGGER_LABELS[rule.triggerType]
+                            ? <BilingualText key="trigger" en={TRIGGER_LABELS[rule.triggerType]} el={statusEl(rule.triggerType) ?? TRIGGER_LABELS[rule.triggerType]} compact />
+                            : <StatusText key="trigger" value={rule.triggerType} />,
+                          rule.tenantId ? <BilingualText key="tenant" en="Tenant" el="Οργανισμός" compact /> : null,
+                        ]}
+                      />
                     )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span><BilingualText en={`Priority ${rule.priority}`} el={`Προτεραιότητα ${rule.priority}`} compact /></span>
-                      <span><BilingualText en={`Runs ${rule.executionCount}`} el={`Εκτελέσεις ${rule.executionCount}`} compact /></span>
-                      {rule.failureCount > 0 && (
-                        <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
-                      )}
-                      {rule.lastRunAt && (
-                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
-                      )}
-                      {rule.delaySeconds > 0 && (
-                        <span>Delay: {rule.delaySeconds}s</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                    aside={statusBadge(rule.status)}
+                  />
+                  {rule.description && (
+                    <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{rule.description}</p>
+                  )}
+                  <FactLine
+                    items={[
+                      <BilingualText key="priority" en={`Priority ${rule.priority}`} el={`Προτεραιότητα ${rule.priority}`} compact />,
+                      <BilingualText key="runs" en={`Runs ${rule.executionCount}`} el={`Εκτελέσεις ${rule.executionCount}`} compact />,
+                      rule.failureCount > 0 ? (
+                        <span key="fail" className="font-medium text-status-warning">
+                          <BilingualText en={`${rule.failureCount} failures`} el={`${rule.failureCount} αποτυχίες`} compact />
+                        </span>
+                      ) : null,
+                      rule.lastRunAt ? (
+                        <BilingualText
+                          key="last"
+                          en={`Last run ${fmtDate(rule.lastRunAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                          el={`Τελευταία εκτέλεση ${fmtDate(rule.lastRunAt, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                          compact
+                        />
+                      ) : null,
+                      rule.delaySeconds > 0 ? <BilingualText key="delay" en={`Delay ${rule.delaySeconds}s`} el={`Καθυστέρηση ${rule.delaySeconds}s`} compact /> : null,
+                    ]}
+                  />
+                  <CardFoot>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -588,8 +606,8 @@ export default function AutomationsPage() {
                     >
                       <Trash2 className="icon-sm" />
                     </Button>
-                  </div>
-                </div>
+                  </CardFoot>
+                </CardContent>
               </Card>
             ))}
           </div>
@@ -600,43 +618,63 @@ export default function AutomationsPage() {
           <div className="space-y-2">
             {execLoading && <p className="text-muted-foreground text-sm animate-pulse"><BilingualText en="Loading executions…" el="Φόρτωση εκτελέσεων…" compact /></p>}
             {!execLoading && executions.length === 0 && (
-              <Card className="p-8 text-center">
-                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm"><BilingualText en="No executions yet." el="Δεν υπάρχουν εκτελέσεις ακόμα." compact /></p>
+              <Card>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm"><BilingualText en="No executions yet." el="Δεν υπάρχουν εκτελέσεις ακόμα." compact wrap /></p>
+                </CardContent>
               </Card>
             )}
             {executions.map(exec => (
-              <div key={exec.id}>
-                <Card
-                  className="p-3 cursor-pointer hover:bg-muted/30 transition-colors"
-                  onClick={() => setSelectedExecution(selectedExecution === exec.id ? null : exec.id)}
-                  {...pressableProps({ expanded: selectedExecution === exec.id })}
-                >
-                  <div className="flex items-center gap-3">
-                    {execStatusIcon(exec.status)}
-                    <span className="text-xs font-mono text-muted-foreground w-24 shrink-0">
-                      {exec.id.slice(0, 8)}…
-                    </span>
-                    <span className="text-xs text-muted-foreground flex-1">
-                      Rule: {exec.ruleId.slice(0, 8)}… · <StatusText value={exec.status} />
-                      {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(exec.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
-                    <ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
+              // An execution's card: its outcome's mark, the run over the
+              // rule, the state and the time, the logs opening under a
+              // hairline on the mark's edge. Only the head toggles them.
+              <Card key={exec.id} className="transition-colors hover:border-primary/20">
+                <CardContent className="space-y-3">
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => setSelectedExecution(selectedExecution === exec.id ? null : exec.id)}
+                    {...pressableProps({ expanded: selectedExecution === exec.id })}
+                  >
+                    <CardHead
+                      titleAs="p"
+                      mark={(
+                        <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                          {execStatusIcon(exec.status)}
+                        </div>
+                      )}
+                      title={<span className="font-mono" translate="no">{exec.id.slice(0, 8)}…</span>}
+                      subtitle={(
+                        <FactLine
+                          className="text-sm"
+                          items={[
+                            <StatusText key="status" value={exec.status} />,
+                            <BilingualText key="rule" en={`Rule ${exec.ruleId.slice(0, 8)}…`} el={`Κανόνας ${exec.ruleId.slice(0, 8)}…`} compact />,
+                            exec.targetUserId ? <BilingualText key="user" en={`User ${exec.targetUserId.slice(0, 6)}`} el={`Χρήστης ${exec.targetUserId.slice(0, 6)}`} compact /> : null,
+                          ]}
+                        />
+                      )}
+                      meta={(
+                        <FactLine
+                          items={[
+                            fmtDate(exec.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                            <BilingualText key="logs" en={`${exec._count?.logs ?? 0} logs`} el={`${exec._count?.logs ?? 0} εγγραφές`} compact />,
+                          ]}
+                        />
+                      )}
+                      asideStays
+                      aside={<ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} aria-hidden="true" />}
+                    />
                   </div>
-                </Card>
-                {selectedExecution === exec.id && (
-                  <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
-                    {exec.errorMessage && (
-                      <p className="text-xs text-destructive-accessible mb-2 font-mono">{exec.errorMessage}</p>
-                    )}
-                    <LogPanel executionId={exec.id} />
-                  </Card>
-                )}
-              </div>
+                  {selectedExecution === exec.id && (
+                    <div className="space-y-2 border-t border-border pt-3">
+                      {exec.errorMessage && (
+                        <p className="text-xs text-destructive-accessible font-mono">{exec.errorMessage}</p>
+                      )}
+                      <LogPanel executionId={exec.id} />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}

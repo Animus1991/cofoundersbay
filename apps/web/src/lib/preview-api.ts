@@ -9,12 +9,19 @@ import { previewSavedSearchesApi } from './demo/saved-searches-world';
 import { previewVerificationApi } from './demo/verification-world';
 import { previewUpdatesApi } from './demo/updates-world';
 import { previewSavedItemsApi } from './demo/saved-items-world';
+import { previewPerksApi } from './demo/perks-world';
+import { previewProfileViewersApi } from './demo/profile-viewers-world';
+import { previewListingsApi } from './demo/listings-world';
+import { demoCompatibilityWith, previewCompatibilityApi } from './demo/compatibility-world';
 import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world';
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
+import { attachDemoPhotos } from './demo/photos';
+import { messageSnippet, textMatches } from '@cofounderbay/shared';
+import { PREVIEW_MESSAGE_EL } from './i18n/strings-messages';
 import { addComposedPost } from './feed-demo';
 import { heuristicConnections, heuristicExtract, heuristicQuestions, heuristicSynthesis, placeVariants } from '@cofounderbay/shared';
 import type { FeedPost } from './api';
@@ -1108,7 +1115,7 @@ const PEOPLE = [
     id: 'hit-sarah',
     userId: 'user-sarah',
     displayName: 'Dr. Sarah Kim',
-    headline: 'Startup mentor · Ex-Google · 3x founder',
+    headline: 'Startup mentor · Former product lead · 3x founder',
     bio: 'Helping first-time founders reach product-market fit.',
     avatarUrl: null,
     location: 'London, UK',
@@ -1275,7 +1282,7 @@ const CONNECTIONS = [
       displayName: 'Dr. Sarah Kim',
       avatarUrl: null,
       role: 'mentor',
-      headline: 'Startup mentor · Ex-Google',
+      headline: 'Startup mentor · Former product lead',
     },
   },
 ];
@@ -1974,7 +1981,7 @@ const PREVIEW_MENTORSHIP_RELATIONSHIPS = [
     mentor: {
       id: 'user-sarah',
       displayName: 'Dr. Sarah Kim',
-      headline: 'Startup mentor - Ex-Google - 3x founder',
+      headline: 'Startup mentor - Former product lead - 3x founder',
       avatarUrl: null,
     },
     mentee: {
@@ -2408,7 +2415,7 @@ function previewExpertReviews() {
   const sarah = {
     id: 'user-sarah',
     displayName: 'Dr. Sarah Kim',
-    headline: 'Startup mentor - Ex-Google - 3x founder',
+    headline: 'Startup mentor - Former product lead - 3x founder',
     avatarUrl: null,
   };
   const nikos = {
@@ -2660,6 +2667,10 @@ export function resolvePreviewApiNow(path: string, init?: RequestInit): unknown 
 
 /** Returns a payload for preview, or null to fall through (never used — always resolve). */
 export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
+  return attachDemoPhotos(resolvePreviewApiBody(path, init));
+}
+
+function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   const pathname = pathnameOf(path);
   const method = (init?.method ?? 'GET').toUpperCase();
   const body = parseBody(init);
@@ -2691,6 +2702,24 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       : PREVIEW_JOBS.find((j) => j.id === itemId)?.title) ?? null,
   );
   if (savedItemsAnswer !== undefined) return savedItemsAnswer;
+  // Partner perks: invented partners, the API's claim rules.
+  const perksAnswer = previewPerksApi(
+    pathname,
+    new URLSearchParams(path.split('?')[1] ?? ''),
+    method,
+    (body ?? {}) as Record<string, unknown>,
+    previewNowMs(),
+  );
+  if (perksAnswer !== undefined) return perksAnswer;
+  // Who viewed the demo founder's profile: reciprocal names, k-anonymous counts.
+  const viewersAnswer = previewProfileViewersApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
+  if (viewersAnswer !== undefined) return viewersAnswer;
+  // The visitor's own mentor and provider listings, with the API's field rules.
+  const listingsAnswer = previewListingsApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (listingsAnswer !== undefined) return listingsAnswer;
+  // The compatibility questions: the visitor's answers and the comparison only.
+  const compatibilityAnswer = previewCompatibilityApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (compatibilityAnswer !== undefined) return compatibilityAnswer;
   // "Open to" and warm introductions; accepting an introduction answers the
   // need card in the commitments world above.
   const openToAnswer = previewOpenToApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
@@ -2759,7 +2788,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true };
   }
 
-  if (pathname.startsWith('/api/search/profiles') || pathname === '/api/search' || pathname.startsWith('/api/v1/search')) {
+  if (pathname.startsWith('/api/search/profiles') || pathname === '/api/search') {
     const params = new URLSearchParams(path.split('?')[1] ?? '');
     const q = params.get('q')?.toLowerCase() ?? '';
     const location = params.get('location')?.toLowerCase() ?? '';
@@ -2950,11 +2979,8 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
           description: 'Plan a fixed weekly overlap so decisions do not wait a day.',
         },
       ],
-      workStyle: {
-        axes: ['Pace', 'Structure', 'Risk', 'Detail', 'Autonomy'],
-        source: [78, 62, 70, 55, 80],
-        target: [70, 74, 58, 72, 66],
-      },
+      // The same comparison /compatibility/with answers: agreement only.
+      compatibility: demoCompatibilityWith(target.userId),
       reasons: target.matchReasons ?? ['Complementary skills'],
       sourceProfile: {
         id: ME_ID,
@@ -3025,6 +3051,38 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
 
   if (pathname === '/api/messages/conversations') {
     return { conversations: CONVERSATIONS };
+  }
+  // Message search, by the rule the API uses, over the demo's own threads.
+  // A demo message also shows its Greek, so that text is searched too and
+  // the snippet comes from whichever one holds the words.
+  if (pathname === '/api/messages/search') {
+    const sp = new URLSearchParams(path.split('?')[1] ?? '');
+    const q = (sp.get('q') ?? '').trim();
+    const limit = Math.min(Math.max(Number(sp.get('limit')) || 10, 1), 25);
+    if (q.length < 2) return { hits: [] };
+    const all = Object.values(MESSAGES)
+      .flat()
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const hits = [];
+    for (const m of all) {
+      const body = String(m.body ?? '');
+      const text = [body, PREVIEW_MESSAGE_EL[body]].find((t) => t && textMatches(t, q));
+      if (!text) continue;
+      const conversation = CONVERSATIONS.find((c) => c.id === m.conversationId);
+      const sender = (m.sender ?? {}) as { displayName?: string };
+      hits.push({
+        messageId: String(m.id),
+        conversationId: String(m.conversationId),
+        createdAt: String(m.createdAt),
+        fromMe: m.senderId === ME_ID,
+        senderName: sender.displayName ?? '',
+        withName: conversation?.recipient?.displayName ?? '',
+        withUserId: conversation?.recipient?.id ?? null,
+        snippet: messageSnippet(text, q),
+      });
+      if (hits.length >= limit) break;
+    }
+    return { hits };
   }
   if (pathname === '/api/messages/conversations/direct' && method === 'POST') {
     return { conversationId: 'conv-elena' };

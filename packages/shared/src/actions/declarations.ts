@@ -247,6 +247,30 @@ export const ACTION_DECLARATIONS = [
     writes: false,
   },
   {
+    id: 'get_match_detail',
+    kind: 'read',
+    label: { en: 'Explain one match', el: 'Εξήγηση μίας αντιστοίχισης' },
+    description: {
+      en: 'Read why the signed-in user and one person were matched: the score and its confidence, the reasons, potential friction worth discussing early, and - from the compatibility questions both answered - where they agree and what to talk about first (never the other person\u2019s answers). Pass the person\u2019s userId from a prior search or recommendation.',
+      el: 'Διαβάζει γιατί αντιστοιχίστηκαν ο χρήστης και ένα πρόσωπο: τη βαθμολογία και τη βεβαιότητά της, τους λόγους, πιθανές τριβές που αξίζει να συζητηθούν νωρίς, και - από τις ερωτήσεις συμβατότητας που απάντησαν και οι δύο - πού συμφωνούν και τι να συζητήσουν πρώτα (ποτέ τις απαντήσεις του άλλου). Δώστε το userId του προσώπου από προηγούμενη αναζήτηση ή πρόταση.',
+    },
+    params: [
+      { name: 'userId', type: 'string', required: false, description: { en: 'Id of the person, from a prior search or recommendation.', el: 'Το id του προσώπου, από προηγούμενη αναζήτηση ή πρόταση.' } },
+    ],
+    writes: false,
+  },
+  {
+    id: 'get_team_gaps',
+    kind: 'read',
+    label: { en: 'Read what the founding team lacks', el: 'Ανάγνωση του τι λείπει από την ιδρυτική ομάδα' },
+    description: {
+      en: 'Read which of the four areas an early team needs (building the product, design, bringing it to market, running the company) the signed-in founder\u2019s own skills cover, which are gaps and the role that fills each, and whom their profile says they are looking for. It sees only their own profile.',
+      el: 'Διαβάζει ποιους από τους τέσσερις τομείς που χρειάζεται μια νέα ομάδα (κατασκευή προϊόντος, σχεδιασμός, φέρνοντάς το στην αγορά, λειτουργία της εταιρείας) καλύπτουν οι δεξιότητες του ιδρυτή, ποια είναι τα κενά και ποιος ρόλος καλύπτει το καθένα, και ποιον λέει το προφίλ του ότι αναζητά. Βλέπει μόνο το δικό του προφίλ.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
     id: 'get_skill_evidence',
     kind: 'read',
     label: { en: 'Read skills and their evidence', el: 'Ανάγνωση δεξιοτήτων και τεκμηρίων' },
@@ -275,6 +299,36 @@ export const ACTION_DECLARATIONS = [
     description: {
       en: 'Read the signed-in user’s upcoming mentoring sessions: title, date and time, length, and whether it is a video call, in person or a chat.',
       el: 'Διαβάζει τις επερχόμενες συνεδρίες mentoring του χρήστη: τίτλο, ημερομηνία και ώρα, διάρκεια, και αν είναι βιντεοκλήση, δια ζώσης ή συνομιλία.',
+    },
+    params: [],
+    writes: false,
+  },
+  {
+    id: 'get_perks',
+    kind: 'read',
+    label: { en: 'Read partner perks', el: 'Ανάγνωση προσφορών συνεργατών' },
+    description: {
+      en: 'Read the partner offers open to the signed-in member (partner, offer, category, the stages each suits, when it ends, whether they claimed it) and the ones they claimed. With stage, the offers named for that startup stage come first. Codes are not included: a member sees a code on the Perks page after claiming.',
+      el: 'Διαβάζει τις προσφορές συνεργατών που είναι ανοιχτές για το μέλος (συνεργάτης, προσφορά, κατηγορία, στάδια, πότε λήγει, αν τη διεκδίκησε) και όσες διεκδίκησε. Με stage, πρώτα οι προσφορές γι’ αυτό το στάδιο. Οι κωδικοί δεν περιλαμβάνονται: το μέλος βλέπει τον κωδικό στη σελίδα Προσφορές μετά τη διεκδίκηση.',
+    },
+    params: [
+      {
+        name: 'stage',
+        type: 'string',
+        required: false,
+        enumValues: ['idea', 'validating', 'building', 'launched', 'scaling'],
+        description: { en: 'Optional startup stage to put first.', el: 'Προαιρετικό στάδιο startup που μπαίνει πρώτο.' },
+      },
+    ],
+    writes: false,
+  },
+  {
+    id: 'get_profile_viewers',
+    kind: 'read',
+    label: { en: 'Read who viewed your profile', el: 'Ανάγνωση του ποιοι είδαν το προφίλ σας' },
+    description: {
+      en: 'Read who viewed the signed-in member\u2019s profile in the last 90 days: total views, distinct members, views from people not signed in, the viewers named to them (only people who show their name when they view, and only if the reader does too), and private viewers as a count, by role only for roles with at least three.',
+      el: 'Διαβάζει ποιοι είδαν το προφίλ του μέλους τις τελευταίες 90 ημέρες: συνολικές προβολές, διαφορετικά μέλη, προβολές χωρίς σύνδεση, όσους κατονομάζονται (μόνο όσοι δείχνουν το όνομά τους και μόνο αν το κάνει και ο αναγνώστης), και τους ιδιωτικούς ως πλήθος, ανά ρόλο μόνο για ρόλους με τουλάχιστον τρεις.',
     },
     params: [],
     writes: false,
@@ -343,6 +397,19 @@ export const ACTION_DECLARATIONS = [
       el: 'Διαβάζει τις συνομιλίες του χρήστη: με ποιον είναι κάθε νήμα, το τελευταίο μήνυμα, πόσα είναι αδιάβαστα και αν είναι καρφιτσωμένο. Επιστρέφει έως πέντε.',
     },
     params: [],
+    writes: false,
+  },
+  {
+    id: 'search_messages',
+    kind: 'read',
+    label: { en: 'Search your messages', el: 'Αναζήτηση στα μηνύματά σου' },
+    description: {
+      en: 'Find the signed-in user\u2019s own messages that hold some words, newest first: with whom, who wrote it, when, and a line around the words. Accents and case are ignored. It reads only conversations the user is in, and opens or sends nothing.',
+      el: 'Βρίσκει τα μηνύματα του χρήστη που περιέχουν κάποιες λέξεις, τα νεότερα πρώτα: με ποιον, ποιος το έγραψε, πότε και μια γραμμή γύρω από τις λέξεις. Τόνοι και κεφαλαία αγνοούνται. Διαβάζει μόνο συνομιλίες όπου συμμετέχει ο χρήστης και δεν ανοίγει ούτε στέλνει τίποτα.',
+    },
+    params: [
+      { name: 'query', type: 'string', required: false, description: { en: 'The words to look for, as the user wrote them.', el: 'Οι λέξεις προς αναζήτηση, όπως τις έγραψε ο χρήστης.' } },
+    ],
     writes: false,
   },
   {
@@ -2082,6 +2149,73 @@ export const ACTION_DECLARATIONS = [
     },
     navigatesOnSuccess: true,
     confirmLabel: { en: 'Open filled brief', el: 'Άνοιγμα συμπληρωμένου σημειώματος' },
+  },
+  {
+    id: 'draft_mentor_listing',
+    kind: 'mutation',
+    label: { en: 'Draft my mentor listing', el: 'Πρόχειρη καταχώριση μέντορα' },
+    description: {
+      en: 'Open the mentor listing on /mentor/profile with fields filled in: headline, bio, industries, stages and expertise (each comma-separated, matched to the form\u2019s own options), session formats (video, in_person, async), hours a week, session length in minutes, years of experience, whether sessions are free and the hourly rate in USD. Saves nothing; the mentor reviews the card preview and presses Save.',
+      el: 'Ανοίγει την καταχώριση μέντορα στο /mentor/profile με πεδία συμπληρωμένα: τίτλος, βιογραφικό, κλάδοι, στάδια και εξειδίκευση (χωρισμένα με κόμμα, από τις επιλογές της φόρμας), μορφές συνεδρίας, ώρες την εβδομάδα, διάρκεια συνεδρίας σε λεπτά, χρόνια εμπειρίας, αν οι συνεδρίες είναι δωρεάν και η ωριαία αμοιβή σε USD. Δεν αποθηκεύει τίποτα· ο μέντορας ελέγχει την προεπισκόπηση και πατά Αποθήκευση.',
+    },
+    params: [
+      { name: 'headline', type: 'string', required: false, description: { en: 'One line under the name, at most 120 characters.', el: 'Μία γραμμή κάτω από το όνομα, έως 120 χαρακτήρες.' } },
+      { name: 'bio', type: 'string', required: false, description: { en: 'Mentoring style, what is offered and which founders it suits.', el: 'Στυλ καθοδήγησης, τι προσφέρεται και σε ποιους ιδρυτές ταιριάζει.' } },
+      { name: 'industries', type: 'string', required: false, description: { en: 'Comma-separated, e.g. SaaS, Fintech.', el: 'Χωρισμένα με κόμμα, π.χ. SaaS, Fintech.' } },
+      { name: 'stages', type: 'string', required: false, description: { en: 'Comma-separated, e.g. MVP, Early Revenue.', el: 'Χωρισμένα με κόμμα, π.χ. MVP, Early Revenue.' } },
+      { name: 'expertise', type: 'string', required: false, description: { en: 'Comma-separated, e.g. Fundraising, Go-to-Market.', el: 'Χωρισμένα με κόμμα, π.χ. Fundraising, Go-to-Market.' } },
+      { name: 'sessionFormats', type: 'string', required: false, description: { en: 'Comma-separated: video, in_person, async.', el: 'Χωρισμένα με κόμμα: video, in_person, async.' } },
+      { name: 'hoursPerWeek', type: 'number', required: false, description: { en: 'Hours available a week.', el: 'Διαθέσιμες ώρες την εβδομάδα.' } },
+      { name: 'sessionDuration', type: 'number', required: false, description: { en: 'Default session length in minutes (15 to 120).', el: 'Προεπιλεγμένη διάρκεια συνεδρίας σε λεπτά (15 έως 120).' } },
+      { name: 'yearsExperience', type: 'number', required: false, description: { en: 'Years of experience.', el: 'Χρόνια εμπειρίας.' } },
+      { name: 'isFree', type: 'boolean', required: false, description: { en: 'Whether sessions are free.', el: 'Αν οι συνεδρίες είναι δωρεάν.' } },
+      { name: 'hourlyRateUsd', type: 'number', required: false, description: { en: 'Hourly rate in USD when sessions are paid.', el: 'Ωριαία αμοιβή σε USD όταν οι συνεδρίες χρεώνονται.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      // Nothing is written: the listing waits until the mentor presses Save.
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The listing opens with these fields filled; you review the preview and save, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η καταχώριση ανοίγει με αυτά τα πεδία συμπληρωμένα· ελέγχετε την προεπισκόπηση και αποθηκεύετε, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled listing', el: 'Άνοιγμα συμπληρωμένης καταχώρισης' },
+  },
+  {
+    id: 'draft_provider_listing',
+    kind: 'mutation',
+    label: { en: 'Draft my provider listing', el: 'Πρόχειρη καταχώριση παρόχου' },
+    description: {
+      en: 'Open the service-provider listing on /provider/profile with fields filled in: service type, company name and website, headline, description, pricing model, starting price in USD, years in business, clients served, and industries and stages (comma-separated, matched to the form\u2019s own options). Saves nothing; the provider reviews the card preview and presses Save.',
+      el: 'Ανοίγει την καταχώριση παρόχου υπηρεσιών στο /provider/profile με πεδία συμπληρωμένα: είδος υπηρεσίας, όνομα και ιστότοπος εταιρείας, τίτλος, περιγραφή, μοντέλο τιμολόγησης, αρχική τιμή σε USD, χρόνια λειτουργίας, πελάτες, κλάδοι και στάδια (χωρισμένα με κόμμα). Δεν αποθηκεύει τίποτα· ο πάροχος ελέγχει την προεπισκόπηση και πατά Αποθήκευση.',
+    },
+    params: [
+      { name: 'serviceType', type: 'string', required: false, enumValues: ['legal', 'accounting', 'development', 'design', 'marketing', 'recruiting', 'consulting', 'coaching'], description: { en: 'The kind of service.', el: 'Το είδος της υπηρεσίας.' } },
+      { name: 'companyName', type: 'string', required: false, description: { en: 'Company or trading name.', el: 'Επωνυμία ή διακριτικός τίτλος.' } },
+      { name: 'companyWebsite', type: 'string', required: false, description: { en: 'Company website.', el: 'Ιστότοπος της εταιρείας.' } },
+      { name: 'headline', type: 'string', required: false, description: { en: 'One line under the name, at most 120 characters.', el: 'Μία γραμμή κάτω από το όνομα, έως 120 χαρακτήρες.' } },
+      { name: 'description', type: 'string', required: false, description: { en: 'What is offered to startups, and how engagements work.', el: 'Τι προσφέρεται στις startups και πώς γίνεται η συνεργασία.' } },
+      { name: 'pricingModel', type: 'string', required: false, enumValues: ['hourly', 'project', 'retainer', 'equity', 'mixed'], description: { en: 'How work is priced.', el: 'Πώς τιμολογείται η δουλειά.' } },
+      { name: 'startingPriceUsd', type: 'number', required: false, description: { en: 'Starting price in USD.', el: 'Αρχική τιμή σε USD.' } },
+      { name: 'yearsInBusiness', type: 'number', required: false, description: { en: 'Years in business.', el: 'Χρόνια λειτουργίας.' } },
+      { name: 'clientsServed', type: 'number', required: false, description: { en: 'Startups served so far.', el: 'Startups που έχουν εξυπηρετηθεί.' } },
+      { name: 'industries', type: 'string', required: false, description: { en: 'Comma-separated, e.g. SaaS, Fintech.', el: 'Χωρισμένα με κόμμα, π.χ. SaaS, Fintech.' } },
+      { name: 'stages', type: 'string', required: false, description: { en: 'Comma-separated, e.g. Seed, Series A.', el: 'Χωρισμένα με κόμμα, π.χ. Seed, Series A.' } },
+    ],
+    writes: false,
+    invalidates: [],
+    reversal: {
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is saved. The listing opens with these fields filled; you review the preview and save, or leave the page and nothing happens.',
+        el: 'Δεν αποθηκεύεται τίποτα. Η καταχώριση ανοίγει με αυτά τα πεδία συμπληρωμένα· ελέγχετε την προεπισκόπηση και αποθηκεύετε, ή φεύγετε και δεν γίνεται τίποτα.',
+      },
+    },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Open filled listing', el: 'Άνοιγμα συμπληρωμένης καταχώρισης' },
   },
   {
     id: 'canvas_command',

@@ -30,6 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LandingNav } from '@/components/layout/LandingNav';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { CookieChoicesButton } from '@/components/common/CookieChoicesButton';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { NeedCard, type NeedCardView } from '@/components/commitments/NeedCard';
@@ -142,10 +143,12 @@ const AFTER_AGREEMENT: Pair[] = [
   { en: 'AI next step', el: 'Επόμενο βήμα με AI' },
 ];
 
-const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: Pair[] }> = [
+const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: Pair[]; join: string; start: Pair }> = [
   {
     icon: Briefcase,
     role: { en: 'Founder', el: 'Ιδρυτής' },
+    join: 'founder',
+    start: { en: 'Start as a founder', el: 'Ξεκινήστε ως ιδρυτής' },
     headline: { en: 'Find your co-founder', el: 'Βρείτε τον συνιδρυτή σας' },
     bullets: [
       { en: 'A need card instead of a cold message', el: 'Μια κάρτα ανάγκης αντί για ψυχρό μήνυμα' },
@@ -156,6 +159,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: GraduationCap,
     role: { en: 'Mentor', el: 'Μέντορας' },
+    join: 'mentor',
+    start: { en: 'Start as a mentor', el: 'Ξεκινήστε ως μέντορας' },
     headline: { en: 'Mentor where it counts', el: 'Καθοδηγήστε εκεί που μετράει' },
     bullets: [
       { en: 'Set your availability and take bookings', el: 'Ορίστε διαθεσιμότητα και δεχτείτε κρατήσεις' },
@@ -166,6 +171,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: TrendingUp,
     role: { en: 'Investor', el: 'Επενδυτής' },
+    join: 'investor',
+    start: { en: 'Start as an investor', el: 'Ξεκινήστε ως επενδυτής' },
     headline: { en: 'Meet founders through people you trust', el: 'Γνωρίστε ιδρυτές μέσα από ανθρώπους που εμπιστεύεστε' },
     bullets: [
       { en: 'Filter by stage, sector and place', el: 'Φίλτρα ανά στάδιο, κλάδο και τόπο' },
@@ -176,6 +183,8 @@ const PERSONAS: Array<{ icon: LucideIcon; role: Pair; headline: Pair; bullets: P
   {
     icon: Building2,
     role: { en: 'Programme', el: 'Πρόγραμμα' },
+    join: 'org',
+    start: { en: 'Start as an organization', el: 'Ξεκινήστε ως οργανισμός' },
     headline: { en: 'Run your cohort', el: 'Τρέξτε την κοορτή σας' },
     bullets: [
       { en: 'Applications, cohorts and mentors in one workspace', el: 'Αιτήσεις, κοορτές και μέντορες σε έναν χώρο' },
@@ -237,10 +246,10 @@ const FOOTER: Array<{ title: Pair; links: Array<{ href: string; label: Pair }> }
 
 function SectionHeading({ eyebrow, title, lead }: { eyebrow: Pair; title: Pair; lead?: Pair }) {
   return (
-    <div className="mx-auto mb-12 max-w-3xl text-center">
-      <Badge variant="outline" className="mb-3 border-primary/30 text-primary-accessible"><T p={eyebrow} /></Badge>
-      <h2 className="font-display text-3xl font-semibold text-foreground sm:text-4xl"><T p={title} wrap /></h2>
-      {lead ? <p className="mt-3 text-muted-foreground"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
+    <div className="mx-auto mb-8 max-w-2xl text-center">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground"><T p={eyebrow} /></p>
+      <h2 className="landing-section font-display font-semibold text-foreground"><T p={title} wrap /></h2>
+      {lead ? <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground"><BilingualText en={lead.en} el={lead.el} wrap /></p> : null}
     </div>
   );
 }
@@ -256,15 +265,10 @@ export function LandingHome() {
 
       {/* ── Hero: the one move, and an example of it ─────────────────────── */}
       <section id="need-cards" className="relative overflow-hidden pt-[52px]">
-        {/* blur-3xl is 64px. 10% less, then another 5% (54.72px). */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="landing-wash absolute left-[18%] top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/[0.16] sm:left-1/4 sm:h-96 sm:w-96" />
-          <div className="landing-wash absolute bottom-0 right-[12%] h-56 w-56 translate-x-1/2 rounded-full bg-primary/[0.11] sm:right-1/4 sm:h-96 sm:w-96" />
-        </div>
-        <div className="landing-intro relative mx-auto w-full px-4 py-8 sm:px-8 sm:py-16 lg:px-12 lg:py-20 xl:px-16">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14">
+        <div className="landing-intro relative mx-auto w-full px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-14 xl:px-16">
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
             <div className="min-w-0 animate-fade-in text-center lg:text-left">
-              <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-4 py-1.5 text-sm text-primary-accessible">
+              <span className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <Sparkles className="icon-sm" />
                 <BilingualText en="Co-founders, mentors and investors" el="Συνιδρυτές, μέντορες και επενδυτές" compact />
               </span>
@@ -277,7 +281,7 @@ export function LandingHome() {
                   secondaryClassName="landing-display-secondary"
                 />
               </h1>
-              <p className="landing-lead mx-auto mt-4 max-w-2xl text-muted-foreground sm:mt-6 lg:mx-0">
+              <p className="landing-lead mx-auto mt-3 max-w-xl text-muted-foreground lg:mx-0">
                 <BilingualText
                   en="One need card: what exists, the outcome, who is missing. The right people answer in a protected conversation, and terms are agreed in versions."
                   el="Μία κάρτα ανάγκης: τι υπάρχει, το αποτέλεσμα, ποιος λείπει. Οι κατάλληλοι άνθρωποι απαντούν σε προστατευμένη συζήτηση και οι όροι συμφωνούνται σε εκδόσεις."
@@ -286,38 +290,38 @@ export function LandingHome() {
                 />
               </p>
 
-              <div className="mx-auto mt-8 flex w-full max-w-sm flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
-                <Button size="lg" className="w-full gap-2 sm:w-auto" asChild>
+              <div className="mx-auto mt-6 flex w-full max-w-sm flex-col items-stretch gap-2 sm:max-w-none sm:flex-row sm:items-center sm:justify-center lg:justify-start">
+                <Button className="w-full gap-2 sm:w-auto" asChild>
                   <Link href="/register?redirect=/commitments/new">
                     <BilingualText en="Write your need card" el="Γράψτε την κάρτα σας" compact />
                     <ArrowRight className="icon-sm" />
                   </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+                <Button variant="outline" className="w-full sm:w-auto" asChild>
                   <Link href="/demo">
                     <Play className="icon-sm" />
                     <BilingualText en="Try the demo" el="Δοκιμάστε το demo" compact />
                   </Link>
                 </Button>
               </div>
-              <p className="mt-4 text-sm">
+              <p className="mt-3 text-xs">
                 <Link href="/discover" className="text-muted-foreground hover:text-foreground hover:underline">
                   <BilingualText en="or browse profiles first" el="ή δείτε πρώτα προφίλ" compact />
                 </Link>
               </p>
 
-              <ol className="mt-8 grid grid-cols-1 gap-3 text-left sm:grid-cols-3" aria-label="Three moves · Τρεις κινήσεις">
+              <ol className="mx-auto mt-8 flex w-fit flex-col gap-1.5 text-left lg:mx-0" aria-label="Three moves · Τρεις κινήσεις">
                 {MOVES.map(({ title }, index) => (
-                  <li key={title.en} className="flex min-w-0 items-center gap-2.5 rounded-xl border border-border bg-card/60 px-3 py-2.5">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-2xs font-bold tabular-nums text-primary-foreground">{index + 1}</span>
-                    <span className="min-w-0 text-sm font-medium text-foreground"><T p={title} wrap /></span>
+                  <li key={title.en} className="flex min-w-0 items-center gap-2.5 py-1">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-input text-2xs font-semibold tabular-nums text-muted-foreground">{index + 1}</span>
+                    <span className="min-w-0 text-sm text-foreground"><T p={title} wrap /></span>
                   </li>
                 ))}
               </ol>
             </div>
 
             <div className="min-w-0 animate-fade-in" style={{ animationDelay: '120ms' }}>
-              <Card className="mx-auto w-full max-w-xl shadow-lg shadow-primary/5">
+              <Card className="mx-auto w-full max-w-xl">
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Badge variant="secondary" className="text-2xs"><BilingualText en="Example card" el="Ενδεικτική κάρτα" compact /></Badge>
@@ -342,14 +346,20 @@ export function LandingHome() {
           />
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {PROTECTIONS.map(({ icon: Icon, title, desc }) => (
-              <li key={title.en} className="flex min-w-0 gap-3 rounded-2xl border border-border bg-card p-5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10" aria-hidden="true">
-                  <Icon className="icon-sm text-primary-accessible" />
-                </span>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-foreground"><T p={title} wrap /></h3>
-                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en={desc.en} el={desc.el} wrap /></p>
-                </div>
+              <li key={title.en} className="min-w-0 space-y-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+                {/* The Endorsements card's head: a 2.5rem mark beside the
+                    title, the sentence under both on the mark's edge. */}
+                <CardHead
+                  titleAs="h3"
+                  className="items-center"
+                  mark={(
+                    <span data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10" aria-hidden="true">
+                      <Icon className="icon-md text-primary-accessible" />
+                    </span>
+                  )}
+                  title={<T p={title} wrap />}
+                />
+                <p className="card-body text-muted-foreground"><BilingualText en={desc.en} el={desc.el} wrap /></p>
               </li>
             ))}
           </ul>
@@ -372,15 +382,15 @@ export function LandingHome() {
           />
           <ol className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {MOVES.map(({ title, note }, index) => (
-              <li key={title.en} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-6">
+              <li key={title.en} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-6">
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold tabular-nums text-primary-foreground">{index + 1}</span>
-                <h3 className="text-lg font-semibold text-foreground"><T p={title} wrap /></h3>
-                <p className="text-sm leading-relaxed text-muted-foreground"><BilingualText en={note.en} el={note.el} wrap /></p>
+                <h3 className="card-title text-foreground"><T p={title} wrap /></h3>
+                <p className="card-body text-muted-foreground"><BilingualText en={note.en} el={note.el} wrap /></p>
               </li>
             ))}
           </ol>
           <div className="mt-10 flex flex-col items-center gap-4 text-center">
-            <p className="text-base font-medium text-foreground">
+            <p className="text-sm font-medium text-foreground">
               <BilingualText en="The agreement is the threshold, not the ceiling." el="Η συμφωνία είναι το κατώφλι, όχι το ταβάνι." wrap />
             </p>
             <ul className="flex flex-wrap justify-center gap-1.5" aria-label="What continues after the agreement · Τι συνεχίζεται μετά τη συμφωνία">
@@ -406,14 +416,14 @@ export function LandingHome() {
             title={{ en: 'Built for every role in a founding team’s first year', el: 'Φτιαγμένο για κάθε ρόλο στον πρώτο χρόνο μιας ιδρυτικής ομάδας' }}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PERSONAS.map(({ icon: Icon, role, headline, bullets }) => (
+            {PERSONAS.map(({ icon: Icon, role, headline, bullets, join, start }) => (
               <Card key={role.en} className="h-full">
                 <CardHeader className="pb-3">
                   <Badge variant="outline" className="w-fit gap-1.5 text-xs text-primary-accessible">
                     <Icon className="icon-sm" />
                     <T p={role} />
                   </Badge>
-                  <CardTitle className="text-base"><T p={headline} wrap /></CardTitle>
+                  <CardTitle><T p={headline} wrap /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {bullets.map((bullet) => (
@@ -422,6 +432,9 @@ export function LandingHome() {
                       <BilingualText en={bullet.en} el={bullet.el} wrap />
                     </div>
                   ))}
+                  <Link href={`/register?role=${join}`} className="inline-flex pt-2 text-sm font-medium text-primary-accessible hover:underline">
+                    <T p={start} wrap />
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -439,13 +452,19 @@ export function LandingHome() {
           />
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <div key={title.en} className="flex min-w-0 gap-4 rounded-2xl border border-border bg-card/70 p-5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10" aria-hidden="true">
-                  <Icon className="icon-md text-muted-foreground" />
-                </div>
+              <div key={title.en} className="min-w-0 space-y-3 rounded-2xl border border-border bg-card/70 p-4 sm:p-5">
+                <CardHead
+                  titleAs="h3"
+                  className="items-center"
+                  mark={(
+                    <span data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10" aria-hidden="true">
+                      <Icon className="icon-md text-primary-accessible" />
+                    </span>
+                  )}
+                  title={<T p={title} wrap />}
+                />
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-foreground"><T p={title} wrap /></h3>
-                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en={desc.en} el={desc.el} wrap /></p>
+                  <p className="card-body text-muted-foreground"><BilingualText en={desc.en} el={desc.el} wrap /></p>
                 </div>
               </div>
             ))}
@@ -480,7 +499,7 @@ export function LandingHome() {
                   ? 'flex flex-col rounded-2xl border border-primary/40 bg-primary/[0.03] p-6'
                   : 'flex flex-col rounded-2xl border border-border bg-card/80 p-6'}
               >
-                <h3 className="text-lg font-semibold text-foreground"><T p={name} /></h3>
+                <h3 className="card-title text-foreground"><T p={name} /></h3>
                 <p className="mt-1 text-sm text-muted-foreground"><BilingualText en={desc.en} el={desc.el} wrap /></p>
                 <ul className="mt-5 flex-1 space-y-2.5">
                   {PLAN_HIGHLIGHTS[key].map((f) => (
@@ -505,22 +524,22 @@ export function LandingHome() {
       </section>
 
       {/* ── The way in ──────────────────────────────────────────────────── */}
-      <section id="cta" className="border-t border-border px-6 py-24 sm:px-8 lg:px-12 xl:px-16">
+      <section id="cta" className="border-t border-border px-6 py-16 sm:px-8 lg:px-12 xl:px-16">
         <div className="mx-auto w-full max-w-3xl text-center">
-          <h2 className="font-display text-4xl font-semibold text-foreground">
+          <h2 className="landing-section font-display font-semibold text-foreground">
             <BilingualText en="Write the card. Meet the people." el="Γράψτε την κάρτα. Γνωρίστε τους ανθρώπους." stacked wrap />
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
             <BilingualText en="Free to start. Nothing is shared outside the platform until both of you say yes." el="Δωρεάν για να ξεκινήσετε. Τίποτα δεν βγαίνει εκτός πλατφόρμας πριν πείτε και οι δύο ναι." wrap />
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Button size="lg" className="gap-2 px-10" asChild>
+            <Button className="gap-2 px-6" asChild>
               <Link href="/register">
                 <BilingualText en="Create a free account" el="Δημιουργία δωρεάν λογαριασμού" compact />
                 <ArrowRight className="icon-sm" />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="gap-2 px-8" asChild>
+            <Button variant="outline" className="gap-2 px-6" asChild>
               <Link href="/discover">
                 <Users className="icon-sm" />
                 <BilingualText en="Browse profiles" el="Περιήγηση προφίλ" compact />

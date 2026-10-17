@@ -5,11 +5,8 @@ import Link from 'next/link';
 import {
   Plus,
   Search,
-  Calendar,
-  Users,
-  ChevronRight,
+  Award,
   MoreVertical,
-  Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -20,13 +17,16 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
+import { EmptyOrgPrograms, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
@@ -34,7 +34,7 @@ import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 /**
@@ -116,70 +116,86 @@ function ProgramCard({ program }: { program: Program }) {
 
   const statusColors = STATUS[ORG_PROGRAM_STATUS_TONE[program.status]];
 
+  // The Programs card: the programme's rounded square, its name over its
+  // kind, the state and the menu at the right; the sentence and the facts
+  // start on the mark's edge.
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+          <MoreVertical className="icon-sm" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/programs/${program.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/tenant/programs"><BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact /></Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/org/applications"><BilingualText en="Manage Participants" el="Διαχείριση συμμετεχόντων" compact /></Link>
+        </DropdownMenuItem>
+        {/*
+          * "Duplicate" is gone rather than left inert: there is no
+          * create-from-existing route, and a menu item that does nothing
+          * is worse than one that is not offered. The page's own "New
+          * program" button is the path that works.
+          */}
+        <DropdownMenuItem
+          className="text-destructive-accessible"
+          disabled={archive.isPending || program.status === 'archived'}
+          onClick={() => archive.mutate()}
+        >
+          {program.status === 'archived'
+            ? <BilingualText en="Archived" el="Αρχειοθετημένο" compact />
+            : <BilingualText en="Archive" el="Αρχειοθέτηση" compact />}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <Link href={`/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
-                {program.name}
-              </Link>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              {/* Stands in for the programme's logo: an avatar, not decoration. */}
+              <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                <Award className="icon-md" aria-hidden="true" />
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <Link href={`/programs/${program.id}`} className="transition-colors hover:text-primary-accessible">
+              {program.name}
+            </Link>
+          )}
+          subtitle={<StatusText value={program.type} />}
+          asideStays
+          aside={(
+            <>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 <BilingualText en={STATUS_LABEL[program.status].en} el={STATUS_LABEL[program.status].el} compact />
               </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1 capitalize"><StatusText value={program.type} /></p>
-            {program.description && (
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{program.description}</p>
-            )}
-            <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
-              {program.startDate && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="icon-sm" aria-hidden="true" />
-                  {fmtDate(program.startDate, PROGRAM_DATE)} – {program.endDate ? fmtDate(program.endDate, PROGRAM_DATE) : <BilingualText en="Ongoing" el="Σε εξέλιξη" compact />}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />
-                <BilingualText en={`${program.enrolled}/${program.capacity} enrolled`} el={`${program.enrolled}/${program.capacity} εγγεγραμμένοι`} compact />
+              {menu}
+            </>
+          )}
+        />
+        {program.description && (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">{program.description}</p>
+        )}
+        <FactLine
+          items={[
+            program.startDate ? (
+              <span key="dates" className="tabular-nums">
+                {fmtDate(program.startDate, PROGRAM_DATE)} – {program.endDate ? fmtDate(program.endDate, PROGRAM_DATE) : <BilingualText en="Ongoing" el="Σε εξέλιξη" compact />}
               </span>
-            </div>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/programs/${program.id}`}><BilingualText en="View Details" el="Λεπτομέρειες" compact /></Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/tenant/programs"><BilingualText en="Edit Program" el="Επεξεργασία προγράμματος" compact /></Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/org/applications"><BilingualText en="Manage Participants" el="Διαχείριση συμμετεχόντων" compact /></Link>
-              </DropdownMenuItem>
-              {/*
-                * "Duplicate" is gone rather than left inert: there is no
-                * create-from-existing route, and a menu item that does nothing
-                * is worse than one that is not offered. The page's own "New
-                * program" button is the path that works.
-                */}
-              <DropdownMenuItem
-                className="text-destructive-accessible"
-                disabled={archive.isPending || program.status === 'archived'}
-                onClick={() => archive.mutate()}
-              >
-                {program.status === 'archived'
-                  ? <BilingualText en="Archived" el="Αρχειοθετημένο" compact />
-                  : <BilingualText en="Archive" el="Αρχειοθέτηση" compact />}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+            ) : null,
+            <BilingualText key="enrolled" en={`${program.enrolled}/${program.capacity} enrolled`} el={`${program.enrolled}/${program.capacity} εγγεγραμμένοι`} compact />,
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -375,7 +391,16 @@ export default function OrgProgramsPage() {
             <ProgramCard key={program.id} program={program} />
           ))}
           {filteredPrograms.length === 0 && (
-            <EmptyOrgPrograms filtersActive={filtersActive} onClearFilters={clearFilters} />
+            <EmptyOrgPrograms
+              filtersActive={filtersActive}
+              onClearFilters={clearFilters}
+              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
+                active: { en: 'Active', el: 'Ενεργά' },
+                completed: { en: 'Completed', el: 'Ολοκληρωμένα' },
+                draft: { en: 'Draft', el: 'Πρόχειρα' },
+                archived: { en: 'Archived', el: 'Αρχειοθετημένα' },
+              }))}
+            />
           )}
         </div>
       </div>

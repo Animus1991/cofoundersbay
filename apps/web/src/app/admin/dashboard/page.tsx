@@ -24,6 +24,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 import { MetricTile } from '@/components/dashboard/MetricTile';
 import { EmptyLine, QuickLinks, SectionCard } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
@@ -196,6 +197,7 @@ export default function AdminDashboardPage() {
       labelEn: 'Needs attention',
       labelEl: 'Χρειάζεται προσοχή',
       rows: statsLoading ? undefined : attention.map((a) => (a.detailEn ? `${a.en} · ${a.detailEn}` : a.en)),
+      rowsEl: statsLoading ? undefined : attention.map((a) => (a.detailEl ? `${a.el} · ${a.detailEl}` : a.el)),
     },
   ]);
 
@@ -236,6 +238,17 @@ export default function AdminDashboardPage() {
       }
     >
       <div className="space-y-6">
+        {attention[0] ? (
+          <HomeNextStep
+            kickerEn="Needs attention"
+            kickerEl="Χρειάζεται προσοχή"
+            titleEn={attention[0].en}
+            titleEl={attention[0].el}
+            href={attention[0].href}
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
         {/* Four figures; the two that ask for work link to where it is done. */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricTile

@@ -29,6 +29,13 @@ export class MessagingController {
     return { conversations };
   }
 
+  /** The member's own messages that hold the words: ?q=terms&limit=10. */
+  @Get('search')
+  async search(@CurrentUser() user: { id: string }, @Query('q') q?: string, @Query('limit') limit?: string) {
+    const hits = await this.messaging.searchMessages(user.id, q ?? '', limit ? parseInt(limit, 10) : 10);
+    return { hits };
+  }
+
   @Post('conversations/direct')
   async getOrCreateDirect(@CurrentUser() user: { id: string }, @Body() body: unknown) {
     const { userId } = directConversationSchema.parse(body);

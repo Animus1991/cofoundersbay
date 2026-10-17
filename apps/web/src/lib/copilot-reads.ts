@@ -1,4 +1,5 @@
 import type { ReadActionId } from '@cofounderbay/shared';
+import { TEAM_AREAS, teamGaps, type TeamArea } from '@/lib/team-gaps';
 import {
   acceptsApplications,
   discoverMentors,
@@ -51,6 +52,7 @@ import {
   listInvestorDeals,
   listJobs,
   listMessageConversations,
+  searchMessages,
   listMilestones,
   listOpportunities,
   listResearchBoards,
@@ -68,6 +70,7 @@ import {
   type ResearchBoard,
   type ShortlistItem,
   searchProfiles,
+  getMatchVs,
 } from '@/lib/api';
 import { getWorkspaces, type BuilderWorkspace } from '@/lib/builder-api';
 import { listCommitmentCards, listCommitmentThreads, type CommitmentCard, type CommitmentThreadSummary } from '@/lib/commitments-api';
@@ -76,7 +79,11 @@ import { getMyUpdates, getUpdatesFeed, type FounderUpdate } from '@/lib/updates-
 import { getIntroPaths, listIntros, type Intro } from '@/lib/intros-api';
 import { INTRO_RELATION_COPY, INTRO_STATUS_COPY, SKILL_EVIDENCE_COPY } from '@cofounderbay/shared';
 import { getEvidenceCandidates, getSkillEvidence } from '@/lib/skill-evidence-api';
-import { getScout } from '@/lib/scout-api';
+import { getScout, scoutReasonEl } from '@/lib/scout-api';
+import { listClaimedPerks, listPerks } from '@/lib/perks-api';
+import { getProfileViewers } from '@/lib/profile-viewers-api';
+import { statusEl } from '@/components/common/StatusText';
+import { isCardStage, PERK_CATEGORY_COPY } from '@cofounderbay/shared';
 import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
 import type { TranslateVars } from '@/lib/i18n/translate';
 import { ventureDimensionEl } from '@/lib/i18n/venture-dimensions';
@@ -663,6 +670,81 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     return { section: parts.join('\n\n'), citations, actions };
   },
 
+  async get_match_detail(args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
+    // By id from a model, or by name from the rule planner.
+    let userId = typeof args?.userId === 'string' ? args.userId : '';
+    if (!userId && typeof args?.name === 'string' && args.name) {
+      const found = await searchProfiles({ q: args.name, limit: 1 }).catch(() => null);
+      userId = found?.hits?.[0]?.userId ?? '';
+    }
+    if (!userId) {
+      return {
+        section: typeof args?.name === 'string' && args.name ? t('I could not find that person.') : t('Tell me who: a name or a profile.'),
+        citations: [],
+        actions: [openArea(t, '/matches', t('Open matches'), t('People who complement you, with the reasons.'))],
+      };
+    }
+    const vs = await getMatchVs(userId);
+    const name = vs?.targetProfile?.displayName ?? '';
+    const href = `/matches/${encodeURIComponent(userId)}`;
+    const actions = [openArea(t, href, t('Open the match'), t('The full comparison, factor by factor.'))];
+    const citations: CopilotCitation[] = name ? [{ type: 'person', id: userId, label: name, href: `/profiles/${encodeURIComponent(userId)}` }] : [];
+    const parts = [t('{name}: {score}% match, {confidence}% confidence.', { name: name || userId, score: vs?.overall?.score ?? 0, confidence: vs?.overall?.confidence ?? 0 })];
+    const reasons = asList<string>(vs?.reasons).slice(0, LIMIT);
+    if (reasons.length) parts.push(`${t('Why you match:')}\n${reasons.map((r) => `• ${r}`).join('\n')}`);
+    const compat = vs?.compatibility;
+    const talks = asList<{ verdict: string; question: { en: string; el: string }; talk?: { en: string; el: string } }>(compat?.items)
+      .filter((i) => i.verdict === 'talk' && i.talk);
+    const friction = asList<{ title: string; description: string }>(vs?.frictionPoints);
+    const early = [
+      ...talks.map((i) => `• **${say(i.question)}** — ${say(i.talk!)}`),
+      ...friction.map((f) => `• **${f.title}** — ${f.description}`),
+    ].slice(0, LIMIT);
+    if (early.length) parts.push(`${t('Worth discussing early:')}\n${early.join('\n')}`);
+    if (compat && typeof compat.shared === 'number' && compat.shared >= 3) {
+      parts.push(t('On the working questions you both answered ({shared} of {total}): {agree} agree, {close} close, {talk} to talk about first.', {
+        shared: compat.shared, total: compat.total, agree: compat.agree, close: compat.close, talk: compat.talk,
+      }));
+    } else {
+      parts.push(t('Fewer than 3 working questions are answered by both of you; answering them in Settings shows where you agree.'));
+    }
+    return { section: parts.join('\n\n'), citations, actions };
+  },
+
+  async get_team_gaps(_args, { t, locale }) {
+    const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : c.en);
+    const me = await getMeProfile().catch(() => null);
+    const profile = me?.profile;
+    if (!profile) {
+      return {
+        section: t('Your profile is not set up yet — finish onboarding and it becomes the page the network sees.'),
+        citations: [],
+        actions: [openArea(t, '/profile/edit', t('Set up your profile'), t('Name, headline and what you are looking for.'))],
+      };
+    }
+    const skills = asList<{ skillName?: string | null }>(profile.skills).map((s) => s.skillName ?? '').filter(Boolean);
+    const payload = (profile.rolePayload ?? {}) as Record<string, unknown>;
+    const sought = Array.isArray(payload.rolesSought) ? (payload.rolesSought as unknown[]).filter((x): x is string => typeof x === 'string') : [];
+    const { covered, gaps } = teamGaps(skills);
+    const names = (areas: TeamArea[]) => areas.map((a) => say(TEAM_AREAS[a])).join(', ');
+    const parts: string[] = [];
+    if (!skills.length) parts.push(t('Your profile lists no skills yet, so I cannot tell what you cover.'));
+    else if (covered.length) parts.push(t('From your own skills, you cover: {areas}.', { areas: names(covered) }));
+    if (gaps.length) {
+      parts.push(`${t('Not covered yet:')}\n${gaps.map((a) => `• **${say(TEAM_AREAS[a])}** — ${say(TEAM_AREAS[a].role)}`).join('\n')}`);
+    } else {
+      parts.push(t('Your skills touch all four areas; the question is time, not coverage.'));
+    }
+    parts.push(sought.length
+      ? t('Your profile says you are looking for: {roles}.', { roles: sought.join(', ') })
+      : t('Your profile does not say whom you are looking for; matching reads it.'));
+    parts.push(t('I only see your profile, not your co-founders’ skills.'));
+    const actions = [openArea(t, '/scout', t('Brief the scout'), t('It proposes people for a role and never contacts anyone.'))];
+    if (!sought.length) actions.push(openArea(t, '/profile/edit#founder-details', t('Say whom you are looking for'), t('Matching reads it to put the people you want first.')));
+    return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
   async get_skill_evidence(_args, { t, locale }) {
     const say = (c: { en: string; el: string }) => (locale === 'el' ? c.el : t(c.en));
     const me = await getMeProfile().catch(() => null);
@@ -689,13 +771,52 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     if (!state?.brief) return { section: t('No brief yet. Tell me who you are looking for and I will draft one.'), citations: [], actions };
     const brief = state.brief;
     const head = `${t('Brief:')} **${brief.role}**${brief.skills?.length ? ` — ${brief.skills.join(', ')}` : ''}${brief.place ? ` · ${brief.place}` : ''}`;
-    const proposed = asList<{ id: string; status: string; score: number; reasons: Array<{ en: string; el: string }>; person: { id: string; displayName: string } }>(state.proposals)
+    const proposed = asList<{ id: string; status: string; score: number; reasons: Array<{ en: string; el: string }>; person: { id: string; displayName: string; location?: string | null } }>(state.proposals)
       .filter((p) => p.status === 'proposed')
       .slice(0, LIMIT);
     if (!proposed.length) return { section: `${head}\n\n${t('Nobody proposed right now. The scout looks again tomorrow.')}`, citations: [], actions };
     const citations: CopilotCitation[] = proposed.map((p) => ({ type: 'person', id: p.person?.id ?? '', label: p.person?.displayName ?? '', href: `/profiles/${encodeURIComponent(p.person?.id ?? '')}` }));
-    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map(say).join('; ')}`);
+    const reason = (r: { en: string; el: string }, location?: string | null) => (locale === 'el' ? scoutReasonEl(r.el, location, t) : say(r));
+    const lines = proposed.map((p) => `• **${p.person?.displayName ?? ''}** (${p.score}, id ${p.id}) — ${(p.reasons ?? []).map((r) => reason(r, p.person?.location)).join('; ')}`);
     return { section: `${head}\n\n${t('The scout proposes:')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  async get_perks(args, { t, locale }) {
+    const stage = isCardStage(args.stage) ? args.stage : undefined;
+    const [open, claimed] = await Promise.all([listPerks(stage ? { stage } : {}), listClaimedPerks().catch(() => [])]);
+    const actions = [openArea(t, '/perks', t('Open perks'), t('Partner offers. Claim one to see its code.'))];
+    if (!open.length && !claimed.length) return { section: t('No partner offers are open right now.'), citations: [], actions };
+    const say = (en: string, el: string | null) => (locale === 'el' ? el ?? en : en);
+    const parts: string[] = [];
+    if (open.length) {
+      const lines = open.slice(0, LIMIT).map((p) => {
+        const cat = PERK_CATEGORY_COPY[p.category];
+        return `• **${p.partner}** — ${say(p.title, p.titleEl)}: ${say(p.value, p.valueEl)} (${cat ? say(cat.en, cat.el) : p.category}${p.claimed ? `, ${t('claimed')}` : ''}, id ${p.id})`;
+      });
+      parts.push(`${stage ? t('Open partner offers, the ones for your stage first:') : t('Open partner offers:')}\n${lines.join('\n')}`);
+      if (open.length > LIMIT) parts.push(t('{count} more on the Perks page.', { count: open.length - LIMIT }));
+    }
+    if (claimed.length) {
+      parts.push(`${t('You claimed:')} ${claimed.slice(0, LIMIT).map((p) => `${p.partner} (${say(p.title, p.titleEl)})`).join('; ')}. ${t('Their codes are under Claimed on the Perks page.')}`);
+    }
+    return { section: parts.join('\n\n'), citations: [], actions };
+  },
+
+  async get_profile_viewers(_args, { t, locale }) {
+    const v = await getProfileViewers();
+    const actions = [openArea(t, '/analytics?tab=growth', t('Open profile views'), t('Who viewed your profile in the last 90 days.'))];
+    if (!v.totalViews) return { section: t('Nobody has opened your profile in the last 90 days.'), citations: [], actions };
+    const parts = [t('In the last {days} days: {views} views from {members} members, and {out} from people not signed in.', { days: v.windowDays, views: v.totalViews, members: v.members, out: v.signedOutViews })];
+    const citations: CopilotCitation[] = v.named.slice(0, LIMIT).map((n) => ({ type: 'person', id: n.id, label: n.displayName, href: `/profiles/${encodeURIComponent(n.id)}` }));
+    if (v.named.length) {
+      parts.push(`${t('Named to you:')}\n${v.named.slice(0, LIMIT).map((n) => `• **${n.displayName}**${n.headline ? ` — ${n.headline}` : ''}`).join('\n')}`);
+    }
+    if (v.privateCount) {
+      const groups = v.privateByRole.map((g) => `${g.count} × ${locale === 'el' ? statusEl(g.role) ?? g.role : g.role}`).join(', ');
+      parts.push(groups ? t('{count} viewed privately, among them {groups}.', { count: v.privateCount, groups }) : t('{count} viewed privately.', { count: v.privateCount }));
+    }
+    if (!v.readerSharesName) parts.push(t('You view profiles privately, so you see counts, not names. Settings → Privacy changes that, and it is reciprocal.'));
+    return { section: parts.join('\n\n'), citations, actions };
   },
 
   async get_mentorship_sessions(_args, { t, locale }) {
@@ -872,6 +993,36 @@ export const AREA_READERS: Record<AreaReadId, Reader> = {
     });
 
     return { section: `${parts.join(' · ')}\n${lines.join('\n')}`, citations, actions };
+  },
+
+  // "Where did Elena and I talk about the terms?" - the reader's own messages
+  // that hold the words, with a line around them. The link opens the thread
+  // with the words already searched, so the hit is marked where it sits.
+  async search_messages(args, { t, locale }) {
+    const query = typeof args?.query === 'string' ? args.query.trim() : '';
+    const inbox = openArea(t, '/messages', t('Open messages'), t('Read and answer your threads.'));
+    if (query.length < 2) return { section: t('Tell me what to look for in your messages.'), citations: [], actions: [inbox] };
+    const { hits } = await searchMessages(query, LIMIT);
+    if (hits.length === 0) {
+      return { section: t('No message of yours holds “{query}”.', { query }), citations: [], actions: [inbox] };
+    }
+    const threadHref = (conversationId: string) => `/messages?c=${encodeURIComponent(conversationId)}&find=${encodeURIComponent(query)}`;
+    const citations: CopilotCitation[] = [];
+    const lines = hits.map((hit) => {
+      const name = hit.withName || t('Conversation');
+      if (!citations.some((c) => c.id === hit.conversationId)) {
+        citations.push({ type: 'conversation', id: hit.conversationId, label: name, href: threadHref(hit.conversationId) });
+      }
+      // Words the other person wrote carry their name once; words the reader wrote say "You".
+      const quote = t('“{snippet}”', { snippet: hit.snippet });
+      const when = formatWhen(hit.createdAt, locale, false);
+      return hit.fromMe ? `• **${name}** — ${t('You')}: ${quote} · ${when}` : `• **${name}**: ${quote} · ${when}`;
+    });
+    const head = hits.length === 1
+      ? t('One message holds “{query}”:', { query })
+      : t('{count} messages hold “{query}”, newest first:', { count: hits.length, query });
+    const actions = [openArea(t, threadHref(hits[0].conversationId), t('Open the conversation'), t('With the words marked, on the message.'))];
+    return { section: `${head}\n${lines.join('\n')}`, citations, actions };
   },
 
   async get_connections(_args, { t }) {

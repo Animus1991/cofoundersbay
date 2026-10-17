@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Send,
   Paperclip,
   Smile,
   MoreVertical,
+  SlidersHorizontal,
   Info,
   Check,
   CheckCheck,
@@ -18,6 +19,9 @@ import {
   X,
   Copy,
   Reply,
+  ChevronUp,
+  ChevronDown,
+  ListFilter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +45,8 @@ import {
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { usePopupChatOptional } from '@/contexts/PopupChatContext';
+import { highlightParts, stepMatch, threadMatches } from '@/lib/thread-search';
 import {
   messagesEn,
   messagesEl,
@@ -89,6 +95,8 @@ type ChatWindowProps = {
   onValidationModeChange?: (mode: ValidationMode) => void;
   onAskAi?: () => void;
   initialDraft?: string;
+  /** Words to open the thread's search with (the assistant's message search links here). */
+  initialSearch?: string;
 };
 
 function firstName(full: string): string {
@@ -144,6 +152,8 @@ function MessageBubble({
   recipientName,
   onReply,
   onReact,
+  highlight,
+  hit = 'none',
 }: {
   message: Message;
   isOwn: boolean;
@@ -152,6 +162,10 @@ function MessageBubble({
   recipientName: string;
   onReply?: (msg: Message) => void;
   onReact?: (messageId: string, emoji: string) => void;
+  /** The thread search's words, marked where they occur. */
+  highlight?: string;
+  /** 'active' is the hit the search is on; 'hit' any other match. */
+  hit?: 'none' | 'hit' | 'active';
 }) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -166,8 +180,16 @@ function MessageBubble({
   return (
     <div
       className={cn('group flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onPointerEnter={(event) => {
+        if (event.pointerType !== 'mouse') return;
+        if (window.matchMedia('(hover: none)').matches) return;
+        setShowActions(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== 'mouse') return;
+        if (window.matchMedia('(hover: none)').matches) return;
+        setShowActions(false);
+      }}
     >
       <div className="w-8 flex-shrink-0">
         {showAvatar && !isOwn && (
@@ -176,7 +198,7 @@ function MessageBubble({
       </div>
 
       {/* Message content */}
-      <div className={cn('max-w-[70%] flex flex-col', isOwn ? 'items-end' : 'items-start')}>
+      <div className={cn('flex max-w-[85%] flex-col sm:max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
         {/* Reply preview */}
         {message.replyTo && (
           <div className={cn(
@@ -188,56 +210,35 @@ function MessageBubble({
         )}
 
         <div className="relative">
-          {/* Hover action bar */}
-          {showActions && (
-            <div className={cn(
-              'absolute -top-8 flex items-center gap-0.5 rounded-full border border-border bg-card shadow-md px-1 py-0.5 z-10',
-              isOwn ? 'right-0' : 'left-0',
-            )}>
-              {QUICK_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  className="rounded-full p-1 text-sm hover:bg-secondary/80 transition-colors"
-                  title={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
-                  aria-label={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
-                  onClick={() => onReact?.(message.id, emoji)}
-                >
-                  {emoji}
-                </button>
-              ))}
-              <div className="w-px h-4 bg-border/60 mx-0.5" />
-              <button
-                type="button"
-                className="rounded-full p-1 hover:bg-secondary/80 transition-colors"
-                title={bilingualAria(messagesEn('reply'), messagesEl('reply'))}
-                onClick={() => onReply?.(message)}
-              >
-                <Reply className="icon-sm text-muted-foreground" />
-              </button>
-              <button
-                type="button"
-                className="rounded-full p-1 hover:bg-secondary/80 transition-colors"
-                title={copied ? bilingualAria(messagesEn('copied'), messagesEl('copied')) : bilingualAria(messagesEn('copy'), messagesEl('copy'))}
-                onClick={handleCopy}
-              >
-                <Copy className="icon-sm text-muted-foreground" />
-              </button>
-            </div>
-          )}
-
           <div
+            data-own-message={isOwn ? '' : undefined}
+            onClick={() => {
+              if (window.matchMedia('(hover: hover)').matches) return;
+              setShowActions((open) => !open);
+            }}
             className={cn(
               'px-4 py-2.5 text-xs leading-relaxed shadow-sm',
               isOwn
                 ? 'rounded-2xl rounded-br-sm bg-primary text-primary-foreground'
                 : 'rounded-2xl rounded-bl-sm border border-border bg-background/90 text-foreground backdrop-blur-sm',
+              // The hit the search is on carries a ring; the others a faint one,
+              // so the eye finds them while scrolling the whole thread.
+              hit === 'active' && 'ring-2 ring-ring ring-offset-2 ring-offset-background',
+              hit === 'hit' && 'ring-1 ring-ring/40',
             )}
           >
             <p className="text-sm whitespace-pre-wrap break-words">
               {PREVIEW_MESSAGE_EL[message.content]
                 ? <BilingualText en={message.content} el={PREVIEW_MESSAGE_EL[message.content]} wrap />
-                : message.content}
+                : highlight
+                  ? highlightParts(message.content, highlight).map((part, i) =>
+                      part.hit ? (
+                        <mark key={i} className="rounded-sm bg-status-warning-mark/45 px-0.5 text-inherit">{part.text}</mark>
+                      ) : (
+                        <span key={i}>{part.text}</span>
+                      ),
+                    )
+                  : message.content}
             </p>
             {message.attachments?.length ? (
               <div className="mt-2 space-y-1">
@@ -261,6 +262,57 @@ function MessageBubble({
               </div>
             ) : null}
           </div>
+
+          {showActions && (
+            <div
+              className={cn(
+                'z-10 mt-1 flex max-w-full flex-wrap items-center gap-0.5 rounded-xl border border-border bg-card px-1 py-0.5 shadow-md',
+                'sm:absolute sm:-top-8 sm:mt-0 sm:w-max sm:flex-nowrap sm:rounded-full',
+                isOwn ? 'sm:right-0' : 'sm:left-0',
+              )}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-sm transition-colors hover:bg-secondary/80 sm:h-8 sm:w-8"
+                  title={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
+                  aria-label={bilingualAria(messagesEn('add_reaction'), messagesEl('add_reaction'))}
+                  onClick={() => onReact?.(message.id, emoji)}
+                >
+                  {emoji}
+                </button>
+              ))}
+              <div className="mx-0.5 hidden h-4 w-px bg-border/60 sm:block" />
+              <button
+                type="button"
+                className="inline-flex h-11 items-center gap-1 rounded-full px-2 transition-colors hover:bg-secondary/80 sm:h-8 sm:px-1.5"
+                title={bilingualAria(messagesEn('reply'), messagesEl('reply'))}
+                onClick={() => onReply?.(message)}
+              >
+                <Reply className="icon-sm text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground sm:sr-only">
+                  <BilingualText en={messagesEn('reply')} el={messagesEl('reply')} compact />
+                </span>
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-11 items-center gap-1 rounded-full px-2 transition-colors hover:bg-secondary/80 sm:h-8 sm:px-1.5"
+                title={copied ? bilingualAria(messagesEn('copied'), messagesEl('copied')) : bilingualAria(messagesEn('copy'), messagesEl('copy'))}
+                onClick={handleCopy}
+              >
+                <Copy className="icon-sm text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground sm:sr-only">
+                  <BilingualText
+                    en={copied ? messagesEn('copied') : messagesEn('copy')}
+                    el={copied ? messagesEl('copied') : messagesEl('copy')}
+                    compact
+                  />
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* Reactions */}
           {message.reactions?.length ? (
@@ -308,6 +360,14 @@ function DateDivider({ date }: { date: Date }) {
   );
 }
 
+/** Wording only. The planner must not treat this as a request to send. */
+export function draftReplyPrompt(recipientName?: string | null): string {
+  const name = recipientName?.trim();
+  return name
+    ? `Draft a reply to ${name} in this conversation. Suggest the wording only. Do not send it.`
+    : 'Draft a reply in this conversation. Suggest the wording only. Do not send it.';
+}
+
 export function ChatWindow({
   conversation,
   messages,
@@ -327,11 +387,35 @@ export function ChatWindow({
   onValidationModeChange,
   onAskAi,
   initialDraft,
+  initialSearch,
 }: ChatWindowProps) {
   const t = useMessagesPrimaryText();
+  const popup = usePopupChatOptional();
+  // The draft sits on the composer, where the reply is written.
+  // It opens the assistant on this page and asks for wording only.
+  // Send stays the only control that delivers a message.
+  const draftReply = () => {
+    const prompt = draftReplyPrompt(conversation.recipientName);
+    if (popup) popup.ask(prompt);
+    else onAskAi?.();
+  };
   const [inputValue, setInputValue] = useState(initialDraft ?? '');
   const [searchOpen, setSearchOpen] = useState(false);
+  // Tells the page rail that this thread is showing the tools icon, so the
+  // floating pill steps aside. 'unmount' is explicit: the cleanup can run
+  // while the button is still in the document.
+  useLayoutEffect(() => {
+    window.dispatchEvent(new CustomEvent('cfb-messages-tools-anchor', { detail: 'mount' }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('cfb-messages-tools-anchor', { detail: 'unmount' }));
+    };
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
+  // Which hit the search is on (index into hitIds), and whether the thread
+  // shows only the matching messages, as the search did before it marked hits.
+  const [activeHit, setActiveHit] = useState(-1);
+  const [onlyHits, setOnlyHits] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [localReactions, setLocalReactions] = useState<Record<string, { emoji: string; count: number }[]>>({});
@@ -344,11 +428,12 @@ export function ChatWindow({
   useEffect(() => {
     setLocalReactions({});
     setReplyTo(null);
-    setSearchOpen(false);
-    setSearchQuery('');
+    setSearchOpen(Boolean(initialSearch));
+    setSearchQuery(initialSearch ?? '');
+    setOnlyHits(false);
     setPendingFiles([]);
     setInputValue(initialDraft ?? '');
-  }, [conversation.id, initialDraft]);
+  }, [conversation.id, initialDraft, initialSearch]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -421,10 +506,31 @@ export function ChatWindow({
     }
   };
 
-  // Filter by search
-  const filteredMessages = searchQuery.trim()
-    ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
-    : messages;
+  // Search: every hit in the whole thread, accents and case ignored, in the
+  // text the reader sees (a demo message shows its Greek too). The thread
+  // stays whole unless the reader asks for only the matches.
+  const hitIds = useMemo(
+    () => threadMatches(messages, searchQuery, (m) => (PREVIEW_MESSAGE_EL[m.content] ? [m.content, PREVIEW_MESSAGE_EL[m.content]] : [m.content])),
+    [messages, searchQuery],
+  );
+  const searching = searchOpen && searchQuery.trim().length > 0;
+  // A new query starts on the newest hit, nearest where the reader is.
+  useEffect(() => {
+    setActiveHit(hitIds.length ? hitIds.length - 1 : -1);
+  }, [searchQuery, hitIds.length]);
+  const activeHitId = activeHit >= 0 ? hitIds[activeHit] : undefined;
+  useEffect(() => {
+    if (!activeHitId) return;
+    const rows = scrollRef.current?.querySelectorAll<HTMLElement>('[data-message-id]') ?? [];
+    [...rows].find((row) => row.dataset.messageId === activeHitId)?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+  }, [activeHitId]);
+  const goToHit = (step: -1 | 1) => setActiveHit((current) => stepMatch(current, hitIds.length, step));
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setOnlyHits(false);
+  };
+  const filteredMessages = searching && onlyHits ? messages.filter((m) => hitIds.includes(m.id)) : messages;
 
   const visibleMessages = filteredMessages.map((m) =>
     localReactions[m.id] ? { ...m, reactions: localReactions[m.id] } : m,
@@ -448,15 +554,15 @@ export function ChatWindow({
     <div className={cn('relative flex h-full min-h-0 flex-col bg-background', className)}>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_52%)]"
+        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_52%)] sm:block"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(hsl(var(--foreground)/0.07)_1px,transparent_1px)] bg-[size:18px_18px] opacity-40"
+        className="pointer-events-none absolute inset-0 hidden bg-[radial-gradient(hsl(var(--foreground)/0.07)_1px,transparent_1px)] bg-[size:18px_18px] opacity-40 sm:block"
       />
       {/* Header */}
       <div className="relative z-10 flex flex-col border-b border-border bg-background/75 backdrop-blur-xl">
-        <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 sm:px-4 sm:py-3">
           <div className="flex min-w-0 items-center gap-3">
             {onBack && (
               <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl md:hidden" aria-label={bilingualAria(messagesEn('back_to_conversations'), messagesEl('back_to_conversations'))}>
@@ -471,14 +577,16 @@ export function ChatWindow({
                 size="md"
                 online={conversation.isOnline}
               />
+              {/* The thread's head reads like a card's: the name on the
+                  title step, the line under it on the subtitle step. */}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-semibold tracking-tight text-foreground">{conversation.recipientName}</span>
+                  <span className="card-title truncate text-foreground">{conversation.recipientName}</span>
                   <RoleBadge role={conversation.recipientRole || 'founder'} size="sm" className="hidden sm:inline-flex" />
                 </div>
-                <p className={cn('truncate text-xs', conversation.isOnline ? 'font-medium text-status-success' : 'text-muted-foreground')}>
+                <p className="card-subtitle truncate">
                   {conversation.isOnline
-                    ? t(messagesEn('online'), messagesEl('online'))
+                    ? <span className="font-medium text-status-success">{t(messagesEn('online'), messagesEl('online'))}</span>
                     : conversation.recipientHeadline
                       ? conversation.recipientHeadline
                       : conversation.lastSeen
@@ -497,6 +605,7 @@ export function ChatWindow({
                 otherUserName={conversation.recipientName}
                 validationState={validationState}
                 onModeChange={onValidationModeChange}
+                className="hidden sm:inline-flex"
               />
             )}
             {validationState && validationState.mode !== 'casual' && (
@@ -505,20 +614,20 @@ export function ChatWindow({
                 validationState={validationState}
               />
             )}
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+            <Button variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))} onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="icon-sm" />
             </Button>
-            <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))} aria-label={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))}>
+            <Button asChild variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))} aria-label={bilingualAria(messagesEn('open_calendar'), messagesEl('open_calendar'))}>
               <Link href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}>
                 <CfbGlyph name="calendar" className="icon-sm" />
               </Link>
             </Button>
             {onAskAi ? (
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} aria-label={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} onClick={onAskAi}>
+              <Button variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} aria-label={bilingualAria(messagesEn('ask_ai_about'), messagesEl('ask_ai_about'))} onClick={onAskAi}>
                 <CfbGlyph name="spark" className="icon-sm" />
               </Button>
             ) : (
-              <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl" title={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))} aria-label={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))}>
+              <Button asChild variant="ghost" size="icon" className="hidden h-9 w-9 rounded-xl sm:inline-flex" title={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))} aria-label={bilingualAria(messagesEn('open_ai_page'), messagesEl('open_ai_page'))}>
                 <Link href="/ai">
                   <CfbGlyph name="spark" className="icon-sm" />
                 </Link>
@@ -531,6 +640,10 @@ export function ChatWindow({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl">
+                <DropdownMenuItem onClick={() => { setSearchOpen(true); setSearchQuery(''); }}>
+                  <Search className="icon-sm mr-2" />
+                  <BilingualText en={messagesEn('search_messages')} el={messagesEl('search_messages')} compact />
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${conversation.recipientId}`}>
                     <Info className="icon-sm mr-2" />
@@ -560,48 +673,52 @@ export function ChatWindow({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <button
+              type="button"
+              data-messages-tools-anchor=""
+              aria-label={bilingualAria('Page tools', 'Εργαλεία σελίδας')}
+              className="tap-target inline-flex h-9 w-9 items-center justify-center rounded-xl bg-transparent text-foreground/70 hover:bg-secondary/60 hover:text-foreground sm:hidden"
+              onClick={() => window.dispatchEvent(new CustomEvent('cfb-open-page-tools'))}
+            >
+              <SlidersHorizontal className="icon-md" aria-hidden="true" />
+            </button>
           </div>
+          {validationState && (
+            <div className="basis-full sm:hidden">
+              <ConversationValidationMenu
+                labeled
+                conversationId={conversation.id}
+                currentUserId={currentUserId}
+                otherUserId={conversation.recipientId}
+                otherUserName={conversation.recipientName}
+                validationState={validationState}
+                onModeChange={onValidationModeChange}
+              />
+            </div>
+          )}
         </div>
-        <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-4 py-1.5">
+        <div className="hidden flex-wrap items-center gap-1.5 border-t border-border px-3 py-2 sm:flex sm:px-4 sm:py-1.5">
           <Link
             href={`/profiles/${conversation.recipientId}`}
-            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="people" className="h-3 w-3" />
             {t(messagesEn('view_profile'), messagesEl('view_profile'))}
           </Link>
           <Link
             href={`/matches/${conversation.recipientId}`}
-            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="matches" className="h-3 w-3" />
             {t(messagesEn('view_match'), messagesEl('view_match'))}
           </Link>
           <Link
             href={`/calendar?with=${encodeURIComponent(conversation.recipientId)}`}
-            className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
+            className="hidden items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted sm:inline-flex"
           >
             <CfbGlyph name="calendar" className="h-3 w-3" />
             {t(messagesEn('schedule_meet'), messagesEl('schedule_meet'))}
           </Link>
-          {onAskAi ? (
-            <button
-              type="button"
-              onClick={onAskAi}
-              className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
-            >
-              <CfbGlyph name="spark" className="h-3 w-3" />
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </button>
-          ) : (
-            <Link
-              href="/ai"
-              className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2.5 py-1 text-2xs font-medium text-foreground/80 transition-colors hover:bg-muted"
-            >
-              <CfbGlyph name="spark" className="h-3 w-3" />
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </Link>
-          )}
         </div>
         {/* Search bar */}
         {searchOpen && (
@@ -610,22 +727,60 @@ export function ChatWindow({
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <input
                 autoFocus
-                type="text"
+                type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  // Enter goes up the thread to the next older hit, as a
+                  // reader searching back in time expects; Shift+Enter comes down.
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToHit(e.shiftKey ? 1 : -1);
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeSearch();
+                  }
+                }}
                 placeholder={t(messagesEn('search_in_chat'), messagesEl('search_in_chat'))}
+                aria-label={bilingualAria(messagesEn('search_messages'), messagesEl('search_messages'))}
                 className="w-full rounded-xl border border-border bg-secondary/50 py-1.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
-            {searchQuery && (
-              <span className="shrink-0 text-xs text-muted-foreground">
-                {filteredMessages.length}{' '}
-                {filteredMessages.length === 1
-                  ? t(messagesEn('result_one'), messagesEl('result_one'))
-                  : t(messagesEn('results_n'), messagesEl('results_n'))}
+            {searching && (
+              <span className="shrink-0 text-xs tabular-nums text-muted-foreground" aria-live="polite">
+                {hitIds.length === 0
+                  ? t(messagesEn('no_matches'), messagesEl('no_matches'))
+                  : onlyHits
+                    ? `${hitIds.length} ${hitIds.length === 1 ? t(messagesEn('result_one'), messagesEl('result_one')) : t(messagesEn('results_n'), messagesEl('results_n'))}`
+                    : t(messagesEn('match_position'), messagesEl('match_position'))
+                        .replace('{n}', String(activeHit + 1))
+                        .replace('{total}', String(hitIds.length))}
               </span>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} aria-label={bilingualAria(messagesEn('close_search'), messagesEl('close_search'))}>
+            {searching && hitIds.length > 0 && !onlyHits && (
+              <>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => goToHit(-1)} aria-label={bilingualAria(messagesEn('older_match'), messagesEl('older_match'))} title={t(messagesEn('older_match'), messagesEl('older_match'))}>
+                  <ChevronUp className="icon-sm" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => goToHit(1)} aria-label={bilingualAria(messagesEn('newer_match'), messagesEl('newer_match'))} title={t(messagesEn('newer_match'), messagesEl('newer_match'))}>
+                  <ChevronDown className="icon-sm" />
+                </Button>
+              </>
+            )}
+            {searching && hitIds.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn('h-7 w-7', onlyHits && 'bg-secondary text-foreground')}
+                onClick={() => setOnlyHits((v) => !v)}
+                aria-pressed={onlyHits}
+                aria-label={bilingualAria(messagesEn('only_matches'), messagesEl('only_matches'))}
+                title={t(messagesEn('only_matches'), messagesEl('only_matches'))}
+              >
+                <ListFilter className="icon-sm" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={closeSearch} aria-label={bilingualAria(messagesEn('close_search'), messagesEl('close_search'))}>
               <X className="icon-sm" />
             </Button>
           </div>
@@ -633,7 +788,7 @@ export function ChatWindow({
       </div>
 
       {/* Messages */}
-      <div className="relative z-10 min-h-0 flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="relative z-10 min-h-0 flex-1 overflow-y-auto">
         <div className="flex min-h-full flex-col justify-end px-4 py-4 sm:px-6">
         {hasMoreMessages && (
           <div className="flex justify-center py-2">
@@ -683,16 +838,6 @@ export function ChatWindow({
               >
                 <BilingualText en={messagesEn('propose_time')} el={messagesEl('propose_time')} compact />
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-8 rounded-full px-3 text-xs"
-                onClick={onAskAi}
-              >
-                <CfbGlyph name="spark" className="icon-sm mr-1" />
-                <BilingualText en={messagesEn('draft_with_ai')} el={messagesEl('draft_with_ai')} compact />
-              </Button>
             </div>
           </div>
         )}
@@ -705,9 +850,11 @@ export function ChatWindow({
               const showAvatar = !prevMsg || prevMsg.senderId !== msg.senderId;
 
               return (
-                <div key={msg.id} className="mb-1.5">
+                <div key={msg.id} className="mb-1.5" data-message-id={msg.id}>
                   <MessageBubble
                     message={msg}
+                    highlight={searching ? searchQuery : undefined}
+                    hit={!searching || !hitIds.includes(msg.id) ? 'none' : msg.id === activeHitId ? 'active' : 'hit'}
                     isOwn={isOwn}
                     showAvatar={showAvatar}
                     recipientAvatar={conversation.recipientAvatar}
@@ -781,6 +928,18 @@ export function ChatWindow({
             ))}
           </div>
         )}
+        <div className="mb-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-auto min-h-9 gap-1.5 px-2"
+            onClick={draftReply}
+          >
+            <CfbGlyph name="spark" className="icon-sm shrink-0" aria-hidden="true" />
+            <BilingualText en={messagesEn('draft_with_ai')} el={messagesEl('draft_with_ai')} compact />
+          </Button>
+        </div>
         <div className="flex items-end gap-1 rounded-3xl border border-border bg-muted/40 p-1.5 shadow-[inset_0_1px_0_hsl(var(--background))]">
           <input
             ref={fileInputRef}
@@ -847,17 +1006,11 @@ export function ChatWindow({
             <Send className="icon-md" />
           </Button>
         </div>
-        <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 px-3 text-2xs text-muted-foreground">
+        <p className="mt-1.5 px-1 text-xs leading-snug text-muted-foreground sm:hidden">
+          <BilingualText en={messagesEn('tap_message_hint')} el={messagesEl('tap_message_hint')} compact />
+        </p>
+        <p className="mt-1.5 hidden px-3 text-2xs text-muted-foreground sm:block">
           <span>{t(messagesEn('type_message_hint'), messagesEl('type_message_hint'))}</span>
-          {onAskAi && (
-            <button
-              type="button"
-              onClick={onAskAi}
-              className="font-medium text-primary-accessible underline-offset-2 hover:underline"
-            >
-              {t(messagesEn('draft_with_ai'), messagesEl('draft_with_ai'))}
-            </button>
-          )}
         </p>
       </div>
     </div>
@@ -890,10 +1043,12 @@ export function NoChatSelected({
           </div>
         </div>
         <div className="space-y-1.5">
-          <h3 className="text-xl font-semibold tracking-tight text-foreground">
+          {/* A step under the inbox's own h1 (text-lg, text-xl on a
+              desktop), and the hint a step under this title on a phone too. */}
+          <h3 className="text-lg font-semibold tracking-tight text-foreground">
             <BilingualText en={messagesEn('empty_inbox_title')} el={messagesEl('empty_inbox_title')} />
           </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="card-body text-muted-foreground">
             <BilingualText en={messagesEn('empty_inbox_hint')} el={messagesEl('empty_inbox_hint')} />
           </p>
         </div>

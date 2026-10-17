@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Search, Star, ExternalLink, Package, TrendingUp, DollarSign,
+  Search, Star, ExternalLink, TrendingUp, DollarSign,
   CheckCircle, MessageCircle, Bookmark, Filter, ArrowUpDown,
   Clock, MapPin, Users, Zap, ChevronRight, ShieldCheck, Plus,
   Scale, Calculator, Megaphone, Code2, Brush, BrainCircuit, GraduationCap,
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
-import { RailAction } from '@/components/layout/RailParts';
+import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +32,11 @@ import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { durationEl } from '@/lib/i18n/units';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -70,7 +73,7 @@ const CAT_CONFIG: Record<string, { label: string; labelEl: string; icon: React.E
   development: { label: 'Development', labelEl: 'Ανάπτυξη λογισμικού', icon: Code2, color: 'text-status-accent' },
   design: { label: 'Design', labelEl: 'Σχεδιασμός', icon: Brush, color: 'text-status-accent' },
   consulting: { label: 'Consulting', labelEl: 'Συμβουλευτική', icon: BrainCircuit, color: 'text-status-warning' },
-  coaching: { label: 'Coaching', labelEl: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
+  coaching: { label: 'Coaching', labelEl: 'Καθοδήγηση', icon: GraduationCap, color: 'text-status-success' },
   other: { label: 'Other', labelEl: 'Άλλο', icon: Globe, color: 'text-muted-foreground' },
 };
 
@@ -165,82 +168,92 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
   const CatIcon = catCfg.icon;
 
   return (
-    <Card className={cn(
-      'group flex flex-col transition-all hover:border-primary/30',
-      featured && 'border-primary/15 bg-primary/[0.03]',
-      !provider.isAvailable && 'surface-inactive',
-    )}>
-      <CardContent className="flex flex-1 flex-col gap-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-11 w-11 shrink-0 rounded-lg">
+    <Card
+      data-provider-card=""
+      className={cn(
+        'group flex flex-col transition-all hover:border-primary/30',
+        featured && 'border-primary-muted bg-primary-subtle',
+        !provider.isAvailable && 'surface-inactive',
+      )}
+    >
+      <CardContent className="flex flex-1 flex-col gap-3">
+        {/* The service is the title and the person sits beside the mark.
+            The specialism and the rating are their own lines: they start on
+            the mark's left edge, with the sentence, the facts and the price,
+            so a wrapped role is not indented under the name and the figure
+            is not pushed right by the star. */}
+        <div>
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
               <AvatarImage src={provider.providerAvatar} />
               <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-sm font-semibold leading-snug">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
-                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
-              </div>
-              {/* "Growth Marketing Strategist" is 170px against the 102px
-                  this column gives it at 1024px — the trade an ellipsis makes
-                  here is the whole specialism for one line. */}
-              <p className="text-xs leading-snug text-muted-foreground">{provider.providerTitle}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="icon-sm fill-status-warning text-status-warning" />
-                <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
-              </div>
+          )}
+          title={provider.title}
+          roomy
+          subtitle={(
+            <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
+              <span className="font-medium text-foreground">{provider.providerName}</span>
+              {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" aria-label={bilingualInline('Verified', 'Επαληθευμένος')} />}
+            </span>
+          )}
+          asideStays
+          aside={(
+            /* Their tap target and accessible name (this icon-only button had
+               neither), kept with our icon-size and contrast-safe tokens. */
+            <button
+              onClick={() => setSaved(!saved)}
+              className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
+              aria-label={saved ? 'Remove bookmark' : 'Save provider'}
+            >
+              <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
+              <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
+            </button>
+          )}
+        />
+        <p className="card-subtitle mt-1.5">{provider.providerTitle}</p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <span className="font-medium text-foreground">{provider.avgRating.toFixed(1)}</span>
+            <Star className="icon-sm fill-status-warning text-status-warning" />
+            <span>({provider.reviewCount})</span>
+          </span>
+          {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border"><BilingualText en="Featured" el="Προτεινόμενο" compact /></Badge>}
+        </div>
+        </div>
+
+        <p className="card-body line-clamp-2 text-muted-foreground">{provider.description}</p>
+
+        <div className="space-y-2">
+          {/* Category, then specialties: facts, one line each. */}
+          <FactLine className="gap-y-1.5" items={[<BilingualText key="cat" en={catCfg.label} el={catCfg.labelEl ?? catCfg.label} compact />, ...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
+          <FactLine className="gap-y-1.5"
+            items={[
+              <BilingualText key="response" en={provider.responseTime} el={durationEl(provider.responseTime)} compact />,
+              <BilingualText key="clients" en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact />,
+              provider.location,
+              <span key="avail" className={provider.isAvailable ? 'text-status-success' : undefined}>
+                {provider.isAvailable
+                  ? <BilingualText en="Available" el="Διαθέσιμος" compact />
+                  : <BilingualText en="Fully booked" el="Πλήρης" compact />}
+              </span>,
+            ]}
+          />
+        </div>
+
+        {/* Foot: the starting price at the left, the actions at the right. */}
+        <CardFoot
+          className="mt-auto"
+          meta={(
+            <div className="space-y-1">
+              <p><BilingualText en="Starting at" el="Από" compact /></p>
+              <p className="card-body truncate font-semibold tabular-nums text-foreground">{priceForDisplay(provider.pricing, primary)}</p>
             </div>
-          </div>
-          {/* Their tap target and accessible name (this icon-only button had
-              neither), kept with our icon-size and contrast-safe tokens. */}
-          <button
-            onClick={() => setSaved(!saved)}
-            className="tap-target flex h-11 w-11 shrink-0 items-center justify-center gap-1.5 rounded-md hover:bg-muted transition-colors sm:w-auto sm:px-3"
-            aria-label={saved ? 'Remove bookmark' : 'Save provider'}
-          >
-            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
-            <span className="hidden sm:inline text-sm"><BilingualText en={saved ? 'Saved' : 'Save'} el={saved ? 'Αποθηκεύτηκε' : 'Αποθήκευση'} compact /></span>
-          </button>
-        </div>
-
-        {/* Service */}
-        <div>
-          <div className="flex items-center gap-1.5 mb-1">
-            <CatIcon className={cn('icon-sm shrink-0', catCfg.color)} />
-            <h3 className="font-semibold text-sm">{provider.title}</h3>
-          </div>
-          <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">{provider.description}</p>
-        </div>
-
-        {/* Specialties */}
-        <FactLine items={[...provider.specialties.slice(0, 3), provider.specialties.length > 3 ? `+${provider.specialties.length - 3}` : null]} />
-
-        {/* Meta */}
-        <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Clock className="icon-sm" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="icon-sm" aria-hidden="true" /><BilingualText en={`${provider.clientCount} clients`} el={`${provider.clientCount} πελάτες`} compact /></div>
-          <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
-          <div className="flex items-center gap-1">
-            <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-status-success-mark' : 'bg-muted')} />
-            {provider.isAvailable
-              ? <BilingualText en="Available" el="Διαθέσιμος" compact />
-              : <BilingualText en="Fully booked" el="Πλήρης" compact />}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border">
-          <div className="min-w-0">
-            <p className="text-xs text-muted-foreground"><BilingualText en="Starting at" el="Από" compact /></p>
-            <p className="truncate font-semibold text-sm">{priceForDisplay(provider.pricing, primary)}</p>
-          </div>
-          <div className="flex shrink-0 gap-2">
+          )}
+        >
             {/* Neither had a handler. A listing carries its provider's own
                 contact and website links, so those are what these open. */}
             {provider.contactUrl ? (
@@ -250,23 +263,27 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
                 </a>
               </Button>
             ) : (
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled title={bilingualInline('This provider has not listed a contact link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο επικοινωνίας')}>
-                <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="This provider has not listed a contact link" reasonEl="Ο πάροχος δεν έχει δηλώσει σύνδεσμο επικοινωνίας">
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1" disabled>
+                  <MessageCircle className="icon-sm" aria-hidden="true" /><BilingualText en="Message" el="Μήνυμα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
             {provider.isAvailable && (provider.websiteUrl || provider.contactUrl) ? (
               <Button size="sm" className="h-8 text-xs" asChild>
                 <a href={provider.websiteUrl ?? provider.contactUrl} target="_blank" rel="noopener noreferrer"><BilingualText en="Request" el="Αίτημα" compact /></a>
               </Button>
             ) : (
-              <Button size="sm" className="h-8 text-xs" disabled title={provider.isAvailable
-                ? bilingualInline('This provider has not listed a request link', 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο αιτήματος')
-                : bilingualInline('Not taking new clients', 'Δεν δέχεται νέους πελάτες')}>
-                <BilingualText en="Request" el="Αίτημα" compact />
-              </Button>
+              <WithDisabledReason
+                reasonEn={provider.isAvailable ? 'This provider has not listed a request link' : 'Not taking new clients'}
+                reasonEl={provider.isAvailable ? 'Ο πάροχος δεν έχει δηλώσει σύνδεσμο αιτήματος' : 'Δεν δέχεται νέους πελάτες'}
+              >
+                <Button size="sm" className="h-8 text-xs" disabled>
+                  <BilingualText en="Request" el="Αίτημα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
-          </div>
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -337,6 +354,7 @@ export default function MarketplacePage() {
     isAvailable: true,
     websiteUrl: s.websiteUrl ?? undefined,
     contactUrl: s.contactUrl ?? undefined,
+    providerAvatar: s.providerLogo ?? undefined,
   }));
 
   const allProviders = backendProviders.length > 0 ? backendProviders : showDemoData ? MOCK_PROVIDERS : [];
@@ -375,7 +393,7 @@ export default function MarketplacePage() {
   // through the same setters the rail and chips use.
   const CATEGORY_EL: Record<string, string> = {
     All: 'Όλες οι υπηρεσίες', legal: 'Νομικά', finance: 'Οικονομικά', marketing: 'Μάρκετινγκ', development: 'Ανάπτυξη',
-    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Coaching', other: 'Άλλο',
+    design: 'Σχεδιασμός', consulting: 'Συμβουλευτική', coaching: 'Καθοδήγηση', other: 'Άλλο',
   };
   usePageControls([
     choiceControl('category', 'Service category', 'Κατηγορία υπηρεσίας', CATEGORIES.map((c) => ({ value: c, en: CAT_CONFIG[c].label, el: CATEGORY_EL[c] ?? CAT_CONFIG[c].label })), selectedCategory, setSelectedCategory),
@@ -397,17 +415,7 @@ export default function MarketplacePage() {
       labelEn: 'Marketplace stats',
       labelEl: 'Στατιστικά αγοράς',
       content: (
-        <div className="space-y-2">
-          {marketplaceStats(allProviders).map(s => (
-            <div key={s.label} className="flex items-center gap-2.5 rounded-lg border border-border p-3">
-              <s.icon className="h-4 w-4 shrink-0 text-primary-accessible" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold">{s.value}</p>
-                <p className="text-2xs text-muted-foreground"><BilingualText en={s.label} el={s.labelEl} compact wrap /></p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <RailStats items={marketplaceStats(allProviders).map((s) => ({ key: s.label, label: s.label, labelEl: s.labelEl, value: s.value, icon: s.icon }))} />
       ),
     },
     {
@@ -473,11 +481,11 @@ export default function MarketplacePage() {
           />
         )}
         {/* Banner CTA for providers */}
-        <Card className="border-primary/15 bg-primary/[0.03]">
+        <Card className="border-primary-muted bg-primary-subtle">
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></p>
-              <p className="text-sm text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
+              <h2 className="card-title text-foreground"><BilingualText en="Are you a service provider?" el="Είστε πάροχος υπηρεσιών;" compact wrap /></h2>
+              <p className="card-body mt-0.5 text-muted-foreground"><BilingualText en="List your services where founders on CoFounderBay look for help" el="Καταχωρίστε τις υπηρεσίες σας εκεί όπου οι ιδρυτές του CoFounderBay αναζητούν βοήθεια" wrap /></p>
             </div>
             {/* Theirs turns a dead button into a real link to /provider/services;
                 our icon-size token is kept. */}
@@ -554,10 +562,37 @@ export default function MarketplacePage() {
                 )}
 
                 {filtered.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Package className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
-                    <p className="font-medium"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
-                    <p className="text-sm text-muted-foreground mt-1"><BilingualText en="Try adjusting your search or filters" el="Δοκιμάστε άλλη αναζήτηση ή φίλτρα" wrap /></p>
+                  <div className="flex flex-col items-start py-16 text-left">
+                    <p className="card-title text-foreground"><BilingualText en="No services found" el="Δεν βρέθηκαν υπηρεσίες" compact /></p>
+                    <p className="card-body mt-1 max-w-prose text-muted-foreground">
+                      {search.trim() || selectedCategory !== 'All' || availableOnly ? (
+                        <BilingualText
+                          en={`Nothing matched ${[
+                            search.trim() ? `“${search.trim()}”` : null,
+                            selectedCategory !== 'All' ? selectedCategory : null,
+                            availableOnly ? 'available now' : null,
+                          ].filter(Boolean).join(', ')}. Clear them to see every service.`}
+                          el={`Τίποτα δεν ταιριάζει με ${[
+                            search.trim() ? `«${search.trim()}»` : null,
+                            selectedCategory !== 'All' ? selectedCategory : null,
+                            availableOnly ? 'διαθέσιμοι τώρα' : null,
+                          ].filter(Boolean).join(', ')}. Καθαρίστε τα για να δείτε όλες τις υπηρεσίες.`}
+                          wrap
+                        />
+                      ) : (
+                        <BilingualText en="Services from members appear here once they are listed." el="Οι υπηρεσίες των μελών εμφανίζονται εδώ μόλις καταχωριστούν." wrap />
+                      )}
+                    </p>
+                    {(search.trim() || selectedCategory !== 'All' || availableOnly) && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => { setSearch(''); setSelectedCategory('All'); setAvailableOnly(false); }}
+                      >
+                        <BilingualText en="Clear filters" el="Καθαρισμός φίλτρων" compact />
+                      </Button>
+                    )}
                   </div>
                 )}
               </>

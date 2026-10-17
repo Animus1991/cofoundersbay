@@ -47,6 +47,7 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { Button } from '@/components/ui/button';
+import { Counter } from '@/components/ui/counter';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -66,6 +67,7 @@ import { SaveItemButton, useSavedItems, useSaveToggle } from '@/components/commo
 import { MessageButton } from '@/components/common/PersonActions';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
+import { CardHead } from '@/components/common/CardAnatomy';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -147,68 +149,50 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
     // The id is the assistant's citation target (`/opportunities#opportunity-…`).
     <Card id={`opportunity-${opportunity.id}`} className="card-interactive hover-lift group scroll-mt-24 transition-all duration-300 hover:border-primary/30">
       <CardContent className="space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-bold text-sm">{initials}</AvatarFallback>
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl ring-2 ring-border/60">
+              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-semibold text-sm">{initials}</AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
-              {/* Company, type and remote are facts about the listing: one
-                  line, where the type and remote were two tinted pills. */}
-              <FactLine
-                className="mt-1 text-sm"
-                items={[
-                  opportunity.company,
-                  <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
-                  opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
-                ]}
-              />
-            </div>
-          </div>
-          <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
-            <Clock className="icon-sm" />
-            {postedAgo}
-          </span>
-        </div>
+          )}
+          title={opportunity.title}
+          /* Company, type and remote are facts about the listing: one line,
+             where the type and remote were two tinted pills. */
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                opportunity.company,
+                <BilingualText key="type" en={opportunitiesEn(cfg.labelKey)} el={opportunitiesEl(cfg.labelKey)} compact />,
+                opportunity.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
+              ]}
+            />
+          )}
+          aside={postedAgo}
+        />
 
         {opportunity.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{opportunity.description}</p>
+          <p className="card-body line-clamp-2 text-muted-foreground">{opportunity.description}</p>
         )}
 
         <FactLine items={opportunity.tags ?? []} />
 
-        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-          {opportunity.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="icon-sm" />
-              {opportunity.location}
-            </span>
-          )}
-          {deadline && opportunity.deadline && (
-            <span className={cn(
-              'flex items-center gap-1',
-              (() => {
-                const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-                return daysLeft <= 3 ? 'text-status-danger font-medium' : 'text-status-warning ';
-              })()
-            )}>
-              <AlertCircle className="icon-sm" />
-              {(() => {
-                const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-                return daysLeft <= 0
-                  ? opportunitiesEn('expired')
-                  : daysLeft <= 3
-                    ? opportunitiesEn('days_left').replace('{n}', String(daysLeft))
-                    : opportunitiesEn('deadline').replace('{date}', deadline);
-              })()}
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <Users className="icon-sm" />
-            {opportunity.createdBy.displayName}
-          </span>
-        </div>
+        <FactLine
+          items={[
+            opportunity.location,
+            deadline && opportunity.deadline ? (() => {
+              const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
+              const key = daysLeft <= 0 ? 'expired' : daysLeft <= 3 ? 'days_left' : 'deadline';
+              const fill = (t: string) => t.replace('{n}', String(daysLeft)).replace('{date}', deadline);
+              return (
+                <span key="deadline" className={daysLeft <= 3 ? 'font-medium text-status-danger' : 'text-status-warning'}>
+                  <BilingualText en={fill(opportunitiesEn(key))} el={fill(opportunitiesEl(key))} compact />
+                </span>
+              );
+            })() : null,
+            opportunity.createdBy.displayName,
+          ]}
+        />
 
         <div className="flex gap-2 pt-1">
           {opportunity.url ? (
@@ -250,45 +234,28 @@ function JobCard({ job }: { job: JobPostingView }) {
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
       <CardContent className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-bold text-sm">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl ring-2 ring-border/60">
+              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-semibold text-sm">
                 {initialsOf(job.creator.displayName)}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
-              <div className="mt-1 flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/10 text-primary-accessible border-primary/20">
-                  <Building2 className="mr-1 icon-sm" />
-                  <BilingualText en={opportunitiesEn('job')} el={opportunitiesEl('job')} compact />
-                </Badge>
-                {job.isRemote && (
-                  <Badge variant="secondary" className="text-2xs">
-                    <BilingualText en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact />
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+          )}
+          title={job.title}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                job.creator.displayName,
+                <BilingualText key="job" en={opportunitiesEn('job')} el={opportunitiesEl('job')} compact />,
+                job.isRemote ? <BilingualText key="remote" en={opportunitiesEn('remote')} el={opportunitiesEl('remote')} compact /> : null,
+              ]}
+            />
+          )}
+        />
 
-        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-          {job.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="icon-sm" />
-              {job.location}
-            </span>
-          )}
-          {job.role && (
-            <span className="flex items-center gap-1">
-              <Briefcase className="icon-sm" />
-              {job.role}
-            </span>
-          )}
-        </div>
+        <FactLine items={[job.location, job.role]} />
 
         <div className="flex gap-2 pt-1">
           {/* The job feed has no apply route, so the useful actions are the
@@ -851,10 +818,10 @@ export default function OpportunitiesPage() {
   ];
 
   const tabs = [
-    { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake },
-    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase },
+    { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake, badge: wallCards.length + opportunities.length, tone: 'neutral' as const },
+    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase, badge: listingJobs.length, tone: 'neutral' as const },
     { key: 'applications' as const, labelKey: 'tab_applications' as const, icon: FileText },
-    { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals },
+    { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals, tone: 'attention' as const },
   ];
 
   return (
@@ -880,7 +847,7 @@ export default function OpportunitiesPage() {
         {/* Wraps rather than scrolls: four bilingual labels are wider than the
             column, and a scrolled strip hid the fourth (Proposals). */}
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualInline('Opportunities section', 'Ενότητα ευκαιριών')}>
-          {tabs.map(({ key, labelKey, icon: Icon, badge }) => (
+          {tabs.map(({ key, labelKey, icon: Icon, badge, tone }) => (
             <button
               key={key}
               type="button"
@@ -895,11 +862,7 @@ export default function OpportunitiesPage() {
             >
               <Icon className="icon-sm" aria-hidden="true" />
               <BilingualText en={opportunitiesEn(labelKey)} el={opportunitiesEl(labelKey)} compact />
-              {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-accessible">
-                  {badge}
-                </span>
-              )}
+              {badge !== undefined && badge > 0 && <Counter value={badge} tone={tone} />}
             </button>
           ))}
         </div>

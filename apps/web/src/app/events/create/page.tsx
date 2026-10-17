@@ -2,7 +2,7 @@
 
 import { useFormDraft } from '@/lib/form-draft';
 import { FormDraftNotice } from '@/components/common/FormDraftNotice';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -26,11 +26,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { isPitchPractice } from '@/lib/pitch-practice';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { CardHead } from '@/components/common/CardAnatomy';
 
 const EVENT_TYPES = [
   { value: 'networking', label: 'Networking', labelEl: 'Δικτύωση' },
@@ -49,7 +50,7 @@ function whenText(startAt: string, endAt: string, locale: 'en-GB' | 'el-GR' = 'e
   const start = startAt ? new Date(startAt) : null;
   if (!start || Number.isNaN(start.getTime())) return null;
   const day = start.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-  const time = (d: Date) => d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const time = (d: Date) => d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const end = endAt ? new Date(endAt) : null;
   if (!end || Number.isNaN(end.getTime())) return `${day}, ${time(start)}`;
   const sameDay = end.toDateString() === start.toDateString();
@@ -62,8 +63,8 @@ function whenText(startAt: string, endAt: string, locale: 'en-GB' | 'el-GR' = 'e
 function FormSection({ icon: Icon, title, titleEl, children }: { icon: typeof Calendar; title: string; titleEl: string; children: React.ReactNode }) {
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
           <Icon className="icon-sm text-muted-foreground" aria-hidden="true" />
           <BilingualText en={title} el={titleEl} />
         </CardTitle>
@@ -85,6 +86,7 @@ export default function CreateEventPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [pitchPractice, setPitchPractice] = useState(false);
 
   const [form, setForm] = useState({
     title: '',
@@ -120,6 +122,13 @@ export default function CreateEventPage() {
       return next;
     });
   });
+
+  useEffect(() => {
+    const kind = new URLSearchParams(window.location.search).get('kind');
+    if (!isPitchPractice(kind)) return;
+    setPitchPractice(true);
+    setForm((prev) => (prev.title || prev.description ? prev : { ...prev, type: 'workshop', isOnline: true }));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,7 +190,16 @@ export default function CreateEventPage() {
     >
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,44rem)_22rem]">
         <form onSubmit={handleSubmit} className="min-w-0 space-y-6">
-          <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
+          <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
+          {pitchPractice ? (
+            <p className="text-sm text-muted-foreground">
+              <BilingualText
+                en="This is a pitch practice. It is published as a workshop: founders present, then hear notes. Add a title and a start time, then press Create."
+                el="Αυτή είναι εξάσκηση παρουσίασης. Δημοσιεύεται ως εργαστήριο: οι ιδρυτές παρουσιάζουν και μετά ακούν σημειώσεις. Γράψτε τίτλο και ώρα έναρξης και πατήστε Δημιουργία."
+                wrap
+              />
+            </p>
+          ) : null}
           <FormSection icon={Calendar} title="Basic information" titleEl="Βασικά στοιχεία">
             <FormField htmlFor="event-title" required label={<BilingualText en="Event title" el="Τίτλος εκδήλωσης" compact />}>
               <Input
@@ -330,53 +348,49 @@ export default function CreateEventPage() {
 
         {/* How the listing will read, and what it still lacks. */}
         <aside aria-label="Preview" className="min-w-0 space-y-4 lg:sticky lg:top-24">
+          {/* The listing as it will read: the event card's own head (mark,
+              title, kind), then the facts and the sentence on the mark's edge. */}
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                <BilingualText en="Preview" el="Προεπισκόπηση" />
-              </CardTitle>
-            </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" size="sm" className="bg-primary/10 text-primary-accessible">
-                <BilingualText en={type.label} el={type.labelEl} compact />
-              </Badge>
-              <p className={cn('text-lg font-semibold leading-snug', !form.title.trim() && 'text-muted-foreground')}>
-                {form.title.trim() || <BilingualText en="Untitled event" el="Εκδήλωση χωρίς τίτλο" />}
+              <p className="text-xs font-medium text-muted-foreground">
+                <BilingualText en="Preview" el="Προεπισκόπηση" compact />
               </p>
-              <ul className="space-y-1.5 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <Clock className="mt-0.5 icon-sm shrink-0" aria-hidden="true" />
-                  <span className="min-w-0">
-                    {when ?? <BilingualText en="Pick a start time" el="Επιλέξτε ώρα έναρξης" wrap />}
-                    {when && form.timezone ? <span className="block text-xs">{form.timezone}</span> : null}
-                  </span>
+              <CardHead
+                mark={(
+                  <div data-card-mark="" data-keep-icon className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible">
+                    <Calendar className="icon-md" aria-hidden="true" />
+                  </div>
+                )}
+                title={form.title.trim()
+                  ? <span className="break-words">{form.title.trim()}</span>
+                  : <span className="text-muted-foreground"><BilingualText en="Untitled event" el="Εκδήλωση χωρίς τίτλο" compact /></span>}
+                subtitle={<BilingualText en={type.label} el={type.labelEl} compact />}
+              />
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li className="min-w-0">
+                  {when ?? <BilingualText en="Pick a start time" el="Επιλέξτε ώρα έναρξης" wrap />}
+                  {when && form.timezone ? <> · {form.timezone}</> : null}
                 </li>
-                <li className="flex items-start gap-2">
-                  {form.isOnline ? <Video className="mt-0.5 icon-sm shrink-0" aria-hidden="true" /> : <MapPin className="mt-0.5 icon-sm shrink-0" aria-hidden="true" />}
-                  <span className="min-w-0 break-words">
-                    {place ?? <BilingualText en={form.isOnline ? 'Online · add the link' : 'Add a venue'} el={form.isOnline ? 'Διαδικτυακά · προσθέστε σύνδεσμο' : 'Προσθέστε χώρο'} wrap />}
-                  </span>
+                <li className="min-w-0 break-words">
+                  {place ?? <BilingualText en={form.isOnline ? 'Online · add the link' : 'Add a venue'} el={form.isOnline ? 'Διαδικτυακά · προσθέστε σύνδεσμο' : 'Προσθέστε χώρο'} wrap />}
                 </li>
-                <li className="flex items-start gap-2">
-                  <Users className="mt-0.5 icon-sm shrink-0" aria-hidden="true" />
-                  <span className="min-w-0">
-                    {capacity && capacity > 0 ? (
-                      <BilingualText en={`Up to ${capacity} attendees`} el={`Έως ${capacity} συμμετέχοντες`} wrap />
-                    ) : (
-                      <BilingualText en="No attendance limit" el="Χωρίς όριο συμμετοχής" wrap />
-                    )}
-                  </span>
+                <li className="min-w-0">
+                  {capacity && capacity > 0 ? (
+                    <BilingualText en={`Up to ${capacity} attendees`} el={`Έως ${capacity} συμμετέχοντες`} wrap />
+                  ) : (
+                    <BilingualText en="No attendance limit" el="Χωρίς όριο συμμετοχής" wrap />
+                  )}
                 </li>
               </ul>
               {form.description.trim() ? (
-                <p className="line-clamp-4 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{form.description.trim()}</p>
+                <p className="card-body line-clamp-4 text-muted-foreground first-letter:uppercase">{form.description.trim()}</p>
               ) : null}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
+            <CardHeader>
+              <CardTitle>
                 <BilingualText en="Before you publish" el="Πριν τη δημοσίευση" />
               </CardTitle>
             </CardHeader>

@@ -95,16 +95,16 @@ export function ListEmptyState({
   const iconSize = size === 'compact' ? 'h-6 w-6' : 'h-7 w-7';
 
   const content = (
-    <div className={cn('flex flex-col items-center justify-center text-center', padding)}>
-      <div className={cn('mb-4 flex items-center justify-center rounded-full', iconWrap, TONE_CLASSES[tone])}>
+    <div className={cn('flex flex-col items-start text-left', padding)}>
+      <div className={cn('empty-mark mb-4 flex items-center justify-center rounded-full', iconWrap, TONE_CLASSES[tone])}>
         <Icon className={iconSize} />
       </div>
       <h3 className="text-base font-semibold text-foreground">{title}</h3>
       {description ? (
-        <div className="text-sm text-muted-foreground max-w-md mt-1.5">{description}</div>
+        <div className="card-body text-muted-foreground max-w-md mt-1.5">{description}</div>
       ) : null}
       {(action || secondary) && (
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-start gap-2" data-actions="">
           {action}
           {secondary}
         </div>
@@ -153,12 +153,29 @@ export function NoFilterResults({
   onClear,
   className,
   description,
+  active,
 }: {
   entity: string;
   onClear?: () => void;
   className?: string;
   description?: ReactNode;
+  /** The filters that emptied the list, in the reader's words. */
+  active?: { en: string; el: string }[];
 }) {
+  const named = (active ?? []).filter((item) => item.en.trim());
+  const namedSentence = named.length > 0 ? (
+    <BilingualText
+      en={`Nothing matched ${named.map((item) => item.en).join(', ')}. Clear them to see every row.`}
+      el={`Τίποτα δεν ταιριάζει με ${named.map((item) => item.el || item.en).join(', ')}. Καθαρίστε τα για να δείτε όλες τις γραμμές.`}
+      wrap
+    />
+  ) : (
+    <BilingualText
+      en="Clear the filters to see every row again."
+      el="Καθαρίστε τα φίλτρα για να δείτε ξανά όλες τις γραμμές."
+      wrap
+    />
+  );
   return (
     <ListEmptyState
       icon={Search}
@@ -169,13 +186,13 @@ export function NoFilterResults({
           wrap
         />
       }
-      description={description ?? (
+      description={description ?? (onClear || named.length > 0 ? namedSentence : (
         <BilingualText
           en="Try a different search term, broaden your filters, or clear them to start over."
           el="Δοκιμάστε άλλη αναζήτηση, πιο ευρεία φίλτρα ή καθαρίστε τα για να ξεκινήσετε από την αρχή."
           wrap
         />
-      )}
+      ))}
       action={onClear ? (
         <Button variant="secondary" size="sm" onClick={onClear} className="gap-1.5">
           <X className="icon-sm" />
@@ -254,15 +271,15 @@ function AskAiLink({ prompt }: { prompt: string }) {
 
 export function EmptyConnections({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.accent.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.accent.bg)}>
         <Users className={cn('icon-xl', STATUS.accent.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No connections yet" el="Δεν υπάρχουν συνδέσεις ακόμα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Start building your network by discovering founders, mentors, and investors who share your interests." el="Χτίστε το δίκτυό σας βρίσκοντας ιδρυτές, μέντορες και επενδυτές με κοινά ενδιαφέροντα." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/discover">
             <Compass className="icon-sm" />
@@ -277,15 +294,15 @@ export function EmptyConnections({ className }: EmptyStateProps) {
 
 export function EmptyMessages({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <MessageCircle className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No conversations" el="Δεν υπάρχουν συνομιλίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Connect with someone to start a conversation. Your messages will appear here." el="Συνδεθείτε με κάποιον για να ξεκινήσετε συνομιλία. Τα μηνύματά σας θα εμφανίζονται εδώ." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/connections">
             <UserPlus className="icon-sm" />
@@ -300,15 +317,15 @@ export function EmptyMessages({ className }: EmptyStateProps) {
 
 export function EmptyEvents({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
         <Calendar className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No upcoming events" el="Δεν υπάρχουν επερχόμενες εκδηλώσεις" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no events scheduled right now. Check back later or create your own event." el="Δεν υπάρχουν προγραμματισμένες εκδηλώσεις. Ελέγξτε αργότερα ή δημιουργήστε τη δική σας." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/events/create">
             <Calendar className="icon-sm" />
@@ -323,15 +340,15 @@ export function EmptyEvents({ className }: EmptyStateProps) {
 
 export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
         <Briefcase className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No jobs posted" el="Δεν υπάρχουν αγγελίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="There are no job listings at the moment. Post a job to find your next team member." el="Δεν υπάρχουν αγγελίες αυτή τη στιγμή. Δημοσιεύστε μία για να βρείτε το επόμενο μέλος της ομάδας σας." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <Briefcase className="icon-sm" />
           <BilingualText en="Post a job" el="Δημοσίευση θέσης" compact />
@@ -344,15 +361,15 @@ export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps &
 
 export function EmptyGroups({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
         <Users className={cn('icon-xl', STATUS.success.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No groups joined" el="Δεν έχετε γίνει μέλος σε κοινότητες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Join groups to connect with like-minded founders and participate in discussions." el="Γίνετε μέλος σε κοινότητες για να γνωρίσετε ιδρυτές με κοινά ενδιαφέροντα και να συμμετέχετε σε συζητήσεις." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/groups">
             <Search className="icon-sm" />
@@ -367,12 +384,12 @@ export function EmptyGroups({ className }: EmptyStateProps) {
 
 export function EmptyNotifications({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
         <Bell className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="All caught up!" el="Είστε ενημερωμένοι!" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="You have no new notifications. We&apos;ll let you know when something happens." el="Δεν έχετε νέες ειδοποιήσεις. Θα σας ενημερώσουμε όταν συμβεί κάτι." wrap />
       </p>
       <AskAiLink prompt="I am all caught up on notifications. What should I do next on CoFounderBay?" />
@@ -382,17 +399,17 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
 
 export function EmptySearchResults({ query, className }: EmptyStateProps & { query?: string }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
         <Search className="icon-xl text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No results found" el="Δεν βρέθηκαν αποτελέσματα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         {query 
           ? `We couldn't find anything matching "${query}". Try different keywords.`
           : 'Try adjusting your search or filters to find what you\'re looking for.'}
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button variant="secondary" onClick={() => window.history.back()}>
           <BilingualText en="Go back" el="Επιστροφή" compact />
         </Button>
@@ -410,12 +427,12 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
 
 export function EmptyLearning({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className={cn('empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
         <BookOpen className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No resources yet" el="Δεν υπάρχουν πόροι ακόμα" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Learning resources will appear here. Check back soon for new content." el="Οι πόροι μάθησης θα εμφανίζονται εδώ. Ελέγξτε σύντομα για νέο περιεχόμενο." wrap />
       </p>
       <AskAiLink prompt="There are no learning resources yet. What should I study next given my venture readiness?" />
@@ -425,15 +442,15 @@ export function EmptyLearning({ className }: EmptyStateProps) {
 
 export function EmptyMarketplace({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
         <ShoppingBag className="icon-xl text-status-accent" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No services listed" el="Δεν υπάρχουν υπηρεσίες" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="The marketplace is empty. Be the first to offer your services to the community." el="Η αγορά είναι άδεια. Γίνετε οι πρώτοι που προσφέρουν υπηρεσίες στην κοινότητα." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <ShoppingBag className="icon-sm" />
           <BilingualText en="List a service" el="Καταχώριση υπηρεσίας" compact />
@@ -446,15 +463,15 @@ export function EmptyMarketplace({ className, actionHref, onAction }: EmptyState
 
 export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
+    <div className={cn('flex flex-col items-start py-16 px-4 text-left', className)}>
+      <div className="empty-mark mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <Users className="icon-xl text-primary-accessible" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2"><BilingualText en="No sessions booked" el="Δεν υπάρχουν κρατήσεις" compact /></h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-6">
+      <p className="card-body text-muted-foreground max-w-sm mb-6">
         <BilingualText en="Book a session with a mentor to get personalized guidance for your startup journey." el="Κλείστε συνεδρία με μέντορα για εξατομικευμένη καθοδήγηση." wrap />
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-start gap-2" data-actions="">
         <Button className="gap-2" asChild>
           <Link href="/mentoring">
             <Search className="icon-sm" />
@@ -472,14 +489,39 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
  *  Each accepts `filtersActive` to render the filtered variant.
  * ──────────────────────────────────────────────────────────── */
 
+export type NamedFilter = { en: string; el: string };
+
+/** The words someone typed, quoted the way the empty sentence reads them. */
+export function namedQuery(value: string): NamedFilter | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return { en: `“${trimmed}”`, el: `«${trimmed}»` };
+}
+
+/** A chosen option, omitted while it still means “everything”. */
+export function namedChoice(
+  value: string,
+  idle: string,
+  labels: Record<string, NamedFilter>,
+): NamedFilter | null {
+  if (!value || value === idle) return null;
+  return labels[value] ?? { en: value, el: value };
+}
+
+export function namedFilters(...items: Array<NamedFilter | null | undefined | false>): NamedFilter[] {
+  return items.filter((item): item is NamedFilter => Boolean(item));
+}
+
 type FilterAwareEmptyProps = {
   filtersActive?: boolean;
   onClearFilters?: () => void;
+  /** The filters that emptied the list, in the reader's words. */
+  active?: NamedFilter[];
   className?: string;
 };
 
-export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} className={className} />;
+export function EmptyOrgPrograms({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Layers}
@@ -498,8 +540,8 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
   );
 }
 
-export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="cohorts" onClear={onClearFilters} className={className} />;
+export function EmptyOrgCohorts({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="cohorts" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -516,8 +558,8 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, acti
   );
 }
 
-export function EmptyOrgApplications({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="applications" onClear={onClearFilters} className={className} />;
+export function EmptyOrgApplications({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="applications" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={FileText}
@@ -534,8 +576,8 @@ export function EmptyOrgApplications({ filtersActive, onClearFilters, className 
   );
 }
 
-export function EmptyOrgMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
+export function EmptyOrgMembers({ filtersActive, onClearFilters, active, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -552,8 +594,8 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className, acti
   );
 }
 
-export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="mentors" onClear={onClearFilters} className={className} />;
+export function EmptyOrgMentors({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="mentors" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={GraduationCap}
@@ -577,8 +619,8 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
   );
 }
 
-export function EmptyOrgStartups({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="startups" onClear={onClearFilters} className={className} />;
+export function EmptyOrgStartups({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="startups" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Rocket}
@@ -595,8 +637,8 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className, act
   );
 }
 
-export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
-  if (filtersActive) return <NoFilterResults entity="events" onClear={onClearFilters} className={className} />;
+export function EmptyOrgEvents({ filtersActive, onClearFilters, active, className }: FilterAwareEmptyProps) {
+  if (filtersActive) return <NoFilterResults entity="events" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Calendar}
@@ -615,8 +657,8 @@ export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: Fil
   );
 }
 
-export function EmptyTenantMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
+export function EmptyTenantMembers({ filtersActive, onClearFilters, active, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Users}
@@ -633,8 +675,8 @@ export function EmptyTenantMembers({ filtersActive, onClearFilters, className, a
   );
 }
 
-export function EmptyTenantPrograms({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
-  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} className={className} />;
+export function EmptyTenantPrograms({ filtersActive, onClearFilters, active, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
+  if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} active={active} className={className} />;
   return (
     <ListEmptyState
       icon={Award}

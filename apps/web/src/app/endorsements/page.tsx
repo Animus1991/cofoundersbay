@@ -25,22 +25,25 @@ import { bilingualInline, formatDate } from '@/lib/i18n/format';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
-  Handshake, Plus, Star, CheckCircle2, Clock, Award, BadgeCheck, Quote,
+  Handshake, Plus, Star, CheckCircle2, Clock, Award, BadgeCheck,
   ThumbsUp, ThumbsDown, Search, Users, UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailStats } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
+import { Counter } from '@/components/ui/counter';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -167,61 +170,52 @@ function EndorsementCard({
       // Waiting on the reader: a warning edge, not an amber-filled card.
       waitingOnMe && 'border-l-2 border-l-status-warning',
     )}>
-      <CardContent>
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-          <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
             <Link href={`/profiles/${user.id}`} aria-label={bilingualInline(`Open ${user.name}'s profile`, `Άνοιγμα προφίλ: ${user.name}`)}>
-              <Avatar className="h-11 w-11">
+              <Avatar className="h-10 w-10">
                 <AvatarImage src={user.avatar} alt="" />
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initials}</AvatarFallback>
               </Avatar>
             </Link>
-            <div className="min-w-0">
-              <Link href={`/profiles/${user.id}`} className="text-sm font-semibold transition-colors hover:text-primary-accessible">
-                {user.name}
-              </Link>
-              {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
-              {endorsement.relationship && (
-                <p className="text-xs text-muted-foreground">
-                  <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${endorsement.relationship}`} compact />
-                </p>
-              )}
-              <EndorsementBasisLine basis={endorsement.basis} />
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {endorsement.skill && (
-              <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
-            )}
-            {waitingOnMe && (
-              <Badge variant="outline" className="border-status-warning-border text-xs text-status-warning">
-                <Clock className="mr-1 icon-sm" aria-hidden="true" />
-                <BilingualText en="Waiting for you" el="Περιμένει εσάς" compact />
-              </Badge>
-            )}
-            {waitingOnThem && (
-              <Badge variant="outline" className="text-xs">
-                <Clock className="mr-1 icon-sm" aria-hidden="true" />
-                <BilingualText en="Not yet approved" el="Δεν έχει εγκριθεί" compact />
-              </Badge>
-            )}
-            {endorsement.isApproved && (
-              <BadgeCheck className="icon-sm text-status-info" aria-label={bilingualInline('Approved and shown on the profile', 'Εγκρίθηκε και εμφανίζεται στο προφίλ')} />
-            )}
-          </div>
+          )}
+          title={(
+            <Link href={`/profiles/${user.id}`} className="transition-colors hover:text-primary-accessible">
+              {user.name}
+            </Link>
+          )}
+          subtitle={user.role || undefined}
+          meta={endorsement.relationship ? (
+            <BilingualText en={`Relationship: ${endorsement.relationship}`} el={`Σχέση: ${endorsement.relationship}`} compact wrap />
+          ) : undefined}
+          aside={waitingOnMe ? (
+            <Badge variant="outline" className="border-status-warning-border text-xs text-status-warning">
+              <Clock className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en="Waiting for you" el="Περιμένει εσάς" compact />
+            </Badge>
+          ) : waitingOnThem ? (
+            <Badge variant="outline" className="text-xs">
+              <Clock className="mr-1 icon-sm" aria-hidden="true" />
+              <BilingualText en="Not yet approved" el="Δεν έχει εγκριθεί" compact />
+            </Badge>
+          ) : endorsement.isApproved ? (
+            <BadgeCheck className="icon-sm text-status-info" aria-label={bilingualInline('Approved and shown on the profile', 'Εγκρίθηκε και εμφανίζεται στο προφίλ')} />
+          ) : undefined}
+        />
+        {/* The skill, the quote and what the platform saw of the work all
+            start on the avatar's edge, like every card's content. */}
+        <div className="space-y-1.5">
+          {endorsement.skill ? <p className="text-xs font-medium text-muted-foreground">{endorsement.skill}</p> : null}
+          <blockquote className="card-body italic text-muted-foreground">{endorsement.content}</blockquote>
+          <EndorsementBasisLine basis={endorsement.basis} />
         </div>
 
-        <div className="relative border-l-2 border-primary/30 pl-4">
-          <Quote className="absolute -left-0.5 -top-1 icon-sm text-primary-emphasis/50" aria-hidden="true" />
-          <p className="text-sm italic leading-relaxed text-muted-foreground">{endorsement.content}</p>
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
-          <span className="text-xs text-muted-foreground">
-            {endorsement.createdAt ? formatDate(endorsement.createdAt, primary === 'el' ? 'el' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
-          </span>
+        <CardFoot
+          meta={endorsement.createdAt ? formatDate(endorsement.createdAt, primary === 'el' ? 'el' : 'en', { day: 'numeric', month: 'short', year: 'numeric' }) : undefined}
+        >
           {waitingOnMe && (
-            <div className="flex gap-2">
+            <>
               <Button size="sm" className="gap-1" onClick={() => onApprove?.(endorsement.id)}>
                 <ThumbsUp className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Approve" el="Έγκριση" compact />
@@ -230,14 +224,14 @@ function EndorsementCard({
                 <ThumbsDown className="icon-sm" aria-hidden="true" />
                 <BilingualText en="Decline" el="Απόρριψη" compact />
               </Button>
-            </div>
+            </>
           )}
           {/* Endorsements have no reply endpoint; replying to someone is
               opening a thread with them. A sample has no one behind it. */}
           {!waitingOnMe && !sample && (
             <MessageButton userId={user.id} displayName={user.name} variant="ghost" />
           )}
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -356,9 +350,11 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
             ) : (
               /* A sample name has no thread to open; the control says so
                  rather than looking available. */
-              <Button size="sm" variant="outline" disabled title={bilingualInline('Sample connection', 'Ενδεικτική επαφή')}>
-                <BilingualText en="Ask" el="Αίτημα" compact />
-              </Button>
+              <WithDisabledReason reasonEn="Sample connection" reasonEl="Ενδεικτική επαφή">
+                <Button size="sm" variant="outline" disabled>
+                  <BilingualText en="Ask" el="Αίτημα" compact />
+                </Button>
+              </WithDisabledReason>
             )}
           </li>
         ))}
@@ -619,11 +615,11 @@ export default function EndorsementsPage() {
             <TabsList>
               <TabsTrigger value="received" className="gap-1.5">
                 <BilingualText en="Received" el="Ληφθείσες" compact />
-                {pendingCount > 0 && <Badge variant="secondary" size="sm" className="px-1.5">{pendingCount}</Badge>}
+                {pendingCount > 0 && <Counter value={pendingCount} />}
               </TabsTrigger>
               <TabsTrigger value="given" className="gap-1.5">
                 <BilingualText en="Given" el="Δοσμένες" compact />
-                <span className="tabular-nums text-muted-foreground">{givenCount}</span>
+                <Counter value={givenCount} />
               </TabsTrigger>
             </TabsList>
             <Button size="sm" className="gap-1.5" onClick={() => setGiving(true)}>

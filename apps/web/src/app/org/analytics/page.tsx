@@ -27,7 +27,7 @@ import { downloadCsv } from '@/lib/csv';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
@@ -266,20 +266,20 @@ export default function OrgAnalyticsPage() {
       actions={(
         <>
           <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-            <SelectTrigger aria-label="Time period" className="w-[150px]">
+            <SelectTrigger aria-label={bilingualAria('Time period', 'Χρονική περίοδος')} className="w-[150px]">
               <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
             </SelectTrigger>
             <SelectContent>
               {PERIODS.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.en}</SelectItem>
+                <SelectItem key={p.value} value={p.value}><BilingualText en={p.en} el={p.el} compact /></SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" title="Refresh" aria-label="Refresh" onClick={refresh}>
+          <Button variant="outline" size="icon" title={bilingualInline('Refresh', 'Ανανέωση')} aria-label={bilingualAria('Refresh', 'Ανανέωση')} onClick={refresh}>
             <RefreshCw className="icon-sm" aria-hidden="true" />
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={exportCsv}>
-            <Download className="icon-sm" aria-hidden="true" /> Export
+            <Download className="icon-sm" aria-hidden="true" /> <BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
         </>
       )}
@@ -328,12 +328,16 @@ export default function OrgAnalyticsPage() {
           <SectionCard title="Applications by month" titleEl="Αιτήσεις ανά μήνα" contentClassName="space-y-2">
             <ApplicationsTrendChart data={trend} />
             <p className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">Applications</span> received and <span className="font-medium text-status-success">accepted</span> in each of the last six months.
+              <BilingualText
+                en="Applications received, and accepted (green), in each of the last six months."
+                el="Αιτήσεις που ελήφθησαν, και όσες εγκρίθηκαν (πράσινο), σε καθέναν από τους τελευταίους έξι μήνες."
+                wrap
+              />
             </p>
           </SectionCard>
           <SectionCard title="Mentor sessions by month" titleEl="Συνεδρίες ανά μήνα" contentClassName="space-y-2">
             <MentorSessionsChart data={sessionsByMonth} />
-            <p className="text-xs text-muted-foreground">Held and scheduled sessions across every cohort.</p>
+            <p className="text-xs text-muted-foreground"><BilingualText en="Held and scheduled sessions across every cohort." el="Συνεδρίες που έγιναν και που έχουν προγραμματιστεί, σε όλους τους κύκλους." wrap /></p>
           </SectionCard>
         </div>
 
@@ -342,8 +346,8 @@ export default function OrgAnalyticsPage() {
             {loading && [0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}
             {!loading && programMetrics.length === 0 && (
               <p className="py-6 text-center text-sm text-muted-foreground">
-                No programmes yet. Each programme you run appears here with how full it is.{' '}
-                <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline">Create a programme</Link>
+                <BilingualText en="No programmes yet. Each programme you run appears here with how full it is." el="Δεν υπάρχουν ακόμη προγράμματα. Κάθε πρόγραμμα που τρέχετε εμφανίζεται εδώ με την πληρότητά του." wrap />{' '}
+                <Link href="/org/programs" className="font-medium text-primary-accessible hover:underline"><BilingualText en="Create a programme" el="Δημιουργία προγράμματος" compact /></Link>
               </p>
             )}
             {programMetrics.map((program) => (
@@ -351,28 +355,32 @@ export default function OrgAnalyticsPage() {
                 <div className="flex items-baseline justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate">{program.name}</span>
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    {program.startups}/{program.capacity ?? '—'} places · {program.applications} applied
+                    <BilingualText en={`${program.startups}/${program.capacity ?? '—'} places · ${program.applications} applied`} el={`${program.startups}/${program.capacity ?? '—'} θέσεις · ${program.applications} αιτήσεις`} compact />
                   </span>
                 </div>
-                <Progress value={program.fill ?? 0} className="h-1.5" aria-label={`${program.name}: ${program.fill ?? 0}% of places filled`} />
+                <Progress value={program.fill ?? 0} className="h-1.5" aria-label={bilingualAria(`${program.name}: ${program.fill ?? 0}% of places filled`, `${program.name}: ${program.fill ?? 0}% των θέσεων καλυμμένες`)} />
               </div>
             ))}
           </SectionCard>
 
           <SectionCard title="Mentor activity" titleEl="Δραστηριότητα μεντόρων" action={{ href: '/org/mentors', label: 'Mentors', labelEl: 'Μέντορες' }}>
-            <dl className="grid grid-cols-2 gap-3">
-              {[
-                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} of ${mentors.length}` : '—' },
-                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'last three months' },
-                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined },
-                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined },
-              ].map((cell) => (
-                <div key={cell.en} className="min-w-0">
-                  <dt className="text-xs text-muted-foreground">
-                    <BilingualText en={cell.en} el={cell.el} stacked wrap />
+            {/* One row per figure on the card's axis: the label (and its
+                note under it) at the left, the figure at the right. In a 2x2
+                grid a note that wrapped in the right column started a line
+                of its own, off the axis. */}
+            <dl className="card-rows">
+              {([
+                { en: 'Active mentors', el: 'Ενεργοί μέντορες', value: mentorsData ? `${activeMentors} / ${mentors.length}` : '—' },
+                { en: 'Sessions a month', el: 'Συνεδρίες τον μήνα', value: cohortsData ? perMonth : '—', note: 'Last three months', noteEl: 'Τελευταίοι τρεις μήνες' },
+                { en: 'Average rating', el: 'Μέση βαθμολογία', value: avgRating == null ? '—' : avgRating.toFixed(1), note: rated.length ? `${rated.length} rated sessions` : undefined, noteEl: `${rated.length} αξιολογημένες συνεδρίες` },
+                { en: 'Places taken', el: 'Κατειλημμένες θέσεις', value: slots ? `${Math.round((taken / slots) * 100)}%` : '—', note: slots ? `${taken} of ${slots} mentee places` : undefined, noteEl: `${taken} από ${slots} θέσεις καθοδηγούμενων` },
+              ] as { en: string; el: string; value: string | number; note?: string; noteEl?: string }[]).map((cell) => (
+                <div key={cell.en} className="flex items-baseline justify-between gap-3">
+                  <dt className="min-w-0 text-sm text-muted-foreground">
+                    <BilingualText en={cell.en} el={cell.el} compact wrap />
+                    {cell.note ? <span className="mt-0.5 block text-xs"><BilingualText en={cell.note} el={cell.noteEl ?? cell.note} compact wrap /></span> : null}
                   </dt>
-                  <dd className="mt-1 text-lg font-semibold tabular-nums">{cell.value}</dd>
-                  {cell.note ? <dd className="text-xs text-muted-foreground">{cell.note}</dd> : null}
+                  <dd className="card-body shrink-0 font-semibold tabular-nums">{cell.value}</dd>
                 </div>
               ))}
             </dl>
@@ -408,10 +416,10 @@ export default function OrgAnalyticsPage() {
                   <span className="text-muted-foreground">{city}</span>
                   <span className="font-medium tabular-nums">{count}</span>
                 </div>
-                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={`${city}: ${count} founders`} />
+                <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={bilingualAria(`${city}: ${count} ${count === 1 ? 'founder' : 'founders'}`, `${city}: ${count} ${count === 1 ? 'ιδρυτής' : 'ιδρυτές'}`)} />
               </div>
             ))}
-            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." />}
+            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." action={{ href: '/org/applications', en: 'Review applications', el: 'Δείτε τις αιτήσεις' }} />}
           </SectionCard>
         </div>
 
@@ -439,13 +447,16 @@ export default function OrgAnalyticsPage() {
               );
             })}
           </ol>
-          <div className="flex flex-wrap gap-2 pt-2">
-            {programs.filter((p) => p.status === 'upcoming').map((p) => (
-              <Badge key={p.id} variant="info" size="sm">
-                <BilingualText en={`${p.title}: taking applications`} el={`${p.title}: δέχεται αιτήσεις`} compact />
-              </Badge>
-            ))}
-          </div>
+          {/* The caption leads the pills, so the row starts on the card's
+              axis with words rather than a pill's padding. */}
+          {programs.some((p) => p.status === 'upcoming') ? (
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <span className="text-xs text-muted-foreground"><BilingualText en="Taking applications" el="Δέχονται αιτήσεις" compact /></span>
+              {programs.filter((p) => p.status === 'upcoming').map((p) => (
+                <Badge key={p.id} variant="info" size="sm">{p.title}</Badge>
+              ))}
+            </div>
+          ) : null}
         </SectionCard>
       </div>
     </AppShell>

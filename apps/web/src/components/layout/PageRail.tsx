@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, ChevronLeft, ChevronRight, Maximize2, PanelRight, SlidersHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -15,6 +16,102 @@ import {
   PAGE_RAIL_WIDTH,
   usePageRail,
 } from './PageRailContext';
+
+/** Phone size of the thread's tools icon: the ghost h-9 floor. */
+const PHONE_TOOLS_HEIGHT = 28.939;
+const PHONE_TOOLS_WIDTH = 30.458;
+
+/**
+ * The thread icon is centered on the avatar row, 10px under the phone top
+ * bar. Every other page uses that same viewport height.
+ */
+function phoneToolsPreferredTop(): number {
+  const chromeY = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chrome-y')) || 0.99;
+  const bar = document.querySelector('header.sticky');
+  const barBottom = bar?.getBoundingClientRect().bottom ?? 3 * 16 * chromeY;
+  return barBottom + 10 + (2.5 * 16 * chromeY - PHONE_TOOLS_HEIGHT) / 2;
+}
+
+/** Viewport top the element has when the page is scrolled to the start. */
+function toolsRestTop(viewportTop: number): number {
+  const main = document.getElementById('main-content');
+  const mainScroll = main && main.scrollHeight > main.clientHeight + 2 ? main.scrollTop : 0;
+  return viewportTop + Math.max(window.scrollY || 0, mainScroll);
+}
+
+/**
+ * Text and controls that occupy the tools column. Positions are restored to
+ * the unscrolled page, so a later scroll does not drag the icon around.
+ * Screen-reader text is not information on the screen.
+ */
+function toolsColumnObstacles(left: number, right: number): { top: number; bottom: number }[] {
+  const out: { top: number; bottom: number }[] = [];
+  const add = (top: number, bottom: number, rLeft: number, rRight: number) => {
+    if (rRight - rLeft < 1 || bottom - top < 1) return;
+    if (rRight <= left || rLeft >= right) return;
+    out.push({ top: toolsRestTop(top), bottom: toolsRestTop(bottom) });
+  };
+  const root = document.getElementById('main-content');
+  if (!root) return out;
+  for (const el of root.querySelectorAll('button, a, input, textarea, select, [role="button"]')) {
+    if (!(el instanceof HTMLElement) || el.closest('[data-page-tools], .sr-only')) continue;
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const r = el.getBoundingClientRect();
+    add(r.top, r.bottom, r.left, r.right);
+  }
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    const parent = node.parentElement;
+    if (parent && node.textContent?.trim() && !parent.closest('.sr-only, [data-page-tools]')) {
+      const cs = getComputedStyle(parent);
+      if (cs.display !== 'none' && cs.visibility !== 'hidden') {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const r of range.getClientRects()) add(r.top, r.bottom, r.left, r.right);
+      }
+    }
+    node = walker.nextNode();
+  }
+  return out;
+}
+
+/** Preferred height, or the nearest clear spot a little above or below it. */
+function placePhoneTools(button: HTMLButtonElement) {
+  if (typeof window.matchMedia !== 'function' || !window.matchMedia('(max-width: 639.98px)').matches) {
+    button.style.top = '';
+    return;
+  }
+  const preferred = phoneToolsPreferredTop();
+  const left = window.innerWidth - 12 - PHONE_TOOLS_WIDTH;
+  const obstacles = toolsColumnObstacles(left - 4, window.innerWidth - 12 + 4);
+  const bar = document.querySelector('header.sticky');
+  const minTop = (bar?.getBoundingClientRect().bottom ?? 0) + 2;
+  const maxTop = window.innerHeight - 80 - PHONE_TOOLS_HEIGHT;
+  const gap = 4;
+  const blocked = (top: number) => {
+    const a = top - gap;
+    const b = top + PHONE_TOOLS_HEIGHT + gap;
+    return obstacles.some((o) => o.bottom > a && o.top < b);
+  };
+  let chosen = preferred;
+  if (blocked(preferred)) {
+    for (let delta = 2; delta <= 40; delta += 2) {
+      const up = preferred - delta;
+      if (up >= minTop && !blocked(up)) {
+        chosen = up;
+        break;
+      }
+      const down = preferred + delta;
+      if (down <= maxTop && !blocked(down)) {
+        chosen = down;
+        break;
+      }
+    }
+  }
+  button.style.top = `${Math.round(chosen * 100) / 100}px`;
+}
 
 /**
  * One group of a page's supporting tools.
@@ -63,6 +160,56 @@ export type PageRailSection = {
  */
 export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { primary } = useLanguagePreference();
+  const pathname = usePathname();
+  // Messages on a phone: the inbox has no conversation menu, so the tools
+  // icon sits under the account initials. A thread offers a slot to the
+  // right of that menu, and the icon moves there.
+  const toolsUnderAccount = pathname === '/messages' || pathname?.startsWith('/messages/');
+  // True while a phone thread is showing its own tools icon, beside the
+  // three dots. The floating pill hides then, so the page has one control.
+  const [threadTools, setThreadTools] = useState(false);
+  useLayoutEffect(() => {
+    if (!toolsUnderAccount || typeof window.matchMedia !== 'function') {
+      setThreadTools(false);
+      return;
+    }
+    const mq = window.matchMedia('(max-width: 639.98px)');
+    let observed: HTMLElement | null = null;
+    // Back to the inbox hides the thread instead of unmounting it, so the
+    // slot stays in the document with no box. Watch that, or the floating
+    // pill would stay gone and the page would have no tools control.
+    const observer = new IntersectionObserver(() => sync());
+    function sync() {
+      const slot = document.querySelector('#main-content [data-messages-tools-anchor]');
+      const shown = mq.matches && slot instanceof HTMLElement && slot.getClientRects().length > 0;
+      setThreadTools(shown);
+      if (slot instanceof HTMLElement && slot !== observed) {
+        if (observed) observer.unobserve(observed);
+        observer.observe(slot);
+        observed = slot;
+      } else if (!(slot instanceof HTMLElement) && observed) {
+        observer.unobserve(observed);
+        observed = null;
+      }
+    }
+    const onAnchor = (event: Event) => {
+      if ((event as CustomEvent<string>).detail === 'unmount') {
+        setThreadTools(false);
+        if (observed) observer.unobserve(observed);
+        observed = null;
+        return;
+      }
+      sync();
+    };
+    sync();
+    window.addEventListener('cfb-messages-tools-anchor', onAnchor);
+    mq.addEventListener('change', sync);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('cfb-messages-tools-anchor', onAnchor);
+      mq.removeEventListener('change', sync);
+    };
+  }, [toolsUnderAccount]);
   const badgeText = (section: PageRailSection) => {
     const badge = section.badge === 0 || section.badge == null ? null : section.badge;
     if (badge == null) return null;
@@ -71,6 +218,13 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   const { pinned, peeked, open, togglePinned, setPeeked, registerRailPresence, registerRailOpener, registerRailSections } = usePageRail();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The thread's tools icon lives in the chat header, outside this sheet, and
+  // asks the sheet to open. The floating trigger is the other way in.
+  useEffect(() => {
+    const open = () => setSheetOpen(true);
+    window.addEventListener('cfb-open-page-tools', open);
+    return () => window.removeEventListener('cfb-open-page-tools', open);
+  }, []);
   const [sheetExpanded, setSheetExpanded] = useState<string | null>(null);
   /* Which section is open at full size. A section is legible in the panel
      and comfortable here; this is the second, not a substitute. */
@@ -79,6 +233,23 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   // trigger to hand focus back to and it fell to <body> on close. The button
   // that opened it is remembered and refocused instead.
   const expandButton = useRef<HTMLButtonElement | null>(null);
+  const toolsButton = useRef<HTMLButtonElement | null>(null);
+  // Phone: the floating icon uses the thread icon's height. A header line
+  // that would run under it shifts the icon a little, on the same right edge.
+  useLayoutEffect(() => {
+    const button = toolsButton.current;
+    if (!button || threadTools) return;
+    const run = () => placePhoneTools(button);
+    run();
+    window.addEventListener('resize', run);
+    const main = document.getElementById('main-content');
+    const observer = main ? new ResizeObserver(run) : null;
+    if (main && observer) observer.observe(main);
+    return () => {
+      window.removeEventListener('resize', run);
+      observer?.disconnect();
+    };
+  }, [threadTools, pathname]);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Tell the frame a rail exists, so the main column reserves the strip and the
@@ -172,6 +343,7 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     return sum + (typeof b === 'number' ? b : 0);
   }, 0);
 
+
   return (
     <TooltipProvider delayDuration={300}>
       {/*
@@ -185,26 +357,33 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
       */}
       <div className="lg:hidden">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              aria-label={bilingualAria(
-                totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
-                totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
-              )}
-              className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-lg sm:bottom-6"
-            >
-              <SlidersHorizontal className="icon-md" aria-hidden="true" />
-              {totalBadge > 0 && (
-                <span
-                  className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-[1.1rem] text-primary-foreground"
-                  aria-hidden="true"
-                >
-                  {totalBadge}
+          {!threadTools && (
+            <SheetTrigger asChild>
+              <button
+                ref={toolsButton}
+                type="button"
+                aria-label={bilingualAria(
+                  totalBadge ? `Page tools, ${totalBadge} active` : 'Page tools',
+                  totalBadge ? `Εργαλεία σελίδας, ${totalBadge} ενεργά` : 'Εργαλεία σελίδας',
+                )}
+                data-page-tools=""
+                className="tap-target fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-11 w-auto min-w-11 items-center justify-center gap-1.5 rounded-full border border-border bg-card px-3 text-foreground shadow-lg sm:bottom-6"
+              >
+                <SlidersHorizontal className="icon-md" aria-hidden="true" />
+                <span className="hidden text-xs font-medium sm:inline">
+                  <BilingualText en="Tools" el="Εργαλεία" compact />
                 </span>
-              )}
-            </button>
-          </SheetTrigger>
+                {totalBadge > 0 && (
+                  <span
+                    className="absolute -right-0.5 -top-0.5 min-w-[1.1rem] rounded-full bg-primary px-1 text-center text-2xs font-semibold leading-[1.1rem] text-primary-foreground"
+                    aria-hidden="true"
+                  >
+                    {totalBadge}
+                  </span>
+                )}
+              </button>
+            </SheetTrigger>
+          )}
           <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
             <SheetHeader className="text-left">
               <SheetTitle><BilingualText en="Page tools" el="Εργαλεία σελίδας" /></SheetTitle>

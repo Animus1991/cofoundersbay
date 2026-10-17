@@ -417,7 +417,7 @@ export function ResearchTemplateTile({
         <CfbGlyph name={glyph} className="icon-sm" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="page-section font-semibold leading-snug">
+        <div className="card-title">
           {copy ? <BilingualText en={copy.name.en} el={copy.name.el} compact wrap /> : template.name}
         </div>
         <div className="mt-1 text-xs leading-snug text-muted-foreground">
@@ -430,7 +430,7 @@ export function ResearchTemplateTile({
         {/* Pills, so three tags and a count do not read as one phrase. */}
         <div className="mt-2 flex flex-wrap items-center gap-1.5 text-2xs text-muted-foreground">
           {template.tags.map((tag) => (
-            <span key={tag} className="rounded-md bg-muted/70 px-1.5 py-0.5">
+            <span key={tag}>
               <BilingualText en={tag} el={RESEARCH_TAG_EL[tag] ?? tag} compact />
             </span>
           ))}

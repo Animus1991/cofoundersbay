@@ -1,0 +1,40 @@
+{
+  "cardType": [
+    {
+      "route": "/commitments/",
+      "reason": "Thread workspace: each colour is a state (offer changed, you accepted, terms step)."
+    },
+    {
+      "route": "/projects",
+      "reason": "Stage and outcome are two different states, each a pill."
+    }
+  ],
+  "cardTypeNotes": [
+    "line-clamp-2 descriptions are a two-line preview; the item page has the full text.",
+    "Removable chips, active filters, API scopes, webhook events, match reasons and the Alliance preview are controls, identifiers or marks, each with a reason in factPills.test.ts.",
+    "Course stays untranslated by the learning glossary."
+  ],
+  "clarity": [
+    { "route": "/research/", "reason": "Canvas glyphs and shadows live outside #main-content." },
+    { "route": "/settings", "reason": "The danger zone is a warning tint." },
+    { "route": "/matches/", "reason": "Timezone callout." },
+    { "route": "/commitments/", "reason": "Chat bubbles, offer-changed callout, ladder steps." },
+    { "route": "/profile/edit", "reason": "Skill and language fields." },
+    { "route": "/projects", "reason": "A pill for the work asked for." },
+    { "route": "/events/create", "reason": "In person / online is a control." },
+    { "route": "/tenant/branding", "reason": "Live preview." },
+    { "route": "/tenant/domains", "reason": "Empty drop target." },
+    { "route": "/admin/analytics", "reason": "Chart legends." },
+    { "route": "/pricing", "reason": "Comparison table." },
+    { "route": "/admin/sso", "reason": "Name and slug are two facts." },
+    { "route": "/admin/tenants", "reason": "Name and slug are two facts." },
+    { "route": "/saved-searches", "reason": "Name and query." },
+    { "route": "/commitments/new", "reason": "Card preview." },
+    { "route": "/p/", "reason": "Endorsement count." },
+    { "route": "/achievements", "reason": "Illustrated empty state." },
+    { "route": "/t/", "reason": "Marketing, centred." },
+    { "route": "/login", "reason": "Auth, centred." },
+    { "route": "/register", "reason": "Auth, centred." },
+    { "route": "/share/", "reason": "Share page, centred." }
+  ]
+}

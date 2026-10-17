@@ -39,8 +39,10 @@ import type { PageRailSection } from '@/components/layout/PageRail';
 import { BilingualText } from '@/components/common/BilingualText';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -71,8 +73,9 @@ import {
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Counter } from '@/components/ui/counter';
 
 // Types
 interface Document {
@@ -495,7 +498,7 @@ export default function DataRoomPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
           <TabsTrigger value="documents"><BilingualText en="Documents" el="Έγγραφα" compact /></TabsTrigger>
-          <TabsTrigger value="investors">Investors ({investors.length})</TabsTrigger>
+          <TabsTrigger value="investors"><BilingualText en="Investors" el="Επενδυτές" compact /><Counter value={investors.length} /></TabsTrigger>
           <TabsTrigger value="activity"><BilingualText en="Activity" el="Δραστηριότητα" compact /></TabsTrigger>
           <TabsTrigger value="settings"><BilingualText en="Settings" el="Ρυθμίσεις" compact /></TabsTrigger>
         </TabsList>
@@ -525,14 +528,14 @@ export default function DataRoomPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button aria-label="List view" aria-pressed={viewMode === 'list'}
+                  <Button aria-label={bilingualAria('List view', 'Προβολή λίστας')} aria-pressed={viewMode === 'list'}
                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('list')}
                   >
                     <List className="icon-sm" />
                   </Button>
-                  <Button aria-label="Grid view" aria-pressed={viewMode === 'grid'}
+                  <Button aria-label={bilingualAria('Grid view', 'Προβολή πλέγματος')} aria-pressed={viewMode === 'grid'}
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
@@ -653,17 +656,28 @@ export default function DataRoomPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  // Documents inside the list's card are rows, not cards in a
+                  // card: the file's mark and name with its size and date
+                  // under it, the menu at the right, the access and views on
+                  // the mark's edge.
+                  <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 lg:grid-cols-3">
                     {filteredDocuments.map((document) => {
                       const FileIcon = getFileIcon(document.type);
                       return (
-                        <Card key={document.id} className="group">
-                          <CardContent>
-                            <div className="flex items-start justify-between">
-                              <FileIcon className="h-10 w-10 text-muted-foreground" />
+                        <div key={document.id} className="group min-w-0 space-y-2">
+                          <RowHead
+                            mark={(
+                              <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                                <FileIcon className="icon-md" aria-hidden="true" />
+                              </div>
+                            )}
+                            title={<span className="block truncate">{document.name}</span>}
+                            subtitle={<>{formatFileSize(document.size)} · {formatDate(document.uploadedAt)}</>}
+                            asideStays
+                            aside={(
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button aria-label="More options"
+                                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
                                     variant="ghost"
                                     size="icon"
                                     // focus-visible too: a keyboard user tabbing onto an
@@ -681,13 +695,9 @@ export default function DataRoomPage() {
                                   <UnavailableMenuItem className="text-destructive-accessible" en="Delete" el="Διαγραφή" reasonEn="Sample document - no file storage yet." reasonEl="Δείγμα - δεν υπάρχει ακόμη αποθήκευση αρχείων." />
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                            <div className="mt-4">
-                              <p className="font-medium truncate">{document.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {formatFileSize(document.size)} • {formatDate(document.uploadedAt)}
-                              </p>
-                              <div className="flex items-center gap-2 mt-3">
+                            )}
+                          />
+                              <div className="flex items-center gap-2">
                                 {document.isPublic ? (
                                   <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                                     <BilingualText en="Public" el="Δημόσιο" compact />
@@ -697,14 +707,11 @@ export default function DataRoomPage() {
                                     <BilingualText en="Private" el="Ιδιωτικό" compact />
                                   </Badge>
                                 )}
-                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Eye className="icon-sm" />
-                                  {document.viewCount}
+                                <span className="text-xs text-muted-foreground tabular-nums">
+                                  <BilingualText en={`${document.viewCount} views`} el={`${document.viewCount} προβολές`} compact />
                                 </span>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                        </div>
                       );
                     })}
                   </div>
@@ -865,36 +872,42 @@ export default function DataRoomPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Require NDA" el="Απαίτηση NDA" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Require NDA" el="Απαίτηση NDA" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Require investors to sign NDA before accessing" el="Οι επενδυτές υπογράφουν NDA πριν την πρόσβαση" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Configure" el="Ρύθμιση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Configure" el="Ρύθμιση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Email Notifications" el="Ειδοποιήσεις email" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Notify when documents are accessed or downloaded" el="Ειδοποίηση όταν τα έγγραφα ανοίγονται ή κατεβαίνουν" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Configure" el="Ρύθμιση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Configure" el="Ρύθμιση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium"><BilingualText en="Download Watermarking" el="Υδατογράφημα λήψεων" compact /></p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm font-medium"><BilingualText en="Download Watermarking" el="Υδατογράφημα λήψεων" compact /></p>
+                    <p className="text-xs text-muted-foreground">
                       <BilingualText en="Add investor email watermark to downloaded PDFs" el="Υδατογράφημα με το email του επενδυτή στα PDF που κατεβαίνουν" wrap />
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="The data room has no storage backend yet">
-                    <BilingualText en="Enable" el="Ενεργοποίηση" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="outline" size="sm" disabled>
+                      <BilingualText en="Enable" el="Ενεργοποίηση" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
               </CardContent>
             </Card>
@@ -917,10 +930,12 @@ export default function DataRoomPage() {
                   <p className="text-sm text-muted-foreground">Elena Papadopoulos</p>
                 </div>
                 <div className="pt-4 border-t">
-                  <Button variant="destructive" size="sm" disabled title="The data room has no storage backend yet">
-                    <Trash2 className="icon-sm mr-2" aria-hidden="true" />
-                    <BilingualText en="Delete Room" el="Διαγραφή χώρου" compact />
-                  </Button>
+                  <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+                    <Button variant="destructive" size="sm" disabled>
+                      <Trash2 className="icon-sm mr-2" aria-hidden="true" />
+                      <BilingualText en="Delete Room" el="Διαγραφή χώρου" compact />
+                    </Button>
+                  </WithDisabledReason>
                 </div>
               </CardContent>
             </Card>
@@ -969,7 +984,9 @@ export default function DataRoomPage() {
             <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
               <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
-            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Upload" el="Μεταφόρτωση" compact /></Button>
+            <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+              <Button disabled><BilingualText en="Upload" el="Μεταφόρτωση" compact /></Button>
+            </WithDisabledReason>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1009,7 +1026,9 @@ export default function DataRoomPage() {
             </Button>
             {/* Every button that would write here had no handler; with no
                 storage behind the room they say so rather than pretend. */}
-            <Button disabled title="The data room has no storage backend yet"><BilingualText en="Send Invite" el="Αποστολή πρόσκλησης" compact /></Button>
+            <WithDisabledReason reasonEn="The data room has no storage backend yet" reasonEl="Ο χώρος εγγράφων δεν έχει ακόμη αποθήκευση">
+              <Button disabled><BilingualText en="Send Invite" el="Αποστολή πρόσκλησης" compact /></Button>
+            </WithDisabledReason>
           </DialogFooter>
         </DialogContent>
       </Dialog>

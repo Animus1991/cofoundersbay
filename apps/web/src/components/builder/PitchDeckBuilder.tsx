@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useId } from 'react';
 import Link from 'next/link';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { fundraisingRoundView, fmtMoney } from '@/lib/fundraising-demo';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageRail, type PageRailSection } from '@/components/layout/PageRail';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -53,7 +53,6 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import {
   BUILDER_BTN,
-  BUILDER_CARD_TITLE,
   BuilderAskAiButton,
   BuilderStageHeader,
   useAskInPlace,
@@ -795,7 +794,7 @@ export function PitchDeckBuilder({
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="deckType" className="text-xs text-muted-foreground">
+            <Label htmlFor="deckType" className="text-muted-foreground">
               <BilingualText en={builderEn('pitch_deck_type')} el={builderEl('pitch_deck_type')} compact />
             </Label>
             <Select
@@ -1046,13 +1045,13 @@ export function PitchDeckBuilder({
       {data.slides.length === 0 ? (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+            <CardTitle className="flex items-center gap-2">
               <CfbGlyph name="flag" className="icon-sm" />
               <BilingualText en={builderEn('pitch_outline')} el={builderEl('pitch_outline')} compact />
             </CardTitle>
-            <p className="text-xs leading-snug text-muted-foreground">
+            <CardDescription>
               <BilingualText en={builderEn('pitch_outline_hint')} el={builderEl('pitch_outline_hint')} />
-            </p>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -1078,7 +1077,7 @@ export function PitchDeckBuilder({
                   key={template.type}
                   type="button"
                   onClick={() => addSlide(template.type)}
-                  className="flex min-h-11 items-start gap-3 rounded-2xl border border-border bg-card p-3 text-left transition-colors hover:border-border hover:bg-muted/30"
+                  className="flex min-h-11 items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/20 hover:bg-muted/30"
                 >
                   <span className="mt-0.5 w-5 shrink-0 font-mono text-xs text-muted-foreground">{index + 1}</span>
                   <CfbGlyph name={template.glyph} className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
@@ -1107,7 +1106,7 @@ export function PitchDeckBuilder({
               {missingTemplates.length > 0 && (
                 <Card className="min-w-0 border-status-warning-border/50">
                   <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                    <CardTitle className="flex items-center gap-2">
                       <AlertTriangle className={cn('icon-sm shrink-0', STATUS.warning.icon)} aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_missing')} el={builderEl('pitch_missing')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{missingTemplates.length}</span>
@@ -1135,7 +1134,7 @@ export function PitchDeckBuilder({
               {emptySlides.length > 0 && (
                 <Card className="min-w-0">
                   <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 pb-3">
-                    <CardTitle className={cn(BUILDER_CARD_TITLE, 'flex items-center gap-2')}>
+                    <CardTitle className="flex items-center gap-2">
                       <CfbGlyph name="spark" className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                       <BilingualText en={builderEn('pitch_next_write')} el={builderEl('pitch_next_write')} compact />
                       <span className="font-normal tabular-nums text-muted-foreground">{emptySlides.length}</span>
@@ -1171,7 +1170,7 @@ export function PitchDeckBuilder({
             <div className="order-2 min-w-0 space-y-4 lg:order-1 lg:col-span-1">
               <Card className="min-w-0">
                 <CardHeader className="py-3">
-                  <CardTitle className="text-sm">
+                  <CardTitle>
                     <BilingualText en={builderEn('pitch_slides')} el={builderEl('pitch_slides')} compact />
                   </CardTitle>
                 </CardHeader>
@@ -1255,23 +1254,17 @@ export function PitchDeckBuilder({
                 <Card className="min-w-0">
                   <CardHeader className="flex flex-col gap-3 space-y-0">
                     <div className="flex min-w-0 items-center gap-2">
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-muted-foreground">
-                            {currentSlideIndex + 1}/{data.slides.length}
-                          </span>
-                          <Input
-                            value={displayedSlideTitle(currentSlide)}
-                            onChange={(event) => updateSlide('title', event.target.value)}
-                            className="h-10 w-full min-w-0 rounded-xl font-semibold"
-                            aria-label={bilingualAria('Slide title', 'Τίτλος διαφάνειας')}
-                          />
-                        </CardTitle>
-                      </div>
+                      <CardTitle className="min-w-0 flex-1 tabular-nums">
+                        <BilingualText
+                          en={`Slide ${currentSlideIndex + 1} of ${data.slides.length}`}
+                          el={`Διαφάνεια ${currentSlideIndex + 1} από ${data.slides.length}`}
+                          compact
+                        />
+                      </CardTitle>
                       <Button
                         variant="outline"
                         size="icon"
-                        className="ml-auto h-10 w-10 shrink-0 rounded-xl"
+                        className="ml-auto h-10 w-10 shrink-0"
                         onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                         disabled={currentSlideIndex === 0}
                         aria-label={bilingualAria(builderEn('pitch_prev'), builderEl('pitch_prev'))}
@@ -1281,7 +1274,7 @@ export function PitchDeckBuilder({
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-10 w-10 shrink-0 rounded-xl"
+                        className="h-10 w-10 shrink-0"
                         onClick={() =>
                           setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))
                         }
@@ -1358,6 +1351,18 @@ export function PitchDeckBuilder({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor={`${fieldId}-title`}>
+                        <BilingualText en="Slide title" el="Τίτλος διαφάνειας" compact />
+                      </Label>
+                      <Input
+                        id={`${fieldId}-title`}
+                        value={displayedSlideTitle(currentSlide)}
+                        onChange={(event) => updateSlide('title', event.target.value)}
+                        className="mt-1.5 w-full min-w-0 font-semibold"
+                        aria-label={bilingualAria('Slide title', 'Τίτλος διαφάνειας')}
+                      />
+                    </div>
                     {viewMode === 'edit' ? (
                       <>
                         <div>
@@ -1375,7 +1380,7 @@ export function PitchDeckBuilder({
                             value={currentSlide.content}
                             onChange={(event) => updateSlide('content', event.target.value)}
                             placeholder={t(builderEn('pitch_content_ph'), builderEl('pitch_content_ph'))}
-                            className="min-h-[180px] rounded-xl text-sm sm:min-h-[250px]"
+                            className="min-h-[180px] text-sm sm:min-h-[250px]"
                           />
                         </div>
                         <div>
@@ -1387,7 +1392,7 @@ export function PitchDeckBuilder({
                             value={currentSlide.notes}
                             onChange={(event) => updateSlide('notes', event.target.value)}
                             placeholder={t(builderEn('pitch_notes_ph'), builderEl('pitch_notes_ph'))}
-                            className="min-h-[80px] rounded-xl text-sm"
+                            className="mt-1.5 min-h-[80px] text-sm"
                           />
                         </div>
                       </>

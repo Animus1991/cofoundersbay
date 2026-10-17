@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RelativeTime } from '@/components/common/RelativeTime';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useMessaging, useMessagingUnreadCount } from '@/contexts/MessagingContext';
@@ -90,64 +91,66 @@ function mapMessage(m: MessageItem, myId: string): PopupMessage {
   };
 }
 
+/** 24-hour digits read the same in both languages ("15:42"). */
 function formatTime(d: Date) {
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 }
 
 // ── Messaging sub-components ───────────────────────────────────────────────────
 
 function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: boolean; onClick: () => void }) {
   const previewEl = PREVIEW_MESSAGE_EL[conv.lastMessage];
+  const unread = conv.unreadCount > 0;
+  // A conversation row (RowHead: rows of a list, not cards): the person's
+  // mark, the name, the last message on the line under it, the time and the
+  // unread count at the right.
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+        'block w-full rounded-lg p-3 text-left transition-colors',
         selected ? 'bg-primary/10' : 'hover:bg-muted/60',
       )}
     >
-      <div className="relative shrink-0">
-        <Avatar className="h-9 w-9">
-          <AvatarImage src={conv.recipientAvatar ?? undefined} />
-          <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
-            {conv.recipientName[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        {conv.isOnline && (
-          <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-status-success-mark ring-2 ring-background" />
+      <RowHead
+        asideStays
+        mark={(
+          <div className="relative">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={conv.recipientAvatar ?? undefined} />
+              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
+                {conv.recipientName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {conv.isOnline && (
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-status-success-mark ring-2 ring-background" />
+            )}
+          </div>
         )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-1">
-          <span className={cn(
-            'text-sm truncate',
-            conv.unreadCount > 0 ? 'font-semibold text-foreground' : 'font-medium text-foreground/90',
-          )}>
-            {conv.recipientName}
-          </span>
-          <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
-            <RelativeTime date={conv.lastMessageTime} short />
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-1 mt-0.5">
-          <p className={cn(
-            'text-xs truncate',
-            conv.unreadCount > 0 ? 'text-foreground/75 font-medium' : 'text-muted-foreground',
-          )}>
+        title={<span className={cn('block truncate', unread ? 'font-semibold' : 'text-foreground/90')}>{conv.recipientName}</span>}
+        subtitle={(
+          <span className={cn('block truncate', unread && 'font-medium text-foreground/75')}>
             {conv.lastMessage
               ? (previewEl
                 ? <BilingualText en={conv.lastMessage} el={previewEl} compact />
                 : conv.lastMessage)
               : <BilingualText en={messagesEn('no_messages_yet_short')} el={messagesEl('no_messages_yet_short')} compact />}
-          </p>
-          {conv.unreadCount > 0 && (
-            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground shrink-0">
-              {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+          </span>
+        )}
+        aside={(
+          <>
+            <span className="tabular-nums">
+              <RelativeTime date={conv.lastMessageTime} short />
             </span>
-          )}
-        </div>
-      </div>
+            {unread && (
+              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground shrink-0">
+                {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
+              </span>
+            )}
+          </>
+        )}
+      />
     </button>
   );
 }
@@ -598,6 +601,7 @@ export function UnifiedChatPopup() {
     <div
       ref={popupRef}
       tabIndex={-1}
+      data-chat-popup=""
       className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-modal animate-in fade-in slide-in-from-bottom-4 duration-200 focus:outline-none bottom-6 right-6"
       role="dialog"
       aria-label={bilingualAria('Chat', 'Συνομιλία')}
@@ -612,7 +616,7 @@ export function UnifiedChatPopup() {
         {...dragHandleProps}
         className={cn(
           'flex shrink-0 items-center gap-1.5 border-b border-white/10 bg-primary px-2 py-2',
-          isDragging ? 'cursor-grabbing' : 'cursor-grab',
+          isDragging ? 'cursor-grabbing' : 'cursor-grab max-sm:cursor-default',
         )}
         tabIndex={0}
         style={dragHandleProps.style}
@@ -664,7 +668,7 @@ export function UnifiedChatPopup() {
           type="button"
           onClick={minimize}
           onMouseDown={(e) => e.stopPropagation()}
-          className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/20 focus-ring sm:h-8 sm:w-8"
+          className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-white/20 focus-ring lg:inline-flex"
           aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
           title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}
         >
@@ -808,10 +812,13 @@ export function UnifiedChatPopup() {
                                 </AvatarFallback>
                               </Avatar>
                             )}
-                            <div className={cn(
-                              'max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed',
-                              isMe ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-muted text-foreground',
-                            )}>
+                            <div
+                              data-own-message={isMe ? '' : undefined}
+                              className={cn(
+                                'max-w-[75%] rounded-2xl px-3 py-2 text-sm leading-relaxed',
+                                isMe ? 'rounded-br-sm bg-primary text-primary-foreground' : 'rounded-bl-sm bg-muted text-foreground',
+                              )}
+                            >
                               {PREVIEW_MESSAGE_EL[msg.content]
                                 ? <BilingualText en={msg.content} el={PREVIEW_MESSAGE_EL[msg.content]} />
                                 : msg.content}

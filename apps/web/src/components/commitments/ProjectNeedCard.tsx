@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { listCommitmentCards } from '@/lib/commitments-api';
 import { CMT } from '@/lib/i18n/strings-commitments';
 import { qk } from '@/lib/query-keys';
@@ -29,12 +30,13 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
   if (!card) {
     if (!owned) return null;
     return (
-      <Card className="border-primary/15 bg-primary/[0.03]">
-        <CardContent className="flex flex-wrap items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground"><BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact /></p>
-            <p className="text-xs text-muted-foreground"><BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap /></p>
-          </div>
+      <Card className="border-primary-muted bg-primary-subtle">
+        <CardContent className="space-y-3">
+          <CardHead
+            titleAs="p"
+            title={<BilingualText en={CMT.write_card.en} el={CMT.write_card.el} compact />}
+            subtitle={<BilingualText en={CMT.guide_intro.en} el={CMT.guide_intro.el} wrap />}
+          />
           <Button size="sm" asChild>
             <Link href={`/commitments/new?project=${encodeURIComponent(projectId)}`}>
               <BilingualText en={CMT.two_minutes.en} el={CMT.two_minutes.el} compact />
@@ -44,11 +46,14 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
       </Card>
     );
   }
+  // The section's name sits above the card, not as a small heading inside
+  // it: inside, it outranked nothing and sat over the card's own title.
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-muted-foreground"><BilingualText en={CMT.needs_cards.en} el={CMT.needs_cards.el} compact /></CardTitle>
-      </CardHeader>
+    <section aria-labelledby={`project-need-${projectId}`} className="space-y-3">
+      <h2 id={`project-need-${projectId}`} className="text-base font-semibold text-foreground">
+        <BilingualText en={CMT.needs_cards.en} el={CMT.needs_cards.el} compact />
+      </h2>
+      <Card>
       <CardContent>
         <NeedCard
           card={card}
@@ -67,6 +72,7 @@ export function ProjectNeedCard({ projectId, owned }: { projectId: string; owned
           }
         />
       </CardContent>
-    </Card>
+      </Card>
+    </section>
   );
 }

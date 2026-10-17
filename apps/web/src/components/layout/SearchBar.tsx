@@ -10,6 +10,9 @@ import {
 } from '@/lib/i18n/LanguagePreferenceContext';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { useI18n } from '@/components/common/I18nProvider';
+import { bilingualAria } from '@/lib/i18n/format';
+import { NAV_LINK_DESCRIPTIONS } from '@/lib/nav-descriptions';
+import { getNavDescriptionEl } from '@/lib/i18n/strings-nav';
 
 const SEARCH_EN = 'Search founders, mentors, skills…';
 const SEARCH_EL = 'Αναζήτηση ιδρυτών, μεντόρων, δεξιοτήτων…';
@@ -40,6 +43,7 @@ export function SearchBar() {
           className="pl-9"
           lang={resolved.primaryLang}
           aria-label={t('Search')}
+          title={bilingualAria(NAV_LINK_DESCRIPTIONS['/search'], getNavDescriptionEl('/search'))}
         />
       </form>
       <Button
@@ -49,6 +53,7 @@ export function SearchBar() {
         className="h-9 w-9 shrink-0 md:hidden"
         onClick={() => router.push('/search')}
         aria-label={t('Search')}
+        title={bilingualAria(NAV_LINK_DESCRIPTIONS['/search'], getNavDescriptionEl('/search'))}
       >
         <CfbGlyph name="search" className="icon-md" />
       </Button>

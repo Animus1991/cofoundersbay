@@ -11,7 +11,7 @@ type StatCardProps = {
   className?: string;
 };
 
-export function StatCard({ label, value, icon, trend, className }: StatCardProps) {
+export function StatCard({ label, value, trend, className }: StatCardProps) {
   const trendColor = trend
     ? trend.value >= 0
       ? TREND.up
@@ -36,11 +36,6 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
             </p>
           )}
         </div>
-        {icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible transition-transform group-hover:scale-110 group-hover:bg-primary/20">
-            {icon}
-          </div>
-        )}
       </div>
     </Card>
   );

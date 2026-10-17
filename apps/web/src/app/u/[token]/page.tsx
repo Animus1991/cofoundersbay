@@ -58,7 +58,7 @@ export default function PublicUpdatePage() {
             <Card>
               <CardContent className="space-y-3">
                 <p className="text-sm text-foreground">
-                  <BilingualText en={`Follow ${update.author.displayName} on CoFounderBay to get the next update.`} el={`Ακολουθήστε τον/την ${update.author.displayName} στο CoFounderBay για την επόμενη ενημέρωση.`} wrap />
+                  <BilingualText en={`Follow ${update.author.displayName} on CoFounderBay to get the next update.`} el={`Για την επόμενη ενημέρωση, ακολουθήστε στο CoFounderBay: ${update.author.displayName}.`} wrap />
                 </p>
                 <Button asChild>
                   <Link href={join}><BilingualText en="Join CoFounderBay" el="Εγγραφή στο CoFounderBay" compact /></Link>

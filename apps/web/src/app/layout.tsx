@@ -60,7 +60,7 @@ const coMarkFont = Manrope({
 });
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
-import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
+import { DemoSessionBanner, NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoleProvider } from '@/contexts/RoleContext';
@@ -82,6 +82,7 @@ import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
 import { I18nProvider } from '@/components/common/I18nProvider';
 import { DomI18n } from '@/components/common/DomI18n';
 import { PhonePlaceholderFit } from '@/components/layout/PhonePlaceholderFit';
+import { IosFieldZoom } from '@/components/layout/IosFieldZoom';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 
 export const metadata: Metadata = {
@@ -120,6 +121,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   // Do NOT lock zoom: maximumScale/userScalable:false fails WCAG 2.2 SC 1.4.4 (Resize Text)
   // and SC 1.4.10 (Reflow). Users must be able to pinch-zoom up to at least 5x.
+  // IosFieldZoom caps it on iOS only, where pinch zoom ignores the cap.
   maximumScale: 5,
   viewportFit: 'cover',
 };
@@ -165,12 +167,14 @@ export default function RootLayout({
                                     <PreviewSessionGuard />
                                     <DomI18n>
                                     <PhonePlaceholderFit />
+                                    <IosFieldZoom />
                                       {/* Above both the page and the floating
                                           assistant, because the page writes
                                           what is on screen and the assistant
                                           reads it. */}
                                       <PageSnapshotProvider>
                                       <OfflineBanner />
+                                      <DemoSessionBanner />
                                       {children}
                                       <GlobalFloatingUi />
                                       <Suspense fallback={null}>

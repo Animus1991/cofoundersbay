@@ -89,7 +89,7 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
     <div
       key={mountKey}
       className={cn(
-        'relative rounded-xl border p-4 shadow-sm transition-all',
+        'relative rounded-xl border p-4 transition-all',
         PRIORITY_STYLES[action.priority],
         className,
       )}
@@ -103,21 +103,21 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
         <X className="icon-sm" />
       </button>
 
-      <div className="flex items-start gap-3 pr-6">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background">
-          <CfbGlyph name={glyph} className="icon-sm text-muted-foreground" />
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <p className="text-sm font-semibold leading-snug text-foreground">{action.title}</p>
-          <p className="text-xs leading-relaxed text-muted-foreground">{action.description}</p>
-          <div className="pt-1.5">
-            <Button size="sm" className="h-9 gap-1.5 px-3 text-xs" asChild>
-              <Link href={action.ctaHref}>
-                {action.ctaLabel}
-                <ArrowRight className="icon-sm" />
-              </Link>
-            </Button>
-          </div>
+      {/* One left axis, like every card's body: the title, the sentence and
+          the action start on the same edge, not in a column beside a well. */}
+      <div className="space-y-1.5 pr-6">
+        <p className="flex items-center gap-2 text-sm font-semibold leading-snug text-foreground">
+          <CfbGlyph name={glyph} className="icon-sm shrink-0 text-muted-foreground" />
+          <span className="min-w-0">{action.title}</span>
+        </p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{action.description}</p>
+        <div className="pt-1.5">
+          <Button size="sm" className="h-9 gap-1.5 px-3 text-xs" asChild>
+            <Link href={action.ctaHref}>
+              {action.ctaLabel}
+              <ArrowRight className="icon-sm" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

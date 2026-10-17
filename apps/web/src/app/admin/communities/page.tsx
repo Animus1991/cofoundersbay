@@ -3,15 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Users2,
   Search,
   Plus,
   MoreVertical,
   Globe,
   Lock,
   Shield,
-  MessageSquare,
-  Calendar,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -57,6 +54,10 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { RailStats } from '@/components/layout/RailParts';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { FactLine } from '@/components/common/FactLine';
 
 /**
  * The page's own row from a group.
@@ -123,95 +124,94 @@ function CommunityCard({
   };
 
   return (
-    <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="h-12 w-12 rounded-lg">
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
-              {community.name[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Link href={`/groups/${community.id}`} className="font-medium hover:text-primary-accessible transition-colors">
-                    {community.name}
-                  </Link>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    {visibilityIcons[community.visibility]}
-                    <StatusText value={community.visibility} />
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground"><StatusText value={community.category} /></p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs', statusColors[community.status])}>
-                  <StatusText value={community.status} />
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" aria-hidden="true" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/groups/${community.id}`}><BilingualText en="View Community" el="Προβολή κοινότητας" compact /></Link>
-                    </DropdownMenuItem>
-                    {/* All five below had no handler, and both links above
-                        pointed at /communities/:id, a route that does not
-                        exist - the groups surface is /groups/[groupId]. */}
-                    <DropdownMenuItem onSelect={() => onEdit(community)}><BilingualText en="Edit Settings" el="Επεξεργασία ρυθμίσεων" compact /></DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/groups/${community.id}?section=members`}><BilingualText en="Manage Members" el="Διαχείριση μελών" compact /></Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin/reports"><BilingualText en="View Reports" el="Προβολή αναφορών" compact /></Link>
-                    </DropdownMenuItem>
-                    <UnavailableMenuItem
-                      className="text-status-warning"
-                      en="Archive"
-                      el="Αρχειοθέτηση"
-                      reasonEn="Groups have no archived state in the schema yet."
-                      reasonEl="Οι ομάδες δεν έχουν ακόμη κατάσταση αρχειοθέτησης."
-                    />
-                    <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(community)}>
-                      <BilingualText en="Delete" el="Διαγραφή" compact />
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+    // The Endorsements card's anatomy: the community's rounded square, the
+    // name over its category and reach, the state and the menu at the right,
+    // the sentence and the facts on the mark's edge.
+    <Card className="transition-all hover:border-primary/20">
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Link href={`/groups/${community.id}`} aria-label={bilingualInline(`Open ${community.name}`, `Άνοιγμα: ${community.name}`)}>
+              <Avatar className="h-10 w-10 rounded-xl">
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
+                  {community.name[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
+          title={(
+            <Link href={`/groups/${community.id}`} className="transition-colors hover:text-primary-accessible">
+              {community.name}
+            </Link>
+          )}
+          subtitle={(
+            <FactLine
+              className="text-sm"
+              items={[
+                community.category ? <StatusText key="category" value={community.category} /> : null,
+                <span key="visibility" className="inline-flex items-center gap-1">
+                  {visibilityIcons[community.visibility]}
+                  <StatusText value={community.visibility} />
+                </span>,
+              ]}
+            />
+          )}
+          asideStays
+          aside={(
+            <>
+              <Badge variant="outline" className={cn('text-xs', statusColors[community.status])}>
+                <StatusText value={community.status} />
+              </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${community.id}`}><BilingualText en="View Community" el="Προβολή κοινότητας" compact /></Link>
+                </DropdownMenuItem>
+                {/* All five below had no handler, and both links above
+                    pointed at /communities/:id, a route that does not
+                    exist - the groups surface is /groups/[groupId]. */}
+                <DropdownMenuItem onSelect={() => onEdit(community)}><BilingualText en="Edit Settings" el="Επεξεργασία ρυθμίσεων" compact /></DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/groups/${community.id}?section=members`}><BilingualText en="Manage Members" el="Διαχείριση μελών" compact /></Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/reports"><BilingualText en="View Reports" el="Προβολή αναφορών" compact /></Link>
+                </DropdownMenuItem>
+                <UnavailableMenuItem
+                  className="text-status-warning"
+                  en="Archive"
+                  el="Αρχειοθέτηση"
+                  reasonEn="Groups have no archived state in the schema yet."
+                  reasonEl="Οι ομάδες δεν έχουν ακόμη κατάσταση αρχειοθέτησης."
+                />
+                <DropdownMenuItem className="text-destructive-accessible" onSelect={() => onDelete(community)}>
+                  <BilingualText en="Delete" el="Διαγραφή" compact />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            </>
+          )}
+        />
 
-            {community.description && (
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                {community.description}
-              </p>
-            )}
+        {community.description && (
+          <p className="card-body line-clamp-2 text-muted-foreground first-letter:uppercase">
+            {community.description}
+          </p>
+        )}
 
-            <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Users2 className="icon-sm" />
-                <BilingualText en={`${community.memberCount} members`} el={`${community.memberCount} μέλη`} compact />
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageSquare className="icon-sm" />
-                <BilingualText en={`${community.postCount} posts`} el={`${community.postCount} αναρτήσεις`} compact />
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
-                <RelativeTime date={community.createdAt} format={formatRelativeTime} />
-              </span>
-              {community.tenant && (
-                <span className="flex items-center gap-1">
-                  <Shield className="icon-sm" />
-                  {community.tenant}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        <FactLine
+          items={[
+            <BilingualText key="members" en={`${community.memberCount} members`} el={`${community.memberCount} μέλη`} compact />,
+            <BilingualText key="posts" en={`${community.postCount} posts`} el={`${community.postCount} αναρτήσεις`} compact />,
+            <span key="created"><BilingualText en="Created" el="Δημιουργήθηκε" compact /> <RelativeTime date={community.createdAt} format={formatRelativeTime} /></span>,
+            community.tenant ? <span key="tenant">{community.tenant}</span> : null,
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -271,6 +271,8 @@ export default function AdminCommunitiesPage() {
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
   const { success, error: toastError } = useToast();
+  const { primary } = useLanguagePreference();
+  const numberLocale = primary === 'el' ? 'el-GR' : 'en-GB';
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState<string>('all');
@@ -397,19 +399,14 @@ export default function AdminCommunitiesPage() {
       labelEl: 'Στατιστικά κοινοτήτων',
       badge: communities.filter((c) => c.status === 'flagged').length || null,
       content: (
-        <div className="space-y-2">
-          {[
-            { label: 'Total Communities', labelEl: 'Σύνολο κοινοτήτων', value: communities.length },
-            { label: 'Total Members', labelEl: 'Σύνολο μελών', value: communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB') },
-            { label: 'Total Posts', labelEl: 'Σύνολο αναρτήσεων', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB') },
-            { label: 'Flagged', labelEl: 'Με σήμανση', value: communities.filter((c) => c.status === 'flagged').length, danger: true },
-          ].map(({ label, labelEl, value, danger }) => (
-            <div key={label} className="rounded-lg border border-border p-3">
-              <p className="text-sm text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-              <p className={cn('page-stat mt-1 text-xl font-bold tabular-nums', danger && 'text-status-danger')}>{value}</p>
-            </div>
-          ))}
-        </div>
+        <RailStats
+          items={[
+            { key: 'communities', label: 'Total Communities', labelEl: 'Σύνολο κοινοτήτων', value: communities.length },
+            { key: 'members', label: 'Total Members', labelEl: 'Σύνολο μελών', value: communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString(numberLocale) },
+            { key: 'posts', label: 'Total Posts', labelEl: 'Σύνολο αναρτήσεων', value: communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString(numberLocale) },
+            { key: 'flagged', label: 'Flagged', labelEl: 'Με σήμανση', value: <span className="text-status-danger">{communities.filter((c) => c.status === 'flagged').length}</span> },
+          ]}
+        />
       ),
     },
     {
@@ -501,12 +498,11 @@ export default function AdminCommunitiesPage() {
           ))}
           {filteredCommunities.length === 0 && (
             <Card>
-              <CardContent className="py-12 text-center">
-                <Users2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
-                <h3 className="font-medium"><BilingualText en="No communities found" el="Δεν βρέθηκαν κοινότητες" compact /></h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  <BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact />
-                </p>
+              <CardContent>
+                <CardHead
+                  title={<BilingualText en="No communities found" el="Δεν βρέθηκαν κοινότητες" compact wrap />}
+                  subtitle={<BilingualText en="Try adjusting your filters" el="Δοκιμάστε να αλλάξετε τα φίλτρα" compact wrap />}
+                />
               </CardContent>
             </Card>
           )}

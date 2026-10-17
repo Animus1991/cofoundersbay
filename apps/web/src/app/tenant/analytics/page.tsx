@@ -23,7 +23,7 @@ import {
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 
 /*
@@ -188,7 +188,7 @@ export default function TenantAnalyticsPage() {
       descriptionEl="Αύξηση μελών, συμμετοχή και δραστηριότητα προγραμμάτων. Φιλτράρετε ανά χρονικό διάστημα για να συγκρίνετε περιόδους."
       actions={(
         <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
-          <SelectTrigger aria-label="Time period" className="w-[150px]">
+          <SelectTrigger aria-label={bilingualAria('Time period', 'Χρονική περίοδος')} className="w-[150px]">
             <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
           </SelectTrigger>
           <SelectContent>
@@ -268,17 +268,18 @@ export default function TenantAnalyticsPage() {
           <SectionCard title="Engagement" titleEl="Συμμετοχή">
             <dl className="grid grid-cols-2 gap-3">
               {[
-                { en: 'Sessions held', el: 'Συνεδρίες', value: cohortsData ? heldInWindow : '—', note: periodLabel?.en.toLowerCase() },
-                { en: 'Sessions ahead', el: 'Προγραμματισμένες', value: cohortsData ? ahead : '—', note: 'scheduled' },
-                { en: 'Upcoming events', el: 'Επόμενες εκδηλώσεις', value: eventsData ? (eventsData.events ?? []).length : '—', note: 'next on the calendar' },
-                { en: 'Applications waiting', el: 'Αιτήσεις σε αναμονή', value: programData ? waiting : '—', note: 'for a decision' },
+                { en: 'Sessions held', el: 'Συνεδρίες', value: cohortsData ? heldInWindow : '—', note: periodLabel?.en, noteEl: periodLabel?.el },
+                { en: 'Sessions ahead', el: 'Προγραμματισμένες', value: cohortsData ? ahead : '—', note: 'Scheduled', noteEl: 'Στο πρόγραμμα' },
+                { en: 'Upcoming events', el: 'Επόμενες εκδηλώσεις', value: eventsData ? (eventsData.events ?? []).length : '—', note: 'Next on the calendar', noteEl: 'Επόμενες στο ημερολόγιο' },
+                { en: 'Applications waiting', el: 'Αιτήσεις σε αναμονή', value: programData ? waiting : '—', note: 'For a decision', noteEl: 'Για απόφαση' },
               ].map((cell) => (
                 <div key={cell.en} className="min-w-0">
                   <dt className="text-xs text-muted-foreground">
                     <BilingualText en={cell.en} el={cell.el} stacked wrap />
                   </dt>
-                  <dd className="mt-1 text-lg font-semibold tabular-nums">{cell.value}</dd>
-                  {cell.note ? <dd className="text-xs text-muted-foreground">{cell.note}</dd> : null}
+                  {/* A figure inside a section card stays under its title. */}
+                  <dd className="card-body mt-1 font-semibold tabular-nums">{cell.value}</dd>
+                  {cell.note ? <dd className="text-xs text-muted-foreground"><BilingualText en={cell.note} el={cell.noteEl ?? cell.note} compact /></dd> : null}
                 </div>
               ))}
             </dl>

@@ -148,6 +148,10 @@ export const CMT = {
     el: 'Συμφωνήθηκε. Η αίθουσα συμφωνίας είναι ανοιχτή και οι όροι παγωμένοι όσο είναι ανοιχτή.',
   },
   deal_room_data: { en: 'Open the data room', el: 'Άνοιγμα data room' },
+  // What usually follows agreed terms. It writes nothing; it is a reminder,
+  // and says plainly that it is not legal advice.
+  deal_room_next: { en: 'What usually comes next', el: 'Τι ακολουθεί συνήθως' },
+  deal_room_not_advice: { en: 'This is not legal advice.', el: 'Δεν αποτελεί νομική συμβουλή.' },
   deal_room_close: { en: 'Close the deal room and revise', el: 'Κλείσιμο αίθουσας και αναθεώρηση' },
   frozen: { en: 'Frozen', el: 'Παγωμένοι' },
 
@@ -264,3 +268,11 @@ export function evidenceCopy(item: { id: string; count?: number; value?: boolean
       return null;
   }
 }
+
+/** After agreed terms: what usually comes next. A reminder that writes nothing. */
+export const DEAL_ROOM_NEXT_STEPS: readonly BilingualPair[] = [
+  { en: 'Put the agreed terms in a founders\u2019 agreement, signed with a lawyer.', el: 'Καταγράψτε τους συμφωνημένους όρους σε συμφωνία ιδρυτών, υπογεγραμμένη με δικηγόρο.' },
+  { en: 'Set up vesting and the cliff exactly as agreed here.', el: 'Ρυθμίστε το vesting και το cliff ακριβώς όπως συμφωνήθηκαν εδώ.' },
+  { en: 'Assign to the company the intellectual property made for it.', el: 'Μεταβιβάστε στην εταιρεία την πνευματική ιδιοκτησία που δημιουργείται για αυτήν.' },
+  { en: 'Upload the signed documents to the data room.', el: 'Ανεβάστε τα υπογεγραμμένα έγγραφα στο data room.' },
+];

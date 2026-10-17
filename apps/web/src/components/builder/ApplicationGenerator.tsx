@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -378,23 +378,20 @@ export function ApplicationGenerator({
       )}
 
       {currentApp && (
-        <Card className="rounded-xl">
+        <Card>
           <CardHeader>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <CfbGlyph name={currentApp.glyph} className="icon-sm shrink-0 text-muted-foreground" />
-                <div>
-                  <CardTitle>
-                    {currentApp.name}{' '}
-                    <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {currentApp.questions.length}{' '}
-                    <BilingualText en={builderEn('app_questions')} el={builderEl('app_questions')} compact />
-                    {' · '}
-                    {requiredCompletion(currentApp)}% <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
-                  </p>
-                </div>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <CardTitle>
+                  {currentApp.name}{' '}
+                  <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
+                </CardTitle>
+                <CardDescription className="mt-0.5 tabular-nums">
+                  {currentApp.questions.length}{' '}
+                  <BilingualText en={builderEn('app_questions')} el={builderEl('app_questions')} compact />
+                  {' · '}
+                  {requiredCompletion(currentApp)}% <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
+                </CardDescription>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {requiredCompletion(currentApp) === 100 && currentApp.status !== 'submitted' && (
@@ -505,7 +502,7 @@ export function ApplicationGenerator({
                         </Button>
                       )}
                       {question.maxLength && (
-                        <Badge id={`${fieldId}-count`} variant="outline" className={cn('rounded-xl text-xs tabular-nums', overLimit && 'text-status-danger')}>
+                        <Badge id={`${fieldId}-count`} variant="outline" className={cn('text-xs tabular-nums', overLimit && 'text-status-danger')}>
                           {question.answer.length}/{question.maxLength}
                           {overLimit && <span className="sr-only">{t('Character limit exceeded', 'Υπέρβαση ορίου χαρακτήρων')}</span>}
                         </Badge>
@@ -525,7 +522,7 @@ export function ApplicationGenerator({
                     onChange={(e) => updateAnswer(question.id, e.target.value)}
                     placeholder={t(builderEn('app_answer_ph'), builderEl('app_answer_ph'))}
                     className={cn(
-                      'min-h-[100px] rounded-xl',
+                      'min-h-[100px]',
                       question.maxLength && question.answer.length > question.maxLength && 'border-status-danger',
                     )}
                     maxLength={question.maxLength ? question.maxLength * 1.5 : undefined}

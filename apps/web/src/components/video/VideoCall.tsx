@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Badge } from '@/components/ui/badge';
 import { 
   Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, Phone, 
@@ -68,9 +69,11 @@ export function VideoCall({ className }: VideoCallProps) {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button aria-label="Call settings" variant="ghost" size="sm" disabled title="Call settings are not available yet">
-              <Settings className="icon-sm" />
-            </Button>
+            <WithDisabledReason reasonEn="Call settings are not available yet" reasonEl="Οι ρυθμίσεις κλήσης δεν είναι ακόμη διαθέσιμες">
+              <Button aria-label="Call settings" variant="ghost" size="sm" disabled>
+                <Settings className="icon-sm" />
+              </Button>
+            </WithDisabledReason>
             <Button
               aria-label="Full screen"
               variant="ghost"

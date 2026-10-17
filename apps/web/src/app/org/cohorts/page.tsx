@@ -3,18 +3,15 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  Users,
   Search,
   Plus,
   MoreVertical,
-  Calendar,
   Award,
   Eye,
   Edit,
   Trash2,
   GraduationCap,
   Rocket,
-  Target,
   TrendingUp,
   CheckCircle2,
 } from 'lucide-react';
@@ -27,10 +24,11 @@ import { useHydrated } from '@/components/common/RelativeTime';
 import { UnavailableMenuItem } from '@/components/common/UnavailableMenuItem';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -44,13 +42,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EmptyOrgCohorts } from '@/components/common/EmptyStates';
+import { EmptyOrgCohorts, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useRouter } from 'next/navigation';
@@ -118,98 +118,110 @@ const COHORT_STATUS_TONE: Record<Cohort['status'], StatusTone> = {
 
 function CohortCard({ cohort }: { cohort: Cohort }) {
   const statusColors = STATUS[COHORT_STATUS_TONE[cohort.status]];
+  // The Programs card: the cohort's rounded square, its name over the
+  // programme, the state and the menu at the right; the facts and the
+  // progress bars start on the mark's edge.
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+          <MoreVertical className="icon-sm" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/org/cohorts/${cohort.id}`}>
+            <Eye className="mr-2 icon-sm" aria-hidden="true" />
+            <BilingualText en="View Details" el="Λεπτομέρειες" compact />
+          </Link>
+        </DropdownMenuItem>
+        {/* Neither had a handler. Cohort writes exist only on the
+            platform-admin routes (PATCH/DELETE /admin/cohorts/:id), so
+            an organisation cannot make them from here yet. */}
+        <UnavailableMenuItem
+          icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+          en="Edit Cohort"
+          el="Επεξεργασία κύκλου"
+          reasonEn="Cohorts are edited by platform administrators for now."
+          reasonEl="Οι κύκλοι επεξεργάζονται προς το παρόν από διαχειριστές της πλατφόρμας."
+        />
+        <UnavailableMenuItem
+          className="text-destructive-accessible"
+          icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
+          en="Archive"
+          el="Αρχειοθέτηση"
+          reasonEn="Cohorts are archived by platform administrators for now."
+          reasonEl="Οι κύκλοι αρχειοθετούνται προς το παρόν από διαχειριστές της πλατφόρμας."
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold">{cohort.name}</span>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              {/* Stands in for the programme's logo: an avatar, not decoration. */}
+              <AvatarFallback data-keep-icon className="rounded-xl bg-primary/10 text-primary-accessible">
+                <Award className="icon-md" aria-hidden="true" />
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <Link href={`/org/cohorts/${cohort.id}`} className="transition-colors hover:text-primary-accessible">
+              {cohort.name}
+            </Link>
+          )}
+          subtitle={<span className="block first-letter:uppercase">{cohort.program}</span>}
+          asideStays
+          aside={(
+            <>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 <StatusText value={cohort.status} />
               </Badge>
+              {menu}
+            </>
+          )}
+        />
+        <FactLine
+          items={[
+            cohort.mentors == null
+              ? <BilingualText key="members" en={`${cohort.startups} members`} el={`${cohort.startups} μέλη`} compact />
+              : <BilingualText key="startups" en={`${cohort.startups} startups`} el={`${cohort.startups} startups`} compact />,
+            cohort.mentors != null
+              ? <BilingualText key="mentors" en={`${cohort.mentors} mentors`} el={`${cohort.mentors} μέντορες`} compact />
+              : null,
+            <span key="dates" className="tabular-nums">{cohort.startDate} - {cohort.endDate}</span>,
+          ]}
+        />
+        {cohort.status !== 'recruiting' && (
+          <div className="space-y-2">
+            <div>
+              <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                <span className="text-muted-foreground"><BilingualText en="Program Progress" el="Πρόοδος προγράμματος" compact /></span>
+                <span className="font-medium tabular-nums">{cohort.progress}%</span>
+              </div>
+              <Progress value={cohort.progress} className="h-1.5" />
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{cohort.program}</p>
-            <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Users className="icon-sm" aria-hidden="true" />
-                {cohort.mentors == null
-                  ? <BilingualText en={`${cohort.startups} members`} el={`${cohort.startups} μέλη`} compact />
-                  : <BilingualText en={`${cohort.startups} startups`} el={`${cohort.startups} startups`} compact />}
-              </span>
-              {cohort.mentors != null && (
-                <span className="flex items-center gap-1">
-                  <GraduationCap className="icon-sm" aria-hidden="true" />
-                  <BilingualText en={`${cohort.mentors} mentors`} el={`${cohort.mentors} μέντορες`} compact />
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {cohort.startDate} - {cohort.endDate}
-              </span>
-            </div>
-            {cohort.status !== 'recruiting' && (
-              <div className="mt-3 space-y-2">
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted-foreground"><BilingualText en="Program Progress" el="Πρόοδος προγράμματος" compact /></span>
-                    <span className="font-medium">{cohort.progress}%</span>
-                  </div>
-                  <Progress value={cohort.progress} className="h-1.5" />
+            {cohort.avgReadiness != null && (
+              <div>
+                <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+                  <span className="text-muted-foreground"><BilingualText en="Avg Readiness" el="Μέση ετοιμότητα" compact /></span>
+                  <span className="font-medium tabular-nums">{cohort.avgReadiness}%</span>
                 </div>
-                {cohort.avgReadiness != null && (
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-muted-foreground"><BilingualText en="Avg Readiness" el="Μέση ετοιμότητα" compact /></span>
-                      <span className="font-medium">{cohort.avgReadiness}%</span>
-                    </div>
-                    <Progress value={cohort.avgReadiness} className="h-1.5" />
-                  </div>
-                )}
-                <div className="flex items-center gap-3 text-2xs">
-                  {cohort.mentorCoverage != null && (
-                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>
-                      <CheckCircle2 className="icon-sm" /> {cohort.mentorCoverage}% mentor coverage
-                    </span>
-                  )}
-                </div>
+                <Progress value={cohort.avgReadiness} className="h-1.5" />
               </div>
             )}
+            {cohort.mentorCoverage != null && (
+              <p className={cn('flex items-center gap-1 text-xs', cohort.mentorCoverage >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>
+                <CheckCircle2 className="icon-sm" aria-hidden="true" />
+                <BilingualText en={`${cohort.mentorCoverage}% mentor coverage`} el={`${cohort.mentorCoverage}% κάλυψη με μέντορα`} compact />
+              </p>
+            )}
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" aria-hidden="true" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/org/cohorts/${cohort.id}`}>
-                  <Eye className="mr-2 icon-sm" aria-hidden="true" />
-                  <BilingualText en="View Details" el="Λεπτομέρειες" compact />
-                </Link>
-              </DropdownMenuItem>
-              {/* Neither had a handler. Cohort writes exist only on the
-                  platform-admin routes (PATCH/DELETE /admin/cohorts/:id), so
-                  an organisation cannot make them from here yet. */}
-              <UnavailableMenuItem
-                icon={<Edit className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                en="Edit Cohort"
-                el="Επεξεργασία κύκλου"
-                reasonEn="Cohorts are edited by platform administrators for now."
-                reasonEl="Οι κύκλοι επεξεργάζονται προς το παρόν από διαχειριστές της πλατφόρμας."
-              />
-              <UnavailableMenuItem
-                className="text-destructive-accessible"
-                icon={<Trash2 className="mr-2 mt-0.5 icon-sm" aria-hidden="true" />}
-                en="Archive"
-                el="Αρχειοθέτηση"
-                reasonEn="Cohorts are archived by platform administrators for now."
-                reasonEl="Οι κύκλοι αρχειοθετούνται προς το παρόν από διαχειριστές της πλατφόρμας."
-              />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -316,9 +328,11 @@ export default function OrgCohortsPage() {
       descriptionEl="Διαχειριστείτε τους κύκλους και τους συμμετέχοντες των προγραμμάτων"
       actions={
         // Had no handler; cohorts are created on the platform-admin route.
-        <Button className="gap-1.5" disabled title="Cohorts are created by platform administrators for now">
-          <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέος κύκλος" compact />
-        </Button>
+        <WithDisabledReason reasonEn="Cohorts are created by platform administrators for now" reasonEl="Τους κύκλους δημιουργούν προς το παρόν οι διαχειριστές της πλατφόρμας">
+          <Button className="gap-1.5" disabled>
+            <Plus className="icon-sm" aria-hidden="true" /> <BilingualText en="Create Cohort" el="Νέος κύκλος" compact />
+          </Button>
+        </WithDisabledReason>
       }
     >
       <div className="space-y-6">
@@ -351,20 +365,17 @@ export default function OrgCohortsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length, icon: Award, tone: 'accent' as const },
-            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, tone: 'success' as const },
+            { label: 'Total Cohorts', labelEl: 'Σύνολο κοορτών', value: cohorts.length },
+            { label: 'Active', labelEl: 'Ενεργές', value: cohorts.filter((c) => c.status === 'active').length },
             totalMentors == null
-              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups, icon: Rocket, tone: 'info' as const }
-              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups, icon: Rocket, tone: 'info' as const },
-            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014', icon: GraduationCap, tone: 'accent' as const },
-          ].map(({ label, labelEl, value, icon: Icon, tone }) => (
+              ? { label: 'Cohort memberships', labelEl: 'Συμμετοχές σε κύκλους', value: totalStartups }
+              : { label: 'Total Startups', labelEl: 'Σύνολο startups', value: totalStartups },
+            { label: 'Total Mentors', labelEl: 'Σύνολο μεντόρων', value: totalMentors ?? '\u2014' },
+          ].map(({ label, labelEl, value }) => (
             <Card key={label}>
-              <CardContent className="flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
-                <div>
-                  <p className="page-stat font-bold tabular-nums">{value}</p>
-                  <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
-                </div>
+              <CardContent>
+                <p className="page-stat font-bold tabular-nums">{value}</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={label} el={labelEl} compact wrap /></p>
               </CardContent>
             </Card>
           ))}
@@ -379,6 +390,11 @@ export default function OrgCohortsPage() {
             <EmptyOrgCohorts
               filtersActive={!!search || statusFilter !== 'all'}
               onClearFilters={() => { setSearch(''); setStatusFilter('all'); }}
+              active={namedFilters(namedQuery(search), namedChoice(statusFilter, 'all', {
+                recruiting: { en: 'Recruiting', el: 'Δέχεται αιτήσεις' },
+                active: { en: 'Active', el: 'Ενεργές' },
+                completed: { en: 'Completed', el: 'Ολοκληρωμένες' },
+              }))}
             />
           )}
         </div>

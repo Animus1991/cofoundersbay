@@ -46,6 +46,13 @@ const config: Config = {
           }) as unknown as string,
           foreground: 'hsl(var(--primary-foreground))',
           accessible: 'hsl(var(--primary-accessible))',
+          // The brand-tinted box, as GitHub's Primer names it: one background
+          // (accent "subtle") and one edge (accent "muted") instead of the
+          // fourteen alpha pairs 63 boxes had drifted into (/[0.03]+/15,
+          // /5+/15, /5+/20, /[0.04]+/15 ...). Both draw from the mid tone,
+          // like every faint tint above. docs §54.
+          subtle: 'hsl(var(--primary-mid) / 0.04)',
+          muted: 'hsl(var(--primary-mid) / 0.18)',
         },
         /** Dark ink for a label on any lively mark (status chips, dots with text). */
         ink: 'hsl(var(--ink))',

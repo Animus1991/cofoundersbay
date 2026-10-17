@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { useRecordProfileView } from '@/hooks/useRecordProfileView';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ import { FollowButton } from '@/components/updates/FollowButton';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { OpenToLine } from '@/components/intros/OpenToLine';
 import { SkillEvidencePanel } from '@/components/profile/SkillEvidencePanel';
+import { IntroVideoLink } from '@/components/profile/IntroVideoLink';
 import { ProfileHero } from '@/components/profile/ProfileHero';
 import { ProfileActivity, ProfileExperience, ProfileRecommendations, SimilarProfiles } from '@/components/profile/ProfileSections';
 import type { PageRailSection } from '@/components/layout/PageRail';
@@ -45,7 +47,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
-import { statusEl } from '@/components/common/StatusText';
+import { StatusText, statusEl } from '@/components/common/StatusText';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -102,7 +104,9 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
     return (
       <div className="space-y-1.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        <FactLine className="text-sm text-foreground" items={value as string[]} />
+        {/* Enum values ("full_time", "pre_seed") read as words in both
+            languages; free text passes through, capitalised. */}
+        <FactLine className="text-sm text-foreground" items={(value as string[]).map((item) => <StatusText key={item} value={item} />)} />
       </div>
     );
   }
@@ -110,7 +114,7 @@ function PayloadEntry({ entryKey, value }: { entryKey: string; value: RolePayloa
     return (
       <div className="space-y-0.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        <p className="text-sm text-foreground">{value}</p>
+        <p className="card-body text-foreground"><StatusText value={value} /></p>
       </div>
     );
   }
@@ -144,6 +148,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     enabled: !!userId,
     retry: 1,
   });
+
+  // One view counted per visit, never the owner's (who viewed: Analytics).
+  useRecordProfileView(userId, Boolean(profile), true);
 
   const { data: connStatus } = useQuery({
     queryKey: qk('connection-status', userId),
@@ -264,7 +271,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const RoleIcon = ROLE_ICONS[profile.role] ?? Briefcase;
 
   const rolePayloadNodes: React.ReactNode[] = Object.entries(rolePayload)
-    .filter(([k]) => k !== 'links' && k !== 'experience' && k !== 'education')
+    .filter(([k]) => k !== 'links' && k !== 'experience' && k !== 'education' && k !== 'introVideoUrl')
     .reduce<React.ReactNode[]>((acc, [key, val]) => {
       acc.push(<PayloadEntry key={key} entryKey={key} value={val} />);
       return acc;
@@ -399,6 +406,16 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <FollowButton userId={userId} />
                 <AskIntroButton targetId={userId} targetName={profile.displayName} />
                 {viewerId ? (
+                  // The full comparison - match reasons, and where the two of
+                  // you agree on the compatibility questions - lives on the
+                  // match page; from a profile it is one step away.
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/matches/${encodeURIComponent(userId)}`}>
+                      <BilingualText en="How we fit" el="Πώς ταιριάζουμε" compact />
+                    </Link>
+                  </Button>
+                ) : null}
+                {viewerId ? (
                   <AIInsightButton
                     prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
                     agentId="matching"
@@ -424,12 +441,12 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         />
 
         {profile.bio && (
-          <Card className="shadow-sm border-border">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-lg font-semibold"><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
+          <Card>
+            <CardHeader>
+              <CardTitle><BilingualText en="About" el="Σχετικά" compact /></CardTitle>
             </CardHeader>
-            <CardContent className="pt-5">
-              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+            <CardContent>
+              <p className="card-body whitespace-pre-wrap text-muted-foreground first-letter:uppercase">
                 {profile.bio}
               </p>
             </CardContent>
@@ -441,13 +458,13 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         <ProfileExperience payload={rolePayload as Record<string, unknown>} own={isOwnProfile} />
 
         {profile.skills?.length ? (
-          <Card className="shadow-sm border-border">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-lg font-semibold">
+          <Card>
+            <CardHeader>
+              <CardTitle>
                 <BilingualText en="Skills" el="Δεξιότητες" compact />
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-5">
+            <CardContent>
               <FactLine className="text-sm text-foreground" items={profile.skills.map((s) => s.skillName)} />
             </CardContent>
           </Card>
@@ -455,10 +472,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         {viewerId ? <SkillEvidencePanel userId={userId} /> : null}
 
         {Object.keys(rolePayload).filter((k) => k !== 'experience' && k !== 'education').length > 0 && (
-          <Card className="shadow-sm border-border">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <RoleIcon className="icon-sm text-muted-foreground" />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RoleIcon className="icon-sm text-muted-foreground" aria-hidden="true" />
                 <BilingualText
                   en={`${(profile.role ?? '').replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())} details`}
                   el={`${(statusEl(profile.role) ?? profile.role ?? '').replace(/^./, (c) => c.toUpperCase())} — λεπτομέρειες`}
@@ -466,11 +483,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 pt-5">
+            <CardContent className="space-y-4">
               {/* Generic role payload display */}
               <>{rolePayloadNodes}</>
+              <IntroVideoLink raw={rolePayload.introVideoUrl} />
 
-              {/* Social links */}
               {rolePayload.links && typeof rolePayload.links === 'object' && (
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider"><BilingualText en="Links" el="Σύνδεσμοι" compact /></p>

@@ -31,6 +31,7 @@ import {
   Square, Circle, Diamond, Triangle, Minus, MoveRight, Type, Spline,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FactLine } from '@/components/common/FactLine';
 import { ResearchNode } from '@/lib/api';
 import { CanvasCommentPins } from '@/components/research/CanvasCommentPin';
 import { ShapeNode, type ShapeVariant, type ShapeMeta } from './ShapeNode';
@@ -1032,16 +1033,16 @@ export function ResearchNodeCard({
                 {items.slice(0, 4).map((item) => (
                   <div key={item.id} className="flex items-center gap-1.5">
                     <div className={cn('w-3 h-3 rounded border shrink-0', item.checked ? 'bg-primary border-primary' : 'border-muted-foreground/40')} />
-                    <span className={cn('text-2xs truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
+                    <span className={cn('text-2xs truncate text-muted-foreground', item.checked && 'line-through')}>
                       {item.text || 'Untitled item'}
                     </span>
                   </div>
                 ))}
-                {items.length > 4 && <p className="text-2xs text-muted-foreground/50">+{items.length - 4} more</p>}
+                {items.length > 4 && <p className="text-2xs text-muted-foreground">+{items.length - 4} more</p>}
                 {items.length > 0 && (
-                  <p className="text-2xs text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
+                  <p className="text-2xs text-muted-foreground mt-1">{done}/{items.length} done</p>
                 )}
-                {items.length === 0 && <p className="text-2xs text-muted-foreground/50 italic">Empty checklist</p>}
+                {items.length === 0 && <p className="text-2xs text-muted-foreground italic">Empty checklist</p>}
               </div>
             );
           })()}
@@ -1052,21 +1053,11 @@ export function ResearchNodeCard({
             const status = (meta?.status as string) || 'todo';
             const priority = (meta?.priority as string) || 'medium';
             const dueDate = meta?.dueDate as string | undefined;
-            const STATUS_COLORS: Record<string, string> = { todo: 'bg-status-neutral-bg text-status-neutral', in_progress: 'bg-status-info-bg text-status-info', done: 'bg-status-success-bg text-status-success', blocked: 'bg-status-danger-bg text-status-danger' };
-            // Four steps must stay visually distinct: amber and orange would both map to
-            // `warning`, collapsing medium into high. Opacity separates them without
-            // leaving the warm ramp the original intended.
-            const PRIORITY_COLORS: Record<string, string> = { low: 'text-status-neutral', medium: 'text-status-warning/70', high: 'text-status-warning', urgent: 'text-status-danger' };
             return (
-              <div className="flex flex-wrap gap-1 items-center">
-                <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
-                  {status.replace('_', ' ')}
-                </span>
-                <span className={cn('text-2xs font-semibold', PRIORITY_COLORS[priority] || PRIORITY_COLORS['medium'])}>
-                  ● {priority}
-                </span>
-                {dueDate && <span className="text-2xs text-muted-foreground">Due {dueDate}</span>}
-              </div>
+              <FactLine
+                className="text-2xs"
+                items={[status.replace('_', ' '), priority, dueDate ? `Due ${dueDate}` : null]}
+              />
             );
           })()}
 
@@ -1086,7 +1077,7 @@ export function ResearchNodeCard({
 
           {/* Document/PDF file info — always show icon box for doc types */}
           {isDoc && (
-            <div className="flex items-center gap-2 py-2 px-2 rounded-lg bg-secondary mb-1.5">
+            <div className="mb-1.5 flex items-center gap-2 py-2">
               <Icon className="icon-lg opacity-70 shrink-0" style={{ color: nodeColor }} />
               <div className="min-w-0">
                 <p className="text-2xs text-muted-foreground truncate">
@@ -1106,7 +1097,7 @@ export function ResearchNodeCard({
 
           {/* Reference preview */}
           {(effectiveType === 'reference' || node.type === 'reference') && (
-            <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-secondary">
+            <div className="flex items-center gap-2 py-1.5">
               <Users className="icon-md text-muted-foreground shrink-0" />
               <span className="text-2xs text-muted-foreground truncate">Entity reference</span>
             </div>
@@ -1114,25 +1105,19 @@ export function ResearchNodeCard({
 
           {/* Tags */}
           {node.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1.5">
-              {node.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="text-2xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground"
-                >
-                  {tag}
-                </span>
-              ))}
-              {node.tags.length > 3 && (
-                <span className="text-2xs text-muted-foreground">+{node.tags.length - 3}</span>
-              )}
-            </div>
+            <FactLine
+              className="mt-1.5 text-2xs"
+              items={[
+                ...node.tags.slice(0, 3),
+                node.tags.length > 3 ? `+${node.tags.length - 3}` : null,
+              ]}
+            />
           )}
 
           {/* Phase 10 — Builder document link badge */}
           {node.builderDocumentId && (
             <div
-              className="flex items-center gap-1 mt-1.5 px-1.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 cursor-pointer w-fit"
+              className="mt-1.5 w-fit cursor-pointer"
               onClick={(e) => { e.stopPropagation(); router.push('/builder'); }}
               title="Linked to a Builder document — click to open Builder"
             >

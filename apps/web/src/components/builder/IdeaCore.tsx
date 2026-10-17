@@ -314,7 +314,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_problem_ph'), builderEl('idea_problem_ph'))}
                   value={data.problemStatement}
                   onChange={(e) => handleFieldChange('problemStatement', e.target.value)}
-                  className="min-h-[100px] rounded-xl"
+                  className="min-h-[100px]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -326,7 +326,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_audience_ph'), builderEl('idea_audience_ph'))}
                   value={data.targetAudience}
                   onChange={(e) => handleFieldChange('targetAudience', e.target.value)}
-                  className="rounded-xl"
+                 
                 />
               </div>
               <div className="space-y-1.5">
@@ -338,7 +338,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_market_ph'), builderEl('idea_market_ph'))}
                   value={data.marketSize}
                   onChange={(e) => handleFieldChange('marketSize', e.target.value)}
-                  className="rounded-xl"
+                 
                 />
               </div>
             </CardContent>
@@ -361,7 +361,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_solution_ph'), builderEl('idea_solution_ph'))}
                   value={data.solution}
                   onChange={(e) => handleFieldChange('solution', e.target.value)}
-                  className="min-h-[100px] rounded-xl"
+                  className="min-h-[100px]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -373,7 +373,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_uvp_ph'), builderEl('idea_uvp_ph'))}
                   value={data.uniqueValue}
                   onChange={(e) => handleFieldChange('uniqueValue', e.target.value)}
-                  className="min-h-[80px] rounded-xl"
+                  className="min-h-[80px]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -385,7 +385,7 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                   placeholder={t(builderEn('idea_why_now_ph'), builderEl('idea_why_now_ph'))}
                   value={data.timing}
                   onChange={(e) => handleFieldChange('timing', e.target.value)}
-                  className="min-h-[80px] rounded-xl"
+                  className="min-h-[80px]"
                 />
               </div>
             </CardContent>
@@ -412,13 +412,13 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                     placeholder={t(builderEn('idea_assumption_ph'), builderEl('idea_assumption_ph'))}
                     value={assumption}
                     onChange={(e) => handleAssumptionChange(index, e.target.value)}
-                    className="rounded-xl"
+                   
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0"
                     onClick={() => removeAssumption(index)}
                     aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >
@@ -451,13 +451,13 @@ export function IdeaCore({ onSave, onGenerate, initialData, contentRevision }: I
                     placeholder={t(builderEn('idea_pain_ph'), builderEl('idea_pain_ph'))}
                     value={painPoint}
                     onChange={(e) => handlePainPointChange(index, e.target.value)}
-                    className="rounded-xl"
+                   
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="shrink-0 rounded-xl"
+                    className="shrink-0"
                     onClick={() => removePainPoint(index)}
                     aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >

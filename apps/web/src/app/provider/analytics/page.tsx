@@ -15,6 +15,8 @@ import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RailStats } from '@/components/layout/RailParts';
+import { RowHead } from '@/components/dashboard/SectionCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -52,6 +54,14 @@ const MOCK_CONVERSIONS = [
   { stage: 'Project Started', count: 18, pct: 5.3, color: 'bg-status-success-mark' },
   { stage: 'Project Completed', count: 14, pct: 4.1, color: 'bg-status-success-mark' },
 ];
+
+/** Where visits came from, in Greek; a source the API adds later shows as sent. */
+const SOURCE_EL: Record<string, string> = {
+  'Direct Search': 'Άμεση αναζήτηση',
+  Recommendations: 'Προτάσεις',
+  'Community Posts': 'Αναρτήσεις κοινότητας',
+  'Mentor Referrals': 'Συστάσεις μεντόρων',
+};
 
 const MOCK_TRAFFIC_SOURCES = [
   { source: 'Direct Search', visits: 148, pct: 43 },
@@ -122,7 +132,11 @@ function MetricCard({
           trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
           <TrendIcon trend={trend} />
-          <span>{trend !== 'neutral' && change != null ? `${Math.abs(change)}% vs last period` : 'vs last period'}</span>
+          <span>
+            {trend !== 'neutral' && change != null
+              ? <BilingualText en={`${Math.abs(change)}% vs last period`} el={`${Math.abs(change)}% έναντι προηγούμενης περιόδου`} compact />
+              : <BilingualText en="vs last period" el="έναντι προηγούμενης περιόδου" compact />}
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -272,14 +286,9 @@ export default function ProviderAnalyticsPage() {
       labelEn: 'At a glance',
       labelEl: 'Με μια ματιά',
       content: (
-        <dl className="space-y-2">
-          {glance.map((g) => (
-            <div key={g.id} className="rounded-lg border border-border p-3">
-              <dt className="text-sm text-muted-foreground"><BilingualText en={g.en} el={g.el} compact wrap /></dt>
-              <dd className="mt-1 text-lg font-semibold tabular-nums">{g.value}</dd>
-            </div>
-          ))}
-        </dl>
+        // The rail's own figures, not framed tiles: the rail is a flat
+        // surface like the sidebar (RailParts).
+        <RailStats items={glance.map((g) => ({ key: g.id, label: g.en, labelEl: g.el, value: g.value }))} />
       ),
     },
     {
@@ -405,7 +414,7 @@ export default function ProviderAnalyticsPage() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base"><BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact /></CardTitle>
+                  <CardTitle><BilingualText en="Daily Views & Inquiries" el="Ημερήσιες προβολές & ερωτήματα" compact /></CardTitle>
                 </CardHeader>
                 <CardContent>
                   {weeklyViews.length === 0 && (
@@ -415,7 +424,7 @@ export default function ProviderAnalyticsPage() {
                       heights (views up to 140px plus inquiries) in a 176px box
                       that also held the day label, so the tallest day grew up
                       through the card title. */}
-                  <div className="flex h-44 items-stretch gap-2">
+                  <div data-chart="" className="flex h-44 items-stretch gap-2">
                     {weeklyViews.map(d => (
                       <div key={d.day} className="flex flex-1 flex-col items-center gap-1">
                         <div className="flex w-full flex-1 flex-col justify-end gap-0.5">
@@ -443,7 +452,7 @@ export default function ProviderAnalyticsPage() {
 
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base"><BilingualText en="Traffic Sources" el="Πηγές κίνησης" compact /></CardTitle>
+                  <CardTitle><BilingualText en="Traffic Sources" el="Πηγές κίνησης" compact /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {trafficSources.length === 0 && (
@@ -452,7 +461,7 @@ export default function ProviderAnalyticsPage() {
                   {trafficSources.map(src => (
                     <div key={src.source}>
                       <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-muted-foreground">{src.source}</span>
+                        <span className="text-muted-foreground"><BilingualText en={src.source} el={SOURCE_EL[src.source]} compact /></span>
                         <span className="font-medium">{src.pct}%</span>
                       </div>
                       <div className="h-1.5 w-full rounded-full bg-muted">
@@ -472,7 +481,7 @@ export default function ProviderAnalyticsPage() {
           <TabsContent value="funnel">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Client Acquisition Funnel" el="Χοάνη απόκτησης πελατών" compact /></CardTitle>
+                <CardTitle><BilingualText en="Client Acquisition Funnel" el="Χοάνη απόκτησης πελατών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {conversions.length === 0 && (
@@ -511,7 +520,7 @@ export default function ProviderAnalyticsPage() {
           <TabsContent value="services">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base"><BilingualText en="Service Performance" el="Απόδοση υπηρεσιών" compact /></CardTitle>
+                <CardTitle><BilingualText en="Service Performance" el="Απόδοση υπηρεσιών" compact /></CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
@@ -519,23 +528,28 @@ export default function ProviderAnalyticsPage() {
                     <p className="py-8 text-center text-sm text-muted-foreground"><BilingualText en="Per-service performance is not tracked yet." el="Η απόδοση ανά υπηρεσία δεν καταγράφεται ακόμα." wrap /></p>
                   )}
                   {topServices.map(svc => (
-                    <div key={svc.name} className="flex items-center gap-4 px-4 sm:px-6 py-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{svc.name}</p>
-                        <p className="text-xs text-muted-foreground">{svc.inquiries} inquiries</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold">${svc.revenue.toLocaleString('en-GB')}</p>
-                        <p className="text-xs text-muted-foreground">revenue</p>
-                      </div>
-                      {svc.rating != null ? (
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Star className="icon-sm text-status-warning fill-status-warning" />
-                          <span className="text-sm font-medium">{svc.rating}</span>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-xs shrink-0"><BilingualText en="No reviews" el="Χωρίς κριτικές" compact /></Badge>
-                      )}
+                    <div key={svc.name} className="px-4 py-3 sm:px-6">
+                      <RowHead
+                        title={svc.name}
+                        subtitle={<BilingualText en={`${svc.inquiries} inquiries`} el={`${svc.inquiries} ερωτήματα`} compact />}
+                        asideStays
+                        aside={(
+                          <>
+                            <span className="text-right">
+                              <span className="block card-body font-semibold tabular-nums text-foreground">${svc.revenue.toLocaleString('en-GB')}</span>
+                              <span className="block text-xs text-muted-foreground"><BilingualText en="Revenue" el="Έσοδα" compact /></span>
+                            </span>
+                            {svc.rating != null ? (
+                              <span className="flex shrink-0 items-center gap-1">
+                                <Star className="icon-sm text-status-warning fill-status-warning" aria-hidden="true" />
+                                <span className="card-body font-medium tabular-nums text-foreground">{svc.rating}</span>
+                              </span>
+                            ) : (
+                              <Badge variant="outline" className="text-xs shrink-0"><BilingualText en="No reviews" el="Χωρίς κριτικές" compact /></Badge>
+                            )}
+                          </>
+                        )}
+                      />
                     </div>
                   ))}
                 </div>

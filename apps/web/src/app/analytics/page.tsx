@@ -13,6 +13,7 @@ import {
 import { ArrowUp, ArrowDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
+import { ProfileViewersCard } from '@/components/analytics/ProfileViewersCard';
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
@@ -23,12 +24,15 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { STATUS, TREND } from '@/lib/semantic-colors';
+import { TREND } from '@/lib/semantic-colors';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { analyticsEn, analyticsEl } from '@/lib/i18n/strings-analytics';
 import { formatShortDate } from '@/lib/i18n/format';
 import { metricsToDisplay, type AnalyticsMetric } from './metrics';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
+import { RowHead } from '@/components/dashboard/SectionCard';
+import { FactLine } from '@/components/common/FactLine';
+import { CardFoot } from '@/components/common/CardAnatomy';
 import { qk } from '@/lib/query-keys';
 
 const ProfileViewsChart = dynamic(
@@ -94,11 +98,9 @@ function metricValue(metric: AnalyticsMetric) {
 
 function MetricCard({
   metric,
-  sparkValues,
   onOpenTab,
 }: {
   metric: AnalyticsMetric;
-  sparkValues?: number[];
   onOpenTab?: (tab: AnalyticsTab) => void;
 }) {
   const ChangeIcon =
@@ -113,14 +115,13 @@ function MetricCard({
     : metric.label === 'Activity Score' || metric.label === 'Profile Views' ? 'growth'
     : null;
 
-  // `h-full` down the chain, so every card fills its grid row; the Profile
-  // Views card is taller than the rest by its sparkline.
+  // Every tile is the same three lines: the change, the figure, the name.
+  // A sparkline on Profile Views alone made the top row taller than the
+  // bottom row. The views series is drawn once, on the Growth tab.
   const body = (
     <Card className="h-full min-w-0 border-border transition-colors hover:border-border">
-      {/* Stretched by the sparkline card's row, a plain tile centres its
-          figure instead of leaving a dead band at the bottom. */}
-      <CardContent className="flex h-full flex-col justify-center">
-        <div className="mb-3 flex items-start justify-between gap-3">
+      <CardContent className="flex h-full flex-col items-center justify-center text-center">
+        <div className="mb-3 flex items-center justify-center gap-2">
           <CfbGlyph name={metric.glyph} className="icon-sm text-muted-foreground/70" />
           <span
             className={cn(
@@ -136,18 +137,10 @@ function MetricCard({
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </span>
         </div>
-        <h3 className="page-stat mb-1 font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
-        <p className="page-stat-label leading-snug text-muted-foreground">
+        <h3 className="page-stat mb-1 text-center font-semibold tabular-nums tracking-tight">{metricValue(metric)}</h3>
+        <p className="page-stat-label line-clamp-2 min-h-[2.75em] text-center leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} compact wrap />
         </p>
-        {sparkValues && sparkValues.length > 1 && (
-          <div className="mt-3">
-            <Sparkline values={sparkValues} />
-            <p className="page-stat-label mt-1 text-muted-foreground">
-              <BilingualText en={analyticsEn('spark_caption')} el={analyticsEl('spark_caption')} wrap />
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -161,29 +154,12 @@ function MetricCard({
   }
   if (tab && onOpenTab) {
     return (
-      <button type="button" className="block h-full min-w-0 rounded-2xl text-left focus-ring" onClick={() => onOpenTab(tab)}>
+      <button type="button" className="block h-full min-w-0 rounded-2xl text-center focus-ring" onClick={() => onOpenTab(tab)}>
         {body}
       </button>
     );
   }
   return body;
-}
-
-function Sparkline({ values, color = 'hsl(var(--primary))' }: { values: number[]; color?: string }) {
-  if (values.length < 2) return null;
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values);
-  const w = 80; const h = 28;
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * w;
-    const y = h - ((v - min) / (max - min || 1)) * h;
-    return `${x},${y}`;
-  }).join(' ');
-  return (
-    <svg width={w} height={h} className="opacity-60">
-      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={pts} />
-    </svg>
-  );
 }
 
 function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
@@ -260,7 +236,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    <Card className="flex min-w-0 flex-col border-primary/15 bg-primary/[0.03]">
+    <Card className="flex min-w-0 flex-col border-primary-muted bg-primary-subtle">
       <CardContent className="flex flex-1 flex-col">
         {/* The period badge sits under the title: bilingual "vs prev period"
             is metadata about the rows, not a peer of the heading. */}
@@ -322,39 +298,44 @@ function TopContentList({ content }: { content: TopContent[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 sm:pt-0">
-        <div className="space-y-3.5">
+        {/* One row per item, parted by hairlines: the rank as the mark, the
+            title and its facts (kind, views, engagements, date) beside it.
+            Each row was a padded rounded tile with its own hover box, which
+            put the text 46px in from the card's axis. */}
+        <div className="card-rows">
           {content.map((item, index) => (
             <Link
               key={item.id}
               href={item.type === 'profile' ? '/profile' : '/feed'}
-              className="flex items-start gap-3 rounded-2xl p-3.5 transition-colors hover:bg-secondary/40"
+              className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring"
             >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center text-sm font-semibold tabular-nums text-muted-foreground">
-                {index + 1}
-              </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="mb-1 line-clamp-2 text-sm font-semibold">{item.title}</h4>
-                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <CfbGlyph name="profile" className="icon-sm shrink-0" />
-                    {item.views.toLocaleString('en-GB')} <BilingualText en={analyticsEn('views')} el={analyticsEl('views')} compact />
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <CfbGlyph name="spark" className="icon-sm shrink-0" />
-                    {item.engagement} <BilingualText en={analyticsEn('engagements')} el={analyticsEl('engagements')} compact />
-                  </span>
-                  <span>
-                    <BilingualText en={formatShortDate(item.date, 'en')} el={formatShortDate(item.date, 'el')} compact />
-                  </span>
-                </div>
-              </div>
-              <Badge variant="secondary" className="h-auto max-w-[7rem] whitespace-normal">
-                <BilingualText
-                  en={item.type}
-                  el={item.type === 'post' ? 'ανάρτηση' : item.type === 'comment' ? 'σχόλιο' : 'προφίλ'}
-                  wrap
-                />
-              </Badge>
+              <RowHead
+                mark={(
+                  <div data-card-mark="" className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-sm font-semibold tabular-nums text-muted-foreground">
+                    {index + 1}
+                  </div>
+                )}
+                title={<span className="line-clamp-2 first-letter:uppercase">{item.title}</span>}
+                subtitle={(
+                  <FactLine
+                    items={[
+                      <BilingualText
+                        key="type"
+                        en={item.type === 'post' ? 'Post' : item.type === 'comment' ? 'Comment' : 'Profile'}
+                        el={item.type === 'post' ? 'Ανάρτηση' : item.type === 'comment' ? 'Σχόλιο' : 'Προφίλ'}
+                        compact
+                      />,
+                      <span key="views" className="tabular-nums">
+                        {item.views.toLocaleString('en-GB')} <BilingualText en={analyticsEn('views')} el={analyticsEl('views')} compact />
+                      </span>,
+                      <span key="eng" className="tabular-nums">
+                        {item.engagement} <BilingualText en={analyticsEn('engagements')} el={analyticsEl('engagements')} compact />
+                      </span>,
+                      <BilingualText key="date" en={formatShortDate(item.date, 'en')} el={formatShortDate(item.date, 'el')} compact />,
+                    ]}
+                  />
+                )}
+              />
             </Link>
           ))}
         </div>
@@ -381,42 +362,38 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
           <BilingualText en={analyticsEn('achievements')} el={analyticsEl('achievements')} wrap />
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-3">
+      <CardContent className="space-y-3">
+        {/* Rows parted by hairlines, each the title with its sentence under
+            it and "Unlocked" at the right: framed, tinted tiles inside the
+            card were cards in a card, and the locked ones faded their muted
+            text under 3:1 with opacity. */}
+        <div className="card-rows">
           {achievements.map((achievement) => (
             <Link
               key={achievement.id}
               href="/achievements"
-              className={cn(
-                'flex items-start gap-3 rounded-2xl border p-3',
-                achievement.unlocked
-                  ? 'border-primary/30 bg-primary/[0.04]'
-                  : 'border-border opacity-60',
-              )}
+              className="axis-row block rounded-md transition-colors hover:bg-accent focus-ring"
             >
-              <CfbGlyph
-                name="award"
-                className={cn('icon-sm mt-0.5 shrink-0', achievement.unlocked ? STATUS.warning.icon : 'text-muted-foreground')}
+              <RowHead
+                title={<span className="first-letter:uppercase">{achievement.title}</span>}
+                subtitle={achievement.description ? <span className="block first-letter:uppercase">{achievement.description}</span> : undefined}
+                asideStays
+                aside={achievement.unlocked ? (
+                  <Badge variant="outline">
+                    <BilingualText en={analyticsEn('unlocked')} el={analyticsEl('unlocked')} compact />
+                  </Badge>
+                ) : undefined}
               />
-              <div className="min-w-0 flex-1">
-              {achievement.unlocked && (
-                <Badge variant="default" className="mb-1.5">
-                  <BilingualText en={analyticsEn('unlocked')} el={analyticsEl('unlocked')} compact />
-                </Badge>
-              )}
-              <h4 className="mb-1 text-sm font-semibold leading-snug">{achievement.title}</h4>
-              <p className="page-stat-label text-muted-foreground">{achievement.description}</p>
-              </div>
             </Link>
           ))}
         </div>
-        <div className="mt-4">
-          <Button asChild variant="ghost" size="sm">
+        <CardFoot>
+          <Button asChild variant="outline" size="sm">
             <Link href="/achievements">
               <BilingualText en={analyticsEn('open_achievements')} el={analyticsEl('open_achievements')} wrap />
             </Link>
           </Button>
-        </div>
+        </CardFoot>
       </CardContent>
     </Card>
   );
@@ -749,28 +726,21 @@ export default function AnalyticsPage() {
               </p>
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => {
-                  const sparkValues = metric.label === 'Profile Views'
-                    ? (profileViews ?? []).map((point) => point.views)
-                    : [];
-                  return (
-                    <MetricCard
-                      key={metric.label}
-                      metric={metric}
-                      sparkValues={sparkValues}
-                      onOpenTab={setTab}
-                    />
-                  );
-                })}
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
+                ))}
               </div>
 
               {declining.length > 0 && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-status-warning-border/50 bg-status-warning-bg/40 p-4">
-                  <div className="min-w-0 space-y-1 text-sm">
-                    <p className="font-semibold">
+                  {/* A status callout set like a card head: the title on the
+                      card-title step and the figures a notch under it (they
+                      were both text-sm, so the list read as loud as its title). */}
+                  <div className="min-w-0 space-y-1">
+                    <p className="card-title">
                       <BilingualText en={analyticsEn('declining_prefix')} el={analyticsEl('declining_prefix')} wrap />
                     </p>
-                    <p className="text-muted-foreground">
+                    <p className="card-body text-muted-foreground">
                       {declining.map((m, i) => (
                         <span key={m.label}>
                           {i > 0 ? ' · ' : ''}
@@ -874,20 +844,11 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
+              <ProfileViewersCard />
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-                {metrics.map((metric) => {
-                  const sparkValues = metric.label === 'Profile Views'
-                    ? (profileViews ?? []).map((point) => point.views)
-                    : [];
-                  return (
-                    <MetricCard
-                      key={metric.label}
-                      metric={metric}
-                      sparkValues={sparkValues}
-                      onOpenTab={setTab}
-                    />
-                  );
-                })}
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} onOpenTab={setTab} />
+                ))}
               </div>
             </>
           )}

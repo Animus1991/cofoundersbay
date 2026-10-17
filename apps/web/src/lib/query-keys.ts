@@ -33,6 +33,8 @@ export const QUERY_ROOTS = [
   'builder',
   // Need cards, the commitment ladder and public cards (one resource).
   'commitments',
+  // The reader's compatibility answers and the comparison with one member.
+  'compatibility',
   'connection-status',
   'connections',
   'conversations',
@@ -70,8 +72,12 @@ export const QUERY_ROOTS = [
   'open-to',
   'opportunities',
   'org',
+  // Partner offers and the reader's claims, one resource.
+  'perks',
   'pitch-deck',
   'polls',
+  // Who viewed the reader's profile, and whether they are named when they view.
+  'profile-viewers',
   'programs',
   'provider',
   'public-profile',

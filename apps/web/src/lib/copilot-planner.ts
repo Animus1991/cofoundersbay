@@ -140,11 +140,32 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   { keys: ['opportunit*', 'gig', 'paid gig', 'ευκαιρι'], tool: 'get_opportunities' },
   // Need cards and the ladder: «δεσμεύσεις» is the area's Greek name.
   { keys: ['commitment*', 'need card*', 'my needs', 'δεσμευσ', 'καρτα αναγκ', 'καρτες αναγκ', 'καρτων αναγκ'], tool: 'get_commitments' },
+  // What the founding team lacks: "what skills is my team missing".
+  {
+    keys: ['team missing', 'my team missing', 'missing skills', 'skill gap*', 'gaps in my team', 'gap in my team', 'what roles do i need', 'who should i add to my team', 'λειπουν απο την ομαδα', 'λειπει απο την ομαδα', 'κενα στην ομαδα', 'κενο στην ομαδα', 'τι ρολους χρειαζομαι'],
+    tool: 'get_team_gaps',
+  },
+  // One match explained: "why do I match with Elena", «γιατί ταιριάζω με την Έλενα».
+  {
+    keys: ['why do i match', 'why we match', 'why are we matched', 'how well do i fit', 'how well do we fit', 'how do we fit', 'compatibility with', 'my match with', 'γιατι ταιριαζ', 'ποσο ταιριαζ', 'πως ταιριαζουμε', 'συμβατοτητα με'],
+    tool: 'get_match_detail',
+  },
   // Warm introductions. «Συστάσεις» alone is endorsements here, so the Greek
   // keys carry «γνωριμ»; "introduce me" alone is a connection request.
   {
     keys: ['introductions', 'warm intro*', 'my intros', 'who could introduce', 'who can introduce', 'συστασεις γνωριμιας', 'συσταση γνωριμιας', 'ζεστη συσταση', 'ζεστες συστασεις', 'να με συστησει'],
     tool: 'get_intros',
+  },
+  // Partner perks: «προσφορές» alone is a provider's own services, so the
+  // Greek keys carry «συνεργατ», «εκπτωσ» or «πιστωσ».
+  {
+    keys: ['perk*', 'partner offer*', 'partner discount*', 'startup credit*', 'cloud credit*', 'discount code*', 'προσφορες συνεργατ', 'προσφορα συνεργατ', 'εκπτωσεις', 'εκπτωση για', 'πιστωσεις'],
+    tool: 'get_perks',
+  },
+  // Who viewed my profile: asked as a person, not as a figure («προβολές» is analytics).
+  {
+    keys: ['who viewed', 'who has viewed', 'who looked at my profile', 'who visited my profile', 'viewed my profile', 'profile viewers', 'ποιος ειδε', 'ποιοι ειδαν', 'ποιος εχει δει', 'ειδαν το προφιλ', 'επισκεπτες του προφιλ'],
+    tool: 'get_profile_viewers',
   },
   // The co-founder scout («ανιχνευτής συνιδρυτών»).
   { keys: ['co-founder scout', 'cofounder scout', 'my scout', 'the scout', 'ανιχνευτ'], tool: 'get_scout' },
@@ -164,6 +185,11 @@ const AREA_READ_ALIASES: Array<{ keys: string[]; tool: AreaReadId }> = [
   {
     keys: ['my workspace', 'my workspaces', 'startup builder', 'builder workspace', 'χωρους εργασιας', 'χωρο εργασιας', 'χωροι εργασιας'],
     tool: 'get_builder_state',
+  },
+  // The investor's board is one list: watchlist, pipeline and portfolio.
+  {
+    keys: ['investor board', 'my pipeline', 'my watchlist', 'my portfolio', 'πινακας επενδυσεων', 'πινακα επενδυσεων', 'pipeline μου', 'χαρτοφυλακιο μου'],
+    tool: 'get_investor_board',
   },
   // Wave B. Each key names the area as a noun, as the ones above do.
   {
@@ -258,6 +284,10 @@ export function detectAreaReads(message: string): AreaReadId[] {
     if (tool === 'get_analytics' && detectAnalyticsPeriod(lower) !== undefined) return false;
     // «Συστάσεις γνωριμίας» are introductions, not endorsements.
     if (tool === 'get_endorsements' && found.includes('get_intros') && !includesWord(lower, ['endorse*', 'προσυπογραφ'])) return false;
+    // "Who viewed my profile" is a question about people, not the profile or its view count.
+    if ((tool === 'get_profile' || tool === 'get_analytics') && found.includes('get_profile_viewers') && !includesWord(lower, ['analytics', 'stats', 'bio', 'headline', 'αναλυτικα', 'στατιστικα'])) return false;
+    // Perks asked about are partners' offers, not the reader's own services.
+    if (tool === 'get_services' && found.includes('get_perks')) return false;
     return true;
   });
 }
@@ -560,6 +590,54 @@ function searchQueryFromMessage(message: string): string {
   return stripped.slice(0, 80);
 }
 
+/*
+ * A search through the reader's own messages: a search verb with
+ * "messages"/«μηνύματα», or "where did we talk about…", «πού μιλήσαμε για…»,
+ * "when did Elena mention…", «πότε μου ανέφερε…». It is decided before the
+ * area reads, because «μηνύματα» alone reads the inbox and "find" alone
+ * searches people. Returns the words to look for ('' when none were given),
+ * or null when the message is not a message search.
+ */
+const MESSAGE_SEARCH_PATTERNS: RegExp[] = [
+  /\b(?:search|find|look)\b.*\b(?:in|through)\s+(?:my\s+|our\s+)?(?:messages|chats|conversations|inbox)\b/,
+  /\b(?:search|find|look\s+for)\s+(?:in\s+)?(?:my\s+|our\s+)?(?:messages|chats|conversations)\b/,
+  /\bwhere\s+did\s+(?:we|i|\w+(?:\s+and\s+i)?)\s+(?:talk|write|speak|chat)\s+about\b/,
+  /\bwhen\s+did\s+\w+\s+(?:mention|say|write|talk\s+about)\b/,
+  /\b(?:messages?|chats?)\s+(?:about|mentioning)\b/,
+  // Greek: JavaScript's \b knows only ASCII letters, so a Greek word is
+  // bounded by the start or a space, never by \b.
+  /(?:^|\s)(?:βρες|ψαξε|αναζητησε|αναζητηση)(?:\s.*)?\sμηνυματ/,
+  /(?:^|\s)που\s+(?:μιλησαμε|γραψαμε|ειπαμε|συζητησαμε)(?:\s|$)/,
+  /(?:^|\s)ποτε\s+(?:μου\s+)?(?:ειπε|ανεφερε|εγραψε|μιλησε)(?:\s|$)/,
+  /(?:^|\s)μηνυματα?\s+(?:για|σχετικα\s+με)(?:\s|$)/,
+];
+
+const MESSAGE_SEARCH_FILLER = /^(?:the|a|an|my|our|το|τη|την|τον|τα|τις|τους|οι|ο|η|μου|μας)\s+/i;
+const MESSAGE_SEARCH_VERB = /^(?:please\s+)?(?:search|find|look\s+for|look|βρες(?:\s+μου)?|ψάξε|ψαξε|αναζήτησε|αναζητησε)(?:\s+|$)/i;
+// «Πότε μου ανέφερε ο Μάρκος το Next.js»: the person after a Greek verb is not the query.
+const MESSAGE_SEARCH_SUBJECT = /^(?:ο|η|τη|την|τον)\s+\p{Lu}\p{L}+\s+(?=\S)/u;
+const MESSAGE_SEARCH_PLACE = /(?:^|\s)(?:(?:in|through)\s+(?:my|our)\s+(?:messages|chats|conversations|inbox)|my\s+(?:messages|chats|conversations)|(?:στα\s+)?μηνύματ[άα]\s+(?:μου|μας)|(?:στα\s+)?μηνυματα\s+(?:μου|μας)|στα\s+μηνύματα|στα\s+μηνυματα)(?=\s|$|[?;!.])/gi;
+
+export function messageSearchQuery(rawMessage: string): string | null {
+  const folded = fold(rawMessage.trim().toLowerCase());
+  if (!MESSAGE_SEARCH_PATTERNS.some((re) => re.test(folded))) return null;
+  // Quoted words are the query, in any of the quotes people type.
+  const quoted = rawMessage.match(/[«“"]([^«»“”"]{2,80})[»”"]/);
+  if (quoted) return quoted[1].trim();
+  // Otherwise what follows "about / for / mention / για / σχετικά με",
+  // or, failing that, the message without its verb and "in my messages".
+  const after = rawMessage.match(/(?:^|\s)(?:about|for|mention(?:ed)?|σχετικά με|σχετικα με|για|ανέφερε|ανεφερε)\s+(.+)$/i);
+  let words = (after ? after[1] : rawMessage).replace(MESSAGE_SEARCH_PLACE, ' ');
+  // Question marks anywhere; a full stop only at the end, so "Next.js" survives.
+  words = words.replace(/[?;!]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[.]+$/, '').trim();
+  for (let i = 0; i < 3; i += 1) {
+    const next = words.replace(MESSAGE_SEARCH_VERB, '').replace(MESSAGE_SEARCH_SUBJECT, '').replace(MESSAGE_SEARCH_FILLER, '');
+    if (next === words) break;
+    words = next;
+  }
+  return words.slice(0, 80);
+}
+
 /**
  * Rule-based planner used when the LLM has no tools (preview, Ollama down).
  * Returns 1–3 tools; never proposes destructive admin actions.
@@ -574,6 +652,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
       tools.push({ name, args });
     }
   };
+
+  // A search through the reader's own messages is a request of its own.
+  const inMessages = messageSearchQuery(rawMessage);
+  if (inMessages !== null) return [{ name: 'search_messages', args: inMessages ? { query: inMessages } : {} }];
 
   const location = detectLocation(message);
   const person = detectPersonName(message);
@@ -622,7 +704,9 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'investor',
   ]);
 
-  const wantsMatches = includesAny(message, [
+  // A question about one match ("why do I match with Elena") is that match's
+  // read, not the whole list.
+  const wantsMatches = !areaReads.includes('get_match_detail') && includesAny(message, [
     'match',
     'recommend',
     'αντιστοίχισ',
@@ -773,7 +857,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (wantsNotifications) add('get_notifications');
 
   // "Who could introduce me to Nikos" reads the paths to that person.
-  for (const read of areaReads) add(read, read === 'get_intros' && person ? { name: person } : {});
+  for (const read of areaReads) add(read, (read === 'get_intros' || read === 'get_match_detail') && person ? { name: person } : {});
 
   if (wantsShortlistRemove) {
     const args: Record<string, string> = {};
@@ -877,12 +961,26 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   // A founder update, like a need card, is asked for with "write" as often as "draft".
   const updateNoun = includesAny(message, ['founder update', 'investor update', 'update for my followers', 'ενημέρωση ιδρυτ', 'ενημερωση ιδρυτ', 'ενημέρωση για τους ακολούθους', 'ενημερωση για τους ακολουθους']);
   const scoutNoun = includesAny(message, ['scout brief', 'brief for the scout', 'σημείωμα ανιχνευτ', 'σημειωμα ανιχνευτ']);
+  // The listings other members search: a mentor's and a service provider's.
+  // Checked before the personal profile, whose nouns ("headline") they share.
+  const mentorListingNoun = includesAny(message, [
+    'mentor listing', 'mentor profile', 'mentoring listing', 'mentoring profile',
+    'καταχώριση μέντορα', 'καταχωριση μεντορα', 'καταχώρισή μου ως μέντορ', 'καταχωριση μου ως μεντορ', 'προφίλ μέντορα', 'προφιλ μεντορα',
+  ]);
+  const providerListingNoun = includesAny(message, [
+    'provider listing', 'provider profile', 'service listing', 'services listing',
+    'καταχώριση παρόχου', 'καταχωριση παροχου', 'προφίλ παρόχου', 'προφιλ παροχου', 'καταχώριση υπηρεσιών', 'καταχωριση υπηρεσιων',
+  ]);
   const draftKind = needCardNoun && needCardVerb
     ? 'draft_need_card'
     : scoutNoun && needCardVerb
     ? 'draft_scout_brief'
     : updateNoun && needCardVerb
     ? 'draft_founder_update'
+    : mentorListingNoun && needCardVerb
+    ? 'draft_mentor_listing'
+    : providerListingNoun && needCardVerb
+    ? 'draft_provider_listing'
     : !draftVerb
     ? null
     : includesAny(message, ['milestone', 'ορόσημ', 'οροσημ'])
@@ -912,6 +1010,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     const isPublic = includesAny(message, ['public', 'linkedin', 'δημόσι', 'δημοσι']);
     add('draft_founder_update', { ...(quoted ? { title: quoted } : {}), ...(isPublic ? { visibility: 'public' } : {}) });
   }
+  if (draftKind === 'draft_mentor_listing') add('draft_mentor_listing', quoted ? { headline: quoted } : {});
+  if (draftKind === 'draft_provider_listing') add('draft_provider_listing', quoted ? { headline: quoted } : {});
   if (draftKind === 'draft_profile') {
     const field = includesAny(message, ['bio', 'βιογραφικ']) ? 'bio' : 'headline';
     add('draft_profile', quoted ? { [field]: quoted } : {});
@@ -924,6 +1024,8 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     ...(draftKind === 'draft_need_card' ? ['get_commitments'] : []),
     ...(draftKind === 'draft_founder_update' ? ['get_founder_updates'] : []),
     ...(draftKind === 'draft_scout_brief' ? ['get_scout'] : []),
+    // "mentor", "founders", "seed" in a listing's headline are its words, not a search.
+    ...(draftKind === 'draft_mentor_listing' || draftKind === 'draft_provider_listing' ? ['search_people'] : []),
     ...(wantsJoinGroup || wantsLeaveGroup ? ['get_groups'] : []),
     ...(wantsApply ? ['get_programs', 'get_my_programs'] : []),
     ...(wantsInvite ? ['get_invites'] : []),

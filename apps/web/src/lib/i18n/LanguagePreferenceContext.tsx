@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_LOCALES, applyLocale, LOCALE_CHANGE_EVENT, LOCALE_STORAGE_KEY, type AppLocale } from '@/lib/locale';
 
-/** Which language appears first (larger); the other is secondary (smaller). */
+/** Which language appears first. The other, when shown, is the same size. */
 export type PrimaryLanguage = 'en' | 'el';
 
 /** Whether secondary language is shown alongside primary. */
@@ -131,7 +131,11 @@ export function LanguagePreferenceProvider({ children }: { children: ReactNode }
 
   useEffect(() => {
     let primary: PrimaryLanguage = 'en';
-    let displayMode: LanguageDisplayMode = 'bilingual';
+    // One language until the reader asks for both. The switch is one click
+    // (the account menu and Settings). A stored choice wins, either way.
+    // The server snapshot stays bilingual so the first paint matches the HTML;
+    // this runs after hydration, the same moment a stored Greek preference does.
+    let displayMode: LanguageDisplayMode = 'primary-only';
     const storedLocale = readStoredLocale();
     try {
       const storedPrimary = localStorage.getItem(PRIMARY_STORAGE_KEY);

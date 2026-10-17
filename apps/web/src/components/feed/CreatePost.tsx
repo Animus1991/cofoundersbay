@@ -236,7 +236,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1">
+                  <Badge key={tag} variant="secondary" data-chip="" className="gap-1">
                     #{tag}
                     <button aria-label={bilingualAria(`Remove tag ${tag}`, `Αφαίρεση ετικέτας ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
                       <X className="icon-sm" aria-hidden="true" />
@@ -259,8 +259,8 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-2 border-t border-border">
+            <div className="inline-flex max-w-full flex-col items-start">
             <div className="flex items-center gap-1" role="group" aria-label={bilingualAria('Attachments', 'Συνημμένα')} aria-describedby={attachHintId}>
-              <span id={attachHintId} className="sr-only">{ATTACHMENTS_UNAVAILABLE}</span>
               <Button aria-label={bilingualAria('Add image', 'Προσθήκη εικόνας')} title={ATTACHMENTS_UNAVAILABLE} variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Image className="icon-sm" aria-hidden="true" />
               </Button>
@@ -270,6 +270,10 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
               <Button variant="ghost" size="icon" className="h-9 w-9" disabled title={ATTACHMENTS_UNAVAILABLE} aria-label={bilingualAria('Mention someone', 'Αναφορά σε κάποιον')}>
                 <AtSign className="icon-sm" aria-hidden="true" />
               </Button>
+            </div>
+              <span id={attachHintId} className="max-w-[16rem] text-2xs leading-snug text-muted-foreground sm:sr-only">
+                <BilingualText en="Not available yet: posts are text-only for now" el="Δεν είναι διαθέσιμο ακόμη: οι αναρτήσεις είναι μόνο κείμενο προς το παρόν" compact wrap />
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <span id={countId} className={cn('text-xs', tooLong ? 'text-destructive-accessible' : 'text-muted-foreground')}>

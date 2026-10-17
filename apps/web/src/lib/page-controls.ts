@@ -388,6 +388,8 @@ export type PageListSummary = {
   total?: number;
   /** The first rows on screen, one line each, in screen order. */
   rows: string[];
+  /** The same rows in Greek, when the page has them; a Greek reader's assistant reads these. */
+  rowsEl?: string[];
   /** The rows are sample data, not the reader's account. */
   sample?: boolean;
 };
@@ -448,6 +450,13 @@ export type PageList = {
    * `undefined` while the list is loading.
    */
   rows: readonly string[] | undefined;
+  /**
+   * The same rows in Greek, same order, when a row carries the page's own
+   * words (a status, a reason, a step) and not only names and figures.
+   * Without it a Greek answer about this page quoted the rows in English
+   * («Skills you asked for…» under «Πρόσωπα που προτείνει ο ανιχνευτής»).
+   */
+  rowsEl?: readonly string[];
   total?: number;
   sample?: boolean;
 };
@@ -471,6 +480,7 @@ export function usePageList(lists: readonly PageList[]): void {
       shown: list.rows.length,
       ...(list.total !== undefined && list.total !== list.rows.length ? { total: list.total } : {}),
       rows: list.rows.slice(0, LIST_ROW_LIMIT).map(oneLine),
+      ...(list.rowsEl ? { rowsEl: list.rowsEl.slice(0, LIST_ROW_LIMIT).map(oneLine) } : {}),
       ...(list.sample ? { sample: true } : {}),
     });
   }

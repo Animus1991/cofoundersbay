@@ -7,7 +7,7 @@ import { executeAction, isUndoable } from './action-registry';
 import { AREA_READERS } from './copilot-reads';
 import { planCopilotTools } from './copilot-planner';
 import { takeFormDraft } from './form-draft';
-import { translate } from './i18n/translate';
+import { ensureExtraCatalog, translate } from './i18n/translate';
 
 /**
  * The co-founder scout and the interest budget. The scout proposes and
@@ -35,6 +35,8 @@ describe('the scout demo', () => {
     expect(state.proposals[0].reasons.map((r: { en: string }) => r.en)).toContain('Open to co-founding');
     expect(state.proposals[0].draftNote).toMatch(/^Hi Marcus/);
     expect(state.proposals[0].draftNote).not.toMatch(/@|\+\d/);
+    expect(state.proposals[0].draftNoteEl).toMatch(/^Γεια σας Marcus/);
+    expect(state.proposals[0].draftNoteEl).not.toMatch(/@|\+\d|\//);
   });
 
   it('never proposes a dismissed person again, and restores one exactly', () => {
@@ -67,10 +69,14 @@ describe('the interest budget', () => {
 
 describe('the assistant', () => {
   it('reads the scout in Greek, with ids it can act on', async () => {
+    await ensureExtraCatalog('el'); // the app loads it when Greek is on; place names live there
     vi.mocked(getScout).mockResolvedValue(scout('/api/scout') as never);
     const reply = await AREA_READERS.get_scout({}, { t: (s: string, v?: Record<string, string | number>) => translate('el', s, v), locale: 'el' });
     expect(reply.section).toContain('Ο ανιχνευτής προτείνει:');
-    expect(reply.section).toMatch(/\*\*Marcus Chen\*\* \(\d+, id scout-\d+\) — .*Ανοιχτός\/ή σε συνίδρυση/);
+    expect(reply.section).toMatch(/\*\*Marcus Chen\*\* \(\d+, id scout-\d+\) — .*Ενδιαφέρεται για συνίδρυση/);
+    // The place reads in Greek inside the reason too, as it does on the card.
+    expect(reply.section).toContain('Στην περιοχή: Αθήνα, Ελλάδα');
+    expect(reply.section).not.toContain('Athens, Greece');
   });
 
   it('runs the scout (nothing to undo) and drafts a brief into the form without saving', async () => {

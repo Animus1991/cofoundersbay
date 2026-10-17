@@ -29,13 +29,15 @@ describe('scout rules', () => {
     expect(hidden.score).toBe(50 + 15 + 5 + 10);
     expect(hidden.reasons.map((r) => r.en)).toEqual(['Skills you asked for: TypeScript, AI', 'Their headline matches the role']);
     expect(shown.reasons.map((r) => r.en)).toContain('Open to co-founding');
-    expect(shown.reasons.map((r) => r.el)).toContain('Επαληθευμένος/η');
+    expect(shown.reasons.map((r) => r.el)).toContain('Επαληθευμένο προφίλ');
     expect(scoreScoutCandidate(BRIEF, candidate({ location: 'Athens, Greece' })).reasons.map((r) => r.en)).toContain('In Athens, Greece');
   });
 
   it('drafts a note with no contact details, in the founder’s language', () => {
     expect(draftScoutNote(BRIEF, candidate())).toBe('Hi Marcus, I am looking for a Technical co-founder for a startup at the building stage. Your work in TypeScript, AI stood out. Would you be open to a short conversation here on CoFounderBay?');
-    expect(draftScoutNote(BRIEF, candidate(), 'el')).toMatch(/^Γεια σας Marcus/);
+    expect(draftScoutNote(BRIEF, candidate(), 'el')).toBe('Γεια σας Marcus, η startup μου βρίσκεται σε στάδιο κατασκευής και ψάχνω άτομο για τον ρόλο «Technical co-founder». Μου έκανε εντύπωση η εμπειρία σας σε TypeScript, AI. Θα σας ενδιέφερε μια σύντομη συζήτηση εδώ στο CoFounderBay;');
+    // The role stays quoted, so a role typed in any language reads; no stage, no stage clause.
+    expect(draftScoutNote({ ...BRIEF, stage: null }, candidate(), 'el')).toMatch(/^Γεια σας Marcus, ψάχνω άτομο για τον ρόλο «Technical co-founder»\./);
   });
 
   it('keeps the best few above the floor', () => {
@@ -91,6 +93,9 @@ describe('ScoutService', () => {
     expect(res.added).toBe(1);
     expect(proposals.map((p) => p.candidateId)).toEqual(['marcus']); // elena is a connection; sofia scores below the floor
     expect(res.proposals[0]).toMatchObject({ status: 'proposed', person: { displayName: 'Marcus Chen' } });
+    // The first note is kept in both languages: a Greek reader may write to someone abroad.
+    expect(res.proposals[0].draftNote).toMatch(/^Hi Marcus/);
+    expect(res.proposals[0].draftNoteEl).toMatch(/^Γεια σας Marcus/);
     // The matching-only signal raised the score and was not named.
     expect(JSON.stringify(res.proposals[0].reasons)).not.toContain('Open to');
     expect(notifications.createNotification).not.toHaveBeenCalled();

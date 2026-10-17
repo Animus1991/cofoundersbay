@@ -43,6 +43,8 @@ import {
   LayoutDashboard,
   ShieldAlert,
 } from 'lucide-react';
+import { safeWebUrl } from '@/lib/web-url';
+import { profileEl, profileEn } from '@/lib/i18n/strings-profile';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
@@ -82,6 +84,7 @@ type ProfileFormData = {
   linkedinUrl: string;
   githubUrl: string;
   twitterUrl: string;
+  introVideoUrl: string;
 
   // Skills & expertise
   skills: string[];
@@ -125,6 +128,7 @@ const defaultFormData: ProfileFormData = {
   linkedinUrl: '',
   githubUrl: '',
   twitterUrl: '',
+  introVideoUrl: '',
   skills: [],
   industries: [],
   languages: [],
@@ -147,38 +151,105 @@ const defaultFormData: ProfileFormData = {
   education: [],
 };
 
-const roleOptions: { value: Role; label: string; icon: React.ElementType; description: string }[] = [
-  { value: 'founder', label: 'Founder', icon: Rocket, description: 'Building or looking to build a startup' },
-  { value: 'mentor', label: 'Mentor', icon: GraduationCap, description: 'Helping founders grow' },
-  { value: 'investor', label: 'Investor', icon: TrendingUp, description: 'Investing in startups' },
-  { value: 'org', label: 'Organization', icon: Building2, description: 'Accelerator, incubator, or hub' },
+const roleOptions: { value: Role; label: string; labelEl: string; icon: React.ElementType; description: string; descriptionEl: string }[] = [
+  { value: 'founder', label: 'Founder', labelEl: 'Ιδρυτής', icon: Rocket, description: 'Building or looking to build a startup', descriptionEl: 'Χτίζει ή θέλει να χτίσει ένα startup' },
+  { value: 'mentor', label: 'Mentor', labelEl: 'Μέντορας', icon: GraduationCap, description: 'Helping founders grow', descriptionEl: 'Βοηθά ιδρυτές να αναπτυχθούν' },
+  { value: 'investor', label: 'Investor', labelEl: 'Επενδυτής', icon: TrendingUp, description: 'Investing in startups', descriptionEl: 'Επενδύει σε startups' },
+  { value: 'org', label: 'Organization', labelEl: 'Οργανισμός', icon: Building2, description: 'Accelerator, incubator, or hub', descriptionEl: 'Επιταχυντής, θερμοκοιτίδα ή κόμβος' },
 ];
 
 const startupStages = [
-  { value: 'idea', label: 'Idea' },
-  { value: 'mvp', label: 'MVP' },
-  { value: 'traction', label: 'Traction' },
-  { value: 'scaling', label: 'Scaling' },
+  { value: 'idea', label: 'Idea', labelEl: 'Ιδέα' },
+  { value: 'mvp', label: 'MVP', labelEl: 'MVP' },
+  { value: 'traction', label: 'Traction', labelEl: 'Traction' },
+  { value: 'scaling', label: 'Scaling', labelEl: 'Κλιμάκωση' },
 ];
 const commitmentLevels = [
-  { value: 'full-time', label: 'Full-time' },
-  { value: 'part-time', label: 'Part-time' },
-  { value: 'weekends', label: 'Weekends only' },
-  { value: 'flexible', label: 'Flexible' },
+  { value: 'full-time', label: 'Full-time', labelEl: 'Πλήρης απασχόληση', hint: 'This is your main work.', hintEl: 'Είναι η κύρια δουλειά σας.' },
+  { value: 'part-time', label: 'Part-time', labelEl: 'Μερική απασχόληση', hint: 'Alongside a job or studies.', hintEl: 'Παράλληλα με δουλειά ή σπουδές.' },
+  { value: 'weekends', label: 'Weekends only', labelEl: 'Μόνο Σαββατοκύριακα', hint: 'Weekends only, for now.', hintEl: 'Μόνο Σαββατοκύριακα, προς το παρόν.' },
+  { value: 'flexible', label: 'Flexible', labelEl: 'Ευέλικτα', hint: 'It varies from week to week.', hintEl: 'Αλλάζει από εβδομάδα σε εβδομάδα.' },
 ];
-const lookingForOptions = ['Co-founder', 'CTO', 'Designer', 'Marketing', 'Sales', 'Operations', 'Other'];
+const lookingForOptions = [
+  { value: 'Co-founder', label: 'Co-founder', labelEl: 'Συνιδρυτής' },
+  { value: 'CTO', label: 'CTO', labelEl: 'CTO' },
+  { value: 'Designer', label: 'Designer', labelEl: 'Σχεδιαστής' },
+  { value: 'Marketing', label: 'Marketing', labelEl: 'Μάρκετινγκ' },
+  { value: 'Sales', label: 'Sales', labelEl: 'Πωλήσεις' },
+  { value: 'Operations', label: 'Operations', labelEl: 'Λειτουργίες' },
+  { value: 'Other', label: 'Other', labelEl: 'Άλλο' },
+];
 const industryOptions = ['AI/ML', 'Fintech', 'Healthtech', 'E-commerce', 'SaaS', 'Marketplace', 'Gaming', 'Education', 'Climate', 'Web3', 'Hardware', 'Consumer', 'Enterprise', 'Other'];
+const industryEl: Record<string, string> = {
+  'E-commerce': 'Ηλεκτρονικό εμπόριο',
+  Marketplace: 'Αγορά',
+  Gaming: 'Παιχνίδια',
+  Education: 'Εκπαίδευση',
+  Climate: 'Κλίμα',
+  Hardware: 'Υλικό',
+  Consumer: 'Καταναλωτικά',
+  Enterprise: 'Επιχειρήσεις',
+  Other: 'Άλλο',
+};
 const expertiseOptions = ['Product', 'Engineering', 'Design', 'Marketing', 'Sales', 'Operations', 'Finance', 'Legal', 'HR', 'Fundraising', 'Growth', 'Strategy'];
-const availabilityOptions = ['1-2 hours/week', '3-5 hours/week', '5-10 hours/week', 'On-demand'];
-const investmentStageOptions = [
-  { value: 'pre-seed', label: 'Pre-seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B+' },
-  { value: 'bootstrapped', label: 'Bootstrapped' },
+const expertiseEl: Record<string, string> = {
+  Product: 'Προϊόν',
+  Engineering: 'Μηχανική λογισμικού',
+  Design: 'Σχεδιασμός',
+  Marketing: 'Μάρκετινγκ',
+  Sales: 'Πωλήσεις',
+  Operations: 'Λειτουργίες',
+  Finance: 'Οικονομικά',
+  Legal: 'Νομικά',
+  HR: 'Ανθρώπινο δυναμικό',
+  Fundraising: 'Χρηματοδότηση',
+  Growth: 'Ανάπτυξη',
+  Strategy: 'Στρατηγική',
+};
+const languageSuggestions = ['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese'];
+const languageEl: Record<string, string> = {
+  English: 'Αγγλικά',
+  Greek: 'Ελληνικά',
+  Spanish: 'Ισπανικά',
+  French: 'Γαλλικά',
+  German: 'Γερμανικά',
+  Chinese: 'Κινεζικά',
+};
+const availabilityOptions = [
+  { value: '1-2 hours/week', label: '1-2 hours/week', labelEl: '1-2 ώρες/εβδομάδα' },
+  { value: '3-5 hours/week', label: '3-5 hours/week', labelEl: '3-5 ώρες/εβδομάδα' },
+  { value: '5-10 hours/week', label: '5-10 hours/week', labelEl: '5-10 ώρες/εβδομάδα' },
+  { value: 'On-demand', label: 'On-demand', labelEl: 'Κατ’ απαίτηση' },
 ];
-const orgTypeOptions = ['Accelerator', 'Incubator', 'Hub', 'University', 'Corporate', 'Government'];
-const programOptions = ['Acceleration', 'Incubation', 'Mentorship', 'Funding', 'Office space', 'Events'];
+const investmentStageOptions = [
+  { value: 'pre-seed', label: 'Pre-seed', labelEl: 'Προ-seed' },
+  { value: 'seed', label: 'Seed', labelEl: 'Seed' },
+  { value: 'series-a', label: 'Series A', labelEl: 'Σειρά A' },
+  { value: 'series-b', label: 'Series B+', labelEl: 'Σειρά B+' },
+  { value: 'bootstrapped', label: 'Bootstrapped', labelEl: 'Αυτοχρηματοδοτούμενο' },
+];
+const orgTypeOptions = [
+  { value: 'Accelerator', label: 'Accelerator', labelEl: 'Επιταχυντής' },
+  { value: 'Incubator', label: 'Incubator', labelEl: 'Θερμοκοιτίδα' },
+  { value: 'Hub', label: 'Hub', labelEl: 'Κόμβος' },
+  { value: 'University', label: 'University', labelEl: 'Πανεπιστήμιο' },
+  { value: 'Corporate', label: 'Corporate', labelEl: 'Επιχείρηση' },
+  { value: 'Government', label: 'Government', labelEl: 'Δημόσιος φορέας' },
+];
+const programOptions = [
+  { value: 'Acceleration', label: 'Acceleration', labelEl: 'Επιτάχυνση' },
+  { value: 'Incubation', label: 'Incubation', labelEl: 'Επώαση' },
+  { value: 'Mentorship', label: 'Mentorship', labelEl: 'Καθοδήγηση' },
+  { value: 'Funding', label: 'Funding', labelEl: 'Χρηματοδότηση' },
+  { value: 'Office space', label: 'Office space', labelEl: 'Χώρος γραφείου' },
+  { value: 'Events', label: 'Events', labelEl: 'Εκδηλώσεις' },
+];
+const regionSuggestions = ['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM'];
+const regionEl: Record<string, string> = {
+  Global: 'Παγκοσμίως',
+  Europe: 'Ευρώπη',
+  Asia: 'Ασία',
+};
 
 function normalizeFounderStage(input: string): string {
   const s = input.trim().toLowerCase();
@@ -213,16 +284,20 @@ function normalizeInvestmentStage(input: string): string {
 
 function TagInput({
   label,
+  labelEl,
   value,
   onChange,
   suggestions,
+  suggestionEl,
   placeholder,
   max = 10,
 }: {
   label: string;
+  labelEl?: string;
   value: string[];
   onChange: (value: string[]) => void;
   suggestions: string[];
+  suggestionEl?: Record<string, string>;
   placeholder?: string;
   max?: number;
 }) {
@@ -243,12 +318,12 @@ function TagInput({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
+      <label htmlFor={inputId} className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></label>
       <div className="flex flex-wrap gap-2 p-3 rounded-lg border border-border bg-background/50 min-h-[60px]">
         {value.map((tag) => (
-          <Badge key={tag} variant="secondary" className="gap-1">
-            {tag}
-            <button aria-label={`Remove ${tag}`} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
+          <Badge key={tag} variant="secondary" data-chip="" className="gap-1">
+            <BilingualText en={tag} el={suggestionEl?.[tag]} compact />
+            <button aria-label={bilingualAria(`Remove ${tag}`, suggestionEl?.[tag] ? `Αφαίρεση: ${suggestionEl[tag]}` : `Αφαίρεση: ${tag}`)} type="button" onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
               <X className="icon-sm" />
             </button>
           </Badge>
@@ -264,7 +339,7 @@ function TagInput({
               addTag(input);
             }
           }}
-          placeholder={value.length < max ? placeholder : `Max ${max} reached`}
+          placeholder={value.length < max ? placeholder : bilingualInline(`Max ${max} reached`, `Όριο ${max}`)}
           disabled={value.length >= max}
           className="flex-1 min-w-[120px] bg-transparent text-sm outline-none"
         />
@@ -280,7 +355,7 @@ function TagInput({
               onClick={() => addTag(s)}
               className="text-xs px-2 py-1 rounded-full bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
-              + {s}
+              + <BilingualText en={s} el={suggestionEl?.[s]} compact />
             </button>
           ))}
       </div>
@@ -290,16 +365,21 @@ function TagInput({
 
 function SelectButtons({
   label,
+  labelEl,
   value,
   onChange,
   options,
   multiple = false,
+  help,
 }: {
   label: string;
+  labelEl?: string;
   value: string | string[];
   onChange: (value: string | string[]) => void;
-  options: ({ value: string; label: string } | string)[];
+  options: ({ value: string; label: string; labelEl?: string; hint?: string; hintEl?: string } | string)[];
   multiple?: boolean;
+  /** What the answer changes, said under the choices. */
+  help?: { en: string; el: string };
 }) {
   const normalized = options.map((opt) => (typeof opt === 'string' ? { value: opt, label: opt } : opt));
   const selected = Array.isArray(value) ? value : [value].filter(Boolean);
@@ -320,7 +400,7 @@ function SelectButtons({
   const groupId = useId();
   return (
     <div className="space-y-2">
-      <p id={groupId} className="text-sm font-medium text-foreground">{label}</p>
+      <p id={groupId} className="text-sm font-medium text-foreground"><BilingualText en={label} el={labelEl} compact /></p>
       <div className="flex flex-wrap gap-2" role="group" aria-labelledby={groupId}>
         {normalized.map((opt) => (
           <button
@@ -335,10 +415,22 @@ function SelectButtons({
                 : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
-            {opt.label}
+            <BilingualText en={opt.label} el={'labelEl' in opt ? opt.labelEl : undefined} compact />
           </button>
         ))}
       </div>
+      {(() => {
+        // The chosen option's meaning, then what the answer changes.
+        const chosen = normalized.find((o) => selected.includes(o.value) && 'hint' in o && o.hint) as { hint?: string; hintEl?: string } | undefined;
+        if (!chosen?.hint && !help) return null;
+        return (
+          <p className="text-xs text-muted-foreground">
+            {chosen?.hint ? <BilingualText en={chosen.hint} el={chosen.hintEl} wrap /> : null}
+            {chosen?.hint && help ? ' ' : null}
+            {help ? <BilingualText en={help.en} el={help.el} wrap /> : null}
+          </p>
+        );
+      })()}
     </div>
   );
 }
@@ -351,7 +443,14 @@ export default function ProfileEditPage() {
   const [form, setForm] = useState<ProfileFormData>(defaultFormData);
   const [formInitialized, setFormInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [introVideoError, setIntroVideoError] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  // A link to a field on another tab (from the completeness list) opens that
+  // tab first; useScrollToHash then finds the field once it is mounted.
+  useEffect(() => {
+    const tab = ({ 'founder-details': 'role', links: 'links' } as Record<string, string>)[window.location.hash.slice(1)];
+    if (tab) setActiveTab(tab);
+  }, []);
   // Whether the saved profile had roles or schools, so removing the last one
   // still sends a payload (an empty one would otherwise keep the old list).
   const hadHistory = useRef(false);
@@ -409,6 +508,7 @@ export default function ProfileEditPage() {
       linkedinUrl: (typeof links.linkedinUrl === 'string' ? links.linkedinUrl : '') ?? '',
       githubUrl: (typeof links.githubUrl === 'string' ? links.githubUrl : '') ?? '',
       twitterUrl: (typeof links.twitterUrl === 'string' ? links.twitterUrl : '') ?? '',
+      introVideoUrl: typeof rolePayload.introVideoUrl === 'string' ? rolePayload.introVideoUrl : '',
       skills: profile.skills?.map((s) => s.skillName) ?? [],
       industries: Array.isArray(rolePayload.industries)
         ? (rolePayload.industries as unknown[]).filter((x): x is string => typeof x === 'string')
@@ -491,6 +591,13 @@ export default function ProfileEditPage() {
         })
         .filter((id): id is string => typeof id === 'string');
 
+      const introVideo = safeWebUrl(form.introVideoUrl);
+      if (form.introVideoUrl.trim() && !introVideo) {
+        setIntroVideoError(true);
+        return;
+      }
+      setIntroVideoError(false);
+
       const links = {
         websiteUrl: form.websiteUrl.trim() || undefined,
         linkedinUrl: form.linkedinUrl.trim() || undefined,
@@ -501,6 +608,7 @@ export default function ProfileEditPage() {
       const rolePayload: Record<string, unknown> = {
         ...(Object.values(links).some(Boolean) ? { links } : {}),
         ...(form.industries.length ? { industries: form.industries, industry: form.industries[0] } : {}),
+        ...(introVideo ? { introVideoUrl: introVideo } : {}),
       };
 
       if (form.role === 'founder') {
@@ -632,9 +740,9 @@ export default function ProfileEditPage() {
       <div className="grid grid-cols-1 gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
-          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} /></div>
+          <div className="mb-4 empty:hidden"><FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} /></div>
           {importedNotice ? (
-            <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="status">
+            <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-primary-muted bg-primary-subtle p-3 text-sm" role="status">
               <BilingualText en="Filled from LinkedIn. Review the fields, then press Save; nothing is stored until you do." el="Συμπληρώθηκε από το LinkedIn. Ελέγξτε τα πεδία και πατήστε Αποθήκευση· τίποτα δεν αποθηκεύεται πριν το κάνετε." wrap />
               <Button type="button" variant="ghost" size="sm" onClick={() => setImportedNotice(false)}>
                 <BilingualText en="Dismiss" el="Απόκρυψη" compact />
@@ -684,15 +792,15 @@ export default function ProfileEditPage() {
             {/* Basic Info */}
             <TabsContent value="basic" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Avatar */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Card id="photo" className="scroll-mt-20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Camera className="icon-md text-muted-foreground" />
                     <BilingualText en="Profile Photo" el="Φωτογραφία προφίλ" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="A friendly face helps others recognize you and builds trust" el="Ένα φιλικό πρόσωπο βοηθά τους άλλους να σας αναγνωρίζουν και χτίζει εμπιστοσύνη" wrap /></CardDescription>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent>
                   <div className="flex flex-col sm:flex-row items-center gap-6">
                     <ImageCropperTrigger
                       cropShape="circle"
@@ -763,11 +871,11 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Name & Headline */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
+              <Card>
+                <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2">
                         <User className="icon-md text-muted-foreground" />
                         <BilingualText en="Personal Identity" el="Προσωπικά στοιχεία" compact />
                       </CardTitle>
@@ -790,14 +898,14 @@ export default function ProfileEditPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-5 pt-6">
+                <CardContent className="space-y-5">
                   <div className="space-y-2">
                     <label htmlFor="profile-display-name" className="text-sm font-medium"><BilingualText en="Display Name" el="Εμφανιζόμενο όνομα" compact /> <span className="text-destructive-accessible">*</span></label>
                     <Input
                       id="profile-display-name"
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
-                      placeholder="e.g. Jane Doe"
+                      placeholder={bilingualInline('e.g. Jane Doe', 'π.χ. Μαρία Παπαδοπούλου')}
                       className="max-w-md"
                     />
                   </div>
@@ -807,7 +915,7 @@ export default function ProfileEditPage() {
                       id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
-                      placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
+                      placeholder={bilingualInline('e.g., 3x Founder | Building AI SaaS | Former product lead', 'π.χ. Ιδρύτρια | Φτιάχνω AI SaaS | Πρώην product lead')}
                     />
                     <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
@@ -829,7 +937,7 @@ export default function ProfileEditPage() {
 
                   {/* AI Suggestions panel */}
                   {showAISuggestions && aiSuggestions && (
-                    <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-5 space-y-4 animate-in fade-in slide-in-from-top-2">
+                    <div className="rounded-xl border border-primary-muted bg-primary-subtle p-5 space-y-4 animate-in fade-in slide-in-from-top-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
@@ -850,7 +958,7 @@ export default function ProfileEditPage() {
                           <div className="space-y-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Headline" el="Προτεινόμενος τίτλος" compact /></p>
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                              <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border shadow-sm italic">
+                              <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border italic">
                                 "{aiSuggestions.headline}"
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
@@ -865,7 +973,7 @@ export default function ProfileEditPage() {
                           <div className="space-y-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"><BilingualText en="Suggested Bio" el="Προτεινόμενο βιογραφικό" compact /></p>
                             <div className="flex flex-col gap-3">
-                              <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border shadow-sm whitespace-pre-wrap">
+                              <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border whitespace-pre-wrap">
                                 {aiSuggestions.bio}
                               </p>
                               <Button size="sm" variant="secondary" className="gap-1.5 self-start"
@@ -896,21 +1004,21 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Location */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <MapPin className="icon-md text-muted-foreground" />
                     <BilingualText en="Location & Timezone" el="Τοποθεσία & ζώνη ώρας" compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-6">
+                <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label htmlFor="profile-location" className="text-sm font-medium"><BilingualText en="City, Country" el="Πόλη, χώρα" compact /></label>
                     <Input
                       id="profile-location"
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
-                      placeholder="e.g., Athens, Greece"
+                      placeholder={bilingualInline('e.g., Athens, Greece', 'π.χ. Αθήνα, Ελλάδα')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -919,45 +1027,51 @@ export default function ProfileEditPage() {
                       id="profile-timezone"
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
-                      placeholder="e.g., Europe/Athens"
+                      placeholder={bilingualInline('e.g., Europe/Athens', 'π.χ. Europe/Athens')}
                     />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Skills & Industries */}
-              <Card className="shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Card id="skills" className="scroll-mt-20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Target className="icon-md text-muted-foreground" />
                     <BilingualText en="Skills & Expertise" el="Δεξιότητες & εξειδίκευση" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="What are your core strengths and areas of focus?" el="Ποια είναι τα βασικά σας δυνατά σημεία και πεδία εστίασης;" wrap /></CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6 pt-6">
+                <CardContent className="space-y-6">
                   <TagInput
                     label="Core Skills (Max 15)"
+                    labelEl="Βασικές δεξιότητες (έως 15)"
                     value={form.skills}
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
+                    suggestionEl={skillCatalog.length ? undefined : expertiseEl}
                     placeholder={bilingualInline("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
                     max={15}
                   />
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <TagInput
                       label="Industries"
+                      labelEl="Κλάδοι"
                       value={form.industries}
                       onChange={(v) => updateField('industries', v)}
                       suggestions={industryOptions}
-                      placeholder="e.g. Fintech, AI..."
+                      suggestionEl={industryEl}
+                      placeholder={bilingualInline('e.g. Fintech, AI...', 'π.χ. Fintech, AI...')}
                       max={5}
                     />
                     <TagInput
                       label="Languages"
+                      labelEl="Γλώσσες"
                       value={form.languages}
                       onChange={(v) => updateField('languages', v)}
-                      suggestions={['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese']}
-                      placeholder="e.g. English, Greek..."
+                      suggestions={languageSuggestions}
+                      suggestionEl={languageEl}
+                      placeholder={bilingualInline('e.g. English, Greek...', 'π.χ. Αγγλικά, Ελληνικά...')}
                       max={5}
                     />
                   </div>
@@ -965,9 +1079,9 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Experience and education: the profile's "Experience" section. */}
-              <Card id="experience" className="scroll-mt-20 shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="text-lg font-semibold">
+              <Card id="experience" className="scroll-mt-20">
+                <CardHeader>
+                  <CardTitle>
                     <BilingualText en="Experience and education" el="Εμπειρία και εκπαίδευση" compact />
                   </CardTitle>
                   <CardDescription>
@@ -978,7 +1092,7 @@ export default function ProfileEditPage() {
                     />
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent>
                   <ExperienceEditor
                     experience={form.experience}
                     education={form.education}
@@ -992,9 +1106,9 @@ export default function ProfileEditPage() {
             {/* Role Details */}
             <TabsContent value="role" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Role Selector */}
-              <Card className="border-primary/15 bg-primary/5">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Card className="border-primary-muted bg-primary-subtle">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Briefcase className="icon-md text-muted-foreground" />
                     <BilingualText en="Your Primary Role" el="Ο κύριος ρόλος σας" compact />
                   </CardTitle>
@@ -1023,8 +1137,8 @@ export default function ProfileEditPage() {
                             <Icon className="icon-md" />
                           </div>
                           <div>
-                            <p className="font-medium text-foreground">{opt.label}</p>
-                            <p className="text-xs text-muted-foreground">{opt.description}</p>
+                            <p className="text-sm font-medium text-foreground"><BilingualText en={opt.label} el={opt.labelEl} compact /></p>
+                            <p className="text-xs text-muted-foreground"><BilingualText en={opt.description} el={opt.descriptionEl} compact wrap /></p>
                           </div>
                         </button>
                       );
@@ -1035,9 +1149,9 @@ export default function ProfileEditPage() {
 
               {/* Founder-specific */}
               {form.role === 'founder' && (
-                <Card>
+                <Card id="founder-details" className="scroll-mt-20">
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
                       <Rocket className="icon-sm" />
                       <BilingualText en="Founder Details" el="Στοιχεία ιδρυτή" compact />
                     </CardTitle>
@@ -1045,22 +1159,30 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Startup Stage"
+                      labelEl="Στάδιο startup"
                       value={form.startupStage}
                       onChange={(v) => updateField('startupStage', v as string)}
                       options={startupStages}
                     />
                     <SelectButtons
                       label="Commitment Level"
+                      labelEl="Επίπεδο δέσμευσης"
                       value={form.commitment}
                       onChange={(v) => updateField('commitment', v as string)}
                       options={commitmentLevels}
+                      help={{ en: 'A different commitment shows as potential friction on both match pages.', el: 'Διαφορετική δέσμευση εμφανίζεται ως πιθανή τριβή και στις δύο σελίδες αντιστοίχισης.' }}
                     />
                     <SelectButtons
                       label="Looking For"
+                      labelEl="Αναζητάτε"
                       value={form.lookingFor}
                       onChange={(v) => updateField('lookingFor', v as string[])}
                       options={lookingForOptions}
                       multiple
+                      help={{
+                        en: 'Matching reads this: a co-founder or a team role puts other founders first; nothing chosen means a co-founder, then advisors.',
+                        el: 'Η αντιστοίχιση το διαβάζει: ένας συνιδρυτής ή ρόλος ομάδας φέρνει πρώτους άλλους ιδρυτές· χωρίς επιλογή σημαίνει συνιδρυτή και μετά συμβούλους.',
+                      }}
                     />
                   </CardContent>
                 </Card>
@@ -1070,7 +1192,7 @@ export default function ProfileEditPage() {
               {form.role === 'mentor' && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
                       <GraduationCap className="icon-sm" />
                       <BilingualText en="Mentor Details" el="Στοιχεία μέντορα" compact />
                     </CardTitle>
@@ -1078,14 +1200,17 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <TagInput
                       label="Expertise Areas"
+                      labelEl="Τομείς εξειδίκευσης"
                       value={form.expertiseAreas}
                       onChange={(v) => updateField('expertiseAreas', v)}
                       suggestions={expertiseOptions}
+                      suggestionEl={expertiseEl}
                       placeholder={bilingualInline("Add expertise…", "Προσθήκη εξειδίκευσης…")}
                       max={10}
                     />
                     <SelectButtons
                       label="Availability"
+                      labelEl="Διαθεσιμότητα"
                       value={form.availability}
                       onChange={(v) => updateField('availability', v as string)}
                       options={availabilityOptions}
@@ -1096,7 +1221,7 @@ export default function ProfileEditPage() {
                         <select id="pe-f2"
                           value={form.meetingPreference}
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
-                          className="w-full h-10 rounded-xl border border-input bg-background px-3 text-sm"
+                          className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                         >
                           <option value="">{bilingualInline("Select...", "Επιλέξτε…")}</option>
                           <option value="video">{bilingualInline("Video calls", "Βιντεοκλήσεις")}</option>
@@ -1109,7 +1234,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f3"
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
-                          placeholder="e.g., $100/hour or Free"
+                          placeholder={bilingualInline('e.g., $100/hour or Free', 'π.χ. 100$/ώρα ή Δωρεάν')}
                         />
                       </div>
                     </div>
@@ -1121,7 +1246,7 @@ export default function ProfileEditPage() {
               {form.role === 'investor' && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="icon-sm" />
                       <BilingualText en="Investor Details" el="Στοιχεία επενδυτή" compact />
                     </CardTitle>
@@ -1129,13 +1254,15 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Investment Focus"
+                      labelEl="Επενδυτική εστίαση"
                       value={form.investmentFocus}
                       onChange={(v) => updateField('investmentFocus', v as string[])}
-                      options={industryOptions}
+                      options={industryOptions.map((value) => ({ value, label: value, labelEl: industryEl[value] }))}
                       multiple
                     />
                     <SelectButtons
                       label="Investment Stages"
+                      labelEl="Στάδια επένδυσης"
                       value={form.investmentStages}
                       onChange={(v) => updateField('investmentStages', v as string[])}
                       options={investmentStageOptions}
@@ -1147,7 +1274,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f4"
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
-                          placeholder="e.g., $25K"
+                          placeholder={bilingualInline('e.g., $25K', 'π.χ. 25.000$')}
                         />
                       </div>
                       <div className="space-y-2">
@@ -1155,15 +1282,17 @@ export default function ProfileEditPage() {
                         <Input id="pe-f5"
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
-                          placeholder="e.g., $500K"
+                          placeholder={bilingualInline('e.g., $500K', 'π.χ. 500.000$')}
                         />
                       </div>
                     </div>
                     <TagInput
                       label="Geography Focus"
+                      labelEl="Γεωγραφική εστίαση"
                       value={form.geography}
                       onChange={(v) => updateField('geography', v)}
-                      suggestions={['Global', 'Europe', 'USA', 'MENA', 'Asia', 'LATAM']}
+                      suggestions={regionSuggestions}
+                      suggestionEl={regionEl}
                       placeholder={bilingualInline("Add region…", "Προσθήκη περιοχής…")}
                       max={5}
                     />
@@ -1175,7 +1304,7 @@ export default function ProfileEditPage() {
               {form.role === 'org' && (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
                       <Building2 className="icon-sm" />
                       <BilingualText en="Organization Details" el="Στοιχεία οργανισμού" compact />
                     </CardTitle>
@@ -1183,12 +1312,14 @@ export default function ProfileEditPage() {
                   <CardContent className="space-y-6">
                     <SelectButtons
                       label="Organization Type"
+                      labelEl="Τύπος οργανισμού"
                       value={form.orgType}
                       onChange={(v) => updateField('orgType', v as string)}
                       options={orgTypeOptions}
                     />
                     <SelectButtons
                       label="Programs Offered"
+                      labelEl="Προγράμματα"
                       value={form.programTypes}
                       onChange={(v) => updateField('programTypes', v as string[])}
                       options={programOptions}
@@ -1200,16 +1331,39 @@ export default function ProfileEditPage() {
             </TabsContent>
 
             {/* Social Links */}
-            <TabsContent value="links" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border">
-                <CardHeader className="pb-4 border-b border-border">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <TabsContent id="links" value="links" className="scroll-mt-20 space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     <Globe className="icon-md text-muted-foreground" />
                     <BilingualText en="Web & Social Links" el="Ιστότοπος & κοινωνικά δίκτυα" compact />
                   </CardTitle>
                   <CardDescription><BilingualText en="Connect your other profiles so people can learn more about you" el="Συνδέστε τα άλλα προφίλ σας ώστε να σας γνωρίσουν καλύτερα" wrap /></CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-5 pt-6">
+                <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <label htmlFor="pe-intro-video" className="text-sm font-medium">
+                      <BilingualText en={profileEn('intro_video')} el={profileEl('intro_video')} compact />
+                    </label>
+                    <Input
+                      id="pe-intro-video"
+                      value={form.introVideoUrl}
+                      onChange={(e) => {
+                        setIntroVideoError(false);
+                        updateField('introVideoUrl', e.target.value);
+                      }}
+                      placeholder="https://"
+                      aria-invalid={introVideoError}
+                      aria-describedby="pe-intro-video-hint"
+                    />
+                    <p id="pe-intro-video-hint" className={introVideoError ? 'text-xs text-destructive-accessible' : 'text-xs text-muted-foreground'}>
+                      <BilingualText
+                        en={introVideoError ? profileEn('intro_video_invalid') : profileEn('intro_video_hint')}
+                        el={introVideoError ? profileEl('intro_video_invalid') : profileEl('intro_video_hint')}
+                        wrap
+                      />
+                    </p>
+                  </div>
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label htmlFor="pe-f6" className="text-sm font-medium flex items-center gap-2">
@@ -1261,7 +1415,7 @@ export default function ProfileEditPage() {
 
             {/* Portfolio Tab */}
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
-              <Card className="shadow-sm border-border text-center py-12">
+              <Card className="text-center py-12">
                 <CardContent className="space-y-4">
                   <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center text-muted-foreground mb-4">
                     <LayoutDashboard className="icon-xl" />
@@ -1281,11 +1435,11 @@ export default function ProfileEditPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card className="shadow-sm border-border sticky top-6">
-            <CardHeader className="pb-4 border-b border-border">
-              <CardTitle className="text-base font-semibold"><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
+          <Card className="sticky top-6">
+            <CardHeader>
+              <CardTitle><BilingualText en="Profile Strength" el="Πληρότητα προφίλ" compact /></CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5 pt-5">
+            <CardContent className="space-y-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
                   <span className="page-stat text-2xl font-semibold text-primary-accessible">{completionPercentage}%</span>
@@ -1304,7 +1458,7 @@ export default function ProfileEditPage() {
               </div>
               
               <div className="space-y-2.5 pt-2">
-                <p className="text-sm font-medium text-foreground">Missing items:</p>
+                <p className="text-sm font-medium text-foreground"><BilingualText en="Missing items" el="Λείπουν" compact /></p>
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
                     <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
@@ -1312,15 +1466,27 @@ export default function ProfileEditPage() {
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
-                      <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="icon-sm text-status-warning" />
-                        <span className="capitalize">{item.label}</span>
+                      <li key={item.id}>
+                        {/* Each missing item opens its tab and brings its field into view. */}
+                        <button
+                          type="button"
+                          className="flex items-center gap-2 text-left text-sm text-muted-foreground hover:text-foreground"
+                          title={item.reason ? bilingualInline(item.reason.en, item.reason.el) : undefined}
+                          onClick={() => {
+                            const anchor = item.href?.split('#')[1];
+                            setActiveTab(item.id === 'commitment' || item.id === 'lookingFor' ? 'role' : item.id === 'links' ? 'links' : 'basic');
+                            if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+                          }}
+                        >
+                          <ShieldAlert className="icon-sm text-status-warning" />
+                          <BilingualText en={item.label} el={item.labelEl} compact />
+                        </button>
                       </li>
                     ))
                   )}
                   {missingCompletionFields.length > 4 && (
-                    <li className="text-xs text-muted-foreground text-center pt-1 italic">
-                      + {missingCompletionFields.length - 4} more items
+                    <li className="pt-1 text-xs text-muted-foreground">
+                      <BilingualText en={`+ ${missingCompletionFields.length - 4} more items`} el={`+ ${missingCompletionFields.length - 4} ακόμη`} compact />
                     </li>
                   )}
                 </ul>

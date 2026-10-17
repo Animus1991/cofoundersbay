@@ -74,10 +74,10 @@ export function OpenToCard() {
   const lapsed = signal && !mine.data?.active;
 
   return (
-    <Card id="open-to" className="scroll-mt-16 shadow-sm border-border">
-      <CardHeader className="border-b border-border">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <Compass className="icon-md text-primary-accessible" />
+    <Card id="open-to" className="scroll-mt-16">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Compass className="icon-md text-primary-accessible" aria-hidden="true" />
           <BilingualText en="Open to" el="Ανοιχτός/ή σε" compact />
         </CardTitle>
         <CardDescription>
@@ -88,7 +88,7 @@ export function OpenToCard() {
           />
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-5 pt-5">
+      <CardContent className="space-y-5">
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground"><BilingualText en="I am open to" el="Είμαι ανοιχτός/ή σε" compact /></legend>
           <div className="flex flex-wrap gap-2">
@@ -102,7 +102,7 @@ export function OpenToCard() {
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground"><BilingualText en="Who sees it" el="Ποιος το βλέπει" compact /></legend>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {OPEN_TO_VISIBILITIES.map((v) => (
               <label key={v} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border px-3 py-2 has-[:checked]:border-primary/40">
                 <input type="radio" name="open-to-visibility" className="mt-1" checked={visibility === v} onChange={() => setVisibility(v)} />

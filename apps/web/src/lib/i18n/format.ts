@@ -90,9 +90,12 @@ export function formatLocalTime(
 ): string {
   const date = toDate(value);
   if (!date) return '';
+  // 24-hour in both languages, as LocalTime already is: el-GR's default is
+  // "10:00 π.μ." while en-GB's is "10:00", so the two languages disagreed.
   return date.toLocaleTimeString(DATE_LOCALE[lang], {
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
   });
 }
 

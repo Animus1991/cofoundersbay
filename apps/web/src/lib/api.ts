@@ -1,5 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
-import type { PublicStats, TransparencyReport } from '@cofounderbay/shared';
+import type { CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
@@ -808,6 +808,25 @@ export type MessageItem = {
 
 export async function listMessageConversations(): Promise<{ conversations: ConversationSummary[] }> {
   return apiRequest('/api/messages/conversations');
+}
+
+/** One message that holds the searched words (GET /messages/search). */
+export type MessageSearchHit = {
+  messageId: string;
+  conversationId: string;
+  createdAt: string;
+  fromMe: boolean;
+  senderName: string;
+  withName: string;
+  withUserId: string | null;
+  snippet: string;
+};
+
+/** The reader's own messages that hold the words, newest first. */
+export async function searchMessages(q: string, limit = 10): Promise<{ hits: MessageSearchHit[] }> {
+  const sp = new URLSearchParams({ q, limit: String(limit) });
+  const res = await apiRequest<{ hits?: MessageSearchHit[] }>(`/api/messages/search?${sp}`);
+  return { hits: Array.isArray(res?.hits) ? res.hits : [] };
 }
 
 export async function getOrCreateDirectConversation(userId: string): Promise<{ conversationId: string }> {
@@ -2421,6 +2440,34 @@ export async function getUpcomingMentorshipSessions(): Promise<{ sessions: Mento
 
 export async function getMentorDashboardStats(): Promise<MentorDashboardStats> {
   return apiRequest('/api/mentorship/dashboard/mentor');
+}
+
+// --- Stakeholder listings (the cards members search) ---
+// The API keeps only the fields a member owns (`readMentorListing`,
+// `readProviderListing` in @cofounderbay/shared); ratings, counts and
+// verification stay with the platform. Money is in cents.
+
+export type MentorListing = MentorListingInput & { id?: string; avgRating?: number | null; totalReviews?: number; isVerified?: boolean };
+export type ProviderListing = ProviderListingInput & { id?: string; avgRating?: number | null; totalReviews?: number; isVerified?: boolean };
+
+/** The signed-in member's mentor listing, or null before the first save. */
+export async function getMyMentorListing(): Promise<MentorListing | null> {
+  const row = await apiRequest<MentorListing | null>('/api/roles/mentor-profile');
+  return row && typeof row === 'object' ? row : null;
+}
+
+export async function saveMyMentorListing(body: MentorListingInput): Promise<MentorListing> {
+  return apiRequest('/api/roles/mentor-profile', { method: 'POST', body: JSON.stringify(body) });
+}
+
+/** The signed-in member's service-provider listing, or null before the first save. */
+export async function getMyProviderListing(): Promise<ProviderListing | null> {
+  const row = await apiRequest<ProviderListing | null>('/api/roles/service-provider-profile');
+  return row && typeof row === 'object' ? row : null;
+}
+
+export async function saveMyProviderListing(body: ProviderListingInput): Promise<ProviderListing> {
+  return apiRequest('/api/roles/service-provider-profile', { method: 'POST', body: JSON.stringify(body) });
 }
 
 // --- Moderation / Admin ---
@@ -4597,11 +4644,6 @@ export interface MatchVsFrictionPoint {
   description: string;
 }
 
-export interface MatchVsWorkStyle {
-  axes: string[];
-  source: number[];
-  target: number[];
-}
 
 export interface MatchVsProfile {
   id: string;
@@ -4618,10 +4660,35 @@ export interface MatchVsResult {
   badges: string[];
   sharedStrengths: MatchVsStrength[];
   frictionPoints: MatchVsFrictionPoint[];
-  workStyle: MatchVsWorkStyle;
+  /** Agreement per compatibility question both answered; never the other person's answers. */
+  compatibility: CompatComparison;
   reasons: string[];
   sourceProfile: MatchVsProfile;
   targetProfile: MatchVsProfile;
+}
+
+// --- Compatibility questions (packages/shared/src/compatibility) ---
+
+export type MyCompatibility = { answers: CompatAnswers; answered: number; total: number };
+export type CompatibilityWith =
+  | { available: false; answeredByYou: number }
+  | ({ available: true; answeredByYou: number; answeredByThem: number } & CompatComparison);
+
+/** The reader's own answers; an empty set before the first save. */
+export async function getMyCompatibility(): Promise<MyCompatibility> {
+  const r = await apiRequest<Partial<MyCompatibility> | null>('/api/compatibility/me');
+  const answers = r?.answers && typeof r.answers === 'object' ? r.answers : {};
+  return { answers, answered: typeof r?.answered === 'number' ? r.answered : Object.keys(answers).length, total: typeof r?.total === 'number' ? r.total : 10 };
+}
+
+/** Saves some answers; a question sent as '' is cleared. */
+export async function saveMyCompatibility(answers: CompatAnswers): Promise<MyCompatibility> {
+  return apiRequest('/api/compatibility/me', { method: 'PUT', body: JSON.stringify({ answers }) });
+}
+
+/** Agreement with one member, per question both answered. */
+export async function getCompatibilityWith(userId: string): Promise<CompatibilityWith> {
+  return apiRequest(`/api/compatibility/with/${encodeURIComponent(userId)}`);
 }
 
 /** Get detailed two-user compatibility breakdown for the match detail page */
@@ -5299,6 +5366,7 @@ export interface ProgramItem {
   settings: Record<string, unknown> | null;
   applicationCount: number;
   participantCount: number;
+  coverImageUrl: string | null;
   organization: {
     id: string;
     name: string;
@@ -5398,6 +5466,7 @@ export function toProgramItem(raw: RawProgram): ProgramItem {
     settings: raw.settings ?? null,
     applicationCount: raw.applicationCount ?? raw._count?.participants ?? 0,
     participantCount: raw.participantCount ?? raw.currentParticipants ?? 0,
+    coverImageUrl: raw.coverImageUrl ?? null,
     organization: {
       id: org?.id ?? '',
       name: org?.name ?? '',

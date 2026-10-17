@@ -113,22 +113,17 @@ export default function NewMilestonePage() {
         <p className="text-sm text-muted-foreground">
           <BilingualText en={milestoneEn('page_new_lead')} el={milestoneEl('page_new_lead')} />
         </p>
-        <FormDraftNotice filled={draft.filled} onDismiss={draft.dismiss} />
-        <Card className="rounded-xl">
+        <FormDraftNotice filled={draft.filled} prompt={draft.prompt} onDismiss={draft.dismiss} />
+        <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <CfbGlyph name="flag" className="icon-md shrink-0 text-muted-foreground" />
-              <div>
-                <CardTitle>
-                  <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />
-                </CardTitle>
-                <CardDescription className="type-identity">
-                  {collaboratorId
-                    ? <BilingualText en={milestoneEn('create_shared')} el={milestoneEl('create_shared')} />
-                    : <BilingualText en={milestoneEn('create_solo')} el={milestoneEl('create_solo')} />}
-                </CardDescription>
-              </div>
-            </div>
+            <CardTitle>
+              <BilingualText en={milestoneEn('create_title')} el={milestoneEl('create_title')} />
+            </CardTitle>
+            <CardDescription>
+              {collaboratorId
+                ? <BilingualText en={milestoneEn('create_shared')} el={milestoneEl('create_shared')} />
+                : <BilingualText en={milestoneEn('create_solo')} el={milestoneEl('create_solo')} />}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form

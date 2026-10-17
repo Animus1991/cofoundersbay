@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
   Search, ChevronDown, ChevronUp, AlertTriangle, Award,
-  Zap, TrendingUp, Shield, Clock,
+  Zap, TrendingUp, Clock,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -16,6 +16,13 @@ import {
 import { useChartTheme } from '@/lib/chart-theme';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { StatusText } from '@/components/common/StatusText';
+import { RowHead } from '@/components/dashboard/SectionCard';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-status-warning-bg text-status-warning',
@@ -27,26 +34,34 @@ const STATUS_COLORS: Record<string, string> = {
 function Section({
   title, icon: Icon, children, defaultOpen = false,
 }: {
-  title: string;
+  title: React.ReactNode;
   icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-border rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-3.5 bg-muted hover:bg-muted transition-colors text-left"
-      >
-        <div className="flex items-center gap-2 font-semibold text-sm text-foreground">
-          <Icon className="icon-sm" />
-          {title}
-        </div>
-        {open ? <ChevronUp className="icon-sm text-muted-foreground" /> : <ChevronDown className="icon-sm text-muted-foreground" />}
-      </button>
-      {open && <div className="p-5 bg-white">{children}</div>}
-    </div>
+    // A section card whose header opens and closes it: the title on the
+    // card's axis, the content under it without a second surface.
+    // The heading holds the button (the disclosure pattern): a heading
+    // inside a button is not valid HTML.
+    <Card className="overflow-hidden">
+      <CardTitle>
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen(!open)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-accent sm:px-6"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <Icon className="icon-sm" />
+            {title}
+          </span>
+          {open ? <ChevronUp className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /> : <ChevronDown className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />}
+        </button>
+      </CardTitle>
+      {open && <CardContent className="pt-0">{children}</CardContent>}
+    </Card>
   );
 }
 
@@ -96,20 +111,21 @@ export function ScoreInspector() {
 
   // XP by event type chart data
   const xpChartData = report
-    ? Object.entries(report.xpByEventType)
+    ? Object.entries(report.xpByEventType ?? {})
         .map(([type, v]) => ({ type: type.replace(/_/g, ' '), xp: v.totalXp, count: v.count }))
         .sort((a, b) => b.xp - a.xp)
         .slice(0, 10)
     : [];
 
   const pendingFlags = report?.anomalies?.filter((a) => a.status === 'pending') ?? [];
+  const fmtDate = useDateFormat();
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-semibold text-foreground"><BilingualText en="Score Inspector" el="Επιθεωρητής βαθμολογίας" compact /></h2>
-        <p className="text-sm text-muted-foreground mt-0.5">
+        <h2 className="text-base font-semibold text-foreground"><BilingualText en="Score Inspector" el="Επιθεωρητής βαθμολογίας" compact /></h2>
+        <p className="mt-0.5 text-xs text-muted-foreground">
           <BilingualText en="Full per-user scoring audit: XP breakdown, badges, streak, contributions, anomaly flags." el="Πλήρης έλεγχος βαθμολογίας ανά χρήστη: ανάλυση XP, διακρίσεις, σερί, συνεισφορές, επισημάνσεις ανωμαλιών." wrap />
         </p>
       </div>
@@ -131,7 +147,7 @@ export function ScoreInspector() {
           disabled={loading || !userId.trim()}
           className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? 'Loading…' : 'Inspect'}
+          {loading ? <BilingualText en="Loading…" el="Φόρτωση…" compact /> : <BilingualText en="Inspect" el="Έλεγχος" compact />}
         </button>
       </div>
 
@@ -144,59 +160,66 @@ export function ScoreInspector() {
       {report && (
         <div className="space-y-4">
           {/* Summary card */}
-          <div className="bg-white rounded-xl border border-border p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                {report.avatarUrl ? (
-                  <img src={report.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={48} height={48} />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-status-accent-bg flex items-center justify-center text-status-accent font-bold text-lg">
-                    {(report.displayName ?? report.email)[0]?.toUpperCase()}
-                  </div>
+          {/* The person's card: the circle, the name over the role and the
+              address, the total at the right; the callouts under it on the
+              circle's edge. */}
+          <Card>
+            <CardContent className="space-y-3">
+              <CardHead
+                mark={(
+                  <Avatar className="h-10 w-10">
+                    {report.avatarUrl ? <AvatarImage src={report.avatarUrl} alt="" /> : null}
+                    <AvatarFallback className="bg-status-accent-bg font-semibold text-status-accent">
+                      {(report.displayName ?? report.email ?? '?')[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                 )}
-                <div>
-                  <div className="font-semibold text-foreground">
-                    {report.displayName ?? '—'}{' '}
-                    <span className="text-muted-foreground font-normal text-sm">({report.role})</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">{report.email}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5 font-mono">{report.userId}</div>
+                title={report.displayName ?? '—'}
+                subtitle={<FactLine className="text-sm" items={[report.role ? <StatusText key="role" value={report.role} /> : null, <span key="email" translate="no">{report.email}</span>]} />}
+                meta={<span className="font-mono" translate="no">{report.userId}</span>}
+                aside={(
+                  <span className="flex flex-col sm:items-end">
+                    <span className="card-body font-semibold tabular-nums text-status-accent">{report.totalXp} XP</span>
+                    <BilingualText en={`Level ${report.level} · ${report.levelLabel}`} el={`Επίπεδο ${report.level} · ${report.levelLabel}`} compact wrap />
+                  </span>
+                )}
+              />
+
+              {/* Human summary */}
+              {report.humanSummary ? (
+                <div className="rounded-lg bg-status-accent-bg px-4 py-3 text-sm text-status-accent first-letter:uppercase">
+                  {report.humanSummary}
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="page-stat text-2xl font-bold text-status-accent">{report.totalXp} XP</div>
-                <div className="text-sm text-muted-foreground">
-                  Level {report.level} · {report.levelLabel}
+              ) : null}
+
+              {/* Suppression warning */}
+              {report.suppressedUntil && (
+                <div className="flex items-center gap-2 rounded-lg border border-status-danger-border bg-status-danger-bg px-4 py-2.5 text-sm text-status-danger">
+                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+                  <BilingualText
+                    en={`Burst suppression active until ${fmtDate(report.suppressedUntil, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                    el={`Ενεργή αναστολή ριπής έως ${fmtDate(report.suppressedUntil, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`}
+                    wrap
+                  />
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Human summary */}
-            <div className="mt-4 bg-status-accent-bg rounded-lg px-4 py-3 text-sm text-status-accent">
-              <Shield className="inline icon-sm mr-1 opacity-70" />
-              {report.humanSummary}
-            </div>
-
-            {/* Suppression warning */}
-            {report.suppressedUntil && (
-              <div className="mt-3 bg-status-danger-bg border border-status-danger-border rounded-lg px-4 py-2.5 text-sm text-status-danger flex items-center gap-2">
-                <AlertTriangle className="icon-sm shrink-0" />
-                Burst suppression active until{' '}
-                <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
-              </div>
-            )}
-
-            {/* Open flags warning */}
-            {pendingFlags.length > 0 && (
-              <div className="mt-3 bg-status-warning-bg border border-status-warning-border rounded-lg px-4 py-2.5 text-sm text-status-warning flex items-center gap-2">
-                <AlertTriangle className="icon-sm shrink-0" />
-                {pendingFlags.length} open abuse flag{pendingFlags.length > 1 ? 's' : ''} pending review
-              </div>
-            )}
-          </div>
+              {/* Open flags warning */}
+              {pendingFlags.length > 0 && (
+                <div className="flex items-center gap-2 rounded-lg border border-status-warning-border bg-status-warning-bg px-4 py-2.5 text-sm text-status-warning">
+                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
+                  <BilingualText
+                    en={`${pendingFlags.length} open abuse flag${pendingFlags.length > 1 ? 's' : ''} pending review`}
+                    el={`${pendingFlags.length} ${pendingFlags.length > 1 ? 'ανοιχτές επισημάνσεις' : 'ανοιχτή επισήμανση'} κατάχρησης σε αναμονή ελέγχου`}
+                    wrap
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* XP by Event Type Chart */}
-          <Section title="XP by Event Type" icon={Zap} defaultOpen>
+          <Section title={<BilingualText en="XP by Event Type" el="XP ανά τύπο συμβάντος" compact />} icon={Zap} defaultOpen>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={xpChartData} layout="vertical" margin={{ left: 20, right: 20, top: 4, bottom: 4 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
@@ -221,7 +244,7 @@ export function ScoreInspector() {
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(report.xpByEventType).map(([type, v]) => (
+                  {Object.entries(report.xpByEventType ?? {}).map(([type, v]) => (
                     <tr key={type} className="border-b border-border">
                       <td className="py-1 font-mono text-xs">{type}</td>
                       <td className="py-1 text-right tabular-nums">{v.count}</td>
@@ -235,7 +258,7 @@ export function ScoreInspector() {
           </Section>
 
           {/* Recent Events */}
-          <Section title={`Recent XP Events (last ${report.recentEvents.length})`} icon={Clock}>
+          <Section title={<BilingualText en={`Recent XP Events (last ${(report.recentEvents ?? []).length})`} el={`Πρόσφατα συμβάντα XP (τελευταία ${(report.recentEvents ?? []).length})`} compact />} icon={Clock}>
             <div className="overflow-auto max-h-64">
               <table className="w-full text-sm">
                 <thead>
@@ -249,7 +272,7 @@ export function ScoreInspector() {
                   </tr>
                 </thead>
                 <tbody>
-                  {report.recentEvents.map((e) => (
+                  {(report.recentEvents ?? []).map((e) => (
                     <XPEventRow key={e.id} e={e} />
                   ))}
                 </tbody>
@@ -258,45 +281,43 @@ export function ScoreInspector() {
           </Section>
 
           {/* Badges */}
-          <Section title={`Badges (${report.badges.length})`} icon={Award}>
-            {report.badges.length === 0 ? (
+          <Section title={<BilingualText en={`Badges (${(report.badges ?? []).length})`} el={`Διακρίσεις (${(report.badges ?? []).length})`} compact />} icon={Award}>
+            {(report.badges ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground"><BilingualText en="No badges earned yet." el="Δεν έχουν κερδηθεί διακρίσεις ακόμα." compact wrap /></p>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <ul className="divide-y divide-border">
                 {report.badges.map((b) => (
-                  <div
-                    key={b.badgeId}
-                    className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-1.5 text-sm"
-                  >
-                    <Award className="icon-sm text-status-warning" />
-                    <span className="font-medium text-foreground">{b.name}</span>
-                    <span className="text-xs text-muted-foreground">· {b.category}</span>
-                    {!b.seen && (
-                      <span className="text-xs bg-status-success-bg text-status-success px-1 rounded">new</span>
-                    )}
-                  </div>
+                  <li key={b.badgeId} className="py-2 first:pt-0 last:pb-0">
+                    <RowHead
+                      title={b.name}
+                      subtitle={b.category ? <StatusText value={b.category} /> : undefined}
+                      aside={!b.seen ? (
+                        <span className="rounded-md bg-status-success-bg px-1.5 py-0.5 text-xs text-status-success"><BilingualText en="New" el="Νέα" compact /></span>
+                      ) : undefined}
+                    />
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </Section>
 
           {/* Streak */}
-          <Section title="Streak" icon={TrendingUp}>
+          <Section title={<BilingualText en="Streak" el="Σερί" compact />} icon={TrendingUp}>
             {report.streak ? (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 card-body">
                 <div>
                   <p className="text-muted-foreground text-xs"><BilingualText en="Current Streak" el="Τρέχον σερί" compact /></p>
-                  <p className="font-bold text-2xl text-status-accent">{report.streak.currentStreak}d</p>
+                  <p className="card-body font-semibold tabular-nums text-status-accent">{report.streak.currentStreak}d</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs"><BilingualText en="Longest" el="Μεγαλύτερο" compact /></p>
-                  <p className="font-semibold text-foreground">{report.streak.longestStreak}d</p>
+                  <p className="card-body font-semibold tabular-nums text-foreground">{report.streak.longestStreak}d</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs"><BilingualText en="Last Active" el="Τελευταία δραστηριότητα" compact /></p>
                   <p className="text-foreground">
                     {report.streak.lastActiveDate
-                      ? new Date(report.streak.lastActiveDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })
+                      ? fmtDate(report.streak.lastActiveDate, { day: 'numeric', month: 'short', year: 'numeric' })
                       : '—'}
                   </p>
                 </div>
@@ -304,8 +325,8 @@ export function ScoreInspector() {
                   <p className="text-muted-foreground text-xs"><BilingualText en="Grace Used" el="Χάρη που χρησιμοποιήθηκε" compact /></p>
                   <p className="text-foreground">
                     {report.streak.graceUsedAt
-                      ? new Date(report.streak.graceUsedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })
-                      : 'No'}
+                      ? fmtDate(report.streak.graceUsedAt, { day: 'numeric', month: 'short', year: 'numeric' })
+                      : <BilingualText en="No" el="Όχι" compact />}
                   </p>
                 </div>
               </div>
@@ -315,47 +336,50 @@ export function ScoreInspector() {
           </Section>
 
           {/* Anomaly Flags */}
-          <Section title={`Abuse Flags (${report.anomalies.length})`} icon={AlertTriangle}>
-            {report.anomalies.length === 0 ? (
+          <Section title={<BilingualText en={`Abuse Flags (${(report.anomalies ?? []).length})`} el={`Επισημάνσεις κατάχρησης (${(report.anomalies ?? []).length})`} compact />} icon={AlertTriangle}>
+            {(report.anomalies ?? []).length === 0 ? (
               <p className="text-sm text-muted-foreground"><BilingualText en="No abuse flags on this user." el="Καμία επισήμανση κατάχρησης για αυτόν τον χρήστη." compact wrap /></p>
             ) : (
-              <div className="space-y-2">
+              <ul className="divide-y divide-border">
                 {report.anomalies.map((a) => (
-                  <div key={a.flagId} className="flex items-start gap-3 border border-border rounded-lg p-3">
-                    <div
-                      className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                      style={{ background: `hsl(${(1 - a.severity) * 120}, 70%, 50%)` }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
-                          {a.type}
+                  <li key={a.flagId} className="space-y-1 py-2 first:pt-0 last:pb-0">
+                    <RowHead
+                      title={(
+                        <span className="inline-flex items-center gap-2">
+                          <span
+                            aria-hidden="true"
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: `hsl(${(1 - a.severity) * 120}, 70%, 50%)` }}
+                          />
+                          <code className="font-mono" translate="no">{a.type}</code>
                         </span>
-                        <span
-                          className={`text-xs px-1.5 py-0.5 rounded ${STATUS_COLORS[a.status] ?? ''}`}
-                        >
-                          {a.status}
-                        </span>
-                        <span className="ml-auto text-xs text-muted-foreground">
-                          severity {(a.severity * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      {a.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
                       )}
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(a.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
-                      </p>
-                    </div>
-                  </div>
+                      subtitle={(
+                        <FactLine
+                          items={[
+                            <BilingualText key="sev" en={`Severity ${(a.severity * 100).toFixed(0)}%`} el={`Σοβαρότητα ${(a.severity * 100).toFixed(0)}%`} compact />,
+                            fmtDate(a.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                          ]}
+                        />
+                      )}
+                      aside={(
+                        <span className={`rounded-md px-1.5 py-0.5 text-xs ${STATUS_COLORS[a.status] ?? ''}`}>
+                          <StatusText value={a.status} />
+                        </span>
+                      )}
+                    />
+                    {a.description && (
+                      <p className="text-sm text-muted-foreground first-letter:uppercase">{a.description}</p>
+                    )}
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </Section>
 
           {/* Contribution scores */}
-          {report.contributions.length > 0 && (
-            <Section title={`Workspace Contributions (${report.contributions.length})`} icon={TrendingUp}>
+          {(report.contributions ?? []).length > 0 && (
+            <Section title={<BilingualText en={`Workspace Contributions (${report.contributions.length})`} el={`Συνεισφορές σε χώρους εργασίας (${report.contributions.length})`} compact />} icon={TrendingUp}>
               <div className="space-y-2">
                 {report.contributions.map((c) => (
                   <div key={c.workspaceId} className="flex items-center justify-between text-sm border-b border-border py-1.5">

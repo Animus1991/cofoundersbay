@@ -2,10 +2,11 @@
 
 import type { ReactNode } from 'react';
 import type { VerificationMethod } from '@cofounderbay/shared';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { CMT, evidenceCopy, kindCopy } from '@/lib/i18n/strings-commitments';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn, initialsOf } from '@/lib/utils';
 import { NonGuaranteeNote } from './NonGuaranteeNote';
 import { OutcomeChip } from './OutcomeChip';
@@ -28,16 +29,34 @@ export type NeedCardView = {
   version?: number;
   outcome?: 'open' | 'in_discussion' | 'agreed' | 'closed';
   closedReason?: string | null;
-  owner?: { displayName: string; headline: string | null; verifiedMethods?: readonly VerificationMethod[] };
+  owner?: { displayName: string; headline: string | null; avatarUrl?: string | null; verifiedMethods?: readonly VerificationMethod[] };
 };
 
-function Field({ label, children }: { label: { en: string; el: string }; children: ReactNode }) {
+function Field({
+  label,
+  tone = 'lead',
+  children,
+}: {
+  label: { en: string; el: string };
+  /** lead: the ask, body step, medium. aside: context, italic and muted like an endorsement quote. meta: a count line, the facts step. */
+  tone?: 'lead' | 'aside' | 'meta';
+  children: ReactNode;
+}) {
   return (
     <div>
       <dt className="text-xs text-muted-foreground">
         <BilingualText en={label.en} el={label.el} compact wrap />
       </dt>
-      <dd className="mt-0.5 text-sm leading-relaxed text-foreground">{children}</dd>
+      <dd
+        className={cn(
+          'mt-0.5',
+          tone === 'meta' ? 'text-xs text-muted-foreground' : 'card-body',
+          tone === 'aside' && 'italic text-muted-foreground',
+          tone === 'lead' && 'font-medium text-foreground',
+        )}
+      >
+        {children}
+      </dd>
     </div>
   );
 }
@@ -50,11 +69,14 @@ function Field({ label, children }: { label: { en: string; el: string }; childre
  * author previews is exactly what a reader sees. Equity and funding words
  * always come with the non-guarantee sentence.
  *
- * Anatomy (one left axis, five text styles and one pill):
+ * Anatomy (one left axis, five text styles and one pill), on the card
+ * ladder in globals.css (title over byline over the fields' sentences):
  *   meta     kind · version as plain text, the outcome as the card's only pill
- *   title    semibold
- *   byline   avatar, name with the verified mark, headline under it (never cut)
- *   fields   caption label over body text: missing (and exists, goal), offer
+ *   title    .card-title
+ *   byline   avatar, name on the subtitle step (medium, foreground), headline under it in the caption step
+ *   fields   a caption over the sentence. Who is missing, and the offer's role
+ *            and terms, are medium; what exists and the goal recede (italic,
+ *            muted), the way an endorsement quote does; evidence is a caption line
  *   facts    one muted line, dot-separated (category, remote, place, stage, commitment)
  *   footer   above a hairline: the non-guarantee sentence, the page's footer, actions
  * A phone sets captions a full step under the body, so a label never reads
@@ -79,12 +101,14 @@ export function NeedCard({
   headingLevel?: 1 | 2 | 3;
 }) {
   const kind = kindCopy(card.kind);
+  // The unit after the hours follows the reader: «40 ώρ./εβδ.», not "40 h/week".
+  const perWeek = useLanguagePreference().primary === 'el' ? CMT.per_week.el : CMT.per_week.en;
   const Heading = headingLevel === 1 ? 'h1' : headingLevel === 2 ? 'h2' : 'h3';
   const evidence = (card.evidence ?? []).map(evidenceCopy).filter((pair): pair is { en: string; el: string } => Boolean(pair));
   const showsMoney = Boolean(card.offer.equity) || card.kind === 'investor_intro';
   const offerLine = [
     card.offer.equity ? card.offer.equity : null,
-    card.offer.hoursPerWeek ? `${card.offer.hoursPerWeek} ${CMT.per_week.en}` : null,
+    card.offer.hoursPerWeek ? `${card.offer.hoursPerWeek} ${perWeek}` : null,
   ].filter(Boolean);
   const version = card.version && card.version > 1 ? card.version : null;
   const owner = showOwner ? card.owner : undefined;
@@ -103,14 +127,15 @@ export function NeedCard({
           </p>
           {card.outcome ? <OutcomeChip outcome={card.outcome} reason={card.closedReason} /> : null}
         </div>
-        <Heading className="text-base font-semibold leading-snug text-foreground">{card.title || '—'}</Heading>
+        <Heading className="card-title text-foreground">{card.title || '—'}</Heading>
         {owner ? (
           <div className="flex min-w-0 items-center gap-2.5 pt-1.5">
             <Avatar className="h-8 w-8" data-keep-icon="">
+              <AvatarImage src={owner.avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-primary/15 text-2xs text-foreground">{initialsOf(owner.displayName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="flex min-w-0 items-center gap-1 text-sm font-medium text-foreground">
+              <p className="card-subtitle card-byline flex min-w-0 items-center gap-1">
                 <span className="min-w-0 truncate">{owner.displayName}</span>
                 <VerifiedBadge methods={owner.verifiedMethods ?? []} variant="mark" />
               </p>
@@ -121,20 +146,20 @@ export function NeedCard({
       </header>
 
       <dl className="space-y-3">
-        {compact ? null : (
-          <>
-            {card.exists ? <Field label={CMT.exists}>{card.exists}</Field> : null}
-            {card.goal ? <Field label={CMT.goal}>{card.goal}</Field> : null}
-          </>
-        )}
+        {!compact && (card.exists || card.goal) ? (
+          <div className="space-y-2">
+            {card.exists ? <Field label={CMT.exists} tone="aside">{card.exists}</Field> : null}
+            {card.goal ? <Field label={CMT.goal} tone="aside">{card.goal}</Field> : null}
+          </div>
+        ) : null}
         {card.missing ? <Field label={CMT.missing}>{card.missing}</Field> : null}
         <Field label={CMT.offer}>
           <span className="block font-medium">{card.offer?.role || '—'}</span>
-          {offerLine.length ? <span className="block tabular-nums">{offerLine.join(' · ')}</span> : null}
-          {!compact && card.offer.scope ? <span className="mt-1 block">{card.offer.scope}</span> : null}
+          {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
+          {!compact && card.offer.scope ? <span className="mt-1 block font-normal italic text-muted-foreground">{card.offer.scope}</span> : null}
         </Field>
         {!compact && evidence.length ? (
-          <Field label={CMT.evidence}>
+          <Field label={CMT.evidence} tone="meta">
             <ul className="facts-dotted flex flex-wrap gap-x-2">
               {evidence.map((pair) => (
                 <li key={pair.en}><BilingualText en={pair.en} el={pair.el} compact /></li>

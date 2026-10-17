@@ -35,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EmptyOrgApplications } from '@/components/common/EmptyStates';
+import { EmptyOrgApplications, namedChoice, namedFilters, namedQuery } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,9 +50,12 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, rowOptions, settle, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { CardHead } from '@/components/common/CardAnatomy';
+import { FactLine } from '@/components/common/FactLine';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * An application is a program participant whose status says so.
@@ -160,84 +163,79 @@ function ApplicationCard({
 
   return (
     <Card className="transition-all hover:border-primary/30">
-      <CardContent>
-        <div className="flex gap-4">
-          <Avatar className="icon-md rounded-lg">
-            <AvatarImage src={application.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                {/* Linked to /org/applications/:id, a route that never existed. */}
-                <button
-                  type="button"
-                  onClick={() => onReview(application)}
-                  className="text-left font-medium hover:text-primary-accessible transition-colors"
-                >
-                  {application.startupName}
-                </button>
-                <p className="text-sm text-muted-foreground">
-                  {[application.founderName, application.industry, application.location].filter(Boolean).join(' · ')}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={cn('text-xs flex items-center gap-1 border', statusColors.chip)}>
-                  <StatusIcon className="icon-sm" />
-                  <StatusText value={application.status} />
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-label="More options" variant="ghost" size="icon">
-                      <MoreVertical className="icon-sm" aria-hidden="true" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={() => onReview(application)}><BilingualText en="Review Application" el="Έλεγχος αίτησης" compact /></DropdownMenuItem>
-                    {/*
-                      * "Mark as Shortlisted" and "Schedule Interview" are gone
-                      * rather than left inert: the participant status enum has
-                      * no shortlisted state and there is no interview to
-                      * schedule against. Accept and Reject write the two
-                      * statuses that do exist.
-                      */}
-                    <DropdownMenuItem
-                      className={STATUS.success.text}
-                      disabled={!onDecide || application.status === 'accepted'}
-                      onClick={() => onDecide?.(application, 'accepted')}
-                    >
-                      <BilingualText en="Accept" el="Αποδοχή" compact />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive-accessible"
-                      disabled={!onDecide || application.status === 'rejected'}
-                      onClick={() => onDecide?.(application, 'rejected')}
-                    >
-                      <BilingualText en="Reject" el="Απόρριψη" compact />
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
+      <CardContent className="space-y-3">
+        <CardHead
+          mark={(
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarImage src={application.logoUrl} />
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            /* Linked to /org/applications/:id, a route that never existed. */
+            <button
+              type="button"
+              onClick={() => onReview(application)}
+              className="text-left transition-colors hover:text-primary-accessible"
+            >
+              {application.startupName}
+            </button>
+          )}
+          subtitle={[application.founderName, application.industry, application.location].filter(Boolean).join(' · ') || undefined}
+          asideStays
+          aside={(
+            <>
+              <Badge variant="outline" className={cn('text-xs flex items-center gap-1 border', statusColors.chip)}>
+                <StatusIcon className="icon-sm" />
+                <StatusText value={application.status} />
+              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')} variant="ghost" size="icon">
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => onReview(application)}><BilingualText en="Review Application" el="Έλεγχος αίτησης" compact /></DropdownMenuItem>
+                  {/*
+                    * "Mark as Shortlisted" and "Schedule Interview" are gone
+                    * rather than left inert: the participant status enum has
+                    * no shortlisted state and there is no interview to
+                    * schedule against. Accept and Reject write the two
+                    * statuses that do exist.
+                    */}
+                  <DropdownMenuItem
+                    className={STATUS.success.text}
+                    disabled={!onDecide || application.status === 'accepted'}
+                    onClick={() => onDecide?.(application, 'accepted')}
+                  >
+                    <BilingualText en="Accept" el="Αποδοχή" compact />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive-accessible"
+                    disabled={!onDecide || application.status === 'rejected'}
+                    onClick={() => onDecide?.(application, 'rejected')}
+                  >
+                    <BilingualText en="Reject" el="Απόρριψη" compact />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        />
 
-            <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
-              <span>{application.program}</span>
-              {application.stage ? <span><StatusText value={application.stage} /></span> : null}
-              <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" aria-hidden="true" />
-                {application.submittedAt}
-              </span>
-              {application.score !== undefined && (
-                <span className="flex items-center gap-1">
-                  <Star className={cn('icon-sm', STATUS.warning.icon)} />
-                  <BilingualText en={`Score: ${application.score}/100`} el={`Βαθμολογία: ${application.score}/100`} compact />
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        <FactLine
+          items={[
+            application.program,
+            application.stage ? <StatusText key="stage" value={application.stage} /> : null,
+            application.submittedAt,
+            application.score !== undefined
+              ? <BilingualText key="score" en={`Score: ${application.score}/100`} el={`Βαθμολογία: ${application.score}/100`} compact />
+              : null,
+          ]}
+        />
       </CardContent>
     </Card>
   );
@@ -418,10 +416,10 @@ export default function OrgApplicationsPage() {
         {/* Tabs: In review and Shortlisted had no status behind them and read 0 forever. */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="all"><BilingualText en={`All (${statusCounts.all})`} el={`Όλες (${statusCounts.all})`} compact /></TabsTrigger>
-            <TabsTrigger value="pending"><BilingualText en={`Pending (${statusCounts.pending})`} el={`Σε αναμονή (${statusCounts.pending})`} compact /></TabsTrigger>
-            <TabsTrigger value="accepted"><BilingualText en={`Accepted (${statusCounts.accepted})`} el={`Εγκεκριμένες (${statusCounts.accepted})`} compact /></TabsTrigger>
-            <TabsTrigger value="rejected"><BilingualText en={`Rejected (${statusCounts.rejected})`} el={`Απορριφθείσες (${statusCounts.rejected})`} compact /></TabsTrigger>
+            <TabsTrigger value="all"><BilingualText en="All" el="Όλες" compact /><Counter value={statusCounts.all} /></TabsTrigger>
+            <TabsTrigger value="pending"><BilingualText en="Pending" el="Σε αναμονή" compact /><Counter value={statusCounts.pending} /></TabsTrigger>
+            <TabsTrigger value="accepted"><BilingualText en="Accepted" el="Εγκεκριμένες" compact /><Counter value={statusCounts.accepted} /></TabsTrigger>
+            <TabsTrigger value="rejected"><BilingualText en="Rejected" el="Απορριφθείσες" compact /><Counter value={statusCounts.rejected} /></TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -461,7 +459,19 @@ export default function OrgApplicationsPage() {
             />
           ))}
           {filteredApplications.length === 0 && (
-            <EmptyOrgApplications filtersActive={filtersActive} onClearFilters={clearFilters} />
+            <EmptyOrgApplications
+              filtersActive={filtersActive}
+              onClearFilters={clearFilters}
+              active={namedFilters(
+                namedQuery(search),
+                program !== 'all' ? { en: program, el: program } : null,
+                namedChoice(activeTab, 'all', {
+                  pending: { en: 'Pending', el: 'Σε αναμονή' },
+                  accepted: { en: 'Accepted', el: 'Εγκεκριμένες' },
+                  rejected: { en: 'Rejected', el: 'Απορριφθείσες' },
+                }),
+              )}
+            />
           )}
         </div>
       </div>

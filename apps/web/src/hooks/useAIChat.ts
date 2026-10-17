@@ -46,6 +46,12 @@ export interface AIMessage {
   isStreaming?: boolean;
   actions?: CopilotAction[];
   citations?: CopilotCitation[];
+  /** The reads behind this answer, for the follow-up questions under it. */
+  usedTools?: string[];
+  /** The reader stopped it; what had arrived stays. */
+  stopped?: boolean;
+  /** Nothing arrived before the request failed; the view says so in the reader's language. */
+  failed?: boolean;
 }
 
 export interface UseAIChatOptions {
@@ -72,6 +78,8 @@ export interface UseAIChatReturn {
   setAgent: (agentId: string) => void;
   clearMessages: () => void;
   retryLastMessage: () => void;
+  /** Stops the answer being written, keeping what arrived (GitHub Copilot Chat's Stop). */
+  stopStreaming: () => void;
   confirmAction: (action: CopilotAction) => Promise<{ href?: string } | void>;
   /** Resolves `false` when the action declares no undo, so the caller can say so. */
   undoAction: (action: CopilotAction) => Promise<boolean>;
@@ -149,10 +157,23 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
   const autoCreate = options.autoCreateConversation !== false;
 
+  // Abort on a real unmount only. React's development double-mount runs this
+  // cleanup and the effect again in the same commit; aborting there killed
+  // the question the page's ask bar had just handed over (sent from an effect
+  // on mount, then marked sent, so never resent): the answer sat on "Working
+  // across your graph" forever. A microtask later a real unmount is still
+  // unmounted, a double-mount is mounted again.
+  const mountedRef = useRef(false);
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = null;
+      mountedRef.current = false;
+      const controller = abortControllerRef.current;
+      queueMicrotask(() => {
+        if (mountedRef.current || !controller || abortControllerRef.current !== controller) return;
+        controller.abort();
+        abortControllerRef.current = null;
+      });
     };
   }, []);
 
@@ -451,6 +472,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
                     isStreaming: false,
                     actions: withReads.length ? withReads.slice(0, 6) : merged,
                     citations: allCitations.length ? allCitations.slice(0, 10) : citations,
+                    usedTools: [...(turn?.usedTools ?? []), ...modelReads.map((r) => r.name)],
                   }
                 : message,
             ),
@@ -459,7 +481,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           setMessages((prev) =>
             prev.map((message) =>
               message.id === assistantMessageId
-                ? { ...message, content: narrative, model: 'copilot', isStreaming: false, actions, citations }
+                ? { ...message, content: narrative, model: 'copilot', isStreaming: false, actions, citations, usedTools: turn?.usedTools ?? [] }
                 : message,
             ),
           );
@@ -481,7 +503,8 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             message.id === assistantMessageId
               ? {
                   ...message,
-                  content: receivedEvent ? message.content : 'Sorry, I encountered an error. Please try again.',
+                  content: receivedEvent ? message.content : '',
+                  failed: !receivedEvent,
                   isStreaming: false,
                 }
               : message,
@@ -551,7 +574,12 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       pendingRef.current = action.id;
       setPendingActionId(action.id);
       try {
-        const result = await executeCopilotAction(action);
+        const ask = [...messages].reverse().find((m) => m.role === 'user')?.content?.trim();
+        const result = await executeCopilotAction(
+          ask && action.tool.startsWith('draft_')
+            ? { ...action, payload: { ...(action.payload ?? {}), __ask: ask } }
+            : action,
+        );
         // The reader said no in the page's own confirmation. Nothing was
         // written, so nothing is refreshed, filed or offered for Undo.
         if (result.cancelled) {
@@ -578,7 +606,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setPendingActionId(null);
       }
     },
-    [audit, invalidateFor, updateAction],
+    [audit, invalidateFor, messages, updateAction],
   );
 
   /**
@@ -640,6 +668,20 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setConversationId(null);
   }, []);
 
+  const stopStreaming = useCallback(() => {
+    const controller = abortControllerRef.current;
+    if (!controller) return;
+    controller.abort();
+    abortControllerRef.current = null;
+    setIsStreaming(false);
+    // The partial answer stays, marked; an answer with nothing yet goes.
+    setMessages((prev) =>
+      prev.flatMap((message) =>
+        message.isStreaming ? (message.content ? [{ ...message, isStreaming: false, stopped: true }] : []) : [message],
+      ),
+    );
+  }, []);
+
   const retryLastMessage = useCallback(() => {
     if (lastUserMessageRef.current) {
       setMessages((prev) => {
@@ -666,6 +708,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setAgent,
     clearMessages,
     retryLastMessage,
+    stopStreaming,
     confirmAction,
     undoAction,
     dismissAction,

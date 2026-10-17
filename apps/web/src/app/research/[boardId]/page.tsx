@@ -2780,15 +2780,15 @@ export default function ResearchBoardPage() {
           />
         )}
 
-        {/* MiniMap — compact on phones, above the draw strip; from sm it sits
-            at bottom-10, and from lg it keeps that height but steps left of
-            the 52px chat bubble (right-6 + bubble + 0.75rem gap) so the Co
-            mark does not cover the map. z-[45] keeps it above the inspector
-            at the seam. */}
+        {/* MiniMap — compact on phones, above the draw strip; from sm it shares
+            the inspector's right edge (right-4) and sits in the gap that panel
+            leaves underneath, so the toolbox is directly above the map. The
+            chat mark lives in the page rail, outside this column. z-[45]
+            keeps the map above the inspector at the seam. */}
         {showMiniMap && board ? (
           <div
             data-canvas-chrome
-            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4 lg:right-[calc(2.25rem+52px)]"
+            className="pointer-events-auto absolute bottom-[5.5rem] right-2 z-[45] cursor-default sm:bottom-10 sm:right-4"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <BoardMiniMap
@@ -2902,7 +2902,7 @@ export default function ResearchBoardPage() {
 
         {/* Bottom status bar */}
         <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border flex items-center justify-between px-3 z-30 pointer-events-none select-none">
-          <span className="text-2xs tabular-nums text-muted-foreground/70 truncate">
+          <span className="text-2xs tabular-nums text-muted-foreground truncate">
             {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
             {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
             {board.connectors.length > 0 && ` · ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
@@ -2913,7 +2913,7 @@ export default function ResearchBoardPage() {
               {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
             </span>
           </span>
-          <span className="ml-2 min-w-0 max-w-[46%] truncate text-2xs tabular-nums text-muted-foreground/50 sm:max-w-none sm:shrink-0">
+          <span className="ml-2 min-w-0 max-w-[46%] truncate text-2xs tabular-nums text-muted-foreground sm:max-w-none sm:shrink-0">
             <span className="sr-only sm:hidden">{t(researchEn('hint_nav_touch'), researchEl('hint_nav_touch'))}</span>
             <span className="hidden sm:inline">
               {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}

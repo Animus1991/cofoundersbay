@@ -88,7 +88,7 @@ export function usePageContext(): PageContextPacket {
       label: el ? l.labelEl : l.labelEn,
       shown: l.shown,
       ...(l.total !== undefined ? { total: l.total } : {}),
-      rows: l.rows,
+      rows: el && l.rowsEl ? l.rowsEl : l.rows,
       ...(l.sample ? { sample: true } : {}),
     })),
   );

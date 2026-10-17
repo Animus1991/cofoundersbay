@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Flag, Lock } from 'lucide-react';
+import { ChevronDown, Flag, Lock } from 'lucide-react';
 import {
   canReviseTerms,
   contactKinds,
@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CardHead } from '@/components/common/CardAnatomy';
 import { RelativeTime } from '@/components/common/RelativeTime';
 import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { qk } from '@/lib/query-keys';
@@ -42,7 +43,7 @@ import {
   type CommitmentThread,
   type CommitmentTermsVersion,
 } from '@/lib/commitments-api';
-import { CMT } from '@/lib/i18n/strings-commitments';
+import { CMT, DEAL_ROOM_NEXT_STEPS } from '@/lib/i18n/strings-commitments';
 import { VerifiedBadge } from './VerifiedBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { CommitmentLadder } from './CommitmentLadder';
@@ -116,7 +117,7 @@ function ProtectedConversation({
   return (
     <section aria-labelledby={`chat-${thread.id}`} className="space-y-3">
       <div className="space-y-1">
-        <h3 id={`chat-${thread.id}`} className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+        <h3 id={`chat-${thread.id}`} className="card-subtitle card-byline flex items-center gap-1.5">
           {readOnly ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden /> : null}
           <BilingualText en={CMT.protected.en} el={CMT.protected.el} compact />
         </h3>
@@ -125,15 +126,15 @@ function ProtectedConversation({
         </p>
       </div>
       {thread.note ? (
-        <blockquote className="text-sm italic text-muted-foreground">“{thread.note}”</blockquote>
+        <blockquote className="card-body italic text-muted-foreground">“{thread.note}”</blockquote>
       ) : null}
       <ol className="max-h-80 space-y-2 overflow-y-auto pr-1">
         {thread.messages.length === 0 ? (
-          <li className="text-sm text-muted-foreground"><BilingualText en={CMT.no_messages.en} el={CMT.no_messages.el} wrap /></li>
+          <li className="card-body text-muted-foreground"><BilingualText en={CMT.no_messages.en} el={CMT.no_messages.el} wrap /></li>
         ) : (
           thread.messages.map((m) => (
             <li key={m.id} className={cn('flex', m.mine ? 'justify-end' : 'justify-start')}>
-              <div className={cn('max-w-[85%] rounded-xl px-3 py-2 text-sm', m.mine ? 'bg-primary/10 text-foreground' : 'bg-muted text-foreground')}>
+              <div className={cn('card-body max-w-[85%] rounded-xl px-3 py-2', m.mine ? 'bg-primary/10 text-foreground' : 'bg-muted text-foreground')}>
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
                 {m.createdAt ? (
                   <p className="mt-1 text-2xs text-muted-foreground"><RelativeTime date={m.createdAt} /></p>
@@ -241,12 +242,12 @@ function VersionCard({ version, highlight }: { version: CommitmentTermsVersion; 
                   <span className="font-medium text-foreground">· <BilingualText en={CMT.changed.en} el={CMT.changed.el} compact /></span>
                 ) : null}
               </dt>
-              <dd className={cn('text-sm tabular-nums text-foreground', changed && 'font-semibold')}>{value}</dd>
+              <dd className={cn('card-body tabular-nums text-foreground', changed && 'font-semibold')}>{value}</dd>
             </div>
           );
         })}
       </dl>
-      {version.note ? <p className="text-sm text-muted-foreground">{version.note}</p> : null}
+      {version.note ? <p className="card-body text-muted-foreground">{version.note}</p> : null}
       <p className="flex flex-wrap gap-x-3 gap-y-1 text-2xs text-muted-foreground">
         <span className={version.acceptedByMe ? 'text-status-success' : undefined}>
           <BilingualText en={version.acceptedByMe ? CMT.accepted_by_you.en : CMT.not_accepted_by_you.en} el={version.acceptedByMe ? CMT.accepted_by_you.el : CMT.not_accepted_by_you.el} compact />
@@ -295,7 +296,7 @@ function TermsSpace({
   return (
     <section aria-labelledby={`terms-${thread.id}`} className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 id={`terms-${thread.id}`} className="text-sm font-semibold text-foreground">
+        <h3 id={`terms-${thread.id}`} className="card-subtitle card-byline">
           <BilingualText en={CMT.terms.en} el={CMT.terms.el} compact />
           {latest ? <span className="ml-1.5 font-normal tabular-nums text-muted-foreground">v{latest.version}</span> : null}
         </h3>
@@ -312,9 +313,11 @@ function TermsSpace({
       </div>
       <p className="text-xs text-muted-foreground"><BilingualText en={CMT.terms_hint.en} el={CMT.terms_hint.el} wrap /></p>
       {!thread.verification.meVerified && thread.step === 'terms' ? (
-        <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-sm" role="note">
-          <p className="text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
-          <Button asChild size="sm" variant="outline" className="mt-2">
+        // On the card's axis, not in a padded tile of its own: a framed
+        // note inside the card moved its sentence 12px off the axis.
+        <div className="space-y-2" role="note">
+          <p className="card-body font-medium text-foreground"><BilingualText en={VERIFICATION_REQUIRED_COPY.en} el={VERIFICATION_REQUIRED_COPY.el} wrap /></p>
+          <Button asChild size="sm" variant="outline">
             <Link href="/settings#verification"><BilingualText en="Verify in Settings" el="Επαλήθευση στις Ρυθμίσεις" compact /></Link>
           </Button>
         </div>
@@ -337,13 +340,14 @@ function TermsSpace({
           ) : null}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground"><BilingualText en={CMT.no_terms.en} el={CMT.no_terms.el} wrap /></p>
+        <p className="card-body text-muted-foreground"><BilingualText en={CMT.no_terms.en} el={CMT.no_terms.el} wrap /></p>
       )}
 
       {earlier.length ? (
-        <details className="border-t border-border pt-3">
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+        <details className="group/more border-t border-border pt-3">
+          <summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
             <BilingualText en={CMT.earlier_versions.en} el={CMT.earlier_versions.el} compact />
+            <ChevronDown className="icon-sm shrink-0 transition-transform group-open/more:rotate-180" aria-hidden="true" />
           </summary>
           <ol className="mt-3 space-y-4">
             {earlier.map((v) => (
@@ -484,6 +488,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
     const ok = await confirm({
       title: <BilingualText en={`Decline ${name}’s interest?`} el={`Απόρριψη του ενδιαφέροντος από ${name};`} />,
       description: <BilingualText en="They are told the card’s author stepped back." el="Ενημερώνονται ότι ο συντάκτης αποχώρησε." />,
+      confirmLabel: <BilingualText en="Decline interest" el="Απόρριψη ενδιαφέροντος" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentThread(threadId), 'Interest declined');
@@ -493,6 +498,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
     const ok = await confirm({
       title: <BilingualText en={`Step back from this commitment with ${name}?`} el={`Αποχώρηση από αυτή τη δέσμευση με ${name};`} />,
       description: <BilingualText en="The conversation closes for both of you and they are told. It cannot be reopened." el="Η συζήτηση κλείνει και για τους δύο και ενημερώνονται. Δεν ανοίγει ξανά." />,
+      confirmLabel: <BilingualText en="Step back" el="Αποχώρηση" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentThread(threadId), 'You stepped back');
@@ -507,6 +513,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
           el="Η συμφωνία αναστέλλεται και οι όροι ανοίγουν ξανά για αναθεώρηση. Θα χρειαστεί να αποδεχτείτε ξανά μια έκδοση και οι δύο."
         />
       ),
+      confirmLabel: <BilingualText en="Close deal room" el="Κλείσιμο αίθουσας" compact secondaryClassName="text-destructive-foreground" />,
     });
     if (!ok) return CANCELLED;
     return run(() => closeCommitmentDealRoom(threadId), 'Deal room closed');
@@ -610,7 +617,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
   }
   if (!thread) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="card-body text-muted-foreground">
         <BilingualText en="This conversation could not be opened." el="Η συζήτηση δεν άνοιξε." wrap />
       </p>
     );
@@ -618,28 +625,37 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
   return (
     <div className="space-y-5" data-thread={thread.id}>
-      <header className="flex flex-wrap items-center gap-3">
-        <Avatar className="h-9 w-9" data-keep-icon="">
-          <AvatarFallback className="bg-primary/15 text-xs text-foreground">{initialsOf(thread.counterpart.displayName)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="flex min-w-0 items-center gap-1.5 text-sm font-semibold text-foreground">
-            <span className="truncate">{thread.counterpart.displayName}</span>
-            <VerifiedBadge methods={thread.verification.counterpartMethods} />
-          </p>
-          {thread.counterpart.headline ? <p className="truncate text-xs text-muted-foreground">{thread.counterpart.headline}</p> : null}
-        </div>
-        <StepChip step={thread.step} />
-        <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground" onClick={() => setReportOpen(true)}>
-          <Flag className="icon-sm" aria-hidden />
-          <BilingualText en={CMT.report_block.en} el={CMT.report_block.el} compact />
-        </Button>
+      <header>
+        <CardHead
+          titleAs="h2"
+          mark={(
+            <Avatar className="h-10 w-10" data-keep-icon="">
+              <AvatarFallback className="bg-primary/15 text-xs text-foreground">{initialsOf(thread.counterpart.displayName)}</AvatarFallback>
+            </Avatar>
+          )}
+          title={(
+            <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <span>{thread.counterpart.displayName}</span>
+              <VerifiedBadge methods={thread.verification.counterpartMethods} />
+            </span>
+          )}
+          subtitle={thread.counterpart?.headline ?? undefined}
+          aside={(
+            <>
+              <StepChip step={thread.step} />
+              <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setReportOpen(true)}>
+                <Flag className="icon-sm" aria-hidden />
+                <BilingualText en={CMT.report_block.en} el={CMT.report_block.el} compact />
+              </Button>
+            </>
+          )}
+        />
       </header>
 
       <CommitmentLadder step={thread.step} myConfirmed={thread.myConfirmed} />
 
       {answeredOld ? (
-        <p className="rounded-lg bg-status-info-bg px-3 py-2 text-xs text-status-info">
+        <p className="text-xs font-medium text-status-info" role="note">
           <BilingualText
             en={`${CMT.offer_changed.en} (v${thread.answeredVersion} → v${thread.card.version}).`}
             el={`${CMT.offer_changed.el} (v${thread.answeredVersion} → v${thread.card.version}).`}
@@ -650,7 +666,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
       {thread.step === 'interest' ? (
         <section className="space-y-3">
-          {thread.note ? <blockquote className="text-sm italic text-muted-foreground">“{thread.note}”</blockquote> : null}
+          {thread.note ? <blockquote className="card-body italic text-muted-foreground">“{thread.note}”</blockquote> : null}
           {isOwner ? (
             <div className="flex flex-wrap gap-2">
               <Button size="sm" disabled={busy} onClick={() => void run(() => acceptCommitmentInterest(threadId), 'Interest accepted')}>
@@ -662,7 +678,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground"><BilingualText en={CMT.interest_waiting.en} el={CMT.interest_waiting.el} wrap /></p>
+              <p className="card-body text-muted-foreground"><BilingualText en={CMT.interest_waiting.en} el={CMT.interest_waiting.el} wrap /></p>
               <Button size="sm" variant="outline" disabled={busy} onClick={() => void run(() => withdrawCommitmentInterest(threadId), 'Interest withdrawn')}>
                 <BilingualText en={CMT.interest_withdraw.en} el={CMT.interest_withdraw.el} compact />
               </Button>
@@ -681,7 +697,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
             onSend={async (body) => !(await run(() => sendCommitmentMessage(threadId, body)))}
           />
           <section aria-labelledby={`confirm-${thread.id}`} className="space-y-2 border-t border-border pt-3">
-            <h3 id={`confirm-${thread.id}`} className="text-sm font-semibold text-foreground">
+            <h3 id={`confirm-${thread.id}`} className="card-subtitle card-byline">
               <BilingualText en={CMT.confirm_title.en} el={CMT.confirm_title.el} compact />
             </h3>
             <p className="text-xs text-muted-foreground">
@@ -701,11 +717,20 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       ) : null}
 
       {thread.step === 'agreed' && thread.dealRoomActive ? (
-        <section aria-labelledby={`deal-${thread.id}`} className="space-y-2 rounded-xl border border-status-success-border bg-status-success-bg p-3">
-          <h3 id={`deal-${thread.id}`} className="text-sm font-semibold text-status-success">
+        <section aria-labelledby={`deal-${thread.id}`} className="space-y-2 border-t border-status-success-border pt-3">
+          <h3 id={`deal-${thread.id}`} className="card-subtitle card-byline">
             <BilingualText en={CMT.deal_room.en} el={CMT.deal_room.el} compact />
           </h3>
-          <p className="text-sm text-foreground"><BilingualText en={CMT.deal_room_open.en} el={CMT.deal_room_open.el} wrap /></p>
+          <p className="card-body text-foreground"><BilingualText en={CMT.deal_room_open.en} el={CMT.deal_room_open.el} wrap /></p>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-foreground"><BilingualText en={CMT.deal_room_next.en} el={CMT.deal_room_next.el} compact /></p>
+            <ol className="list-decimal space-y-0.5 pl-5 card-body text-muted-foreground">
+              {DEAL_ROOM_NEXT_STEPS.map((step) => (
+                <li key={step.en}><BilingualText en={step.en} el={step.el} wrap /></li>
+              ))}
+            </ol>
+            <p className="text-xs text-muted-foreground"><BilingualText en={CMT.deal_room_not_advice.en} el={CMT.deal_room_not_advice.el} compact /></p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" asChild>
               <Link href={`/data-room/${encodeURIComponent(thread.cardId)}`}>
@@ -736,9 +761,10 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       ) : null}
 
       {thread.step === 'terms' || thread.step === 'agreed' || (thread.step === 'closed' && thread.messages.length > 0) ? (
-        <details className="border-t border-border pt-3">
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+        <details className="group/more border-t border-border pt-3">
+          <summary className="flex w-fit cursor-pointer list-none items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
             <BilingualText en={`${CMT.protected.en} · ${thread.messages.length}`} el={`${CMT.protected.el} · ${thread.messages.length}`} compact />
+            <ChevronDown className="icon-sm shrink-0 transition-transform group-open/more:rotate-180" aria-hidden="true" />
           </summary>
           <div className="mt-3">
             <ProtectedConversation thread={thread} sending={false} error={null} onSend={async () => false} />
@@ -747,7 +773,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
       ) : null}
 
       {thread.step === 'closed' ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="card-body text-muted-foreground">
           <BilingualText en={CMT.closed_thread.en} el={CMT.closed_thread.el} wrap />
           {thread.closedReason ? <span className="mt-1 block italic">“{thread.closedReason}”</span> : null}
         </p>
@@ -755,7 +781,7 @@ export function ThreadWorkspace({ threadId }: { threadId: string }) {
 
       {thread.step === 'conversation' || thread.step === 'terms' ? (
         <div className="border-t border-border pt-3">
-          <Button size="sm" variant="ghost" className="text-muted-foreground" disabled={busy} onClick={() => void stepBack()}>
+          <Button size="sm" variant="outline" className="text-muted-foreground" disabled={busy} onClick={() => void stepBack()}>
             <BilingualText en={CMT.step_back.en} el={CMT.step_back.el} compact />
           </Button>
         </div>

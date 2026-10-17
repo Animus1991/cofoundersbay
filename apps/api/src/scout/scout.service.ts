@@ -74,6 +74,7 @@ export class ScoutService {
           score: p.score,
           reasons: (Array.isArray(p.reasons) ? p.reasons : []) as unknown as ScoutReason[],
           draftNote: p.draftNote,
+          draftNoteEl: p.draftNoteEl ?? null,
           createdAt: p.createdAt.toISOString(),
           person: {
             id: p.candidateId,
@@ -153,8 +154,11 @@ export class ScoutService {
     });
   }
 
-  /** One pass: scores the base against the brief and writes the best few as proposals. Sends nothing. */
-  async run(userId: string, now = new Date(), lang: 'en' | 'el' = 'en') {
+  /**
+   * One pass: scores the base against the brief and writes the best few as
+   * proposals, each with its first note in English and Greek. Sends nothing.
+   */
+  async run(userId: string, now = new Date()) {
     const row = await this.prisma.scoutBrief.findUnique({ where: { userId } });
     if (!row) {
       throw new BadRequestException({
@@ -167,7 +171,7 @@ export class ScoutService {
     const picked = pickScoutProposals(scored);
     for (const p of picked) {
       await this.prisma.scoutProposal.create({
-        data: { userId, candidateId: p.c.userId, score: p.score, reasons: p.reasons as unknown as Prisma.InputJsonValue, draftNote: draftScoutNote(brief, p.c, lang) },
+        data: { userId, candidateId: p.c.userId, score: p.score, reasons: p.reasons as unknown as Prisma.InputJsonValue, draftNote: draftScoutNote(brief, p.c, 'en'), draftNoteEl: draftScoutNote(brief, p.c, 'el') },
       });
     }
     await this.prisma.scoutBrief.update({ where: { userId }, data: { lastRunAt: now } });

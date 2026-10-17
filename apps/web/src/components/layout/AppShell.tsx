@@ -159,9 +159,10 @@ export function AppShellFrame({
               tabIndex={-1}
               className={cn(
                 'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
-                // Phone clearance covers the bottom nav and the page-tools button
-                // above it. From `sm` there is no bottom nav.
-                'pb-[calc(10rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
+                // Phone clearance is the bottom nav only. The tools icon on this
+                // page sits under the account initials, so the thread reaches
+                // the bar. The sum is the nav's own padding, tab, and border.
+                'pb-[calc(0.25rem+3.75rem+max(0.75rem,env(safe-area-inset-bottom,0px))+1px)] sm:pb-0',
                 contentClassName,
               )}
             >
@@ -276,49 +277,51 @@ export function AppShell({
     <div className={cn('space-y-5', insideFrame && contentClassName)}>
       {headerShown && (
         <header className="space-y-3">
-          {/* Stacks under a pinned rail: at that width a side-by-side header
-              gives the title about 90px and the Ask AI bar the rest. */}
-          <section className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6 group-data-[rail=pinned]/shell:lg:flex-col group-data-[rail=pinned]/shell:lg:gap-3">
-            {/* A floor for the title. The Ask AI bar asked for 57.5rem and would
-                not shrink, so at 1440px the title kept ~370px and 10 of 138
-                bilingual titles broke mid-phrase ("Founder dashboard · Πίνακας
-                / ελέγχου ιδρυτή"). Now the bar gives way down to 20rem before
-                the title does; at 1920px nothing changes. */}
-            <div className="min-w-0 flex-1 lg:min-w-[min(100%,42rem)] group-data-[rail=pinned]/shell:lg:min-w-0" data-page-header="">
-              {pageTitle && (
-                <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
-                  <BilingualText en={pageTitle} el={pageTitleEl} />
-                </h1>
-              )}
-              {pageDescription && (
-                <p className="page-lead mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
-                  <BilingualText
-                    en={pageDescription}
-                    el={pageDescriptionEl}
-                    stacked
-                    wrap
-                    secondaryFrom="lg"
-                  />
-                </p>
-              )}
-            </div>
-            {(showHelp || showAskAi) && (
-              <div className="flex w-full min-w-0 items-center gap-2 lg:mt-0.5 lg:w-[min(100%,57.5rem)] lg:min-w-[20rem] lg:shrink lg:justify-end group-data-[rail=pinned]/shell:lg:w-full">
-                {showHelp && <PageContextualHelp compact defaultOpen={false} />}
-                {showAskAi && (
-                  <AIComposer
-                    prompt={askAiPrompt}
-                    className="w-full min-w-0"
-                  />
+          {/* The title takes the row. The ask field sits under it, the full
+              width of the page, the way a question box sits under a greeting:
+              beside the title it asked for 57.5rem and bilingual headings
+              broke mid-phrase. Help stays on the title row. */}
+          <section className="space-y-3">
+            {/* GitHub's PageHeader: the page's own actions sit on the title
+                row, right-aligned, in the same place on every page, so "what
+                can I do here" is answered before the body is read. Below sm
+                they wrap under the title, full width. (§55) */}
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
+              <div className="min-w-0 flex-1" data-page-header="">
+                {pageTitle && (
+                  <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
+                    <BilingualText en={pageTitle} el={pageTitleEl} />
+                  </h1>
+                )}
+                {pageDescription && (
+                  <p className="page-lead mt-0.5 max-w-prose text-sm leading-snug text-muted-foreground">
+                    <BilingualText
+                      en={pageDescription}
+                      el={pageDescriptionEl}
+                      stacked
+                      wrap
+                      secondaryFrom="lg"
+                    />
+                  </p>
                 )}
               </div>
+              {(actions || showHelp) && (
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end" data-page-actions="">
+                  {actions}
+                  {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                </div>
+              )}
+            </div>
+            {showAskAi && (
+              <AIComposer
+                prompt={askAiPrompt}
+                className="w-full min-w-0"
+              />
             )}
           </section>
-          {/* Always present, hidden while empty: the header's actions, and the
-              slot page-level notes portal into (PageHeaderSlot). */}
-          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden">
-            {actions}
-          </div>
+          {/* Always present, hidden while empty: the slot page-level notes
+              portal into (PageHeaderSlot: sample-data pill, drafts). */}
+          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden" />
         </header>
       )}
       <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
