@@ -2,7 +2,7 @@
 
 import { BilingualText } from '@/components/common/BilingualText';
 import { useEffect, useState } from 'react';
-import { readNaturalSearch } from '@cofounderbay/shared';
+import { readNaturalSearch, SEARCH_QUALIFIER_EXAMPLES } from '@cofounderbay/shared';
 import {
   Filter,
   X,
@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import type { NaturalFilter } from '@cofounderbay/shared';
 
 export type SearchFiltersValues = {
@@ -174,6 +175,7 @@ export function SearchFilters({
   onSearchAsTyped,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const primaryIsGreek = useLanguagePreference().primary === 'el';
 
   // While typing, say what Enter will read as filters (debounced); only Enter
   // applies it. Shown where Enter reads words at all (Discover passes
@@ -255,8 +257,8 @@ export function SearchFilters({
   return (
     <div className="space-y-4">
       {/* Main search bar */}
-      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:gap-3">
-        <div className="flex min-w-0 flex-1 gap-2">
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-2">
           <div className="relative min-w-0 flex-1">
             <Input
               type="text"
@@ -276,6 +278,24 @@ export function SearchFilters({
               >
                 <X className="icon-sm" />
               </button>
+            )}
+            {/* Qualifiers, as GitHub's search field suggests `is:open`: shown
+                while the field is empty and Enter reads words at all. Each is
+                a button that types itself, so the syntax is learned by use. */}
+            {onSearchAsTyped && !filters.q && (
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted-foreground" data-search-qualifiers="">
+                <span><BilingualText en="Or narrow with" el="Ή περιορίστε με" compact /></span>
+                {SEARCH_QUALIFIER_EXAMPLES.map((q) => (
+                  <button
+                    key={q.en}
+                    type="button"
+                    onClick={() => updateFilter('q', `${primaryIsGreek ? q.el : q.en} `)}
+                    className="rounded border border-input bg-transparent px-1.5 py-px font-mono text-2xs text-muted-foreground hover:border-foreground/25 hover:text-foreground"
+                  >
+                    {primaryIsGreek ? q.el : q.en}
+                  </button>
+                ))}
+              </p>
             )}
           </div>
 

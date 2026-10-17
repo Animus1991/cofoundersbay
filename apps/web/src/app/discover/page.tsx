@@ -267,6 +267,7 @@ export default function DiscoverPage() {
       availability: union(f.availability, read.availability),
       fundingStage: union(f.fundingStage, read.fundingStage),
       languages: union(f.languages, read.languages),
+      skills: union(f.skills, read.skills),
       location: read.location ?? f.location,
     }));
   }, [filters, runSearch]);

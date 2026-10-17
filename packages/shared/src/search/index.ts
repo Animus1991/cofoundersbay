@@ -15,7 +15,7 @@
  * bios and skill names.
  */
 
-export type NaturalFilterKind = 'role' | 'industry' | 'stage' | 'availability' | 'fundingStage' | 'language' | 'location';
+export type NaturalFilterKind = 'role' | 'industry' | 'stage' | 'availability' | 'fundingStage' | 'language' | 'location' | 'skill';
 
 export interface NaturalFilter {
   kind: NaturalFilterKind;
@@ -33,6 +33,8 @@ export interface NaturalSearch {
   fundingStage: string[];
   languages: string[];
   location: string | null;
+  /** Skills named with the `skill:` qualifier; plain words stay text (see above). */
+  skills: string[];
   /** What was not recognised, in the order typed, without filler words. */
   rest: string;
   /** Every recognised term, in the order it was found, for "Understood as". */
@@ -153,6 +155,40 @@ function pattern(word: string): RegExp {
   return new RegExp(`(^|[^\\p{L}\\p{N}])(${body}${stem ? '[\\p{L}]*' : ''})(?=$|[^\\p{L}\\p{N}])`, 'u');
 }
 
+/*
+ * Qualifiers, as GitHub's search writes them (`is:open author:me`): an
+ * explicit `key:value`, in English or Greek, that a reader can type again and
+ * share. They sit on top of the plain-language reading - "role:mentor
+ * location:Athens AI" and "mentor in Athens who knows AI" reach the same
+ * filters - and they add one thing the words cannot: `skill:` names a skill
+ * filter on purpose, where a bare word stays free text. A value with spaces
+ * is quoted: `location:"New York"`. Keys are folded, so «Ρόλος:» works too.
+ */
+const QUALIFIER_KEYS: Record<string, NaturalFilterKind> = Object.fromEntries(
+  (
+    [
+      ['role', ['role', 'ρολος', 'ρολο']],
+      ['industry', ['industry', 'sector', 'κλαδος', 'τομεας']],
+      ['stage', ['stage', 'σταδιο']],
+      ['availability', ['availability', 'time', 'διαθεσιμοτητα', 'χρονος']],
+      ['fundingStage', ['funding', 'round', 'χρηματοδοτηση', 'γυρος']],
+      ['language', ['language', 'lang', 'speaks', 'γλωσσα', 'μιλα']],
+      ['location', ['location', 'place', 'city', 'in', 'τοπος', 'πολη', 'περιοχη', 'τοποθεσια']],
+      ['skill', ['skill', 'skills', 'δεξιοτητα', 'δεξιοτητες', 'ικανοτητα']],
+    ] as Array<[NaturalFilterKind, string[]]>
+  ).flatMap(([kind, keys]) => keys.map((k) => [k, kind] as const)),
+);
+const QUALIFIER = /(^|\s)([\p{L}]+):(?:"([^"]+)"|«([^»]+)»|([^\s"«»]+))/gu;
+
+/** The qualifiers a field can suggest, in the reader's language, with the key the parser reads. */
+export const SEARCH_QUALIFIER_EXAMPLES: ReadonlyArray<{ en: string; el: string }> = [
+  { en: 'role:mentor', el: 'ρόλος:μέντορας' },
+  { en: 'location:Athens', el: 'τόπος:Αθήνα' },
+  { en: 'skill:AI', el: 'δεξιότητα:AI' },
+  { en: 'industry:fintech', el: 'κλάδος:fintech' },
+  { en: 'stage:seed', el: 'στάδιο:seed' },
+];
+
 const COMPILED = TERMS.map((t) => ({ ...t, patterns: t.words.map(pattern) }));
 const PLACES = PLACE_ALIASES.map((p) => ({ ...p, patterns: p.words.map(pattern) }));
 
@@ -163,8 +199,55 @@ export function readNaturalSearch(text: string): NaturalSearch {
   // recognised word is blanked in both and what remains keeps its accents.
   let folded = foldSearchText(original);
   let remaining = original;
-  const out: NaturalSearch = { roles: [], industries: [], stage: [], availability: [], fundingStage: [], languages: [], location: null, rest: '', understood: [] };
+  const out: NaturalSearch = { roles: [], industries: [], stage: [], availability: [], fundingStage: [], languages: [], location: null, skills: [], rest: '', understood: [] };
   const found: Array<NaturalFilter & { at: number }> = [];
+  const listFor = (kind: NaturalFilterKind): string[] | null =>
+    kind === 'role' ? out.roles : kind === 'industry' ? out.industries : kind === 'stage' ? out.stage : kind === 'availability' ? out.availability : kind === 'fundingStage' ? out.fundingStage : kind === 'language' ? out.languages : kind === 'skill' ? out.skills : null;
+  const blank = (start: number, length: number) => {
+    const gap = ' '.repeat(length);
+    folded = folded.slice(0, start) + gap + folded.slice(start + length);
+    remaining = remaining.slice(0, start) + gap + remaining.slice(start + length);
+  };
+
+  // Qualifiers first: an explicit `key:value` wins over the words around it.
+  for (const m of [...original.matchAll(QUALIFIER)]) {
+    const kind = QUALIFIER_KEYS[foldSearchText(m[2])];
+    if (!kind) continue;
+    const start = m.index + m[1].length;
+    const raw = (m[3] ?? m[4] ?? m[5] ?? '').trim();
+    if (!raw) continue;
+    const value = foldSearchText(raw);
+    if (kind === 'skill') {
+      if (!out.skills.includes(raw)) {
+        out.skills.push(raw);
+        found.push({ kind, value: raw, en: `Skill: ${raw}`, el: `Δεξιότητα: ${raw}`, at: start });
+      }
+      blank(start, m[0].length - m[1].length);
+      continue;
+    }
+    if (kind === 'location') {
+      const place = PLACES.find((p) => p.patterns.some((re) => re.test(value)) || p.variants.some((v) => foldSearchText(v) === value));
+      if (!out.location) {
+        out.location = place ? place.value : raw;
+        found.push({ kind, value: out.location, en: out.location, el: place ? place.el : raw, at: start });
+      }
+      blank(start, m[0].length - m[1].length);
+      continue;
+    }
+    const term = COMPILED.find((t) => t.kind === kind && t.patterns.some((re) => re.test(value)));
+    if (!term) {
+      // A known key with a value we have no filter for: the key goes, the
+      // value stays as text ("role:designer" searches "designer").
+      blank(start, m[2].length + 1);
+      continue;
+    }
+    const list = listFor(kind);
+    if (list && !list.includes(term.value)) {
+      list.push(term.value);
+      found.push({ kind, value: term.value, en: term.en, el: term.el, at: start });
+    }
+    blank(start, m[0].length - m[1].length);
+  }
 
   const take = (patterns: RegExp[]): number => {
     for (const re of patterns) {

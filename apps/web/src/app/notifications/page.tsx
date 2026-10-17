@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell, BellOff, Check, CheckCheck, Trash2, Filter,
   MessageCircle, UserPlus, Calendar, TrendingUp, Award,
-  Briefcase, Users, RefreshCw, ExternalLink,
+  Briefcase, Users, RefreshCw,
   Settings, Square, SquareCheck,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -174,7 +174,20 @@ const NotificationRow = memo(function NotificationRow({
               )}
             </div>
           )}
-          title={<span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}>{item.title}</span>}
+          // The title is the way in, as on GitHub's inbox: opening it marks
+          // the row read. The separate "View" link that said the same thing
+          // is gone; a row without a destination keeps a plain title.
+          title={item.link ? (
+            <Link
+              href={item.link}
+              onClick={() => onRead(item.id)}
+              className={cn('block first-letter:uppercase hover:underline', !isUnread && 'text-foreground/80')}
+            >
+              {item.title}
+            </Link>
+          ) : (
+            <span className={cn('block first-letter:uppercase', !isUnread && 'text-foreground/80')}>{item.title}</span>
+          )}
           subtitle={typeLabel
             ? <BilingualText en={typeLabel.en} el={typeLabel.el} compact />
             : <StatusText value={item.type} />}
@@ -187,18 +200,9 @@ const NotificationRow = memo(function NotificationRow({
             invisible on touch screens yet still took taps, and on a desktop
             they left an empty band under every row. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {item.link && (
-            <Link
-              href={item.link}
-              onClick={() => onRead(item.id)}
-              // tap-target-y on all three row actions: they were 16px tall, under the
-              // 24px target minimum, and they sit close enough together that the
-              // SC 2.5.8 spacing exception does not rescue them either.
-              className="inline-flex tap-target-y items-center gap-1 text-xs font-medium text-primary-accessible hover:underline"
-            >
-              <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="icon-sm" />
-            </Link>
-          )}
+          {/* tap-target-y on the row actions: they were 16px tall, under the
+              24px target minimum, and they sit close enough together that the
+              SC 2.5.8 spacing exception does not rescue them either. */}
           {isUnread && (
             <button
               onClick={() => onRead(item.id)}
