@@ -103,10 +103,17 @@ export function QuickLinks({ links, label, labelEl, title = 'Go to', titleEl = '
 }
 
 /** An empty list's one line, on the card's left axis like the rows it stands in for. */
-export function EmptyLine({ en, el }: { en: string; el?: string }) {
+/* GitHub's Blankslate: what the empty means, then the one move the reader can
+   make from here. `action` is a link only when the reader can act. */
+export function EmptyLine({ en, el, action }: { en: string; el?: string; action?: { href: string; en: string; el: string } }) {
   return (
     <p className="text-sm text-muted-foreground">
       <BilingualText en={en} el={el} stacked wrap />
+      {action && (
+        <Link href={action.href} className="mt-1 block w-fit text-primary-accessible hover:underline">
+          <BilingualText en={action.en} el={action.el} compact />
+        </Link>
+      )}
     </p>
   );
 }

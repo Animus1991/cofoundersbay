@@ -47,6 +47,7 @@ import { RailAction, RailOptions, RailStats } from '@/components/layout/RailPart
 import { usePageRail } from '@/components/layout/PageRailContext';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { Button } from '@/components/ui/button';
+import { Counter } from '@/components/ui/counter';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -817,10 +818,10 @@ export default function OpportunitiesPage() {
   ];
 
   const tabs = [
-    { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake },
-    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase },
+    { key: 'listings' as const, labelKey: 'tab_listings' as const, icon: Handshake, badge: wallCards.length + opportunities.length, tone: 'neutral' as const },
+    { key: 'jobs' as const, labelKey: 'tab_jobs' as const, icon: Briefcase, badge: listingJobs.length, tone: 'neutral' as const },
     { key: 'applications' as const, labelKey: 'tab_applications' as const, icon: FileText },
-    { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals },
+    { key: 'proposals' as const, labelKey: 'tab_proposals' as const, icon: Check, badge: pendingProposals, tone: 'attention' as const },
   ];
 
   return (
@@ -846,7 +847,7 @@ export default function OpportunitiesPage() {
         {/* Wraps rather than scrolls: four bilingual labels are wider than the
             column, and a scrolled strip hid the fourth (Proposals). */}
         <div className="flex flex-wrap gap-1 rounded-xl bg-secondary/50 p-1" role="group" aria-label={bilingualInline('Opportunities section', 'Ενότητα ευκαιριών')}>
-          {tabs.map(({ key, labelKey, icon: Icon, badge }) => (
+          {tabs.map(({ key, labelKey, icon: Icon, badge, tone }) => (
             <button
               key={key}
               type="button"
@@ -861,11 +862,7 @@ export default function OpportunitiesPage() {
             >
               <Icon className="icon-sm" aria-hidden="true" />
               <BilingualText en={opportunitiesEn(labelKey)} el={opportunitiesEl(labelKey)} compact />
-              {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-accessible">
-                  {badge}
-                </span>
-              )}
+              {badge !== undefined && badge > 0 && <Counter value={badge} tone={tone} />}
             </button>
           ))}
         </div>

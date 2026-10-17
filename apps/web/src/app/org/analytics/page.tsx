@@ -419,7 +419,7 @@ export default function OrgAnalyticsPage() {
                 <Progress value={(count / maxCity) * 100} className="h-1.5" aria-label={bilingualAria(`${city}: ${count} ${count === 1 ? 'founder' : 'founders'}`, `${city}: ${count} ${count === 1 ? 'ιδρυτής' : 'ιδρυτές'}`)} />
               </div>
             ))}
-            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." />}
+            {cities.length === 0 && <EmptyLine en="No founder has joined a cohort yet." el="Κανένας ιδρυτής σε cohort ακόμα." action={{ href: '/org/applications', en: 'Review applications', el: 'Δείτε τις αιτήσεις' }} />}
           </SectionCard>
         </div>
 

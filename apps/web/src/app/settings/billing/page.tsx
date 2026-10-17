@@ -483,6 +483,9 @@ export default function UserBillingPage() {
                 <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground"><BilingualText en="No invoices yet" el="Δεν υπάρχουν τιμολόγια ακόμα" compact /></p>
                 <p className="mt-1 text-xs text-muted-foreground"><BilingualText en="Invoices appear here after each billing cycle." el="Τα τιμολόγια εμφανίζονται εδώ μετά από κάθε κύκλο χρέωσης." compact /></p>
+                <Link href="/pricing" className="mt-2 inline-block text-xs text-primary-accessible hover:underline">
+                  <BilingualText en="Compare plans" el="Σύγκριση πλάνων" compact />
+                </Link>
               </div>
             ) : (
               <div className="divide-y divide-border/50">

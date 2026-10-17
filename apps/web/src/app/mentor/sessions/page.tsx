@@ -414,7 +414,10 @@ export default function MentorSessionsPage() {
                 <Counter value={upcomingRows.length} />
               )}
             </TabsTrigger>
-            <TabsTrigger value="past"><BilingualText en="Past Sessions" el="Παρελθούσες συνεδρίες" compact /></TabsTrigger>
+            <TabsTrigger value="past" className="gap-2">
+              <BilingualText en="Past Sessions" el="Παρελθούσες συνεδρίες" compact />
+              {pastRows.length > 0 && <Counter value={pastRows.length} />}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="space-y-3 mt-4">

@@ -20,6 +20,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Button } from '@/components/ui/button';
+import { Counter } from '@/components/ui/counter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -426,9 +427,18 @@ export default function CommitmentsPage() {
     >
       <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="space-y-4">
         <TabsList>
-          <TabsTrigger value="mine"><BilingualText en={CMT.tab_mine.en} el={CMT.tab_mine.el} compact /></TabsTrigger>
-          <TabsTrigger value="responses"><BilingualText en={CMT.tab_responses.en} el={CMT.tab_responses.el} compact /></TabsTrigger>
-          <TabsTrigger value="history"><BilingualText en={CMT.tab_history.en} el={CMT.tab_history.el} compact /></TabsTrigger>
+          <TabsTrigger value="mine" className="gap-2">
+            <BilingualText en={CMT.tab_mine.en} el={CMT.tab_mine.el} compact />
+            {liveCards.length > 0 && <Counter value={liveCards.length} />}
+          </TabsTrigger>
+          <TabsTrigger value="responses" className="gap-2">
+            <BilingualText en={CMT.tab_responses.en} el={CMT.tab_responses.el} compact />
+            {liveResponses.length > 0 && <Counter value={liveResponses.length} tone={needsYou.length > 0 ? 'attention' : 'neutral'} />}
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <BilingualText en={CMT.tab_history.en} el={CMT.tab_history.el} compact />
+            {historyCards.length + historyResponses.length > 0 && <Counter value={historyCards.length + historyResponses.length} />}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="mine" className="space-y-4">

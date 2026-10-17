@@ -464,14 +464,17 @@ export default function ConnectionsPage() {
           <TabsTrigger value="received" className="gap-2">
             <UserCheck className="icon-sm" />
             <BilingualText en={connectionsEn('received')} el={connectionsEl('received')} compact />
+            {receivedCount ? <Counter value={receivedCount} /> : null}
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
             <Send className="icon-sm" />
             <BilingualText en={connectionsEn('sent')} el={connectionsEl('sent')} compact />
+            {sentCount ? <Counter value={sentCount} /> : null}
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
             <Users className="icon-sm" />
             <BilingualText en={connectionsEn('connected')} el={connectionsEl('connected')} compact />
+            {acceptedCount ? <Counter value={acceptedCount} /> : null}
           </TabsTrigger>
         </TabsList>
 

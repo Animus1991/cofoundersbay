@@ -282,7 +282,11 @@ export function AppShell({
               beside the title it asked for 57.5rem and bilingual headings
               broke mid-phrase. Help stays on the title row. */}
           <section className="space-y-3">
-            <div className="flex min-w-0 items-start gap-3">
+            {/* GitHub's PageHeader: the page's own actions sit on the title
+                row, right-aligned, in the same place on every page, so "what
+                can I do here" is answered before the body is read. Below sm
+                they wrap under the title, full width. (§55) */}
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start">
               <div className="min-w-0 flex-1" data-page-header="">
                 {pageTitle && (
                   <h1 className={cn('page-title text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl', titleClassName)}>
@@ -301,7 +305,12 @@ export function AppShell({
                   </p>
                 )}
               </div>
-              {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+              {(actions || showHelp) && (
+                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end" data-page-actions="">
+                  {actions}
+                  {showHelp && <PageContextualHelp compact defaultOpen={false} />}
+                </div>
+              )}
             </div>
             {showAskAi && (
               <AIComposer
@@ -310,11 +319,9 @@ export function AppShell({
               />
             )}
           </section>
-          {/* Always present, hidden while empty: the header's actions, and the
-              slot page-level notes portal into (PageHeaderSlot). */}
-          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden">
-            {actions}
-          </div>
+          {/* Always present, hidden while empty: the slot page-level notes
+              portal into (PageHeaderSlot: sample-data pill, drafts). */}
+          <div ref={setMetaSlot} className="flex flex-wrap items-center gap-2 empty:hidden" />
         </header>
       )}
       <PageHeaderSlot.Provider value={{ inHeader: headerShown, slot: metaSlot }}>{children}</PageHeaderSlot.Provider>
