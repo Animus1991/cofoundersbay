@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
 import { NeedCard } from '@/components/commitments/NeedCard';
+import { Timeline } from '@/components/common/Timeline';
+import { RelativeTime } from '@/components/common/RelativeTime';
 import { StepChip } from '@/components/commitments/OutcomeChip';
 import { ContactWarning } from '@/components/commitments/ContactWarning';
 import { ThreadWorkspace } from '@/components/commitments/ThreadWorkspace';
@@ -57,6 +59,11 @@ const OFFER_FIELD_COPY: Record<string, { en: string; el: string }> = {
   offerScope: CMT.offer_scope,
   commitment: CMT.commitment,
 };
+
+/** One line of an offer, as the card's "What is offered" reads it. */
+function offerLine(offer: { role: string; equity: string | null; hoursPerWeek: number | null }, perWeek: string): string {
+  return [offer.role, offer.equity, offer.hoursPerWeek ? `${offer.hoursPerWeek} ${perWeek}` : null].filter(Boolean).join(' · ');
+}
 
 function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => void }) {
   const { success } = useToast();
@@ -129,6 +136,7 @@ function InterestForm({ card, onSent }: { card: CommitmentCard; onSent: () => vo
 
 function Board() {
   const { primary } = useLanguagePreference();
+  const perWeek = primary === 'el' ? CMT.per_week.el : CMT.per_week.en;
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const router = useRouter();
@@ -383,28 +391,47 @@ function Board() {
       labelEn: 'Card versions',
       labelEl: 'Εκδόσεις κάρτας',
       badge: card && card.version > 1 ? card.version : null,
-      content: card && card.history.length ? (
-        <ol className="space-y-3 px-2.5">
-          <li className="text-sm font-medium text-foreground">v{card.version} · <BilingualText en="current" el="τρέχουσα" compact /></li>
-          {[...card.history].reverse().map((h) => (
-            <li key={h.version} className="space-y-0.5 text-sm">
-              <p className="font-medium text-foreground">v{h.version}</p>
-              <p className="text-xs text-muted-foreground">
-                {[h.offer.role, h.offer.equity, h.offer.hoursPerWeek ? `${h.offer.hoursPerWeek} ${primary === 'el' ? CMT.per_week.el : CMT.per_week.en}` : null].filter(Boolean).join(' · ')}
-              </p>
-              {h.changed.length ? (
-                <p className="text-2xs text-muted-foreground">
-                  <BilingualText
-                    en={`Changed in v${h.version + 1}: ${h.changed.map((f) => OFFER_FIELD_COPY[f]?.en ?? f).join(', ')}`}
-                    el={`Άλλαξαν στην v${h.version + 1}: ${h.changed.map((f) => OFFER_FIELD_COPY[f]?.el ?? f).join(', ')}`}
-                    compact
-                    wrap
-                  />
-                </p>
-              ) : null}
-            </li>
-          ))}
-        </ol>
+      // GitHub's Timeline: the current version first, then each earlier one
+      // down a hairline, with when it was replaced and which fields moved.
+      // The owner is the only person who edits a card, so "who" is implied.
+      content: card ? (
+        <Timeline
+          className="px-2.5"
+          events={[
+            {
+              id: `v${card.version}`,
+              current: true,
+              title: <>v{card.version} · <BilingualText en="current" el="τρέχουσα" compact /></>,
+              when: card.updatedAt ? <RelativeTime date={card.updatedAt} absoluteAfterDays={30} /> : undefined,
+              detail: offerLine(card.offer, perWeek),
+            },
+            ...[...card.history].reverse().map((h) => ({
+              id: `v${h.version}`,
+              title: <>v{h.version}</>,
+              when: h.at ? <RelativeTime date={h.at} absoluteAfterDays={30} /> : undefined,
+              detail: (
+                <>
+                  <p>{offerLine(h.offer, perWeek)}</p>
+                  {h.changed.length ? (
+                    <p className="mt-0.5 text-2xs">
+                      <BilingualText
+                        en={`Changed in v${h.version + 1}: ${h.changed.map((f) => OFFER_FIELD_COPY[f]?.en ?? f).join(', ')}`}
+                        el={`Άλλαξαν στην v${h.version + 1}: ${h.changed.map((f) => OFFER_FIELD_COPY[f]?.el ?? f).join(', ')}`}
+                        compact
+                        wrap
+                      />
+                    </p>
+                  ) : null}
+                </>
+              ),
+            })),
+            ...(card.createdAt ? [{
+              id: 'written',
+              title: <BilingualText en="Card written" el="Η κάρτα γράφτηκε" compact />,
+              when: <RelativeTime date={card.createdAt} absoluteAfterDays={30} />,
+            }] : []),
+          ]}
+        />
       ) : (
         <p className="px-2.5 text-sm text-muted-foreground"><BilingualText en={CMT.no_versions.en} el={CMT.no_versions.el} wrap /></p>
       ),
