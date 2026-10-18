@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { Counter } from '@/components/ui/counter';
 
 /**
  * A home-screen section: a bilingual title, at most one way out to the page
@@ -20,6 +21,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 export function SectionCard({
   title,
   titleEl,
+  count,
   icon: Icon,
   action,
   children,
@@ -28,6 +30,8 @@ export function SectionCard({
 }: {
   title: string;
   titleEl?: string;
+  /** A count beside the title, drawn as a Counter (not "(2)" in the words). */
+  count?: number;
   icon?: ElementType;
   action?: { href: string; label: string; labelEl?: string };
   children: ReactNode;
@@ -45,6 +49,7 @@ export function SectionCard({
           <CardTitle className="flex min-w-0 flex-1 items-center gap-2">
             {Icon ? <Icon className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
             <BilingualText en={title} el={titleEl} />
+            {count !== undefined ? <Counter value={count} className="ml-0" /> : null}
           </CardTitle>
           {action ? (
             // At most half the row: a long pair drops its second language

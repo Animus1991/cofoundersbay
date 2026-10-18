@@ -20,6 +20,13 @@ const ALL: readonly WhatsNewAudience[] = ['founder', 'investor', 'mentor', 'org'
  * renders the same on the server and in the browser.
  */
 const ITEMS: Item[] = [
+  // 17–18 October 2026: what the GitHub comparison added, each where it shows
+  { href: '/dashboard', en: 'Your next move, first', el: 'Η επόμενη κίνησή σας, πρώτη', hintEn: 'One box at the top of every home: what comes up on the brand tint, what waits on you on the amber one, with one button.', hintEl: 'Ένα πλαίσιο στην κορυφή κάθε αρχικής: ό,τι έρχεται με το χρώμα της πλατφόρμας, ό,τι σας περιμένει με κεχριμπαρί, με ένα κουμπί.', for: ALL },
+  { href: '/discover', en: 'Search with qualifiers', el: 'Αναζήτηση με φίλτρα-λέξεις', hintEn: 'Type "role:mentor location:Athens" and press Enter; skill:, industry: and stage: work too, and the examples under the empty field type themselves.', hintEl: 'Γράψτε «ρόλος:μέντορας τόπος:Αθήνα» και πατήστε Enter· δουλεύουν και τα δεξιότητα:, κλάδος:, στάδιο:, και τα παραδείγματα κάτω από το κενό πεδίο γράφονται μόνα τους.', for: ALL },
+  { href: '/discover', en: 'Who someone is, on hover', el: 'Ποιος είναι κάποιος, με το ποντίκι στο όνομα', hintEn: 'Rest the pointer on a person’s name for their headline, place and skills; the profile then opens already loaded.', hintEl: 'Αφήστε τον δείκτη σε ένα όνομα για τίτλο, τόπο και δεξιότητες· το προφίλ ανοίγει μετά ήδη φορτωμένο.', for: ALL },
+  { href: '/ai', en: 'The assistant: Stop, Copy, sources', el: 'Ο βοηθός: Διακοπή, Αντιγραφή, πηγές', hintEn: 'Stop an answer midway, copy it, see what it read, and switch off "This page" when the question is not about it.', hintEl: 'Σταματήστε μια απάντηση στη μέση, αντιγράψτε τη, δείτε τι διάβασε, και κλείστε το «Αυτή η σελίδα» όταν η ερώτηση δεν την αφορά.', for: ALL },
+  { href: '/help', en: 'Ctrl+K: > commands, @ people, / pages', el: 'Ctrl+K: > εντολές, @ άτομα, / σελίδες', hintEn: 'Type a prefix first in the command palette; "?" lists every shortcut.', hintEl: 'Γράψτε πρώτα ένα πρόθεμα στην παλέτα εντολών· το «?» δείχνει όλες τις συντομεύσεις.', for: ALL },
+  { href: '/commitments', en: 'A need card’s versions as a timeline', el: 'Οι εκδόσεις μιας κάρτας ανάγκης ως χρονολόγιο', hintEn: 'Open a card: each version says when it changed and which terms moved.', hintEl: 'Ανοίξτε μια κάρτα: κάθε έκδοση λέει πότε άλλαξε και ποιοι όροι κινήθηκαν.', for: ['founder', 'investor', 'mentor'] },
   // 16–17 October 2026
   { href: '/scout', en: 'Co-founder scout', el: 'Ανιχνευτής συνιδρυτών', hintEn: 'Proposes people for your brief, with its reasons and a first note in English or Greek, whichever they read. It never contacts anyone.', hintEl: 'Προτείνει ανθρώπους για το σημείωμά σας, με τους λόγους του και ένα πρώτο μήνυμα στα ελληνικά ή στα αγγλικά, όποια γλώσσα διαβάζει ο άλλος. Δεν επικοινωνεί ποτέ με κανέναν.', for: ['founder'] },
   { href: '/messages', en: 'Search your messages', el: 'Αναζήτηση στα μηνύματα', hintEn: 'Search a conversation and step through every hit, accents ignored, or ask the assistant where you talked about something.', hintEl: 'Αναζητήστε σε μια συζήτηση και μεταβείτε σε κάθε εύρημα, χωρίς να μετρούν οι τόνοι, ή ρωτήστε τον βοηθό πού μιλήσατε για κάτι.', for: ALL },
@@ -39,7 +46,7 @@ const ITEMS: Item[] = [
 ];
 
 // A new round shows the panel again to those who hid the previous one.
-const ROUND = '2026-10-17';
+const ROUND = '2026-10-18';
 
 export function whatsNewItems(audience: WhatsNewAudience): Item[] {
   return ITEMS.filter((i) => i.for.includes(audience));
@@ -78,7 +85,7 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
               <BilingualText en="What’s new" el="Τι νέο υπάρχει" compact />
             </CardTitle>
             <CardDescription>
-              <BilingualText en="Added between 7 and 17 October 2026, newest first. Each opens where you can try it." el="Προστέθηκαν από τις 7 έως τις 17 Οκτωβρίου 2026, τα νεότερα πρώτα. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
+              <BilingualText en="Added between 7 and 18 October 2026, newest first. Each opens where you can try it." el="Προστέθηκαν από τις 7 έως τις 18 Οκτωβρίου 2026, τα νεότερα πρώτα. Το καθένα ανοίγει εκεί που μπορείτε να το δοκιμάσετε." wrap />
             </CardDescription>
           </div>
           <Button size="sm" variant="ghost" className="-mr-2 shrink-0" onClick={hide}>

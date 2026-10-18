@@ -277,6 +277,23 @@ export default function MentorDashboard() {
     );
   }
 
+  // A booking waits on the mentor, not the founder: the waiting tone. The
+  // order is the same on every home - a session within the hour, then what
+  // waits on you, then what comes next.
+  const bookingWaiting = requestedBookings.length > 0 ? (
+    <HomeNextStep
+      tone="waiting"
+      kickerEn="Waiting on you"
+      kickerEl="Σας περιμένει"
+      titleEn={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'booking awaits' : 'bookings await'} your confirmation`}
+      titleEl={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'κράτηση περιμένει' : 'κρατήσεις περιμένουν'} την επιβεβαίωσή σας`}
+      href="/mentor/sessions"
+      glyph="calendar"
+      actionEn="Review"
+      actionEl="Εξέταση"
+    />
+  ) : null;
+
   return (
     <AppShell showHelp
       description="Sessions, mentee requests, reviews, and earnings at a glance."
@@ -293,29 +310,18 @@ export default function MentorDashboard() {
 
         {/* One next step, before everything else. Within the hour it stays the
             status line; otherwise the next session, or the first request. */}
+        {sessionSoon && nextSession ? null : bookingWaiting}
         {sessionSoon && nextSession ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
-            <p className="flex items-center gap-2 text-sm font-medium">
-              <Video className="icon-sm text-status-info" aria-hidden="true" />
-              <BilingualText
-                en={`Session with ${nextSession.menteeName} in ${nextSessionMinsAway} min`}
-                el={`Συνεδρία με ${nextSession.menteeName} σε ${nextSessionMinsAway} λεπ.`}
-                compact
-                wrap
-              />
-            </p>
-            <Button size="sm" variant="outline" asChild>
-              {nextSession.meetingUrl ? (
-                <a href={nextSession.meetingUrl} target="_blank" rel="noopener noreferrer">
-                  <BilingualText en="Join now" el="Συμμετοχή τώρα" compact />
-                </a>
-              ) : (
-                <Link href="/mentor/sessions">
-                  <BilingualText en="Join now" el="Συμμετοχή τώρα" compact />
-                </Link>
-              )}
-            </Button>
-          </div>
+          <HomeNextStep
+            kickerEn={`Starts in ${nextSessionMinsAway} min`}
+            kickerEl={`Ξεκινά σε ${nextSessionMinsAway} λεπ.`}
+            title={nextSession.menteeName}
+            href={nextSession.meetingUrl || '/mentor/sessions'}
+            external={Boolean(nextSession.meetingUrl)}
+            glyph="calendar"
+            actionEn="Join now"
+            actionEl="Συμμετοχή τώρα"
+          />
         ) : nextSession ? (
           <HomeNextStep
             kickerEn="Next session"
@@ -330,6 +336,7 @@ export default function MentorDashboard() {
           />
         ) : pendingRequests[0] ? (
           <HomeNextStep
+            tone="waiting"
             kickerEn="Mentorship request"
             kickerEl="Αίτημα καθοδήγησης"
             title={pendingRequests[0].name}
@@ -338,6 +345,8 @@ export default function MentorDashboard() {
             actionEl="Εξέταση"
           />
         ) : null}
+
+        {sessionSoon && nextSession ? bookingWaiting : null}
 
         {/* Four figures, each a different fact and each linking to its rows.
             Rating and hours were drawn twice (a tile and a tinted banner). */}
@@ -380,28 +389,14 @@ export default function MentorDashboard() {
           />
         </div>
 
-        {/* A booking waits on the mentor, not the founder: surface it as a
-            warning line rather than letting it pass for a scheduled session. */}
-        {requestedBookings.length > 0 && (
-          <Link
-            href="/mentor/sessions"
-            className="flex items-center gap-2 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 text-sm font-medium text-status-warning transition-colors hover:border-status-warning"
-          >
-            <Calendar className="icon-sm shrink-0" aria-hidden="true" />
-            <BilingualText
-              en={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'booking' : 'bookings'} await your confirmation`}
-              el={`${requestedBookings.length} ${requestedBookings.length === 1 ? 'κράτηση περιμένει' : 'κρατήσεις περιμένουν'} επιβεβαίωση`}
-            />
-          </Link>
-        )}
-
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Requests lead when there are any: they wait on this mentor. */}
             {pendingRequests.length > 0 && (
               <SectionCard
-                title={`Mentorship requests (${pendingRequests.length})`}
-                titleEl={`Αιτήματα καθοδήγησης (${pendingRequests.length})`}
+                title="Mentorship requests"
+                titleEl="Αιτήματα καθοδήγησης"
+                count={pendingRequests.length}
                 icon={Zap}
                 action={{ href: '/mentor/requests', label: 'View all', labelEl: 'Όλα' }}
                 contentClassName="card-rows"

@@ -40,6 +40,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Counter } from '@/components/ui/counter';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -628,7 +629,7 @@ export default function GroupDetailPage() {
               {groupMembers.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle><BilingualText en={`Members (${group.memberCount})`} el={`Μέλη (${group.memberCount})`} compact /></CardTitle>
+                    <CardTitle><BilingualText en="Members" el="Μέλη" compact /><Counter value={group.memberCount} /></CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <ul className="space-y-2">
@@ -668,7 +669,7 @@ export default function GroupDetailPage() {
         {activeSection === 'members' && (
           <Card>
             <CardHeader>
-              <CardTitle><BilingualText en={`All Members (${group.memberCount})`} el={`Όλα τα μέλη (${group.memberCount})`} compact /></CardTitle>
+              <CardTitle><BilingualText en="All Members" el="Όλα τα μέλη" compact /><Counter value={group.memberCount} /></CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

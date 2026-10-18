@@ -11,6 +11,14 @@ import {
 import { Flag } from 'lucide-react';
 
 describe('CoFounderBay original glyph family', () => {
+  it('draws exactly one element of every glyph in the brand colour (Bay duo)', () => {
+    for (const name of CFB_GLYPH_NAMES) {
+      const { container, unmount } = render(<CfbGlyph name={name} />);
+      expect(container.querySelectorAll('[data-accent]').length, name).toBe(1);
+      unmount();
+    }
+  });
+
   it('gives every named glyph a unique drawing', () => {
     const drawings = CFB_GLYPH_NAMES.map((name) => {
       const { container } = render(<CfbGlyph name={name} />);

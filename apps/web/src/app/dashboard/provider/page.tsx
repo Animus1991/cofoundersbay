@@ -256,6 +256,7 @@ export default function ProviderDashboard() {
 
         {!inquiriesLoading && waiting[0] ? (
           <HomeNextStep
+            tone="waiting"
             kickerEn="Waiting on you"
             kickerEl="Σας περιμένει"
             title={waiting[0].service !== EM_DASH ? `${waiting[0].clientName} · ${waiting[0].service}` : waiting[0].clientName}

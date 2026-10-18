@@ -49,6 +49,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
+import { Counter } from '@/components/ui/counter';
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
   { id: 'role', title: 'What\'s your role?', icon: Target },
@@ -814,7 +815,7 @@ function SkillsStep({
         {/* Selected Skills */}
         {selectedSkills.length > 0 && (
           <div>
-            <h3 className="font-semibold mb-2">Selected Skills ({selectedSkills.length})</h3>
+            <h3 className="font-semibold mb-2"><BilingualText en="Selected skills" el="Επιλεγμένες δεξιότητες" compact /><Counter value={selectedSkills.length} /></h3>
             <div className="flex flex-wrap gap-2">
               {selectedSkills.map(skillId => {
                 const skill = skillsData?.find((s: any) => s.id === skillId);
@@ -1009,7 +1010,7 @@ function ReviewStep({
 
           {data.skills.length > 0 && (
             <div>
-              <h4 className="font-medium mb-1"><BilingualText en={`Skills (${data.skills.length})`} el={`Δεξιότητες (${data.skills.length})`} compact /></h4>
+              <h4 className="font-medium mb-1"><BilingualText en="Skills" el="Δεξιότητες" compact /><Counter value={data.skills.length} /></h4>
               <FactLine className="text-foreground sm:text-sm" items={[...data.skills.slice(0, 10), data.skills.length > 10 ? `+${data.skills.length - 10}` : null]} />
             </div>
           )}

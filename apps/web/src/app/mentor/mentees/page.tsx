@@ -32,6 +32,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { Counter } from '@/components/ui/counter';
 
 function MenteeCard({ relationship, upcomingBookings = 0 }: { relationship: MentorshipRelationshipItem; upcomingBookings?: number }) {
   const fmtDate = useDateFormat();
@@ -268,7 +269,7 @@ export default function MenteesPage() {
 
         {/* Active Mentees */}
         <div className="space-y-3">
-          <h2 className="text-base font-semibold text-foreground"><BilingualText en={`Active (${activeRelationships.length})`} el={`Ενεργοί (${activeRelationships.length})`} compact /></h2>
+          <h2 className="text-base font-semibold text-foreground"><BilingualText en="Active" el="Ενεργοί" compact /><Counter value={activeRelationships.length} /></h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="icon-xl animate-spin text-muted-foreground" />
@@ -296,7 +297,7 @@ export default function MenteesPage() {
         {/* Paused Mentees */}
         {pausedRelationships.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-semibold text-foreground"><BilingualText en={`Paused (${pausedRelationships.length})`} el={`Σε παύση (${pausedRelationships.length})`} compact /></h2>
+            <h2 className="text-base font-semibold text-foreground"><BilingualText en="Paused" el="Σε παύση" compact /><Counter value={pausedRelationships.length} /></h2>
             {pausedRelationships.map((relationship) => (
               <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}
@@ -306,7 +307,7 @@ export default function MenteesPage() {
         {/* Completed Mentees */}
         {completedRelationships.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-semibold text-foreground"><BilingualText en={`Completed (${completedRelationships.length})`} el={`Ολοκληρωμένοι (${completedRelationships.length})`} compact /></h2>
+            <h2 className="text-base font-semibold text-foreground"><BilingualText en="Completed" el="Ολοκληρωμένοι" compact /><Counter value={completedRelationships.length} /></h2>
             {completedRelationships.map((relationship) => (
               <MenteeCard key={relationship.id} relationship={relationship} upcomingBookings={upcomingBookingsByMentee.get(relationship.menteeId) ?? 0} />
             ))}

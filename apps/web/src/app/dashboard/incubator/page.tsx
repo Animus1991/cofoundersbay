@@ -213,6 +213,7 @@ export default function IncubatorDashboard() {
 
         {!loading && nextApplication ? (
           <HomeNextStep
+            tone="waiting"
             kickerEn="Application waiting"
             kickerEl="Αίτηση σε αναμονή"
             title={nextApplicationTitle}

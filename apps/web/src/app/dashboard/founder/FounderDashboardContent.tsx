@@ -75,6 +75,7 @@ import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { matchReasonCopy } from '@/lib/match-reason';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { HomeNextStep } from '@/components/dashboard/HomeNextStep';
 const FOUNDER_TOUR: TourStep[] = [
   {
     target: 'founder-stats',
@@ -615,15 +616,17 @@ export default function FounderDashboardContent() {
   const waitingThreads = (ladderThreads ?? []).filter(waitsOnMe);
   const firstWaiting = waitingThreads[0];
   const firstWaitingStep = firstWaiting ? ladderNextAction(firstWaiting) : null;
-  if (firstWaiting && firstWaitingStep) {
-    const more = waitingThreads.length - 1;
-    attentionItems.push({
-      href: `/commitments/${encodeURIComponent(firstWaiting.cardId)}?thread=${encodeURIComponent(firstWaiting.id)}`,
-      glyph: 'pact',
-      en: more > 0 ? `${firstWaitingStep.en} (+${more} more)` : firstWaitingStep.en,
-      el: more > 0 ? `${firstWaitingStep.el} (+${more} ακόμη)` : firstWaitingStep.el,
-    });
-  }
+  // It leads the page in the waiting flash (HomeNextStep), the same anatomy
+  // every role's home uses for what waits on the reader; the chips below keep
+  // the rest, so it is not said twice.
+  const waitingNext = firstWaiting && firstWaitingStep
+    ? {
+        href: `/commitments/${encodeURIComponent(firstWaiting.cardId)}?thread=${encodeURIComponent(firstWaiting.id)}`,
+        titleEn: firstWaitingStep.en,
+        titleEl: firstWaitingStep.el,
+        more: waitingThreads.length - 1,
+      }
+    : null;
   // Unread messages have their own tile directly above these chips, linking to
   // the same inbox; a chip saying "1 unread message" under "Unread messages 1"
   // was the same fact twice. The chips carry what no tile says.
@@ -1274,6 +1277,22 @@ export default function FounderDashboardContent() {
             }
           />
         )}
+
+        {waitingNext ? (
+          <HomeNextStep
+            tone="waiting"
+            kickerEn="Waiting on you"
+            kickerEl="Σας περιμένει"
+            titleEn={waitingNext.titleEn}
+            titleEl={waitingNext.titleEl}
+            reasonEn={waitingNext.more > 0 ? `${waitingNext.more} more on Commitments` : undefined}
+            reasonEl={waitingNext.more > 0 ? `${waitingNext.more} ακόμη στις Δεσμεύσεις` : undefined}
+            href={waitingNext.href}
+            glyph="pact"
+            actionEn="Open"
+            actionEl="Άνοιγμα"
+          />
+        ) : null}
 
         {/* The unfinished thing and the next people lead at every width.
             Activity, the first person, the milestone and the calendar stay

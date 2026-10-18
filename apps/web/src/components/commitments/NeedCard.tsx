@@ -38,7 +38,7 @@ function Field({
   children,
 }: {
   label: { en: string; el: string };
-  /** lead: the ask, body step, medium. aside: context, italic and muted like an endorsement quote. meta: a count line, the facts step. */
+  /** lead: the ask, body step, medium. aside: context, muted and upright. meta: a count line, the facts step. */
   tone?: 'lead' | 'aside' | 'meta';
   children: ReactNode;
 }) {
@@ -51,7 +51,7 @@ function Field({
         className={cn(
           'mt-0.5',
           tone === 'meta' ? 'text-xs text-muted-foreground' : 'card-body',
-          tone === 'aside' && 'italic text-muted-foreground',
+          tone === 'aside' && 'text-muted-foreground',
           tone === 'lead' && 'font-medium text-foreground',
         )}
       >
@@ -75,8 +75,8 @@ function Field({
  *   title    .card-title
  *   byline   avatar, name on the subtitle step (medium, foreground), headline under it in the caption step
  *   fields   a caption over the sentence. Who is missing, and the offer's role
- *            and terms, are medium; what exists and the goal recede (italic,
- *            muted), the way an endorsement quote does; evidence is a caption line
+ *            and terms, are medium; what exists and the goal recede (muted,
+ *            upright); evidence is a caption line
  *   facts    one muted line, dot-separated (category, remote, place, stage, commitment)
  *   footer   above a hairline: the non-guarantee sentence, the page's footer, actions
  * A phone sets captions a full step under the body, so a label never reads
@@ -156,7 +156,7 @@ export function NeedCard({
         <Field label={CMT.offer}>
           <span className="block font-medium">{card.offer?.role || '—'}</span>
           {offerLine.length ? <span className="block font-medium tabular-nums">{offerLine.join(' · ')}</span> : null}
-          {!compact && card.offer.scope ? <span className="mt-1 block font-normal italic text-muted-foreground">{card.offer.scope}</span> : null}
+          {!compact && card.offer.scope ? <span className="mt-1 block font-normal text-muted-foreground">{card.offer.scope}</span> : null}
         </Field>
         {!compact && evidence.length ? (
           <Field label={CMT.evidence} tone="meta">

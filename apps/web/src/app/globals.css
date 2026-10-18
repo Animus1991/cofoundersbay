@@ -4677,3 +4677,15 @@ input:is(
 :root [class~='first-letter:uppercase']::first-letter {
   text-transform: capitalize;
 }
+
+/* Bay duo — icon direction B (.probes/icon-directions, 2026-10-08; adopted
+   2026-10-18). Each platform glyph (CfbGlyph) marks one element
+   `data-accent`, drawn in the role's brand colour: the brand appears once per
+   icon, the line weight and the calm stay A's. On a solid brand fill the
+   accent would vanish into it, so there it keeps the glyph's own colour. */
+.cfb-glyph [data-accent] {
+  color: hsl(var(--primary));
+}
+:is([class~='bg-primary'], [class~='bg-primary-accessible']) .cfb-glyph [data-accent] {
+  color: inherit;
+}

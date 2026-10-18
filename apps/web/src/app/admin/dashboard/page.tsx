@@ -240,6 +240,7 @@ export default function AdminDashboardPage() {
       <div className="space-y-6">
         {attention[0] ? (
           <HomeNextStep
+            tone="waiting"
             kickerEn="Needs attention"
             kickerEl="Χρειάζεται προσοχή"
             titleEn={attention[0].en}
