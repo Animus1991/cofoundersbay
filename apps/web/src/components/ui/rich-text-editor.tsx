@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { escapeHtml, sanitizeHtml } from '@/lib/sanitize';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface RichTextEditorProps {
@@ -82,7 +83,8 @@ export function RichTextEditor({
     if (!el || isFocused) return;
     if (el.innerHTML !== value) {
       isInternalChange.current = true;
-      el.innerHTML = value;
+      // Stored as someone wrote it, perhaps a collaborator: load it sanitised, never raw.
+      el.innerHTML = sanitizeHtml(value, 'editor');
     }
   }, [value, isFocused]);
 
@@ -128,7 +130,8 @@ export function RichTextEditor({
     editorRef.current?.focus();
     const url = linkUrl.startsWith('http') ? linkUrl : `https://${linkUrl}`;
     if (linkText) {
-      exec('insertHTML', `<a href="${url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`);
+      // Both came from a text box: escaped, so they can be a link and its words and nothing else.
+      exec('insertHTML', `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a>`);
     } else {
       exec('createLink', url);
     }

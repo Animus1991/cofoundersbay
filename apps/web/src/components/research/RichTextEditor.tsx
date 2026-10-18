@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { bilingualAria } from '@/lib/i18n/format';
 import { countDocWords } from '@/lib/canvas/canvas-document';
 
@@ -32,11 +33,15 @@ export function RichTextEditor({
   const [counts, setCounts] = useState(() => countDocWords(content));
 
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== content) {
-      editorRef.current.innerHTML = content || '';
-      setIsEmpty(!content);
-      setCounts(countDocWords(content || ''));
-    }
+    const el = editorRef.current;
+    // What the person is typing already is `content`: leave it alone, or the caret jumps.
+    if (!el || el.innerHTML === content) return;
+    // A note that arrives from somewhere else was written by someone else, perhaps a
+    // collaborator, and is stored as they wrote it: load it sanitised, never raw.
+    const clean = sanitizeHtml(content || '', 'editor');
+    if (el.innerHTML !== clean) el.innerHTML = clean;
+    setIsEmpty(!content);
+    setCounts(countDocWords(content || ''));
   }, [content]);
 
   const handleInput = useCallback(() => {

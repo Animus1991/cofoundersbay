@@ -86,3 +86,26 @@ describe('ResearchCanvas link insertion', () => {
     expect(promptMock).not.toHaveBeenCalled();
   });
 });
+
+describe('ResearchCanvas note loading', () => {
+  // A note is stored as its last editor wrote it, perhaps a collaborator; the
+  // reader is shown it sanitised, and the editor must load it the same way.
+  it('keeps the text and drops everything that can run script', () => {
+    const { container } = render(
+      <RichTextEditor
+        value={'<p>Pricing notes</p><img src="x" onerror="window.__pwned = 1"><script>window.__pwned = 2</script><a href="javascript:window.__pwned = 3">link</a><svg onload="window.__pwned = 4"></svg>'}
+        onChange={vi.fn()}
+      />,
+    );
+    const editor = container.querySelector('[contenteditable]') as HTMLDivElement;
+    expect(editor.textContent).toContain('Pricing notes');
+    expect(editor.querySelector('[onerror], [onload], script, svg')).toBeNull();
+    expect(editor.innerHTML).not.toMatch(/onerror|onload|javascript:/i);
+  });
+
+  it('leaves what the toolbar itself produces exactly as it was', () => {
+    const note = '<p style="text-align: center;">Centred</p><p><span style="background-color: rgb(254, 240, 138);">marked</span> <b>bold</b></p>';
+    const { container } = render(<RichTextEditor value={note} onChange={vi.fn()} />);
+    expect((container.querySelector('[contenteditable]') as HTMLDivElement).innerHTML).toBe(note);
+  });
+});

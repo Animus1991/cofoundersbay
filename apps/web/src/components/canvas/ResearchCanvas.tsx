@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useModalA11y } from "@/hooks/useModalA11y";
 import { bilingualAria } from "@/lib/i18n/format";
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /* ─── Types ──────────────────────────────────────────────────── */
@@ -189,8 +190,9 @@ export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEd
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // The note was stored as its last editor wrote it, perhaps a collaborator: load it sanitised, never raw.
     if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || "";
+      editorRef.current.innerHTML = sanitizeHtml(value || "", 'editor');
     }
   }, []);
 

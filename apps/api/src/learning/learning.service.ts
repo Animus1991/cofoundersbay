@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { isWebAddress } from './learning-links';
 
 type LearningResourceType = 'article' | 'video' | 'course' | 'podcast' | 'book' | 'tool' | 'template';
 type LearningDifficulty = 'beginner' | 'intermediate' | 'advanced';
@@ -47,7 +48,22 @@ export interface LearningResourceFilters {
 export class LearningService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Refuse a link that is not an ordinary web address (see learning-links.ts).
+   * `imageUrl` may be empty or null: that clears the picture.
+   */
+  private assertLinks(links: { url?: unknown; imageUrl?: unknown }) {
+    if (links.url !== undefined && !isWebAddress(links.url)) {
+      throw new BadRequestException('url must be an http or https address');
+    }
+    if (links.imageUrl !== undefined && links.imageUrl !== null && links.imageUrl !== '' && !isWebAddress(links.imageUrl)) {
+      throw new BadRequestException('imageUrl must be an http or https address');
+    }
+  }
+
   async create(userId: string, dto: CreateLearningResourceDto) {
+    // `url` is required: a missing one is a 400 here, not a database error below.
+    this.assertLinks({ url: dto.url ?? '', imageUrl: dto.imageUrl });
     return this.prisma.learningResource.create({
       data: {
         title: dto.title,
@@ -154,6 +170,9 @@ export class LearningService {
     if (resource.createdById !== userId && !isAdmin) {
       throw new ForbiddenException('You can only edit your own resources');
     }
+
+    // An empty `url` is ignored below, as it always was; anything else is checked.
+    this.assertLinks({ url: dto.url ? dto.url : undefined, imageUrl: dto.imageUrl });
 
     return this.prisma.learningResource.update({
       where: { id },

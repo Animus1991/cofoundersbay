@@ -25,6 +25,9 @@ const RICH_TEXT_TAGS = [
 
 const RICH_TEXT_ATTRS = ['href', 'title', 'target', 'rel', 'class', 'colspan', 'rowspan', 'datetime'];
 
+/** javascript:, data: and vbscript: URIs never survive; relative links and http(s), mailto and tel do. */
+const SAFE_URI = /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+
 /** Escapes every HTML-significant character. Safe in any context. */
 export function escapeHtml(input: string): string {
   return input
@@ -35,11 +38,21 @@ export function escapeHtml(input: string): string {
     .replace(/'/g, '&#39;');
 }
 
-type SanitizeProfile = 'rich-text' | 'highlight';
+type SanitizeProfile = 'rich-text' | 'highlight' | 'editor';
 
 /**
  * `highlight` allows nothing but <mark>/<em>/<strong>: the search service only
  * ever wraps matched terms, so anything else in that payload is an injection.
+ *
+ * `editor` is for HTML about to be loaded into a contentEditable, where a
+ * person goes on to change it. The note is stored as written, and the API does
+ * not sanitise on the way in, so a collaborator with write access can store
+ * markup meant to run in the owner's browser when they open the note
+ * (`<img onerror=...>`). Unlike `rich-text` this keeps everything the editors'
+ * own toolbar produces, inline styles included (highlight, alignment and indent
+ * are written as `style`), so loading a note does not restyle it; what is
+ * removed is what can run script or leave the page: scripts, event handlers,
+ * script URLs, frames, forms, SVG and MathML.
  */
 export function sanitizeHtml(dirty: string, profile: SanitizeProfile = 'rich-text'): string {
   if (!dirty) return '';
@@ -63,11 +76,19 @@ export function sanitizeHtml(dirty: string, profile: SanitizeProfile = 'rich-tex
     });
   }
 
+  if (profile === 'editor') {
+    return DOMPurify.sanitize(dirty, {
+      ALLOWED_URI_REGEXP: SAFE_URI,
+      ADD_ATTR: ['target'],
+      FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'link', 'meta', 'base', 'svg', 'math'],
+      FORBID_ATTR: ['srcset', 'formaction'],
+    });
+  }
+
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS: RICH_TEXT_TAGS,
     ALLOWED_ATTR: RICH_TEXT_ATTRS,
-    // javascript:, data: and vbscript: URIs never survive.
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+    ALLOWED_URI_REGEXP: SAFE_URI,
     ADD_ATTR: ['target'],
     FORBID_TAGS: ['style', 'script', 'iframe', 'object', 'embed', 'form', 'input'],
     FORBID_ATTR: ['style', 'srcset', 'formaction'],
