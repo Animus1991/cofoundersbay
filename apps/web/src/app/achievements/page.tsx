@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAnalyticsAchievements, getMyXP, getMyBadges, type AnalyticsAchievement, type GamificationXPSummary, type GamificationBadge } from '@/lib/api';
+import { getAnalyticsAchievements, getLeaderboard, getMyXP, getMyBadges, type AnalyticsAchievement, type GamificationXPSummary, type GamificationBadge } from '@/lib/api';
 import { ReputationSystem } from '@/components/gamification/ReputationSystem';
 import { UserBadges } from '@/components/gamification/UserBadges';
 import {
@@ -41,8 +41,8 @@ import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
-import { attachDemoPhotos } from '@/lib/demo/photos';
-import { useStoredUser } from '@/hooks/useStoredUser';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import { LEVEL_LABEL_EL } from '@/lib/i18n/strings-reputation';
 
 const ACHIEVEMENTS_TOUR: TourStep[] = [
   {
@@ -475,7 +475,6 @@ function computeEarnedBadgeIds(signals?: { connectionCount: number; boardCount: 
 }
 
 export default function AchievementsPage() {
-  const me = useStoredUser();
   const fmtDate = useDateFormat();
   const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked' | 'leaderboard' | 'reputation' | 'badges'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -485,6 +484,14 @@ export default function AchievementsPage() {
     queryFn: () => getAnalyticsAchievements(),
     staleTime: 120_000,
     retry: 1,
+  });
+
+  const { showDemoData } = useDemoData();
+  const { data: board, isLoading: boardLoading, isError: boardError } = useQuery({
+    queryKey: qk('gamification', 'leaderboard'),
+    queryFn: () => getLeaderboard(10),
+    staleTime: 60_000,
+    enabled: activeTab === 'leaderboard',
   });
 
   const { data: xpData } = useQuery<GamificationXPSummary>({
@@ -504,13 +511,15 @@ export default function AchievementsPage() {
   const badgeProgressMap: Record<string, number> = {};
 
   const achievements = useMemo(() => {
-    const list = isError || !rawAchievements ? DEMO_ACHIEVEMENTS : rawAchievements;
+    // The sample list is the demo's; a member whose list failed to load sees
+    // an empty list and the error, not someone else's unlocked achievements.
+    const list = rawAchievements ?? (showDemoData ? DEMO_ACHIEVEMENTS : []);
     return (list ?? []).map((a, i) =>
       'tier' in a && 'points' in a && 'rarity' in a
         ? (a as unknown as Achievement)
         : apiToAchievement(a as AnalyticsAchievement, i),
     );
-  }, [rawAchievements, isError]);
+  }, [rawAchievements, showDemoData]);
 
   const stats: UserStats = useMemo(() => {
     const unlocked = achievements.filter((a) => a.unlocked).length;
@@ -548,13 +557,10 @@ export default function AchievementsPage() {
     { value: 'special', labelEn: 'Special', labelEl: 'Ειδικά', icon: Crown },
   ];
 
-  const LEADERBOARD = attachDemoPhotos([
-    { rank: 1, name: 'Nikos Papadakis', points: 4200, level: 21, badge: 'Legend', avatar: '' },
-    { rank: 2, name: 'Elena Papadopoulos', points: 3850, level: 19, badge: 'Expert', avatar: '' },
-    { rank: 3, name: 'Marcus Chen', points: 3100, level: 15, badge: 'Rising Star', avatar: '' },
-    { rank: 4, name: 'Andreea Ionescu', points: 2800, level: 14, badge: 'Rising Star', avatar: '' },
-    { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: me?.avatarUrl ?? '', isMe: true },
-  ]).sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
+  // The members with the most XP, from the API (the demo answers with its
+  // cast). It used to be four invented names, at levels 14 to 21 on a ladder
+  // that ends at 10, shown to every member.
+  const leaderboard = board?.entries ?? [];
 
   const RANK_COLORS: Record<number, string> = { 1: 'text-status-warning', 2: 'text-muted-foreground', 3: 'text-status-warning' };
 
@@ -732,41 +738,56 @@ export default function AchievementsPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
+                        {boardLoading ? (
+                          <div className="space-y-3" aria-busy="true">
+                            {[0, 1, 2].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+                          </div>
+                        ) : boardError ? (
+                          <p className="card-body text-muted-foreground">
+                            <BilingualText en="The leaderboard could not be loaded. Try again in a moment." el="Ο πίνακας κατάταξης δεν φόρτωσε. Δοκιμάστε ξανά σε λίγο." />
+                          </p>
+                        ) : leaderboard.length === 0 ? (
+                          <p className="card-body text-muted-foreground">
+                            <BilingualText
+                              en="No one has XP yet. A match, a message or a finished milestone puts you on the board."
+                              el="Κανείς δεν έχει ακόμη XP. Μια αντιστοίχιση, ένα μήνυμα ή ένα ολοκληρωμένο ορόσημο σας βάζει στον πίνακα."
+                            />
+                          </p>
+                        ) : (
                         <ol className="divide-y divide-border">
-                          {LEADERBOARD.map((user) => {
-                            const isMe = (user as { isMe?: boolean }).isMe === true;
+                          {leaderboard.map((user) => {
+                            const isMe = user.isMe;
                             return (
                               <li
-                                key={user.rank}
+                                key={user.userId}
                                 aria-current={isMe ? 'true' : undefined}
                                 className="py-3 first:pt-0 last:pb-0"
                               >
                                 <RowHead
                                   mark={(
                                     <Avatar className={cn('h-10 w-10', isMe && 'ring-2 ring-primary/20')}>
-                                      <AvatarImage src={user.avatar || undefined} alt="" />
-                                      <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{initialsOf(user.name)}</AvatarFallback>
+                                      <AvatarImage src={user.avatarUrl ?? undefined} alt="" />
+                                      <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{initialsOf(user.displayName)}</AvatarFallback>
                                     </Avatar>
                                   )}
                                   title={isMe
-                                    ? <span className="text-primary-accessible"><BilingualText en={user.name === 'You' ? 'You' : `${user.name} (You)`} el={user.name === 'You' ? 'Εσείς' : `${user.name} (Εσείς)`} compact /></span>
-                                    : user.name}
+                                    ? <span className="text-primary-accessible"><BilingualText en={`${user.displayName} (You)`} el={`${user.displayName} (Εσείς)`} compact /></span>
+                                    : user.displayName}
                                   subtitle={(
                                     <FactLine
                                       items={[
                                         <span key="rank" className={cn('tabular-nums', RANK_COLORS[user.rank])}>
                                           {user.rank <= 3 ? `${['🥇', '🥈', '🥉'][user.rank - 1]} ` : ''}#{user.rank}
                                         </span>,
-                                        <BilingualText key="level" en={`Level ${user.level}`} el={`Επίπεδο ${user.level}`} compact />,
-                                        user.badge,
+                                        <BilingualText key="level" en={`Level ${user.level} · ${user.levelLabel}`} el={`Επίπεδο ${user.level} · ${LEVEL_LABEL_EL[user.level] ?? user.levelLabel}`} compact />,
                                       ]}
                                     />
                                   )}
                                   asideStays
                                   aside={(
                                     <span className="card-body font-semibold tabular-nums text-foreground">
-                                      {user.points.toLocaleString('en-GB')}{' '}
-                                      <span className="text-xs font-normal text-muted-foreground"><BilingualText en="pts" el="πόντοι" compact /></span>
+                                      {user.totalXp.toLocaleString('el-GR')}{' '}
+                                      <span className="text-xs font-normal text-muted-foreground">XP</span>
                                     </span>
                                   )}
                                 />
@@ -774,6 +795,22 @@ export default function AchievementsPage() {
                             );
                           })}
                         </ol>
+                        )}
+                        {board && !board.entries.some((e) => e.isMe) && (
+                          <p className="mt-3 border-t border-border pt-3 card-body text-muted-foreground">
+                            {board.me.xpToEnter != null ? (
+                              <BilingualText
+                                en={`You have ${board.me.totalXp.toLocaleString('en-GB')} XP: ${board.me.xpToEnter.toLocaleString('en-GB')} more puts you on the board.`}
+                                el={`Έχετε ${board.me.totalXp.toLocaleString('el-GR')} XP: ακόμη ${board.me.xpToEnter.toLocaleString('el-GR')} σας βάζουν στον πίνακα.`}
+                              />
+                            ) : (
+                              <BilingualText
+                                en={`You have ${board.me.totalXp.toLocaleString('en-GB')} XP.`}
+                                el={`Έχετε ${board.me.totalXp.toLocaleString('el-GR')} XP.`}
+                              />
+                            )}
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   </div>

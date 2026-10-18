@@ -4043,6 +4043,24 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
     };
   }
 
+  if (pathname === '/api/gamification/leaderboard') {
+    // The API's ladder (gamification.types.ts XP_LEVELS), and Alex at the
+    // 920 XP the XP widget shows, so the board and the header agree.
+    const row = (rank: number, userId: string, displayName: string, headline: string, totalXp: number, level: number, levelLabel: string, isMe = false) => (
+      { rank, userId, displayName, avatarUrl: null, headline, totalXp, level, levelLabel, isMe }
+    );
+    return {
+      entries: [
+        row(1, 'user-nikos-papadakis', 'Nikos Papadakis', 'Founder · climate software', 4200, 6, 'Growth Architect'),
+        row(2, 'user-elena', 'Elena Papadopoulos', 'Founder & CEO at Harbor', 3850, 6, 'Growth Architect'),
+        row(3, 'user-marcus', 'Marcus Chen', 'Technical cofounder · Full-stack', 3100, 5, 'Market Fit Seeker'),
+        row(4, 'user-andreea', 'Andreea Ionescu', 'Product designer', 2800, 5, 'Market Fit Seeker'),
+        row(5, ME_ID, 'Alex Demo', 'Founder exploring CoFounderBay', 920, 3, 'Builder', true),
+      ],
+      me: { rank: 5, totalXp: 920, level: 3, levelLabel: 'Builder', xpToEnter: null },
+    };
+  }
+
   if (pathname === '/api/gamification/users/me/xp' || pathname.endsWith('/xp')) {
     return {
       // Consistent with the real ladder in apps/api gamification.types.ts, which

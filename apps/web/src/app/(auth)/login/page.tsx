@@ -14,6 +14,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { loginEmailError, loginPasswordError } from '@/lib/auth-fields';
+import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 
 // No member counts here: the platform does not publish one, so a figure
 // would be invented. Each point describes something the product does.
@@ -76,6 +77,7 @@ function LoginPageContent() {
   const handleSSOLogin = () => {
     if (!ssoDiscovery?.provider?.id) return;
     const returnUrl = safeInternalPath(searchParams?.get('redirect') || searchParams?.get('returnUrl')) ?? '/';
+    leavePreviewDemoForRealAccount();
     window.location.href = getSSOLoginUrl(ssoDiscovery.provider.id, returnUrl);
   };
 

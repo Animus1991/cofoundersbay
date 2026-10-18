@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { getAbsoluteApiOrigin } from '@/lib/api-origin';
 import { BilingualText } from '@/components/common/BilingualText';
+import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 
 interface OAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -25,6 +26,8 @@ export function OAuthButtons({ mode = 'login', disabled }: OAuthButtonsProps) {
 
   const handleOAuth = (provider: 'google' | 'linkedin') => {
     setLoadingProvider(provider);
+    // A real account: the demo's flags would keep answering from the shim.
+    leavePreviewDemoForRealAccount();
     window.location.href = `${getAbsoluteApiOrigin()}/api/auth/${provider}`;
   };
 

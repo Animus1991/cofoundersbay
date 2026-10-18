@@ -1,4 +1,5 @@
 import { resolvePreviewApiNow } from '@/lib/preview-api';
+import { leavePreviewDemoForRealAccount } from '@/lib/preview-demo';
 import type { CompatAnswers, CompatComparison, MentorListingInput, ProviderListingInput, PublicStats, TransparencyReport } from '@cofounderbay/shared';
 
 // Returns the API base URL evaluated at call time — not module load time.
@@ -374,6 +375,7 @@ export async function apiRequest<T>(
 }
 
 export async function register(body: { email: string; password: string; role?: string }) {
+  leavePreviewDemoForRealAccount();
   clearLegacyTokens();
   const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
     '/api/auth/register',
@@ -385,6 +387,7 @@ export async function register(body: { email: string; password: string; role?: s
 }
 
 export async function forgotPassword(email: string): Promise<{ sent: boolean }> {
+  leavePreviewDemoForRealAccount();
   return apiRequest('/api/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
@@ -392,6 +395,7 @@ export async function forgotPassword(email: string): Promise<{ sent: boolean }> 
 }
 
 export async function login(body: { email: string; password: string }) {
+  leavePreviewDemoForRealAccount();
   clearLegacyTokens();
   const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
     '/api/auth/login',
@@ -433,10 +437,12 @@ export async function getMe(): Promise<{ user: AuthUser }> {
 }
 
 export async function verifyEmail(token: string): Promise<{ ok: boolean; email: string }> {
+  leavePreviewDemoForRealAccount();
   return apiRequest('/api/auth/verify-email?token=' + encodeURIComponent(token), { method: 'GET' }, { retryOn401: false });
 }
 
 export async function resendVerification(email: string): Promise<{ ok: boolean }> {
+  leavePreviewDemoForRealAccount();
   return apiRequest('/api/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }, { retryOn401: false });
 }
 
@@ -4709,6 +4715,7 @@ export async function getMatchingAdminStats(): Promise<{
 // --- Password Reset ---
 
 export async function resetPassword(token: string, password: string): Promise<{ ok: boolean; message: string }> {
+  leavePreviewDemoForRealAccount();
   return apiRequest('/api/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify({ token, password }),
@@ -6601,6 +6608,29 @@ export interface GamificationXPSummary {
 
 export async function getMyXP(): Promise<GamificationXPSummary> {
   return apiRequest('/api/gamification/users/me/xp');
+}
+
+/** One member on the leaderboard; `totalXp` is the total they see for themselves. */
+export type LeaderboardEntry = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  headline: string | null;
+  totalXp: number;
+  level: number;
+  levelLabel: string;
+  isMe: boolean;
+};
+
+export type LeaderboardView = {
+  entries: LeaderboardEntry[];
+  me: { rank: number | null; totalXp: number; level: number; levelLabel: string; xpToEnter: number | null };
+};
+
+/** The members with the most XP (active, not hidden from search) and the reader's place. */
+export async function getLeaderboard(limit = 10): Promise<LeaderboardView> {
+  return apiRequest(`/api/gamification/leaderboard?limit=${limit}`);
 }
 
 export async function getUserXP(userId: string): Promise<GamificationXPSummary> {

@@ -10,65 +10,81 @@ type DemoDataCtx = {
 };
 
 const DemoDataContext = createContext<DemoDataCtx>({
-  showDemoData: true,
+  showDemoData: false,
   toggleDemoData: () => {},
   setShowDemoData: () => {},
 });
 
-const STORAGE_KEY = 'cfb_demo_data';
+/**
+ * The "Show sample data" switch, on its own key.
+ *
+ * It used to share `cfb_demo_data` with the demo session itself, so turning
+ * samples on made the browser a demo session (every request answered by the
+ * shim, the account replaced by Alex Demo), and every real account saw sample
+ * founders, deals and inquiries until it found the switch, because the
+ * default was on. Now:
+ *
+ * - in the demo, samples are on unless the visitor hid them;
+ * - for a real account they are off unless the member turned them on, so a
+ *   new member sees their own (empty) pages and the empty states' next steps.
+ *
+ * Before mount the value is `false` for everyone: the server cannot read
+ * localStorage, and lists render from queries that are still loading then.
+ */
+const STORAGE_KEY = 'cfb_show_samples';
+
+function readPreference(): boolean {
+  let stored: string | null = null;
+  try {
+    stored = window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    // localStorage not available
+  }
+  return isPreviewDemo() ? stored !== '0' : stored === '1';
+}
+
+function writePreference(value: boolean) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, value ? '1' : '0');
+  } catch {
+    // localStorage not available
+  }
+}
 
 export function DemoDataProvider({ children }: { children: ReactNode }) {
-  // Default to true (show demo data) for better UX on first visit
-  const [showDemoData, setShowDemoDataState] = useState(true);
+  const [showDemoData, setShowDemoDataState] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Read from localStorage after mount to prevent SSR/CSR mismatch
   useEffect(() => {
     setMounted(true);
-    if (isPreviewDemo()) {
-      setShowDemoDataState(true);
-      try {
-        localStorage.setItem(STORAGE_KEY, '1');
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored !== null) {
-        setShowDemoDataState(stored === '1');
-      }
-    } catch {
-      // localStorage not available
-    }
+    setShowDemoDataState(readPreference());
+    // A sign-in or a sign-out changes which default applies.
+    const sync = () => setShowDemoDataState(readPreference());
+    window.addEventListener('cfb:login', sync);
+    window.addEventListener('cfb:logout', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('cfb:login', sync);
+      window.removeEventListener('cfb:logout', sync);
+      window.removeEventListener('storage', sync);
+    };
   }, []);
 
   const toggleDemoData = useCallback(() => {
     setShowDemoDataState((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
-      } catch {
-        // localStorage not available
-      }
+      writePreference(next);
       return next;
     });
   }, []);
 
   const setShowDemoData = useCallback((v: boolean) => {
     setShowDemoDataState(v);
-    try {
-      localStorage.setItem(STORAGE_KEY, v ? '1' : '0');
-    } catch {
-      // localStorage not available
-    }
+    writePreference(v);
   }, []);
 
-  // Prevent hydration mismatch by not rendering children until mounted
-  // Actually, we should render children but just use the default state
   return (
-    <DemoDataContext.Provider value={{ showDemoData: mounted ? showDemoData : true, toggleDemoData, setShowDemoData }}>
+    <DemoDataContext.Provider value={{ showDemoData: mounted ? showDemoData : false, toggleDemoData, setShowDemoData }}>
       {children}
     </DemoDataContext.Provider>
   );

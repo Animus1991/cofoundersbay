@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -45,6 +46,16 @@ export class GamificationController {
   @Get('users/me/xp')
   async getMyXP(@CurrentUser() user: { id: string }) {
     return this.svc.calculateUserXP(user.id);
+  }
+
+  /**
+   * GET /gamification/leaderboard?limit=10
+   * The members with the most XP (active, not hidden from search) and the
+   * caller's own place.
+   */
+  @Get('leaderboard')
+  async getLeaderboard(@CurrentUser() user: { id: string }, @Query('limit') limit?: string) {
+    return this.svc.getLeaderboard(user.id, limit ? parseInt(limit, 10) : 10);
   }
 
   /**

@@ -49,6 +49,7 @@ import {
   XPEventExplain,
   StreakExplain,
 } from './gamification.types';
+import { rankLeaderboard, type LeaderboardView } from './leaderboard';
 
 @Injectable()
 export class GamificationService {
@@ -196,6 +197,56 @@ export class GamificationService {
       tasks.push(this.processMentorFeedbackMetrics(workspaceId));
     }
     await Promise.allSettled(tasks);
+  }
+
+  /**
+   * The members with the most XP, and the reader's own place.
+   *
+   * Candidates are the members with the most event XP (four times the board,
+   * since badge rewards can reorder them) plus the reader; `rankLeaderboard`
+   * decides who may appear (active, not hidden from search) and in what order.
+   */
+  async getLeaderboard(viewerId: string, limit = 10): Promise<LeaderboardView> {
+    const size = Math.min(Math.max(Math.trunc(limit) || 10, 3), 50);
+    const top = await this.prisma.xPEvent.groupBy({
+      by: ['userId'],
+      _sum: { xpAmount: true },
+      orderBy: { _sum: { xpAmount: 'desc' } },
+      take: size * 4,
+    });
+    const eventXp = new Map(top.map((row) => [row.userId, row._sum.xpAmount ?? 0]));
+    if (!eventXp.has(viewerId)) {
+      const mine = await this.prisma.xPEvent.aggregate({ where: { userId: viewerId }, _sum: { xpAmount: true } });
+      eventXp.set(viewerId, mine._sum.xpAmount ?? 0);
+    }
+    const ids = [...eventXp.keys()];
+    const [users, badges] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { id: { in: ids } },
+        select: {
+          id: true,
+          moderationStatus: true,
+          profile: { select: { displayName: true, avatarUrl: true, headline: true, visibilityRules: true } },
+        },
+      }),
+      this.prisma.userGamificationBadge.findMany({
+        where: { userId: { in: ids } },
+        select: { userId: true, badge: { select: { xpReward: true } } },
+      }),
+    ]);
+    const badgeXp = new Map<string, number>();
+    for (const row of badges) badgeXp.set(row.userId, (badgeXp.get(row.userId) ?? 0) + row.badge.xpReward);
+    return rankLeaderboard(
+      users.map((u) => ({
+        userId: u.id,
+        eventXp: eventXp.get(u.id) ?? 0,
+        badgeXp: badgeXp.get(u.id) ?? 0,
+        active: u.moderationStatus === 'active',
+        profile: u.profile,
+      })),
+      viewerId,
+      size,
+    );
   }
 
   /**

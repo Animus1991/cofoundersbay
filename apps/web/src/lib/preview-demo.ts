@@ -99,6 +99,29 @@ export function restorePreviewDemoSessionIfNeeded() {
   return false;
 }
 
+/**
+ * Leaves the demo before a real account is created or signed into.
+ *
+ * While the demo's flags are set, every request is answered in the browser
+ * by the demo shim, and the shim answers an unknown POST with a success that
+ * echoes the body. So a visitor who tried the demo and then signed up was
+ * told "welcome" by the shim and nothing reached the server; signing in
+ * opened the demo again. Register, login, password reset, email verification
+ * and the Google, LinkedIn and SSO buttons call this first. A demo-only host
+ * (a trycloudflare preview, which has no API) stays a demo.
+ */
+export function leavePreviewDemoForRealAccount(): void {
+  if (typeof document === 'undefined') return;
+  if (window.location.hostname.endsWith('.trycloudflare.com')) return;
+  let flagged = document.cookie.includes('cfb_preview_demo=1') || document.cookie.includes('cfb_session=preview-demo');
+  try {
+    flagged = flagged || window.localStorage.getItem('cfb_demo_data') === '1';
+  } catch {
+    // private mode: the cookies decide
+  }
+  if (flagged) clearPreviewDemoSession();
+}
+
 export function clearPreviewDemoSession() {
   if (typeof document === 'undefined') return;
   document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
