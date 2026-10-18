@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { errorMessage } from '@/lib/utils';
+import { errorMessage, initialsOf } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -106,7 +106,7 @@ function PostCard({
           mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author?.avatarUrl ?? undefined} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{post.author?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(post.author?.displayName)}</AvatarFallback>
             </Avatar>
           )}
           title={post.author?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}
@@ -201,7 +201,7 @@ function PostCard({
               <div key={c.id} className="flex items-start gap-2.5">
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarImage src={c.author?.avatarUrl ?? undefined} alt="" />
-                  <AvatarFallback className="text-2xs">{c.author?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{initialsOf(c.author?.displayName)}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                   <span className="text-xs font-semibold">{c.author?.displayName}</span>
@@ -640,7 +640,7 @@ export default function GroupDetailPage() {
                         <li key={m.userId} className="flex items-center gap-2">
                           <Avatar className="h-7 w-7 shrink-0">
                             <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
-                            <AvatarFallback className="text-2xs">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                            <AvatarFallback className="text-2xs">{initialsOf(m.user?.displayName)}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-medium">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</p>
@@ -685,7 +685,7 @@ export default function GroupDetailPage() {
                   >
                     <Avatar className="h-10 w-10 shrink-0">
                       <AvatarImage src={m.user?.avatarUrl ?? undefined} alt="" />
-                      <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(m.user?.displayName)}</AvatarFallback>
                     </Avatar>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium">{m.user?.displayName ?? <BilingualText en="Member" el="Μέλος" compact />}</span>

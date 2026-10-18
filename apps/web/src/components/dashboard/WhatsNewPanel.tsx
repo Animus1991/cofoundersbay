@@ -96,7 +96,7 @@ export function WhatsNewPanel({ audience }: { audience: WhatsNewAudience }) {
       <CardContent>
         <ul className="grid grid-cols-1 gap-x-6 gap-y-1 md:grid-cols-2">
           {items.map((item) => (
-            <li key={item.href} className="min-w-0">
+            <li key={item.en /* a title: several entries can open the same page */} className="min-w-0">
               <Link href={item.href} className="axis-row block rounded-md py-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span className="block text-sm font-medium text-foreground"><BilingualText en={item.en} el={item.el} compact /></span>
                 <span className="mt-0.5 block text-xs text-muted-foreground"><BilingualText en={item.hintEn} el={item.hintEl} wrap /></span>

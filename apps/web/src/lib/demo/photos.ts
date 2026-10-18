@@ -1,31 +1,17 @@
 /**
- * Stable photos for the demo, from the same service the studio prototype uses
- * (`https://picsum.photos/seed/…`). A seed is the person's id, so Elena is
- * always the same portrait and a real uploaded URL is never replaced.
+ * Stable cover photos for the demo, from the same service the studio prototype
+ * uses (`https://picsum.photos/seed/…`): an event, a startup or a programme
+ * gets a picture of a place, the same one every time, and a real uploaded URL
+ * is never replaced.
+ *
+ * People and logos get no demo photo (2026-10-18, docs §56). A picsum seed is
+ * a random scene, so "Marcus Chen" was a swimmer, "Elena" a desk and "Sarah" a
+ * bridge at night: on a platform for finding co-founders a person's picture
+ * that is not a person read as broken. They show the product's initials
+ * instead, exactly as a real member without a photo does.
  */
 
-const PORTRAIT_KEYS = new Set([
-  'avatarUrl',
-  'logoUrl',
-  'providerLogo',
-  'providerAvatar',
-  'profilePhoto',
-  'photoUrl',
-  'photoURL',
-  'avatar',
-]);
-
 const COVER_KEYS = new Set(['coverImageUrl', 'imageUrl', 'heroImageUrl']);
-
-function portraitSeed(raw: string): string {
-  const id = raw.trim();
-  if (id === 'preview-demo-user' || id === 'me' || id === 'you') return 'alex';
-  return id.replace(/^(user-|hit-)/, '');
-}
-
-export function demoPortrait(seed: string, size = 200): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(portraitSeed(seed))}/${size}/${size}`;
-}
 
 export function demoCover(seed: string, width = 800, height = 450): string {
   return `https://picsum.photos/seed/${encodeURIComponent(seed.trim())}/${width}/${height}`;
@@ -35,32 +21,19 @@ function textOf(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null;
 }
 
-function portraitSeedOf(obj: Record<string, unknown>): string | null {
-  // userId wins over a profile-row id, so Alex's portrait matches the one in the menu.
-  return textOf(obj.userId) ?? textOf(obj.id) ?? textOf(obj.slug) ?? textOf(obj.displayName) ?? textOf(obj.name) ?? textOf(obj.fullName);
-}
-
 function coverSeedOf(obj: Record<string, unknown>): string | null {
   return textOf(obj.id) ?? textOf(obj.slug) ?? textOf(obj.title) ?? textOf(obj.name) ?? textOf(obj.displayName);
-}
-
-function isPerson(obj: Record<string, unknown>): boolean {
-  return textOf(obj.displayName) != null && (textOf(obj.id) != null || textOf(obj.userId) != null);
 }
 
 function fill(obj: Record<string, unknown>): Record<string, unknown> {
   const next: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
-    if ((PORTRAIT_KEYS.has(key) || COVER_KEYS.has(key)) && (value === null || value === '')) {
-      const seed = PORTRAIT_KEYS.has(key) ? portraitSeedOf(obj) : coverSeedOf(obj);
-      next[key] = seed ? (PORTRAIT_KEYS.has(key) ? demoPortrait(seed) : demoCover(seed)) : value;
+    if (COVER_KEYS.has(key) && (value === null || value === '')) {
+      const seed = coverSeedOf(obj);
+      next[key] = seed ? demoCover(seed) : value;
     } else {
       next[key] = walk(value);
     }
-  }
-  if (!('avatarUrl' in next) && isPerson(obj)) {
-    const seed = textOf(obj.id) ?? textOf(obj.userId);
-    if (seed) next.avatarUrl = demoPortrait(seed);
   }
   return next;
 }
@@ -73,7 +46,7 @@ function walk(value: unknown): unknown {
   return fill(value as Record<string, unknown>);
 }
 
-/** Copies a demo payload and fills empty photo fields. A URL already set stays. */
+/** Copies a demo payload and fills empty cover fields. A URL already set stays. */
 export function attachDemoPhotos<T>(value: T): T {
   return walk(value) as T;
 }

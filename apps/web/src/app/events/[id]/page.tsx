@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { getEvent, rsvpEvent, type EventItem } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
@@ -319,7 +319,7 @@ export default function EventDetailPage() {
                 mark={(
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={event.host?.avatarUrl ?? undefined} alt="" />
-                    <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{event.host?.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(event.host?.displayName)}</AvatarFallback>
                   </Avatar>
                 )}
                 title={event.host?.id ? (

@@ -24,7 +24,7 @@ import { dashboardEl, dashboardEn } from '@/lib/i18n/strings-dashboard';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS } from '@/lib/semantic-colors';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { matchReasonCopy } from '@/lib/match-reason';
 
 type PhoneActivity = {
@@ -221,7 +221,7 @@ export function FounderPhoneHome({
                 >
                   <Avatar>
                     <AvatarImage src={person.avatarUrl ?? undefined} alt="" />
-                    <AvatarFallback>{person.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
+                    <AvatarFallback>{initialsOf(person.displayName)}</AvatarFallback>
                   </Avatar>
                   <span className="line-clamp-2 w-full text-center text-xs text-foreground">
                     {shortName(person.displayName ?? '')}
@@ -286,7 +286,7 @@ export function FounderPhoneHome({
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarImage src={first.avatarUrl ?? undefined} alt="" />
-                <AvatarFallback>{first.displayName?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
+                <AvatarFallback>{initialsOf(first.displayName)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">

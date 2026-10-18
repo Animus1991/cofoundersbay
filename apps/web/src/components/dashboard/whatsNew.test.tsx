@@ -67,6 +67,15 @@ describe('where the panel sits', () => {
   });
 });
 
+describe('the entries', () => {
+  it('have unique titles for every audience, since a title is the list key', () => {
+    for (const audience of ['founder', 'investor', 'mentor', 'org', 'provider'] as const) {
+      const titles = whatsNewItems(audience).map((i) => i.en);
+      expect(new Set(titles).size, audience).toBe(titles.length);
+    }
+  });
+});
+
 describe('the search example it advertises', () => {
   // The panel said to type "co-founder fintech Thessaloniki part-time"; the
   // demo directory has nobody like that, so following it showed an empty

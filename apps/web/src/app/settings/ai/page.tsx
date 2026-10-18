@@ -35,7 +35,6 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
-import { demoPortrait } from '@/lib/demo/photos';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
@@ -45,6 +44,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { getAgentGlyph } from '@/lib/ai-api';
 
 type AIPreferences = {
   preferredModel: string;
@@ -624,8 +624,10 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3"
                   >
-                    <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      <img src={demoPortrait(agent.id, 64)} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+                    {/* The agent's own glyph, as the assistant draws it: a random
+                        photo of a place said nothing about what the agent does. */}
+                    <div data-keep-icon="" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                      <CfbGlyph name={getAgentGlyph(agent.id)} className="icon-sm" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>
