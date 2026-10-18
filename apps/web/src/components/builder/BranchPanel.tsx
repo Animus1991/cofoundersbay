@@ -50,7 +50,7 @@ import {
   type ArtifactBranch,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Branch Status helpers ──────────────────────────────────────────────────
 
@@ -76,6 +76,7 @@ interface CreateBranchDialogProps {
 }
 
 function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreated }: CreateBranchDialogProps) {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -124,7 +125,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
           <div className="space-y-1.5">
             <Label htmlFor="description"><BilingualText en="Description (optional)" el="Περιγραφή (προαιρετικά)" compact /></Label>
             <Textarea id="description"
-              placeholder={bilingualInline("What changes are you exploring in this variant?", "Ποιες αλλαγές δοκιμάζετε σε αυτή την εκδοχή;")}
+              placeholder={sayOne("What changes are you exploring in this variant?", "Ποιες αλλαγές δοκιμάζετε σε αυτή την εκδοχή;")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
@@ -156,6 +157,7 @@ interface SubmitProposalDialogProps {
 }
 
 function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProposalDialogProps) {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const [title, setTitle] = useState(`Changes from "${branch.name}"`);
   const [description, setDescription] = useState('');
@@ -197,7 +199,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
           <div className="space-y-1.5">
             <Label htmlFor="description-2"><BilingualText en="Description" el="Περιγραφή" compact /></Label>
             <Textarea id="description-2"
-              placeholder={bilingualInline("Summarise the changes you've made and why…", "Συνοψίστε τις αλλαγές σας και τον λόγο…")}
+              placeholder={sayOne("Summarise the changes you've made and why…", "Συνοψίστε τις αλλαγές σας και τον λόγο…")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}

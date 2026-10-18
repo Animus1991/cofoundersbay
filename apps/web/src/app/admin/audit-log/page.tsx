@@ -26,6 +26,7 @@ import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * The API writes dotted actions - `user.ban`, `report.resolve`,
@@ -129,6 +130,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
 const PAGE_SIZE = 10;
 
 export default function AdminAuditLogPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const [entityType, setEntityType] = useState('all');
   const [action, setAction] = useState('all');
@@ -235,7 +237,7 @@ export default function AdminAuditLogPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline("Search audit log by actor, entity, or action", "Αναζήτηση στο αρχείο ελέγχου με χρήστη, οντότητα ή ενέργεια")}
-              placeholder={bilingualInline("Search by actor, entity, action…", "Αναζήτηση με χρήστη, οντότητα, ενέργεια…")}
+              placeholder={sayOne("Search by actor, entity, action…", "Αναζήτηση με χρήστη, οντότητα, ενέργεια…")}
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(0); }}
               className="pl-9"
@@ -243,7 +245,7 @@ export default function AdminAuditLogPage() {
           </div>
           <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(0); }}>
             <SelectTrigger aria-label="Entity type. Τύπος οντότητας" className="w-[160px]">
-              <SelectValue placeholder={bilingualInline("Entity type", "Τύπος οντότητας")} />
+              <SelectValue placeholder={sayOne("Entity type", "Τύπος οντότητας")} />
             </SelectTrigger>
             <SelectContent>
               {ENTITY_TYPES.map((t) => (
@@ -253,7 +255,7 @@ export default function AdminAuditLogPage() {
           </Select>
           <Select value={action} onValueChange={(v) => { setAction(v); setPage(0); }}>
             <SelectTrigger aria-label="Action. Ενέργεια" className="w-[160px]">
-              <SelectValue placeholder={bilingualInline("Action", "Ενέργεια")} />
+              <SelectValue placeholder={sayOne("Action", "Ενέργεια")} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_TYPES.map((a) => (

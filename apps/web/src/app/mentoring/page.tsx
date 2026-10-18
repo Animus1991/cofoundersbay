@@ -70,6 +70,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface Mentor {
   id: string;
@@ -249,6 +250,7 @@ function BookingModal({
   onClose: () => void;
   onBook: (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => Promise<void>;
 }) {
+  const sayOne = useBilingualString();
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState('60');
@@ -349,7 +351,7 @@ function BookingModal({
             <Label htmlFor="notes"><BilingualText en="Notes (optional)" el="Σημειώσεις (προαιρετικά)" compact /></Label>
             <Textarea
               id="notes"
-              placeholder={bilingualInline('What would you like to discuss?', 'Τι θα θέλατε να συζητήσετε;')}
+              placeholder={sayOne('What would you like to discuss?', 'Τι θα θέλατε να συζητήσετε;')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -484,6 +486,7 @@ function MentorSkeleton() {
 }
 
 export default function MentoringPage() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
@@ -775,7 +778,7 @@ export default function MentoringPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder={bilingualInline('Search mentors by name, expertise or bio…', 'Αναζήτηση μεντόρων με όνομα, εξειδίκευση ή βιογραφικό…')}
+                placeholder={sayOne('Search mentors by name, expertise or bio…', 'Αναζήτηση μεντόρων με όνομα, εξειδίκευση ή βιογραφικό…')}
                 aria-label={bilingualInline('Search mentors', 'Αναζήτηση μεντόρων')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

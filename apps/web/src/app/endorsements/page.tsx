@@ -22,7 +22,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { MessageButton } from '@/components/common/PersonActions';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { bilingualInline, formatDate } from '@/lib/i18n/format';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, Award, BadgeCheck,
@@ -283,6 +283,7 @@ function SkillsList({ skills }: { skills: SkillEndorsement[] }) {
 // ── Ask for one ────────────────────────────────────────────────────────────────
 
 function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<string> }) {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
 
   // The reader's own accepted connections; the sample names stay as the
@@ -321,7 +322,7 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
       <div className="relative">
         <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <Input
-          placeholder={bilingualInline('Search connections…', 'Αναζήτηση επαφών…')}
+          placeholder={sayOne('Search connections…', 'Αναζήτηση επαφών…')}
           aria-label={bilingualInline('Search connections', 'Αναζήτηση επαφών')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}

@@ -48,7 +48,8 @@ import {
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The page's own row from the admin row.
@@ -280,6 +281,7 @@ const SEED_USERS: User[] = [
 ];
 
 export default function AdminUsersPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -591,7 +593,7 @@ export default function AdminUsersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder={bilingualInline("Search users…", "Αναζήτηση χρηστών…")}
+              placeholder={sayOne("Search users…", "Αναζήτηση χρηστών…")}
               aria-label="Search users by name or email"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

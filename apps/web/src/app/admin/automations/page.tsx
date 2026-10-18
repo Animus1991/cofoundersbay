@@ -40,6 +40,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
   'connection_request_sent','connection_not_answered','connection_accepted',
@@ -56,6 +57,7 @@ const ACTION_TYPES = [
 ] as const;
 
 function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const sayOne = useBilingualString();
   const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
   const { success, error: toastError } = useToast();
   const [name, setName] = useState('');
@@ -115,7 +117,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
           </div>
           <div className="space-y-1.5">
             <label htmlFor="auto-a-description" className="text-sm font-medium"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-            <Input id="auto-a-description" value={description} onChange={e => setDescription(e.target.value)} placeholder={bilingualInline("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
+            <Input id="auto-a-description" value={description} onChange={e => setDescription(e.target.value)} placeholder={sayOne("What does this rule do?", "Τι κάνει αυτός ο κανόνας;")} />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="auto-f1" className="text-sm font-medium"><BilingualText en="Trigger" el="Έναυσμα" compact /></label>

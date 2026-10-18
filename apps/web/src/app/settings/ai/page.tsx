@@ -43,7 +43,8 @@ import { useI18n } from '@/components/common/I18nProvider';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls, type PageControlRunResult } from '@/lib/page-controls';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type AIPreferences = {
   preferredModel: string;
@@ -106,6 +107,7 @@ function Toggle({ checked, onChange, disabled, label }: { checked: boolean; onCh
 }
 
 export default function AISettingsPage() {
+  const sayOne = useBilingualString();
   const { success, error: showError } = useToast();
   const { t } = useI18n();
   const queryClient = useQueryClient();
@@ -354,7 +356,7 @@ export default function AISettingsPage() {
                     onValueChange={(v) => updatePref('preferredModel', v)}
                   >
                     <SelectTrigger id="preferredModel" aria-label="Preferred Model">
-                      <SelectValue placeholder={bilingualInline("Select model", "Επιλογή μοντέλου")} />
+                      <SelectValue placeholder={sayOne("Select model", "Επιλογή μοντέλου")} />
                     </SelectTrigger>
                     <SelectContent>
                       {/* The built-in copilot is a real choice (the demo and
@@ -390,7 +392,7 @@ export default function AISettingsPage() {
                     onValueChange={(v) => updatePref('defaultAgent', v)}
                   >
                     <SelectTrigger id="defaultAgent" aria-label="Default Agent">
-                      <SelectValue placeholder={bilingualInline("Select agent", "Επιλογή βοηθού")} />
+                      <SelectValue placeholder={sayOne("Select agent", "Επιλογή βοηθού")} />
                     </SelectTrigger>
                     <SelectContent>
                       {agents.length > 0 ? (

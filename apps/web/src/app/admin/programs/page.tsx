@@ -56,6 +56,7 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Program = {
   /** Set on live rows; the owning organisation's own programs page. */
@@ -228,6 +229,7 @@ const STATUS_OPTIONS: { value: string; en: string; el: string }[] = [
 ];
 
 export default function AdminProgramsPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -493,7 +495,7 @@ export default function AdminProgramsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
+              placeholder={sayOne("Search programs…", "Αναζήτηση προγραμμάτων…")}
               aria-label="Search programs by name or organization"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

@@ -29,6 +29,7 @@ import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const ChartFallback = () => <Skeleton className="h-[180px] w-full rounded-lg" />;
 const PieFallback = () => <Skeleton className="h-[140px] w-[140px] rounded-full" />;
@@ -86,6 +87,7 @@ function monthKey(d: Date): string {
 }
 
 export default function OrgAnalyticsPage() {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('30d');
   const windowDays = PERIODS.find((p) => p.value === period)?.days ?? 30;
@@ -267,7 +269,7 @@ export default function OrgAnalyticsPage() {
         <>
           <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
             <SelectTrigger aria-label={bilingualAria('Time period', 'Χρονική περίοδος')} className="w-[150px]">
-              <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
+              <SelectValue placeholder={sayOne("Time period", "Χρονική περίοδος")} />
             </SelectTrigger>
             <SelectContent>
               {PERIODS.map((p) => (

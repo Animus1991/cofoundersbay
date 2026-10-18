@@ -47,6 +47,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
 import { pressableProps } from '@/lib/pressable';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
   if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border"><BilingualText en="SSO Required" el="SSO υποχρεωτικό" compact /></Badge>;
   if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border"><BilingualText en="SSO Optional" el="SSO προαιρετικό" compact /></Badge>;
@@ -252,6 +253,7 @@ function SSOConfigPanel({
   tenantName: string;
   onClose: () => void;
 }) {
+  const sayOne = useBilingualString();
   const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
@@ -595,7 +597,7 @@ function SSOConfigPanel({
                     <label htmlFor="sso-defaultRole" className="text-sm font-medium"><BilingualText en="Default Role for new users" el="Προεπιλεγμένος ρόλος νέων χρηστών" compact /></label>
                     <select id="sso-defaultRole" value={defaultRole} onChange={e => setDefaultRole(e.target.value)}
                       className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm">
-                      {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{bilingualInline(r.charAt(0).toUpperCase() + r.slice(1), statusEl(r))}</option>)}
+                      {['founder', 'investor', 'mentor', 'member'].map(r => <option key={r} value={r}>{sayOne(r.charAt(0).toUpperCase() + r.slice(1), statusEl(r) ?? r.charAt(0).toUpperCase() + r.slice(1))}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -680,9 +682,9 @@ function SSOConfigPanel({
                 {roleMappingRules.map((r, i) => (
                   <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                     <input value={r.claim} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,claim:e.target.value} : x))}
-                      placeholder={bilingualInline("Claim", "Ισχυρισμός")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
+                      placeholder={sayOne("Claim", "Ισχυρισμός")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <input value={r.value} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,value:e.target.value} : x))}
-                      placeholder={bilingualInline("Value", "Τιμή")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
+                      placeholder={sayOne("Value", "Τιμή")} className="h-8 rounded-xl border border-input bg-background px-2 text-xs" />
                     <select value={r.role} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,role:e.target.value} : x))}
                       className="h-8 rounded-xl border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}

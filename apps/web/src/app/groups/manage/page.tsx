@@ -45,11 +45,12 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ManagedGroup = {
   id: string;
@@ -189,6 +190,7 @@ function GroupCard({ group, onInvite, onDelete }: { group: ManagedGroup } & Grou
 }
 
 export default function ManageGroupsPage() {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
@@ -325,7 +327,7 @@ export default function ManageGroupsPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input aria-label={bilingualAria("Search groups", "Αναζήτηση κοινοτήτων")} placeholder={bilingualInline("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label={bilingualAria("Search groups", "Αναζήτηση κοινοτήτων")} placeholder={sayOne("Search groups…", "Αναζήτηση κοινοτήτων…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Groups */}

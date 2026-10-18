@@ -31,7 +31,7 @@ import {
   type OrgMembershipItem,
   type ResearchBoardVisibility,
 } from '@/lib/api';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface BoardSettingsPanelProps {
   board: ResearchBoard;
@@ -256,6 +256,7 @@ function OrgOwnershipSection({
 }
 
 export function BoardSettingsPanel({ board, open, onClose, currentUserId }: BoardSettingsPanelProps) {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [activeTab, setActiveTab] = useState<'general' | 'sharing'>('general');
@@ -406,7 +407,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Input id="bsp-f2"
-                        placeholder={bilingualInline("Search users by name…", "Αναζήτηση χρηστών με όνομα…")}
+                        placeholder={sayOne("Search users by name…", "Αναζήτηση χρηστών με όνομα…")}
                         value={inviteQuery}
                         onChange={(e) => setInviteQuery(e.target.value)}
                         className="pr-3"

@@ -50,11 +50,12 @@ import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The page's own row from the API row.
@@ -230,6 +231,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
 /** Shown to an organisation that has not created a cohort yet. */
 
 export default function OrgCohortsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -343,7 +345,7 @@ export default function OrgCohortsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label="Search cohorts. Αναζήτηση κοορτών"
-              placeholder={bilingualInline('Search cohorts…', 'Αναζήτηση κοορτών…')}
+              placeholder={sayOne('Search cohorts…', 'Αναζήτηση κοορτών…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -351,7 +353,7 @@ export default function OrgCohortsPage() {
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger aria-label="Status. Κατάσταση" className="w-full sm:w-[150px]">
-              <SelectValue placeholder={bilingualInline('Status', 'Κατάσταση')} />
+              <SelectValue placeholder={sayOne('Status', 'Κατάσταση')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>

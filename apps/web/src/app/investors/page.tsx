@@ -35,6 +35,7 @@ import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -416,6 +417,7 @@ function InvestorCard({
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function InvestorsPage() {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { success, error: toastError } = useToast();
@@ -612,7 +614,7 @@ export default function InvestorsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder={bilingualInline('Search by name, firm or focus area…', 'Αναζήτηση με όνομα, εταιρεία ή πεδίο…')}
+            placeholder={sayOne('Search by name, firm or focus area…', 'Αναζήτηση με όνομα, εταιρεία ή πεδίο…')}
             aria-label={bilingualInline('Search investors', 'Αναζήτηση επενδυτών')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

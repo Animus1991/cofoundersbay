@@ -48,6 +48,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * A project is an inquiry that was accepted — the same row /provider/inquiries
@@ -282,6 +283,7 @@ const SEED_PROJECTS: Project[] = [
 ];
 
 export default function ProviderProjectsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -375,7 +377,7 @@ export default function ProviderProjectsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search projects", "Αναζήτηση έργων")}
-            placeholder={bilingualInline("Search projects…", "Αναζήτηση έργων…")}
+            placeholder={sayOne("Search projects…", "Αναζήτηση έργων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

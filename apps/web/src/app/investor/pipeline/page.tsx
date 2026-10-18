@@ -35,6 +35,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -225,6 +226,7 @@ const MOCK_DEALS: Deal[] = [
 ];
 
 export default function InvestorPipelinePage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [showPassed, setShowPassed] = useState(false);
@@ -413,7 +415,7 @@ export default function InvestorPipelinePage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               aria-label="Search deals. Αναζήτηση ευκαιριών"
-              placeholder={bilingualInline('Search deals…', 'Αναζήτηση ευκαιριών…')}
+              placeholder={sayOne('Search deals…', 'Αναζήτηση ευκαιριών…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"

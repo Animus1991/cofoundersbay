@@ -23,6 +23,7 @@ import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUIL
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualInline } from '@/lib/i18n/format';
 import { STATUS } from '@/lib/semantic-colors';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface Feature {
   id: string;
@@ -118,6 +119,7 @@ const IMPORTANCE_LABEL: Record<string, { en: string; el: string }> = {
 };
 
 export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
+  const sayOne = useBilingualString();
   const t = useBuilderPrimaryText();
   const [data, setData] = useState<MVPData>({ ...defaultMVPData, ...initialData });
   const [activeTab, setActiveTab] = useState('scope');
@@ -490,13 +492,13 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <Input
                                     value={feature.name}
                                     onChange={(e) => updateFeature(feature.id, 'name', e.target.value)}
-                                    placeholder={bilingualInline("Feature name", "Όνομα λειτουργίας")}
+                                    placeholder={sayOne("Feature name", "Όνομα λειτουργίας")}
                                     className="font-medium"
                                   />
                                   <Textarea
                                     value={feature.description}
                                     onChange={(e) => updateFeature(feature.id, 'description', e.target.value)}
-                                    placeholder={bilingualInline("Description", "Περιγραφή")}
+                                    placeholder={sayOne("Description", "Περιγραφή")}
                                     className="mt-2 min-h-[60px]"
                                   />
                                 </div>
@@ -527,7 +529,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                   <Input
                                     value={feature.effort}
                                     onChange={(e) => updateFeature(feature.id, 'effort', e.target.value)}
-                                    placeholder={bilingualInline("Effort (e.g., 2 weeks)", "Προσπάθεια (π.χ. 2 εβδομάδες)")}
+                                    placeholder={sayOne("Effort (e.g., 2 weeks)", "Προσπάθεια (π.χ. 2 εβδομάδες)")}
                                   />
                                   <div className={cn('text-sm font-medium', getComplexityColor(feature.complexity))}>
                                     {feature.complexity.charAt(0).toUpperCase() + feature.complexity.slice(1)} Risk
@@ -625,7 +627,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                 newSprints[index] = { ...sprint, name: e.target.value };
                                 setData(prev => ({ ...prev, sprints: newSprints }));
                               }}
-                              placeholder={bilingualInline("Sprint name", "Όνομα sprint")}
+                              placeholder={sayOne("Sprint name", "Όνομα sprint")}
                               className="font-medium"
                             />
                             <Input
@@ -635,7 +637,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                 newSprints[index] = { ...sprint, duration: e.target.value };
                                 setData(prev => ({ ...prev, sprints: newSprints }));
                               }}
-                              placeholder={bilingualInline("Duration (e.g., 2 weeks)", "Διάρκεια (π.χ. 2 εβδομάδες)")}
+                              placeholder={sayOne("Duration (e.g., 2 weeks)", "Διάρκεια (π.χ. 2 εβδομάδες)")}
                             />
                           </div>
                           <div>
@@ -664,7 +666,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                 </Badge>
                               ))}
                               <Input
-                                placeholder={bilingualInline("Add goal…", "Προσθήκη στόχου…")}
+                                placeholder={sayOne("Add goal…", "Προσθήκη στόχου…")}
                                 className="w-32 h-6 text-xs"
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' && e.currentTarget.value) {

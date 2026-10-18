@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/toast';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const CATEGORIES = ['Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export function CreateGroupModal({ onClose, onCreated }: Props) {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const fieldId = useId();
   const [loading, setLoading] = useState(false);
@@ -78,7 +80,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               id={`${fieldId}-name`}
               value={form.name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder={bilingualInline('e.g. SaaS Founders Hub', 'π.χ. SaaS Founders Hub')}
+              placeholder={sayOne('e.g. SaaS Founders Hub', 'π.χ. SaaS Founders Hub')}
               required
             />
           </div>
@@ -110,7 +112,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 outline-none"
               rows={3}
-              placeholder={bilingualInline("What is this group about?", "Ποιο είναι το θέμα της κοινότητας;")}
+              placeholder={sayOne("What is this group about?", "Ποιο είναι το θέμα της κοινότητας;")}
             />
           </div>
 
@@ -125,9 +127,9 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
                 onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 outline-none"
               >
-                <option value="">{bilingualInline('None', 'Καμία')}</option>
+                <option value="">{sayOne('None', 'Καμία')}</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{bilingualInline(c, statusEl(c))}</option>
+                  <option key={c} value={c}>{sayOne(c, statusEl(c) ?? c)}</option>
                 ))}
               </select>
             </div>

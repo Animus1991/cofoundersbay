@@ -62,6 +62,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { formatDate } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const PROGRAM_STATUS_FILTERS: { value: 'all' | 'current' | Program['status']; en: string; el: string }[] = [
   { value: 'current', en: 'Not archived', el: 'Μη αρχειοθετημένα' },
@@ -267,6 +268,7 @@ const EMPTY_FORM: ProgramForm = {
 };
 
 export default function TenantProgramsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -493,7 +495,7 @@ export default function TenantProgramsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search programs", "Αναζήτηση προγραμμάτων")}
-            placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
+            placeholder={sayOne("Search programs…", "Αναζήτηση προγραμμάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

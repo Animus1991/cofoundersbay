@@ -21,7 +21,7 @@ import {
   type MentorshipSessionItem,
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /** `<input type="datetime-local">` wants local wall-clock time without a zone. */
 function toLocalInput(iso: string | Date): string {
@@ -57,6 +57,7 @@ export function ScheduleSessionDialog({
   initialMenteeId?: string | null;
   onScheduled: () => void;
 }) {
+  const sayOne = useBilingualString();
   const { data, isLoading } = useQuery({
     queryKey: qk('mentorships', 'mentor'),
     queryFn: () => getMyMentorships('mentor'),
@@ -127,7 +128,7 @@ export function ScheduleSessionDialog({
             <div className="space-y-1.5">
               <Label htmlFor="session-mentee"><BilingualText en="Mentee" el="Καθοδηγούμενος" compact /></Label>
               <Select value={relationshipId} onValueChange={setRelationshipId}>
-                <SelectTrigger id="session-mentee"><SelectValue placeholder={bilingualInline("Choose a mentee", "Επιλέξτε καθοδηγούμενο")} /></SelectTrigger>
+                <SelectTrigger id="session-mentee"><SelectValue placeholder={sayOne("Choose a mentee", "Επιλέξτε καθοδηγούμενο")} /></SelectTrigger>
                 <SelectContent>
                   {relationships.map((r) => (
                     <SelectItem key={r.id} value={r.id}>{r.mentee.displayName}</SelectItem>

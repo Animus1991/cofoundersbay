@@ -33,6 +33,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type StatusFilter = 'all' | TenantItem['status'];
 type BrandingFilter = 'all' | 'branded' | 'unbranded';
@@ -64,6 +65,7 @@ const TENANT_DELETE_DESCRIPTION = (
 );
 
 export default function TenantsAdminPage() {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
@@ -356,7 +358,7 @@ export default function TenantsAdminPage() {
               type="search"
               value={search}
               onChange={(e) => { setSearch(e.target.value); clear(); }}
-              placeholder={bilingualInline('Search name or slug', 'Αναζήτηση ονόματος ή slug')}
+              placeholder={sayOne('Search name or slug', 'Αναζήτηση ονόματος ή slug')}
               aria-label={bilingualAria('Search tenants', 'Αναζήτηση οργανισμών')}
               className="pl-9"
             />
@@ -518,6 +520,7 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const sayOne = useBilingualString();
   const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
@@ -701,15 +704,15 @@ function TenantEditor({
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="tn-general-shortDescription" className="text-sm font-medium"><BilingualText en="Short Description" el="Σύντομη περιγραφή" compact /></label>
-                  <Input id="tn-general-shortDescription" value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder={bilingualInline("One-line description shown in listings", "Περιγραφή μίας γραμμής για τις λίστες")} maxLength={160} />
+                  <Input id="tn-general-shortDescription" value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder={sayOne("One-line description shown in listings", "Περιγραφή μίας γραμμής για τις λίστες")} maxLength={160} />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="tn-general-description" className="text-sm font-medium"><BilingualText en="Full Description" el="Πλήρης περιγραφή" compact /></label>
-                  <textarea id="tn-general-description" value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder={bilingualInline("Detailed description of the organization…", "Αναλυτική περιγραφή του οργανισμού…")} className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea id="tn-general-description" value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder={sayOne("Detailed description of the organization…", "Αναλυτική περιγραφή του οργανισμού…")} className="w-full min-h-[80px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="tn-general-aboutText" className="text-sm font-medium"><BilingualText en="About Text (long-form landing page)" el="Κείμενο «Σχετικά» (σελίδα προορισμού)" wrap /></label>
-                  <textarea id="tn-general-aboutText" value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder={bilingualInline("Full about section displayed on the tenant landing page…", "Πλήρες κείμενο «Σχετικά» για τη σελίδα του οργανισμού…")} className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  <textarea id="tn-general-aboutText" value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder={sayOne("Full about section displayed on the tenant landing page…", "Πλήρες κείμενο «Σχετικά» για τη σελίδα του οργανισμού…")} className="w-full min-h-[100px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -858,7 +861,7 @@ function TenantEditor({
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="tn-branding-dashboardWelcomeText" className="text-sm font-medium"><BilingualText en="Dashboard Welcome Message" el="Μήνυμα καλωσορίσματος" compact /></label>
-                    <textarea id="tn-branding-dashboardWelcomeText" value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder={bilingualInline("Here's what's happening…", "Να τι συμβαίνει…")} className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
+                    <textarea id="tn-branding-dashboardWelcomeText" value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder={sayOne("Here's what's happening…", "Να τι συμβαίνει…")} className="w-full min-h-[70px] rounded-xl border border-input bg-background px-3 py-2 text-sm resize-none" />
                   </div>
                 </div>
                 <div className="space-y-2">

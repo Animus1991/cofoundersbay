@@ -15,7 +15,6 @@ import {
 } from '@/lib/api';
 import { useChartTheme } from '@/lib/chart-theme';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +22,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-status-warning-bg text-status-warning',
@@ -87,6 +87,7 @@ function XPEventRow({ e }: { e: AdminXPBreakdownItem }) {
 }
 
 export function ScoreInspector() {
+  const sayOne = useBilingualString();
   const theme = useChartTheme();
   const [userId, setUserId] = useState('');
   const [query, setQuery] = useState('');
@@ -138,7 +139,7 @@ export function ScoreInspector() {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && void runInspection()}
-            placeholder={bilingualInline("Enter user ID…", "Συμπληρώστε αναγνωριστικό χρήστη…")}
+            placeholder={sayOne("Enter user ID…", "Συμπληρώστε αναγνωριστικό χρήστη…")}
             className="w-full pl-9 pr-4 py-2.5 text-sm border border-border rounded-xl focus:outline-none"
           />
         </div>

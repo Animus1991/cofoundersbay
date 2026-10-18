@@ -26,13 +26,13 @@ import {
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { qk } from '@/lib/query-keys';
-import { bilingualInline } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { FactLine } from '@/components/common/FactLine';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type SecurityEvent = {
   id: string;
@@ -87,6 +87,7 @@ const LEVEL_TONE: Record<SecurityEvent['level'], StatusTone> = {
 };
 
 export default function SecurityMonitoringPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [level, setLevel] = useState('all');
@@ -194,13 +195,13 @@ export default function SecurityMonitoringPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search security events. Αναζήτηση συμβάντων ασφαλείας"
-            placeholder={bilingualInline('Search security events…', 'Αναζήτηση συμβάντων ασφαλείας…')}
+            placeholder={sayOne('Search security events…', 'Αναζήτηση συμβάντων ασφαλείας…')}
             className="pl-9"
           />
         </div>
         <Select value={level} onValueChange={setLevel}>
           <SelectTrigger aria-label="Level. Επίπεδο" className="w-full sm:w-[160px]">
-            <SelectValue placeholder={bilingualInline("Level", "Επίπεδο")} />
+            <SelectValue placeholder={sayOne("Level", "Επίπεδο")} />
           </SelectTrigger>
           <SelectContent>
             {LEVELS.map((l) => (

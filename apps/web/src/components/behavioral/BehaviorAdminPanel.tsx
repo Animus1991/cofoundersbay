@@ -26,11 +26,11 @@ import {
 import { useChartTheme } from '@/lib/chart-theme';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const STATE_LABELS: Record<string, { label: string; labelEl: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard', labelEl: 'Νέα εγγραφή', color: 'bg-primary' },
@@ -110,6 +110,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
 }
 
 function UserClassifyTab() {
+  const sayOne = useBilingualString();
   const [userId, setUserId] = useState('');
   const [queried, setQueried] = useState('');
 
@@ -134,7 +135,7 @@ function UserClassifyTab() {
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
-          placeholder={bilingualInline("User ID", "Αναγνωριστικό χρήστη")}
+          placeholder={sayOne("User ID", "Αναγνωριστικό χρήστη")}
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
           className="flex-1"

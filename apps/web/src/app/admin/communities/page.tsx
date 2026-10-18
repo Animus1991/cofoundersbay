@@ -56,7 +56,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { RailStats } from '@/components/layout/RailParts';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { FactLine } from '@/components/common/FactLine';
 
 /**
@@ -267,6 +267,7 @@ const SEED_COMMUNITIES: Community[] = [
 ];
 
 export default function AdminCommunitiesPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -421,7 +422,7 @@ export default function AdminCommunitiesPage() {
             <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Visibility" el="Ορατότητα" compact /></p>
             <Select value={visibility} onValueChange={setVisibility}>
               <SelectTrigger aria-label="Visibility" className="w-full">
-                <SelectValue placeholder={bilingualInline("Visibility", "Ορατότητα")} />
+                <SelectValue placeholder={sayOne("Visibility", "Ορατότητα")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All" el="Όλες" compact /></SelectItem>
@@ -435,7 +436,7 @@ export default function AdminCommunitiesPage() {
             <p className="mb-1.5 text-xs font-medium text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger aria-label="Status" className="w-full">
-                <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
+                <SelectValue placeholder={sayOne("Status", "Κατάσταση")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -484,7 +485,7 @@ export default function AdminCommunitiesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             aria-label={bilingualAria("Search communities", "Αναζήτηση κοινοτήτων")}
-            placeholder={bilingualInline("Search communities…", "Αναζήτηση κοινοτήτων…")}
+            placeholder={sayOne("Search communities…", "Αναζήτηση κοινοτήτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -571,7 +572,7 @@ export default function AdminCommunitiesPage() {
                 id="community-description"
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder={bilingualInline("What is this community about?", "Ποιο είναι το θέμα της κοινότητας;")}
+                placeholder={sayOne("What is this community about?", "Ποιο είναι το θέμα της κοινότητας;")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">

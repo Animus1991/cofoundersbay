@@ -66,7 +66,8 @@ import { qk } from '@/lib/query-keys';
 import { CANCELLED, choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type OrgMember = {
   id: string;
@@ -234,6 +235,7 @@ function StatCard({ title, titleEl, value, change, trend }: {
 }
 
 export default function OrgAdminPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -468,7 +470,7 @@ export default function OrgAdminPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
-                <SelectValue placeholder={bilingualInline("All roles", "Όλοι οι ρόλοι")} />
+                <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
@@ -485,7 +487,7 @@ export default function OrgAdminPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
-                <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
+                <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -616,7 +618,7 @@ export default function OrgAdminPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder={bilingualInline("Search members…", "Αναζήτηση μελών…")}
+                placeholder={sayOne("Search members…", "Αναζήτηση μελών…")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -814,7 +816,7 @@ export default function OrgAdminPage() {
                 id="invite-user-id"
                 value={inviteUserId}
                 onChange={(e) => setInviteUserId(e.target.value)}
-                placeholder={bilingualInline("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
+                placeholder={sayOne("The member's user ID", "Το αναγνωριστικό χρήστη του μέλους")}
                 className="mt-2"
               />
             </div>

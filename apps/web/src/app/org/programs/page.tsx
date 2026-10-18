@@ -36,6 +36,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The page's own row from the API row.
@@ -249,6 +250,7 @@ const SEED_PROGRAMS: Program[] = [
 ];
 
 export default function OrgProgramsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -377,7 +379,7 @@ export default function OrgProgramsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline("Search programs", "Αναζήτηση προγραμμάτων")}
-              placeholder={bilingualInline("Search programs…", "Αναζήτηση προγραμμάτων…")}
+              placeholder={sayOne("Search programs…", "Αναζήτηση προγραμμάτων…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"

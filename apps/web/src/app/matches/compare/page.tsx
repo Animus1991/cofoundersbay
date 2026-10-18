@@ -19,12 +19,12 @@ import { getMatchBreakdown, getRecommendations, type MatchBreakdown, type Search
 import { rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn, initialsOf } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
 import { matchAxisEl } from '@/lib/i18n/strings-matches';
 import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * Matches side by side.
@@ -47,6 +47,7 @@ import { PersonHovercard } from '@/components/common/PersonHovercard';
 const MAX = 3;
 
 export default function MatchComparePage() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -170,7 +171,7 @@ export default function MatchComparePage() {
             <Select value="" onValueChange={add}>
               <SelectTrigger aria-label="Add a match to compare. Προσθήκη αντιστοίχισης για σύγκριση" className="w-[220px]">
                 <Plus className="mr-1.5 icon-sm" aria-hidden="true" />
-                <SelectValue placeholder={bilingualInline("Add a match", "Προσθήκη αντιστοίχισης")} />
+                <SelectValue placeholder={sayOne("Add a match", "Προσθήκη αντιστοίχισης")} />
               </SelectTrigger>
               <SelectContent>
                 {addable.map((m) => (

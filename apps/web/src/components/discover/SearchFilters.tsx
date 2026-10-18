@@ -37,8 +37,8 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import type { NaturalFilter } from '@cofounderbay/shared';
 
 export type SearchFiltersValues = {
@@ -174,6 +174,7 @@ export function SearchFilters({
   interpreted,
   onSearchAsTyped,
 }: SearchFiltersProps) {
+  const sayOne = useBilingualString();
   const [isOpen, setIsOpen] = useState(false);
   const primaryIsGreek = useLanguagePreference().primary === 'el';
 
@@ -263,7 +264,7 @@ export function SearchFilters({
             <Input
               type="text"
               aria-label={bilingualAria("Search profiles", "Αναζήτηση προφίλ")}
-              placeholder={bilingualInline("Name, skill, or e.g. cofounder SaaS Athens full-time", "Όνομα, δεξιότητα ή π.χ. συνιδρυτής SaaS Αθήνα πλήρης απασχόληση")}
+              placeholder={sayOne("Name, skill, or e.g. cofounder SaaS Athens full-time", "Όνομα, δεξιότητα ή π.χ. συνιδρυτής SaaS Αθήνα πλήρης απασχόληση")}
               value={filters.q}
               onChange={(e) => updateFilter('q', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch()}
@@ -420,7 +421,7 @@ export function SearchFilters({
                 </AccordionTrigger>
                 <AccordionContent className="space-y-3">
                   <Input
-                    placeholder={bilingualInline("City or country…", "Πόλη ή χώρα…")}
+                    placeholder={sayOne("City or country…", "Πόλη ή χώρα…")}
                     value={filters.location}
                     onChange={(e) => updateFilter('location', e.target.value)}
                   />
@@ -639,9 +640,9 @@ export function SearchFilters({
             className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground backdrop-blur"
             data-filter-field=""
           >
-            <option value="relevance">{bilingualInline('Most relevant', 'Πιο σχετικά')}</option>
-            <option value="recent">{bilingualInline('Recently active', 'Πρόσφατα ενεργοί')}</option>
-            <option value="active">{bilingualInline('Most active', 'Πιο ενεργοί')}</option>
+            <option value="relevance">{sayOne('Most relevant', 'Πιο σχετικά')}</option>
+            <option value="recent">{sayOne('Recently active', 'Πρόσφατα ενεργοί')}</option>
+            <option value="active">{sayOne('Most active', 'Πιο ενεργοί')}</option>
           </select>
         </div>
       )}

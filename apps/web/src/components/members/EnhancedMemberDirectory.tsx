@@ -31,9 +31,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText } from '@/components/common/StatusText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface Member {
   id: string;
@@ -52,6 +53,7 @@ interface Member {
 }
 
 export function EnhancedMemberDirectory() {
+  const sayOne = useBilingualString();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
@@ -172,7 +174,7 @@ export function EnhancedMemberDirectory() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder={bilingualInline("Search by name, skills, or industry…", "Αναζήτηση με όνομα, δεξιότητες ή κλάδο…")}
+              placeholder={sayOne("Search by name, skills, or industry…", "Αναζήτηση με όνομα, δεξιότητες ή κλάδο…")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"

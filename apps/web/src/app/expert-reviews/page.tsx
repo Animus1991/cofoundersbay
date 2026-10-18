@@ -56,6 +56,7 @@ import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls
 import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -616,6 +617,7 @@ function toPageExpert(row: ExpertDirectoryItem): ExpertProfile {
 }
 
 export default function ExpertReviewsPage() {
+  const sayOne = useBilingualString();
   const [activeTab, setActiveTab] = useState('my-reviews');
   const [searchExperts, setSearchExperts] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
@@ -832,7 +834,7 @@ export default function ExpertReviewsPage() {
             {/* Search — domain lives in the rail. */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-              <Input placeholder={bilingualInline("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
+              <Input placeholder={sayOne("Search experts…", "Αναζήτηση ειδικών…")} value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-9 h-9 text-sm" />
             </div>
 
             <div className="space-y-3">

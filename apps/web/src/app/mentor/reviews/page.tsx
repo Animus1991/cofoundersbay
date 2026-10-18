@@ -34,6 +34,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Review = {
   id: string;
@@ -119,6 +120,7 @@ function sampleReviews(now: number | null): Review[] {
 }
 
 export default function MentorReviewsPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState<string>('all');
@@ -244,7 +246,7 @@ export default function MentorReviewsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               aria-label={bilingualInline("Search mentor reviews", "Αναζήτηση αξιολογήσεων μεντόρων")}
-              placeholder={bilingualInline("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
+              placeholder={sayOne("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -252,7 +254,7 @@ export default function MentorReviewsPage() {
           </div>
           <Select value={ratingFilter} onValueChange={setRatingFilter}>
             <SelectTrigger aria-label="Rating. Βαθμολογία" className="w-full sm:w-[150px]">
-              <SelectValue placeholder={bilingualInline("Rating", "Βαθμολογία")} />
+              <SelectValue placeholder={sayOne("Rating", "Βαθμολογία")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Ratings" el="Όλες οι βαθμολογίες" compact /></SelectItem>

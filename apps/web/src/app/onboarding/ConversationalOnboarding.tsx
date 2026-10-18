@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/Logo';
 import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -140,6 +140,7 @@ function UserBubble({ children }: { children: React.ReactNode }) {
 }
 
 export function ConversationalOnboarding() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const { primary } = useLanguagePreference();
   const [step, setStep] = useState<Step>('welcome');
@@ -538,7 +539,7 @@ export function ConversationalOnboarding() {
                 ref={inputRef as React.RefObject<HTMLTextAreaElement>}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder={bilingualInline("Tell us about yourself…", "Πείτε μας για εσάς…")}
+                placeholder={sayOne("Tell us about yourself…", "Πείτε μας για εσάς…")}
                 aria-label={bilingualInline(STEP_META.bio.labelEn, STEP_META.bio.labelEl)}
                 data-testid="onboarding-bio-input"
                 rows={3}

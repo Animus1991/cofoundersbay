@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 export type NewsletterItem = {
   id: string;
@@ -32,6 +33,7 @@ export function DashboardNewsletter({
   items = defaultAnnouncements,
   className,
 }: DashboardNewsletterProps) {
+  const sayOne = useBilingualString();
   const list = items ?? defaultAnnouncements;
   const reasonId = useId();
   const reasonEn = 'The newsletter has no subscription service yet';
@@ -69,7 +71,7 @@ export function DashboardNewsletter({
         <div className="inline-flex max-w-full flex-col items-start">
           <div className="flex gap-2">
             <Input
-              placeholder={bilingualInline("Your email", "Το email σας")}
+              placeholder={sayOne("Your email", "Το email σας")}
               className="flex-1 text-sm"
               type="email"
               aria-label="Newsletter email"

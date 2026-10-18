@@ -27,9 +27,9 @@ import {
 } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
-import { bilingualInline } from '@/lib/i18n/format';
 import { CANCELLED, usePageControls } from '@/lib/page-controls';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const STAGE_LABEL: Record<PipelineStage, { en: string; el: string }> = {
   discovered: { en: 'Discovered', el: 'Εντοπίστηκε' },
@@ -55,6 +55,7 @@ const FORWARD: PipelineStage[] = PIPELINE_STAGES.filter((s) => s !== 'passed');
  * promised, its notes, and its history.
  */
 export default function StartupDealPage() {
+  const sayOne = useBilingualString();
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const queryClient = useQueryClient();
@@ -272,7 +273,7 @@ export default function StartupDealPage() {
                   rows={3}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder={bilingualInline("Call notes, a concern, the next step…", "Σημειώσεις κλήσης, μια ανησυχία, το επόμενο βήμα…")}
+                  placeholder={sayOne("Call notes, a concern, the next step…", "Σημειώσεις κλήσης, μια ανησυχία, το επόμενο βήμα…")}
                 />
                 <Button type="submit" size="sm" disabled={!note.trim() || addNote.isPending}>
                   <BilingualText en="Save note" el="Αποθήκευση σημείωσης" compact />

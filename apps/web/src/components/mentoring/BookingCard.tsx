@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/common/LocalTime';
 import { SessionDateTile } from './SessionDateTile';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 export const MEETING_TYPE_LABEL: Record<string, { en: string; el: string }> = {
   video: { en: 'Video call', el: 'Βιντεοκλήση' },
@@ -67,6 +68,7 @@ export function BookingCard({
   /** Merged lists tag each row with the store it came from. */
   showSource?: boolean;
 }) {
+  const sayOne = useBilingualString();
   const isMentor = booking.mentorId === userId;
   const other = isMentor ? booking.mentee : booking.mentor;
   const otherUserId = isMentor ? booking.menteeId : booking.mentorId;
@@ -171,7 +173,7 @@ export function BookingCard({
                 {showNotes && (
                   <div className="mt-2 space-y-2">
                     <Textarea
-                      placeholder={bilingualInline('Add your session notes, key points, decisions…', 'Προσθέστε σημειώσεις, βασικά σημεία, αποφάσεις…')}
+                      placeholder={sayOne('Add your session notes, key points, decisions…', 'Προσθέστε σημειώσεις, βασικά σημεία, αποφάσεις…')}
                       aria-label={bilingualInline('Session notes', 'Σημειώσεις συνεδρίας')}
                       value={sessionNotes}
                       onChange={(e) => setSessionNotes(e.target.value)}

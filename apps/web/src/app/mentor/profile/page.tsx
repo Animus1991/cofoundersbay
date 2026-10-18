@@ -36,11 +36,11 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { mentorDemoRating } from '@/lib/demo/mentor-world';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 
 import { pressableProps } from '@/lib/pressable';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 const INDUSTRIES = [
   'SaaS', 'Fintech', 'Healthtech', 'Edtech', 'Deep Tech', 'AI/ML',
   'E-commerce', 'Marketplace', 'Web3/Crypto', 'Climate Tech', 'AgriTech',
@@ -71,6 +71,7 @@ const stepToOption = (n: number | null | undefined, steps: readonly number[], fa
 };
 
 export default function MentorProfilePage() {
+  const sayOne = useBilingualString();
   // The preview's check is the real verification, not a constant.
   const me = useStoredUser();
   const { hasSession, mounted } = useSession();
@@ -294,7 +295,7 @@ export default function MentorProfilePage() {
                     id="mentor-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
-                    placeholder={bilingualInline('e.g. Serial founder & GTM advisor | 2x exits', 'π.χ. Ιδρυτής πολλών εταιρειών και σύμβουλος GTM | 2 exits')}
+                    placeholder={sayOne('e.g. Serial founder & GTM advisor | 2x exits', 'π.χ. Ιδρυτής πολλών εταιρειών και σύμβουλος GTM | 2 exits')}
                     maxLength={120}
                   />
                   <p className="text-xs text-muted-foreground"><BilingualText en={`${headline.length}/120 characters`} el={`${headline.length}/120 χαρακτήρες`} compact /></p>
@@ -305,7 +306,7 @@ export default function MentorProfilePage() {
                     id="mentor-bio"
                     value={bio}
                     onChange={e => setBio(e.target.value)}
-                    placeholder={bilingualInline("Describe your mentoring style, what you offer, and what kinds of founders you work best with…", "Περιγράψτε το στυλ καθοδήγησής σας, τι προσφέρετε και με ποιους ιδρυτές δουλεύετε καλύτερα…")}
+                    placeholder={sayOne("Describe your mentoring style, what you offer, and what kinds of founders you work best with…", "Περιγράψτε το στυλ καθοδήγησής σας, τι προσφέρετε και με ποιους ιδρυτές δουλεύετε καλύτερα…")}
                     rows={5}
                     className="resize-none"
                   />

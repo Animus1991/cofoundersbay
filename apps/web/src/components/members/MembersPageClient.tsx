@@ -46,6 +46,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { StatusText } from '@/components/common/StatusText';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ViewMode = 'grid' | 'list';
 type SortBy = 'relevance' | 'recent' | 'active';
@@ -293,6 +294,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
 }
 
 export function MembersPageClient() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -550,7 +552,7 @@ export function MembersPageClient() {
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search members by name, skills, or bio", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό")}
-            placeholder={bilingualInline("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
+            placeholder={sayOne("Search members by name, skills, or bio…", "Αναζήτηση μελών με όνομα, δεξιότητες ή βιογραφικό…")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"

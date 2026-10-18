@@ -28,9 +28,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
 import { isPitchPractice } from '@/lib/pitch-practice';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { CardHead } from '@/components/common/CardAnatomy';
 
 const EVENT_TYPES = [
@@ -82,6 +81,7 @@ function FormSection({ icon: Icon, title, titleEl, children }: { icon: typeof Ca
  * to its input.
  */
 export default function CreateEventPage() {
+  const sayOne = useBilingualString();
   const { primary } = useLanguagePreference();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -214,7 +214,7 @@ export default function CreateEventPage() {
             <FormField htmlFor="event-description" label={<BilingualText en="Description" el="Περιγραφή" compact />}>
               <Textarea
                 className="min-h-[7rem] resize-none"
-                placeholder={bilingualInline("What will happen at this event? Who should attend?", "Τι θα γίνει στην εκδήλωση; Ποιοι πρέπει να έρθουν;")}
+                placeholder={sayOne("What will happen at this event? Who should attend?", "Τι θα γίνει στην εκδήλωση; Ποιοι πρέπει να έρθουν;")}
                 value={form.description}
                 onChange={(e) => set('description', e.target.value)}
                 maxLength={5000}
@@ -314,7 +314,7 @@ export default function CreateEventPage() {
             >
               <Input
                 type="number"
-                placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
+                placeholder={sayOne("Unlimited", "Απεριόριστο")}
                 value={form.capacity}
                 onChange={(e) => set('capacity', e.target.value)}
                 min={1}

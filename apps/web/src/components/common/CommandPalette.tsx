@@ -34,6 +34,7 @@ import { foldText, searchPages } from '@/lib/page-search';
 import { FileText } from 'lucide-react';
 import { usePopupChatOptional } from '@/contexts/PopupChatContext';
 import { searchProfiles, type SearchHit } from '@/lib/api';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type CommandItem = {
   id: string;
@@ -72,6 +73,7 @@ type CommandPaletteProps = {
 };
 
 export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandPaletteProps) {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const { setTheme } = useTheme();
   const popup = usePopupChatOptional();
@@ -439,7 +441,7 @@ export function CommandPalette({ open, onOpenChange, onOpenShortcuts }: CommandP
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
-              placeholder={bilingualInline("Search or jump to…", "Αναζήτηση ή μετάβαση…")}
+              placeholder={sayOne("Search or jump to…", "Αναζήτηση ή μετάβαση…")}
               aria-describedby="palette-tip"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

@@ -8,8 +8,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 export type FeedPostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export function FeedPostComposer({ onPost }: Props) {
+  const sayOne = useBilingualString();
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<FeedPostType>('update');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -62,7 +64,7 @@ export function FeedPostComposer({ onPost }: Props) {
           <div className="min-w-0 flex-1">
             <Textarea
               aria-label={bilingualAria('Write a post', 'Σύνταξη δημοσίευσης')}
-              placeholder={bilingualInline('Share an update, ask a question, or celebrate a milestone…', 'Μοιραστείτε νέα, κάντε μια ερώτηση ή γιορτάστε ένα ορόσημο…')}
+              placeholder={sayOne('Share an update, ask a question, or celebrate a milestone…', 'Μοιραστείτε νέα, κάντε μια ερώτηση ή γιορτάστε ένα ορόσημο…')}
               value={content}
               onChange={(e) => { setContent(e.target.value); if (failed) setFailed(false); }}
               onFocus={() => setIsExpanded(true)}

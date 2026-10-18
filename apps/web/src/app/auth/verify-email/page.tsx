@@ -11,13 +11,14 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
 import { errorMessage as readErrorMessage } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { verifyEmail, resendVerification } from '@/lib/api';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'no-token';
 
 export default function VerifyEmailPage() {
+  const sayOne = useBilingualString();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -163,7 +164,7 @@ export default function VerifyEmailPage() {
                         <Input
                           id="email"
                           type="email"
-                          placeholder={bilingualInline("Enter your email address", "Συμπληρώστε το email σας")}
+                          placeholder={sayOne("Enter your email address", "Συμπληρώστε το email σας")}
                           value={resendEmail}
                           onChange={(e) => setResendEmail(e.target.value)}
                           required

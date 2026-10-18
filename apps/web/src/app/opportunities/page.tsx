@@ -68,6 +68,7 @@ import { MessageButton } from '@/components/common/PersonActions';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -479,6 +480,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function OpportunitiesPage() {
+  const sayOne = useBilingualString();
   // The assistant cites a listing as /opportunities#opportunity-<id>; its card mounts after the data.
   useScrollToHash();
   const queryClient = useQueryClient();
@@ -875,7 +877,7 @@ export default function OpportunitiesPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
+                placeholder={sayOne(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
                 aria-label={bilingualInline(opportunitiesEn('search_roles'), opportunitiesEl('search_roles'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -956,7 +958,7 @@ export default function OpportunitiesPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
-                placeholder={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
+                placeholder={sayOne(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
                 aria-label={bilingualInline(opportunitiesEn('search_jobs'), opportunitiesEl('search_jobs'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}

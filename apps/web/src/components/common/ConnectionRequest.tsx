@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ConnectionRequestProps = {
   open: boolean;
@@ -45,6 +45,7 @@ export function ConnectionRequestDialog({
   onSend,
   suggestedMessages = defaultSuggestions,
 }: ConnectionRequestProps) {
+  const sayOne = useBilingualString();
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -138,7 +139,7 @@ export function ConnectionRequestDialog({
         {/* Message input */}
         <div className="space-y-2">
           <Textarea
-            placeholder={bilingualInline("Write a personalized message explaining why you'd like to connect…", "Γράψτε ένα προσωπικό μήνυμα για το γιατί θέλετε να συνδεθείτε…")}
+            placeholder={sayOne("Write a personalized message explaining why you'd like to connect…", "Γράψτε ένα προσωπικό μήνυμα για το γιατί θέλετε να συνδεθείτε…")}
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);

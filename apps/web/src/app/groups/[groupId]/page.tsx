@@ -34,13 +34,14 @@ import {
   type GroupPost,
   type GroupComment,
 } from '@/lib/api';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const REACTIONS = ['👍', '❤️', '🔥', '🎉', '💡'];
 
@@ -59,6 +60,7 @@ function PostCard({
   onDelete: (postId: string) => void;
   onReact: (postId: string, emoji: string) => void;
 }) {
+  const sayOne = useBilingualString();
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -215,7 +217,7 @@ function PostCard({
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
                   aria-label={bilingualAria('Write a comment', 'Γράψτε ένα σχόλιο')}
-                  placeholder={bilingualInline("Write a comment…", "Γράψτε ένα σχόλιο…")}
+                  placeholder={sayOne("Write a comment…", "Γράψτε ένα σχόλιο…")}
                   className="min-w-0 flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none"
                 />
                 <Button aria-label={bilingualAria('Send comment', 'Αποστολή σχολίου')}
@@ -236,6 +238,7 @@ function PostCard({
 }
 
 export default function GroupDetailPage() {
+  const sayOne = useBilingualString();
   const params = useParams<{ groupId: string }>();
   const groupId = params?.groupId;
   const router = useRouter();
@@ -543,7 +546,7 @@ export default function GroupDetailPage() {
                       value={newPost}
                       onChange={(e) => setNewPost(e.target.value)}
                       aria-label={bilingualAria('Share something with the group', 'Μοιραστείτε κάτι με την κοινότητα')}
-                      placeholder={bilingualInline("Share something with the group…", "Μοιραστείτε κάτι με την κοινότητα…")}
+                      placeholder={sayOne("Share something with the group…", "Μοιραστείτε κάτι με την κοινότητα…")}
                       className="resize-none"
                       rows={3}
                     />

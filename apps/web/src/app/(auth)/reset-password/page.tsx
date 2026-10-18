@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
 import { resetPassword } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { MainLandmark } from '@/components/layout/AppShell';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /** Every message this form can show, in both languages. */
 const RESET_ERRORS = {
@@ -24,6 +25,7 @@ const RESET_ERRORS = {
 type ResetError = { key?: keyof typeof RESET_ERRORS; en: string; el?: string };
 
 export default function ResetPasswordPage() {
+  const sayOne = useBilingualString();
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams?.get('token') ?? null;
@@ -148,7 +150,7 @@ export default function ResetPasswordPage() {
                       minLength={8}
                       autoComplete="new-password"
                       autoFocus
-                      placeholder={bilingualInline("Min. 8 characters", "Τουλάχιστον 8 χαρακτήρες")}
+                      placeholder={sayOne("Min. 8 characters", "Τουλάχιστον 8 χαρακτήρες")}
                       className="pr-16"
                     />
                     <button
@@ -191,7 +193,7 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setConfirm(e.target.value)}
                     required
                     autoComplete="new-password"
-                    placeholder={bilingualInline("Repeat password", "Επανάληψη κωδικού")}
+                    placeholder={sayOne("Repeat password", "Επανάληψη κωδικού")}
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (

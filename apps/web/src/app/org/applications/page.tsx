@@ -56,6 +56,7 @@ import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { formatDate } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * An application is a program participant whose status says so.
@@ -243,6 +244,7 @@ function ApplicationCard({
 
 
 export default function OrgApplicationsPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const [program, setProgram] = useState<string>('all');
   const [activeTab, setActiveTab] = useState('all');
@@ -429,7 +431,7 @@ export default function OrgApplicationsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline('Search applications', 'Αναζήτηση αιτήσεων')}
-              placeholder={bilingualInline('Search applications…', 'Αναζήτηση αιτήσεων…')}
+              placeholder={sayOne('Search applications…', 'Αναζήτηση αιτήσεων…')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -437,7 +439,7 @@ export default function OrgApplicationsPage() {
           </div>
           <Select value={program} onValueChange={setProgram}>
             <SelectTrigger aria-label="Program. Πρόγραμμα" className="w-full sm:w-[200px]">
-              <SelectValue placeholder={bilingualInline('Program', 'Πρόγραμμα')} />
+              <SelectValue placeholder={sayOne('Program', 'Πρόγραμμα')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>

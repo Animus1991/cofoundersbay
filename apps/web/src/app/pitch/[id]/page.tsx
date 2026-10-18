@@ -53,6 +53,7 @@ import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { bilingualInline } from '@/lib/i18n/format';
 import { pitchPost, useSuggestedPost } from '@/lib/share-text';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
 const DEMO_DECK: PublicPitchDeck = {
@@ -502,6 +503,7 @@ function SlideRenderer({ slide }: { slide: SlideBase }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function PitchDeckPage() {
+  const sayOne = useBilingualString();
   const params = useParams();
   const deckId = params?.id as string;
 
@@ -817,7 +819,7 @@ export default function PitchDeckPage() {
                 id="cmsg"
                 value={contactForm.message}
                 onChange={(e) => setContactForm((f) => ({ ...f, message: e.target.value }))}
-                placeholder={bilingualInline("Hi, I'd love to learn more about your company…", "Γεια σας, θα ήθελα να μάθω περισσότερα για την εταιρεία σας…")}
+                placeholder={sayOne("Hi, I'd love to learn more about your company…", "Γεια σας, θα ήθελα να μάθω περισσότερα για την εταιρεία σας…")}
                 className="mt-1.5 min-h-[80px]"
               />
             </div>

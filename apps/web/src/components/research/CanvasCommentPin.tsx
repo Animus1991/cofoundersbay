@@ -18,6 +18,7 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -106,6 +107,7 @@ interface PinPopoverProps {
 }
 
 function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
+  const sayOne = useBilingualString();
   const [open, setOpen] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
   const [replyBody, setReplyBody] = useState('');
@@ -236,7 +238,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Textarea
                 value={replyBody}
                 onChange={(e) => setReplyBody(e.target.value)}
-                placeholder={bilingualInline("Reply…", "Απάντηση…")}
+                placeholder={sayOne("Reply…", "Απάντηση…")}
                 rows={1}
                 className="text-2xs min-h-0 py-1.5 px-2 resize-none"
                 onKeyDown={(e) => {
@@ -300,6 +302,7 @@ export function CanvasCommentPins({
   placingPin = false,
   onPinPlaced,
 }: CanvasCommentPinsProps) {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -465,7 +468,7 @@ export function CanvasCommentPins({
             <Textarea
               value={newPinBody}
               onChange={(e) => setNewPinBody(e.target.value)}
-              placeholder={bilingualInline("Add a comment…", "Προσθήκη σχολίου…")}
+              placeholder={sayOne("Add a comment…", "Προσθήκη σχολίου…")}
               rows={2}
               className="text-xs min-h-0 resize-none mb-2"
               autoFocus

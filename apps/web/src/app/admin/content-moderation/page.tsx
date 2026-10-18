@@ -15,12 +15,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { qk } from '@/lib/query-keys';
-import { bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { StatusText } from '@/components/common/StatusText';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, rowOptions, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Report = {
   id: string;
@@ -70,6 +70,7 @@ const REPORTS: Report[] = [
 ];
 
 export default function ContentModerationPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [tab, setTab] = useState('open');
   const [search, setSearch] = useState('');
@@ -191,7 +192,7 @@ export default function ContentModerationPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search reports. Αναζήτηση αναφορών"
-            placeholder={bilingualInline('Search reports…', 'Αναζήτηση αναφορών…')}
+            placeholder={sayOne('Search reports…', 'Αναζήτηση αναφορών…')}
             className="pl-9"
           />
         </div>

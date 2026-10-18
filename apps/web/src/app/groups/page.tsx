@@ -56,6 +56,7 @@ import { qk } from '@/lib/query-keys';
 import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
 const TYPE_FILTERS = [
@@ -218,6 +219,7 @@ function GroupsGrid({
 }
 
 export default function GroupsPage() {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -506,7 +508,7 @@ export default function GroupsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
-                  placeholder={bilingualInline('Search communities by name, topic or tag…', 'Αναζήτηση κοινοτήτων με όνομα, θέμα ή ετικέτα…')}
+                  placeholder={sayOne('Search communities by name, topic or tag…', 'Αναζήτηση κοινοτήτων με όνομα, θέμα ή ετικέτα…')}
                   aria-label={bilingualInline('Search communities', 'Αναζήτηση κοινοτήτων')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

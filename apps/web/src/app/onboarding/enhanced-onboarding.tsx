@@ -50,6 +50,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 const STEPS = [
   { id: 'welcome', title: 'Welcome to CoFounderBay', icon: Sparkles },
   { id: 'role', title: 'What\'s your role?', icon: Target },
@@ -639,6 +640,7 @@ function ProfileStep({
   avatarPreview: string;
   onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
+  const sayOne = useBilingualString();
   return (
     <Card>
       <CardHeader>
@@ -704,7 +706,7 @@ function ProfileStep({
             <Textarea id="ob-f3"
               value={data.bio}
               onChange={(e) => setData({ ...data, bio: e.target.value })}
-              placeholder={bilingualInline("Tell us about your background, experience, and what you're looking for…", "Πείτε μας για το υπόβαθρο, την εμπειρία σας και τι αναζητάτε…")}
+              placeholder={sayOne("Tell us about your background, experience, and what you're looking for…", "Πείτε μας για το υπόβαθρο, την εμπειρία σας και τι αναζητάτε…")}
               rows={4}
               maxLength={5000}
             />
@@ -727,7 +729,7 @@ function ProfileStep({
               <label className="block text-sm font-medium mb-2" htmlFor="ob-timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></label>
               <Select value={data.timezone} onValueChange={(value) => setData({ ...data, timezone: value })}>
                 <SelectTrigger id="ob-timezone">
-                  <SelectValue placeholder={bilingualInline("Select timezone", "Επιλογή ζώνης ώρας")} />
+                  <SelectValue placeholder={sayOne("Select timezone", "Επιλογή ζώνης ώρας")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="UTC">UTC</SelectItem>
@@ -757,6 +759,7 @@ function SkillsStep({
   onSkillToggle: (skillId: string) => void;
   skillsData?: Skill[];
 }) {
+  const sayOne = useBilingualString();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -778,7 +781,7 @@ function SkillsStep({
         {/* Search and Filter */}
         <div className="space-y-4">
           <Input
-            placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
+            placeholder={sayOne("Search skills…", "Αναζήτηση δεξιοτήτων…")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -863,6 +866,7 @@ function SkillsStep({
 }
 
 function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (data: OnboardingData) => void }) {
+  const sayOne = useBilingualString();
   return (
     <Card>
       <CardHeader>
@@ -904,7 +908,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
             }
           >
             <SelectTrigger id="ob-commitment">
-              <SelectValue placeholder={bilingualInline("Select commitment level", "Επιλογή βαθμού δέσμευσης")} />
+              <SelectValue placeholder={sayOne("Select commitment level", "Επιλογή βαθμού δέσμευσης")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="part-time"><BilingualText en="Part-time" el="Μερική απασχόληση" compact /></SelectItem>
@@ -928,7 +932,7 @@ function PreferencesStep({ data, setData }: { data: OnboardingData; setData: (da
             }
           >
             <SelectTrigger id="ob-notiffreq">
-              <SelectValue placeholder={bilingualInline("Select notification frequency", "Επιλογή συχνότητας ειδοποιήσεων")} />
+              <SelectValue placeholder={sayOne("Select notification frequency", "Επιλογή συχνότητας ειδοποιήσεων")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="real-time"><BilingualText en="Real-time" el="Σε πραγματικό χρόνο" compact /></SelectItem>

@@ -37,6 +37,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -196,6 +197,7 @@ export function BoardHistoryDrawer({
   boardId,
   boardTitle,
 }: BoardHistoryDrawerProps) {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
@@ -256,7 +258,7 @@ export function BoardHistoryDrawer({
             <Label htmlFor="snapshotLabel" className="font-medium">Save current state</Label>
             <div className="flex gap-2">
               <Input id="snapshotLabel"
-                placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
+                placeholder={sayOne("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
                 value={snapshotLabel}
                 onChange={(e) => setSnapshotLabel(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreateSnapshot()}

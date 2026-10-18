@@ -56,6 +56,7 @@ import { formatCompactMoney } from '@/lib/i18n/format';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { dealEventTitleEl } from '@/lib/i18n/deal-events';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
@@ -410,6 +411,7 @@ function WatchlistCard({ startup, live, onPromote, onRemove, onAlerts }: { start
 }
 
 export default function InvestorWatchlistPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [alertsOnly, setAlertsOnly] = useState(false);
@@ -584,7 +586,7 @@ export default function InvestorWatchlistPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   aria-label={bilingualAria("Search watchlist", "Αναζήτηση στη λίστα παρακολούθησης")}
-                  placeholder={bilingualInline("Search watchlist…", "Αναζήτηση στη λίστα παρακολούθησης…")}
+                  placeholder={sayOne("Search watchlist…", "Αναζήτηση στη λίστα παρακολούθησης…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-9"

@@ -38,10 +38,11 @@ import { WithDisabledReason } from '@/components/common/UnavailableButton';
 import { STATUS } from '@/lib/semantic-colors';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { statusEl } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -180,6 +181,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
 }
 
 export default function GroupsModerationPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('pending');
 
@@ -268,7 +270,7 @@ export default function GroupsModerationPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input aria-label={bilingualAria("Search reports", "Αναζήτηση αναφορών")} placeholder={bilingualInline("Search reports…", "Αναζήτηση αναφορών…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label={bilingualAria("Search reports", "Αναζήτηση αναφορών")} placeholder={sayOne("Search reports…", "Αναζήτηση αναφορών…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

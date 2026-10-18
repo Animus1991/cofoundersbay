@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useModalA11y } from "@/hooks/useModalA11y";
 import { bilingualAria } from "@/lib/i18n/format";
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -185,6 +185,7 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
+  const sayOne = useBilingualString();
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -269,7 +270,7 @@ export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEd
         ref={editorRef}
         contentEditable={!readOnly}
         suppressContentEditableWarning
-        data-placeholder={bilingualInline("Start writing your research notes…", "Ξεκινήστε να γράφετε τις σημειώσεις έρευνας…")}
+        data-placeholder={sayOne("Start writing your research notes…", "Ξεκινήστε να γράφετε τις σημειώσεις έρευνας…")}
         onInput={() => { if (editorRef.current) onChange(editorRef.current.innerHTML); }}
         className={cn(
           "flex-1 p-4 outline-none overflow-y-auto text-sm text-foreground leading-relaxed",
@@ -292,6 +293,7 @@ interface DocumentViewerProps {
 }
 
 function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
+  const sayOne = useBilingualString();
   const [editTitle, setEditTitle] = useState(node.title);
   const [content, setContent] = useState(node.content);
   const [tags, setTags] = useState<string[]>(node.tags || []);
@@ -364,7 +366,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
               className="flex-1 bg-transparent text-sm font-semibold text-foreground outline-none truncate placeholder:text-muted-foreground"
-              placeholder={bilingualInline("Untitled", "Χωρίς τίτλο")}
+              placeholder={sayOne("Untitled", "Χωρίς τίτλο")}
             />
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
@@ -421,7 +423,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTag(); }}
-                placeholder={bilingualInline("Add tag…", "Προσθήκη ετικέτας…")}
+                placeholder={sayOne("Add tag…", "Προσθήκη ετικέτας…")}
                 className="h-6 px-2 rounded bg-secondary text-2xs outline-none placeholder:text-muted-foreground min-w-[80px]"
               />
               <button aria-label="Add tag"
@@ -511,6 +513,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
 
 /* ─── Main Canvas Component ──────────────────────────────────── */
 export default function ResearchCanvas() {
+  const sayOne = useBilingualString();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const connectionCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1071,7 +1074,7 @@ export default function ResearchCanvas() {
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={bilingualInline("Search nodes…", "Αναζήτηση κόμβων…")}
+              placeholder={sayOne("Search nodes…", "Αναζήτηση κόμβων…")}
               className="h-8 pl-8 pr-3 rounded-lg bg-secondary text-sm outline-none placeholder:text-muted-foreground min-w-[200px]"
             />
           </div>

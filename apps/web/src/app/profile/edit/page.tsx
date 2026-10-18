@@ -63,6 +63,7 @@ import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -436,6 +437,7 @@ function SelectButtons({
 }
 
 export default function ProfileEditPage() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const { success, error: showError } = useToast();
 
@@ -840,7 +842,7 @@ export default function ProfileEditPage() {
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Input
                           aria-label={bilingualInline("Profile photo URL", "URL φωτογραφίας προφίλ")}
-                          placeholder={bilingualInline("Paste image URL…", "Επικολλήστε URL εικόνας…")}
+                          placeholder={sayOne("Paste image URL…", "Επικολλήστε URL εικόνας…")}
                           value={form.avatarUrl}
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
@@ -905,7 +907,7 @@ export default function ProfileEditPage() {
                       id="profile-display-name"
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
-                      placeholder={bilingualInline('e.g. Jane Doe', 'π.χ. Μαρία Παπαδοπούλου')}
+                      placeholder={sayOne('e.g. Jane Doe', 'π.χ. Μαρία Παπαδοπούλου')}
                       className="max-w-md"
                     />
                   </div>
@@ -915,7 +917,7 @@ export default function ProfileEditPage() {
                       id="profile-headline"
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
-                      placeholder={bilingualInline('e.g., 3x Founder | Building AI SaaS | Former product lead', 'π.χ. Ιδρύτρια | Φτιάχνω AI SaaS | Πρώην product lead')}
+                      placeholder={sayOne('e.g., 3x Founder | Building AI SaaS | Former product lead', 'π.χ. Ιδρύτρια | Φτιάχνω AI SaaS | Πρώην product lead')}
                     />
                     <p className="text-xs text-muted-foreground"><BilingualText en="Appears directly below your name everywhere on the site." el="Εμφανίζεται κάτω από το όνομά σας σε όλη την πλατφόρμα." wrap /></p>
                   </div>
@@ -929,7 +931,7 @@ export default function ProfileEditPage() {
                     <Textarea id="pe-f1"
                       value={form.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
-                      placeholder={bilingualInline("Tell the community about your background, what you're working on, and what you're looking for…", "Πείτε στην κοινότητα για το υπόβαθρό σας, τι φτιάχνετε και τι αναζητάτε…")}
+                      placeholder={sayOne("Tell the community about your background, what you're working on, and what you're looking for…", "Πείτε στην κοινότητα για το υπόβαθρό σας, τι φτιάχνετε και τι αναζητάτε…")}
                       rows={5}
                       className="resize-y"
                     />
@@ -1018,7 +1020,7 @@ export default function ProfileEditPage() {
                       id="profile-location"
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
-                      placeholder={bilingualInline('e.g., Athens, Greece', 'π.χ. Αθήνα, Ελλάδα')}
+                      placeholder={sayOne('e.g., Athens, Greece', 'π.χ. Αθήνα, Ελλάδα')}
                     />
                   </div>
                   <div className="space-y-2">
@@ -1027,7 +1029,7 @@ export default function ProfileEditPage() {
                       id="profile-timezone"
                       value={form.timezone}
                       onChange={(e) => updateField('timezone', e.target.value)}
-                      placeholder={bilingualInline('e.g., Europe/Athens', 'π.χ. Europe/Athens')}
+                      placeholder={sayOne('e.g., Europe/Athens', 'π.χ. Europe/Athens')}
                     />
                   </div>
                 </CardContent>
@@ -1050,7 +1052,7 @@ export default function ProfileEditPage() {
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
                     suggestionEl={skillCatalog.length ? undefined : expertiseEl}
-                    placeholder={bilingualInline("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
+                    placeholder={sayOne("Type a skill and press Enter…", "Πληκτρολογήστε δεξιότητα και πατήστε Enter…")}
                     max={15}
                   />
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -1061,7 +1063,7 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('industries', v)}
                       suggestions={industryOptions}
                       suggestionEl={industryEl}
-                      placeholder={bilingualInline('e.g. Fintech, AI...', 'π.χ. Fintech, AI...')}
+                      placeholder={sayOne('e.g. Fintech, AI...', 'π.χ. Fintech, AI...')}
                       max={5}
                     />
                     <TagInput
@@ -1071,7 +1073,7 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('languages', v)}
                       suggestions={languageSuggestions}
                       suggestionEl={languageEl}
-                      placeholder={bilingualInline('e.g. English, Greek...', 'π.χ. Αγγλικά, Ελληνικά...')}
+                      placeholder={sayOne('e.g. English, Greek...', 'π.χ. Αγγλικά, Ελληνικά...')}
                       max={5}
                     />
                   </div>
@@ -1205,7 +1207,7 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('expertiseAreas', v)}
                       suggestions={expertiseOptions}
                       suggestionEl={expertiseEl}
-                      placeholder={bilingualInline("Add expertise…", "Προσθήκη εξειδίκευσης…")}
+                      placeholder={sayOne("Add expertise…", "Προσθήκη εξειδίκευσης…")}
                       max={10}
                     />
                     <SelectButtons
@@ -1223,10 +1225,10 @@ export default function ProfileEditPage() {
                           onChange={(e) => updateField('meetingPreference', e.target.value)}
                           className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                         >
-                          <option value="">{bilingualInline("Select...", "Επιλέξτε…")}</option>
-                          <option value="video">{bilingualInline("Video calls", "Βιντεοκλήσεις")}</option>
-                          <option value="in-person">{bilingualInline("In person", "Δια ζώσης")}</option>
-                          <option value="both">{bilingualInline("Both", "Και τα δύο")}</option>
+                          <option value="">{sayOne("Select...", "Επιλέξτε…")}</option>
+                          <option value="video">{sayOne("Video calls", "Βιντεοκλήσεις")}</option>
+                          <option value="in-person">{sayOne("In person", "Δια ζώσης")}</option>
+                          <option value="both">{sayOne("Both", "Και τα δύο")}</option>
                         </select>
                       </div>
                       <div className="space-y-2">
@@ -1234,7 +1236,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f3"
                           value={form.hourlyRate}
                           onChange={(e) => updateField('hourlyRate', e.target.value)}
-                          placeholder={bilingualInline('e.g., $100/hour or Free', 'π.χ. 100$/ώρα ή Δωρεάν')}
+                          placeholder={sayOne('e.g., $100/hour or Free', 'π.χ. 100$/ώρα ή Δωρεάν')}
                         />
                       </div>
                     </div>
@@ -1274,7 +1276,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f4"
                           value={form.checkSizeMin}
                           onChange={(e) => updateField('checkSizeMin', e.target.value)}
-                          placeholder={bilingualInline('e.g., $25K', 'π.χ. 25.000$')}
+                          placeholder={sayOne('e.g., $25K', 'π.χ. 25.000$')}
                         />
                       </div>
                       <div className="space-y-2">
@@ -1282,7 +1284,7 @@ export default function ProfileEditPage() {
                         <Input id="pe-f5"
                           value={form.checkSizeMax}
                           onChange={(e) => updateField('checkSizeMax', e.target.value)}
-                          placeholder={bilingualInline('e.g., $500K', 'π.χ. 500.000$')}
+                          placeholder={sayOne('e.g., $500K', 'π.χ. 500.000$')}
                         />
                       </div>
                     </div>
@@ -1293,7 +1295,7 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('geography', v)}
                       suggestions={regionSuggestions}
                       suggestionEl={regionEl}
-                      placeholder={bilingualInline("Add region…", "Προσθήκη περιοχής…")}
+                      placeholder={sayOne("Add region…", "Προσθήκη περιοχής…")}
                       max={5}
                     />
                   </CardContent>

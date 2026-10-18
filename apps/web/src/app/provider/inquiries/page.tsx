@@ -46,6 +46,7 @@ import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Inquiry = {
   id: string;
@@ -279,6 +280,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
   ];
 
 export default function ProviderInquiriesPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -405,7 +407,7 @@ export default function ProviderInquiriesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search inquiries", "Αναζήτηση αιτημάτων")}
-            placeholder={bilingualInline("Search inquiries…", "Αναζήτηση αιτημάτων…")}
+            placeholder={sayOne("Search inquiries…", "Αναζήτηση αιτημάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

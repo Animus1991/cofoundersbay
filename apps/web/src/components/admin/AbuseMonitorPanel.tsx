@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FactLine } from '@/components/common/FactLine';
 import { StatusText, statusEl } from '@/components/common/StatusText';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-status-warning-bg text-status-warning',
@@ -48,6 +49,7 @@ function SeverityBar({ v }: { v: number }) {
 }
 
 export function AbuseMonitorPanel() {
+  const sayOne = useBilingualString();
   const [flags, setFlags] = useState<AbuseFlagRecord[]>([]);
   const [stats, setStats] = useState<AbuseStats | null>(null);
   const [total, setTotal] = useState(0);
@@ -132,9 +134,9 @@ export function AbuseMonitorPanel() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="text-sm border border-input bg-background rounded-md px-3 py-2 focus:outline-none"
         >
-          <option value="">{bilingualInline("All statuses", "Όλες οι καταστάσεις")}</option>
+          <option value="">{sayOne("All statuses", "Όλες οι καταστάσεις")}</option>
           {['pending', 'reviewed', 'actioned', 'dismissed'].map((s) => (
-            <option key={s} value={s}>{bilingualInline(s.charAt(0).toUpperCase() + s.slice(1), statusEl(s) ?? s)}</option>
+            <option key={s} value={s}>{sayOne(s.charAt(0).toUpperCase() + s.slice(1), statusEl(s) ?? s)}</option>
           ))}
         </select>
         <select
@@ -143,7 +145,7 @@ export function AbuseMonitorPanel() {
           onChange={(e) => setTypeFilter(e.target.value)}
           className="text-sm border border-input bg-background rounded-md px-3 py-2 focus:outline-none"
         >
-          <option value="">{bilingualInline("All types", "Όλοι οι τύποι")}</option>
+          <option value="">{sayOne("All types", "Όλοι οι τύποι")}</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </div>

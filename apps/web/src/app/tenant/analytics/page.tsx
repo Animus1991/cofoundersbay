@@ -23,8 +23,9 @@ import {
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { qk } from '@/lib/query-keys';
 import { cn } from '@/lib/utils';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * Workspace analytics, counted.
@@ -50,6 +51,7 @@ const PERIODS = [
 const DAY = 86_400_000;
 
 export default function TenantAnalyticsPage() {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['value']>('30d');
   const windowDays = PERIODS.find((p) => p.value === period)?.days ?? 30;
@@ -189,7 +191,7 @@ export default function TenantAnalyticsPage() {
       actions={(
         <Select value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
           <SelectTrigger aria-label={bilingualAria('Time period', 'Χρονική περίοδος')} className="w-[150px]">
-            <SelectValue placeholder={bilingualInline("Time period", "Χρονική περίοδος")} />
+            <SelectValue placeholder={sayOne("Time period", "Χρονική περίοδος")} />
           </SelectTrigger>
           <SelectContent>
             {PERIODS.map((p) => (

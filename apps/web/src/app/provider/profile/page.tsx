@@ -35,11 +35,11 @@ import { centsToDollars, dollarsToCents, pickOptions, readNumber, snapToStep } f
 import { SERVICE_PROVIDER_TYPES, PROVIDER_PRICING_MODELS, type ServiceProviderKind, type ProviderPricingModel } from '@cofounderbay/shared';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 const SERVICE_TYPES: { value: ServiceProviderKind; label: string; labelEl: string }[] = [
   { value: 'legal', label: 'Legal', labelEl: 'Νομικές υπηρεσίες' },
   { value: 'accounting', label: 'Accounting & Finance', labelEl: 'Λογιστική & οικονομικά' },
@@ -75,6 +75,7 @@ const INDUSTRIES = [
 const STARTUP_STAGES = ['Pre-seed', 'Seed', 'Series A', 'Series B+', 'Growth', 'All stages'];
 
 export default function ProviderProfilePage() {
+  const sayOne = useBilingualString();
   // The preview's check is the real verification, not a constant.
   const me = useStoredUser();
   const { hasSession, mounted } = useSession();
@@ -305,7 +306,7 @@ export default function ProviderProfilePage() {
                     id="provider-headline"
                     value={headline}
                     onChange={e => setHeadline(e.target.value)}
-                    placeholder={bilingualInline('e.g. Startup-focused legal services — term sheets, IP, incorporation', 'π.χ. Νομικές υπηρεσίες για startups — term sheets, πνευματική ιδιοκτησία, σύσταση εταιρείας')}
+                    placeholder={sayOne('e.g. Startup-focused legal services — term sheets, IP, incorporation', 'π.χ. Νομικές υπηρεσίες για startups — term sheets, πνευματική ιδιοκτησία, σύσταση εταιρείας')}
                     maxLength={120}
                   />
                 </div>
@@ -315,7 +316,7 @@ export default function ProviderProfilePage() {
                     id="provider-description"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder={bilingualInline("Describe your services, your process, and what makes you different…", "Περιγράψτε τις υπηρεσίες, τη μέθοδό σας και τι σας ξεχωρίζει…")}
+                    placeholder={sayOne("Describe your services, your process, and what makes you different…", "Περιγράψτε τις υπηρεσίες, τη μέθοδό σας και τι σας ξεχωρίζει…")}
                     rows={5}
                     className="resize-none"
                   />

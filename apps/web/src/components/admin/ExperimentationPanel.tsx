@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { cn } from '@/lib/utils';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -335,6 +336,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
 // ── System Config Editor ────────────────────────────────────────────────────────
 
 function ConfigEditor() {
+  const sayOne = useBilingualString();
   const { success: toastSuccess, error: toastError } = useToast();
   const [configs, setConfigs] = useState<SystemConfigRecord[]>([]);
   const [category, setCategory] = useState('');
@@ -395,7 +397,7 @@ function ConfigEditor() {
             onChange={(e) => setCategory(e.target.value)}
             className="text-sm border border-border rounded-xl px-3 py-2 focus:outline-none"
           >
-            <option value="">{bilingualInline("All categories", "Όλες οι κατηγορίες")}</option>
+            <option value="">{sayOne("All categories", "Όλες οι κατηγορίες")}</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <button aria-label="Refresh" onClick={load} className="text-muted-foreground hover:text-status-accent">

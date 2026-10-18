@@ -43,7 +43,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { initialsOf } from '@/lib/utils';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /*
  * The selects offered `gr` and `europe_athens` while the organisation stores
@@ -76,6 +77,7 @@ function normalTimezone(value: string | null | undefined): string {
 }
 
 export default function OrgSettingsPage() {
+  const sayOne = useBilingualString();
   /*
    * The three fields opened with another organisation's details written into
    * the source, and both Save buttons had no handler — typing into them
@@ -262,7 +264,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="orgType"><BilingualText en="Organization Type" el="Τύπος οργανισμού" compact /></Label>
                     <Select value={orgType} onValueChange={setOrgType}>
                       <SelectTrigger id="orgType" aria-label={bilingualAria('Organization type', 'Τύπος οργανισμού')}>
-                        <SelectValue placeholder={bilingualInline("Choose a type", "Επιλέξτε τύπο")} />
+                        <SelectValue placeholder={sayOne("Choose a type", "Επιλέξτε τύπο")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="incubator"><BilingualText en="Incubator" el="Θερμοκοιτίδα" compact /></SelectItem>
@@ -279,7 +281,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="country"><BilingualText en="Country" el="Χώρα" compact /></Label>
                     <Select value={country} onValueChange={setCountry}>
                       <SelectTrigger id="country" aria-label={bilingualAria('Country', 'Χώρα')}>
-                        <SelectValue placeholder={bilingualInline("Choose a country", "Επιλέξτε χώρα")} />
+                        <SelectValue placeholder={sayOne("Choose a country", "Επιλέξτε χώρα")} />
                       </SelectTrigger>
                       <SelectContent>
                         {COUNTRIES.map(([code, name]) => (
@@ -292,7 +294,7 @@ export default function OrgSettingsPage() {
                     <Label htmlFor="timezone"><BilingualText en="Timezone" el="Ζώνη ώρας" compact /></Label>
                     <Select value={timezone} onValueChange={setTimezone}>
                       <SelectTrigger id="timezone" aria-label={bilingualAria('Timezone', 'Ζώνη ώρας')}>
-                        <SelectValue placeholder={bilingualInline("Choose a timezone", "Επιλέξτε ζώνη ώρας")} />
+                        <SelectValue placeholder={sayOne("Choose a timezone", "Επιλέξτε ζώνη ώρας")} />
                       </SelectTrigger>
                       <SelectContent>
                         {TIMEZONES.map((tz) => (

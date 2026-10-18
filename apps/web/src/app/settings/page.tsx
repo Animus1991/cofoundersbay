@@ -51,13 +51,13 @@ import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 import { useI18n } from '@/components/common/I18nProvider';
-import { useLanguagePreference, type LanguageDisplayMode } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, type LanguageDisplayMode, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { translate } from '@/lib/i18n/translate';
 import { qk, queryKeys } from '@/lib/query-keys';
 import { choiceControl, usePageControls } from '@/lib/page-controls';
 import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { NOTIFICATION_CATEGORIES, categoryChannelOn, channelsOf, setChannel, useNotificationPrefs, type NotificationCategoryDef } from '@/lib/notification-prefs';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 
 /*
@@ -540,6 +540,7 @@ function PrivacyCard() {
 }
 
 export default function SettingsPage() {
+  const sayOne = useBilingualString();
   const searchParams = useSearchParams();
   // `/settings#verification`, `#open-to`, `#language`, `#profile-views`: the cards mount after load.
   useScrollToHash();
@@ -1022,7 +1023,7 @@ export default function SettingsPage() {
                       <Input
                         id="settings-current-password"
                         type={showPw ? 'text' : 'password'}
-                        placeholder={bilingualInline("Current password", "Τρέχων κωδικός")}
+                        placeholder={sayOne("Current password", "Τρέχων κωδικός")}
                         value={pwForm.current}
                         onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
                         required
@@ -1048,7 +1049,7 @@ export default function SettingsPage() {
                     <Input
                       id="settings-new-password"
                       type={showPw ? 'text' : 'password'}
-                      placeholder={bilingualInline("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
+                      placeholder={sayOne("New password (min 8 chars)", "Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)")}
                       value={pwForm.next}
                       onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
                       required
@@ -1059,7 +1060,7 @@ export default function SettingsPage() {
                     <Input
                       id="settings-confirm-password"
                       type={showPw ? 'text' : 'password'}
-                      placeholder={bilingualInline("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
+                      placeholder={sayOne("Confirm new password", "Επιβεβαίωση νέου κωδικού")}
                       value={pwForm.confirm}
                       onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
                       required

@@ -29,8 +29,9 @@ import { ImageCropperTrigger } from '@/components/ui/image-cropper';
 import { analytics } from '@/lib/analytics';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
@@ -131,6 +132,7 @@ const DEFAULT_FORM: FormState = {
 };
 
 export default function TenantBrandingPage() {
+  const sayOne = useBilingualString();
   const qc = useQueryClient();
   const { activeTenant } = useTenant();
   const tenantId = activeTenant?.id ?? '';
@@ -428,7 +430,7 @@ export default function TenantBrandingPage() {
                         value={form[key] ?? ''}
                         onChange={(e) => setField(key, e.target.value)}
                         aria-labelledby={`page-cap2-${key}`}
-                        placeholder={bilingualInline("Custom font name…", "Όνομα προσαρμοσμένης γραμματοσειράς…")}
+                        placeholder={sayOne("Custom font name…", "Όνομα προσαρμοσμένης γραμματοσειράς…")}
                         className="mt-2 max-w-sm"
                       />
                     </div>
@@ -632,7 +634,7 @@ export default function TenantBrandingPage() {
                       rows={4}
                       value={form.aboutText ?? ''}
                       onChange={(e) => setField('aboutText', e.target.value)}
-                      placeholder={bilingualInline("Long-form description shown on your public landing page…", "Αναλυτική περιγραφή για τη δημόσια σελίδα σας…")}
+                      placeholder={sayOne("Long-form description shown on your public landing page…", "Αναλυτική περιγραφή για τη δημόσια σελίδα σας…")}
                     />
                   </div>
                 </CardContent>
@@ -679,7 +681,7 @@ export default function TenantBrandingPage() {
                     <Input id="page-f13"
                       value={form.communityNaming ?? ''}
                       onChange={(e) => setField('communityNaming', e.target.value)}
-                      placeholder={bilingualInline("Community (default)", "Κοινότητα (προεπιλογή)")}
+                      placeholder={sayOne("Community (default)", "Κοινότητα (προεπιλογή)")}
                     />
                     <p className="text-xs text-muted-foreground"><BilingualText en={'Replace "Community" with e.g. "Program", "Cohort", "Circle".'} el="Αντικαταστήστε το «Κοινότητα» με π.χ. «Πρόγραμμα», «Κύκλος», «Ομάδα»." wrap /></p>
                   </div>

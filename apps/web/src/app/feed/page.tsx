@@ -55,6 +55,7 @@ import {
   type FeedPreferences,
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -194,6 +195,7 @@ function PostCard({
   /** Opens the report dialog for the post's author. */
   onReport: () => void;
 }) {
+  const sayOne = useBilingualString();
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const config = POST_TYPE_CONFIG[post.type] ?? POST_TYPE_CONFIG.update;
@@ -357,7 +359,7 @@ function PostCard({
                   for feed posts. Until there is, the box says so instead
                   of swallowing what someone wrote. */}
               <Textarea
-                placeholder={bilingualInline('Comments on feed posts are not saved yet', 'Τα σχόλια σε δημοσιεύσεις δεν αποθηκεύονται ακόμη')}
+                placeholder={sayOne('Comments on feed posts are not saved yet', 'Τα σχόλια σε δημοσιεύσεις δεν αποθηκεύονται ακόμη')}
                 aria-label={bilingualAria('Comment', 'Σχόλιο')}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}

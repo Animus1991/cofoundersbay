@@ -17,6 +17,7 @@ import {
 import { cn, initialsOf } from '@/lib/utils';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type PostType = 'update' | 'ask' | 'offer' | 'hiring' | 'milestone' | 'pitch';
 
@@ -45,6 +46,7 @@ const ATTACHMENTS_UNAVAILABLE = bilingualInline(
 );
 
 export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?" }: CreatePostProps) {
+  const sayOne = useBilingualString();
   const [isExpanded, setIsExpanded] = useState(false);
   const [content, setContent] = useState('');
   const [postType, setPostType] = useState<PostType>('update');
@@ -214,7 +216,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                   id={tagsId}
                   aria-describedby={tagsHintId}
                   type="text"
-                  placeholder={bilingualInline("Add tags (press Enter)", "Προσθήκη ετικετών (πατήστε Enter)")}
+                  placeholder={sayOne("Add tags (press Enter)", "Προσθήκη ετικετών (πατήστε Enter)")}
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {

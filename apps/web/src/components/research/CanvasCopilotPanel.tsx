@@ -26,6 +26,7 @@ import {
 import { bilingualAria } from '@/lib/i18n/format';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Agent metadata ────────────────────────────────────────────────────────────
 
@@ -238,6 +239,7 @@ export function CanvasCopilotPanel({
   onNodeLinked,
   workspaceId,
 }: CanvasCopilotPanelProps) {
+  const sayOne = useBilingualString();
   const { success, error: showError } = useToast();
 
   const [tab, setTab] = useState<Tab>('chat');
@@ -563,7 +565,7 @@ export function CanvasCopilotPanel({
             <input id="ccp-f2"
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              placeholder={bilingualInline("Paste workspace UUID…", "Επικολλήστε το UUID του χώρου εργασίας…")}
+              placeholder={sayOne("Paste workspace UUID…", "Επικολλήστε το UUID του χώρου εργασίας…")}
               className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>
@@ -588,7 +590,7 @@ export function CanvasCopilotPanel({
             <input id="ccp-f4"
               value={exportTitle}
               onChange={(e) => setExportTitle(e.target.value)}
-              placeholder={bilingualInline("Auto-generated if empty", "Δημιουργείται αυτόματα αν μείνει κενό")}
+              placeholder={sayOne("Auto-generated if empty", "Δημιουργείται αυτόματα αν μείνει κενό")}
               className="w-full text-xs bg-muted/30 border border-border rounded-lg px-2.5 py-2 focus:outline-none focus:border-status-accent/60 placeholder:text-muted-foreground/50"
             />
           </div>

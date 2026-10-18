@@ -59,10 +59,11 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, ROW_GONE, usePageControls, usePageList, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Startup = {
   id: string;
@@ -290,6 +291,7 @@ const ALL_STARTUPS: Startup[] = [
 ];
 
 export default function InvestorScoutingPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [industry, setIndustry] = useState('all');
@@ -435,22 +437,22 @@ export default function InvestorScoutingPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-              <Input aria-label={bilingualAria("Search startups", "Αναζήτηση startups")} placeholder={bilingualInline("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+              <Input aria-label={bilingualAria("Search startups", "Αναζήτηση startups")} placeholder={sayOne("Search by name, industry, or keyword…", "Αναζήτηση με όνομα, κλάδο ή λέξη-κλειδί…")} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
-              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder={bilingualInline("Industry", "Κλάδος")} /></SelectTrigger>
+              <SelectTrigger aria-label="Industry" className="w-full sm:w-[140px]"><SelectValue placeholder={sayOne("Industry", "Κλάδος")} /></SelectTrigger>
               <SelectContent>
                 {industries.map(i => <SelectItem key={i} value={i}>{i === 'all' ? 'All Industries' : i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={stage} onValueChange={setStage}>
-              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder={bilingualInline("Stage", "Στάδιο")} /></SelectTrigger>
+              <SelectTrigger aria-label="Stage" className="w-full sm:w-[130px]"><SelectValue placeholder={sayOne("Stage", "Στάδιο")} /></SelectTrigger>
               <SelectContent>
                 {stages.map(s => <SelectItem key={s} value={s}>{s === 'all' ? 'All Stages' : s}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={model} onValueChange={setModel}>
-              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={bilingualInline("Model", "Μοντέλο")} /></SelectTrigger>
+              <SelectTrigger aria-label={bilingualAria('Business model', 'Επιχειρηματικό μοντέλο')} className="w-full sm:w-[120px]"><SelectValue placeholder={sayOne("Model", "Μοντέλο")} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All Models" el="Όλα τα μοντέλα" compact /></SelectItem>
                 {['B2B', 'B2C', 'B2B2C', 'Marketplace'].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}

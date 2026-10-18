@@ -21,6 +21,7 @@ import { qk } from '@/lib/query-keys';
 import { formatRelativeTime } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
 import { usePageList } from '@/lib/page-controls';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const PRIVACY_LABEL: Record<string, { en: string; el: string }> = {
   public: { en: 'Public', el: 'Δημόσια' },
@@ -37,6 +38,7 @@ const PRIVACY_LABEL: Record<string, { en: string; el: string }> = {
  * what the rows actually carry. Editing stays on /admin/communities.
  */
 export default function CommunityManagementPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const { data, isLoading, isError } = useQuery({
     queryKey: qk('groups', 'admin'),
@@ -89,7 +91,7 @@ export default function CommunityManagementPage() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={bilingualInline("Search communities…", "Αναζήτηση κοινοτήτων…")}
+          placeholder={sayOne("Search communities…", "Αναζήτηση κοινοτήτων…")}
           aria-label="Search communities"
           className="pl-9"
         />

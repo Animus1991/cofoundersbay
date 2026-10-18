@@ -39,6 +39,7 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The page's own row from the pool row.
@@ -225,6 +226,7 @@ const SEED_MENTORS: Mentor[] = [
 ];
 
 export default function OrgMentorsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -326,7 +328,7 @@ export default function OrgMentorsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             aria-label={bilingualAria('Search mentors', 'Αναζήτηση μεντόρων')}
-            placeholder={bilingualInline('Search mentors by name or expertise…', 'Αναζήτηση μεντόρων με όνομα ή εξειδίκευση…')}
+            placeholder={sayOne('Search mentors by name or expertise…', 'Αναζήτηση μεντόρων με όνομα ή εξειδίκευση…')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

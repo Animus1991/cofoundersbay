@@ -46,6 +46,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { priceEl } from '@/lib/i18n/units';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Service = {
   id: string;
@@ -260,6 +261,7 @@ const MOCK_SERVICES: Service[] = [
   ];
 
 export default function ProviderServicesPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
@@ -409,7 +411,7 @@ export default function ProviderServicesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search services", "Αναζήτηση υπηρεσιών")}
-            placeholder={bilingualInline("Search services…", "Αναζήτηση υπηρεσιών…")}
+            placeholder={sayOne("Search services…", "Αναζήτηση υπηρεσιών…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -478,7 +480,7 @@ export default function ProviderServicesPage() {
             {creating && (
               <div className="space-y-1.5">
                 <Label htmlFor="svc-provider"><BilingualText en="Provider name" el="Όνομα παρόχου" compact /></Label>
-                <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder={bilingualInline("Your name or firm", "Το όνομά σας ή η εταιρεία σας")} required />
+                <Input id="svc-provider" value={draft.providerName} onChange={(e) => setDraft((d) => ({ ...d, providerName: e.target.value }))} placeholder={sayOne("Your name or firm", "Το όνομά σας ή η εταιρεία σας")} required />
               </div>
             )}
             <div className="space-y-1.5">

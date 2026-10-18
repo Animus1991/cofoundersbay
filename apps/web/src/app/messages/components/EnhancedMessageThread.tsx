@@ -36,7 +36,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface Message {
   id: string;
@@ -87,6 +88,7 @@ export function EnhancedMessageThread({
   onArchiveConversation,
   onStartCall,
 }: EnhancedMessageThreadProps) {
+  const sayOne = useBilingualString();
   const [messageText, setMessageText] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
@@ -227,7 +229,7 @@ export function EnhancedMessageThread({
       {showSearch && (
         <div className="px-6 py-3 border-b bg-muted/50">
           <Input
-            placeholder={bilingualInline("Search in conversation…", "Αναζήτηση στη συνομιλία…")}
+            placeholder={sayOne("Search in conversation…", "Αναζήτηση στη συνομιλία…")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-background"
@@ -479,7 +481,7 @@ export function EnhancedMessageThread({
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={bilingualInline("Type a message…", "Γράψτε ένα μήνυμα…")}
+              placeholder={sayOne("Type a message…", "Γράψτε ένα μήνυμα…")}
               className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none min-h-[48px] max-h-[200px]"
               rows={1}
             />

@@ -50,6 +50,7 @@ import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const ROLE_FILTERS = [
   { value: 'all',         labelKey: 'role_all' as const,         icon: Briefcase },
@@ -250,6 +251,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
 }
 
 export default function JobsPage() {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -415,7 +417,7 @@ export default function JobsPage() {
           <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search jobs, roles, companies", "Αναζήτηση θέσεων, ρόλων, εταιρειών")}
-            placeholder={bilingualInline(jobsEn('search'), jobsEl('search'))}
+            placeholder={sayOne(jobsEn('search'), jobsEl('search'))}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

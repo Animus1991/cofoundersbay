@@ -22,6 +22,7 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { BuilderStageHeader, BUILDER_BTN, BUILDER_STAT, BUILDER_STAT_LABEL, BUILDER_SUBTAB_LIST, BUILDER_SUBTAB_TRIGGER, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface RevenueStream {
   name: string;
@@ -129,6 +130,7 @@ export function financialCompletion(data: FinancialData): number {
 }
 
 export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProps) {
+  const sayOne = useBilingualString();
   const t = useBuilderPrimaryText();
   const [data, setData] = useState<FinancialData>({ ...defaultFinancialData, ...initialData });
   const [activeTab, setActiveTab] = useState('costs');
@@ -401,7 +403,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 {data.startupCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder={bilingualInline("Category", "Κατηγορία")}
+                      placeholder={sayOne("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -410,7 +412,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
+                      placeholder={sayOne("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.startupCosts];
@@ -421,7 +423,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder={bilingualInline("Amount", "Ποσό")}
+                        placeholder={sayOne("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.startupCosts];
@@ -468,7 +470,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 {data.operatingCosts.map((cost, index) => (
                   <div key={index} className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder={bilingualInline("Category", "Κατηγορία")}
+                      placeholder={sayOne("Category", "Κατηγορία")}
                       value={cost.category}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -477,7 +479,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                       }}
                     />
                     <Input
-                      placeholder={bilingualInline("Item name", "Όνομα στοιχείου")}
+                      placeholder={sayOne("Item name", "Όνομα στοιχείου")}
                       value={cost.name}
                       onChange={(e) => {
                         const newCosts = [...data.operatingCosts];
@@ -488,7 +490,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <div className="flex gap-2">
                       <Input
                         type="number"
-                        placeholder={bilingualInline("Amount", "Ποσό")}
+                        placeholder={sayOne("Amount", "Ποσό")}
                         value={cost.amount || ''}
                         onChange={(e) => {
                           const newCosts = [...data.operatingCosts];
@@ -548,7 +550,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                           newStreams[index] = { ...stream, name: e.target.value };
                           setData(prev => ({ ...prev, revenueStreams: newStreams }));
                         }}
-                        placeholder={bilingualInline("Revenue stream name", "Όνομα πηγής εσόδων")}
+                        placeholder={sayOne("Revenue stream name", "Όνομα πηγής εσόδων")}
                       />
                     </div>
                     <div>
@@ -562,11 +564,11 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                         className="w-full rounded-md border border-input bg-background px-3 py-2"
                       >
-                        <option value="subscription">{bilingualInline("Subscription", "Συνδρομή")}</option>
-                        <option value="transaction">{bilingualInline("Transaction", "Συναλλαγή")}</option>
-                        <option value="one-time">{bilingualInline("One-time", "Εφάπαξ")}</option>
-                        <option value="advertising">{bilingualInline("Advertising", "Διαφήμιση")}</option>
-                        <option value="other">{bilingualInline("Other", "Άλλο")}</option>
+                        <option value="subscription">{sayOne("Subscription", "Συνδρομή")}</option>
+                        <option value="transaction">{sayOne("Transaction", "Συναλλαγή")}</option>
+                        <option value="one-time">{sayOne("One-time", "Εφάπαξ")}</option>
+                        <option value="advertising">{sayOne("Advertising", "Διαφήμιση")}</option>
+                        <option value="other">{sayOne("Other", "Άλλο")}</option>
                       </select>
                     </div>
                     <div>

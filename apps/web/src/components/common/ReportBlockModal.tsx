@@ -21,7 +21,7 @@ import { blockUser, createUserReport } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ReportReason = 
   | 'harassment'
@@ -140,6 +140,7 @@ export function ReportBlockModal({
   onBlocked,
   context,
 }: ReportBlockModalProps) {
+  const sayOne = useBilingualString();
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   
@@ -313,7 +314,7 @@ export function ReportBlockModal({
                     id="details"
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
-                    placeholder={bilingualInline("Provide any additional context that might help us investigate…", "Δώστε ό,τι επιπλέον στοιχείο μπορεί να βοηθήσει τον έλεγχο…")}
+                    placeholder={sayOne("Provide any additional context that might help us investigate…", "Δώστε ό,τι επιπλέον στοιχείο μπορεί να βοηθήσει τον έλεγχο…")}
                     rows={3}
                     maxLength={1000}
                     className="resize-none"

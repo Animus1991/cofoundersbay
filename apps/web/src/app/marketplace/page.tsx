@@ -1,6 +1,6 @@
 'use client';
 
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -309,6 +309,7 @@ function marketplaceStats(providers: ServiceProvider[]) {
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function MarketplacePage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -501,7 +502,7 @@ export default function MarketplacePage() {
         <div className="relative max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder={bilingualInline("Search services, providers, specialties…", "Αναζήτηση υπηρεσιών, παρόχων, ειδικοτήτων…")}
+            placeholder={sayOne("Search services, providers, specialties…", "Αναζήτηση υπηρεσιών, παρόχων, ειδικοτήτων…")}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"

@@ -29,6 +29,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { demoCover } from '@/lib/demo/photos';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { durationEl } from '@/lib/i18n/units';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface Resource {
   id: string;
@@ -369,6 +370,7 @@ function backendToResource(r: LearningResourceItem): Resource {
 }
 
 export default function LearningPage() {
+  const sayOne = useBilingualString();
   const completedReasonId = useId();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
@@ -679,7 +681,7 @@ export default function LearningPage() {
               <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
                 aria-label={bilingualInline("Search courses, guides, topics", "Αναζήτηση μαθημάτων, οδηγών, θεμάτων")}
-                placeholder={bilingualInline(learningEn('search'), learningEl('search'))}
+                placeholder={sayOne(learningEn('search'), learningEl('search'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"

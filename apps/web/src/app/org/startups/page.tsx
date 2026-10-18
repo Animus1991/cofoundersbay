@@ -41,6 +41,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { BilingualText } from '@/components/common/BilingualText';
 import { StatusText } from '@/components/common/StatusText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /**
  * The page's own row from the organisation's member list.
@@ -258,6 +259,7 @@ const SEED_STARTUPS: Startup[] = [
 ];
 
 export default function OrgStartupsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -393,7 +395,7 @@ export default function OrgStartupsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               aria-label={bilingualInline("Search startups", "Αναζήτηση startups")}
-              placeholder={bilingualInline("Search startups…", "Αναζήτηση startups…")}
+              placeholder={sayOne("Search startups…", "Αναζήτηση startups…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -401,7 +403,7 @@ export default function OrgStartupsPage() {
           </div>
           <Select value={program} onValueChange={setProgram}>
             <SelectTrigger aria-label={bilingualAria('Program', 'Πρόγραμμα')} className="w-full sm:w-[200px]">
-              <SelectValue placeholder={bilingualInline("Program", "Πρόγραμμα")} />
+              <SelectValue placeholder={sayOne("Program", "Πρόγραμμα")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Programs" el="Όλα τα προγράμματα" compact /></SelectItem>
@@ -412,7 +414,7 @@ export default function OrgStartupsPage() {
           </Select>
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger aria-label={bilingualAria('Status', 'Κατάσταση')} className="w-full sm:w-[150px]">
-              <SelectValue placeholder={bilingualInline("Status", "Κατάσταση")} />
+              <SelectValue placeholder={sayOne("Status", "Κατάσταση")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all"><BilingualText en="All Status" el="Όλες οι καταστάσεις" compact /></SelectItem>

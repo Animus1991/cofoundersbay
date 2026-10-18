@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const ALL_STATUSES = 'all';
 
@@ -160,6 +161,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
 }
 
 export default function AdminBillingPage() {
+  const sayOne = useBilingualString();
   const qc = useQueryClient();
   const fmtDate = useDateFormat();
   const { success: toastSuccess, error: toastError } = useToast();
@@ -367,7 +369,7 @@ export default function AdminBillingPage() {
       content: (
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger aria-label="Subscription status">
-            <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
+            <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_STATUSES}><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -414,7 +416,7 @@ export default function AdminBillingPage() {
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   aria-label={bilingualInline("Search billing records", "Αναζήτηση εγγραφών χρέωσης")}
-                  placeholder={bilingualInline("Search…", "Αναζήτηση…")}
+                  placeholder={sayOne("Search…", "Αναζήτηση…")}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="pl-8 h-8 w-48 text-sm"
@@ -570,7 +572,7 @@ export default function AdminBillingPage() {
                       <Label htmlFor="maxRedemptions"><BilingualText en="Max redemptions (optional)" el="Μέγιστες χρήσεις (προαιρετικά)" compact /></Label>
                       <Input id="maxRedemptions"
                         type="number"
-                        placeholder={bilingualInline("Unlimited", "Απεριόριστο")}
+                        placeholder={sayOne("Unlimited", "Απεριόριστο")}
                         value={couponForm.maxRedemptions}
                         onChange={e => setCouponForm(p => ({ ...p, maxRedemptions: e.target.value }))}
                       />
@@ -661,7 +663,7 @@ export default function AdminBillingPage() {
               <Label htmlFor="overridePlanId"><BilingualText en="New plan" el="Νέο πλάνο" compact /></Label>
               <Select value={overridePlanId} onValueChange={setOverridePlanId}>
                 <SelectTrigger id="overridePlanId" aria-label="New plan">
-                  <SelectValue placeholder={bilingualInline("Select plan", "Επιλογή πακέτου")} />
+                  <SelectValue placeholder={sayOne("Select plan", "Επιλογή πακέτου")} />
                 </SelectTrigger>
                 <SelectContent>
                   {plans.map(p => (

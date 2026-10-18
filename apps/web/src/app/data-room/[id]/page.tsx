@@ -73,9 +73,10 @@ import {
 } from '@/components/ui/dialog';
 import { cn, initialsOf } from '@/lib/utils';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // Types
 interface Document {
@@ -296,6 +297,7 @@ const DEMO_ACCESS_LOGS: AccessLog[] = [
 ];
 
 export default function DataRoomPage() {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   const params = useParams();
   const roomId = params?.id as string;
@@ -520,7 +522,7 @@ export default function DataRoomPage() {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
-                      placeholder={bilingualInline("Search documents…", "Αναζήτηση εγγράφων…")}
+                      placeholder={sayOne("Search documents…", "Αναζήτηση εγγράφων…")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9 w-full sm:w-[300px]"
@@ -965,7 +967,7 @@ export default function DataRoomPage() {
             <div>
               <p className="text-sm font-medium mb-2"><BilingualText en="Select Folder" el="Επιλογή φακέλου" compact /></p>
               <select className="w-full p-2 border rounded-xl">
-                <option>{bilingualInline("Root", "Αρχικός φάκελος")}</option>
+                <option>{sayOne("Root", "Αρχικός φάκελος")}</option>
                 {folders.map((folder) => (
                   <option key={folder.id} value={folder.id}>
                     {folder.name}
@@ -1008,9 +1010,9 @@ export default function DataRoomPage() {
             <div>
               <label htmlFor="dr-invite-access" className="text-sm font-medium mb-2 block"><BilingualText en="Access Level" el="Επίπεδο πρόσβασης" compact /></label>
               <select id="dr-invite-access" className="w-full p-2 border rounded-xl">
-                <option value="view">{bilingualInline("View Only", "Μόνο προβολή")}</option>
-                <option value="download">{bilingualInline("View & Download", "Προβολή & λήψη")}</option>
-                <option value="admin">{bilingualInline("Admin Access", "Πρόσβαση διαχειριστή")}</option>
+                <option value="view">{sayOne("View Only", "Μόνο προβολή")}</option>
+                <option value="download">{sayOne("View & Download", "Προβολή & λήψη")}</option>
+                <option value="admin">{sayOne("Admin Access", "Πρόσβαση διαχειριστή")}</option>
               </select>
             </div>
             <div className="flex items-center gap-2">

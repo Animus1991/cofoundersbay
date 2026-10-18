@@ -7,7 +7,7 @@ import {
   Type, Minus, Plus, X, Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /* ─── Types ─── */
 interface PdfHighlight {
@@ -43,6 +43,7 @@ export function PdfAnnotationViewer({
   onAnnotationsChange,
   initialAnnotations = [],
 }: PdfAnnotationViewerProps) {
+  const sayOne = useBilingualString();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [pdfZoom, setPdfZoom] = useState(100);
   const [currentPage, setCurrentPage] = useState(1);
@@ -339,7 +340,7 @@ export function PdfAnnotationViewer({
                     <textarea
                       value={a.note || ''}
                       onChange={(e) => updateAnnotationNote(a.id, e.target.value)}
-                      placeholder={bilingualInline("Add a note…", "Προσθήκη σημείωσης…")}
+                      placeholder={sayOne("Add a note…", "Προσθήκη σημείωσης…")}
                       className="w-full bg-secondary/50 rounded-lg px-2 py-1.5 text-2xs text-foreground outline-none border border-transparent focus:border-primary/30 transition-colors resize-none leading-relaxed"
                       rows={2}
                     />

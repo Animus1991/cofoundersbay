@@ -38,6 +38,7 @@ import {
   type IdentityProviderItem,
   type SSODomainMapping,
 } from '@/lib/api';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type RoleMappingRule = { claim: string; value: string; role: string };
 
@@ -210,6 +211,7 @@ function RoleMappingEditor({
   rules: RoleMappingRule[];
   onChange: (rules: RoleMappingRule[]) => void;
 }) {
+  const sayOne = useBilingualString();
   const add = () => onChange([...rules, { claim: '', value: '', role: 'member' }]);
   const remove = (i: number) => onChange(rules.filter((_, idx) => idx !== i));
   const update = (i: number, field: keyof RoleMappingRule, val: string) =>
@@ -231,8 +233,8 @@ function RoleMappingEditor({
         <div className="space-y-2">
           {rules.map((r, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
-              <Input value={r.claim} onChange={e => update(i, 'claim', e.target.value)} placeholder={bilingualInline('Claim (e.g. groups)', 'Claim (π.χ. groups)')} aria-label={bilingualInline(`Rule ${i + 1} claim`, `Κανόνας ${i + 1}: claim`)} className="text-xs h-8" />
-              <Input value={r.value} onChange={e => update(i, 'value', e.target.value)} placeholder={bilingualInline('Value (e.g. admins)', 'Τιμή (π.χ. admins)')} aria-label={bilingualInline(`Rule ${i + 1} value`, `Κανόνας ${i + 1}: τιμή`)} className="text-xs h-8" />
+              <Input value={r.claim} onChange={e => update(i, 'claim', e.target.value)} placeholder={sayOne('Claim (e.g. groups)', 'Claim (π.χ. groups)')} aria-label={bilingualInline(`Rule ${i + 1} claim`, `Κανόνας ${i + 1}: claim`)} className="text-xs h-8" />
+              <Input value={r.value} onChange={e => update(i, 'value', e.target.value)} placeholder={sayOne('Value (e.g. admins)', 'Τιμή (π.χ. admins)')} aria-label={bilingualInline(`Rule ${i + 1} value`, `Κανόνας ${i + 1}: τιμή`)} className="text-xs h-8" />
               <select value={r.role} onChange={e => update(i, 'role', e.target.value)}
                 aria-label={bilingualInline(`Rule ${i + 1} role`, `Κανόνας ${i + 1}: ρόλος`)}
                 className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs">
@@ -255,6 +257,7 @@ function RoleMappingEditor({
 }
 
 export default function TenantSSOPage() {
+  const sayOne = useBilingualString();
   const { activeTenant } = useTenant();
   const tenantId = activeTenant?.id ?? '';
   const queryClient = useQueryClient();
@@ -498,7 +501,7 @@ export default function TenantSSOPage() {
 
                   <div className="space-y-1">
                     <label htmlFor="sso-provider-name" className="text-sm font-medium"><BilingualText en="Provider Name *" el="Όνομα παρόχου *" compact /></label>
-                    <Input id="sso-provider-name" value={newProvider.providerName} onChange={e => setNewProvider(p => ({ ...p, providerName: e.target.value }))} placeholder={bilingualInline('e.g. University SSO, Okta, Azure AD', 'π.χ. SSO Πανεπιστημίου, Okta, Azure AD')} />
+                    <Input id="sso-provider-name" value={newProvider.providerName} onChange={e => setNewProvider(p => ({ ...p, providerName: e.target.value }))} placeholder={sayOne('e.g. University SSO, Okta, Azure AD', 'π.χ. SSO Πανεπιστημίου, Okta, Azure AD')} />
                   </div>
 
                   {(providerType === 'oidc' || providerType === 'oauth2') && (
@@ -618,7 +621,7 @@ export default function TenantSSOPage() {
                       <label htmlFor="sso-selected-provider" className="text-sm font-medium"><BilingualText en="Identity provider" el="Πάροχος ταυτότητας" compact /></label>
                       <select id="sso-selected-provider" value={selectedProviderId} onChange={e => setSelectedProviderId(e.target.value)}
                         className="w-full rounded-md border border-input bg-background px-3 py-2">
-                        <option value="">{bilingualInline('None selected', 'Καμία επιλογή')}</option>
+                        <option value="">{sayOne('None selected', 'Καμία επιλογή')}</option>
                         {providers?.map(p => <option key={p.id} value={p.id}>{p.providerName} ({p.providerType.toUpperCase()})</option>)}
                       </select>
                     </div>
@@ -677,11 +680,11 @@ export default function TenantSSOPage() {
                     <CardContent className="space-y-4">
                       <div className="space-y-1">
                         <label htmlFor="sso-redirect" className="text-sm font-medium"><BilingualText en="Page after sign-in" el="Σελίδα μετά τη σύνδεση" compact /></label>
-                        <Input id="sso-redirect" value={postLoginRedirect} onChange={e => setPostLoginRedirect(e.target.value)} placeholder={bilingualInline('/dashboard (blank for the default)', '/dashboard (κενό για την προεπιλογή)')} />
+                        <Input id="sso-redirect" value={postLoginRedirect} onChange={e => setPostLoginRedirect(e.target.value)} placeholder={sayOne('/dashboard (blank for the default)', '/dashboard (κενό για την προεπιλογή)')} />
                       </div>
                       <div className="space-y-1">
                         <label htmlFor="sso-allowed-domains" className="text-sm font-medium"><BilingualText en="Allowed email domains" el="Επιτρεπόμενοι τομείς email" compact /></label>
-                        <Input id="sso-allowed-domains" value={allowedDomains} onChange={e => setAllowedDomains(e.target.value)} placeholder={bilingualInline('uoa.gr, di.uoa.gr (comma-separated)', 'uoa.gr, di.uoa.gr (με κόμμα)')} />
+                        <Input id="sso-allowed-domains" value={allowedDomains} onChange={e => setAllowedDomains(e.target.value)} placeholder={sayOne('uoa.gr, di.uoa.gr (comma-separated)', 'uoa.gr, di.uoa.gr (με κόμμα)')} />
                         <p className="text-xs text-muted-foreground"><BilingualText en="Leave empty to allow any domain." el="Αφήστε κενό για οποιονδήποτε τομέα." compact wrap /></p>
                       </div>
                       <div className="flex items-center justify-between gap-3 border-t border-border pt-4">

@@ -72,10 +72,10 @@ import { cn } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
-import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 // The API's Role enum (schema.prisma). The page used to offer moderator,
@@ -214,6 +214,7 @@ const ROLE_OPTIONS: { value: UserRole; en: string; el: string }[] = [
 const roleLabel = (role: UserRole) => ROLE_OPTIONS.find((r) => r.value === role)?.en ?? role;
 
 export default function AdminUserManagementPage() {
+  const sayOne = useBilingualString();
   const { success, error } = useToast();
   const qc = useQueryClient();
   const { data: adminUsers } = useQuery({
@@ -423,7 +424,7 @@ export default function AdminUserManagementPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Role" el="Ρόλος" compact /></p>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger aria-label="Role" className="mt-2">
-                <SelectValue placeholder={bilingualInline("All roles", "Όλοι οι ρόλοι")} />
+                <SelectValue placeholder={sayOne("All roles", "Όλοι οι ρόλοι")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All roles" el="Όλοι οι ρόλοι" compact /></SelectItem>
@@ -437,7 +438,7 @@ export default function AdminUserManagementPage() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><BilingualText en="Status" el="Κατάσταση" compact /></p>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger aria-label="Status" className="mt-2">
-                <SelectValue placeholder={bilingualInline("All statuses", "Όλες οι καταστάσεις")} />
+                <SelectValue placeholder={sayOne("All statuses", "Όλες οι καταστάσεις")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all"><BilingualText en="All statuses" el="Όλες οι καταστάσεις" compact /></SelectItem>
@@ -645,7 +646,7 @@ export default function AdminUserManagementPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder={bilingualInline("Search by name, email, or location…", "Αναζήτηση με όνομα, email ή τοποθεσία…")}
+              placeholder={sayOne("Search by name, email, or location…", "Αναζήτηση με όνομα, email ή τοποθεσία…")}
               className="pl-9"
               aria-label="Search users"
             />

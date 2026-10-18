@@ -16,9 +16,10 @@ import { CardHead } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { HELP_FAQ_EL, HELP_TOPIC_EL } from '@/lib/i18n/strings-help';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type FAQItem = {
   question: string;
@@ -283,6 +284,7 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
 }
 
 export default function HelpPage() {
+  const sayOne = useBilingualString();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [openFAQs, setOpenFAQs] = useState<Set<string>>(new Set());
@@ -381,7 +383,7 @@ export default function HelpPage() {
             <Input
               type="text"
               aria-label={bilingualAria("Search help", "Αναζήτηση βοήθειας")}
-              placeholder={bilingualInline("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
+              placeholder={sayOne("Search for help (e.g. matching, billing, profile…)", "Αναζήτηση βοήθειας (π.χ. αντιστοιχίσεις, χρεώσεις, προφίλ…)")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-11 bg-background border-border"

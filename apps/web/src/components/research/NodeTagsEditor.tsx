@@ -13,7 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { researchEn, researchEl, useResearchPrimaryText } from '@/lib/i18n/strings-research';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const SUGGESTED_TAGS = [
   'research', 'market-analysis', 'competitor', 'funding', 'team',
@@ -29,6 +29,7 @@ interface NodeTagsEditorProps {
 }
 
 export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEditorProps) {
+  const sayOne = useBilingualString();
   const [inputValue, setInputValue] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -88,7 +89,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
             </div>
 
             <Input
-              placeholder={bilingualInline("Add tag…", "Προσθήκη ετικέτας…")}
+              placeholder={sayOne("Add tag…", "Προσθήκη ετικέτας…")}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -140,7 +141,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
 
       <div className="flex gap-2">
         <Input
-          placeholder={bilingualInline("Add a tag…", "Προσθήκη ετικέτας…")}
+          placeholder={sayOne("Add a tag…", "Προσθήκη ετικέτας…")}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}

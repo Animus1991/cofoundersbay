@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { BilingualText } from '@/components/common/BilingualText';
 import { qk } from '@/lib/query-keys';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -56,6 +57,7 @@ function toEventData(item: EventItem): EventData {
 }
 
 export default function EventsPage() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
@@ -289,7 +291,7 @@ export default function EventsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder={bilingualInline('Search events…', 'Αναζήτηση εκδηλώσεων…')}
+              placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')}
               aria-label={bilingualInline('Search events', 'Αναζήτηση εκδηλώσεων')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

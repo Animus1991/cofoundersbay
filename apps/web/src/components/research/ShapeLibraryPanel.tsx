@@ -5,7 +5,7 @@ import { X, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ResearchNodeType } from '@/lib/api';
 import type { ShapeVariant, ShapeMeta } from './ShapeNode';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 /* ─── Shape template definition ────────────────────────────────────────── */
 
@@ -172,6 +172,7 @@ interface ShapeLibraryPanelProps {
 /* ─── Component ─────────────────────────────────────────────────────────── */
 
 export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProps) {
+  const sayOne = useBilingualString();
   const [search, setSearch]           = useState('');
   const [openCats, setOpenCats]       = useState<Set<string>>(new Set(SHAPE_CATEGORIES.map((c) => c.name)));
 
@@ -208,7 +209,7 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
           <Search className="icon-sm text-muted-foreground/60 shrink-0" />
           <input
             className="flex-1 text-2xs bg-transparent outline-none placeholder:text-muted-foreground/50"
-            placeholder={bilingualInline("Search shapes…", "Αναζήτηση σχημάτων…")}
+            placeholder={sayOne("Search shapes…", "Αναζήτηση σχημάτων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

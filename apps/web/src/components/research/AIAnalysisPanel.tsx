@@ -27,6 +27,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { bilingualInline } from '@/lib/i18n/format';
 
 import { pressableProps } from '@/lib/pressable';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 /* ─── Types ─── */
 type Tab = 'extract' | 'connect' | 'synthesize' | 'questions' | 'chat';
 
@@ -74,6 +75,7 @@ export function AIAnalysisPanel({
   onClose,
   onCreateNodes,
 }: AIAnalysisPanelProps) {
+  const sayOne = useBilingualString();
   const { success, error: showError } = useToast();
   const [tab, setTab] = useState<Tab>('extract');
   const [loading, setLoading] = useState(false);
@@ -290,7 +292,7 @@ export function AIAnalysisPanel({
               <textarea
                 value={extractText}
                 onChange={(e) => setExtractText(e.target.value)}
-                placeholder={bilingualInline("Paste research text, abstract, paper excerpt, or notes here…", "Επικολλήστε εδώ κείμενο έρευνας, περίληψη, απόσπασμα ή σημειώσεις…")}
+                placeholder={sayOne("Paste research text, abstract, paper excerpt, or notes here…", "Επικολλήστε εδώ κείμενο έρευνας, περίληψη, απόσπασμα ή σημειώσεις…")}
                 className="w-full bg-secondary/50 rounded-xl px-3 py-2.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors resize-none leading-relaxed"
                 rows={6}
               />
@@ -655,7 +657,7 @@ export function AIAnalysisPanel({
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } }}
-                  placeholder={bilingualInline("Ask about your research…", "Ρωτήστε για την έρευνά σας…")}
+                  placeholder={sayOne("Ask about your research…", "Ρωτήστε για την έρευνά σας…")}
                   disabled={loading}
                   className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 />

@@ -42,6 +42,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { statusEl } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type OrgEvent = {
   id: string;
@@ -306,6 +307,7 @@ function EventCard({ event, onDuplicate }: { event: OrgEvent; onDuplicate?: (e: 
 }
 
 export default function OrgEventsPage() {
+  const sayOne = useBilingualString();
   // Illustrative rows are for the showcase; a real account with nothing
   // to list sees the page's empty state, not invented people and records.
   const { showDemoData } = useDemoData();
@@ -428,7 +430,7 @@ export default function OrgEventsPage() {
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-            <Input aria-label="Search events. Αναζήτηση εκδηλώσεων" placeholder={bilingualInline('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+            <Input aria-label="Search events. Αναζήτηση εκδηλώσεων" placeholder={sayOne('Search events…', 'Αναζήτηση εκδηλώσεων…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>
 

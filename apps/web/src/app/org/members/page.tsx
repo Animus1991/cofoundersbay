@@ -41,9 +41,10 @@ import { UnavailableButton } from '@/components/common/UnavailableButton';
 import { qk } from '@/lib/query-keys';
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
 import { formatDate } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type MemberRole = 'owner' | 'admin' | 'manager' | 'member' | 'mentor' | 'viewer';
 
@@ -200,6 +201,7 @@ function MemberRow({ member, live, adminHref }: { member: OrgMember; live: boole
 }
 
 export default function OrgMembersPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
@@ -305,7 +307,7 @@ export default function OrgMembersPage() {
         {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input aria-label="Search members. Αναζήτηση μελών" placeholder={bilingualInline('Search members…', 'Αναζήτηση μελών…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          <Input aria-label="Search members. Αναζήτηση μελών" placeholder={sayOne('Search members…', 'Αναζήτηση μελών…')} value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
         {/* Table */}

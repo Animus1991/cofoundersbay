@@ -11,8 +11,7 @@ import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { useTenant } from '@/components/providers/TenantContext';
 import { BilingualText } from '@/components/common/BilingualText';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
-import { bilingualInline } from '@/lib/i18n/format';
+import { useLanguagePreference, useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { MainLandmark } from '@/components/layout/AppShell';
 import { registerEmailError, registerPasswordError } from '@/lib/auth-fields';
 
@@ -74,6 +73,7 @@ const HERO_STATS = [
 type Message = { en: string; el?: string };
 
 export default function RegisterPage() {
+  const sayOne = useBilingualString();
   const router = useRouter();
   const { activeTenant, branding } = useTenant();
   const { primary } = useLanguagePreference();
@@ -250,7 +250,7 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   aria-invalid={passwordMessage ? true : undefined}
                   aria-describedby={passwordMessage ? 'reg-password-error' : undefined}
-                  placeholder={bilingualInline('Min 8 characters', 'Τουλάχιστον 8 χαρακτήρες')}
+                  placeholder={sayOne('Min 8 characters', 'Τουλάχιστον 8 χαρακτήρες')}
                   className="pr-24"
                 />
                 <button

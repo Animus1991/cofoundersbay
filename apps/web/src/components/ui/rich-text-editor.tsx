@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 interface RichTextEditorProps {
   value: string;
@@ -66,6 +67,7 @@ export function RichTextEditor({
   disabled = false,
   showWordCount = false,
 }: RichTextEditorProps) {
+  const sayOne = useBilingualString();
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -239,7 +241,7 @@ export function RichTextEditor({
               <Input id="rte-f2"
                 value={linkText}
                 onChange={(e) => setLinkText(e.target.value)}
-                placeholder={bilingualInline("Link text…", "Κείμενο συνδέσμου…")}
+                placeholder={sayOne("Link text…", "Κείμενο συνδέσμου…")}
               />
             </div>
             <div className="flex gap-2">

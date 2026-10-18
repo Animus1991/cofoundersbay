@@ -28,6 +28,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualInline } from '@/lib/i18n/format';
 import { usePageList } from '@/lib/page-controls';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type Review = {
   id: string;
@@ -180,6 +181,7 @@ const MOCK_REVIEWS: Review[] = [
   ];
 
 export default function ProviderReviewsPage() {
+  const sayOne = useBilingualString();
   const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
 
@@ -309,7 +311,7 @@ export default function ProviderReviewsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             aria-label={bilingualInline("Search reviews", "Αναζήτηση αξιολογήσεων")}
-            placeholder={bilingualInline("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
+            placeholder={sayOne("Search reviews…", "Αναζήτηση αξιολογήσεων…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

@@ -52,6 +52,7 @@ import {
 } from '@/lib/api';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const SKILL_CATEGORIES = ['Technical', 'Business', 'Design', 'Marketing', 'Sales', 'Finance', 'Operations', 'Legal', 'Product', 'Data', 'Other'];
 
@@ -136,6 +137,7 @@ function SkillDialog({
   onSave: (data: { name: string; slug: string; category: string }) => void;
   isSaving: boolean;
 }) {
+  const sayOne = useBilingualString();
   const [name, setName] = useState(skill?.name ?? '');
   const [slug, setSlug] = useState(skill?.slug ?? '');
   const [category, setCategory] = useState(skill?.category ?? '');
@@ -179,7 +181,7 @@ function SkillDialog({
             <label className="block text-sm font-medium mb-1" htmlFor="tax-category"><BilingualText en="Category" el="Κατηγορία" compact /></label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger id="tax-category">
-                <SelectValue placeholder={bilingualInline("Select category", "Επιλογή κατηγορίας")} />
+                <SelectValue placeholder={sayOne("Select category", "Επιλογή κατηγορίας")} />
               </SelectTrigger>
               <SelectContent>
                 {SKILL_CATEGORIES.map((c) => (
@@ -205,6 +207,7 @@ function SkillDialog({
 }
 
 export default function AdminTaxonomyPage() {
+  const sayOne = useBilingualString();
   const qc = useQueryClient();
   const { success, error: showError } = useToast();
   const confirm = useConfirm();
@@ -378,7 +381,7 @@ export default function AdminTaxonomyPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
                   aria-label={bilingualAria("Search skills", "Αναζήτηση δεξιοτήτων")}
-                  placeholder={bilingualInline("Search skills…", "Αναζήτηση δεξιοτήτων…")}
+                  placeholder={sayOne("Search skills…", "Αναζήτηση δεξιοτήτων…")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 h-9"
@@ -395,7 +398,7 @@ export default function AdminTaxonomyPage() {
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
-                <option value="">{bilingualInline("All categories", "Όλες οι κατηγορίες")}</option>
+                <option value="">{sayOne("All categories", "Όλες οι κατηγορίες")}</option>
                 {SKILL_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>

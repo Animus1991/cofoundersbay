@@ -44,12 +44,12 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { CANCELLED, choiceControl, ROW_GONE, rowOptions, usePageControls, usePageList, type PageControl, type PageControlRunResult } from '@/lib/page-controls';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { bilingualAria } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { FactLine } from '@/components/common/FactLine';
 import { Counter } from '@/components/ui/counter';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type FlagStatus = 'enabled' | 'disabled' | 'rollout' | 'experiment';
 type FlagTarget = 'all' | 'beta' | 'admins' | 'specific_tenants' | 'percentage';
@@ -255,6 +255,7 @@ function FlagCard({ flag, onToggle, onEdit, onCopyKey, onDelete }: { flag: Featu
 }
 
 export default function AdminFeatureFlagsPage() {
+  const sayOne = useBilingualString();
   const [search, setSearch] = useState('');
   const qc = useQueryClient();
   const [liveFlags, setFlags] = useState<FeatureFlag[]>([]);
@@ -517,7 +518,7 @@ export default function AdminFeatureFlagsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             aria-label={bilingualAria("Search flags by name or key", "Αναζήτηση σημαιών με όνομα ή κλειδί")}
-            placeholder={bilingualInline("Search flags by name or key…", "Αναζήτηση σημαιών με όνομα ή κλειδί…")}
+            placeholder={sayOne("Search flags by name or key…", "Αναζήτηση σημαιών με όνομα ή κλειδί…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

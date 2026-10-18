@@ -18,9 +18,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn, initialsOf } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { useLocalDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 export type TimeSlot = {
   id: string;
@@ -106,6 +106,7 @@ export function BookingCalendar({
   minDate = new Date(),
   maxDate,
 }: BookingCalendarProps) {
+  const sayOne = useBilingualString();
   const fmtLocal = useLocalDateFormat();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -380,7 +381,7 @@ export function BookingCalendar({
                 <Textarea id="bc-f1"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder={bilingualInline("Share your goals, challenges, or questions…", "Μοιραστείτε στόχους, προκλήσεις ή ερωτήσεις…")}
+                  placeholder={sayOne("Share your goals, challenges, or questions…", "Μοιραστείτε στόχους, προκλήσεις ή ερωτήσεις…")}
                   rows={4}
                 />
               </div>

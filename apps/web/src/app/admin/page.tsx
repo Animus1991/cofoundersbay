@@ -100,6 +100,7 @@ import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
 import { Counter } from '@/components/ui/counter';
 import { PersonHovercard } from '@/components/common/PersonHovercard';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; labelEl: string; color: string }> = {
   spam: { label: 'Spam', labelEl: 'Ανεπιθύμητο', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
@@ -523,6 +524,7 @@ function useWide(): boolean {
 }
 
 export default function AdminPage() {
+  const sayOne = useBilingualString();
   const queryClient = useQueryClient();
   const fmtDate = useDateFormat();
   const { success, error: showError } = useToast();
@@ -961,7 +963,7 @@ export default function AdminPage() {
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
-                    placeholder={bilingualInline("Search users…", "Αναζήτηση χρηστών…")}
+                    placeholder={sayOne("Search users…", "Αναζήτηση χρηστών…")}
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                     className="pl-9"
@@ -1137,7 +1139,7 @@ export default function AdminPage() {
             <div className="relative w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
-                placeholder={bilingualInline("Search cohorts…", "Αναζήτηση κοορτών…")}
+                placeholder={sayOne("Search cohorts…", "Αναζήτηση κοορτών…")}
                 value={cohortSearch}
                 onChange={(e) => setCohortSearch(e.target.value)}
                 className="pl-9"
@@ -1179,7 +1181,7 @@ export default function AdminPage() {
                   </div>
                   <div className="space-y-1 sm:col-span-2">
                     <label htmlFor="cohort-f6" className="text-sm font-medium text-muted-foreground"><BilingualText en="Description" el="Περιγραφή" compact /></label>
-                    <Input id="cohort-f6" placeholder={bilingualInline("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
+                    <Input id="cohort-f6" placeholder={sayOne("Short description…", "Σύντομη περιγραφή…")} value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
                   </div>
                 </div>
                 <div className="flex gap-2 pt-1">

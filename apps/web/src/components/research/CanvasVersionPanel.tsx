@@ -59,6 +59,7 @@ import { LocalTime } from '@/components/common/LocalTime';
 import { qk } from '@/lib/query-keys';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -317,6 +318,7 @@ function RestoreConfirmDialog({
 // ── Snapshots Tab ─────────────────────────────────────────────────────────────
 
 function SnapshotsTab({ boardId }: { boardId: string }) {
+  const sayOne = useBilingualString();
   const fmtDate = useDateFormat();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
@@ -390,7 +392,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
         <Label htmlFor="snapshotLabel" className="font-medium">Save current state</Label>
         <div className="flex gap-2">
           <Input id="snapshotLabel"
-            placeholder={bilingualInline("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
+            placeholder={sayOne("Label (optional)…", "Ετικέτα (προαιρετικά)…")}
             value={snapshotLabel}
             onChange={(e) => setSnapshotLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -523,6 +525,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
 // ── Versions Tab ──────────────────────────────────────────────────────────────
 
 function VersionsTab({ boardId }: { boardId: string }) {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const [label, setLabel] = useState('');
@@ -580,7 +583,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
         <Label htmlFor="label" className="font-medium">Commit current state</Label>
         <div className="flex gap-2">
           <Input id="label"
-            placeholder={bilingualInline("Commit message (optional)…", "Μήνυμα αλλαγής (προαιρετικά)…")}
+            placeholder={sayOne("Commit message (optional)…", "Μήνυμα αλλαγής (προαιρετικά)…")}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -680,6 +683,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
 // ── Branches Tab ──────────────────────────────────────────────────────────────
 
 function BranchesTab({ boardId }: { boardId: string }) {
+  const sayOne = useBilingualString();
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
@@ -753,7 +757,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Input
-            placeholder={bilingualInline("Description (optional)…", "Περιγραφή (προαιρετικά)…")}
+            placeholder={sayOne("Description (optional)…", "Περιγραφή (προαιρετικά)…")}
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             className="text-sm h-8"

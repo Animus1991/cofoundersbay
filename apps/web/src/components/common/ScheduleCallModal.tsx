@@ -27,8 +27,8 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualInline } from '@/lib/i18n/format';
 import { useLocalDateFormat } from '@/lib/i18n/useDateFormat';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ScheduleCallModalProps = {
   open: boolean;
@@ -86,6 +86,7 @@ export function ScheduleCallModal({
   recipientAvatar,
   onScheduled,
 }: ScheduleCallModalProps) {
+  const sayOne = useBilingualString();
   const fmtLocal = useLocalDateFormat();
   const [step, setStep] = useState<'date' | 'time' | 'details' | 'confirm'>('date');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -341,7 +342,7 @@ export function ScheduleCallModal({
             <div className="space-y-2">
               <Label htmlFor="message"><BilingualText en="Message (optional)" el="Μήνυμα (προαιρετικά)" compact /></Label>
               <Textarea id="message"
-                placeholder={bilingualInline("Add a note about what you'd like to discuss…", "Προσθέστε σημείωση για το τι θέλετε να συζητήσετε…")}
+                placeholder={sayOne("Add a note about what you'd like to discuss…", "Προσθέστε σημείωση για το τι θέλετε να συζητήσετε…")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
