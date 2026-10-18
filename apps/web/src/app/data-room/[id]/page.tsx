@@ -77,6 +77,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // Types
 interface Document {
@@ -132,7 +133,7 @@ interface AccessLog {
 }
 
 // Mock data
-const DEMO_DOCUMENTS: Document[] = [
+const DEMO_DOCUMENTS: Document[] = attachDemoPhotos([
   {
     id: '1',
     name: 'Pitch Deck v2.pdf',
@@ -207,7 +208,7 @@ const DEMO_DOCUMENTS: Document[] = [
     tags: ['legal', 'cap-table', 'confidential'],
     description: 'Updated with new investor allocations',
   },
-];
+], { portraitKey: 'avatarUrl' });
 
 const DEMO_FOLDERS: Folder[] = [
   {
@@ -233,7 +234,7 @@ const DEMO_FOLDERS: Folder[] = [
   },
 ];
 
-const DEMO_INVESTORS: Investor[] = [
+const DEMO_INVESTORS: Investor[] = attachDemoPhotos([
   {
     id: '1',
     name: 'Alex Dimitriou',
@@ -264,7 +265,7 @@ const DEMO_INVESTORS: Investor[] = [
     documentsViewed: 15,
     documentsDownloaded: 8,
   },
-];
+], { portraitKey: 'avatarUrl' });
 
 const DEMO_ACCESS_LOGS: AccessLog[] = [
   {
@@ -595,6 +596,7 @@ export default function DataRoomPage() {
                             <TableCell className="hidden md:table-cell">
                               <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
+                                  <AvatarImage src={document.uploadedBy.avatarUrl} alt="" />
                                   <AvatarFallback className="text-xs">
                                     {initialsOf(document.uploadedBy.name)}
                                   </AvatarFallback>
@@ -750,6 +752,7 @@ export default function DataRoomPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
+                            <AvatarImage src={investor.avatarUrl} alt="" />
                             <AvatarFallback>
                               {initialsOf(investor.name)}
                             </AvatarFallback>

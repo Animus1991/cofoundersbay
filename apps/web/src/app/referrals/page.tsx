@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { REFERRALS_STRINGS, referralsEn, referralsEl } from '@/lib/i18n/strings-referrals';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type ReferralStatus = 'pending' | 'signed_up' | 'active' | 'rewarded' | 'expired';
 
@@ -114,13 +115,13 @@ const STATUS_CONFIG: Record<ReferralStatus, { key: ReferralKey; color: string; i
 // Samples from the demo world, shown only with sample data on and when the
 // preview has no invitations to answer with. None carries a reward: rewards
 // are not live, and a "+€10" sample said otherwise.
-const DEMO_REFERRALS: Referral[] = [
+const DEMO_REFERRALS: Referral[] = attachDemoPhotos([
   { id: 's1', email: 'ioanna@aegeanlab.example', name: 'Ioanna Pappa', status: 'active', invitedAt: '2026-02-15T10:00:00Z', signedUpAt: '2026-02-16T14:30:00Z' },
   { id: 's2', email: 'thanos@rigas.energy', name: 'Thanos Rigas', status: 'signed_up', invitedAt: '2026-03-01T09:00:00Z', signedUpAt: '2026-03-02T11:00:00Z' },
   { id: 's3', email: 'eleni@anemosstorage.example', status: 'pending', invitedAt: '2026-03-20T15:00:00Z' },
   { id: 's4', email: 'petros@kymaenergy.example', status: 'pending', invitedAt: '2026-03-25T08:00:00Z' },
   { id: 's5', email: 'hello@old-venture.example', status: 'expired', invitedAt: '2026-01-01T00:00:00Z' },
-];
+], { portraitKey: 'avatarUrl' });
 
 /**
  * The link shared is the real sign-up page. It used to be

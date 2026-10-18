@@ -56,6 +56,7 @@ import {
 } from '@/lib/api';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
 
@@ -80,7 +81,7 @@ const POST_TYPE_CONFIG: Record<PostType, { icon: typeof Rocket; color: string; l
   achievement: { icon: Award, color: 'text-status-accent', label: 'Achievement', labelEl: 'Επίτευγμα' },
 };
 
-const DEMO_POSTS: FeedPost[] = [
+const DEMO_POSTS: FeedPost[] = attachDemoPhotos([
   {
     id: '1',
     author: {
@@ -175,7 +176,7 @@ const DEMO_POSTS: FeedPost[] = [
     createdAt: '2026-03-24T14:20:00Z',
     tags: ['portfolio', 'fintech', 'growth'],
   },
-];
+]);
 
 function PostCard({
   post,
@@ -430,11 +431,11 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
 }
 
 function SuggestedConnections() {
-  const suggestions = [
+  const suggestions: Array<{ id: string; name: string; role: string; match: number; avatarUrl?: string }> = attachDemoPhotos([
     { id: '1', name: 'Anna Kowalski', role: 'UX Designer', match: 85 },
     { id: '2', name: 'James Wilson', role: 'Backend Developer', match: 78 },
     { id: '3', name: 'Maria Santos', role: 'Growth Marketer', match: 72 },
-  ];
+  ], { portraitKey: 'avatarUrl' });
 
   return (
     <Card className="shadow-sm border-border">
@@ -449,6 +450,7 @@ function SuggestedConnections() {
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
+                <AvatarImage src={person.avatarUrl} alt="" />
                 <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                   {initialsOf(person.name)}
                 </AvatarFallback>

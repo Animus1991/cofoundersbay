@@ -21,6 +21,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
+import { PhotoChip } from '@/components/common/PhotoChip';
 
 export type EventData = {
   id: string;
@@ -194,12 +195,12 @@ export function EventCard({
                 </span>
               </div>
             </div>
-            {/* Type badge */}
+            {/* Type: an opaque chip, so it reads on any photo. */}
             <div className="absolute top-4 right-4">
-              <Badge variant="secondary" className="gap-1">
+              <PhotoChip>
                 <EventTypeIcon type={event.type} />
                 <EventTypeLabel type={event.type} />
-              </Badge>
+              </PhotoChip>
             </div>
           </div>
         )}

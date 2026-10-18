@@ -1,3 +1,5 @@
+import { DEMO_ACCOUNT_PHOTO } from '@/lib/demo/photos';
+
 export const PREVIEW_DEMO_USER = {
   id: 'preview-demo-user',
   email: 'demo@cofounderbay.com',
@@ -5,8 +7,8 @@ export const PREVIEW_DEMO_USER = {
   displayName: 'Alex Demo',
   firstName: 'Alex',
   lastName: 'Demo',
-  // No demo photo: the product shows the initials, as for any member without one.
-  avatarUrl: undefined as string | undefined,
+  // The reader's own account: a neutral picture rather than a stranger's face.
+  avatarUrl: DEMO_ACCOUNT_PHOTO as string | undefined,
 };
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;

@@ -36,6 +36,7 @@ import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { bilingualInline } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
 
@@ -214,7 +215,7 @@ function formatAsk(amount: number, currency = 'EUR'): string {
  * them through `RelativeTime` now, and a phrase would reach `new Date()` as an
  * invalid date.
  */
-const MOCK_DEALS: Deal[] = [
+const MOCK_DEALS: Deal[] = attachDemoPhotos([
   { id: 'demo-1', name: 'NeuralFlow AI', industry: 'AI/ML', stage: 'Seed', pipelineStage: 'discovered', readinessScore: 85, askAmount: 500000, currency: 'EUR', addedAt: '2026-03-20T09:00:00.000Z', lastActivity: '2026-09-04T08:00:00.000Z', starred: true, founderName: 'Alex Georgiou', teamSize: 3 },
   { id: 'demo-2', name: 'GreenGrid', industry: 'CleanTech', stage: 'Pre-seed', pipelineStage: 'discovered', readinessScore: 72, askAmount: 200000, currency: 'EUR', addedAt: '2026-03-18T09:00:00.000Z', lastActivity: '2026-09-03T10:00:00.000Z', starred: false, founderName: 'Maria Sotiropoulou', teamSize: 2 },
   { id: 'demo-3', name: 'PayStream', industry: 'FinTech', stage: 'Seed', pipelineStage: 'reviewing', readinessScore: 91, askAmount: 750000, currency: 'EUR', addedAt: '2026-03-15T09:00:00.000Z', lastActivity: '2026-09-04T07:00:00.000Z', starred: true, founderName: 'Nikos Papas', teamSize: 4 },
@@ -223,7 +224,7 @@ const MOCK_DEALS: Deal[] = [
   { id: 'demo-6', name: 'EduLearn', industry: 'EdTech', stage: 'Pre-seed', pipelineStage: 'due_diligence', readinessScore: 82, askAmount: 350000, currency: 'EUR', addedAt: '2026-03-05T09:00:00.000Z', lastActivity: '2026-08-28T09:00:00.000Z', starred: false, founderName: 'Sofia Mela', teamSize: 3 },
   { id: 'demo-7', name: 'CloudSecure', industry: 'Cybersecurity', stage: 'Seed', pipelineStage: 'negotiating', readinessScore: 88, askAmount: 1000000, currency: 'EUR', addedAt: '2026-02-28T09:00:00.000Z', lastActivity: '2026-08-30T11:00:00.000Z', starred: true, founderName: 'Kostas Panou', teamSize: 6 },
   { id: 'demo-8', name: 'FoodTech Pro', industry: 'FoodTech', stage: 'Seed', pipelineStage: 'invested', readinessScore: 95, askAmount: 450000, currency: 'EUR', addedAt: '2026-02-15T09:00:00.000Z', lastActivity: '2026-08-20T09:00:00.000Z', starred: true, founderName: 'Ioanna Vlachou', teamSize: 4 },
-];
+], { logoKey: 'logoUrl' });
 
 export default function InvestorPipelinePage() {
   const sayOne = useBilingualString();

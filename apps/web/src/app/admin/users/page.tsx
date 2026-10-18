@@ -50,6 +50,7 @@ import { qk } from '@/lib/query-keys';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 /**
  * The page's own row from the admin row.
@@ -226,7 +227,7 @@ function UserRow({ user, onModerate, onRole }: { user: User } & RowActions) {
 }
 
 /** Shown when the directory has not loaded. */
-const SEED_USERS: User[] = [
+const SEED_USERS: User[] = attachDemoPhotos([
   {
     id: '1',
     name: 'John Doe',
@@ -278,7 +279,7 @@ const SEED_USERS: User[] = [
     createdAt: 'Mar 20, 2025',
     lastActive: 'Never',
   },
-];
+], { portraitKey: 'avatar' });
 
 export default function AdminUsersPage() {
   const sayOne = useBilingualString();

@@ -68,6 +68,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { bilingualAria } from '@/lib/i18n/format';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type OrgMember = {
   id: string;
@@ -132,7 +133,7 @@ const MOCK_STATS: OrgStats = {
   monthlyGrowth: 12.5,
 };
 
-const MOCK_MEMBERS: OrgMember[] = [
+const MOCK_MEMBERS: OrgMember[] = attachDemoPhotos([
   {
     id: 'm1',
     name: 'Sarah Chen',
@@ -182,7 +183,7 @@ const MOCK_MEMBERS: OrgMember[] = [
     joinedAt: new Date('2023-08-15'),
     lastActive: new Date('2024-01-10'),
   },
-];
+], { portraitKey: 'avatar' });
 
 const ROLE_TONE: Record<string, StatusTone | 'neutral'> = {
   owner: 'warning',

@@ -51,7 +51,7 @@ import { Counter } from '@/components/ui/counter';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -69,6 +69,7 @@ import { useDateFormat } from '@/lib/i18n/useDateFormat';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ interface Proposal {
   id: string;
   fromName: string;
   fromInitials: string;
+  fromAvatar?: string;
   fromRole: string;
   scope: string;
   timeframe: string;
@@ -97,7 +99,7 @@ interface Proposal {
 
 
 
-const DEMO_PROPOSALS: Proposal[] = [
+const DEMO_PROPOSALS: Proposal[] = attachDemoPhotos([
   {
     id: 'p1',
     fromName: 'Alex Chen',
@@ -120,7 +122,7 @@ const DEMO_PROPOSALS: Proposal[] = [
     status: 'pending',
     date: '3d ago',
   },
-];
+]);
 
 // ── Config maps ───────────────────────────────────────────────────────────────
 
@@ -152,8 +154,13 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-semibold text-sm">{initials}</AvatarFallback>
+            /* A company's listing shows the company's mark; a person's listing
+               shows the person, round like every person on the platform. */
+            <Avatar className={cn('h-10 w-10 ring-2 ring-border/60', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
+              {!opportunity.company && <AvatarImage src={opportunity.createdBy?.avatarUrl ?? undefined} alt="" />}
+              <AvatarFallback className={cn('bg-primary/15 text-foreground font-semibold text-sm', opportunity.company ? 'rounded-xl' : 'rounded-full')}>
+                {opportunity.company ? initials : initialsOf(opportunity.createdBy?.displayName)}
+              </AvatarFallback>
             </Avatar>
           )}
           title={opportunity.title}
@@ -237,8 +244,9 @@ function JobCard({ job }: { job: JobPostingView }) {
       <CardContent className="space-y-3">
         <CardHead
           mark={(
-            <Avatar className="h-10 w-10 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/15 text-foreground font-semibold text-sm">
+            <Avatar className="h-10 w-10 rounded-full ring-2 ring-border/60">
+              <AvatarImage src={job.creator?.avatarUrl ?? undefined} alt="" />
+              <AvatarFallback className="rounded-full bg-primary/15 text-foreground font-semibold text-sm">
                 {initialsOf(job.creator.displayName)}
               </AvatarFallback>
             </Avatar>
@@ -304,6 +312,7 @@ function ProposalCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
+              <AvatarImage src={proposal.fromAvatar} alt="" />
               <AvatarFallback className="bg-primary/15 text-foreground text-xs font-bold">
                 {proposal.fromInitials}
               </AvatarFallback>

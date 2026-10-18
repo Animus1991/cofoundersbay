@@ -20,7 +20,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listServiceInquiries, updateServiceInquiry, type ServiceInquiryItem } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { Counter } from '@/components/ui/counter';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type Inquiry = {
   id: string;
@@ -87,7 +88,7 @@ function InquiryCard({
           mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={inquiry.clientAvatar} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(inquiry.clientName)}</AvatarFallback>
             </Avatar>
           )}
           title={(
@@ -227,7 +228,7 @@ function toPageInquiry(row: ServiceInquiryItem): Inquiry {
 }
 
 /** Shown to a provider with no inquiries yet. */
-const MOCK_INQUIRIES: Inquiry[] = [
+const MOCK_INQUIRIES: Inquiry[] = attachDemoPhotos([
     {
       id: '1',
       clientName: 'John Doe',
@@ -277,7 +278,7 @@ const MOCK_INQUIRIES: Inquiry[] = [
       status: 'declined',
       budget: '€800',
     },
-  ];
+  ]);
 
 export default function ProviderInquiriesPage() {
   const sayOne = useBilingualString();

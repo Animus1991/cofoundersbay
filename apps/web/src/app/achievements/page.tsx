@@ -34,13 +34,15 @@ import { achievementsEn, achievementsEl } from '@/lib/i18n/strings-achievements'
 import { choiceControl, usePageControls, usePageList } from '@/lib/page-controls';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, initialsOf } from '@/lib/utils';
 import { qk } from '@/lib/query-keys';
 import { FirstRunTour, type TourStep } from '@/components/common/FirstRunTour';
 import { useDateFormat } from '@/lib/i18n/useDateFormat';
+import { attachDemoPhotos } from '@/lib/demo/photos';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 const ACHIEVEMENTS_TOUR: TourStep[] = [
   {
@@ -473,6 +475,7 @@ function computeEarnedBadgeIds(signals?: { connectionCount: number; boardCount: 
 }
 
 export default function AchievementsPage() {
+  const me = useStoredUser();
   const fmtDate = useDateFormat();
   const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked' | 'leaderboard' | 'reputation' | 'badges'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -545,13 +548,13 @@ export default function AchievementsPage() {
     { value: 'special', labelEn: 'Special', labelEl: 'Ειδικά', icon: Crown },
   ];
 
-  const LEADERBOARD = [
+  const LEADERBOARD = attachDemoPhotos([
     { rank: 1, name: 'Nikos Papadakis', points: 4200, level: 21, badge: 'Legend', avatar: '' },
     { rank: 2, name: 'Elena Papadopoulos', points: 3850, level: 19, badge: 'Expert', avatar: '' },
     { rank: 3, name: 'Marcus Chen', points: 3100, level: 15, badge: 'Rising Star', avatar: '' },
     { rank: 4, name: 'Andreea Ionescu', points: 2800, level: 14, badge: 'Rising Star', avatar: '' },
-    { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
-  ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
+    { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: me?.avatarUrl ?? '', isMe: true },
+  ]).sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
 
   const RANK_COLORS: Record<number, string> = { 1: 'text-status-warning', 2: 'text-muted-foreground', 3: 'text-status-warning' };
 
@@ -741,7 +744,8 @@ export default function AchievementsPage() {
                                 <RowHead
                                   mark={(
                                     <Avatar className={cn('h-10 w-10', isMe && 'ring-2 ring-primary/20')}>
-                                      <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{user.name[0]}</AvatarFallback>
+                                      <AvatarImage src={user.avatar || undefined} alt="" />
+                                      <AvatarFallback className="bg-muted font-semibold text-muted-foreground">{initialsOf(user.name)}</AvatarFallback>
                                     </Avatar>
                                   )}
                                   title={isMe

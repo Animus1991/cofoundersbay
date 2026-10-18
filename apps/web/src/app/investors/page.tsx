@@ -36,6 +36,7 @@ import { cn, initialsOf } from '@/lib/utils';
 import { STATUS } from '@/lib/semantic-colors';
 import { AskIntroButton } from '@/components/intros/AskIntroDialog';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -152,7 +153,7 @@ function hitToInvestor(hit: SearchHit): Investor {
  * The people and firms are invented; none names a real fund or company, and
  * none has a profile or an inbox, so their Profile and Intro buttons say so.
  */
-const SAMPLE_INVESTORS: Investor[] = [
+const SAMPLE_INVESTORS: Investor[] = attachDemoPhotos([
   {
     id: 'sample-inv-1', userId: 'sample-inv-1', displayName: 'Irini Kosta', investorType: 'angel_investor',
     firmName: 'Kosta Angels', firmRole: 'Founding partner',
@@ -201,7 +202,7 @@ const SAMPLE_INVESTORS: Investor[] = [
     checkSizeMin: 1_000_000, checkSizeMax: 5_000_000, geographies: ['DACH', 'EU'],
     isVerified: false, isActivelyScouting: false, portfolioCount: 14, viewCount: 455, dealsThisYear: 2, sample: true,
   },
-];
+]);
 
 // ── Investor card ──────────────────────────────────────────────────────────────
 

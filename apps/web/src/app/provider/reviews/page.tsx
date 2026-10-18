@@ -12,7 +12,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RelativeTime } from '@/components/common/RelativeTime';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, initialsOf } from '@/lib/utils';
 import { listServiceInquiries, type ServiceInquiryItem } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { usePageList } from '@/lib/page-controls';
 import { CardFoot, CardHead } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type Review = {
   id: string;
@@ -54,7 +55,7 @@ function ReviewCard({ review }: { review: Review }) {
           mark={(
             <Avatar className="h-10 w-10">
               <AvatarImage src={review.clientAvatar} alt="" />
-              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{review.clientName[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">{initialsOf(review.clientName)}</AvatarFallback>
             </Avatar>
           )}
           title={review.clientName}
@@ -135,7 +136,7 @@ function toReview(row: ServiceInquiryItem): Review {
 }
 
 /** Shown to a provider with no reviews yet. */
-const MOCK_REVIEWS: Review[] = [
+const MOCK_REVIEWS: Review[] = attachDemoPhotos([
     {
       id: '1',
       clientName: 'Sarah Williams',
@@ -178,7 +179,7 @@ const MOCK_REVIEWS: Review[] = [
       date: '2026-08-04T10:00:00.000Z',
       helpful: 15,
     },
-  ];
+  ]);
 
 export default function ProviderReviewsPage() {
   const sayOne = useBilingualString();

@@ -57,6 +57,7 @@ import { bilingualInline } from '@/lib/i18n/format';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 /** Why the one disabled control is disabled, in both languages. */
 const MESSAGE_HINT = bilingualAria(
@@ -156,7 +157,7 @@ const STATUS_CONFIG: Record<ReviewStatus, { label: string; labelEl: string; tone
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
 
-const DEMO_REVIEWS: ExpertReview[] = [
+const DEMO_REVIEWS: ExpertReview[] = attachDemoPhotos([
   {
     id: '1',
     expertName: 'Stavros Nikolaou',
@@ -201,9 +202,9 @@ const DEMO_REVIEWS: ExpertReview[] = [
     requestMessage: 'We need feedback on our go-to-market strategy for EU market expansion.',
     isPaid: false,
   },
-];
+]);
 
-const DEMO_EXPERTS: ExpertProfile[] = [
+const DEMO_EXPERTS: ExpertProfile[] = attachDemoPhotos([
   {
     id: 'e1',
     name: 'Stavros Nikolaou',
@@ -256,7 +257,7 @@ const DEMO_EXPERTS: ExpertProfile[] = [
     isVerified: true,
     badges: ['Tech Expert'],
   },
-];
+], { portraitKey: 'avatar' });
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -273,6 +274,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           <CardHead
             mark={(
               <Avatar className="h-10 w-10">
+                <AvatarImage src={review.expertAvatar} alt="" />
                 <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
                   {initialsOf(review.expertName)}
                 </AvatarFallback>
@@ -434,6 +436,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
         <CardHead
           mark={(
             <Avatar className="h-10 w-10">
+              <AvatarImage src={expert.avatar} alt="" />
               <AvatarFallback className="bg-primary/10 font-semibold text-primary-accessible">
                 {initialsOf(expert.name)}
               </AvatarFallback>

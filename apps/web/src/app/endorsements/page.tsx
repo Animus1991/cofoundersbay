@@ -44,6 +44,7 @@ import { useStoredUser } from '@/hooks/useStoredUser';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { cn, initialsOf } from '@/lib/utils';
 import { Counter } from '@/components/ui/counter';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ type SkillEndorsement = {
  */
 type SampleEndorsement = Omit<Endorsement, 'createdAt'> & { ageDays: number };
 
-const SAMPLE_RECEIVED: SampleEndorsement[] = [
+const SAMPLE_RECEIVED: SampleEndorsement[] = attachDemoPhotos([
   {
     id: 'sample-end-1', fromUserId: 'user-elena', fromUserName: 'Elena Papadopoulos', fromUserRole: 'Founder & CEO at Harbor',
     toUserId: 'me', toUserName: 'Alex Demo', skill: 'Go-to-market', relationship: 'Peer founder',
@@ -108,9 +109,9 @@ const SAMPLE_RECEIVED: SampleEndorsement[] = [
     content: 'A well-prepared founder: knows the numbers, answers the hard question first, and follows up when promised.',
     isApproved: true, ageDays: 30,
   },
-];
+]);
 
-const SAMPLE_GIVEN: SampleEndorsement[] = [
+const SAMPLE_GIVEN: SampleEndorsement[] = attachDemoPhotos([
   {
     id: 'sample-end-5', fromUserId: 'me', fromUserName: 'Alex Demo',
     toUserId: 'user-marcus', toUserName: 'Marcus Chen', toUserRole: 'Technical cofounder · Full-stack',
@@ -125,14 +126,14 @@ const SAMPLE_GIVEN: SampleEndorsement[] = [
     content: "Elena sees the product from the customer's chair. Her teardown of our onboarding was the most useful hour of the quarter.",
     isApproved: true, ageDays: 20,
   },
-];
+]);
 
-const SAMPLE_CONNECTIONS = [
+const SAMPLE_CONNECTIONS: Array<{ id: string; name: string; role: string; avatarUrl?: string }> = attachDemoPhotos([
   { id: 'user-sarah', name: 'Dr. Sarah Kim', role: 'Mentor' },
   { id: 'user-marcus', name: 'Marcus Chen', role: 'Co-founder' },
   { id: 'user-nikos', name: 'Nikos Andreou', role: 'Investor' },
   { id: 'user-elena', name: 'Elena Papadopoulos', role: 'Founder' },
-];
+], { portraitKey: 'avatarUrl' });
 
 function stampSample(rows: SampleEndorsement[], now: number | null): Endorsement[] {
   return rows.map(({ ageDays, ...row }) => ({
@@ -262,7 +263,8 @@ function SkillsList({ skills }: { skills: SkillEndorsement[] }) {
               <div className="flex -space-x-1" aria-hidden="true">
                 {s.endorsers.slice(0, 3).map((e, i) => (
                   <Avatar key={`${e.name}-${i}`} className="h-5 w-5 rounded-full border border-background">
-                    <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{e.name[0]}</AvatarFallback>
+                    <AvatarImage src={e.avatar} alt="" />
+                    <AvatarFallback className="bg-primary/10 text-xs text-primary-accessible">{initialsOf(e.name)}</AvatarFallback>
                   </Avatar>
                 ))}
               </div>
@@ -301,6 +303,7 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
       id: other?.id ?? c.id,
       name: other?.displayName ?? '',
       role: other?.role ?? '',
+      avatarUrl: other?.avatarUrl ?? undefined,
       endorsed: endorsedIds.has(other?.id ?? ''),
       real: true as const,
     };
@@ -334,7 +337,8 @@ function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<s
           <li key={c.id} className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2">
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary-accessible">{c.name[0]}</AvatarFallback>
+                <AvatarImage src={c.avatarUrl} alt="" />
+                <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary-accessible">{initialsOf(c.name)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
                 <p className="truncate text-xs font-medium">{c.name}</p>
@@ -449,12 +453,12 @@ export default function EndorsementsPage() {
   // Counted from approved endorsements that name a skill, the same way for
   // samples and real ones: a sample list of four cannot claim eight.
   const mySkills: SkillEndorsement[] = useMemo(() => {
-    const skillMap = new Map<string, { count: number; endorsers: { name: string }[] }>();
+    const skillMap = new Map<string, { count: number; endorsers: { name: string; avatar?: string }[] }>();
     for (const e of received.filter((r) => r.isApproved)) {
       if (!e.skill) continue;
       const entry = skillMap.get(e.skill) ?? { count: 0, endorsers: [] };
       entry.count++;
-      entry.endorsers.push({ name: e.fromUserName });
+      entry.endorsers.push({ name: e.fromUserName, avatar: e.fromUserAvatar });
       skillMap.set(e.skill, entry);
     }
     return Array.from(skillMap.entries())

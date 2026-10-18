@@ -40,6 +40,7 @@ import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 /**
  * The page's own row from the pool row.
@@ -171,7 +172,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
 }
 
 /** Shown to an organisation whose mentor pool is empty. */
-const SEED_MENTORS: Mentor[] = [
+const SEED_MENTORS: Mentor[] = attachDemoPhotos([
   {
     id: '1',
     userId: 'mentor1',
@@ -223,7 +224,7 @@ const SEED_MENTORS: Mentor[] = [
     status: 'inactive',
     isVerified: true,
   },
-];
+], { portraitKey: 'avatar' });
 
 export default function OrgMentorsPage() {
   const sayOne = useBilingualString();

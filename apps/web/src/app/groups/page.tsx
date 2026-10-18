@@ -57,7 +57,40 @@ import { pressableProps } from '@/lib/pressable';
 import { FactLine } from '@/components/common/FactLine';
 import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { PhotoChip } from '@/components/common/PhotoChip';
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
+
+/**
+ * A community's category in Greek. Categories are stored in English (and the
+ * filter's values stay English); "Technology", "Local" and "Sales" used to
+ * show untranslated on Greek cards.
+ */
+const CATEGORY_EL: Record<string, string> = {
+  all: 'Όλες οι κατηγορίες',
+  founders: 'Ιδρυτές',
+  tech: 'Τεχνολογία',
+  technology: 'Τεχνολογία',
+  marketing: 'Μάρκετινγκ',
+  design: 'Σχεδιασμός',
+  finance: 'Οικονομικά',
+  product: 'Προϊόν',
+  operations: 'Λειτουργίες',
+  legal: 'Νομικά',
+  local: 'Τοπική',
+  industry: 'Κλάδος',
+  fundraising: 'Χρηματοδότηση',
+  community: 'Κοινότητα',
+  sales: 'Πωλήσεις',
+  stage: 'Στάδιο',
+  role: 'Ρόλος',
+  learning: 'Μάθηση',
+};
+
+/** "local" → { en: 'Local', el: 'Τοπική' }; an unknown category stays as written. */
+function categoryLabel(category: string): { en: string; el: string } {
+  const en = category ? category[0].toUpperCase() + category.slice(1) : category;
+  return { en, el: CATEGORY_EL[category.toLowerCase()] ?? en };
+}
 
 const TYPE_FILTERS = [
   { value: 'all',      label: 'All',      icon: Layers },
@@ -103,11 +136,12 @@ function GroupCard({
           className="h-28 w-full bg-cover bg-center relative"
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
-          {/* On the card's axis, like everything under it. */}
+          {/* On the card's axis, like everything under it; opaque, so it
+              reads on any photo. */}
           <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
-            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
-              {groupType}
-            </span>
+            <PhotoChip>
+              <BilingualText en={categoryLabel(groupType).en} el={categoryLabel(groupType).el} compact />
+            </PhotoChip>
           </div>
           {group.privacy === 'private' && (
             <div className="absolute top-2 right-2">
@@ -121,8 +155,8 @@ function GroupCard({
         // nothing the card's own icon does not.
         <div className={cn('h-10 w-full rounded-t-xl relative', coverTone)}>
           <div className="absolute top-2 left-4 sm:left-6 lg:left-[24px]">
-            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold capitalize', typeColor.chip)}>
-              {groupType}
+            <span className={cn('rounded-full px-2 py-0.5 text-xs font-semibold', typeColor.chip)}>
+              <BilingualText en={categoryLabel(groupType).en} el={categoryLabel(groupType).el} compact />
             </span>
           </div>
         </div>
@@ -146,7 +180,7 @@ function GroupCard({
             <FactLine
               className="text-sm"
               items={[
-                group.category,
+                group.category ? <BilingualText key="category" en={categoryLabel(group.category).en} el={categoryLabel(group.category).el} compact /> : null,
                 group.privacy === 'public'
                   ? <BilingualText key="privacy" en="Public" el="Δημόσια" compact />
                   : <BilingualText key="privacy" en="Private" el="Ιδιωτική" compact />,
@@ -239,13 +273,13 @@ export default function GroupsPage() {
       { value: 'discover', en: 'Discover', el: 'Ανακάλυψη' },
       { value: 'my-groups', en: 'My communities', el: 'Οι κοινότητές μου' },
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
-    choiceControl('category', 'Community category', 'Κατηγορία κοινότητας', CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: c === 'All' ? 'Όλες οι κατηγορίες' : c })), selectedCategory, setSelectedCategory),
+    choiceControl('category', 'Community category', 'Κατηγορία κοινότητας', CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: categoryLabel(c).el })), selectedCategory, setSelectedCategory),
     choiceControl('sort', 'Sort communities', 'Ταξινόμηση κοινοτήτων', [
       { value: 'popular', en: 'Popular', el: 'Δημοφιλείς' },
       { value: 'recent', en: 'Recent', el: 'Πρόσφατες' },
       { value: 'trending', en: 'Trending', el: 'Ανερχόμενες' },
     ], sort, (v) => setSort(v as typeof sort)),
-    choiceControl('type', 'Community type', 'Τύπος κοινότητας', TYPE_FILTERS.map((t) => ({ value: t.value, en: t.value === 'all' ? 'Any type' : t.label, el: t.value === 'all' ? 'Οποιοσδήποτε τύπος' : t.label })), typeFilter, setTypeFilter),
+    choiceControl('type', 'Community type', 'Τύπος κοινότητας', TYPE_FILTERS.map((t) => ({ value: t.value, en: t.value === 'all' ? 'Any type' : t.label, el: t.value === 'all' ? 'Οποιοσδήποτε τύπος' : categoryLabel(t.value).el })), typeFilter, setTypeFilter),
     { id: 'create', labelEn: 'Open the create community form', labelEl: 'Άνοιγμα φόρμας νέας κοινότητας', writes: false, run: () => setShowCreateModal(true) },
   ]);
 
@@ -403,14 +437,14 @@ export default function GroupsPage() {
             <RailOptions
               title="Type"
               titleEl="Τύπος"
-              options={TYPE_FILTERS.map((tf) => ({ value: tf.value, en: tf.value === 'all' ? 'Any type' : tf.label, el: tf.value === 'all' ? 'Οποιοσδήποτε τύπος' : tf.label, icon: tf.icon }))}
+              options={TYPE_FILTERS.map((tf) => ({ value: tf.value, en: tf.value === 'all' ? 'Any type' : tf.label, el: tf.value === 'all' ? 'Οποιοσδήποτε τύπος' : categoryLabel(tf.value).el, icon: tf.icon }))}
               value={typeFilter}
               onChange={setTypeFilter}
             />
             <RailOptions
               title="Category"
               titleEl="Κατηγορία"
-              options={CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: c === 'All' ? 'Όλες οι κατηγορίες' : c }))}
+              options={CATEGORIES.map((c) => ({ value: c, en: c === 'All' ? 'All categories' : c, el: categoryLabel(c).el }))}
               value={selectedCategory}
               onChange={setSelectedCategory}
             />

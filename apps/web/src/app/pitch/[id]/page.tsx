@@ -54,9 +54,10 @@ import { MainLandmark } from '@/components/layout/AppShell';
 import { bilingualInline } from '@/lib/i18n/format';
 import { pitchPost, useSuggestedPost } from '@/lib/share-text';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ─── Demo data (used when API returns no result or in dev) ────────────────────
-const DEMO_DECK: PublicPitchDeck = {
+const DEMO_DECK: PublicPitchDeck = attachDemoPhotos({
   id: 'demo',
   title: 'TechStart - Series A Pitch',
   companyName: 'TechStart',
@@ -186,7 +187,7 @@ const DEMO_DECK: PublicPitchDeck = {
   allowContact: true,
   createdAt: '2026-03-01T00:00:00Z',
   updatedAt: '2026-03-25T14:00:00Z',
-};
+}, { portraitKey: 'avatarUrl' });
 
 
 // ─── Slide content shapes ─────────────────────────────────────────────────────
@@ -210,7 +211,7 @@ type BusinessModelContent = {
   headline?: string;
   streams: { name: string; percent: number; amount: string }[];
 };
-type TeamContent = { members: { name: string; role: string; background: string }[] };
+type TeamContent = { members: { name: string; role: string; background: string; avatarUrl?: string }[] };
 type AskContent = {
   amount: string;
   valuation: string;
@@ -386,6 +387,7 @@ function TeamSlide({ slide }: { slide: SlideBase }) {
         {c.members.map((member, i) => (
           <div key={i} data-card="" className="rounded-2xl border bg-card p-4">
             <Avatar className="mb-3 h-10 w-10">
+              <AvatarImage src={member.avatarUrl} alt="" />
               <AvatarFallback className="text-sm">
                 {initialsOf(member.name)}
               </AvatarFallback>

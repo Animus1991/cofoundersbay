@@ -41,6 +41,7 @@ import { qk, queryKeys } from '@/lib/query-keys';
 import { cn, formatRelativeTime, initialsOf } from '@/lib/utils';
 import { WhatsNewPanel } from '@/components/dashboard/WhatsNewPanel';
 import { priceEl } from '@/lib/i18n/units';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 /*
  * The provider's one home.
@@ -142,14 +143,14 @@ function eur(amount: number | null, currency = 'EUR'): string {
  * Shown when the showcase switch is on and the book is empty (a real account
  * with no inquiries yet). The same founders the showcase's API answers with.
  */
-const DEMO_INQUIRIES: Inquiry[] = [
+const DEMO_INQUIRIES: Inquiry[] = attachDemoPhotos([
   { id: 'd1', clientName: 'Katerina Nikolaou', service: 'Seed-round financial model', message: 'Raising a €1.2M seed in Q1 and need a model investors will trust.', receivedAt: '2026-09-22T10:00:00.000Z', status: 'open' },
   { id: 'd2', clientName: 'Giorgos Vlachos', service: 'Incorporation & shareholder agreement', message: 'Two founders, one angel committed - we need the company set up.', receivedAt: '2026-09-20T10:00:00.000Z', status: 'in_discussion' },
-];
-const DEMO_PROJECTS: Project[] = [
+]);
+const DEMO_PROJECTS: Project[] = attachDemoPhotos([
   { id: 'd3', clientName: 'Sofia Alexiou', service: 'Fractional CFO', status: 'active', agreedPrice: 3800, currency: 'EUR' },
   { id: 'd4', clientName: 'Yannis Petrou', service: 'Seed-round financial model', status: 'completed', agreedPrice: 1800, currency: 'EUR' },
-];
+]);
 const DEMO_REVIEWS: DashReview[] = [
   { id: 'd5', client: 'Yannis Petrou', rating: 5, comment: 'The model answered every question our lead asked before they asked it.' },
   { id: 'd6', client: 'Maria Georgiou', rating: 4, comment: 'Clear, fast, and the agreement held up in due diligence.' },

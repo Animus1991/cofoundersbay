@@ -45,6 +45,7 @@ import {
   type MentorshipSessionItem,
   type MentorProfileItem,
 } from '@/lib/api';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -166,7 +167,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
   },
 ];
 
-const DEMO_COACHES: CoachProfile[] = [
+const DEMO_COACHES: CoachProfile[] = attachDemoPhotos([
   {
     id: 'c1',
     name: 'Elena Papadopoulos',
@@ -206,7 +207,7 @@ const DEMO_COACHES: CoachProfile[] = [
     availability: 'Mon, Wed, Fri',
     isVerified: false,
   },
-];
+], { portraitKey: 'avatar' });
 
 /**
  * Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch.

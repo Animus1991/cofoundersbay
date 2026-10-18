@@ -76,6 +76,7 @@ import { StatusText } from '@/components/common/StatusText';
 import { FactLine } from '@/components/common/FactLine';
 import { RowHead } from '@/components/dashboard/SectionCard';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 type UserStatus = 'active' | 'suspended' | 'pending' | 'banned';
 // The API's Role enum (schema.prisma). The page used to offer moderator,
@@ -127,7 +128,7 @@ function toManagedUser(row: AdminUserItem): ManagedUser {
 }
 
 /** Shown when the directory has not loaded. */
-const MOCK_USERS: ManagedUser[] = [
+const MOCK_USERS: ManagedUser[] = attachDemoPhotos([
   {
     id: '1',
     name: 'John Doe',
@@ -185,7 +186,7 @@ const MOCK_USERS: ManagedUser[] = [
     lastActive: '',
     location: 'Boston, MA',
   },
-];
+], { portraitKey: 'avatar' });
 
 const STATUS_STYLES: Record<UserStatus, string> = {
   active: 'bg-status-success-bg text-status-success border-status-success-border',

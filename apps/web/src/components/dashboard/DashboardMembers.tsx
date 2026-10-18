@@ -5,6 +5,7 @@ import { Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { attachDemoPhotos } from '@/lib/demo/photos';
 
 export type ActiveMember = {
   id: string;
@@ -14,13 +15,13 @@ export type ActiveMember = {
   isOnline?: boolean;
 };
 
-const defaultMembers: ActiveMember[] = [
+const defaultMembers: ActiveMember[] = attachDemoPhotos([
   { id: '1', displayName: 'Alex K.', initials: 'AK', isOnline: true },
   { id: '2', displayName: 'Maria P.', initials: 'MP', isOnline: true },
   { id: '3', displayName: 'Nikos D.', initials: 'ND', isOnline: true },
   { id: '4', displayName: 'Elena V.', initials: 'EV', isOnline: false },
   { id: '5', displayName: 'Chris M.', initials: 'CM', isOnline: true },
-];
+]);
 
 type DashboardMembersProps = {
   members?: ActiveMember[] | null;
