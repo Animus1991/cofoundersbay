@@ -82,34 +82,38 @@ export function CompatibilityCard() {
             wrap
           />
         </p>
-        {COMPAT_QUESTIONS.map((q) => (
-          <fieldset key={q.id} className="space-y-2">
-            <legend className="text-sm font-medium text-foreground">
-              <BilingualText en={q.question.en} el={q.question.el} wrap />
-            </legend>
-            <p className="text-xs text-muted-foreground">
-              <BilingualText en={q.why.en} el={q.why.el} wrap />
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {q.options.map((o) => {
-                const on = answers[q.id] === o.value;
-                return (
-                  <Button
-                    key={o.value}
-                    type="button"
-                    size="sm"
-                    variant={on ? 'secondary' : 'outline'}
-                    aria-pressed={on}
-                    disabled={!mine.data || save.isPending}
-                    onClick={() => save.mutate({ id: q.id, value: on ? '' : o.value })}
-                  >
-                    <BilingualText en={o.label.en} el={o.label.el} compact />
-                  </Button>
-                );
-              })}
-            </div>
-          </fieldset>
-        ))}
+        {/* Two columns from `lg`. The card spans the page now; ten questions one
+            under another would leave the right half of every row blank. */}
+        <div className="grid grid-cols-1 gap-x-10 gap-y-5 lg:grid-cols-2">
+          {COMPAT_QUESTIONS.map((q) => (
+            <fieldset key={q.id} className="min-w-0 space-y-2">
+              <legend className="text-sm font-medium text-foreground">
+                <BilingualText en={q.question.en} el={q.question.el} wrap />
+              </legend>
+              <p className="text-xs text-muted-foreground">
+                <BilingualText en={q.why.en} el={q.why.el} wrap />
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {q.options.map((o) => {
+                  const on = answers[q.id] === o.value;
+                  return (
+                    <Button
+                      key={o.value}
+                      type="button"
+                      size="sm"
+                      variant={on ? 'secondary' : 'outline'}
+                      aria-pressed={on}
+                      disabled={!mine.data || save.isPending}
+                      onClick={() => save.mutate({ id: q.id, value: on ? '' : o.value })}
+                    >
+                      <BilingualText en={o.label.en} el={o.label.el} compact />
+                    </Button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

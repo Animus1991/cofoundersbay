@@ -1,8 +1,10 @@
 'use client';
 
 import type { ElementType, ReactNode } from 'react';
+import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { cn } from '@/lib/utils';
+import { closePageTools } from './PageRailContext';
 
 /**
  * The pieces a page rail is built from.
@@ -142,5 +144,64 @@ export function RailAction({
         <BilingualText en={en} el={el} compact wrap />
       </span>
     </button>
+  );
+}
+
+/**
+ * A place the rail points to: another page, or a card further down this one
+ * (`#id`). A real link, so it opens in a new tab, can be copied and is
+ * announced as a link, not a button that navigates. It carries the sentence
+ * that says what is there when the destination has one.
+ *
+ * Following it asks the rail to step aside (`closePageTools`): the phone sheet
+ * and an unpinned peek would otherwise sit over the very place the reader just
+ * asked for. A pinned rail stays - that is the reader's preference.
+ */
+export function RailLink({
+  href,
+  icon: Icon,
+  en,
+  el,
+  descEn,
+  descEl,
+}: {
+  href: string;
+  icon?: ElementType;
+  en: string;
+  el?: string;
+  descEn?: string;
+  descEl?: string;
+}) {
+  const className =
+    'tap-target flex min-h-10 w-full items-start gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-foreground hover:bg-muted/70';
+  const body = (
+    <>
+      {Icon ? <Icon className="icon-sm mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" /> : null}
+      <span className="min-w-0 flex-1">
+        <span className="block">
+          <BilingualText en={en} el={el} compact wrap />
+        </span>
+        {descEn ? (
+          <span className="mt-0.5 block text-xs text-muted-foreground">
+            <BilingualText en={descEn} el={descEl ?? descEn} wrap />
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+  // A fragment is the browser's own jump (it honours the page's scroll margin
+  // and `prefers-reduced-motion`, and moves keyboard focus on from the target);
+  // anything else is a route change.
+  if (href.startsWith('#')) {
+    return (
+      <a href={href} onClick={closePageTools} className={className}>
+        {body}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} onClick={closePageTools} className={className}>
+      {body}
+    </Link>
   );
 }

@@ -29,8 +29,12 @@ import {
   Trash2,
   Download,
   Activity,
+  Sparkles,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import type { PageRailSection } from '@/components/layout/PageRail';
+import { closePageTools } from '@/components/layout/PageRailContext';
+import { RailLink } from '@/components/layout/RailParts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -45,7 +49,7 @@ import { useScrollToHash } from '@/hooks/useScrollToHash';
 import { OpenToCard } from '@/components/settings/OpenToCard';
 import { CompatibilityCard } from '@/components/settings/CompatibilityCard';
 import { getViewerSetting, setViewerSetting } from '@/lib/profile-viewers-api';
-import { PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
+import { COMPAT_COPY, PROFILE_VIEWERS_COPY } from '@cofounderbay/shared';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { THEME_OPTIONS } from '@/components/theme/ThemeSwitcher';
@@ -254,7 +258,7 @@ function AppearanceCard() {
   ]);
 
   return (
-    <Card className="shadow-sm border-border">
+    <Card id="appearance" className="scroll-mt-16 shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="text-lg">
           <BilingualText en="Appearance" el="Εμφάνιση" compact />
@@ -306,10 +310,16 @@ function AppearanceCard() {
   );
 }
 
-/** Pages that hold a setting this screen only points at. Copy is the nav sentence for each route. */
+/**
+ * Pages that hold a setting this screen only points at. Copy is the nav
+ * sentence for each route. They sit in the page rail ("Other settings pages"):
+ * the left navigation already lists all four, so a card of them in the column
+ * only repeated it.
+ */
 const MORE_SETTINGS = [
   {
     href: '/settings/ai',
+    icon: Sparkles,
     en: 'AI assistant',
     el: 'Βοηθός AI',
     descEn: 'The model and agent that answer you',
@@ -317,6 +327,7 @@ const MORE_SETTINGS = [
   },
   {
     href: '/settings/billing',
+    icon: CreditCard,
     en: 'Plan & billing',
     el: 'Πλάνο & χρεώσεις',
     descEn: 'Your plan and where invoices go',
@@ -324,6 +335,7 @@ const MORE_SETTINGS = [
   },
   {
     href: '/settings/notifications',
+    icon: Bell,
     en: 'Notification preferences',
     el: 'Προτιμήσεις ειδοποιήσεων',
     descEn: 'Which emails reach you, and how often',
@@ -331,11 +343,34 @@ const MORE_SETTINGS = [
   },
   {
     href: '/settings/data-export',
+    icon: Download,
     en: 'Data export',
     el: 'Εξαγωγή δεδομένων',
     descEn: 'Download your profile, messages and activity',
     descEl: 'Λήψη του προφίλ, των μηνυμάτων και της δραστηριότητάς σας',
   },
+] as const;
+
+/**
+ * The cards of this page from top to bottom: what the rail's "On this page"
+ * jumps to. Each id sits on its card (the page's older deep links -
+ * #language, #verification, #open-to, #how-you-work - are among them), so
+ * `/settings#billing` is a link too. The words are each card's own heading.
+ */
+const PAGE_SECTIONS = [
+  { id: 'language', en: 'Language', el: 'Γλώσσα' },
+  { id: 'appearance', en: 'Appearance', el: 'Εμφάνιση' },
+  { id: 'billing', en: 'Billing', el: 'Χρέωση' },
+  { id: 'connected-accounts', en: 'Connected accounts', el: 'Συνδεδεμένοι λογαριασμοί' },
+  { id: 'account', en: 'Account', el: 'Λογαριασμός' },
+  { id: 'change-password', en: 'Change password', el: 'Αλλαγή κωδικού' },
+  { id: 'security', en: 'Security', el: 'Ασφάλεια' },
+  { id: 'notifications', en: 'Notifications', el: 'Ειδοποιήσεις' },
+  { id: 'verification', en: 'Verification', el: 'Επαλήθευση' },
+  { id: 'open-to', en: 'Open to', el: 'Ανοιχτός/ή σε' },
+  { id: 'how-you-work', en: COMPAT_COPY.title.en, el: COMPAT_COPY.title.el },
+  { id: 'privacy', en: 'Privacy & Visibility', el: 'Απόρρητο και ορατότητα' },
+  { id: 'danger-zone', en: 'Danger Zone', el: 'Επικίνδυνη ζώνη' },
 ] as const;
 
 /*
@@ -472,7 +507,7 @@ function PrivacyCard() {
   ]);
 
   return (
-    <Card className="shadow-sm border-border">
+    <Card id="privacy" className="scroll-mt-16 shadow-sm border-border">
       <CardHeader className="border-b border-border">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="icon-md text-muted-foreground" />
@@ -684,6 +719,22 @@ export default function SettingsPage() {
       .filter((c) => categoryChannelOn(notificationPrefs, c, 'inApp') === inApp)
       .map((c) => ({ value: c.id, labelEn: c.titleEn, labelEl: c.titleEl }));
   usePageControls([
+    // The rail's "On this page", for the assistant: "take me to privacy". It is
+    // the same fragment jump a reader's link makes, so the address can be shared
+    // and the page's scroll margin applies; it changes what is in view, nothing
+    // stored.
+    {
+      id: 'go_to_section',
+      labelEn: 'Go to a section of this page',
+      labelEl: 'Μετάβαση σε ενότητα αυτής της σελίδας',
+      writes: false,
+      options: PAGE_SECTIONS.map((section) => ({ value: section.id, labelEn: section.en, labelEl: section.el })),
+      run: (value) => {
+        if (!value || !document.getElementById(value)) return { error: 'That section is not on the page.' };
+        closePageTools();
+        window.location.hash = value;
+      },
+    },
     choiceControl('language', 'Language', 'Γλώσσα', APP_LOCALES.map((l) => ({ value: l.value, en: l.label, el: l.label })), locale, (v) => applyLocale(v)),
     // The same two buttons as the card, so "show me only Greek" works from
     // the assistant too. Reversible in one click, so no confirmation.
@@ -761,12 +812,46 @@ export default function SettingsPage() {
     },
   ]);
 
+  // What is beside the settings rather than in them: where the cards are, and
+  // the pages whose settings live on their own. Neither holds a setting, so
+  // nothing here is a second copy of a control in the column.
+  const rail: PageRailSection[] = [
+    {
+      id: 'on-this-page',
+      glyph: 'bookmark',
+      labelEn: 'On this page',
+      labelEl: 'Σε αυτή τη σελίδα',
+      content: (
+        <nav aria-label={bilingualAria('On this page', 'Σε αυτή τη σελίδα')} className="space-y-0.5">
+          {PAGE_SECTIONS.map((section) => (
+            <RailLink key={section.id} href={`#${section.id}`} en={section.en} el={section.el} />
+          ))}
+        </nav>
+      ),
+    },
+    {
+      id: 'other-settings',
+      glyph: 'sliders',
+      labelEn: 'Other settings pages',
+      labelEl: 'Άλλες σελίδες ρυθμίσεων',
+      content: (
+        <div className="space-y-0.5">
+          {MORE_SETTINGS.map((item) => (
+            <RailLink key={item.href} href={item.href} icon={item.icon} en={item.en} el={item.el} descEn={item.descEn} descEl={item.descEl} />
+          ))}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <AppShell
       title="Settings"
       description="Language, appearance, billing, notifications, security and privacy."
       descriptionEl="Γλώσσα, εμφάνιση, χρεώσεις, ειδοποιήσεις, ασφάλεια και ιδιωτικότητα."
       showHelp
+      // Signed out there are no cards to jump to, and the links need an account.
+      rail={hasToken ? rail : undefined}
     >
       {!hasToken && (
         <Card>
@@ -786,34 +871,6 @@ export default function SettingsPage() {
         <div className="space-y-6 pb-10">
           <LanguageCard />
           <AppearanceCard />
-          <Card className="shadow-sm border-border">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg">
-                <BilingualText en="On their own pages" el="Σε δικές τους σελίδες" compact />
-              </CardTitle>
-              <CardDescription>
-                <BilingualText
-                  en="Each of these is edited on its own page, so a choice is made in one place."
-                  el="Καθεμία ρυθμίζεται στη δική της σελίδα, ώστε η επιλογή να γίνεται σε ένα σημείο."
-                  wrap
-                />
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 xl:grid-cols-4">
-                {MORE_SETTINGS.map((item) => (
-                  <Link key={item.href} href={item.href} className="block min-w-0 rounded-md hover:bg-accent">
-                    <p className="text-sm font-medium text-foreground">
-                      <BilingualText en={item.en} el={item.el} compact />
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      <BilingualText en={item.descEn} el={item.descEl} wrap />
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
           {/* Short account cards in two explicit columns. A flowing grid would
               stretch every row to its taller half. The long sections
               (notifications, verification, open to, privacy, danger zone)
@@ -822,7 +879,7 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
             <div className="min-w-0 space-y-6">
               {/* Billing */}
-              <Card className="shadow-sm border-border">
+              <Card id="billing" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <CreditCard className="icon-md text-muted-foreground" />
@@ -889,7 +946,7 @@ export default function SettingsPage() {
 
 
               {/* Connected accounts */}
-              <Card className="shadow-sm border-border">
+              <Card id="connected-accounts" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Link2 className="icon-md text-muted-foreground" />
@@ -961,7 +1018,7 @@ export default function SettingsPage() {
 
 
               {/* Account section */}
-              <Card className="shadow-sm border-border">
+              <Card id="account" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <User className="icon-md text-muted-foreground" />
@@ -1008,7 +1065,7 @@ export default function SettingsPage() {
 
             <div className="min-w-0 space-y-6">
               {/* Password Change */}
-              <Card className="shadow-sm border-border">
+              <Card id="change-password" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <KeyRound className="icon-md text-muted-foreground" />
@@ -1078,7 +1135,7 @@ export default function SettingsPage() {
 
 
               {/* Security — 2FA */}
-              <Card className="shadow-sm border-border">
+              <Card id="security" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Shield className="icon-md text-muted-foreground" />
@@ -1100,7 +1157,7 @@ export default function SettingsPage() {
             </div>
           </div>
               {/* Notifications: the quick view of /settings/notifications. */}
-              <Card className="shadow-sm border-border">
+              <Card id="notifications" className="scroll-mt-16 shadow-sm border-border">
                 <CardHeader className="border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 space-y-1.5">
@@ -1174,11 +1231,14 @@ export default function SettingsPage() {
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <VerificationCard />
             <OpenToCard />
-            <CompatibilityCard />
           </div>
+          {/* Ten questions and their reasons: the card's own fieldsets sit in two
+              columns, so it takes the full width instead of half of it with the
+              other half blank. */}
+          <CompatibilityCard />
           <PrivacyCard />
           {/* Danger Zone */}
-          <Card className="border-destructive/30">
+          <Card id="danger-zone" className="scroll-mt-16 border-destructive/30">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
                 <AlertTriangle className="icon-md" />

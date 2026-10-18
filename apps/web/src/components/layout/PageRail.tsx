@@ -12,6 +12,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
+  CLOSE_PAGE_TOOLS_EVENT,
   PAGE_RAIL_COLLAPSED_WIDTH,
   PAGE_RAIL_WIDTH,
   usePageRail,
@@ -229,6 +230,34 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   /* Which section is open at full size. A section is legible in the panel
      and comfortable here; this is the second, not a substitute. */
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Closing the panel under a resting pointer (a jump chosen from it, Escape)
+  // reflows the rail, and the browser answers with a fresh `mouseenter` that
+  // would reopen it at once - over the right edge of the very card the reader
+  // just asked for. Held closed until the pointer leaves, as the left sidebar
+  // does. Keyboard focus is another intent and is never held off.
+  const peekHeld = useRef(false);
+  const peekedNow = useRef(false);
+  peekedNow.current = peeked;
+  const dismissPeek = () => {
+    if (peekedNow.current) peekHeld.current = true;
+    setPeeked(false);
+  };
+  // A link inside a section (a jump to a card further down the page, a page the
+  // rail points to) asks the floating surfaces to step aside, so the place that
+  // was asked for is in view rather than under a sheet: the phone sheet, the
+  // full-size dialog and a peek close. A pin is the reader's preference and is
+  // not touched - a pinned rail has reflowed the page around itself already.
+  const stepAside = useRef(() => {});
+  stepAside.current = () => {
+    setSheetOpen(false);
+    setExpandedId(null);
+    dismissPeek();
+  };
+  useEffect(() => {
+    const listener = () => stepAside.current();
+    window.addEventListener(CLOSE_PAGE_TOOLS_EVENT, listener);
+    return () => window.removeEventListener(CLOSE_PAGE_TOOLS_EVENT, listener);
+  }, []);
   // The dialog opens from state, not from a Radix trigger, so Radix has no
   // trigger to hand focus back to and it fell to <body> on close. The button
   // that opened it is remembered and refocused instead.
@@ -308,10 +337,11 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
   useEffect(() => {
     if (!peeked) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setPeeked(false);
+      if (event.key === 'Escape') dismissPeek();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- dismissPeek reads refs and a stable setter
   }, [peeked, setPeeked]);
 
   useEffect(() => () => {
@@ -324,10 +354,15 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     if (!pinned) setPeeked(true);
   };
+  const enterPeek = () => {
+    if (!peekHeld.current) openPeek();
+  };
 
   // A short grace period: crossing the seam between the strip and the panel, or
   // overshooting a target by a few pixels, should not slam the panel shut.
   const closePeek = () => {
+    // The pointer has left: a hold set when the panel was dismissed is over.
+    peekHeld.current = false;
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => {
       // Pointer exit must not dismiss a panel while keyboard focus is in it.
@@ -444,9 +479,12 @@ export function PageRail({ sections }: { sections: PageRailSection[] }) {
         // pinned (globals.css, "Page rail surface").
         data-peek={peeked && !pinned ? 'true' : undefined}
         style={{ paddingTop: 'var(--top-banner-stack, 0px)' }}
-        onMouseEnter={openPeek}
+        onMouseEnter={enterPeek}
         onMouseLeave={closePeek}
-        onFocusCapture={openPeek}
+        onFocusCapture={() => {
+          peekHeld.current = false;
+          openPeek();
+        }}
         onBlurCapture={(event) => {
           if (!event.currentTarget.contains(event.relatedTarget)) closePeek();
         }}

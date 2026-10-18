@@ -67,6 +67,19 @@ export function openCurrentRailSection(id: string): boolean {
   return true;
 }
 
+/**
+ * The window event that asks a rail's floating surfaces to step aside: the
+ * phone sheet, the full-size dialog and an unpinned peek. A link in a rail
+ * section sends it (`RailLink`) so the place the reader asked for is the thing
+ * in view, not a panel laid over it. A pin is a preference and stays.
+ */
+export const CLOSE_PAGE_TOOLS_EVENT = 'cfb-close-page-tools';
+
+/** Ask the rail on screen, if any, to step aside. */
+export function closePageTools() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event(CLOSE_PAGE_TOOLS_EVENT));
+}
+
 type PageRailCtx = {
   /** Kept open by choice; the main column is offset for it. */
   pinned: boolean;
