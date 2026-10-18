@@ -29,6 +29,10 @@ export const LEARNING_STRINGS: Record<string, BilingualPair> = {
   type_guide: { en: 'Guides', el: 'Οδηγοί' },
   type_video: { en: 'Videos', el: 'Βίντεο' },
   type_article: { en: 'Articles', el: 'Άρθρα' },
+  type_podcast: { en: 'Podcasts', el: 'Podcasts' },
+  type_book: { en: 'Books', el: 'Βιβλία' },
+  type_tool: { en: 'Tools', el: 'Εργαλεία' },
+  type_template: { en: 'Templates', el: 'Πρότυπα' },
   cat_all: { en: 'All', el: 'Όλα' },
 
   difficulty_beginner: { en: 'Beginner', el: 'Αρχάριοι' },
@@ -73,4 +77,24 @@ export function learningEn(key: keyof typeof LEARNING_STRINGS): string {
 
 export function learningEl(key: keyof typeof LEARNING_STRINGS): string {
   return LEARNING_STRINGS[key].el;
+}
+
+/**
+ * The topics a library usually holds, in Greek. The category chips take their
+ * names from the library, which writes them in English, and the page-wide
+ * translation pass knew four of the six samples' topics: «Sales» and «Tech» were
+ * the two English chips in a row of Greek ones. A topic the library invents
+ * stays as written.
+ */
+const CATEGORY_EL: Record<string, string> = {
+  Fundraising: 'Χρηματοδότηση',
+  Product: 'Προϊόν',
+  Marketing: 'Μάρκετινγκ',
+  Sales: 'Πωλήσεις',
+  Leadership: 'Ηγεσία',
+  Tech: 'Τεχνολογία',
+};
+
+export function learningCategoryEl(category: string): string {
+  return CATEGORY_EL[category] ?? category;
 }

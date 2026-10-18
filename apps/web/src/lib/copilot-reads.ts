@@ -276,6 +276,8 @@ const RESOURCE_TYPE: Record<string, string> = {
   tool: 'tool',
   book: 'book',
   podcast: 'podcast',
+  // A long read, as the demo calls it; the library enum has no such value (lib/demo/learning-world.ts).
+  guide: 'guide',
 };
 
 const DIFFICULTY: Record<string, string> = {

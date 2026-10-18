@@ -17,6 +17,9 @@ import { readDemoVisibility, writeDemoVisibility } from './demo/visibility-world
 import { previewOpenToApi } from './demo/open-to-world';
 import { previewIntrosApi } from './demo/intros-world';
 import { previewSkillEvidenceApi } from './demo/skill-evidence-world';
+import { previewEndorsementsApi } from './demo/endorsements-world';
+import { previewNotificationPrefsApi } from './demo/notification-prefs-world';
+import { previewLearningApi } from './demo/learning-world';
 import { previewTransparencyApi } from './demo/transparency-world';
 import { previewScoutApi } from './demo/scout-world';
 import { attachDemoPhotos } from './demo/photos';
@@ -2729,6 +2732,17 @@ function resolvePreviewApiBody(path: string, init?: RequestInit): unknown {
   // Skills tied to the demo's own completed work.
   const evidenceAnswer = previewSkillEvidenceApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (evidenceAnswer !== undefined) return evidenceAnswer;
+  // Endorsements, read from the same six rows the /endorsements page shows
+  // (its writes are answered further down, unstored); and the one notification
+  // choice the server keeps, the email digest.
+  const endorsementsAnswer = previewEndorsementsApi(pathname, path, method, previewNowMs());
+  if (endorsementsAnswer !== undefined) return endorsementsAnswer;
+  const notificationPrefsAnswer = previewNotificationPrefsApi(pathname, method, (body ?? {}) as Record<string, unknown>);
+  if (notificationPrefsAnswer !== undefined) return notificationPrefsAnswer;
+  // The learning library, read from the same six resources the /learning page
+  // shows (its writes are answered further down, unstored).
+  const learningAnswer = previewLearningApi(pathname, new URLSearchParams(path.split('?')[1] ?? ''), method, previewNowMs());
+  if (learningAnswer !== undefined) return learningAnswer;
   // The co-founder scout: proposals only, from the demo world's people.
   const scoutAnswer = previewScoutApi(pathname, method, (body ?? {}) as Record<string, unknown>, previewNowMs());
   if (scoutAnswer !== undefined) return scoutAnswer;

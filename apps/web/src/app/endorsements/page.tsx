@@ -45,6 +45,7 @@ import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/p
 import { cn, initialsOf } from '@/lib/utils';
 import { Counter } from '@/components/ui/counter';
 import { attachDemoPhotos } from '@/lib/demo/photos';
+import { DEMO_ENDORSEMENTS, DEMO_MEMBER_ID, type DemoEndorsement } from '@/lib/demo/endorsements-world';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -81,52 +82,39 @@ type SkillEndorsement = {
  * mentor, co-founder, investor and founder the rest of the showcase shows -
  * in the roles it gives them, and each date is an age in days, so the samples
  * stay recent whenever the page is opened.
+ *
+ * The rows are not written here: they are the demo world's endorsements
+ * (lib/demo/endorsements-world.ts), the same ones the endorsement endpoints
+ * answer in the demo, so the profile, the assistant and this page count the
+ * same things. A sample is only a row of that set seen from this member's side.
  */
 type SampleEndorsement = Omit<Endorsement, 'createdAt'> & { ageDays: number };
 
-const SAMPLE_RECEIVED: SampleEndorsement[] = attachDemoPhotos([
-  {
-    id: 'sample-end-1', fromUserId: 'user-elena', fromUserName: 'Elena Papadopoulos', fromUserRole: 'Founder & CEO at Harbor',
-    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Go-to-market', relationship: 'Peer founder',
-    content: 'Alex shared their outbound playbook with our team without being asked. Two of our first five customers came from it.',
-    isApproved: false, ageDays: 1,
-  },
-  {
-    id: 'sample-end-2', fromUserId: 'user-marcus', fromUserName: 'Marcus Chen', fromUserRole: 'Technical cofounder · Full-stack',
-    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Customer discovery', relationship: 'Trial project',
-    content: 'We spent two weeks on a trial project. Alex ran twelve customer interviews in that time and came back with the one feature we should cut.',
-    isApproved: false, ageDays: 3,
-  },
-  {
-    id: 'sample-end-3', fromUserId: 'user-sarah', fromUserName: 'Dr. Sarah Kim', fromUserRole: 'Startup mentor',
-    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Product strategy', relationship: 'Mentor', basis: ['mentoring'],
-    content: 'Alex takes feedback on Monday and ships the change by Friday. Over six sessions the onboarding went from nine steps to three.',
-    isApproved: true, ageDays: 12,
-  },
-  {
-    id: 'sample-end-4', fromUserId: 'user-nikos', fromUserName: 'Nikos Andreou', fromUserRole: 'Angel investor · Seed',
-    toUserId: 'me', toUserName: 'Alex Demo', skill: 'Fundraising', relationship: 'Investor',
-    content: 'A well-prepared founder: knows the numbers, answers the hard question first, and follows up when promised.',
-    isApproved: true, ageDays: 30,
-  },
-]);
+function sampleOf(e: DemoEndorsement): SampleEndorsement {
+  return {
+    id: e.id,
+    fromUserId: e.from.id,
+    fromUserName: e.from.displayName,
+    ...(e.from.headline ? { fromUserRole: e.from.headline } : {}),
+    toUserId: e.to.id,
+    toUserName: e.to.displayName,
+    ...(e.to.headline ? { toUserRole: e.to.headline } : {}),
+    ...(e.skill ? { skill: e.skill } : {}),
+    ...(e.relationship ? { relationship: e.relationship } : {}),
+    ...(e.basis.length ? { basis: [...e.basis] } : {}),
+    content: e.content,
+    isApproved: e.isApproved,
+    ageDays: e.ageDays,
+  };
+}
 
-const SAMPLE_GIVEN: SampleEndorsement[] = attachDemoPhotos([
-  {
-    id: 'sample-end-5', fromUserId: 'me', fromUserName: 'Alex Demo',
-    toUserId: 'user-marcus', toUserName: 'Marcus Chen', toUserRole: 'Technical cofounder · Full-stack',
-    skill: 'Full-stack engineering', relationship: 'Trial project',
-    content: 'Marcus shipped a working prototype in nine days, with tests, and wrote down every shortcut he took.',
-    isApproved: false, ageDays: 5,
-  },
-  {
-    id: 'sample-end-6', fromUserId: 'me', fromUserName: 'Alex Demo',
-    toUserId: 'user-elena', toUserName: 'Elena Papadopoulos', toUserRole: 'Founder & CEO at Harbor',
-    skill: 'Product', relationship: 'Peer founder',
-    content: "Elena sees the product from the customer's chair. Her teardown of our onboarding was the most useful hour of the quarter.",
-    isApproved: true, ageDays: 20,
-  },
-]);
+const SAMPLE_RECEIVED: SampleEndorsement[] = attachDemoPhotos(
+  DEMO_ENDORSEMENTS.filter((e) => e.to.id === DEMO_MEMBER_ID).map(sampleOf),
+);
+
+const SAMPLE_GIVEN: SampleEndorsement[] = attachDemoPhotos(
+  DEMO_ENDORSEMENTS.filter((e) => e.from.id === DEMO_MEMBER_ID).map(sampleOf),
+);
 
 const SAMPLE_CONNECTIONS: Array<{ id: string; name: string; role: string; avatarUrl?: string }> = attachDemoPhotos([
   { id: 'user-sarah', name: 'Dr. Sarah Kim', role: 'Mentor' },

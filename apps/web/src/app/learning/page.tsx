@@ -3,7 +3,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap } from 'lucide-react';
+import { Search, BookOpen, BookMarked, Video, FileText, Award, Clock, Headphones, LayoutTemplate, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, X, GraduationCap, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import type { PageRailSection } from '@/components/layout/PageRail';
 import { RailAction, RailOptions, RailStats } from '@/components/layout/RailParts';
@@ -16,17 +16,19 @@ import { CardHead, CardFoot } from '@/components/common/CardAnatomy';
 import { Badge } from '@/components/ui/badge';
 import { FactLine } from '@/components/common/FactLine';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
+import { getMeProfile, listLearningResources, getLearningCategories } from '@/lib/api';
 import { queryKeys, qk } from '@/lib/query-keys';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
-import { learningEn, learningEl } from '@/lib/i18n/strings-learning';
+import { learningEn, learningEl, learningCategoryEl } from '@/lib/i18n/strings-learning';
 import { bilingualInline } from '@/lib/i18n/format';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { demoCover } from '@/lib/demo/photos';
+import { demoLibrary, sampleCompletions, type LibraryItem } from '@/lib/demo/learning-world';
+import { learningDuration, learningTotalHours } from '@/lib/learning-format';
+import { linkTarget } from '@/lib/web-url';
 import { choiceControl, rowOptions, usePageControls, usePageList } from '@/lib/page-controls';
 import { durationEl } from '@/lib/i18n/units';
 import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
@@ -35,12 +37,15 @@ interface Resource {
   id: string;
   title: string;
   description: string;
-  type: 'article' | 'video' | 'course' | 'guide';
+  /** The library's seven formats, and `guide`, the page's own word for a long read. */
+  type: LibraryItem['type'];
   category: string;
+  /** What the card prints ("45 min read", "4.5 hours"), made from `minutes`. */
   duration?: string;
+  /** The length as the library stores it; the "Total hours" count adds these. */
+  minutes?: number;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   author: string;
-  authorRole: string;
   url: string;
   image?: string;
   isFeatured?: boolean;
@@ -59,7 +64,20 @@ const TYPE_FILTERS = [
   { key: 'video', labelKey: 'type_video' as const },
   { key: 'article', labelKey: 'type_article' as const },
 ] as const;
-type TypeFilterKey = typeof TYPE_FILTERS[number]['key'];
+/*
+ * The library has seven formats and the filter row had four of them: a podcast,
+ * a book, a tool or a template could only be found under "All types", and was
+ * labelled as an article. They join the row when the library holds one (or one
+ * is the active filter), so a library of courses and videos does not show four
+ * chips that can only say "No resources found".
+ */
+const EXTRA_TYPE_FILTERS = [
+  { key: 'podcast', labelKey: 'type_podcast' as const },
+  { key: 'book', labelKey: 'type_book' as const },
+  { key: 'tool', labelKey: 'type_tool' as const },
+  { key: 'template', labelKey: 'type_template' as const },
+] as const;
+type TypeFilterKey = typeof TYPE_FILTERS[number]['key'] | typeof EXTRA_TYPE_FILTERS[number]['key'];
 
 interface LearningPath {
   id: string;
@@ -80,107 +98,18 @@ const LEARNING_PATHS: LearningPath[] = [
   { id: 'lp4', titleKey: 'path_team_title', descKey: 'path_team_desc', category: 'Leadership', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, glyph: 'people' },
 ];
 
-const DEMO_RESOURCES: Resource[] = [
-  {
-    id: '1',
-    title: 'The Complete Guide to Seed Fundraising',
-    description: 'Everything you need to know about raising your first round. From pitch deck to term sheets.',
-    type: 'guide',
-    category: 'Fundraising',
-    duration: '45 min read',
-    difficulty: 'intermediate',
-    author: 'Sarah Chen',
-    authorRole: 'VC Partner',
-    url: '#',
-    image: demoCover('course-seed', 800, 450, ['The Complete Guide to Seed Fundraising', 'Fundraising']),
-    isFeatured: true,
-    tags: ['Pitch Deck', 'Term Sheets', 'VC'],
-    completedBy: 1247,
-  },
-  {
-    id: '2',
-    title: 'Building Your First MVP in 30 Days',
-    description: 'Step-by-step video course on validating ideas and shipping fast with no-code tools.',
-    type: 'course',
-    category: 'Product',
-    duration: '4.5 hours',
-    difficulty: 'beginner',
-    author: 'Alex Kumar',
-    authorRole: 'Product Lead',
-    url: '#',
-    image: demoCover('course-mvp', 800, 450, ['Building Your First MVP in 30 Days', 'Product']),
-    isFeatured: true,
-    tags: ['MVP', 'No-Code', 'Validation'],
-    completedBy: 892,
-  },
-  {
-    id: '3',
-    title: 'Growth Marketing Playbook 2024',
-    description: 'Latest tactics and case studies from successful B2B SaaS companies achieving product-market fit.',
-    type: 'article',
-    category: 'Marketing',
-    duration: '20 min read',
-    difficulty: 'advanced',
-    author: 'Maria Santos',
-    authorRole: 'Growth Lead',
-    url: '#',
-    image: demoCover('course-growth', 800, 450, ['Growth Marketing Playbook 2024', 'Marketing']),
-    tags: ['Growth', 'B2B', 'SaaS'],
-    completedBy: 567,
-  },
-  {
-    id: '4',
-    title: 'Sales for Technical Founders',
-    description: 'How to sell when you hate selling. Frameworks and scripts that actually work.',
-    type: 'video',
-    category: 'Sales',
-    duration: '1.5 hours',
-    difficulty: 'beginner',
-    author: 'James Wilson',
-    authorRole: 'Sales Coach',
-    url: '#',
-    image: demoCover('course-sales', 800, 450, ['Sales for Technical Founders', 'Sales']),
-    tags: ['Sales', 'Founders', 'B2B'],
-    completedBy: 734,
-  },
-  {
-    id: '5',
-    title: 'Building High-Performance Teams',
-    description: 'Leadership principles for scaling from 5 to 50 people without losing culture.',
-    type: 'course',
-    category: 'Leadership',
-    duration: '3 hours',
-    difficulty: 'intermediate',
-    author: 'David Park',
-    authorRole: 'CEO',
-    url: '#',
-    image: demoCover('course-teams', 800, 450, ['Building High-Performance Teams', 'Leadership']),
-    tags: ['Leadership', 'Culture', 'Hiring'],
-    completedBy: 423,
-  },
-  {
-    id: '6',
-    title: 'System Design for Startups',
-    description: 'Architecture patterns that scale without over-engineering. Real-world examples.',
-    type: 'guide',
-    category: 'Tech',
-    duration: '35 min read',
-    difficulty: 'advanced',
-    author: 'Lisa Zhang',
-    authorRole: 'CTO',
-    url: '#',
-    image: demoCover('course-systems', 800, 450, ['System Design for Startups', 'Tech']),
-    tags: ['Architecture', 'Scaling', 'Backend'],
-    completedBy: 645,
-  },
-];
-
 const TYPE_CONFIG = {
-  article: { labelKey: 'type_article' as const, icon: FileText },
-  video:   { labelKey: 'type_video' as const,   icon: Video },
-  course:  { labelKey: 'type_course' as const,  icon: BookOpen },
-  guide:   { labelKey: 'type_guide' as const,   icon: Award },
-};
+  article:  { labelKey: 'type_article' as const,  icon: FileText },
+  video:    { labelKey: 'type_video' as const,    icon: Video },
+  course:   { labelKey: 'type_course' as const,   icon: BookOpen },
+  guide:    { labelKey: 'type_guide' as const,    icon: Award },
+  podcast:  { labelKey: 'type_podcast' as const,  icon: Headphones },
+  book:     { labelKey: 'type_book' as const,     icon: BookMarked },
+  tool:     { labelKey: 'type_tool' as const,     icon: Wrench },
+  template: { labelKey: 'type_template' as const, icon: LayoutTemplate },
+} satisfies Record<LibraryItem['type'], { labelKey: string; icon: unknown }>;
+/** Formats the reader starts (watches, listens to, takes) rather than opens. */
+const STARTED_TYPES: ReadonlySet<string> = new Set(['video', 'course', 'podcast']);
 
 const DIFFICULTY_CONFIG = {
   beginner: { labelKey: 'difficulty_beginner' as const, color: 'bg-status-success-bg text-status-success ' },
@@ -189,8 +118,19 @@ const DIFFICULTY_CONFIG = {
 };
 
 function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; saved: boolean; onToggleSave: (id: string) => void }) {
+  const router = useRouter();
   const typeConfig = TYPE_CONFIG[resource.type] ?? TYPE_CONFIG.article;
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
+  // The link was typed by whoever added the resource, so it is checked before it
+  // is followed: a page of this platform, or an ordinary web address opened
+  // without handing the new tab this one. A script URL opened with window.open
+  // runs with this site's origin.
+  const target = linkTarget(resource.url);
+  const follow = () => {
+    if (!target) return;
+    if (target.kind === 'internal') router.push(target.path);
+    else window.open(target.href, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:border-primary/20">
@@ -278,8 +218,14 @@ function ResourceCard({ resource, saved, onToggleSave }: { resource: Resource; s
             />
           )}
         >
-          <Button size="sm" className="gap-1" onClick={() => window.open(resource.url, '_blank')}>
-            {resource.type === 'video' || resource.type === 'course' ? (
+          <Button
+            size="sm"
+            className="gap-1"
+            onClick={follow}
+            disabled={!target}
+            title={target ? undefined : bilingualAria('This resource has no link yet', 'Αυτός ο πόρος δεν έχει ακόμη σύνδεσμο')}
+          >
+            {STARTED_TYPES.has(resource.type) ? (
               <><Play className="icon-sm" aria-hidden="true" /><BilingualText en={learningEn('start')} el={learningEl('start')} compact /></>
             ) : (
               <><ExternalLink className="icon-sm" aria-hidden="true" /><BilingualText en={learningEn('open')} el={learningEl('open')} compact /></>
@@ -349,25 +295,34 @@ const ROLE_CATEGORY_MAP: Record<string, string[]> = {
   org: ['Leadership', 'Marketing', 'Sales'],
 };
 
-// Map backend LearningResourceItem to local Resource shape
-function backendToResource(r: LearningResourceItem): Resource {
+// Map the library's item (the API's, or a sample in the same shape) to the page's Resource.
+function backendToResource(r: LibraryItem): Resource {
   return {
     id: r.id,
     title: r.title,
     description: r.description ?? '',
-    type: (r.type as Resource['type']) ?? 'article',
+    type: r.type ?? 'article',
     category: r.category ?? 'General',
-    duration: r.duration != null ? `${r.duration} min` : undefined,
-    difficulty: (r.difficulty as Resource['difficulty']) ?? 'beginner',
+    duration: learningDuration(r.duration, r.type),
+    minutes: r.duration ?? undefined,
+    difficulty: r.difficulty ?? 'beginner',
     author: r.author ?? 'CoFounderBay',
-    authorRole: '',
     url: r.url,
     image: r.imageUrl ?? undefined,
     isFeatured: r.isFeatured,
     tags: r.tags ?? [],
-    completedBy: undefined,
+    // A sample figure for the sample resources; nothing counts completions, so a real one has none.
+    completedBy: sampleCompletions(r.id),
   };
 }
+
+/**
+ * The sample library, from the same module the demo API answers with
+ * (lib/demo/learning-world.ts), so what the page lists and what the assistant
+ * reads are one set. It stays the page's own fallback for an account whose
+ * library is empty and who asked to see sample data.
+ */
+const DEMO_RESOURCES: Resource[] = demoLibrary().map(backendToResource);
 
 export default function LearningPage() {
   const sayOne = useBilingualString();
@@ -450,7 +405,10 @@ export default function LearningPage() {
       r.tags.some((tag) => tag.toLowerCase().includes(skill) || skill.includes(tag.toLowerCase()))
     );
     const matchesPath = selectedCategory === 'All' || r.category === selectedCategory;
-    return (matchesRole || matchesSkill) && matchesPath;
+    // The two chip rows narrow the whole page: the Topic row already narrowed this
+    // shelf and the Format row did not, so "Videos" left a guide and an article here.
+    const matchesFormat = typeFilter === 'all' || r.type === typeFilter;
+    return (matchesRole || matchesSkill) && matchesPath && matchesFormat;
   }).slice(0, 4);
 
   // If backend is handling filtering, skip client-side filter; otherwise apply client-side
@@ -481,10 +439,14 @@ export default function LearningPage() {
   const inProgressPaths = paths.filter((p) => p.progress > 0 && p.progress < 100);
   const totalResourceCount = allResources.length;
   const courseCount = allResources.filter((r) => r.type === 'course').length;
-  const totalHours = Math.round(allResources.reduce((acc, r) => {
-    const match = r.duration?.match(/(\d+\.?\d*)/);
-    return acc + (match ? parseFloat(match[1]) : 0);
-  }, 0));
+  // The stored lengths are minutes; adding the printed text ("45 min read",
+  // "4.5 hours") counted minutes as hours.
+  const totalHours = learningTotalHours(allResources.map((r) => r.minutes));
+  // The row offers a format once the library holds one (see EXTRA_TYPE_FILTERS).
+  const typeFilters = [
+    ...TYPE_FILTERS,
+    ...EXTRA_TYPE_FILTERS.filter((tf) => typeFilter === tf.key || allResources.some((r) => r.type === tf.key)),
+  ];
 
   /*
    * The column leads with the paths, what is recommended, and the library.
@@ -500,8 +462,8 @@ export default function LearningPage() {
       { value: 'all', en: 'All resources', el: 'Όλοι οι πόροι' },
       { value: 'saved', en: 'Saved on this device', el: 'Αποθηκευμένα σε αυτή τη συσκευή' },
     ], activeTab, (v) => setActiveTab(v as typeof activeTab)),
-    choiceControl('category', 'Category', 'Κατηγορία', allCategories.map((c) => ({ value: c, en: c, el: c === 'All' ? 'Όλες' : c })), selectedCategory, setSelectedCategory),
-    choiceControl('resource_type', 'Resource type', 'Τύπος πόρου', TYPE_FILTERS.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) })), typeFilter, (v) => setTypeFilter(v as TypeFilterKey)),
+    choiceControl('category', 'Category', 'Κατηγορία', allCategories.map((c) => ({ value: c, en: c, el: c === 'All' ? 'Όλες' : learningCategoryEl(c) })), selectedCategory, setSelectedCategory),
+    choiceControl('resource_type', 'Resource type', 'Τύπος πόρου', typeFilters.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) })), typeFilter, (v) => setTypeFilter(v as TypeFilterKey)),
     {
       id: 'toggle_saved',
       labelEn: 'Save or unsave a resource on this device',
@@ -563,14 +525,14 @@ export default function LearningPage() {
           <RailOptions
             title="Format"
             titleEl="Μορφή"
-            options={TYPE_FILTERS.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) }))}
+            options={typeFilters.map((tf) => ({ value: tf.key, en: learningEn(tf.labelKey), el: learningEl(tf.labelKey) }))}
             value={typeFilter}
             onChange={setTypeFilter}
           />
           <RailOptions
             title="Topic"
             titleEl="Θέμα"
-            options={allCategories.map((c) => ({ value: c, en: c === 'All' ? 'All topics' : c, el: c === 'All' ? 'Όλα τα θέματα' : c }))}
+            options={allCategories.map((c) => ({ value: c, en: c === 'All' ? 'All topics' : c, el: c === 'All' ? 'Όλα τα θέματα' : learningCategoryEl(c) }))}
             value={selectedCategory}
             onChange={setSelectedCategory}
           />
