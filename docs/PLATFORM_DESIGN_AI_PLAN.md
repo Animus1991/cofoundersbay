@@ -5017,3 +5017,78 @@ tsc web 0· vitest web 1048/1048 (133 αρχεία)· οι σελίδες του
 - Η ταχύτητα του production build δεν μετρήθηκε ξανά: δεν χωρούσε στον δίσκο.
 - Η πηγή που γεμίζει τον δίσκο δεν εντοπίστηκε.
 - Το «Bay duo» είναι υλοποίηση της πρότασης του φύλλου πάνω στη δική μας οικογένεια. Η αισθητική κρίση (πόσο ήσυχο ή έντονο) είναι του ιδιοκτήτη.
+
+## 56. Γύρος 2026-10-18 (β) — χώρος στον δίσκο, πρόσωπα με αρχικά, production server, `main`
+
+Αφορμή (ο ιδιοκτήτης, 2026-10-18): «τι άλλο θα μπορούσες να σβήσεις ώστε να ελευθερώσουμε χώρο … χωρίς να βλάπτουμε τίποτε σημαντικό. Σβήσε το Ollama model. Θέλω όλα τα Project να παραμείνουν πλήρως λειτουργικά … μόνο περιττά cache … screenshots που δεν χρειάζονται … Σβήσε και όλα τα υπόλοιπα στο docker που ξαναφτιάχνονται και δεν αφορούν το cofounderbay. Έπειτα να συνεχίσουμε με όλα τα υπόλοιπα.»
+
+### 56.1 Τι σβήστηκε, και τι όχι
+
+Από 2 GB ελεύθερα στα 13 GB. Κάθε κατηγορία μετρήθηκε πριν σβηστεί.
+
+| κατηγορία | MB | γιατί είναι ασφαλές |
+|---|---|---|
+| Ollama: `krikri-el`, `ilsp/llama-krikri-8b-instruct:q4_k_m` | 4 530 | ζητήθηκε ρητά· κανένα project δεν τα χρησιμοποιεί (το CoFounderBay έχει προεπιλογή `llama3.2:latest`, και κανένα `.env` δεν ορίζει `OLLAMA_MODEL`)· το Modelfile του `krikri-el` σώθηκε στο `C:\Users\anast\ollama-modelfiles\` με οδηγίες επαναδημιουργίας |
+| Docker: δύο images του `ai-tutor` (pgvector, minio), το `mcp/playwright` χωρίς tag, τα δύο containers του `ai-tutor` | 2 290 μέσα στον δίσκο του Docker | κατεβαίνουν ξανά· τα δεδομένα του `ai-tutor` είναι σε named volumes, που έμειναν, και το `docker compose up` του project τα ξαναστήνει |
+| Docker: συμπίεση του `docker_data.vhdx` (fstrim, `diskpart compact`, με έγκριση UAC) | 2 310 | 10.55 → 8.24 GB· τα δεδομένα δεν αγγίζονται |
+| Παλιά δεδομένα editors (Devin, VS Code, Windsurf, Cursor, Antigravity) | 2 142 | ό,τι δεν ξαναδιαβάζει καμία εφαρμογή: caches παλιών εκδόσεων, crash reports, αποθηκευμένα installers επεκτάσεων, logs άνω των 3 ημερών· όχι ρυθμίσεις, workspaces, επεκτάσεις ή το ιστορικό συνεδριών του Devin |
+| Temp: updaters (Docker Desktop, VS Code ×5, Windsurf) | 1 666 | ξανακατεβαίνουν αν χρειαστούν |
+| Temp: φάκελοι μετασχηματισμού του Vitest από τελειωμένα runs | 482 | προσωρινά |
+| Playwright Chromium 1193 (και headless shell) | 547 | κανένα project δεν το αναφέρει· τα 1194 (CoFounderBay) και 1234 (Obsidian_protocol) έμειναν |
+| `.next` των τριών checkouts | 2 400 | ξαναφτιάχνονται |
+| cache του npm | 2 700 | ξαναφτιάχνεται |
+| untracked screenshots ελέγχων και του scratchpad | 54 | όχι το `icon-directions/` (το παραθέτει η §55), όχι scripts, όχι αρχεία του git |
+| `jcef_cache` των JetBrains | ~100 | cache του ενσωματωμένου browser |
+
+**Δεν σβήστηκαν:**
+- `node_modules`, πηγαίος κώδικας, JDKs και dists του Gradle (χρειάζονται για builds)
+- plugins και τοπικά μοντέλα completion των JetBrains
+- όλα τα volumes του Docker (δεδομένα, μαζί με τα ανώνυμα και των άλλων projects)
+- τα Downloads (διαλέξεις περίπου 34 GB, προσωπικά έγγραφα)
+- cookies των browsers (θα σας αποσύνδεαν από κάθε site)
+- τα caches του Edge όσο είναι ανοιχτός
+- το `sessions.db` του Devin (το ιστορικό του)
+
+Το `pnpm store prune` δεν βρήκε τίποτα αχρησιμοποίητο.
+
+**Θέλουν εσάς ή τα Windows:**
+- το `pagefile.sys` (36 GB) μικραίνει με επανεκκίνηση
+- `hiberfil.sys` 6.6 GB
+- Disk Cleanup («Εκκαθάριση αρχείων συστήματος»)
+
+### 56.2 Πρόσωπα με αρχικά, όχι τυχαία τοπία
+
+Το demo γέμιζε τα κενά πορτρέτα με picsum, όπως το πρωτότυπο του Google AI Studio. Ένα seed όμως είναι τυχαία σκηνή: ο «Marcus Chen» ήταν κολυμβητής, η «Elena» γραφείο, η «Sarah» γέφυρα τη νύχτα.
+
+- Άνθρωποι και logos δεν παίρνουν πια φωτογραφία demo και δείχνουν αρχικά, όπως ένα πραγματικό μέλος χωρίς φωτογραφία.
+- Τα εξώφυλλα (εκδηλώσεις, startups, προγράμματα) κρατούν το picsum.
+- Ο Alex Demo δείχνει αρχικά.
+- Οι πράκτορες AI στις Ρυθμίσεις → AI δείχνουν το glyph τους.
+- Επτά avatars έπαιρναν τον πρώτο χαρακτήρα («Dr. Sarah Kim» → «D»). Τώρα παίρνουν το `initialsOf` («SK»).
+- Κάθε `<img>` ανθρώπου ή logo ελέγχθηκε ότι έχει fallback.
+
+### 56.3 Ένα σφάλμα που βρέθηκε από τον έλεγχο της κονσόλας
+
+Το «Τι νέο υπάρχει» είχε τον σύνδεσμο ως key. Τρεις καταχωρίσεις ανοίγουν το `/discover`, και το React το ανέφερε 14 φορές ως διπλό key, που μπορεί να ρίξει ή να διπλασιάσει γραμμές. Τώρα το key είναι ο τίτλος, και ένα test ελέγχει τη μοναδικότητα.
+
+Έλεγχος κονσόλας (demo, ελληνικά): 0 σφάλματα στο `/dashboard` και των έξι ρόλων, και στα `/discover`, `/scout`, `/messages`, `/ai`, `/commitments`, `/matches`, `/connections`, `/events`. Δύο σελίδες κρατούν μια παλιά προειδοποίηση development για handler demo που λείπει: `GET /api/notifications/preferences` στις `/settings`, και `GET /api/endorsements/user/...` στο `/profile`.
+
+### 56.4 Server και `main`
+
+**Ο server είναι production, στο `http://localhost:3000`.** Το `next build` πέρασε σε 4.4 λεπτά, χωρίς σφάλμα, με 104 kB κοινό JS. Ξεκίνησε με `next start -p 3000 -H ::` και ήταν έτοιμο σε 1.8 s. Η λειτουργία development έμεινε σταματημένη.
+
+| μέτρηση (demo, ελληνικά) | production | development (προηγουμένως) |
+|---|---|---|
+| πρώτο άνοιγμα `/dashboard` | 336–433 ms | 4–68 s |
+| κλικ από την αρχική στο `/discover` | 265–415 ms | ένα compile ανά σελίδα, 1–17 s |
+| άμεσο άνοιγμα 10 σελίδων | 0.2–1.8 s (`/commitments` 200 ms, `/scout` 1.8 s) | — |
+
+Το production build δεν βλέπει αλλαγές κώδικα. Μετά από αλλαγές τρέχει ξανά το `npx next build` στο `apps/web` και ξεκινά πάλι ο server. Για ανάπτυξη χρησιμοποιείται το `node ./scripts/dev.js`.
+
+**Το `main` δεν μετακινήθηκε.** Ο έλεγχος ασφαλείας του Claude Code (auto mode) μπλόκαρε ως «Production Deploy» το `git push origin HEAD:main` και κάθε εντολή `gh pr`. Το `main` είναι πρόγονος του branch, άρα ένα fast-forward αρκεί (171 commits).
+
+Το deploy στο Cloudflare αποτυγχάνει έτσι κι αλλιώς στο βήμα των διαπιστευτηρίων: στο GitHub λείπουν τα secrets `CLOUDFLARE_API_TOKEN` και `CLOUDFLARE_ACCOUNT_ID`. Η ροή χτίζει και ελέγχει τύπους, αλλά δεν ανεβάζει τίποτα.
+
+Η απόφαση είναι του ιδιοκτήτη, με δύο δρόμους:
+- το «Compare & pull request» στο GitHub και merge
+- άδεια για `git push origin HEAD:main`
